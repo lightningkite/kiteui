@@ -94,7 +94,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         bodyTransitions: ScreenTransitions? = null,
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
-        derivations: SemanticOverrides = SemanticOverrides.EMPTY,
+        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
     ) = copy(
         id = key,
         cascading = cascading,
@@ -114,7 +114,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
-        overrides = derivations,
+        semanticOverrides = semanticOverrides,
     ).withBack
 
     fun Theme.withoutBack(
@@ -135,7 +135,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         bodyTransitions: ScreenTransitions? = null,
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
-        overrides: SemanticOverrides = SemanticOverrides.EMPTY,
+        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
     ) = copy(
         id = key,
         cascading = cascading,
@@ -155,7 +155,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
-        overrides = overrides,
+        semanticOverrides = semanticOverrides,
     ).withoutBack
 
     fun Theme.alter(
@@ -176,7 +176,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         bodyTransitions: ScreenTransitions? = null,
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
-        derivations: SemanticOverrides = SemanticOverrides.EMPTY,
+        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
     ) = copy(
         id = key,
         cascading = cascading,
@@ -196,7 +196,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
-        overrides = derivations,
+        semanticOverrides = semanticOverrides,
     )
 
     data class Override<T : Semantic>(
@@ -214,16 +214,16 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         )
 
         sealed interface Key<T : Semantic> {
-            @JvmInline
-            value class Instance<T : Semantic>(val semantic: T) : Key<T>
+            data class Instance<T : Semantic>(val semantic: T) : Key<T>
 
-            @JvmInline
-            value class Type<T : Semantic>(val type: KClass<T>) : Key<T>
+            data class Type<T : Semantic>(val type: KClass<T>) : Key<T>
         }
     }
+
+    operator fun invoke(derivation: Semantic.(Theme) -> ThemeAndBack) = Override(this, derivation)
 }
 
-fun <T : Semantic> T.override(derivation: Semantic.(Theme) -> ThemeAndBack) = Semantic.Override(this, derivation)
+fun <T : Semantic> T.override(derivation: T.(Theme) -> ThemeAndBack) = Semantic.Override(this, derivation)
 inline fun <reified T : Semantic> override(noinline derivation: T.(Theme) -> ThemeAndBack) = Semantic.Override(T::class, derivation)
 
 
@@ -593,7 +593,7 @@ class Theme(
     val derivationId: String? = null,
     val revert: Theme? = null,
 
-    val overrides: SemanticOverrides = SemanticOverrides.EMPTY,
+    val semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
 ) {
     val icon: Paint get() = iconOverride ?: foreground
     val separator: Paint get() = separatorOverride ?: foreground.applyAlpha(0.5f)
@@ -614,7 +614,7 @@ class Theme(
     private val themeCache = HashMap<Semantic, ThemeAndBack>()
 
     operator fun get(semantic: Semantic): ThemeAndBack = themeCache.getOrPut(semantic) {
-        overrides.derive(semantic, this)
+        semanticOverrides.derive(semantic, this)
     }
 
     override fun hashCode(): Int = id.hashCode()
@@ -640,7 +640,7 @@ class Theme(
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
-        overrides: SemanticOverrides = SemanticOverrides.EMPTY,
+        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
     ): Theme = Theme(
         id = newId,
         font = font,
@@ -659,7 +659,7 @@ class Theme(
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
-        overrides = this.overrides + overrides
+        semanticOverrides = this.semanticOverrides + semanticOverrides
     )
 
     fun copy(
@@ -681,7 +681,7 @@ class Theme(
         bodyTransitions: ScreenTransitions? = null,
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
-        overrides: SemanticOverrides = SemanticOverrides.EMPTY,
+        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
     ): Theme = Theme(
         id = "${this.id}-$id",
         derivedFrom = derivedFrom,
@@ -702,7 +702,7 @@ class Theme(
         bodyTransitions = bodyTransitions ?: this.bodyTransitions,
         dialogTransitions = dialogTransitions ?: this.dialogTransitions,
         transitionDuration = transitionDuration ?: this.transitionDuration,
-        overrides = this.overrides + overrides,
+        semanticOverrides = this.semanticOverrides + semanticOverrides,
         revert = if (!cascading) (this.revert ?: this) else this.revert?.copy(
             id = id,
             cascading = cascading,
@@ -722,7 +722,7 @@ class Theme(
             bodyTransitions = bodyTransitions,
             dialogTransitions = dialogTransitions,
             transitionDuration = transitionDuration,
-            overrides = overrides,
+            semanticOverrides = semanticOverrides,
         )
     )
 

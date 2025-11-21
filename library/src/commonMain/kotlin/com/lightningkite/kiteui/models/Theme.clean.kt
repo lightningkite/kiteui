@@ -16,14 +16,14 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
         cornerRadii = CornerRadii.Constant(0.5.rem),
         gap = 0.75.rem,
         padding = Edges(0.75.rem),
-        overrides = mapOf(
-            CardSemantic to {
+        semanticOverrides = overrides(
+            CardSemantic {
                 if(it.background != Color.white)
                     it.withBack(background = it.background.backInvert(), foreground = Color.black)
                 else
                     it.withBack(outlineWidth = 1.px)
             },
-            FieldSemantic to {
+            FieldSemantic {
                 it.withBack(
                     outline = separator,
                     outlineWidth = 1.px,
@@ -31,14 +31,14 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
                     cornerRadii = CornerRadii.ForceConstant(0.5.rem)
                 )
             },
-            BarSemantic to { it.withBack },
-            NavSemantic to { it.withBack },
-            OuterSemantic to { it.withBack(cascading = false, gap = 1.px, padding = Edges.ZERO, background = separator) },
-            MainContentSemantic to { it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
-            InsetSemantic to { it.withBack(background = it.background.backInvert()) },
-            UnselectedSemantic to { it.withBack },
-            SelectedSemantic to { it[CardSemantic] },
-            DialogSemantic to {
+            BarSemantic { it.withBack },
+            NavSemantic { it.withBack },
+            OuterSemantic { it.withBack(cascading = false, gap = 1.px, padding = Edges.ZERO, background = separator) },
+            MainContentSemantic { it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
+            InsetSemantic { it.withBack(background = it.background.backInvert()) },
+            UnselectedSemantic { it.withBack },
+            SelectedSemantic { it[CardSemantic] },
+            DialogSemantic {
                 it.withBack(
                     cascading = false,
                     outline = separator,
@@ -47,7 +47,7 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
                     elevation = 4.dp
                 )
             },
-            PopoverSemantic to {
+            PopoverSemantic {
                 it.withBack(
                     cascading = false,
                     outline = separator,
@@ -56,13 +56,13 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
                     elevation = 4.dp
                 )
             },
-            ImportantSemantic to {
+            ImportantSemantic {
                 it.withBack(
                     background = highlight,
                     foreground = if (highlight.perceivedBrightness > 0.4f) Color.white else Color.black,
                 )
             },
-            ListSemantic to {
+            ListSemantic {
                 it.copy(id = "lsts", background = back).withBack(
                     cascading = false,
                     cornerRadii = CornerRadii.ForceConstant(0.75.rem),

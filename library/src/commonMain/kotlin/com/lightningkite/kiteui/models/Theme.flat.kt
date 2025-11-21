@@ -22,11 +22,11 @@ fun Theme.Companion.flat(
     foreground = if(baseBrightness > 0.6f) Color.black else Color.white,
     background = HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness).toRGB(),
     outline = HSPColor(hue = hue, saturation = saturation, brightness = 0.4f).toRGB(),
-    overrides = mapOf(
-        HeaderSemantic to {
+    semanticOverrides = overrides(
+        HeaderSemantic {
             it.withoutBack(font = title)
         },
-        ImportantSemantic to {
+        ImportantSemantic {
             val existing = it.background.closestColor().toHSP()
             if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
                 val b = existing.copy(brightness = 0.5f).toRGB()
@@ -45,7 +45,7 @@ fun Theme.Companion.flat(
                 )
             }
         },
-        CardSemantic to {
+        CardSemantic {
             it.withBack(
                 background = it.background.closestColor().toHSP().let {
                     it.copy(brightness = it.brightness + brightnessStep)
@@ -55,7 +55,7 @@ fun Theme.Companion.flat(
                 }.toRGB()
             )
         },
-//        UnselectedSemantic to {
+//        UnselectedSemantic {
 //            val existing = it.background.closestColor().toHSP()
 //            if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
 //                it.withoutBack
@@ -68,21 +68,21 @@ fun Theme.Companion.flat(
 //                ).withBack
 //            }
 //        },
-//        SelectedSemantic to {
+//        SelectedSemantic {
 //            it.copy(id = "sel", background = it.background.closestColor().toHSP().let {
 //                it.copy(brightness = it.brightness + brightnessStep * 2)
 //            }.toRGB(), outline = it.outline.closestColor().toHSP().let {
 //                it.copy(brightness = it.brightness + brightnessStep * 2)
 //            }.toRGB(), outlineWidth = it.outlineWidth * 2).withBack
 //        },
-        HoverSemantic to {
+        HoverSemantic {
             it.withBack(background = it.background.closestColor().toHSP().let {
                 it.copy(brightness = it.brightness + brightnessStep)
             }.toRGB(), outline = it.outline.closestColor().toHSP().let {
                 it.copy(brightness = it.brightness + brightnessStep)
             }.toRGB(), outlineWidth = it.outlineWidth * 2)
         },
-        FocusSemantic to {
+        FocusSemantic {
             val o = it.outline.closestColor()
             val b = it.background.closestColor()
             if(b.alpha == 0f || abs(o.perceivedBrightness - b.perceivedBrightness) > 0.4) {
@@ -96,7 +96,7 @@ fun Theme.Companion.flat(
                 )
             }
         },
-        DownSemantic to {
+        DownSemantic {
             it.withBack(background = it.background.closestColor().toHSP().let {
                 it.copy(brightness = it.brightness + brightnessStep * 3)
             }.toRGB(), outline = it.outline.closestColor().toHSP().let {
@@ -104,7 +104,7 @@ fun Theme.Companion.flat(
             }.toRGB(), outlineWidth = it.outlineWidth * 2)
         },
 
-        FieldSemantic to {
+        FieldSemantic {
             it.withBack(
                 outlineWidth = 1.px,
                 background = it.background.closestColor(),
@@ -119,12 +119,12 @@ fun Theme.Companion.flat(
                 }
             )
         },
-        BarSemantic to { it.withoutBack },
-        NavSemantic to { it[CardSemantic] },
-        OuterSemantic to {
+        BarSemantic { it.withoutBack },
+        NavSemantic { it[CardSemantic] },
+        OuterSemantic {
             it.withBack
         },
-        MainContentSemantic to {
+        MainContentSemantic {
             it.withBack(
                 background = RadialGradient(
                     stops = listOf(
@@ -135,7 +135,7 @@ fun Theme.Companion.flat(
                 )
             )
         },
-        DialogSemantic to {
+        DialogSemantic {
             it.withBack(outlineWidth = 1.dp, gap = 2.rem, cascading = false)
         },
     ),

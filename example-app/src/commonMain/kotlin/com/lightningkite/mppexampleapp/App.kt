@@ -22,15 +22,6 @@ import kotlin.time.Duration.Companion.seconds
 val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
 val appTheme = Signal<Theme>(defaultTheme)
 
-val theme = Theme(
-    id = "test",
-    overrides = overrides(
-        override(CardSemantic) {
-
-        }
-    )
-)
-
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): Unit {
     RViewHelper.leakDetection = true
 //    return frame {

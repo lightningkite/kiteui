@@ -48,11 +48,11 @@ fun Theme.Companion.shadCnLike(
         foreground = if (baseBrightness > 0.6f) Color.black else Color.white,
         background = background,
         outline = background.highlight(outlineHighlight),
-        overrides = mapOf(
-            HeaderSemantic to {
+        semanticOverrides = overrides(
+            HeaderSemantic.override {
                 it.withoutBack(font = title)
             },
-            ImportantSemantic to {
+            ImportantSemantic.override {
                 when(it.background) {
                     accent -> it.withBack(
                         background = superAccent,
@@ -64,35 +64,35 @@ fun Theme.Companion.shadCnLike(
                     )
                 }
             },
-            CardSemantic to {
+            CardSemantic.override {
                 it[GroupSemantic]
             },
-            GroupSemantic to {
+            GroupSemantic.override {
                 it.withBack(
                     cascading = false,
                     outlineWidth = 1.px,
                 )
             },
-            HoverSemantic to {
+            HoverSemantic.override {
                 it.withBack(
                     background = it.background.highlight2(cardHighlight),
                     outline = it.outline.highlight2(cardHighlight),
                 )
             },
-            FocusSemantic to {
+            FocusSemantic.override {
                 it.withBack(
                     cascading = false,
                     outlineWidth = 3.px,
                 )
             },
-            DownSemantic to {
+            DownSemantic.override {
                 it.withBack(
                     background = it.background.brighten2(cardHighlight),
                     outline = it.outline.brighten2(cardHighlight),
                 )
             },
 
-            FieldSemantic to {
+            FieldSemantic.override {
                 it.alter(
                     background = it.background.brighten2(cardHighlight),
                     outline = it.outline.brighten2(cardHighlight),
@@ -102,11 +102,11 @@ fun Theme.Companion.shadCnLike(
                 )
             },
 
-            ListSemantic to {
+            ListSemantic.override {
                 it.withoutBack(gap = 1.px, cascading = false)
             },
 
-            BarSemantic to {
+            BarSemantic.override {
                 it.withBack(
                     background = background.highlight2(cardHighlight),
                     cascading = false,
@@ -115,7 +115,7 @@ fun Theme.Companion.shadCnLike(
                     padding = Edges(0.px)
                 )
             },
-            NavSemantic to {
+            NavSemantic.override {
                 it.withBack(
                     background = background.highlight2(cardHighlight),
                     cascading = false,
@@ -124,7 +124,7 @@ fun Theme.Companion.shadCnLike(
                     padding = Edges(0.px)
                 )
             },
-            OuterSemantic to {
+            OuterSemantic.override {
                 it.withBack(
                     cascading = false,
                     outlineWidth = 1.px,
@@ -132,13 +132,13 @@ fun Theme.Companion.shadCnLike(
                     padding = Edges(0.px)
                 )
             },
-            MainContentSemantic to { it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
+            MainContentSemantic. override{ it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
 
-            DialogSemantic to {
+            DialogSemantic.override {
                 it.withBack(outlineWidth = 1.dp, padding = Edges(2.rem), cascading = false)
             },
 
-            SelectedSemantic to {
+            SelectedSemantic.override {
                 it.alter(
                     background = if(background.perceivedBrightness < 0.5f)
                         HSVColor(
@@ -160,7 +160,7 @@ fun Theme.Companion.shadCnLike(
                     outlineWidth = 1.px,
                 )
             },
-            UnselectedSemantic to {
+            UnselectedSemantic.override {
                 it.withBack(
                     background = background,
                     foreground = background.foreground(),

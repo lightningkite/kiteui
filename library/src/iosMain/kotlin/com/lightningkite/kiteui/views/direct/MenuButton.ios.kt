@@ -26,7 +26,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                         it.copy(
                             id = "mnubtndsm",
                             revert = true,
-                            overrides = mapOf(
+                            semanticOverrides = mapOf(
                                 DismissSemantic to {
                                     it.copy(
                                         background = Color.transparent,

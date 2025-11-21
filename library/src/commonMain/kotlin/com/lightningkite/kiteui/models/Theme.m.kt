@@ -27,8 +27,8 @@ fun Theme.Companion.material(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    overrides = mapOf(
-        OuterSemantic to {
+    semanticOverrides = overrides(
+        OuterSemantic {
             it.alter(
                 cascading = false,
                 gap = 0.px,
@@ -36,62 +36,67 @@ fun Theme.Companion.material(
                 outlineWidth = 0.px,
             ).withBackNoPadding
         },
-        HeaderSemantic to {
+        HeaderSemantic {
             it.withoutBack(font = title)
         },
-        DialogSemantic to {
+        DialogSemantic {
             it.withBack(
                 background = it.background.closestColor().darken(0.1f),
                 outline = it.outline.closestColor().darken(0.1f),
                 elevation = it.elevation * 2f,
             )
         },
-        ImportantSemantic to {
+        ImportantSemantic {
             it.withBack(
                 foreground = primaryForeground,
                 background = primary,
                 outline = primary.highlight(0.1f),
-                derivations = mapOf(ImportantSemantic to {
-                    it.withBack(
-                        foreground = secondaryForeground,
-                        background = secondary,
-                        outline = secondary.highlight(0.1f),
-                    )
-                })
+                semanticOverrides = overrides(
+                    ImportantSemantic {
+                        it.withBack(
+                            foreground = secondaryForeground,
+                            background = secondary,
+                            outline = secondary.highlight(0.1f),
+                        )
+                    }
+                )
             )
         },
-        MainContentSemantic to {
+        MainContentSemantic {
             it.withBack(
                 cascading = false,
                 cornerRadii = CornerRadii.ForceConstant(0.px),
                 outlineWidth = 0.px,
             )
         },
-        BarSemantic to {
+        BarSemantic {
             it.alter(
                 foreground = primaryForeground,
                 background = primary,
                 outline = primary.highlight(0.1f),
-                derivations = mapOf(ImportantSemantic to {
-                    it.withBack(
-                        foreground = secondaryForeground,
-                        background = secondary,
-                        outline = secondary.highlight(0.1f),
-                    )
-                }, ListSemantic to {
-                    it.withoutBack(
-                        cascading = false,
-                        padding = Edges(0.px),
-                        gap = 0.px
-                    )
-                })
+                semanticOverrides = overrides(
+                    ImportantSemantic {
+                        it.withBack(
+                            foreground = secondaryForeground,
+                            background = secondary,
+                            outline = secondary.highlight(0.1f),
+                        )
+                    },
+                    ListSemantic {
+                        it.withoutBack(
+                            cascading = false,
+                            padding = Edges(0.px),
+                            gap = 0.px
+                        )
+                    }
+                )
             ).withBack(
                 cascading = false,
                 cornerRadii = CornerRadii.ForceConstant(0.px),
                 outlineWidth = 0.px,
             )
         },
-        CriticalSemantic to {
+        CriticalSemantic {
             it.withBack(
                 foreground = secondaryForeground,
                 background = secondary,
@@ -164,8 +169,8 @@ object MaterialLikeTheme {
 
 fun Theme.randomTitleFontSettings() = copy(
     id = "${Random.nextInt()}",
-    overrides = mapOf(
-        HeaderSemantic to {
+    semanticOverrides = overrides(
+        HeaderSemantic {
             val old = this@randomTitleFontSettings[HeaderSemantic]
             old.theme.copy(
                 id = id,
