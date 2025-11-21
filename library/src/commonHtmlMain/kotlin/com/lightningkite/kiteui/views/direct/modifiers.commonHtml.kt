@@ -219,7 +219,7 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
 //        ::exists.invoke(condition)
 //    }
     var v: RView? = null
-    return object: RViewWriter(context) {
+    return write(object: RViewWriter(context) {
         init {
             v = this
             native.tag = "div"
@@ -255,7 +255,7 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
 
         override val mySpacingForChildren: Dimension
             get() = parent?.mySpacingForChildren ?: 0.px
-    }
+    }) {}
 }
 
 internal expect fun RView.nativeAnimateShow()
