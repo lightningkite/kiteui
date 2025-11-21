@@ -5,8 +5,10 @@ import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.PopoverSemantic
+import com.lightningkite.kiteui.models.SemanticOverrides
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.dp
+import com.lightningkite.kiteui.models.override
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.atTopStart
@@ -26,15 +28,15 @@ actual fun RView.openPopover(
             themeChoice += ThemeDerivation {
                 it.copy(
                     id = "mnubtndsm",
-                    revert = true,
-                    derivations = mapOf(
-                        DismissSemantic to {
-                            it.copy(
+                    cascading = false,
+                    semanticOverrides = SemanticOverrides(
+                        DismissSemantic.override {
+                            it.withBack(
                                 background = Color.transparent,
                                 outlineWidth = 0.dp,
                                 cornerRadii = CornerRadii.Constant(0.dp),
-                                revert = true,
-                            ).withBack
+                                cascading = false,
+                            )
                         }
                     )
                 ).withBack

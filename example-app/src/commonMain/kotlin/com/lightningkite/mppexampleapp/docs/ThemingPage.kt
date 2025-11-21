@@ -6,19 +6,17 @@ import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.DownSemantic
 import com.lightningkite.kiteui.models.HoverSemantic
 import com.lightningkite.kiteui.models.Semantic
-import com.lightningkite.kiteui.models.ShaderEffect
+import com.lightningkite.kiteui.models.SemanticOverrides
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.Transformation
-import com.lightningkite.kiteui.models.dp
-import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.models.override
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.titledSection
-import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.mppexampleapp.appTheme
 import com.lightningkite.mppexampleapp.defaultTheme
 import com.lightningkite.reactive.context.*
@@ -27,9 +25,6 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlin.collections.mapOf
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.delay
 
 
 @Routable("docs/theming")
@@ -191,11 +186,11 @@ data object GlassSemantic : Semantic("glass") {
         return theme.withBack(
             background = Color.gray.withAlpha(0.25f),
             blurBackground = 1.rem,
-            derivations = mapOf(
-                HoverSemantic to {
+            semanticOverrides = SemanticOverrides(
+                HoverSemantic.override {
                     it.withBack(transform = Transformation(scaleX = 1.2, scaleY = 1.2))
                 },
-                DownSemantic to {
+                DownSemantic.override {
                     it.withBack(transform = Transformation(scaleX = 0.9, scaleY = 0.9))
                 },
             )

@@ -25,15 +25,15 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     themeChoice += ThemeDerivation {
                         it.copy(
                             id = "mnubtndsm",
-                            revert = true,
-                            derivations = mapOf(
-                                DismissSemantic to {
-                                    it.copy(
+                            cascading = false,
+                            semanticOverrides = SemanticOverrides(
+                                DismissSemantic.override {
+                                    it.withBack(
                                         background = Color.transparent,
                                         outlineWidth = 0.dp,
                                         cornerRadii = CornerRadii.Constant(0.dp),
-                                        revert = true,
-                                    ).withBack
+                                        cascading = false,
+                                    )
                                 }
                             )
                         ).withBack

@@ -52,15 +52,16 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
     actual val checked: MutableReactiveValue<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
-        { value -> attributes.checked = value })
+        { value -> attributes.checked = value }
+    )
 
     init {
         checked.addListener {
-            if(checked.value)
+            if (checked.value)
                 native.classes.add("checked")
             else
                 native.classes.remove("checked")
-        }
+        }.also(::onRemove)
     }
 
     actual inline var enabled: Boolean
