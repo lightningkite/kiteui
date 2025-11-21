@@ -27,8 +27,8 @@ fun Theme.Companion.material(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    semanticOverrides = overrides(
-        OuterSemantic {
+    semanticOverrides = SemanticOverrides(
+        OuterSemantic.override {
             it.alter(
                 cascading = false,
                 gap = 0.px,
@@ -36,23 +36,23 @@ fun Theme.Companion.material(
                 outlineWidth = 0.px,
             ).withBackNoPadding
         },
-        HeaderSemantic {
+        HeaderSemantic.override {
             it.withoutBack(font = title)
         },
-        DialogSemantic {
+        DialogSemantic.override {
             it.withBack(
                 background = it.background.closestColor().darken(0.1f),
                 outline = it.outline.closestColor().darken(0.1f),
                 elevation = it.elevation * 2f,
             )
         },
-        ImportantSemantic {
+        ImportantSemantic.override {
             it.withBack(
                 foreground = primaryForeground,
                 background = primary,
                 outline = primary.highlight(0.1f),
-                semanticOverrides = overrides(
-                    ImportantSemantic {
+                semanticOverrides = SemanticOverrides(
+                    ImportantSemantic.override {
                         it.withBack(
                             foreground = secondaryForeground,
                             background = secondary,
@@ -62,27 +62,27 @@ fun Theme.Companion.material(
                 )
             )
         },
-        MainContentSemantic {
+        MainContentSemantic.override {
             it.withBack(
                 cascading = false,
                 cornerRadii = CornerRadii.ForceConstant(0.px),
                 outlineWidth = 0.px,
             )
         },
-        BarSemantic {
+        BarSemantic.override {
             it.alter(
                 foreground = primaryForeground,
                 background = primary,
                 outline = primary.highlight(0.1f),
-                semanticOverrides = overrides(
-                    ImportantSemantic {
+                semanticOverrides = SemanticOverrides(
+                    ImportantSemantic.override {
                         it.withBack(
                             foreground = secondaryForeground,
                             background = secondary,
                             outline = secondary.highlight(0.1f),
                         )
                     },
-                    ListSemantic {
+                    ListSemantic.override {
                         it.withoutBack(
                             cascading = false,
                             padding = Edges(0.px),
@@ -96,7 +96,7 @@ fun Theme.Companion.material(
                 outlineWidth = 0.px,
             )
         },
-        CriticalSemantic {
+        CriticalSemantic.override {
             it.withBack(
                 foreground = secondaryForeground,
                 background = secondary,
@@ -169,8 +169,8 @@ object MaterialLikeTheme {
 
 fun Theme.randomTitleFontSettings() = copy(
     id = "${Random.nextInt()}",
-    semanticOverrides = overrides(
-        HeaderSemantic {
+    semanticOverrides = SemanticOverrides(
+        HeaderSemantic.override {
             val old = this@randomTitleFontSettings[HeaderSemantic]
             old.theme.copy(
                 id = id,

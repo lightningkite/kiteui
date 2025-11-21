@@ -48,7 +48,7 @@ fun Theme.Companion.shadCnLike(
         foreground = if (baseBrightness > 0.6f) Color.black else Color.white,
         background = background,
         outline = background.highlight(outlineHighlight),
-        semanticOverrides = overrides(
+        semanticOverrides = SemanticOverrides(
             HeaderSemantic.override {
                 it.withoutBack(font = title)
             },

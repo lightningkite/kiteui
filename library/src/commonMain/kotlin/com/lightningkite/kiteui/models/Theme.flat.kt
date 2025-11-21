@@ -22,11 +22,11 @@ fun Theme.Companion.flat(
     foreground = if(baseBrightness > 0.6f) Color.black else Color.white,
     background = HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness).toRGB(),
     outline = HSPColor(hue = hue, saturation = saturation, brightness = 0.4f).toRGB(),
-    semanticOverrides = overrides(
-        HeaderSemantic {
+    semanticOverrides = SemanticOverrides(
+        HeaderSemantic.override {
             it.withoutBack(font = title)
         },
-        ImportantSemantic {
+        ImportantSemantic.override {
             val existing = it.background.closestColor().toHSP()
             if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
                 val b = existing.copy(brightness = 0.5f).toRGB()
@@ -45,7 +45,7 @@ fun Theme.Companion.flat(
                 )
             }
         },
-        CardSemantic {
+        CardSemantic.override {
             it.withBack(
                 background = it.background.closestColor().toHSP().let {
                     it.copy(brightness = it.brightness + brightnessStep)
@@ -55,7 +55,7 @@ fun Theme.Companion.flat(
                 }.toRGB()
             )
         },
-//        UnselectedSemantic {
+//        UnselectedSemantic.override {
 //            val existing = it.background.closestColor().toHSP()
 //            if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
 //                it.withoutBack
@@ -68,21 +68,21 @@ fun Theme.Companion.flat(
 //                ).withBack
 //            }
 //        },
-//        SelectedSemantic {
+//        SelectedSemantic.override {
 //            it.copy(id = "sel", background = it.background.closestColor().toHSP().let {
 //                it.copy(brightness = it.brightness + brightnessStep * 2)
 //            }.toRGB(), outline = it.outline.closestColor().toHSP().let {
 //                it.copy(brightness = it.brightness + brightnessStep * 2)
 //            }.toRGB(), outlineWidth = it.outlineWidth * 2).withBack
 //        },
-        HoverSemantic {
+        HoverSemantic.override {
             it.withBack(background = it.background.closestColor().toHSP().let {
                 it.copy(brightness = it.brightness + brightnessStep)
             }.toRGB(), outline = it.outline.closestColor().toHSP().let {
                 it.copy(brightness = it.brightness + brightnessStep)
             }.toRGB(), outlineWidth = it.outlineWidth * 2)
         },
-        FocusSemantic {
+        FocusSemantic.override {
             val o = it.outline.closestColor()
             val b = it.background.closestColor()
             if(b.alpha == 0f || abs(o.perceivedBrightness - b.perceivedBrightness) > 0.4) {
@@ -96,7 +96,7 @@ fun Theme.Companion.flat(
                 )
             }
         },
-        DownSemantic {
+        DownSemantic.override {
             it.withBack(background = it.background.closestColor().toHSP().let {
                 it.copy(brightness = it.brightness + brightnessStep * 3)
             }.toRGB(), outline = it.outline.closestColor().toHSP().let {
@@ -104,7 +104,7 @@ fun Theme.Companion.flat(
             }.toRGB(), outlineWidth = it.outlineWidth * 2)
         },
 
-        FieldSemantic {
+        FieldSemantic.override {
             it.withBack(
                 outlineWidth = 1.px,
                 background = it.background.closestColor(),
@@ -119,12 +119,12 @@ fun Theme.Companion.flat(
                 }
             )
         },
-        BarSemantic { it.withoutBack },
-        NavSemantic { it[CardSemantic] },
-        OuterSemantic {
+        BarSemantic.override { it.withoutBack },
+        NavSemantic.override { it[CardSemantic] },
+        OuterSemantic.override {
             it.withBack
         },
-        MainContentSemantic {
+        MainContentSemantic.override {
             it.withBack(
                 background = RadialGradient(
                     stops = listOf(
@@ -135,7 +135,7 @@ fun Theme.Companion.flat(
                 )
             )
         },
-        DialogSemantic {
+        DialogSemantic.override {
             it.withBack(outlineWidth = 1.dp, gap = 2.rem, cascading = false)
         },
     ),

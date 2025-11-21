@@ -28,8 +28,8 @@ fun Theme.Companion.material3(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    semanticOverrides = overrides(
-        OuterSemantic {
+    semanticOverrides = SemanticOverrides(
+        OuterSemantic.override {
             it.alter(
                 cascading = false,
                 gap = 0.px,
@@ -37,30 +37,30 @@ fun Theme.Companion.material3(
                 outlineWidth = 0.px,
             ).withBackNoPadding
         },
-        MainContentSemantic {
+        MainContentSemantic.override {
             it.withBack(
                 cascading = false,
                 cornerRadii = CornerRadii.ForceConstant(0.px),
                 outlineWidth = 0.px,
             )
         },
-        BarSemantic {
+        BarSemantic.override {
             it.withBack(
                 cascading = false,
                 cornerRadii = CornerRadii.ForceConstant(0.px),
                 outlineWidth = 0.px,
             )
         },
-        HeaderSemantic {
+        HeaderSemantic.override {
             it.withoutBack(font = title)
         },
-        ImportantSemantic {
+        ImportantSemantic.override {
             it.withBack(
                 foreground = primaryForeground,
                 background = primary,
                 outline = primary.highlight(0.1f),
-                semanticOverrides = overrides(
-                    ImportantSemantic {
+                semanticOverrides = SemanticOverrides(
+                    ImportantSemantic.override {
                         it.withBack(
                             foreground = secondaryForeground,
                             background = secondary,
@@ -70,7 +70,7 @@ fun Theme.Companion.material3(
                 )
             )
         },
-        CriticalSemantic {
+        CriticalSemantic.override {
             it.withBack(
                 foreground = secondaryForeground,
                 background = secondary,

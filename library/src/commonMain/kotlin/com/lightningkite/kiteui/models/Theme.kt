@@ -219,8 +219,6 @@ abstract class Semantic(val key: String) : ThemeDerivation {
             data class Type<T : Semantic>(val type: KClass<T>) : Key<T>
         }
     }
-
-    operator fun invoke(derivation: Semantic.(Theme) -> ThemeAndBack) = Override(this, derivation)
 }
 
 fun <T : Semantic> T.override(derivation: T.(Theme) -> ThemeAndBack) = Semantic.Override(this, derivation)
@@ -251,16 +249,13 @@ value class SemanticOverrides private constructor(
     }
 }
 
-fun overrides(vararg overrides: Semantic.Override<*>): SemanticOverrides =
-    if (overrides.isEmpty()) SemanticOverrides.EMPTY
-    else SemanticOverrides(overrides.toList())
 
 fun overrideNotNull(vararg overrides: Semantic.Override<*>?): SemanticOverrides =
     if (overrides.isEmpty()) SemanticOverrides.EMPTY
     else SemanticOverrides(overrides.toList().filterNotNull())
 
-private fun List<Semantic.Override<*>>.toOverrides(): SemanticOverrides = SemanticOverrides(this)
-fun Map<Semantic, Semantic.(Theme) -> ThemeAndBack>.toOverrides(): SemanticOverrides = SemanticOverrides(map { Semantic.Override(it.key, it.value) })
+private fun List<Semantic.Override<*>>.toSemanticOverrides(): SemanticOverrides = SemanticOverrides(this)
+fun Map<Semantic, Semantic.(Theme) -> ThemeAndBack>.toSemanticOverrides(): SemanticOverrides = SemanticOverrides(map { Semantic.Override(it.key, it.value) })
 
 
 data object ForcePaddingSemantic : Semantic("fpad") {

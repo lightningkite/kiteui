@@ -12,7 +12,7 @@ interface DocPage: Page {
     val covers: List<String>
 }
 
-//data object CodeSemantic: Semantic {
+//data object CodeSemantic: Semantic.override {
 //    override val key: String = "code"
 //    override fun default(theme: Theme): ThemeAndBack = theme.copy(
 //        id = key,
