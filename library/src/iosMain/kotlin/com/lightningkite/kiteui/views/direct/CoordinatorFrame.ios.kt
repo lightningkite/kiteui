@@ -61,7 +61,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     }
                 }
             }
-            frame {
+
+            split().frame {
+                overlayFrame = this
                 content(control)
             }
         }
@@ -126,7 +128,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     closePanel()
                 }
             }
-            willRemove = frame {
+
+            willRemove = split().frame {
+                overlayFrame = this
                 if (ratio == null) {
                     align(Align.Start, Align.Stretch) - content(control)
                 } else {
@@ -164,7 +168,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     closePanel()
                 }
             }
-            willRemove = frame {
+
+            willRemove = split().frame {
+                overlayFrame = this
                 if (ratio == null) {
                     align(Align.End, Align.Stretch) - content(control)
                 } else {
