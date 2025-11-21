@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.roborazzi)
     id("dev.opensavvy.vite.kotlin") version "DEV"
 }
 apply<KiteUiPlugin>()
@@ -70,6 +71,26 @@ kotlin {
             dependencies {
                 implementation(devNpm("webpack-bundle-analyzer", "4.10.2"))
             }
+        }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(project(":test-utilities"))
+            }
+        }
+
+        val commonInteractiveTest by creating() {
+            dependsOn(commonTest)
+        }
+        val jsTest by getting {
+            dependsOn(commonInteractiveTest)
+        }
+        val androidUnitTest by getting {
+            dependsOn(commonInteractiveTest)
+        }
+        val iosTest by getting {
+            dependsOn(commonInteractiveTest)
         }
     }
 
@@ -133,6 +154,11 @@ android {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
     }
     dependencies {
         coreLibraryDesugaring(libs.desugar.jdk.libs)

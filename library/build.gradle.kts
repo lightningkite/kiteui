@@ -71,6 +71,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinxCoroutinesTest)
                 implementation(libs.comLightningkiteTestingKotlinTestManualRuntime)
+                implementation(project(":test-utilities"))
             }
         }
         val androidMain by getting {
@@ -99,6 +100,7 @@ kotlin {
                 implementation(libs.junit)
                 implementation(libs.robolectric)
                 implementation(libs.roborazzi)
+                implementation(project(":test-utilities"))
             }
         }
 
