@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.MutableReactive
@@ -59,7 +60,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                         refreshTheming()
                     }
                 }
-            }.frame {
+            }
+                .split().frame {
+                    overlayFrame = this
                 content(control)
             }
         }
@@ -124,8 +127,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     closePanel()
                 }
             }
-            willRemove = produceOne {
+            willRemove = split().produceOne {
                 frame {
+                    overlayFrame = this
                     if (ratio == null) {
                         align(Align.Start, Align.Stretch).content(control)
                     } else {
@@ -164,8 +168,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     closePanel()
                 }
             }
-            willRemove = produceOne {
+            willRemove = split().produceOne {
                 frame {
+                    overlayFrame = this
                     if (ratio == null) {
                         align(Align.End, Align.Stretch).content(control)
                     } else {
