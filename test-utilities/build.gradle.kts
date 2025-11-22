@@ -39,7 +39,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":library"))
-                api(kotlin("test"))
+                implementation(kotlin("test"))
             }
         }
 

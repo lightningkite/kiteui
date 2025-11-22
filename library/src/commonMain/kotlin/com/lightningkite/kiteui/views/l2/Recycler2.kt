@@ -949,46 +949,6 @@ class Recycler2(
     // Scroll to the newly-created target cell using a simple scrollTo.
 
 
-    @Deprecated("Please, don't use this. This is BAD.  It won't identify the elements properly.")
-    fun <T> children(items: Reactive<List<T>>, render: ViewWriter.(value: Reactive<T>) -> Unit): Unit {
-        var currentData: List<T> = listOf()
-        rendererSet = object : RecyclerViewRendererSet<T, Int> {
-            override fun id(item: T): Int = currentData.indexOf(item)
-            val r = object : RecyclerViewRenderer<T> {
-                override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): Unit {
-                    return viewWriter.render(data)
-                }
-            }
-
-            override fun renderer(item: T): RecyclerViewRenderer<T> = r
-        }
-        reactive {
-            currentData = items()
-            data = object : RecyclerViewData<T, Int> {
-                override val range: IntRange = currentData.indices
-                override fun get(index: Int): T {
-                    if (index !in currentData.indices) throw IllegalStateException("Index $index out of range for ${currentData.indices}")
-                    return currentData[index]
-                }
-            }
-        }
-    }
-
-    @Deprecated("Set your placer instead. ")
-    var columns: Int = 1
-        set(value) {
-            field = value
-
-            placer = if (vertical)
-                RecyclerViewPlacerVerticalGrid(columns)
-            else
-                RecyclerViewPlacerHorizontalGrid(columns)
-        }
-
-    @Deprecated("Renamed to 'firstIndex'") val firstVisibleIndex: Reactive<Int> get() = firstIndex
-    @Deprecated("Renamed to 'lastIndex'") val lastVisibleIndex: Reactive<Int> get() = lastIndex
-    @Deprecated("Renamed to 'centerIndex'") val index: MutableReactive<Int> get() = centerIndex
-    @Deprecated("Just use directly") val new get() = this
 }
 
 internal fun <T> MutableList<T>.popOrNull(): T? = if (!isEmpty()) removeAt(lastIndex) else null

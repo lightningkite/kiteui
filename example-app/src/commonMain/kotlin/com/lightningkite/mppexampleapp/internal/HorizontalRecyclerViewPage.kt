@@ -10,6 +10,8 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerHorizontalGrid
+import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.kiteui.views.l2.lazyExpanding
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -48,16 +50,16 @@ object HorizontalRecyclerViewPage : Page {
                     val cols = it + 1
                     expanding.button {
                         subtext("${cols} columns")
-                        onClick { recyclerView?.columns = cols }
+                        onClick { recyclerView?.placer = RecyclerViewPlacerHorizontalGrid(cols) }
                     }
                 }
             }
             weight(1f).horizontalRecyclerView {
                 recyclerView = this
                 gap = 0.5.rem
-                columns = 2
+                placer = RecyclerViewPlacerHorizontalGrid(2)
                 scrollToIndex(10, Align.Start)
-                children(items) {
+                children(items, id = { it }) {
                     col {
                         row {
                             dynamicTheme {
@@ -87,7 +89,7 @@ object HorizontalRecyclerViewPage : Page {
             row {
                 text {
                     ::content {
-                        "Min: ${recyclerView!!.firstVisibleIndex()}, Max: ${recyclerView!!.lastVisibleIndex()}"
+                        "Min: ${recyclerView!!.firstIndex()}, Max: ${recyclerView!!.lastIndex()}"
                     }
                 }
             }

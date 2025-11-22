@@ -117,8 +117,8 @@ object LeakCheckerPage : Page {
         "video" to { frame { video {} } },
         "webView" to { frame { webView {} } },
         "canvas" to { frame { canvas { delegate = DrawDelegate() } } },
-        "recyclerView" to { frame { recyclerView { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
-        "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
+//        "recyclerView" to { frame { recyclerView { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
+//        "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
     )
 
     override fun ViewWriter.render(): Unit = run {

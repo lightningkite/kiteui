@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -42,12 +43,11 @@ object ViewPagerElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 sizeConstraints(height = 10.rem).card.viewPager {
-                    new.log = LogRoot.tag("Viewpager")
                     // Bind the current index of the ViewPager to `currentPage`
-                    index bind currentPage
+                    centerIndex bind currentPage
 
                     // Define what to show here
-                    children(items) {
+                    children(items, id = { it }) {
                         frame {
                             centered.text { ::content { "Page ${it()}" } }
                         }

@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
+import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -31,7 +32,7 @@ object DataLoadingExamplePage : Page {
             h1 { content = "This example loads some data." }
             text { content = "It's also faking a lot of loading so you can see what it looks like." }
             expanding.recyclerView {
-                children(data) {
+                children(data, id = { it.id }) {
                     card.col {
                         val takesTime = rememberSuspending { delay(Random.nextLong(0, 5000)); "" }
                         val f = remember { takesTime() }

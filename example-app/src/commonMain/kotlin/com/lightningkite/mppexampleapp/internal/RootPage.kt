@@ -64,7 +64,6 @@ object RootPage : Page {
                 linkPage { ScrollIntoViewTest }
                 linkPage { FormattedInputTests() }
                 linkPage { TestingGroundPage }
-                linkPage { ListEditPage }
                 linkPage { LeakCheckerPage }
                 linkPage { ExperimentPage }
                 linkPage { Recycler2TestPage }

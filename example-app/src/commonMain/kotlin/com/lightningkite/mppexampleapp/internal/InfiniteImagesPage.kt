@@ -9,7 +9,9 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalTrueGrid
+import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -54,9 +56,8 @@ object InfiniteImagesPage : Page {
 
     override fun ViewWriter.render(): Unit = run {
         recyclerView {
-
-            new.placer = RecyclerViewPlacerVerticalTrueGrid(4)
-            children(Constant(ReturnIndexList)) {
+            placer = RecyclerViewPlacerVerticalGrid(4, 1.0)
+            children(Constant(ReturnIndexList), id = { it }) {
                 unpadded.button {
                     ::transitionId { it().toString() }
                     sizeConstraints(aspectRatio = 1.0).image {
@@ -80,7 +81,7 @@ class ImageViewPager(val initialIndex: Int) : Page {
             val rv: ViewPager
             viewPager {
                 rv = this
-                children(Constant(InfiniteImagesPage.ReturnIndexList)) { currImage ->
+                children(Constant(InfiniteImagesPage.ReturnIndexList), id = { it }) { currImage ->
                     val renders = Signal(0)
                     frame {
                         ::transitionId { currImage().toString() }
@@ -102,7 +103,7 @@ class ImageViewPager(val initialIndex: Int) : Page {
                         centered.h2 { ::content { renders().toString() } }
                     }
                 }
-                index bind currentPage
+                centerIndex bind currentPage
             }
             align(Align.End, Align.Start).button {
                 icon { source = Icon.close }
@@ -116,7 +117,7 @@ class ImageViewPager(val initialIndex: Int) : Page {
                 }
                 text {
                     content = "I never update because I'm a loser"
-                    ::content { "rv.index ${rv.index()}" }
+                    ::content { "rv.index ${rv.centerIndex()}" }
                 }
             }
             atBottomStart.button {

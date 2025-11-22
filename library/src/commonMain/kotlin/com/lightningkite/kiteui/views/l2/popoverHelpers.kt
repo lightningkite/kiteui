@@ -38,37 +38,6 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> U
     }
 }
 
-@Deprecated("Use dialog with explicit closer instead", ReplaceWith("dialog(dismissable, content)"))
-fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
-    var willRemove: RView? = null
-    overlayWriter {
-        representsView!!.withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    launch {
-                        it.opacity = 0.0
-                        delay(it.theme.transitionDuration)
-                        this@overlayWriter.representsView!!.removeChild(it)
-                    }
-                }
-            }.run {
-                willRemove = beforeNextElementSetup {
-                    opacity = 0.0
-                    launch {
-                        delay(110)
-                        opacity = 1.0
-                    }
-                }.dismissBackground {
-                    onClick { if (dismissable) closePopovers() }
-                    centered.onNext(DialogSemantic).frame {
-                        content()
-                    }
-                }
-            }
-        }
-    }
-}
-
 fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: ()->Unit) -> Unit) {
     overlayWriter(modal = true) { close ->
         dismissBackground {

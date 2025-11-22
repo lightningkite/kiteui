@@ -7,6 +7,9 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerHorizontalGrid
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
+import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -50,7 +53,7 @@ object RecyclerViewTestPage : Page {
                     val cols = it + 1
                     expanding.button {
                         subtext("${cols} columns")
-                        onClick { recyclerView?.columns = cols }
+                        onClick { recyclerView?.placer = RecyclerViewPlacerVerticalGrid(cols) }
                     }
                 }
                 sizeConstraints(width = 10.rem).field("Element Count") {
@@ -72,7 +75,7 @@ object RecyclerViewTestPage : Page {
                     }
                 }
                 scrollToIndex(10, Align.Start)
-                children(items) {
+                children(items, id = { it }) {
                     col child@{
                         dynamicTheme {
                             if (it() == 50) ImportantSemantic
@@ -106,7 +109,7 @@ object RecyclerViewTestPage : Page {
             row {
                 text {
                     ::content {
-                        "Min: ${recyclerView!!.firstVisibleIndex()}, Max: ${recyclerView!!.lastVisibleIndex()}"
+                        "Min: ${recyclerView!!.firstIndex()}, Max: ${recyclerView!!.lastIndex()}"
                     }
                 }
             }
