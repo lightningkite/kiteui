@@ -37,23 +37,7 @@ object AudioManager {
     }
     public fun requestAudioUse() {
         if (context.state == "suspended") {
-            if (!isResuming) {
-                isResuming = true
-                console.log("AudioManager: User gesture detected, resuming AudioContext")
-                context.resume().then(
-                    onFulfilled = {
-                        console.log("AudioManager: AudioContext resumed successfully, state: ${context.state}")
-                        isResuming = false
-                        audioEnablementChange.invokeAll()
-                    },
-                    onRejected = { error ->
-                        console.error("AudioManager: Failed to resume AudioContext", error)
-                        isResuming = false
-                    }
-                )
-            } else {
-                console.log("AudioManager: Already attempting to resume, skipping")
-            }
+            context.resume()
         }
     }
 

@@ -155,4 +155,5 @@ vite {
         this.host.set("0.0.0.0")
         this.port.set(8907)
     }
+    publicDir.set("public")
 }

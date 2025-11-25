@@ -14,6 +14,8 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 @Routable("audio")
 object AudioPage : Page {
@@ -23,12 +25,30 @@ object AudioPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         val soundEffectPool = SoundEffectPool()
         col {
-            h1("Audio Testing")
+            h1("Audio Testing (no workaround)")
             fun withPool(title: String, audioSource: AudioSource) {
                 h2(title)
                 row {
-                    expanding - button { text("Pool"); onClick { soundEffectPool.play(audioSource) } }
-                    expanding - button { text("Direct"); onClick { audioSource.load().play() } }
+                    expanding - button {
+                        text("Pool")
+                        onClick {
+                            delay(5.seconds)
+                            soundEffectPool.play(audioSource)
+                        }
+                    }
+                    expanding - button {
+                        text("Delay Direct")
+                        onClick {
+                            delay(5.seconds)
+                            audioSource.load().play()
+                        }
+                    }
+                    expanding - button {
+                        text("Direct")
+                        onClick {
+                            audioSource.load().play()
+                        }
+                    }
                 }
             }
 //            withPool("CantinaBand3.wav", "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav")
