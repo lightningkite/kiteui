@@ -17,6 +17,7 @@ import com.lightningkite.kiteui.views.backgroundImage
 import com.lightningkite.kiteui.views.backgroundPosition
 import com.lightningkite.kiteui.views.backgroundRepeat
 import com.lightningkite.kiteui.views.backgroundSize
+import com.lightningkite.kiteui.views.crossOrigin
 import com.lightningkite.kiteui.views.position
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -65,7 +66,10 @@ actual class RawImageView actual constructor(
         native.classes.add("viewDraws")
     }
     actual override val state: Reactive<Unit> = _state
-    init { nativeLoad(source.toUrl()) }
+    init {
+        if(source is ImageRemote && source.crossOrigin) native.attributes.crossOrigin = "anonymous"
+        nativeLoad(source.toUrl())
+    }
 }
 
 actual class SizelessRawImageView actual constructor(
@@ -108,7 +112,10 @@ actual class RawImageViewZoomable actual constructor(
         native.classes.add("viewDraws")
     }
     actual override val state: Reactive<Unit> = _state
-    init { nativeLoad(source.toUrl()) }
+    init {
+        if(source is ImageRemote && source.crossOrigin) native.attributes.crossOrigin = "anonymous"
+        nativeLoad(source.toUrl())
+    }
     actual val zoomState: MutableReactiveValue<ZoomState> = Signal(Unit)
 }
 

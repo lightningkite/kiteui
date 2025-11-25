@@ -25,7 +25,9 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
         val sources: List<ImageSource>,
         val scaleType: ImageScaleType,
         val description: String?
-    )
+    ) {
+        internal infix fun closeEnough(other: Info): Boolean = scaleType == scaleType && sources.size == other.sources.size && sources.indices.all { sources[it] sameIfLoaded other.sources[it] }
+    }
 
     var info: Info? = null
         set(value) {
@@ -77,7 +79,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
     fun refresh() {
         if (!ready) return
         val info = info
-        if (lastRendered != info) {
+        if (info == null || lastRendered?.closeEnough(info) != true) {
             lastRender?.forEach {
                 if(rView.areAnimationsEnabled) {
                     it.opacity = 0.0

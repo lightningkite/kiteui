@@ -86,7 +86,9 @@ data class FontDirect(
 actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
 actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
 
-actual sealed class ImageSource actual constructor(): VisualMediaSource
+actual sealed class ImageSource actual constructor(): VisualMediaSource{
+    actual open infix fun sameIfLoaded(other: ImageSource): Boolean = this == other
+}
 actual data class ImageResource(val relativeUrl: String) : ImageSource()
 actual class ImageRaw actual constructor(data: Blob) : ImageSource() {
     val url = createObjectUrl(data)

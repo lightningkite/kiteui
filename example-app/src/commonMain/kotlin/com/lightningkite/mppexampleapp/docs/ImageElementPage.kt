@@ -64,11 +64,25 @@ object ImageElementPage: DocPage {
                             }
                         }
                         expanding - button {
+                            text("RandomSens")
+                            onClick {
+                                currentImage.value =
+                                    ImageRemote("https://picsum.photos/seed/${Random.nextInt()}/640/480", cacheIgnoresParameters = false)
+                            }
+                        }
+                        expanding - button {
                             text("Pick")
                             onClick {
                                 context.requestFile(listOf("image/*"))
                                     ?.let(::ImageLocal)
                                     ?.let { currentImage.value = it }
+                            }
+                        }
+                        expanding - button {
+                            text("TweakParam")
+                            onClick {
+                                val c = currentImage.value as? ImageRemote ?: return@onClick
+                                currentImage.value = c.copy(url = c.url.substringBefore('?').plus("?t=${Random.nextInt()}"))
                             }
                         }
                     }

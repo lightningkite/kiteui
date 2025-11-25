@@ -477,7 +477,9 @@ data class Icon(
 
 
 interface VisualMediaSource
-expect sealed class ImageSource(): VisualMediaSource
+expect sealed class ImageSource(): VisualMediaSource {
+    open infix fun sameIfLoaded(other: ImageSource): Boolean
+}
 data class ImageVector(
     val width: Dimension, val height: Dimension,
     val viewBoxMinX: Int = 0, val viewBoxMinY: Int = 0, val viewBoxWidth: Int = 24, val viewBoxHeight: Int = 24,
@@ -495,11 +497,15 @@ data class ImageVector(
     )
 }
 
-data class ImageRemote(val url: String) : ImageSource() {
+data class ImageRemote(
+    val url: String,
+    val crossOrigin: Boolean = true,
+    val cacheIgnoresParameters: Boolean = true,
+) : ImageSource() {
     //    private val before = url.substringBefore('?')
     override fun hashCode(): Int = url.hashCode()
     override fun equals(other: Any?): Boolean = other is ImageRemote && other.url == this.url
-    override fun toString(): String = "ImageRemote($url)"
+    override infix fun sameIfLoaded(other: ImageSource): Boolean = other is ImageRemote && cacheIgnoresParameters == other.cacheIgnoresParameters && crossOrigin == other.crossOrigin && (if(cacheIgnoresParameters) url.substringBefore('?') == other.url.substringBefore('?') else url == other.url)
 }
 
 expect class ImageRaw constructor(data: Blob) : ImageSource {
@@ -509,7 +515,7 @@ data class ImageLocal(val file: FileReference) : ImageSource()
 expect class ImageResource : ImageSource
 
 expect sealed class VideoSource(): VisualMediaSource
-data class VideoRemote(val url: String) : VideoSource()
+data class VideoRemote(val url: String, val crossOrigin: Boolean = true, val cacheIgnoresParameters: Boolean = true) : VideoSource()
 expect class VideoRaw constructor(data: Blob) : VideoSource {
     fun release()
 }
@@ -517,7 +523,7 @@ data class VideoLocal(val file: FileReference) : VideoSource()
 expect class VideoResource : VideoSource
 
 expect sealed class AudioSource()
-data class AudioRemote(val url: String) : AudioSource()
+data class AudioRemote(val url: String, val crossOrigin: Boolean = true, val cacheIgnoresParameters: Boolean = true) : AudioSource()
 expect class AudioRaw constructor(data: Blob) : AudioSource {
     fun release()
 }
