@@ -70,7 +70,9 @@ fun fontFromFamilyInfo(
 actual val systemDefaultFont: Font get() = Font { size, weight, italic -> if(italic) UIFont.italicSystemFontOfSize(size) else UIFont.systemFontOfSize(size, weight) }
 actual val systemDefaultFixedWidthFont: Font get() = Font { size, weight, italic -> UIFont.systemFontOfSize(size, weight) }
 
-actual sealed class ImageSource actual constructor(): VisualMediaSource
+actual sealed class ImageSource actual constructor(): VisualMediaSource{
+    actual open infix fun sameIfLoaded(other: ImageSource): Boolean = this == other
+}
 actual data class ImageResource(val name: String) : ImageSource()
 actual sealed class VideoSource actual constructor(): VisualMediaSource
 actual data class VideoResource(val name: String, val extension: String) : VideoSource()
