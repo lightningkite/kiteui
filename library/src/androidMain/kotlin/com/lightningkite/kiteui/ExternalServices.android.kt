@@ -25,7 +25,7 @@ import kotlinx.datetime.toInstant
 import java.io.File
 import kotlin.coroutines.resume
 
-actual fun RContext.openTab(url: String) {
+actual fun RContext.openLink(url: String, newTab: Boolean) {
     AndroidAppContext.activityCtx?.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
 }
 
