@@ -121,7 +121,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         set(value) {
             super.ignoreInteraction = value
             native.extensionIgnoreInteraction = value
-            println("DEBUG ignore set to $value on views $this")
         }
 
     // Update padding based on safe insets
@@ -413,7 +412,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         override fun dragInteraction(interaction: UIDragInteraction, itemsForBeginningSession: UIDragSessionProtocol): List<UIDragItem> {
             val view = owner.get() ?: return listOf<UIDragItem>()
             val data = view.dragData ?: return listOf<UIDragItem>()
-            println("DEBUG drag interaction")
             view.parent?.let {
                 addChildDropInteractionToParentScrollViews(it)
             }
@@ -426,16 +424,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
 
         fun addChildDropInteractionToParentScrollViews(currentView: RView) {
-
             currentView.children.forEach { child ->
                 // Check if this child is a ScrollView
                 if (child is ScrollView) {
-                    child.children?.map {
-                        println("DEBUG droopInteractionoDelegate ${it.dropInteractionDelegate == null}")
-                        if(it.dropInteractionDelegate != null){
-                            println("DEBUG set to parent ${child.native}")
+                    child.children.forEach {
+                        if (it.dropInteractionDelegate != null && child.scrollViewDropInteraction == null) {
                             child.dropInteractionDelegate = it.dropInteractionDelegate
-                            child.native.addInteraction(UIDropInteraction(DropInteractionDelegate(child)))
+                            val interaction = UIDropInteraction(DropInteractionDelegate(child))
+                            child.scrollViewDropInteraction = interaction
+                            child.native.addInteraction(interaction)
                         }
                     }
                 }
@@ -446,20 +443,17 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
 
         fun removeChildDropInteractionToParentScrollViews(currentView: RView) {
-
-            // Iterate over all children of the current view
             currentView.children.forEach { child ->
-
                 // Check if this child is a ScrollView
                 if (child is ScrollView) {
-
-                        if(child.dropInteractionDelegate != null){
-                            child.dropInteractionDelegate = null
-                            child.native.removeInteraction(UIDropInteraction(DropInteractionDelegate(child)))
-                        }
+                    child.scrollViewDropInteraction?.let { interaction ->
+                        child.native.removeInteraction(interaction)
+                        child.scrollViewDropInteraction = null
+                    }
+                    child.dropInteractionDelegate = null
                 }
                 if (child.children.isNotEmpty()) {
-                    addChildDropInteractionToParentScrollViews(child)
+                    removeChildDropInteractionToParentScrollViews(child)
                 }
             }
         }
@@ -468,7 +462,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         @OptIn(ExperimentalNativeApi::class)
         override fun dragInteraction(interaction: platform.UIKit.UIDragInteraction, sessionWillBegin: platform.UIKit.UIDragSessionProtocol) {
             val view = owner.get() ?: return
-            println("DEBUG drag interaction")
             view.parent?.let {
                 addChildDropInteractionToParentScrollViews(it)
             }
@@ -478,7 +471,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         @OptIn(ExperimentalNativeApi::class)
         override fun dragInteraction(interaction: platform.UIKit.UIDragInteraction, session: platform.UIKit.UIDragSessionProtocol, didEndWithOperation: kotlin.ULong /* from: platform.UIKit.UIDropOperation */): kotlin.Unit  {
             val view = owner.get() ?: return
-            println("DEBUG undo")
             view.parent?.let {
                 removeChildDropInteractionToParentScrollViews(it)
             }
@@ -490,6 +482,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     var dropInteraction: UIDropInteraction? = null
     var dropInteractionDelegate: DropInteractionDelegate? = null
+    var scrollViewDropInteraction: UIDropInteraction? = null
 
     override var dropTargetDelegate: DropTargetDelegate?
         get() = super.dropTargetDelegate
@@ -532,31 +525,20 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             @OptIn(ExperimentalNativeApi::class)
             @ObjCSignatureOverride
             override fun dropInteraction(interaction: UIDropInteraction, canHandleSession: UIDropSessionProtocol): Boolean {
-                println("DEBUG can handle drop ${owner.get()}")
-                println("DEBUG interaction.view ${interaction.view}")
                 val view = owner.get() ?: return false
-//                return view.dropTargetDelegate != null
                 return true
             }
 
             @OptIn(ExperimentalNativeApi::class)
             @ObjCSignatureOverride
             override fun dropInteraction(interaction: UIDropInteraction, sessionDidUpdate: UIDropSessionProtocol): UIDropProposal {
-//                println("DEBUG sessionDidUpdaatet")
-//                println("DEBUG can handle drop ${owner.get()}")
-//                println("DEBUG interaction.view ${interaction.view}")
-//                println("DEBUG sessiion locaation: ${interaction.view?.let {sessionDidUpdate.locationInView(it)}}")
                 val view = owner.get() ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
-//                println("DEBUG handle drop view not null ${view is ScrollView}")
-//                println("DEBUG drop delegate ${view.children.firstOrNull {it.dropTargetDelegate != null}?.dropTargetDelegate != null}")
-                val delegate = view.dropTargetDelegate ?: view.children.firstOrNull {it.dropTargetDelegate != null}?.dropTargetDelegate ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
-//                println("DEBUG delegate not null")
+                val delegate = view.dropTargetDelegate ?: view.children.firstOrNull { it.dropTargetDelegate != null }?.dropTargetDelegate
+                    ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
                 getDragDataPlaceholder(sessionDidUpdate)?.let { data ->
-//                    println("DEBUG getDragDataPlaaaceholder ${view.children.firstOrNull {it.dropTargetDelegate != null}?.dropTargetDelegate}")
-                    val test = if(view is ScrollView) view.children.firstOrNull {it.dropTargetDelegate != null}?:view else view
-                    val location = sessionDidUpdate.locationInView(test.native)
+                    val targetView = if (view is ScrollView) view.children.firstOrNull { it.dropTargetDelegate != null } ?: view else view
+                    val location = sessionDidUpdate.locationInView(targetView.native)
                     val event = DragEvent(data, location.useContents { x }, location.useContents { y })
-//                    println("DEBUG event ${event}")
                     delegate.over(event)
                 }
 
@@ -567,23 +549,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             @ObjCSignatureOverride
             @OptIn(ExperimentalNativeApi::class)
             override fun dropInteraction(interaction: UIDropInteraction, performDrop: UIDropSessionProtocol) {
-                println("DEBUG performm drop")
                 val view = owner.get() ?: return
-                println("DEBUG view ${view}")
-                val delegate = view.dropTargetDelegate ?: view.children.firstOrNull {it.dropTargetDelegate != null}?.dropTargetDelegate ?:view.dropTargetDelegate ?: return
-                println("DEBUG vew ${view.dropTargetDelegate}")
+                val delegate = view.dropTargetDelegate ?: view.children.firstOrNull { it.dropTargetDelegate != null }?.dropTargetDelegate
+                    ?: return
                 val localData = (performDrop.items.firstOrNull() as? UIDragItem)?.localObject as? DragData
-                println("DEBUG localData ${localData}")
                 if (localData != null) {
-                    val location = performDrop.locationInView(view.native)
-                    println("DEBUG location ${location}")
+                    // Use consistent location calculation - target the view with the delegate
+                    val targetView = if (view is ScrollView) view.children.firstOrNull { it.dropTargetDelegate != null } ?: view else view
+                    val location = performDrop.locationInView(targetView.native)
                     val event = DragEvent(
                         data = localData,
                         xInView = location.useContents { x },
                         yInView = location.useContents { y },
                     )
-                    println("DEBUG delegate ${delegate}")
-                    println("DEBUG event ${event}")
                     delegate.drop(event)
                     return
                 }
