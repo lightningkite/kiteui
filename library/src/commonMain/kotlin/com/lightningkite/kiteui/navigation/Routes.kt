@@ -31,10 +31,7 @@ class Routes(
     }
 ) {
     fun render(screen: Page) = renderers.get(screen::class)?.invoke(screen)
-    fun parse(path: UrlLikePath): Page? {
-        println("Parsing $path. Segments.size = ${path.segments.size}")
-        return parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
-    }
+    fun parse(path: UrlLikePath): Page? = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
     fun parseOrFallback(path: UrlLikePath) =
         try {
             parse(path) ?: fallback
