@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.navigation
 
+import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
 import com.lightningkite.kiteui.reactive.*
@@ -30,10 +31,17 @@ class Routes(
     }
 ) {
     fun render(screen: Page) = renderers.get(screen::class)?.invoke(screen)
-    fun parse(path: UrlLikePath) = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
-    fun parseOrFallback(path: UrlLikePath) = try { parse(path) } catch(e: Exception) {
-        fallback
+    fun parse(path: UrlLikePath): Page? {
+        println("Parsing $path. Segments.size = ${path.segments.size}")
+        return parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
     }
+    fun parseOrFallback(path: UrlLikePath) =
+        try {
+            parse(path) ?: fallback
+        } catch(e: Exception) {
+            LogRoot.warn("Encountered exception when parsing route: $e")
+            fallback
+        }
 }
 
 data class RouteRendered(
