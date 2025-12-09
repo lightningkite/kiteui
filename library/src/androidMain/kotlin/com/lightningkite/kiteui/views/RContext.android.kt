@@ -19,4 +19,5 @@ actual class RContext(val activity: KiteUiActivity): RContextHelper() {
         }
     actual fun split() = RContext(activity).also { it.addons.putAll(addons) }
     actual var immersiveMode: Boolean = false
+    actual companion object {}
 }

@@ -54,9 +54,7 @@ actual fun PageNavigator.bindToPlatform(context: RContext) {
             // load stack
             fun guessAndImplementFromUrlBar(urlLikePath: UrlLikePath) {
                 stack.value = lastStackForPath.getOrPut(urlLikePath) {
-                    routes.parseOrFallback(urlLikePath)?.let {
-                        listOf(it)
-                    } ?: listOf()
+                    listOf(routes.parseOrFallback(urlLikePath))
                 }
             }
             guessAndImplementFromUrlBar(initBar)
@@ -143,7 +141,7 @@ actual fun PageNavigator.bindToPlatform(context: RContext) {
                     log?.log("guessAndImplementFromUrlBar: loading stack position ${index}")
                     currentStack.value = currentStack.value.subList(0, index + 1)
                 }
-                this.stack.value = currentStack.value.mapNotNull { routes.parseOrFallback(it) }
+                this.stack.value = currentStack.value.map { routes.parseOrFallback(it) }
             }
             guessAndImplementFromUrlBar(initBar)
 
@@ -256,15 +254,15 @@ actual fun PageNavigator.bindToPlatform(context: RContext) {
                 log?.log("Finding $urlBar in ${storedStack.value}, index $goToIndex")
                 if (goToIndex == -1) {
                     log?.log("Could not find, pushing")
-                    val newPage = (routes.parseOrFallback(urlBar) ?: routes.fallback)
+                    val newPage = routes.parseOrFallback(urlBar)
                     this.stack.value =
-                        storedStack.value.mapNotNull { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) } + newPage
+                        storedStack.value.map { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) } + newPage
                     routes.render(newPage)?.let { storedStack.value += it.urlLikePath.render() }
                 } else {
                     log?.log("Found, popping backwards")
                     storedStack.value = storedStack.value.subList(0, goToIndex + 1)
                     this.stack.value =
-                        storedStack.value.mapNotNull { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) }
+                        storedStack.value.map { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) }
                 }
             }
             guessAndImplementFromUrlBar()

@@ -149,13 +149,16 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
             }
         }
 
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
     override fun actionSet(value: Action?) {
         super.actionSet(value)
-        textField.delegate = value?.let {
+        textField.delegate = value?.let { action ->
+            // Use weak reference to avoid retain cycle
+            val weakSelf = kotlin.native.ref.WeakReference(this)
             val d = object : NSObject(), UITextFieldDelegateProtocol {
                 override fun textFieldShouldReturn(textField: UITextField): Boolean {
                     textField.resignFirstResponder()
-                    it.startAction(this@TextInput)
+                    weakSelf.get()?.let { action.startAction(it) }
                     return true
                 }
             }

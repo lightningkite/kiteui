@@ -190,7 +190,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
         }
         expanding - navigatorView(pageNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
-        navGroupTabs(appNav.navItemsProperty) {
+        nav - navGroupTabs(appNav.navItemsProperty) {
             applySafeInsets(top = false)
             debugName = "navGroupTabs"
             showOnPrint = false
@@ -226,7 +226,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
             beforeNextElementSetup {
                 applySafeInsets(right = false)
             }
-            scrolling - navGroupColumn(appNav.navItemsProperty) {
+            nav - scrolling - navGroupColumn(appNav.navItemsProperty) {
                 ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
             }

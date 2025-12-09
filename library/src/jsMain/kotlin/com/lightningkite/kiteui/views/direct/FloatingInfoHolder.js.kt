@@ -2,9 +2,10 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.DOMRect
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.DialogSemantic
+
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
+import com.lightningkite.kiteui.models.PopoverSemantic
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
@@ -82,7 +83,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 source.keepPopoverOpen(this)
                 currentDirection = preferredDirection
                 existingView = this
-                themeChoice = DialogSemantic
+                themeChoice = PopoverSemantic
                 native.style.position = "absolute"
                 native.style.zIndex = "999"
                 native.style.height = "auto"
@@ -144,8 +145,10 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                         }
                             .firstOrNull {
                                 val proposed = it.bounds()
-                                proposed.left >= screen.left && proposed.right <= screen.right &&
-                                    proposed.top >= screen.top && proposed.bottom <= screen.bottom
+                                val epsilon =
+                                    0.01 // Fix precision mismatch i.e. screen.right is 1231 but proposed is 1231.0000457763672
+                                (proposed.left >= screen.left - epsilon) && (proposed.right <= screen.right + epsilon) &&
+                                        (proposed.top >= screen.top - epsilon) && (proposed.bottom <= screen.bottom + epsilon)
                             }
 
                         if(currentDirection == null) {

@@ -97,6 +97,7 @@ object RootPage : Page {
                 linkPage { RecyclerViewTestPage }
                 linkPage { ImageTestPage }
                 linkPage { PerformanceTestPage }
+                linkPage { DatePickerExamplePage }
                 run {
                     val screen = { ArgumentsExamplePage("test-id").also { it.toAdd.value = "Preset" } }
                     link {

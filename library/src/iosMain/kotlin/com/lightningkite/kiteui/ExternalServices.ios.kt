@@ -38,11 +38,12 @@ import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.posix.int64_t
 
-actual fun RContext.openTab(url: String) {
+actual fun RContext.openLink(url: String, newTab: Boolean) {
     UIApplication.sharedApplication.openURL(
         url = NSURL(string = url),
         options = mapOf<Any?, Any?>(),
-        completionHandler = {})
+        completionHandler = {}
+    )
 }
 
 private val mostTypes = listOf(

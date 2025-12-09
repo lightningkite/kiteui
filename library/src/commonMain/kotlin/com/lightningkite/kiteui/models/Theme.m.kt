@@ -2,8 +2,6 @@ package com.lightningkite.kiteui.models
 
 import kotlin.random.Random
 
-private fun <T, R> paramToReceiver(action: T.()->R): (T)->R = action
-
 fun Theme.Companion.material(
     id: String,
     foreground: Paint = Color.black,
@@ -34,6 +32,8 @@ fun Theme.Companion.material(
             it.alter(
                 cascading = false,
                 gap = 0.px,
+                cornerRadii = CornerRadii.ForceConstant(0.px),
+                outlineWidth = 0.px,
             ).withBackNoPadding
         },
         HeaderSemantic to {
@@ -60,8 +60,15 @@ fun Theme.Companion.material(
                 })
             )
         },
-        BarSemantic to {
+        MainContentSemantic to {
             it.withBack(
+                cascading = false,
+                cornerRadii = CornerRadii.ForceConstant(0.px),
+                outlineWidth = 0.px,
+            )
+        },
+        BarSemantic to {
+            it.alter(
                 foreground = primaryForeground,
                 background = primary,
                 outline = primary.highlight(0.1f),
@@ -71,7 +78,17 @@ fun Theme.Companion.material(
                         background = secondary,
                         outline = secondary.highlight(0.1f),
                     )
+                }, ListSemantic to {
+                    it.withoutBack(
+                        cascading = false,
+                        padding = Edges(0.px),
+                        gap = 0.px
+                    )
                 })
+            ).withBack(
+                cascading = false,
+                cornerRadii = CornerRadii.ForceConstant(0.px),
+                outlineWidth = 0.px,
             )
         },
         CriticalSemantic to {

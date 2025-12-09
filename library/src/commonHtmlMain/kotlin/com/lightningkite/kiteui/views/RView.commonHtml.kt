@@ -90,7 +90,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     override fun refreshPadding() {
         super.refreshPadding()
-        if(paddingByEdge != null || additionalPadding != null) {
+        if(paddingByEdge != null || safeAreaPadding != null) {
             val value = appliedPadding
             native.style.paddingLeft = value.left.value.toString()
             native.style.paddingTop = value.top.value.toString()

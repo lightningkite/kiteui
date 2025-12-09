@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -16,131 +17,194 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import java.io.File
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
-actual class Video actual constructor(context: RContext): RView(context) {
+@OptIn(UnstableApi::class)
+actual class RawVideoView actual constructor(
+    context: RContext,
+    actual val source: VideoSource,
+    actual val description: String,
+    @get:OptIn(UnstableApi::class)
+    actual val scaleType: ImageScaleType,
+    actual val preloadHint: PreloadHint,
+) : RView(context) {
     override val native = PlayerView(context.activity).apply {
         player = ExoPlayer.Builder(context.activity).build()
+        contentDescription = description
+        resizeMode = when (scaleType) {
+            ImageScaleType.Fit -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+            ImageScaleType.Crop -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+            else -> AspectRatioFrameLayout.RESIZE_MODE_FILL
+        }
     }
 
-    actual var source: VideoSource?
-        get() = TODO()
-        set(value) {
-            when (value) {
-                null -> {
-                    native.player!!.stop()
-                    native.player!!.clearMediaItems()
-                }
+    private val _state = RawReactive<Unit>()
+    actual val state: Reactive<Unit> = _state
 
-                is VideoRemote -> {
-                    native.player!!.setMediaItem(MediaItem.fromUri(value.url))
-                    native.player!!.prepare()
+    init {
+        when (val value = source) {
+            is VideoRemote -> native.player!!.setMediaItem(MediaItem.fromUri(value.url))
+            is VideoResource -> native.player!!.setMediaItem(MediaItem.fromUri("android.resource://${native.context.packageName}/${value.resource}"))
+            is VideoLocal -> native.player!!.setMediaItem(MediaItem.fromUri(value.file.uri))
+            is VideoRaw -> {
+                try {
+                    val tmp = File.createTempFile("kiteui_video_", ".mp4", context.activity.cacheDir)
+                    tmp.outputStream().use { it.write(value.data.data) }
+                    native.player!!.setMediaItem(MediaItem.fromUri(Uri.fromFile(tmp)))
+                } catch (e: Throwable) {
+                    _state.state = ReactiveState.exception(Exception(e))
                 }
-
-                is VideoRaw -> {
-                    TODO()
+            }
+            else -> {}
+        }
+        native.player!!.prepare()
+        val l = object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_READY) {
+                    _state.state = ReactiveState(Unit)
                 }
+            }
 
-                is VideoResource -> {
-                    native.player!!.setMediaItem(MediaItem.fromUri("android.resource://${native.context.packageName}/${value.resource}"))
-                    native.player!!.prepare()
-                }
-
-                is VideoLocal -> {
-                    native.player!!.setMediaItem(MediaItem.fromUri(value.file.uri))
-                    native.player!!.prepare()
-                }
-
-                else -> {}
+            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                _state.state = ReactiveState.exception(error)
             }
         }
-    actual val time: MutableReactive<Double>
-        get() = object : MutableReactive<Double> {
-            override suspend fun set(value: Double) {
-                native.player!!.seekTo((value * 1000.0).toLong())
-            }
+        native.player!!.addListener(l)
+    }
 
-            override val state get() = ReactiveState(native.player!!.currentPosition / 1000.0)
+    actual val time: MutableReactive<Double> = object : MutableReactive<Double> {
+        override suspend fun set(value: Double) {
+            native.player!!.seekTo((value * 1000.0).toLong())
+        }
 
-            override fun addListener(listener: () -> Unit): () -> Unit {
-                var remover: (() -> Unit)? = null
-                val l = object : Player.Listener {
-                    override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        if (isPlaying) remover = AppState.animationFrame.addListener(listener)
-                        else {
-                            remover?.invoke()
-                            remover = null
-                        }
+        override val state get() = ReactiveState(native.player!!.currentPosition / 1000.0)
+
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            var remover: (() -> Unit)? = null
+            val l = object : Player.Listener {
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (isPlaying) remover = AppState.animationFrame.addListener(listener)
+                    else {
+                        remover?.invoke()
+                        remover = null
                     }
                 }
-                native.player!!.addListener(l)
-                return { native.player!!.removeListener(l) }
             }
+            native.player!!.addListener(l)
+            return { native.player!!.removeListener(l) }
         }
-    actual val playing: MutableReactive<Boolean>
-        get() = object : MutableReactive<Boolean> {
-            override suspend fun set(value: Boolean) {
-                if (value) {
-                    native.player!!.play()
-                } else {
-                    native.player!!.pause()
-                }
-            }
+    }
 
-            override val state: ReactiveState<Boolean> get() = ReactiveState(native.player!!.isPlaying)
+    actual val currentTime: MutableReactive<Duration> = object : MutableReactive<Duration> {
+        override suspend fun set(value: Duration) {
+            native.player!!.seekTo(value.inWholeMilliseconds)
+        }
 
-            override fun addListener(listener: () -> Unit): () -> Unit {
-                val l = object : Player.Listener {
-                    override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        listener()
+        override val state get() = ReactiveState(native.player!!.currentPosition.milliseconds)
+
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            var remover: (() -> Unit)? = null
+            val l = object : Player.Listener {
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (isPlaying) remover = AppState.animationFrame.addListener(listener)
+                    else {
+                        remover?.invoke()
+                        remover = null
                     }
                 }
-                native.player!!.addListener(l)
-                return { native.player!!.removeListener(l) }
+            }
+            native.player!!.addListener(l)
+            return { native.player!!.removeListener(l) }
+        }
+    }
+
+    actual val playing: MutableReactive<Boolean> = object : MutableReactive<Boolean> {
+        override suspend fun set(value: Boolean) {
+            if (value) {
+                native.player!!.play()
+            } else {
+                native.player!!.pause()
             }
         }
-    actual val volume: MutableReactive<Float>
-        get() = object : MutableReactive<Float> {
-            override suspend fun set(value: Float) {
-                native.player!!.volume = value
-            }
 
-            override val state: ReactiveState<Float> get() = ReactiveState(native.player!!.volume)
+        override val state: ReactiveState<Boolean> get() = ReactiveState(native.player!!.isPlaying)
 
-            override fun addListener(listener: () -> Unit): () -> Unit {
-                val l = object : Player.Listener {
-                    override fun onVolumeChanged(volume: Float) {
-                        listener()
-                    }
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            val l = object : Player.Listener {
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    listener()
                 }
-                native.player!!.addListener(l)
-                return { native.player!!.removeListener(l) }
             }
+            native.player!!.addListener(l)
+            return { native.player!!.removeListener(l) }
         }
+    }
+
+    actual val volume: MutableReactive<Float> = object : MutableReactive<Float> {
+        override suspend fun set(value: Float) {
+            native.player!!.volume = value
+        }
+
+        override val state: ReactiveState<Float> get() = ReactiveState(native.player!!.volume)
+
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            val l = object : Player.Listener {
+                override fun onVolumeChanged(volume: Float) {
+                    listener()
+                }
+            }
+            native.player!!.addListener(l)
+            return { native.player!!.removeListener(l) }
+        }
+    }
+
+    actual val sourceDuration: Reactive<Double?> = object : Reactive<Double?> {
+        override val state: ReactiveState<Double?>
+            get() {
+                val d = native.player!!.duration
+                val seconds = if (d <= 0L) null else d / 1000.0
+                return ReactiveState(seconds)
+            }
+
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            val l = object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    listener()
+                }
+            }
+            native.player!!.addListener(l)
+            return { native.player!!.removeListener(l) }
+        }
+    }
+
     actual var showControls: Boolean
         get() = native.useController
         set(value) {
             native.useController = value
         }
+
     actual var loop: Boolean
         get() = native.player!!.repeatMode == Player.REPEAT_MODE_ONE
         set(value) {
-            native.player!!.repeatMode = Player.REPEAT_MODE_ONE
+            native.player!!.repeatMode = if (value) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
         }
-    @get:OptIn(UnstableApi::class)
-    @set:OptIn(UnstableApi::class)
-    actual var scaleType: ImageScaleType
-        get() = when (native.resizeMode) {
-            AspectRatioFrameLayout.RESIZE_MODE_FIT -> ImageScaleType.Fit
-            AspectRatioFrameLayout.RESIZE_MODE_ZOOM -> ImageScaleType.Crop
-            else -> ImageScaleType.NoScale
-        }
-        set(value) {
-            native.resizeMode = when (value) {
-                ImageScaleType.Fit -> AspectRatioFrameLayout.RESIZE_MODE_FIT
-                ImageScaleType.Crop -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                else -> AspectRatioFrameLayout.RESIZE_MODE_FILL
+
+    actual val completedPlay: Listenable = object: Listenable {
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            val l = object : Player.Listener {
+                override fun onPlaybackStateChanged(state: Int) {
+                    if (state == Player.STATE_ENDED) {
+                        listener()
+                    }
+                }
             }
+            native.player!!.addListener(l)
+            return { native.player!!.removeListener(l) }
         }
+    }
+    actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = listOf()
 }
 
 //actual fun Video.onComplete(action: () -> Unit) {

@@ -33,7 +33,25 @@ fun Theme.Companion.material3(
             it.alter(
                 cascading = false,
                 gap = 0.px,
+                cornerRadii = CornerRadii.ForceConstant(0.px),
+                outlineWidth = 0.px,
             ).withBackNoPadding
+        },
+        MainContentSemantic to {
+            it.withBack(
+                cascading = false,
+                cornerRadii = CornerRadii.ForceConstant(0.px),
+                outlineWidth = 0.px,
+            )
+        },
+        BarSemantic to {
+            it
+                .withBack(
+                    cascading = false,
+                    cornerRadii = CornerRadii.ForceConstant(0.px),
+                    outlineWidth = 0.px,
+                )
+
         },
         HeaderSemantic to {
             it.withoutBack(font = title)

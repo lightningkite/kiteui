@@ -26,7 +26,7 @@ fun EditText.contentProperty(): MutableReactiveValue<String> = object : MutableR
     init { addTextChangedListener(this) }
 }
 fun CompoundButton.contentProperty(): MutableReactiveValue<Boolean> = object : MutableReactiveValue<Boolean>, BaseListenable(), CompoundButton.OnCheckedChangeListener {
-    override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) { invokeAllListeners() }
+    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) { invokeAllListeners() }
     override var value: Boolean
         get() = isChecked
         set(value) { isChecked = value }

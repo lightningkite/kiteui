@@ -39,10 +39,10 @@ actual inline operator fun Dimension.div(other: Float): Dimension = Dimension(
 actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimension(this.value.coerceAtMost(other.value))
 actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension(this.value.coerceAtLeast(other.value))
 
-actual sealed class ImageSource actual constructor()
+actual sealed class ImageSource actual constructor(): VisualMediaSource
 actual class ImageResource(val resource: Int) : ImageSource()
 
-actual sealed class VideoSource actual constructor()
+actual sealed class VideoSource actual constructor(): VisualMediaSource
 actual class VideoResource(val resource: Int) : VideoSource()
 
 actual sealed class AudioSource actual constructor()
