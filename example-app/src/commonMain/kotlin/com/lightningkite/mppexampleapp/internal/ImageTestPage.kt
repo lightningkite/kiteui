@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.ImageRaw
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
@@ -37,6 +38,16 @@ object ImageTestPage : Page {
                     scaleType = ImageScaleType.Stretch
                 }
 
+                text(".GIF from Resource")
+                val gif = rememberSuspending {
+                    ImageRaw(Resources.imagesGifTest())
+                }
+                centered.sizeConstraints(
+                    width = 6.rem,
+                    height = 6.rem
+                ).image {
+                    ::source{ gif() }
+                }
             }
         }
 }
