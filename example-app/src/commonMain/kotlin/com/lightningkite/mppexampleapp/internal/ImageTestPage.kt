@@ -50,7 +50,7 @@ object ImageTestPage : Page {
                     ::source{ gif() }
                 }
 
-                text("Remote gif")
+                text("Remote gif ")
                 centered.sizeConstraints(width = 20.rem,height=20.rem).image{
                     source = ImageRemote("https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif")
                 }

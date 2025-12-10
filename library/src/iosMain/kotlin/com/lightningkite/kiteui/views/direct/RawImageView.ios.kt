@@ -113,18 +113,20 @@ suspend fun ImageSource?.load(size: Size?): UIImage? =
             is ImageRemote -> {
                 val loader = suspend {
                     inBackground {
-                        UIImage(
-                                data =
-                                        NSData.dataWithContentsOfURL(
-                                                NSURL.URLWithString(value.url)
-                                                        ?: throw IllegalStateException(
-                                                                "Invalid URL ${value.url}"
-                                                        )
-                                        )
+                        val data =
+                                NSData.dataWithContentsOfURL(
+                                        NSURL.URLWithString(value.url)
                                                 ?: throw IllegalStateException(
-                                                        "No data found at URL ${value.url}"
+                                                        "Invalid URL ${value.url}"
                                                 )
-                        )
+                                )
+                                        ?: throw IllegalStateException(
+                                                "No data found at URL ${value.url}"
+                                        )
+                        createAnimatedImage(data)
+                                ?: throw IllegalStateException(
+                                        "Failed to create image from URL ${value.url}"
+                                )
                     }
                 }
                 val image =
@@ -445,6 +447,8 @@ object ImageCache {
                         }
                 )
         if (minWidth == 0 || minHeight == 0) return baseCached
+        // Don't resize animated images - resizing would lose the animation frames
+        if (baseCached.images != null) return baseCached
         val scaling =
                 max(
                         minWidth.toFloat() / baseCached.size.useContents { width },
