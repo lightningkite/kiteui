@@ -130,7 +130,7 @@ actual inline fun ViewWriter.__scrollsUncontracted(
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit
 ): ViewWriter {
-    return ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
+    return write(ScrollView(context, horizontal = horizontal, vertical = vertical),setup)
 }
 
 @ViewModifierDsl3
@@ -164,7 +164,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
         scrollView.scroller.refreshControl = refreshControl
     }
 
-    return scrollView
+    return write(scrollView,setup)
 }
 
 @ViewModifierDsl3
