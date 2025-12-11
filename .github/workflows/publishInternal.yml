@@ -37,8 +37,11 @@ jobs:
       - name: Clean
         run: ./gradlew clean
 
-      - name: Test
-        run: ./gradlew allTests
+      - name: Test Library
+        run: ./gradlew library:allTests
+
+      - name: Test Plugin
+        run: ./gradlew gradle-plugin:test
 
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -47,6 +50,8 @@ jobs:
           path: |
             build/reports/tests/**
             */build/reports/tests/**
+            build/reports/problems/**
+            */build/reports/problems/**
           retention-days: 10
 
       - name: Build

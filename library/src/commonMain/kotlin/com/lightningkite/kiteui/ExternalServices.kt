@@ -1,21 +1,16 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.js.JsName
+import com.lightningkite.reactive.core.AppScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlin.js.JsName
 
 enum class DownloadLocation { Downloads, Pictures }
 object ExternalServices {
     lateinit var baseContext: RContext
-    fun openTab(url: String) = baseContext.openTab(url)
+    @Deprecated("Use RContext.openLink instead") fun openTab(url: String) = baseContext.openLink(url)
     @Deprecated("Use RContext.requestFile instead") suspend fun requestFile(mimeTypes: List<String> = listOf("*/*")): FileReference? = baseContext.requestFile(mimeTypes)
     @Deprecated("Use RContext.requestFiles instead") suspend fun requestFiles(mimeTypes: List<String> = listOf("*/*")): List<FileReference> = baseContext.requestFiles(mimeTypes)
     @Deprecated("Use RContext.requestCaptureSelf instead") suspend fun requestCaptureSelf(mimeTypes: List<String> = listOf("image/*")): FileReference? = baseContext.requestCaptureSelf(mimeTypes)
@@ -42,8 +37,16 @@ object ExternalServices {
     AppScope.launch { onResult(try { requestCaptureEnvironment(mimeTypes) } catch(e: Exception) { e.printStackTrace2(); null }) }
 
 
+/**
+ * Open the provided url.
+ *
+ * @param newTab If `true` the page is opened in a new tab on web. Does nothing on ios and android apps.
+ * */
+expect fun RContext.openLink(url: String, newTab: Boolean = true)
 
-expect fun RContext.openTab(url: String)
+@Deprecated("renamed to openLink", replaceWith = ReplaceWith("openLink", "com.lightningkite.kiteui.openLink"))
+fun RContext.openTab(url: String) = openLink(url, newTab = true)
+
 expect suspend fun RContext.requestFile(mimeTypes: List<String> = listOf("*/*")): FileReference?
 expect suspend fun RContext.requestFiles(mimeTypes: List<String> = listOf("*/*")): List<FileReference>
 expect suspend fun RContext.requestCaptureSelf(mimeTypes: List<String> = listOf("image/*")): FileReference?

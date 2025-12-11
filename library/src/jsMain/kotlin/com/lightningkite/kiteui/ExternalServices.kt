@@ -18,8 +18,11 @@ import org.w3c.files.FilePropertyBag
 import kotlin.coroutines.resume
 import kotlin.js.json
 
-actual fun RContext.openTab(url: String) {
-    window.open(url, "_blank")
+actual fun RContext.openLink(url: String, newTab: Boolean) {
+    window.open(
+        url,
+        if (newTab) "_blank" else "_self"
+    )
 }
 
 private var lastFileInput: HTMLInputElement? = null

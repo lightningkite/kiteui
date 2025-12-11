@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui
 
-import org.gradle.api.Task
 import java.io.File
 import kotlin.math.min
 
@@ -12,41 +11,75 @@ private fun String.indexOf(startIndex: Int, vararg chars: Char): Int {
 
 private val blockComment = Regex("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/")
 
+data class AnnotationMatch(
+    val kind: Kind,
+    val index: Int
+) {
+    enum class Kind {
+        Routable, FallbackRoute
+    }
+}
+
 internal fun generateAutoroutes(sources: File, out: File) {
 
     val allRoutables = sources.walkTopDown()
         .filter { it.extension == "kt" }
-        .flatMap {
+        .flatMap { file ->
             val out = ArrayList<ScreenData>()
-            val text = it.readLines().map { it.trim() }.filter { !it.startsWith("//") }.joinToString("\n")
+            val text = file.readLines()
+                .map { it.trim() }
+                .filter { !it.startsWith("//") }
+                .joinToString("\n")
                 .replace(blockComment, "")
+
             val packageName = text.substringAfter("package ").substringBefore("\n").trim()
             var index = 0
+
             while (true) {
-                val next = text.indexOf("@Routable", index)
-                if (next == -1) break
-                index = next + 1
+                val routable = text.indexOf("@Routable", index).takeUnless { it == -1 }
+                val fallback = text.indexOf("@FallbackRoute", index).takeUnless { it == -1 }
+
+                val match = when {
+                    routable != null && fallback != null ->
+                        // use first match
+                        if (routable < fallback) AnnotationMatch(AnnotationMatch.Kind.Routable, routable)
+                        else AnnotationMatch(AnnotationMatch.Kind.FallbackRoute, fallback)
+
+                    routable != null -> AnnotationMatch(AnnotationMatch.Kind.Routable, routable)
+
+                    fallback != null -> AnnotationMatch(AnnotationMatch.Kind.FallbackRoute, fallback)
+
+                    else -> break
+                }
+
+                index = match.index + 1
 
                 // Skip if this @Routable is inside a string literal
                 if (text.isInsideStringLiteral(next)) {
                     continue
                 }
 
-                val quoteStart = text.indexOf('"', next)
-                if (quoteStart == -1) break
-                val quoteEnd = text.indexOf('"', quoteStart + 1)
-                if (quoteEnd == -1) break
-                val url = text.substring(quoteStart + 1, quoteEnd)
-                val urlParts = url.split('/').map { it.trim() }.filter { it.isNotBlank() }.map {
-                    if (it.startsWith('{'))
-                        Segment.Variable(it.trim('{', '}'))
-                    else
-                        Segment.Constant(it)
+                val urlParts = when (match.kind) {
+                    AnnotationMatch.Kind.Routable -> {
+                        val quoteStart = text.indexOf('"', match.index)
+                        if (quoteStart == -1) break
+                        val quoteEnd = text.indexOf('"', quoteStart + 1)
+                        if (quoteEnd == -1) break
+                        val url = text.substring(quoteStart + 1, quoteEnd)
+                        url.split('/').map { it.trim() }.filter { it.isNotBlank() }.map {
+                            if (it.startsWith('{'))
+                                Segment.Variable(it.trim('{', '}'))
+                            else
+                                Segment.Constant(it)
+                        }
+                    }
+
+                    AnnotationMatch.Kind.FallbackRoute -> emptyList()
                 }
 
                 val classOrObjectMark = min(
-                    text.indexOf("class ", next).let { if (it == -1) Int.MAX_VALUE else it },
-                    text.indexOf("object ", next).let { if (it == -1) Int.MAX_VALUE else it },
+                    text.indexOf("class ", match.index).let { if (it == -1) Int.MAX_VALUE else it },
+                    text.indexOf("object ", match.index).let { if (it == -1) Int.MAX_VALUE else it },
                 )
                 if (classOrObjectMark == Int.MAX_VALUE) break
                 val nameStart = text.indexOf(' ', classOrObjectMark) + 1
@@ -58,34 +91,38 @@ internal fun generateAutoroutes(sources: File, out: File) {
                         startingAt = constructorParamsStart
                     )
 
-                val upperIndex = index
-                val queryParams = run {
-                    val out = HashMap<String, String>()
-                    var index = upperIndex
-                    while (true) {
-                        val next = text.indexOf("@QueryParameter", index)
-                        if (next == -1) break
-                        index = next + 1
-                        val argStart = text.indexOf('(', next).let { if (it == -1) text.length else it }
-                        val hasExplicitName = (next + 15..argStart).none { !text[it].isWhitespace() }
-                        if (argStart == text.length) continue
-                        var annoArgs: List<String>? = null
-                        val beginLoookingForVa = if (hasExplicitName) {
-                            annoArgs = text.splitParens(startingAt = argStart)
-                            text.afterParens(startingAt = argStart)
-                        } else {
-                            index
+                val queryParams = when (match.kind) {
+                    AnnotationMatch.Kind.Routable -> {
+                        val upperIndex = index
+                        val out = HashMap<String, String>()
+                        var index = upperIndex
+                        while (true) {
+                            val next = text.indexOf("@QueryParameter", index)
+                            if (next == -1) break
+                            index = next + 1
+                            val argStart = text.indexOf('(', next).let { if (it == -1) text.length else it }
+                            val hasExplicitName = (next + 15..argStart).none { !text[it].isWhitespace() }
+                            if (argStart == text.length) continue
+                            var annoArgs: List<String>? = null
+                            val beginLoookingForVa = if (hasExplicitName) {
+                                annoArgs = text.splitParens(startingAt = argStart)
+                                text.afterParens(startingAt = argStart)
+                            } else {
+                                index
+                            }
+                            val declstart = text.indexOf("va", beginLoookingForVa)
+                            if (declstart == -1) continue
+                            val nameStart = text.indexOf(' ', declstart) + 1
+                            if (nameStart == -1) continue
+                            val nameEnd = text.indexOf(nameStart, ' ', ':')
+                            if (nameEnd == -1) continue
+                            val codename = text.substring(nameStart, nameEnd)
+                            out[codename] = annoArgs?.getOrNull(0) ?: codename
                         }
-                        val declstart = text.indexOf("va", beginLoookingForVa)
-                        if (declstart == -1) continue
-                        val nameStart = text.indexOf(' ', declstart) + 1
-                        if (nameStart == -1) continue
-                        val nameEnd = text.indexOf(nameStart, ' ', ':')
-                        if (nameEnd == -1) continue
-                        val codename = text.substring(nameStart, nameEnd)
-                        out[codename] = annoArgs?.getOrNull(0) ?: codename
+                        out
                     }
-                    out
+
+                    AnnotationMatch.Kind.FallbackRoute -> emptyMap()
                 }
 
                 out.add(
@@ -97,7 +134,8 @@ internal fun generateAutoroutes(sources: File, out: File) {
                         },
                         url = urlParts,
                         isObject = text[classOrObjectMark] == 'o',
-                        queryParams = queryParams
+                        queryParams = queryParams,
+                        isFallback = match.kind == AnnotationMatch.Kind.FallbackRoute
                     )
                 )
             }
@@ -129,7 +167,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
             tab {
                 appendLine("parsers = listOf(")
                 tab {
-                    for (routable in allRoutables) {
+                    for (routable in allRoutables.filter { !it.isFallback }) {
                         val route = routable.url
                         appendLine("label@{ ")
                         tab {
@@ -144,7 +182,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 }
                             }
                             if (routable.isObject) {
-                                appendLine("${routable.name}")
+                                appendLine(routable.name)
                                 appendLine(".apply {")
                                 tab {
                                     for (qp in routable.queryParams) {
@@ -207,10 +245,11 @@ internal fun generateAutoroutes(sources: File, out: File) {
                     }
                 }
                 appendLine("),")
-//                if (fallbackRoute.classKind == ClassKind.OBJECT)
-//                    appendLine("fallback = ${fallbackRoute.simpleName!!.asString()}")
-//                else
-//                    appendLine("fallback = ${fallbackRoute.simpleName!!.asString()}()")
+                allRoutables
+                    .firstOrNull { it.isFallback }
+                    ?.let { routable ->
+                        appendLine("fallback = ${routable.name}${if (routable.isObject) "" else "()"}")
+                    }
             }
             appendLine(")")
         }
@@ -225,6 +264,7 @@ internal data class ScreenData(
     val url: List<Segment>,
     val isObject: Boolean,
     val queryParams: Map<String, String>,
+    val isFallback: Boolean = false
 )
 
 internal sealed class Segment {
