@@ -1,12 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.models.div
-import com.lightningkite.kiteui.models.plus
 import com.lightningkite.kiteui.objc.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.utils.cg
 import com.lightningkite.kiteui.utils.div
 import com.lightningkite.kiteui.utils.local
@@ -14,19 +10,11 @@ import com.lightningkite.kiteui.utils.minus
 import com.lightningkite.kiteui.utils.plus
 import com.lightningkite.kiteui.utils.times
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.compareTo
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.getValue
 import kotlin.math.max
 import kotlin.math.roundToInt
-import kotlin.setValue
 import kotlinx.cinterop.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.CancellationException
@@ -65,8 +53,7 @@ constructor(
 
 // Helper function to create an animated UIImage from data (supports GIF)
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-private fun createAnimatedImage(data: NSData): UIImage? {
-    // NSData and CFData are toll-free bridged - directly reinterpret the pointer
+private fun processImageOrAnimatedImage(data: NSData): UIImage? {
     val source =
             CGImageSourceCreateWithData(interpretCPointer(data.objcPtr()), null)
                     ?: return UIImage.imageWithData(data)
@@ -107,7 +94,7 @@ private fun createAnimatedImage(data: NSData): UIImage? {
 suspend fun ImageSource?.load(size: Size?): UIImage? =
         when (val value = this) {
             null -> null
-            is ImageRaw -> createAnimatedImage(value.data.data)
+            is ImageRaw -> processImageOrAnimatedImage(value.data.data)
             is ImageResource -> UIImage.imageNamed(value.name)
             is ImageVector -> ImageCache.get(value.hashCode().toString()) { value.render() }
             is ImageRemote -> {
@@ -123,7 +110,7 @@ suspend fun ImageSource?.load(size: Size?): UIImage? =
                                         ?: throw IllegalStateException(
                                                 "No data found at URL ${value.url}"
                                         )
-                        createAnimatedImage(data)
+                        processImageOrAnimatedImage(data)
                                 ?: throw IllegalStateException(
                                         "Failed to create image from URL ${value.url}"
                                 )
