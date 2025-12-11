@@ -55,7 +55,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                 index = match.index + 1
 
                 // Skip if this @Routable is inside a string literal
-                if (text.isInsideStringLiteral(next)) {
+                if (text.isInsideStringLiteral(index)) {
                     continue
                 }
 
