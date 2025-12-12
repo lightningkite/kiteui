@@ -14,9 +14,9 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
+fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> Unit) {
     overlayWriter(false) {
-        withoutAnimation {
+        representsView!!.withoutAnimation {
 
             beforeNextElementSetup {
                 opacity = 0.0
@@ -27,45 +27,12 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> V
                     delay(duration.inWholeMilliseconds)
                     opacity = 0.0
                     delay(t.transitionDuration)
-                    this@overlayWriter.removeChild(this@beforeNextElementSetup)
+                    this@overlayWriter.representsView!!.removeChild(this@beforeNextElementSetup)
                 }
-            }
-            atBottomCenter - col {
+            }.atBottomCenter.col {
                 gap = 2.rem
-                DialogSemantic.onNext - content()
+                DialogSemantic.onNext.content()
                 space()
-            }
-        }
-    }
-}
-
-@Deprecated("Use dialog with explicit closer instead", ReplaceWith("dialog(dismissable, content)"))
-fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
-    var willRemove: RView? = null
-    overlayWriter {
-        withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    launch {
-                        it.opacity = 0.0
-                        delay(it.theme.transitionDuration)
-                        this@overlayWriter.removeChild(it)
-                    }
-                }
-            }.run {
-                beforeNextElementSetup {
-                    opacity = 0.0
-                    launch {
-                        delay(110)
-                        opacity = 1.0
-                    }
-                }
-                willRemove = dismissBackground {
-                    onClick { if (dismissable) closePopovers() }
-                    centered - DialogSemantic.onNext - frame {
-                        content()
-                    }
-                }
             }
         }
     }
@@ -75,28 +42,27 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: (
     overlayWriter(modal = true) { close ->
         dismissBackground {
             onClick { if (dismissable) close() }
-            centered - DialogSemantic.onNext - frame {
+            centered.onNext(DialogSemantic).frame {
                 content { close() }
             }
         }
     }
 }
 
-fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
+fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> Unit) {
     var willRemove: RView? = null
     overlayWriter {
-        withoutAnimation {
+        representsView!!.withoutAnimation {
             popoverWriter {
                 willRemove?.let {
                     it.animateOut(transition.reverse) {
-                        this@overlayWriter.removeChild(it)
+                        this@overlayWriter.representsView!!.removeChild(it)
                     }
                 }
             }.run {
-                beforeNextElementSetup {
+                willRemove = beforeNextElementSetup {
                     animateIn(transition.forward)
-                }
-                willRemove = content().rView
+                }.produceOne(content)
             }
         }
     }

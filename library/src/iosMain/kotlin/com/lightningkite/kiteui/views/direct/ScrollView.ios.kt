@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.RViewWrapper
+import com.lightningkite.kiteui.views.RViewWriter
 import com.lightningkite.kiteui.views.extensionHorizontalAlign
 import com.lightningkite.kiteui.views.extensionIgnoreInteraction
 import com.lightningkite.kiteui.views.extensionVerticalAlign
@@ -25,7 +25,7 @@ class ScrollView(
     context: RContext,
     override val horizontal: Boolean,
     override val vertical: Boolean
-) : RViewWrapper(context), ScrollingBehaviors {
+) : RViewWriter(context), ScrollingBehaviors {
     override val native = FrameLayout()
     val scroller = ScrollLayout()
     init { native.addSubview(scroller) }

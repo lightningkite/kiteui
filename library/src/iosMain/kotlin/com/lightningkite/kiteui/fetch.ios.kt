@@ -56,8 +56,8 @@ actual suspend fun fetch(
     method: HttpMethod,
     headers: HttpHeaders,
     body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
 ): RequestResponse {
     return run {
         try {
@@ -103,14 +103,14 @@ actual suspend fun fetch(
                     onUploadProgress?.let {
                         onUpload { a, b ->
                             run {
-                                it(a.toInt(), b?.toInt() ?: -1)
+                                it(a, b ?: -1)
                             }
                         }
                     }
                     onDownloadProgress?.let {
                         onDownload { a, b ->
                             run {
-                                it(a.toInt(), b?.toInt() ?: -1)
+                                it(a, b ?: -1)
                             }
                         }
                     }

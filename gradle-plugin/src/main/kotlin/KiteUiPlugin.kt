@@ -109,6 +109,23 @@ class KiteUiPlugin : Plugin<Project> {
             tasks.matching { it.name == "kspKotlinJvm" }.configureEach { dependsOn(task) }
             tasks.matching { it.name == "jvmProcessResources" }.configureEach { dependsOn(task) }
         }
+        tasks.register("kiteuiResourcesJvmSsr", Task::class.java).apply {
+            val task = this.get()
+            task.dependsOn("kiteuiResourcesCommon")
+            group = "kiteui"
+            val out = project.file("build/generated/kiteui-jvmSsr/Resources.jvm.kt")
+            val gitIgnore = project.file("src/jvmSsrMain/resources/common/.gitignore")
+            task.outputs.file(out)
+            task.outputs.file(gitIgnore)
+            val resourceFolder = project.file("src/commonMain/resources")
+            task.inputs.files(resourceFolder)
+            task.doLast {
+                resourcesJs(listOf(gitIgnore), resourceFolder, out, ext)
+            }
+            tasks.matching { it.name == "compileKotlinJvmSsr" }.configureEach { dependsOn(task) }
+            tasks.matching { it.name == "kspKotlinJvmSsr" }.configureEach { dependsOn(task) }
+            tasks.matching { it.name == "jvmSsrProcessResources" }.configureEach { dependsOn(task) }
+        }
 
         tasks.register("kiteuiResourcesIos").apply {
             val task = this.get()

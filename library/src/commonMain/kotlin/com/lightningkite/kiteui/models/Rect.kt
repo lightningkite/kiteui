@@ -37,7 +37,12 @@ data class Rect(
         bottom = bottom + dy
     )
 
-    fun offset(x: Double, y: Double) = copy(left + x)
+    fun offset(x: Double, y: Double) = copy(
+        left = left + x,
+        top = top + y,
+        right = right + x,
+        bottom = bottom + y
+    )
 }
 
 data class Edges(

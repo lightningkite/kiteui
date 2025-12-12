@@ -46,8 +46,8 @@ actual suspend fun fetch(
     method: HttpMethod,
     headers: HttpHeaders,
     body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
 ): RequestResponse {
     /**
      * There is currently a bug in android fetch where after a sleep or lock state it will
@@ -92,12 +92,12 @@ actual suspend fun fetch(
                 }
                 onUploadProgress?.let {
                     onUpload { a, b ->
-                        it(a.toInt(), b?.toInt() ?: -1)
+                        it(a, b ?: -1L)
                     }
                 }
                 onDownloadProgress?.let {
                     onDownload { a, b ->
-                        it(a.toInt(), b?.toInt() ?: -1)
+                        it(a, b ?: -1L)
                     }
                 }
             }

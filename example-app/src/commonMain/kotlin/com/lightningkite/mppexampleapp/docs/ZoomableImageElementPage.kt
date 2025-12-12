@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.views.direct.*
 object ZoomableImageElementPage: DocPage {
     override val covers: List<String> = listOf("image", "Image", "zoomable")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         zoomableImage {
             source = ImageRemote("https://picsum.photos/seed/starter/2048/2048")
         }

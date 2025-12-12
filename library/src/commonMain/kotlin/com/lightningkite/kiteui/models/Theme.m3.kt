@@ -28,8 +28,8 @@ fun Theme.Companion.material3(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    derivations = mapOf(
-        OuterSemantic to {
+    semanticOverrides = SemanticOverrides(
+        OuterSemantic.override {
             it.alter(
                 cascading = false,
                 gap = 0.px,
@@ -37,41 +37,40 @@ fun Theme.Companion.material3(
                 outlineWidth = 0.px,
             ).withBackNoPadding
         },
-        MainContentSemantic to {
+        MainContentSemantic.override {
             it.withBack(
                 cascading = false,
                 cornerRadii = CornerRadii.ForceConstant(0.px),
                 outlineWidth = 0.px,
             )
         },
-        BarSemantic to {
-            it
-                .withBack(
-                    cascading = false,
-                    cornerRadii = CornerRadii.ForceConstant(0.px),
-                    outlineWidth = 0.px,
-                )
-
+        BarSemantic.override {
+            it.withBack(
+                cascading = false,
+                cornerRadii = CornerRadii.ForceConstant(0.px),
+                outlineWidth = 0.px,
+            )
         },
-        HeaderSemantic to {
+        HeaderSemantic.override {
             it.withoutBack(font = title)
         },
-        ImportantSemantic to {
+        ImportantSemantic.override {
             it.withBack(
                 foreground = primaryForeground,
                 background = primary,
                 outline = primary.highlight(0.1f),
-                derivations = mapOf(ImportantSemantic to {
-                    it.withBack(
-                        foreground = secondaryForeground,
-                        background = secondary,
-                        outline = secondary.highlight(0.1f),
-                    )
-                }
+                semanticOverrides = SemanticOverrides(
+                    ImportantSemantic.override {
+                        it.withBack(
+                            foreground = secondaryForeground,
+                            background = secondary,
+                            outline = secondary.highlight(0.1f),
+                        )
+                    }
                 )
             )
         },
-        CriticalSemantic to {
+        CriticalSemantic.override {
             it.withBack(
                 foreground = secondaryForeground,
                 background = secondary,

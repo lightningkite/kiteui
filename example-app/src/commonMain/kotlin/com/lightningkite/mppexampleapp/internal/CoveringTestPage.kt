@@ -32,15 +32,15 @@ object CoveringTestPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         col {
-            card - button {
+            card.button {
                 text("dialog")
                 onClick {
                     dialog { close ->
-                        sizeConstraints(width = 20.rem, height = 15.rem) - col {
-                            expanding - text("Heyo")
-                            card - button {
+                        sizeConstraints(width = 20.rem, height = 15.rem).col {
+                            expanding.text("Heyo")
+                            card.button {
                                 text("Close")
                                 onClick { close() }
                             }
@@ -48,17 +48,17 @@ object CoveringTestPage : Page {
                     }
                 }
             }
-            card - button {
+            card.button {
                 text("bottom sheet")
                 onClick {
                     coordinatorFrame!!.bottomSheet(blockBehind = false) { control ->
-                        DialogSemantic.onNext - col {
+                        DialogSemantic.onNext.col {
                             applySafeInsets()
-                            centered - coordinatorDragHandle()
+                            centered.coordinatorDragHandle()
                             for (letter in 'A'..'C') {
-                                card - text(letter.toString())
+                                card.text(letter.toString())
                             }
-                            card - button {
+                            card.button {
                                 text("Force close")
                                 onClick {
                                     control.close()
@@ -70,7 +70,7 @@ object CoveringTestPage : Page {
             }
             recyclerView {
                 children(Constant(('A'..'Z').toList()), { it }) {
-                    card - button {
+                    card.button {
                         text { ::content { it().toString() }}
                         onClick {
                             throw IllegalStateException("This should not be clickable.")

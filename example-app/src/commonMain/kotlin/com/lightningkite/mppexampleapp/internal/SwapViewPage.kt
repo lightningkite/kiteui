@@ -18,30 +18,32 @@ import kotlinx.coroutines.launch
 
 @Routable("swapview")
 object SwapViewPage : Page {
-    override fun ViewWriter.render() = col {
-        val clock = reactiveProcess {
-            var tick = 0
-            while (true) {
-                emit(tick++)
-                delay(500)
-            }
-        }
-        val willDelete = swapView {
-            swapping(
-                current = { clock() },
-                views = { tick ->
-                    return@swapping when (tick % 3) {
-                        0 -> h1("1")
-                        1 -> h1("2")
-                        2 -> h1("3")
-                        else -> h1("-")
-                    }
+    override fun ViewWriter.render() {
+        col {
+            val clock = reactiveProcess {
+                var tick = 0
+                while (true) {
+                    emit(tick++)
+                    delay(500)
                 }
-            )
-        }
-        launch {
-            delay(5000)
-            removeChild(willDelete)
+            }
+            val willDelete = swapView {
+                swapping(
+                    current = { clock() },
+                    views = { tick ->
+                        when (tick % 3) {
+                            0 -> h1("1")
+                            1 -> h1("2")
+                            2 -> h1("3")
+                            else -> h1("-")
+                        }
+                    }
+                )
+            }
+            launch {
+                delay(5000)
+                removeChild(willDelete)
+            }
         }
     }
 }

@@ -18,10 +18,10 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
+import com.lightningkite.kiteui.views.produceOne
 import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -37,7 +37,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
 
     override fun willAddChild(view: RView) {
         view.native.layoutParams = defaultLayoutParams()
-        super.willAddChild(view)
+        
     }
 
     override fun internalAddChild(index: Int, view: RView) {
@@ -55,10 +55,10 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         startState: BottomSheetState,
         shouldRemoveExpandedCorners: Boolean,
         blockBehind: Boolean,
-        content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
+        content: ViewWriter.(control: BottomSheetControl) -> Unit
     ) {
         lateinit var b: BottomSheetBehavior<View>
-        var sub: ViewModifiable? = null
+        var sub: RView? = null
         var backToRemove: RView? = null
         val state = Signal(startState)
         val control = object : BottomSheetControl {
@@ -94,7 +94,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     this.isHideable = true
                     addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                         override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                            sub?.rView?.native?.run {
+                            sub?.native?.run {
                                 layoutParams.height = (this@CoordinatorFrame.native.height - bottomSheet.top)
                                 requestLayout()
                             }
@@ -127,14 +127,14 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     Log.log("$this ($it) blocked the touch, because screw you")
                 }
 
-            } - col { sub = content(control) }
+            }.col { sub = produceOne { content(control) } }
         }
     }
 
     actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         lateinit var b: SideSheetBehavior<View>
         var backToRemove: RView? = null
@@ -178,13 +178,13 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             } ?: ViewGroup.LayoutParams.WRAP_CONTENT
             (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
 
-        } - content(control)
+        }.content(control)
     }
 
     actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         lateinit var b: SideSheetBehavior<View>
         var backToRemove: RView? = null
@@ -228,7 +228,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             } ?: ViewGroup.LayoutParams.WRAP_CONTENT
             (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
 
-        } - content(control)
+        }.content(control)
     }
 
     actual fun onLeftSwipe(action: suspend () -> Unit) {

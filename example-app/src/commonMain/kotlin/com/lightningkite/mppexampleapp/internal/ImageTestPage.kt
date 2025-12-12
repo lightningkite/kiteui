@@ -15,24 +15,24 @@ object ImageTestPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
-            scrolling - sizeConstraints(width = 40.rem) - col {
+    override fun ViewWriter.render(): Unit = run {
+            scrolling.sizeConstraints(width = 40.rem).col {
 
                 text("scaleType = ${ImageScaleType.Crop}")
 
-                 centered -  sizeConstraints(
+                 centered.sizeConstraints(
                     width = 6.rem,
                     height = 6.rem
-                ) - image {
+                ).image {
                     source = Resources.imagesSnowyBackground
                     scaleType = ImageScaleType.Crop
                 }
 
                 text("scaleType = ${ImageScaleType.Stretch}")
-                centered -  sizeConstraints(
+                centered.sizeConstraints(
                     width = 6.rem,
                     height = 6.rem
-                ) - image {
+                ).image {
                     source = Resources.imagesSnowyBackground
                     scaleType = ImageScaleType.Stretch
                 }

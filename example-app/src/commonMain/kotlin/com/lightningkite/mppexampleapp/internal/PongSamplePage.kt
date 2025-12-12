@@ -21,17 +21,19 @@ import kotlin.math.min
 @Routable("sample/pong")
 object PongSamplePage : Page {
 
-    override fun ViewWriter.render() = canvas {
-        val dg = PongDelegate()
-        delegate = dg
-        var last = clockMillis()
-        reactiveScope {
-            rerunOn(AppState.animationFrame)
-            val now = clockMillis()
-            val diff = now - last
-            last = now
-            dg.frame(diff / 1000.0)
-            dg.invalidate()
+    override fun ViewWriter.render() {
+        canvas {
+            val dg = PongDelegate()
+            delegate = dg
+            var last = clockMillis()
+            reactiveScope {
+                rerunOn(AppState.animationFrame)
+                val now = clockMillis()
+                val diff = now - last
+                last = now
+                dg.frame(diff / 1000.0)
+                dg.invalidate()
+            }
         }
     }
 }
@@ -73,21 +75,21 @@ class PongDelegate : CanvasDelegate() {
     fun frame(time: Double) {
         ballX += ballVX * time
         ballY += ballVY * time
-        if (ballY > stageHalfWidth - ballRadius) {
+        if (ballY > stageHalfWidth -ballRadius) {
             ballVY = -abs(ballVY)
-            ballY = stageHalfWidth - ballRadius
+            ballY = stageHalfWidth -ballRadius
         }
         if (ballY < -stageHalfWidth + ballRadius) {
             ballVY = abs(ballVY)
             ballY = -stageHalfWidth + ballRadius
         }
-        if (abs(ballX - -(stageHalfLength - paddleOffset)) < paddleHalfThickness + ballRadius) {
-            if (abs(ballY - paddleLeftY) < paddleHalfWidth + ballRadius) {
+        if (abs(ballX - -(stageHalfLength -paddleOffset)) < paddleHalfThickness + ballRadius) {
+            if (abs(ballY -paddleLeftY) < paddleHalfWidth + ballRadius) {
                 ballVX = abs(ballVX)
             }
         }
-        if (abs(ballX - (stageHalfLength - paddleOffset)) < paddleHalfThickness + ballRadius) {
-            if (abs(ballY - paddleRightY) < paddleHalfWidth + ballRadius) {
+        if (abs(ballX - (stageHalfLength -paddleOffset)) < paddleHalfThickness + ballRadius) {
+            if (abs(ballY -paddleRightY) < paddleHalfWidth + ballRadius) {
                 ballVX = -abs(ballVX)
             }
         }

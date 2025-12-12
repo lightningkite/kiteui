@@ -9,13 +9,13 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-fun <T, ID> Recycler2.children(items: Reactive<List<T>>, id: (T)->ID, render: ViewWriter.(value: Reactive<T>) -> ViewModifiable): Unit {
+fun <T, ID> Recycler2.children(items: Reactive<List<T>>, id: (T)->ID, render: ViewWriter.(value: Reactive<T>) -> Unit): Unit {
     rendererSet = RecyclerViewRendererSet.single(id, render)
     reactive {
         data = RecyclerViewData.fromList(items())
     }
 }
-fun <T, ID> Recycler2.children(items: ReactiveContext.()->List<T>, id: (T)->ID, render: ViewWriter.(value: Reactive<T>) -> ViewModifiable): Unit {
+fun <T, ID> Recycler2.children(items: ReactiveContext.()->List<T>, id: (T)->ID, render: ViewWriter.(value: Reactive<T>) -> Unit): Unit {
     rendererSet = RecyclerViewRendererSet.single(id, render)
     reactive {
         data = RecyclerViewData.fromList(items())

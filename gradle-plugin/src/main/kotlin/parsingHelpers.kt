@@ -61,3 +61,61 @@ internal fun String.afterParens(
     }
     return index + 1
 }
+
+/**
+ * Checks if a position in the string is inside a string literal.
+ * Handles both regular strings ("...") and triple-quoted strings ("""...""").
+ */
+internal fun String.isInsideStringLiteral(position: Int): Boolean {
+    var i = 0
+    var inString = false
+    var stringDelimiter = '"'
+    var isTripleQuoted = false
+    var escapeNext = false
+
+    while (i < position && i < length) {
+        if (!inString) {
+            // Check for start of triple-quoted string
+            if (i + 2 < length && this[i] == '"' && this[i + 1] == '"' && this[i + 2] == '"') {
+                inString = true
+                stringDelimiter = '"'
+                isTripleQuoted = true
+                i += 3
+                continue
+            }
+            // Check for start of regular string
+            else if (this[i] == '"' || this[i] == '\'') {
+                inString = true
+                stringDelimiter = this[i]
+                isTripleQuoted = false
+                escapeNext = false
+                i++
+                continue
+            }
+        } else {
+            // Inside a string
+            if (isTripleQuoted) {
+                // Check for end of triple-quoted string
+                if (i + 2 < length && this[i] == '"' && this[i + 1] == '"' && this[i + 2] == '"') {
+                    inString = false
+                    isTripleQuoted = false
+                    i += 3
+                    continue
+                }
+            } else {
+                // Regular string handling
+                if (escapeNext) {
+                    escapeNext = false
+                } else if (this[i] == '\\') {
+                    escapeNext = true
+                } else if (this[i] == stringDelimiter) {
+                    inString = false
+                    isTripleQuoted = false
+                }
+            }
+        }
+        i++
+    }
+
+    return inString
+}

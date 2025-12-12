@@ -1,0 +1,75 @@
+CODE REVIEW: Action.kt
+=========================================
+
+ISSUES:
+-------
+1. Line 5: Redundant import - imports kiteui.reactive.* which is already the current package
+2. Lines 26-43: Large commented-out code block (ExternalLinkAction, LinkAction) - should be removed or converted to TODOs
+3. Line 24: Commented debug println - should be removed
+
+RISKS:
+------
+1. FrequencyCapAction (line 63-73): Race condition possible
+   - lastInvoked is not thread-safe/atomic
+   - Multiple threads could pass the check simultaneously
+   - Consider using AtomicReference or synchronization
+
+2. RetryableAction/DependentAction: Job cancellation
+   - lastJob cancellation at lines 88, 156 may cause issues if job is already cancelled
+   - No null check before cancel() call
+
+3. CoroutineStart.UNDISPATCHED usage (lines 95, 163)
+   - Can lead to unexpected synchronous execution
+   - May cause stack overflow in deeply recursive scenarios
+   - Consider documenting why this optimization is necessary
+
+SIMPLIFICATION OPPORTUNITIES:
+-----------------------------
+1. RetryableAction and DependentAction have ~90% identical code
+   - Extract common functionality to base class or composition
+   - Only difference is dependency tracking in DependentAction
+
+2. The Action(...) builder function (lines 45-61) has complex conditional logic
+   - Could be simplified with a builder pattern
+   - frequencyCap wrapping could be more explicit
+
+3. plus operator implementation (lines 122-131, 192-201) is duplicated
+
+ARCHITECTURE:
+-------------
++ Good separation of concerns with different action types
++ Nice use of delegation pattern for FrequencyCapAction
++ Good coroutine scope management with keepRunningWhile
+⚠ Too much duplication between RetryableAction and DependentAction
+
+BEST PRACTICES:
+---------------
++ Good use of inline invoke operator (line 24)
++ Proper use of @OptIn for ExperimentalStdlibApi
+- Missing documentation for complex behavior
+- No unit tests visible for concurrency scenarios
+
+PERFORMANCE:
+------------
++ Good use of ReactiveState to avoid unnecessary updates
++ UNDISPATCHED start mode is an optimization but risky
+⚠ frequencyCap using TimeSource.Monotonic is good but not thread-safe
+
+SECURITY:
+---------
+No security issues identified
+
+THREAD SAFETY:
+--------------
+⚠ Critical: FrequencyCapAction.lastInvoked is not thread-safe
+⚠ RetryableAction/DependentAction lastJob field has potential race conditions
+
+RECOMMENDATIONS:
+----------------
+1. Add @Synchronized or use AtomicReference for FrequencyCapAction.lastInvoked
+2. Extract common code from RetryableAction and DependentAction
+3. Remove commented code blocks
+4. Add KDoc comments explaining the different action types and their use cases
+5. Add thread-safety documentation
+
+STATUS: Medium priority - Has thread safety issues that could cause bugs

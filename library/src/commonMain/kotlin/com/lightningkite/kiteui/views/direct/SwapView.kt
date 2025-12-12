@@ -13,13 +13,13 @@ import com.lightningkite.readable.*
 
 
 expect class SwapView(context: RContext) : RView {
-    fun swap(transition: ScreenTransition = ScreenTransition.Fade, createNewView: ViewWriter.() -> ViewModifiable?): Unit
+    fun swap(transition: ScreenTransition = ScreenTransition.Fade, createNewView: ViewWriter.() -> Unit?): Unit
 }
 
 inline fun <T> SwapView.swapping(
     crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
     crossinline current: ReactiveContext.() -> T,
-    crossinline views: ViewWriter.(T) -> ViewModifiable?
+    crossinline views: ViewWriter.(T) -> Unit
 ): Unit {
     val queue = ArrayList<T>()
     var alreadySwapping = false

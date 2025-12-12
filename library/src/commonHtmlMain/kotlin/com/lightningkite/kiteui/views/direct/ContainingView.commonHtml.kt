@@ -178,6 +178,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
 
     actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+        // TODO: This won't work
         beforeNextElementSetup {
             // TODO: Make this work when vertical changes
             if(vertical) native.style.marginTop = "calc(${amount.value} - var(--parentSpacing))"

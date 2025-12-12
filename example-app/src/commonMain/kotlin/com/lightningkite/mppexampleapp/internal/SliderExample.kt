@@ -15,14 +15,14 @@ import com.lightningkite.readable.*
 
 @Routable("slider-example")
 object SliderExamplePage : Page {
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render(): Unit {
         val sliderValue = Signal(50f)
         val sliderValueText = Signal("50")
 
-        return scrolling - col {
+        scrolling.col {
             h1 { content = "Slider Example" }
 
-            card - col {
+            card.col {
                 h2 { content = "Basic Slider (0-100)" }
 
                 text { ::content { "Value: ${sliderValue().toInt()}" } }
@@ -33,7 +33,7 @@ object SliderExamplePage : Page {
                 }
             }
 
-            card - col {
+            card.col {
                 h2 { content = "Slider with Step (0-10, step 0.5)" }
 
                 val stepSliderValue = Signal(5f)
@@ -45,7 +45,7 @@ object SliderExamplePage : Page {
                 }
             }
 
-            card - col {
+            card.col {
                 h2 { content = "Themed Sliders" }
 
                 val themedSliderValue = Signal(50f)
@@ -56,23 +56,23 @@ object SliderExamplePage : Page {
                     value bind themedSliderValue
                 }
 
-                card - slider {
+                card.slider {
                     range(0f, 100f)
                     value bind themedSliderValue
                 }
 
-                important - slider {
+                important.slider {
                     range(0f, 100f)
                     value bind themedSliderValue
                 }
 
-                critical - slider {
+                critical.slider {
                     range(0f, 100f)
                     value bind themedSliderValue
                 }
             }
 
-            card - col {
+            card.col {
                 h2 { content = "Disabled Slider" }
 
                 slider {

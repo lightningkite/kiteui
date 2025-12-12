@@ -2,15 +2,12 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 import kotlin.math.max
@@ -25,7 +22,7 @@ class Recycler2(
     viewWriter: ViewWriter,
     val vertical: Boolean = true,
     var log: Log? = null//ConsoleRoot.tag("Recycler2"),
-) : ViewModifiable {
+): CoroutineScopeHelpers() {
     override val coroutineContext: CoroutineContext
         get() = outerFrame.coroutineContext
     val outerFrame: Frame
@@ -37,8 +34,6 @@ class Recycler2(
         private set
     internal val fakeScrollContent: ProgrammaticLayout
     internal val fakeScrollIndicator: Frame
-    override val rView: RView
-        get() = outerFrame
 
     var gap: Dimension?
         get() = cells.gap
@@ -98,24 +93,24 @@ class Recycler2(
                 beforeNextElementSetup {
                     padding = 0.px
                     themeTakeNonCascadingFromParent = true
-                } - scrolling(vertical = vertical, horizontal = !vertical) {
+                }.scrolling(vertical = vertical, horizontal = !vertical) {
                     scroll = this
                     showScrollBars = false
-                } - ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext - programmatic {
+                }.onNext(ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }).programmatic {
                     padding = null
                     themeTakeNonCascadingFromParent = true
 //                    viewDebugTarget = this
                     cells = this
-                    unpadded - frame {
+                    unpadded.frame {
                         scrollSentinel = this
                     }
                 }
-                if (vertical) atEnd - sizeConstraints(width = 1.rem, maxWidth = 1.rem)
-                else atBottom - sizeConstraints(height = 1.rem, maxHeight = 1.rem)
-                scrolling(vertical = vertical, horizontal = !vertical) {
+                (if (vertical) atEnd.sizeConstraints(width = 1.rem, maxWidth = 1.rem)
+                else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem))
+                    .scrolling(vertical = vertical, horizontal = !vertical) {
                     fakeScroll = this
                     ignoreInteraction = Platform.current != Platform.Web
-                } - programmatic {
+                }.programmatic {
                     fakeScrollContent = this
                     ignoreInteraction = Platform.current != Platform.Web
                     ThemeDerivation {
@@ -123,7 +118,7 @@ class Recycler2(
                             id = "scrollindicator",
                             background = it.foreground.applyAlpha(0.5f)
                         ).withBack
-                    }.onNext - unpadded - frame {
+                    }.onNext.unpadded.frame {
                         ignoreInteraction = Platform.current != Platform.Web
                         fakeScrollIndicator = this
                         opacity = 0.0
@@ -235,6 +230,7 @@ class Recycler2(
             this.indexProp.value = index
             log?.log("CELL CREATED: from $data at $index")
             val writer = object: ViewWriter() {
+                override val representsView: RView? = cells
                 override val context: RContext
                     get() = cells.context
 
@@ -953,46 +949,6 @@ class Recycler2(
     // Scroll to the newly-created target cell using a simple scrollTo.
 
 
-    @Deprecated("Please, don't use this. This is BAD.  It won't identify the elements properly.")
-    fun <T> children(items: Reactive<List<T>>, render: ViewWriter.(value: Reactive<T>) -> ViewModifiable): Unit {
-        var currentData: List<T> = listOf()
-        rendererSet = object : RecyclerViewRendererSet<T, Int> {
-            override fun id(item: T): Int = currentData.indexOf(item)
-            val r = object : RecyclerViewRenderer<T> {
-                override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): ViewModifiable {
-                    return viewWriter.render(data)
-                }
-            }
-
-            override fun renderer(item: T): RecyclerViewRenderer<T> = r
-        }
-        reactive {
-            currentData = items()
-            data = object : RecyclerViewData<T, Int> {
-                override val range: IntRange = currentData.indices
-                override fun get(index: Int): T {
-                    if (index !in currentData.indices) throw IllegalStateException("Index $index out of range for ${currentData.indices}")
-                    return currentData[index]
-                }
-            }
-        }
-    }
-
-    @Deprecated("Set your placer instead. ")
-    var columns: Int = 1
-        set(value) {
-            field = value
-
-            placer = if (vertical)
-                RecyclerViewPlacerVerticalGrid(columns)
-            else
-                RecyclerViewPlacerHorizontalGrid(columns)
-        }
-
-    @Deprecated("Renamed to 'firstIndex'") val firstVisibleIndex: Reactive<Int> get() = firstIndex
-    @Deprecated("Renamed to 'lastIndex'") val lastVisibleIndex: Reactive<Int> get() = lastIndex
-    @Deprecated("Renamed to 'centerIndex'") val index: MutableReactive<Int> get() = centerIndex
-    @Deprecated("Just use directly") val new get() = this
 }
 
 internal fun <T> MutableList<T>.popOrNull(): T? = if (!isEmpty()) removeAt(lastIndex) else null

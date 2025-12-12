@@ -15,13 +15,13 @@ import kotlin.test.assertEquals
 
 class LayoutsTestPage : Page {
     val checks = ArrayList<() -> Unit>()
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render(): Unit {
         fun RView.parentRectangle() = parent!!.let { rectangleRelativeTo(it) }!!
-        return card - col {
+        card.col {
             checks += { println(parentRectangle()) }
             val start = text("Start")
             lateinit var above: RView
-            card - frame {
+            card.frame {
                 above = this
                 checks += {
                     assertEquals(start.parentRectangle().bottom + theme.gap.viewUnits, parentRectangle().top, 1.0)
@@ -39,7 +39,7 @@ class LayoutsTestPage : Page {
                 }
             }
             row {
-                expanding - text("Left").apply {
+                expanding.text("Left").apply {
                     checks += {
                         assertEquals(
                             (this@row.parentRectangle()?.width?.div(2) ?: 0.0) - theme.gap.viewUnits / 2,
@@ -48,7 +48,7 @@ class LayoutsTestPage : Page {
                         )
                     }
                 }
-                expanding - text("Right").apply {
+                expanding.text("Right").apply {
                     checks += {
                         assertEquals(
                             (this@row.parentRectangle()?.width?.div(2) ?: 0.0) + theme.gap.viewUnits / 2,

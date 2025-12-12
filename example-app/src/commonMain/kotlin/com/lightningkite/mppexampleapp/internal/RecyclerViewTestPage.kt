@@ -7,6 +7,9 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerHorizontalGrid
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
+import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -24,14 +27,14 @@ object RecyclerViewTestPage : Page {
     @QueryParameter
     val elementCount = Signal(10000)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         var expanded = Signal(-1)
         val items = remember { (1..elementCount()).toList() }
         var recyclerView: RecyclerView? = null
         col {
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Jump ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, false) }
                     }
@@ -39,7 +42,7 @@ object RecyclerViewTestPage : Page {
             }
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Scroll ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, true) }
                     }
@@ -48,31 +51,31 @@ object RecyclerViewTestPage : Page {
             row {
                 repeat(4) {
                     val cols = it + 1
-                    expanding - button {
+                    expanding.button {
                         subtext("${cols} columns")
-                        onClick { recyclerView?.columns = cols }
+                        onClick { recyclerView?.placer = RecyclerViewPlacerVerticalGrid(cols) }
                     }
                 }
-                sizeConstraints(width = 10.rem) - field("Element Count") {
+                sizeConstraints(width = 10.rem).field("Element Count") {
                     numberInput { content bind elementCount.nullable().asDouble() }
                 }
             }
-            recyclerView {
+            weight(1f).recyclerView {
                 recyclerView = this
                 log = Log.tag("R2")
                 gap = 0.5.rem
                 paddingByEdge = Edges(left = 1.rem, right = 1.rem, top = 1.rem, bottom = 10.rem)
-//                columns = 2
+            //                columns = 2
                 reactive {
                     val index = expanded()
-                    if(index == -1) return@reactive
+                    if (index == -1) return@reactive
                     launch {
                         delay(250)
-//                        this@recyclerView.scrollToIndex(index - 1, Align.Start, true)
+            //                        this@recyclerView.scrollToIndex(index - 1, Align.Start, true)
                     }
                 }
-                this.scrollToIndex(10, Align.Start)
-                children(items) {
+                scrollToIndex(10, Align.Start)
+                children(items, id = { it }) {
                     col child@{
                         dynamicTheme {
                             if (it() == 50) ImportantSemantic
@@ -80,19 +83,19 @@ object RecyclerViewTestPage : Page {
                             else null
                         }
                         row {
-                            expanding - centered - text { ::content { "Item ${it()}" } }
-                            centered - button {
+                            expanding.centered.text { ::content { "Item ${it()}" } }
+                            centered.button {
                                 text {
                                     ::content { if (expanded() == it()) "Expanded" else "Expand" }
                                 }
                                 onClick {
                                     expanded.value = if (it.await() == expanded.value) -1 else it.await()
-//                                    scrollIntoView(null, Align.Start, true)
+            //                                    scrollIntoView(null, Align.Start, true)
                                 }
                             }
                         }
-                        shownWhen { expanded() == it() } - col {
-//                            ::exists { expanded() == it() }
+                        shownWhen { expanded() == it() }.col {
+            //                            ::exists { expanded() == it() }
                             text { ::content { "Content for ${it()} == ${expanded()}" } }
                             text("More Content")
                             text("More Content")
@@ -102,11 +105,11 @@ object RecyclerViewTestPage : Page {
                         }
                     }
                 }
-            } in weight(1f)
+            }
             row {
                 text {
                     ::content {
-                        "Min: ${recyclerView!!.firstVisibleIndex()}, Max: ${recyclerView!!.lastVisibleIndex()}"
+                        "Min: ${recyclerView!!.firstIndex()}, Max: ${recyclerView!!.lastIndex()}"
                     }
                 }
             }

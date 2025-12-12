@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -19,7 +18,7 @@ interface RecyclerViewRendererSet<in T, out ID> {
     }
 
     companion object {
-        fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Reactive<T>) -> ViewModifiable) =
+        fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Reactive<T>) -> Unit) =
             object : RecyclerViewRendererSet<T, ID> {
                 override fun id(item: T): ID = id(item)
                 val r = object : RecyclerViewRenderer<T> {
@@ -27,7 +26,7 @@ interface RecyclerViewRendererSet<in T, out ID> {
                         viewWriter: ViewWriter,
                         data: Reactive<T>,
                         index: Reactive<Int>
-                    ): ViewModifiable = viewWriter.render(data)
+                    ): Unit = viewWriter.render(data)
                 }
 
                 override fun renderer(item: T): RecyclerViewRenderer<T> = r
@@ -36,13 +35,13 @@ interface RecyclerViewRendererSet<in T, out ID> {
         class MultiBuilder<T, ID> internal constructor(val id: (T)->ID) {
             internal val entries = ArrayList<Pair<(T)->Boolean, RecyclerViewRenderer<T>>>()
             fun elementsMatching(predicate: (T)->Boolean): (T)->Boolean = predicate
-            infix fun ((T)->Boolean).renderedAs(renderer: ViewWriter.(data: Reactive<T>) -> ViewModifiable) {
+            infix fun ((T)->Boolean).renderedAs(renderer: ViewWriter.(data: Reactive<T>) -> Unit) {
                 entries += this to object : RecyclerViewRenderer<T> {
                     override fun render(
                         viewWriter: ViewWriter,
                         data: Reactive<T>,
                         index: Reactive<Int>
-                    ): ViewModifiable = viewWriter.renderer(data)
+                    ): Unit = viewWriter.renderer(data)
                 }
             }
             internal fun build(): RecyclerViewRendererSet<T, ID> {

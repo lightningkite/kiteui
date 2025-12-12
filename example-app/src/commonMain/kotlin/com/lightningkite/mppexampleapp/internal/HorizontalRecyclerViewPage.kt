@@ -10,6 +10,8 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerHorizontalGrid
+import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.kiteui.views.l2.lazyExpanding
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -22,14 +24,14 @@ object HorizontalRecyclerViewPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         var expanded = Signal(-1)
         val items = Signal((1..101).toList())
         var recyclerView: RecyclerView? = null
         col {
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Jump ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, false) }
                     }
@@ -37,7 +39,7 @@ object HorizontalRecyclerViewPage : Page {
             }
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Scroll ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, true) }
                     }
@@ -46,18 +48,18 @@ object HorizontalRecyclerViewPage : Page {
             row {
                 repeat(4) {
                     val cols = it + 1
-                    expanding - button {
+                    expanding.button {
                         subtext("${cols} columns")
-                        onClick { recyclerView?.columns = cols }
+                        onClick { recyclerView?.placer = RecyclerViewPlacerHorizontalGrid(cols) }
                     }
                 }
             }
-            horizontalRecyclerView {
+            weight(1f).horizontalRecyclerView {
                 recyclerView = this
                 gap = 0.5.rem
-                columns = 2
-                this.scrollToIndex(10, Align.Start)
-                children(items) {
+                placer = RecyclerViewPlacerHorizontalGrid(2)
+                scrollToIndex(10, Align.Start)
+                children(items, id = { it }) {
                     col {
                         row {
                             dynamicTheme {
@@ -65,14 +67,14 @@ object HorizontalRecyclerViewPage : Page {
                                 else if (it() % 7 == 0) HoverSemantic
                                 else null
                             }
-                            expanding - centered - text { ::content { "Item ${it()}" } }
-                            centered - button {
+                            expanding.centered.text { ::content { "Item ${it()}" } }
+                            centered.button {
                                 text {
                                     ::content { if (expanded() == it()) "Expanded" else "Expand" }
                                 }
                                 onClick {
                                     expanded.value = if (it.await() == expanded.value) -1 else it.await()
-//                                    scrollIntoView(null, Align.Start, true)
+            //                                    scrollIntoView(null, Align.Start, true)
                                 }
                             }
                         }
@@ -83,11 +85,11 @@ object HorizontalRecyclerViewPage : Page {
                         }
                     }
                 }
-            } in weight(1f)
+            }
             row {
                 text {
                     ::content {
-                        "Min: ${recyclerView!!.firstVisibleIndex()}, Max: ${recyclerView!!.lastVisibleIndex()}"
+                        "Min: ${recyclerView!!.firstIndex()}, Max: ${recyclerView!!.lastIndex()}"
                     }
                 }
             }

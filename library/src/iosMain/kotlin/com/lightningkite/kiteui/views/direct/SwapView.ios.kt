@@ -2,15 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.kiteui.views.NewViewWriter
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.animateIn
 import com.lightningkite.kiteui.views.animateOut
 import com.lightningkite.kiteui.views.extensionIgnoreInteraction
 import com.lightningkite.kiteui.views.informParentOfSizeChange
+import com.lightningkite.kiteui.views.produceOneMaybe
 import com.lightningkite.kiteui.views.withoutAnimation
 
 
@@ -23,7 +22,7 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
         native.clipsToBounds = true
     }
 
-    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit {
+    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit?): Unit {
         native.hidden = false
         currentView?.let { oldView ->
             oldView.animateOut(transition) {
@@ -34,18 +33,16 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
         }
         currentView = null
 
-        val newViewWriter = NewViewWriter(this, context)
+        var newView: RView? = null
         withoutAnimation {
-            newViewWriter.createNewView()
-            newViewWriter.newView?.let {
-                addChild(it)
-                currentView = it
-            }
+            newView = produceOneMaybe { createNewView() }
+            println("Swapping to $newView")
+            currentView = newView
         }
-        newViewWriter.newView?.let {
+        newView?.let {
             it.animateIn(transition) {}
         }
-        native.extensionIgnoreInteraction = newViewWriter.newView == null
+        native.extensionIgnoreInteraction = newView == null
     }
 
 }

@@ -54,6 +54,11 @@ internal fun generateAutoroutes(sources: File, out: File) {
 
                 index = match.index + 1
 
+                // Skip if this @Routable is inside a string literal
+                if (text.isInsideStringLiteral(index)) {
+                    continue
+                }
+
                 val urlParts = when (match.kind) {
                     AnnotationMatch.Kind.Routable -> {
                         val quoteStart = text.indexOf('"', match.index)

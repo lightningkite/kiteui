@@ -17,7 +17,7 @@ import kotlinx.coroutines.delay
 
 @Routable("performance")
 object PerformanceTestPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         col {
             h1 { content = "Performance Test" }
             text("This screen is hammering the UI by adding and removing thousands of views and updating content.")
@@ -37,7 +37,7 @@ object PerformanceTestPage : Page {
                     property.value++
                 }
             }
-            scrolling - col  {
+            scrolling.col  {
                 forEach(items) {
                     row {
                         icon { source = Icon.add }

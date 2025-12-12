@@ -2,7 +2,6 @@ package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.atStart
 import com.lightningkite.kiteui.views.card
@@ -36,7 +35,7 @@ object DataPage : DocPage {
         "launch"
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             val secondsElapsed = reactiveProcess<Int> {
                 // Starts out as 'loading'
@@ -77,7 +76,7 @@ object DataPage : DocPage {
                     titledSection("reactiveProcess") {
                         text("Other kinds of Reactives can also contain loading and error states, which can be displayed in your UI with no modifications.")
                         text("Another example is 'reactiveProcess', which runs a Kotlin Coroutine that emits values.  For example, let's create a counter for seconds since opening the screen:")
-                        atStart - card - externalLink { subtext("What is a coroutine?"); to = "https://kotlinlang.org/docs/coroutines-overview.html"; newTab = true }
+                        atStart.card.externalLink { subtext("What is a coroutine?"); to = "https://kotlinlang.org/docs/coroutines-overview.html"; newTab = true }
                         code {
                             content = """
                                 val secondsElapsed = reactiveProcess<Int> {
@@ -185,14 +184,14 @@ object DataPage : DocPage {
                         example(
                             """
                                 col {
-                                    onlyWhen { secondsElapsed() % 2 == 0 } - text("We're on an even second")
-                                    onlyWhen { secondsElapsed() % 2 != 0 } - text("We're on an odd second")
+                                    onlyWhen { secondsElapsed() % 2 == 0 }.text("We're on an even second")
+                                    onlyWhen { secondsElapsed() % 2 != 0 }.text("We're on an odd second")
                                 }
                             """.trimIndent()
                         ) {
                             col {
-                                shownWhen { secondsElapsed() % 2 == 0 } - text("We're on an even second")
-                                shownWhen { secondsElapsed() % 2 != 0 } - text("We're on an odd second")
+                                shownWhen { secondsElapsed() % 2 == 0 }.text("We're on an even second")
+                                shownWhen { secondsElapsed() % 2 != 0 }.text("We're on an odd second")
                             }
                         }
                         text("This is much easier on the DOM, so you'll get better performance too.")
@@ -211,13 +210,13 @@ object DataPage : DocPage {
                         }
                         text("This is particularly useful for creating a Reactive whose value is calculated from other Reactives.")
                         text("'remember' is short for 'remember calculation'.  If multiple people listen to this property, they share the calculated result.")
-                        text("'remember' is also lazy - it won't begin calculating until someone is listing.  It's safe to use 'remember' at the top level for this reason!")
-                        danger - text("You should not use a Signal to hold a view of another Signal.  Use 'remember' instead.")
+                        text("'remember' is also lazy.it won't begin calculating until someone is listing.  It's safe to use 'remember' at the top level for this reason!")
+                        danger.text("You should not use a Signal to hold a view of another Signal.  Use 'remember' instead.")
                         text("Now, we can access this calculation like this:")
                         example(
                             """
                                 col {
-                                    important - button {
+                                    important.button {
                                         text { ::content { "Increment the other counter, which is at ${'$'}{otherCounter()}" } }
                                         onClick { counter.value++ }
                                     }
@@ -228,7 +227,7 @@ object DataPage : DocPage {
                         """.trimIndent()
                         ) {
                             col {
-                                important - button {
+                                important.button {
                                     text { ::content { "Increment the other counter, which is at ${counter()}" } }
                                     onClick { counter.value++ }
                                 }
@@ -267,8 +266,8 @@ object DataPage : DocPage {
                             """.trimIndent()
                         ) {
                             col {
-                                fieldTheme - textInput { content bind emailAddress }
-                                card - text { ::content { emailAddress() } }
+                                fieldTheme.textInput { content bind emailAddress }
+                                card.text { ::content { emailAddress() } }
                             }
                         }
                         text("Try editing the email address and you'll see the value immediately reflected in the text below it.")
@@ -289,16 +288,16 @@ object DataPage : DocPage {
                                     if(toSet != null) counter.value = toSet
                                 }
                                 col { 
-                                    fieldTheme - textInput { content bind counterAsString }
-                                    card - text { ::content { counterAsString() } }
-                                    card - button { text("Increment"); onClick { counter.value++ } }
+                                    fieldTheme.textInput { content bind counterAsString }
+                                    card.text { ::content { counterAsString() } }
+                                    card.button { text("Increment"); onClick { counter.value++ } }
                                 }
                             """.trimIndent()
                         ) {
                             col {
-                                fieldTheme - textInput { content bind counterAsString }
-                                card - text { ::content { counterAsString() } }
-                                card - button { text("Increment"); onClick { counter.value++ } }
+                                fieldTheme.textInput { content bind counterAsString }
+                                card.text { ::content { counterAsString() } }
+                                card.button { text("Increment"); onClick { counter.value++ } }
                             }
                         }
                         text("It should have started out as '0', but we can increment it with the button and directly edit the value using the field.")
@@ -311,16 +310,16 @@ object DataPage : DocPage {
                             """
                                 val counterAsString2 = counter.lens(get = { it.toString() }, set = { it.toIntOrNull() ?: 0 }) 
                                 col { 
-                                    fieldTheme - textInput { content bind counterAsString2 }
-                                    card - text { ::content { counterAsString2() } }
-                                    card - button { text("Increment"); onClick { counter.value++ } }
+                                    fieldTheme.textInput { content bind counterAsString2 }
+                                    card.text { ::content { counterAsString2() } }
+                                    card.button { text("Increment"); onClick { counter.value++ } }
                                 }
                             """.trimIndent()
                         ) {
                             col {
-                                fieldTheme - textInput { content bind counterAsString2 }
-                                card - text { ::content { counterAsString2() } }
-                                card - button { text("Increment"); onClick { counter.value++ } }
+                                fieldTheme.textInput { content bind counterAsString2 }
+                                card.text { ::content { counterAsString2() } }
+                                card.button { text("Increment"); onClick { counter.value++ } }
                             }
                         }
                     }

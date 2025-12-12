@@ -13,7 +13,8 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.hours
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.builtins.ListSerializer
@@ -23,12 +24,12 @@ object ExternalServicesPage : Page {
     override val title: Reactive<String>
         get() = super.title
     val image = Signal<ImageSource?>(null)
-    override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - col {
-            col {
+    override fun ViewWriter.render(): Unit = run {
+        scrolling.col {
+            padded.col {
                 h1 { content = "This screen demonstrates various some external access." }
-//                text { content = "Note the use of the multi-layer 'Reactive' in `fetching`." }
-            } in padded
+            //                text { content = "Note the use of the multi-layer 'Reactive' in `fetching`." }
+            }
 
             row {
                 button {
@@ -61,21 +62,23 @@ object ExternalServicesPage : Page {
                 }
             }
 
-            scrollingHorizontally - row {
+            scrollingHorizontally.row {
                 button {
                     text("Open Map")
                     onClick { context.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
                 }
                 button {
                     text("Open Event")
-                    onClick { context.openEvent(
-                        title = "Test Event",
-                        description = "This is a test event from the KiteUI Tester app.",
-                        location = "255 S 300 W Logan, UT 84321",
-                        start = Clock.System.now().plus(1.hours).toLocalDateTime(TimeZone.currentSystemDefault()),
-                        end = Clock.System.now().plus(2.hours).toLocalDateTime(TimeZone.currentSystemDefault()),
-                        zone = TimeZone.currentSystemDefault()
-                    ) }
+                    onClick {
+                        context.openEvent(
+                            title = "Test Event",
+                            description = "This is a test event from the KiteUI Tester app.",
+                            location = "255 S 300 W Logan, UT 84321",
+                            start = Clock.System.now().plus(1.hours).toLocalDateTime(TimeZone.currentSystemDefault()),
+                            end = Clock.System.now().plus(2.hours).toLocalDateTime(TimeZone.currentSystemDefault()),
+                            zone = TimeZone.currentSystemDefault()
+                        )
+                    }
                 }
                 button {
                     text("Download")
@@ -89,29 +92,42 @@ object ExternalServicesPage : Page {
                 button {
                     text("Share")
                     onClick {
-                        context.share("Cool Thing", "Check out this cool thing!", "https://github.com/lightningkite/kiteui")
+                        context.share(
+                            "Cool Thing",
+                            "Check out this cool thing!",
+                            "https://github.com/lightningkite/kiteui"
+                        )
                     }
                 }
                 button {
                     text("Share image")
                     onClick {
-                        val blob = fetch("https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png").blob()
+                        val blob =
+                            fetch("https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png").blob()
                         context.share(listOf("Captain_Falcon.png" to blob))
                     }
                 }
             }
 
-            scrollingHorizontally - row {
+            scrollingHorizontally.row {
                 button {
                     text { content = "download image" }
                     onClick {
-                        ExternalServices.download("test.jpg", "https://picsum.photos/200/300", DownloadLocation.Downloads)
+                        ExternalServices.download(
+                            "test.jpg",
+                            "https://picsum.photos/200/300",
+                            DownloadLocation.Downloads
+                        )
                     }
                 }
                 button {
                     text { content = "download gallery image" }
                     onClick {
-                        ExternalServices.download("test.jpg", "https://picsum.photos/200/300", DownloadLocation.Pictures)
+                        ExternalServices.download(
+                            "test.jpg",
+                            "https://picsum.photos/200/300",
+                            DownloadLocation.Pictures
+                        )
                     }
                 }
 
@@ -182,7 +198,7 @@ object ExternalServicesPage : Page {
                 }
             }
 
-            sizeConstraints(height = 30.rem) - image {
+            sizeConstraints(height = 30.rem).image {
                 ::source { image.invoke() }
                 scaleType = ImageScaleType.Crop
             }
