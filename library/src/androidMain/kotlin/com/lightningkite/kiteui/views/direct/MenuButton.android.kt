@@ -38,24 +38,11 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                         closePopovers()
                     }
                     atTopStart.onNext(PopoverSemantic).frame {
-                        this@dismissBackground.native.apply {
-                            clipChildren = false
-                            clipToPadding = false
-                        }
-                        this@dismissBackground.native.addOnLayoutChangeListener{ dismissBackground, _, _, _, _, _, _, _, _ ->
-                            val overlayContainer = this@frame.native
-                            val anchor = this@MenuButton.native
-
-                            val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
-                            val offset = preferredDirection.calculatePopoverOffset(
-                                anchor.getBoundariesInWindow(),
-                                overlayBoundsInWindow,
-                                dismissBackground.getBoundariesInWindow()
-                            )
-
-                            overlayContainer.offsetLeftAndRight((offset.first - overlayBoundsInWindow.left).toInt())
-                            overlayContainer.offsetTopAndBottom((offset.second - overlayBoundsInWindow.top).toInt())
-                        }
+                        configurePopoverLayout(
+                            dismissBackground = this@dismissBackground,
+                            anchorView = this@MenuButton.native,
+                            preferredDirection = preferredDirection
+                        )
                         createMenu()
                     }
                 }

@@ -9,6 +9,7 @@ actual fun RView.openPopover(
     createMenu: Frame.() -> Unit
 ) {
     val floating = FloatingInfoHolder(this, anchor)
+    floating.preferredDirection = preferredDirection
     floating.menuGenerator = createMenu
     floating.open()
     floating.block()
