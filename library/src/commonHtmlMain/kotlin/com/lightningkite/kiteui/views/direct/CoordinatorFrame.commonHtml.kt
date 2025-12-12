@@ -37,7 +37,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         startState: BottomSheetState,
         shouldRemoveExpandedCorners: Boolean,
         blockBehind: Boolean,
-        content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
+        content: ViewWriter.(control: BottomSheetControl) -> Unit
     ) {
 
         val expanded = Signal(startState)
@@ -51,16 +51,15 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }}
         withoutAnimation {
             bottomSheetState = expanded
-            beforeNextElementSetup {
+            willRemove = beforeNextElementSetup {
                 animateIn(transition.forward)
-            }
-            willRemove = col {
+            }.col {
                 gap = 0.px
                 ignoreInteraction = true
-                expanding - shownWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
+                expanding.shownWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED }.frame {
                     ignoreInteraction = true
                 }
-                expanding - content(object : BottomSheetControl {
+                expanding.content(object : BottomSheetControl {
                     override val state: MutableReactive<BottomSheetState> = expanded
                     override fun close() {
                         closePanel()
@@ -73,7 +72,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions(ScreenTransition.Pop, ScreenTransition.Push, ScreenTransition.Fade)
@@ -85,31 +84,33 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
         }
         withoutAnimation {
-            beforeNextElementSetup {
-                animateIn(transition.forward)
-            }
             val control = object : SlidingPanelControl {
                 override fun close() {
                     closePanel()
                 }
             }
-            willRemove = if(ratio == null) {
-                align(Align.Start, Align.Stretch) - content(control)
-            } else {
-                row {
-                    gap = 0.px
-                    ignoreInteraction = true
-                    weight(ratio) - content(control)
-                    weight(1f - ratio) - frame { ignoreInteraction = true }
+            willRemove = produceOne {
+                beforeNextElementSetup {
+                    animateIn(transition.forward)
                 }
-            }.rView
+                if(ratio == null) {
+                    align(Align.Start, Align.Stretch).content(control)
+                } else {
+                    row {
+                        gap = 0.px
+                        ignoreInteraction = true
+                        weight(ratio).content(control)
+                        weight(1f - ratio).frame { ignoreInteraction = true }
+                    }
+                }
+            }
         }
     }
 
     actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions.HorizontalSlide
@@ -121,24 +122,26 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
         }
         withoutAnimation {
-            beforeNextElementSetup {
-                animateIn(transition.forward)
-            }
             val control = object : SlidingPanelControl {
                 override fun close() {
                     closePanel()
                 }
             }
-            willRemove = if(ratio == null) {
-                align(Align.End, Align.Stretch) - content(control)
-            } else {
-                row {
-                    gap = 0.px
-                    ignoreInteraction = true
-                    weight(1f - ratio) - frame { ignoreInteraction = true }
-                    weight(ratio) - content(control)
+            willRemove = produceOne {
+                beforeNextElementSetup {
+                    animateIn(transition.forward)
                 }
-            }.rView
+                if(ratio == null) {
+                    align(Align.End, Align.Stretch).content(control)
+                } else {
+                    row {
+                        gap = 0.px
+                        ignoreInteraction = true
+                        weight(1f - ratio).frame { ignoreInteraction = true }
+                        weight(ratio).content(control)
+                    }
+                }
+            }
         }
     }
 

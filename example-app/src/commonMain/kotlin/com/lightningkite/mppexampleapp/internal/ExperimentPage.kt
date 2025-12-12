@@ -29,11 +29,11 @@ object ExperimentPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         col {
             val prop = Signal(true)
-            shownWhen { prop() } - text("A")
-            shownWhen { !prop() } - text("B")
+            shownWhen { prop() }.text("A")
+            shownWhen { !prop() }.text("B")
             button {
                 text("Toggle")
                 onClick { prop.value = !prop.value }

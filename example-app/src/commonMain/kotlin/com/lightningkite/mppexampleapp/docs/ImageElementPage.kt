@@ -19,7 +19,7 @@ import kotlin.random.Random
 object ImageElementPage: DocPage {
     override val covers: List<String> = listOf("image", "Image")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("Image")
             text("You can use the image element to render many types of images with fairly smooth animations.")
@@ -27,19 +27,19 @@ object ImageElementPage: DocPage {
             example("""
                 val currentImage = Signal<ImageSource>(ImageRemote("https://picsum.photos/seed/starter/640/480"))
                 col {
-                    sizeConstraints(height = 10.rem) - image {
+                    sizeConstraints(height = 10.rem).image {
                         scaleType = ImageScaleType.Crop
                         ::source { currentImage.await() }
                     }
                     row {
-                        expanding - button {
+                        expanding.button {
                             text("Random")
                             onClick {
                                 currentImage.value =
                                     ImageRemote("https://picsum.photos/seed/${Random.nextInt()}/640/480")
                             }
                         }
-                        expanding - button {
+                        expanding.button {
                             text("Pick")
                             onClick {
                                 ExternalServices.requestFile(listOf("image/*")) {
@@ -51,19 +51,19 @@ object ImageElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 col {
-                    sizeConstraints(height = 10.rem) - image {
+                    sizeConstraints(height = 10.rem).image {
                         scaleType = ImageScaleType.Crop
                         ::source { currentImage() }
                     }
                     row {
-                        expanding - button {
+                        expanding.button {
                             text("Random")
                             onClick {
                                 currentImage.value =
                                     ImageRemote("https://picsum.photos/seed/${Random.nextInt()}/640/480")
                             }
                         }
-                        expanding - button {
+                        expanding.button {
                             text("Pick")
                             onClick {
                                 context.requestFile(listOf("image/*"))
@@ -89,7 +89,7 @@ object ImageElementPage: DocPage {
             example("""
                 row {
                     fun showSize(size: Int) {
-                        centered - image { source = ImageRemote("https://picsum.photos/seed/1/${'$'}size/${'$'}size") }
+                        centered.image { source = ImageRemote("https://picsum.photos/seed/1/${'$'}size/${'$'}size") }
                     }
                     showSize(40)
                     showSize(60)
@@ -98,7 +98,7 @@ object ImageElementPage: DocPage {
             """.trimIndent()) {
                 row {
                     fun showSize(size: Int) {
-                        centered - image { source = ImageRemote("https://picsum.photos/seed/1/$size/$size") }
+                        centered.image { source = ImageRemote("https://picsum.photos/seed/1/$size/$size") }
                     }
                     showSize(40)
                     showSize(60)
@@ -108,15 +108,15 @@ object ImageElementPage: DocPage {
             text("You can also control the crop modes.  Note that images do NOT get padding when they are given a new theme.")
             row {
                 fun sample(scaleType: ImageScaleType) {
-                    important - sizeConstraints(height = 5.rem) - image {
+                    important.sizeConstraints(height = 5.rem).image {
                         this.scaleType = scaleType
                         source = ImageRemote("https://picsum.photos/seed/1/200/200")
                     }
                 }
                 ImageScaleType.values().forEach {
-                    expanding - col {
+                    expanding.col {
                         sample(it)
-                        centered - text(it.name)
+                        centered.text(it.name)
                     }
                 }
             }

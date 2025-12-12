@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.bold
 import com.lightningkite.kiteui.views.direct.*
@@ -20,7 +19,7 @@ import com.lightningkite.readable.*
 class FormattedInputTests : Page {
     val phone = Signal("")
     val general = Signal("")
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         col {
             field("General Formatted Input") {
                 formattedTextInput {
@@ -35,14 +34,14 @@ class FormattedInputTests : Page {
             }
 
             row {
-                bold - text("Stored:")
+                bold.text("Stored:")
                 text { ::content { general() } }
             }
 
             space()
 
             field("US Phone Number") {
-                sizeConstraints(height = 3.rem) - phoneNumberInput {
+                sizeConstraints(height = 3.rem).phoneNumberInput {
                     format = PhoneNumberFormat.USA
                     hint = "(123) 456-7890"
                     content bind phone
@@ -50,7 +49,7 @@ class FormattedInputTests : Page {
             }
 
             row {
-                bold - text("Stored: ")
+                bold.text("Stored: ")
                 text { ::content { phone() } }
             }
 

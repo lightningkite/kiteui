@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered
@@ -14,11 +13,12 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 
-class ImageView(viewWriter: ViewWriter) : ViewModifiable {
-    override val rView: Frame = with(viewWriter) { frame { } }
+class ImageView(viewWriter: ViewWriter) : CoroutineScope {
+    val rView: Frame = with(viewWriter) { frame { } }
     override val coroutineContext: CoroutineContext get() = rView.coroutineContext
 
     data class Info(
@@ -62,7 +62,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
     val activityIndicator: ActivityIndicator
     init {
         with(rView) {
-            centered - activityIndicator {
+            centered.activityIndicator {
                 cannotBeCovered = false
                 activityIndicator = this
                 opacity = 0.0

@@ -15,7 +15,6 @@ buildscript {
     }
     dependencies {
         classpath(libs.lkGradleHelpers)
-//        classpath(libs.androidGradle)
     }
 }
 allprojects {

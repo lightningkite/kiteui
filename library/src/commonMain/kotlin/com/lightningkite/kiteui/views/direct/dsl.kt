@@ -14,7 +14,6 @@ import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
@@ -24,9 +23,11 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
@@ -118,16 +119,22 @@ inline fun ViewWriter.rawImageZoomable(source: ImageSource, description: String,
 //    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
 //    return write(ZoomableImageView(context) , setup)
 //}
-class Label(val label: TextView, val container: RowOrCol): ViewWriter(), ViewModifiable by container {
+class Label(val label: TextView, val container: RowOrCol): ViewWriter() {
+    override val coroutineContext: CoroutineContext get() = container.coroutineContext
+    override val representsView: RView? = container
     override val context: RContext
         get() = container.context
+
+    override fun willAddChild(view: RView) {
+        container.willAddChild(view)
+    }
     override fun addChild(view: RView) {
         container.addChild(view)
     }
     var content: String by label::content
 }
 @OptIn(ExperimentalContracts::class)
-@Deprecated("use the new label: label(String, RowOrCol.() -> ViewModifiable)")
+@Deprecated("use the new label: label(String, RowOrCol.() -> Unit)")
 inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     val l: Label
@@ -142,10 +149,10 @@ inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.label(label: String, content: RowOrCol.() -> ViewModifiable): ViewModifiable {
+inline fun ViewWriter.label(label: String, content: RowOrCol.() -> Unit): Unit {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
-    return col {
-        FieldLabelSemantic.onNext - text(label)
+    col {
+        FieldLabelSemantic.onNext.text(label)
         spacingOverrideBeforeNext(0.px)
         content()
     }
@@ -425,13 +432,13 @@ inline fun ViewWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
 
         with(outerFrame) {
             if(!Platform.usesTouchscreen) {
-                align(Align.Start, Align.Center) - frame {
+                align(Align.Start, Align.Center).frame {
                     button {
                         icon(Icon.chevronLeft, "Previous")
                         onClick { centerIndex set centerIndex() - 1 }
                     }
                 }
-                align(Align.End, Align.Center) - frame {
+                align(Align.End, Align.Center).frame {
                     button {
                         icon(Icon.chevronRight, "Next")
                         onClick { centerIndex set centerIndex() + 1 }

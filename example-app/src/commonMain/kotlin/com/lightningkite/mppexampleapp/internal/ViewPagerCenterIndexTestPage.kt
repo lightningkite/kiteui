@@ -21,25 +21,27 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 object ViewPagerCenterIndexTestPage : Page {
-    override fun ViewWriter.render() = frame {
-        val slides = Constant((0..10).toList())
-        unpadded - expanding
-        val recycler = horizontalRecyclerView {
-            placer = RecyclerViewPagingPlacer()
-            snapToElements = Align.Center
-            scrollSnapStop = true
+    override fun ViewWriter.render() {
+        frame {
+            val slides = Constant((0..10).toList())
+            unpadded.expanding
+            val recycler = horizontalRecyclerView {
+                placer = RecyclerViewPagingPlacer()
+                snapToElements = Align.Center
+                scrollSnapStop = true
 
-            children(slides, { it }) { slide ->
-                frame {
-                    centered - h1 {
-                        ::content { "${slide()}" }
+                children(slides, { it }) { slide ->
+                    frame {
+                        centered.h1 {
+                            ::content { "${slide()}" }
+                        }
                     }
                 }
             }
-        }
 
-        atTopEnd - h3 {
-            ::content { "Center Index: ${recycler.centerIndex()}" }
+            atTopEnd.h3 {
+                ::content { "Center Index: ${recycler.centerIndex()}" }
+            }
         }
     }
 }

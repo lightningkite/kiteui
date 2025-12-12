@@ -132,12 +132,12 @@ class MyView(context: RContext) : RView(context) {
 
 ## Specialized View Types
 
-### RViewWrapper
+### RViewWriter
 
 Delegates gap (spacing) to its parent:
 
 ```kotlin
-class MyWrapper(context: RContext) : RViewWrapper(context) {
+class MyWrapper(context: RContext) : RViewWriter(context) {
     // gap property returns parent's gap if not explicitly set
 }
 ```

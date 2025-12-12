@@ -8,7 +8,6 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
@@ -22,21 +21,21 @@ import kotlinx.coroutines.delay
 
 @Routable("scroll-test")
 object SpecialScrollTest : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         col {
             h1 { content = "Scroll Layout Test" }
             lateinit var verticalScrollElement: ScrollingBehaviors
-            expanding - scrollingWithRefresh(Action("Test") {
+            expanding.scrollingWithRefresh(Action("Test") {
                 delay(1000)
                 println("OK")
             }) {
                 verticalScrollElement = this
-            } - col {
+            }.col {
                 repeat(10) {
-                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem) - card - text("Hello World: $it")
+                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem).card.text("Hello World: $it")
                 }
             }
-            sizeConstraints(height = 7.rem) - row {
+            sizeConstraints(height = 7.rem).row {
                 col {
                     button {
                         text("Scroll to End Smooth")
@@ -57,7 +56,7 @@ object SpecialScrollTest : Page {
                         }
                     }
                 }
-                expanding - text {
+                expanding.text {
                     ::content {
                         verticalScrollElement.content().toString() + "\n" + verticalScrollElement.viewport().toString()
                     }
@@ -69,14 +68,14 @@ object SpecialScrollTest : Page {
                 checkbox { verticalScrollElement::scrollSnapStop { checked() } }
             }
             lateinit var horizontalScrollElement: ScrollingBehaviors
-            expanding - scrollsHorizontally {
+            expanding.scrollsHorizontally {
                 horizontalScrollElement = this
-            } - row {
+            }.row {
                 repeat(10) {
-                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem) - card - text("Hello World: $it")
+                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem).card.text("Hello World: $it")
                 }
             }
-            sizeConstraints(height = 7.rem) - row {
+            sizeConstraints(height = 7.rem).row {
                 button {
                     text("Scroll to End PLZ")
                     action = Action("Scroll to End", Icon.done) {
@@ -89,7 +88,7 @@ object SpecialScrollTest : Page {
                         )
                     }
                 }
-                expanding - text {
+                expanding.text {
                     ::content {
                         horizontalScrollElement.content().toString() + "\n" + horizontalScrollElement.viewport()
                             .toString()

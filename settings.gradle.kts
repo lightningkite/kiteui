@@ -15,3 +15,4 @@ rootProject.name = "kiteui"
 include(":library")
 include(":example-app")
 include(":gradle-plugin")
+include(":test-utilities")

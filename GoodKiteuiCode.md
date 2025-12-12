@@ -29,7 +29,7 @@ In KiteUI, pages are objects that implement the `Page` interface. Here's how to 
 ```kotlin
 @Routable("your/path")
 object YourPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         // Your UI code here
     }
 }
@@ -42,7 +42,7 @@ If you want parameters in your page, you can do so like this:
 ```kotlin
 @Routable("some-collection/{id}")
 class YourPage(val id: String) : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         // Your UI code here
     }
 }
@@ -55,7 +55,7 @@ Parameter types can be any KotlinX Serialization serializable type.
 ```kotlin
 @Routable("sample/login")
 object SampleLogInPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         val email = Property("")
         val password = Property("")
         frame {
@@ -127,7 +127,7 @@ For documentation pages, you can implement the `DocPage` interface:
 object YourDocPage : DocPage {
     override val covers: List<String> = listOf("topic1", "topic2")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("Your Topic")
             text("Description")

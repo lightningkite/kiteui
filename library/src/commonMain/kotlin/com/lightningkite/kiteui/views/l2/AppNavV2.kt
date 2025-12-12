@@ -25,7 +25,7 @@ fun ViewWriter.navLayout(
 }
 
 fun ViewWriter.navBottomBar(show: Reactive<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
-    nav - row {
+    nav.row {
         ::shown { show() && !AppState.softInputOpen() }
         navGroupTabs(remember { navElements() }) {}
     } 
@@ -38,8 +38,8 @@ fun ViewWriter.navSideBar(navElements: ReactiveContext.() -> List<NavElement>) {
 var ViewWriter.overlayFrame by rContextAddon<RView?>(null)
 var ViewWriter.coordinatorFrame by rContextAddon<CoordinatorFrame?>(null)
 
-fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit): ViewModifiable {
-    return coordinatorFrame {
+fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit): Unit {
+    coordinatorFrame {
         mainPageNavigator = main
         dialog?.let {
             dialogPageNavigator = it

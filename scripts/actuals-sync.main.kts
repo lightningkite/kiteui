@@ -135,12 +135,12 @@ infix fun String.ofType(other: String) = Argument(this, other)
 infix fun Argument.default(other: String) = copy(default = other)
 
 fun modifier(name: String, vararg arguments: Argument) {
-    CodeEmitter.common("@ViewModifierDsl3 expect fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" + (it.default?.let { " = $it" } ?: "") }}): ViewWrapper")
-    CodeEmitter.impl("@ViewModifierDsl3 actual fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" }}): ViewWrapper", " = TODO()")
+    CodeEmitter.common("@ViewModifierDsl3 expect fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" + (it.default?.let { " = $it" } ?: "") }}): ViewWriter")
+    CodeEmitter.impl("@ViewModifierDsl3 actual fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" }}): ViewWriter", " = TODO()")
 }
 fun modifierVal(name: String) {
-    CodeEmitter.common("@ViewModifierDsl3 expect val ViewWriter.$name: ViewWrapper")
-    CodeEmitter.impl("@ViewModifierDsl3 actual val ViewWriter.$name: ViewWrapper", " = TODO()")
+    CodeEmitter.common("@ViewModifierDsl3 expect val ViewWriter.$name: ViewWriter")
+    CodeEmitter.impl("@ViewModifierDsl3 actual val ViewWriter.$name: ViewWriter", " = TODO()")
 }
 
 CodeEmitter.common(

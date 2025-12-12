@@ -37,7 +37,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         val o = source.overlayFrame ?: return
         val v = existingView ?: return
         with<RView, Unit>(o) {
-            beforeNextElementSetup { closeView = this } - atTopEnd - button {
+            beforeNextElementSetup { closeView = this }.atTopEnd.button {
                 icon(Icon.close, "Close")
                 onClick {
                     close()

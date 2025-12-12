@@ -96,9 +96,9 @@
 //    }
 //
 //    @Test
-//    fun testGapDelegationInRViewWrapper() {
+//    fun testGapDelegationInRViewWriter() {
 //        val parent = createTestView()
-//        val wrapper = createTestView() // extends RViewWrapper
+//        val wrapper = createTestView() // extends RViewWriter
 //
 //        parent.gap = 10.px
 //        parent.willAddChild(wrapper)

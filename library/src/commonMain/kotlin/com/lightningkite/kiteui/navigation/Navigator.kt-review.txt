@@ -1,0 +1,103 @@
+CODE REVIEW: Navigator.kt
+=========================================
+
+ISSUES:
+-------
+1. Lines 5-11: Multiple redundant imports from reactive packages
+2. Lines 62-70: Deprecated companion object properties with ERROR level
+   - These should be removed entirely if deprecated to ERROR level
+   - Clutters the API surface
+
+RISKS:
+------
+1. wrap() function (line 24) does nothing currently
+   - Documented as wrapping but just returns screen as-is
+   - Could be confusing - either implement or remove
+
+2. Stack manipulation is not synchronized
+   - stack.value mutations (lines 34, 37, 40, 46, 53, 57) could have race conditions
+   - Multiple threads calling navigate/goBack simultaneously could cause issues
+
+3. navigateUrlLikePath/resetUrlLikePath silently fail
+   - If parse returns null, nothing happens
+   - No error feedback to caller
+
+SIMPLIFICATION OPPORTUNITIES:
+-----------------------------
+1. Remove deprecated ERROR-level properties entirely (lines 62-70)
+2. Simplify wrap() - either implement or remove
+3. navigateRaw/navigate split is confusing
+   - Could use single method with internal flag
+   - Or make wrap() more explicit
+
+4. Duplicate code in navigate/replace/reset (lines 29-31)
+   - Could be simplified with higher-order function
+
+ARCHITECTURE:
+-------------
++ Good separation between parsing and navigation
++ Stack-based navigation is clean
++ Reactive stack state is good design
+⚠ wrap() function seems incomplete or unnecessary
+⚠ Lazy routes initialization could cause issues if routesGetter throws
+
+BEST PRACTICES:
+---------------
+- Deprecated properties at ERROR level should be removed
+- No documentation on thread safety
+- Missing KDoc for public API
++ Good use of reactive values for currentPage and canGoBack
+
+CONCURRENCY:
+------------
+⚠ stack.value mutations are not atomic
+⚠ No synchronization for concurrent navigation calls
+⚠ Could lead to corrupted stack state
+
+API DESIGN:
+-----------
++ Clear method names (navigate, replace, reset)
++ Good separation of concerns
+⚠ navigateRaw/replaceRaw/resetRaw vs navigate/replace/reset is confusing
+  - The "Raw" suffix doesn't clearly indicate the difference
+  - Better names: navigateWithoutWrapper? Or just make wrap() explicit parameter?
+
+PERFORMANCE:
+------------
++ Lazy routes initialization
++ remember {} for computed reactives is good
+
+MISSING FUNCTIONALITY:
+----------------------
+- No navigation history limit
+- No navigation event listeners
+- No navigation guards (canNavigate checks)
+- No deep linking support beyond URL parsing
+
+RECOMMENDATIONS:
+----------------
+1. Remove all ERROR-level deprecated code
+2. Add synchronization for stack mutations or document thread-safety requirements
+3. Implement wrap() properly or remove it
+4. Add error handling for URL parsing failures
+5. Consider adding:
+   - Navigation guards
+   - Navigation events/listeners
+   - Stack size limit
+   - Navigation transaction support (for atomic multi-step nav)
+6. Rename Raw methods or rethink the API
+7. Add comprehensive KDoc
+
+EXAMPLE SYNCHRONIZATION:
+------------------------
+```kotlin
+private val stackLock = Any()
+
+fun navigateRaw(screen: Page) {
+    synchronized(stackLock) {
+        stack.value += screen
+    }
+}
+```
+
+STATUS: Medium priority - Cleanup needed, potential concurrency issues

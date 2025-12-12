@@ -5,7 +5,7 @@ import kotlin.time.Duration.Companion.seconds
 fun Theme.Companion.shadCnLike(
     id: String,
     background: Color = Color.gray(0.05f),
-    accent: Color = HSPColor(hue = 0.6.turns, saturation = 0.8f, brightness = 0.3f).toRGB(),
+    accent: Color = HSPColor(hue = 0.6.turns, saturation = 0.95f, brightness = 0.4f).toRGB(),
     title: FontAndStyle = FontAndStyle(),
     body: FontAndStyle = FontAndStyle(),
 ): Theme {
@@ -48,11 +48,11 @@ fun Theme.Companion.shadCnLike(
         foreground = if (baseBrightness > 0.6f) Color.black else Color.white,
         background = background,
         outline = background.highlight(outlineHighlight),
-        derivations = mapOf(
-            HeaderSemantic to {
+        semanticOverrides = SemanticOverrides(
+            HeaderSemantic.override {
                 it.withoutBack(font = title)
             },
-            ImportantSemantic to {
+            ImportantSemantic.override {
                 when(it.background) {
                     accent -> it.withBack(
                         background = superAccent,
@@ -64,7 +64,35 @@ fun Theme.Companion.shadCnLike(
                     )
                 }
             },
-            CardSemantic to {
+            CardSemantic.override {
+                it[GroupSemantic]
+            },
+            GroupSemantic.override {
+                it.withBack(
+                    cascading = false,
+                    outlineWidth = 1.px,
+                )
+            },
+            HoverSemantic.override {
+                it.withBack(
+                    background = it.background.highlight2(cardHighlight),
+                    outline = it.outline.highlight2(cardHighlight),
+                )
+            },
+            FocusSemantic.override {
+                it.withBack(
+                    cascading = false,
+                    outlineWidth = 3.px,
+                )
+            },
+            DownSemantic.override {
+                it.withBack(
+                    background = it.background.brighten2(cardHighlight),
+                    outline = it.outline.brighten2(cardHighlight),
+                )
+            },
+
+            FieldSemantic.override {
                 it.alter(
                     background = it.background.brighten2(cardHighlight),
                     outline = it.outline.brighten2(cardHighlight),
@@ -73,38 +101,12 @@ fun Theme.Companion.shadCnLike(
                     outlineWidth = 1.px,
                 )
             },
-            GroupSemantic to {
-                it.withBack(
-                    cascading = false,
-                    outlineWidth = 1.px,
-                )
-            },
-            HoverSemantic to {
-                it.withBack(
-                    background = it.background.brighten2(cardHighlight),
-                    outline = it.outline.brighten2(cardHighlight),
-                )
-            },
-            FocusSemantic to {
-                it.withBack(
-                    cascading = false,
-                    outlineWidth = 3.px,
-                )
-            },
-            DownSemantic to {
-                it.withBack(
-                    background = it.background.brighten2(cardHighlight),
-                    outline = it.outline.brighten2(cardHighlight),
-                )
-            },
 
-            FieldSemantic to { it[CardSemantic] },
-
-            ListSemantic to {
+            ListSemantic.override {
                 it.withoutBack(gap = 1.px, cascading = false)
             },
 
-            BarSemantic to {
+            BarSemantic.override {
                 it.withBack(
                     background = background.highlight2(cardHighlight),
                     cascading = false,
@@ -113,7 +115,7 @@ fun Theme.Companion.shadCnLike(
                     padding = Edges(0.px)
                 )
             },
-            NavSemantic to {
+            NavSemantic.override {
                 it.withBack(
                     background = background.highlight2(cardHighlight),
                     cascading = false,
@@ -122,7 +124,7 @@ fun Theme.Companion.shadCnLike(
                     padding = Edges(0.px)
                 )
             },
-            OuterSemantic to {
+            OuterSemantic.override {
                 it.withBack(
                     cascading = false,
                     outlineWidth = 1.px,
@@ -130,12 +132,43 @@ fun Theme.Companion.shadCnLike(
                     padding = Edges(0.px)
                 )
             },
-            MainContentSemantic to { it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
+            MainContentSemantic. override{ it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
 
-            DialogSemantic to {
+            DialogSemantic.override {
                 it.withBack(outlineWidth = 1.dp, padding = Edges(2.rem), cascading = false)
             },
 
+            SelectedSemantic.override {
+                it.alter(
+                    background = if(background.perceivedBrightness < 0.5f)
+                        HSVColor(
+                            hue = accent.toHSV().hue,
+                            saturation = accent.toHSV().saturation,
+                            value = background.toHSV().value + 0.05f
+                        ).toRGB()
+                    else
+                        HSVColor(
+                            hue = accent.toHSV().hue,
+                            saturation = background.toHSV().saturation + 0.05f,
+                            value = 1f,
+                        ).toRGB(),
+//                    background = Color.interpolate(background, accent, 0.2f),
+                    foreground = background.foreground(),
+                    outline = accent
+                ).withBack(
+                    cascading = false,
+                    outlineWidth = 1.px,
+                )
+            },
+            UnselectedSemantic.override {
+                it.withBack(
+                    background = background,
+                    foreground = background.foreground(),
+                    outline = background.highlight(outlineHighlight),
+                    cascading = false,
+                    outlineWidth = 1.px,
+                )
+            }
             // TODO: Selected / Unselected semantics
         ),
     )

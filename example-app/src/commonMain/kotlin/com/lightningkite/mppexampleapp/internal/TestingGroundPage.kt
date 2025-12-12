@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 @Routable("testing")
 object TestingGroundPage: Page {
     val progressRatio: Signal<Float> = Signal(0f)
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
 //        val ratioShared = sharedSuspending {
 //            kotlinx.coroutines.delay(1000)
 //            ratio.set(ratio.value + 0.1f)
@@ -28,9 +28,9 @@ object TestingGroundPage: Page {
 
 
 
-        scrolling - col {
+        scrolling.col {
             h1("Experiments test")
-            centered - sizeConstraints(maxWidth = 10.rem) - image { source = Resources.imagesSnowyBackground }
+            centered.sizeConstraints(maxWidth = 10.rem).image { source = Resources.imagesSnowyBackground }
 
             launch {
                 while (true) {
@@ -48,8 +48,7 @@ object TestingGroundPage: Page {
                 }
             }
 //            frame {
-                sizeConstraints(width = 6.rem, height = 6.rem) -
-                        circularProgress {
+                sizeConstraints(width = 6.rem, height = 6.rem).circularProgress {
                     ::ratio {
                         progressRatio.invoke()
                     }

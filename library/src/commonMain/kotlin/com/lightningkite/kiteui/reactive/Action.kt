@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.exceptions.ExceptionHandlers
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -23,25 +22,6 @@ interface Action: Reactive<Boolean> {
 
 operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
 
-//data class ExternalLinkAction(
-//    override val name: String,
-//    override val icon: Icon,
-//    val href: String,
-//    val newWindow: Boolean
-//): Action by (Action("Link", Icon.externalLink) {
-//    ExternalServices.openTab(href, newWindow)
-//})
-//
-//data class LinkAction(
-//    override val name: String,
-//    override val icon: Icon,
-//    val to: (() -> Page)? = null,
-//    val newTab: Boolean = false,
-//    val resetsStack: Boolean = false,
-//): Action by (Action("Link", Icon.externalLink) {
-//    TODO()
-//})
-
 fun Action(
     title: String,
     icon: Icon = Icon.send,
@@ -61,7 +41,8 @@ fun Action(
 }
 
 class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.milliseconds) : Action by wraps {
-    var lastInvoked = TimeSource.Monotonic.markNow()
+    private var lastInvoked = TimeSource.Monotonic.markNow()
+
     override fun startAction(scope: CoroutineScope) {
         if (lastInvoked.elapsedNow() > frequencyCap) {
             lastInvoked = TimeSource.Monotonic.markNow()
