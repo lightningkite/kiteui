@@ -18,6 +18,7 @@ import com.lightningkite.kiteui.views.popoverWriter
 
 actual fun RView.openPopover(
     preferredDirection: PopoverPreferredDirection,
+    anchor: RView?,
     createMenu: Frame.() -> Unit
 ) {
     var willRemove: RView? = null
@@ -52,11 +53,11 @@ actual fun RView.openPopover(
                 }
                 this@dismissBackground.native.addOnLayoutChangeListener{ dismissBackground, _, _, _, _, _, _, _, _ ->
                     val overlayContainer = this@frame.native
-                    val anchor = this@openPopover.native
+                    val anchorView = (anchor ?: this@openPopover).native
 
                     val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
                     val offset = preferredDirection.calculatePopoverOffset(
-                        anchor.getBoundariesInWindow(),
+                        anchorView.getBoundariesInWindow(),
                         overlayBoundsInWindow,
                         dismissBackground.getBoundariesInWindow()
                     )

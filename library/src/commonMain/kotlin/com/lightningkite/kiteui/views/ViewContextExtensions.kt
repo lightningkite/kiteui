@@ -78,11 +78,13 @@ fun ViewWriter.keepPopoverOpen(lifecycle: CoroutineScope) {
 fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = false, close: ()->Unit): ViewWriter {
     popoverCloser?.invoke()
     popoverCloser = close
+
     val writer = object : ViewWriter(), CalculationContext by this {
         override val representsView: RView? = overlay.representsView
         override val context: RContext = this@popoverWriter.context.split()
         override fun willAddChild(view: RView) = overlay.willAddChild(view)
         override fun addChild(view: RView) = overlay.addChild(view)
+
     }
     writer.popoverParent = this@popoverWriter.takeIf { !popoverRoot }
     writer.popoverCloser = null

@@ -16,38 +16,42 @@ import com.lightningkite.kiteui.views.popoverWriter
 
 actual fun RView.openPopover(
     preferredDirection: PopoverPreferredDirection,
+    anchor: RView?,
     createMenu: Frame.() -> Unit
 ) {
     var willRemove: RView? = null
-    val f= overlayFrame!!
-    f.popoverWriter {
-        willRemove?.let { f.removeChild(it) }
-        willRemove = null
-    }.run {
-        willRemove = dismissBackground {
-            themeChoice += ThemeDerivation {
-                it.copy(
-                    id = "mnubtndsm",
-                    cascading = false,
-                    semanticOverrides = SemanticOverrides(
-                        DismissSemantic.override {
-                            it.withBack(
-                                background = Color.transparent,
-                                outlineWidth = 0.dp,
-                                cornerRadii = CornerRadii.Constant(0.dp),
-                                cascading = false,
+    val f = overlayFrame!!
+    f
+        .popoverWriter {
+            willRemove?.let { f.removeChild(it) }
+            willRemove = null
+        }
+        .run {
+            willRemove = dismissBackground {
+                themeChoice += ThemeDerivation {
+                    it.copy(
+                        id = "mnubtndsm",
+                        cascading = false,
+                        semanticOverrides =
+                            SemanticOverrides(
+                                DismissSemantic.override {
+                                    it.withBack(
+                                        background = Color.transparent,
+                                        outlineWidth = 0.dp,
+                                        cornerRadii =
+                                            CornerRadii.Constant(
+                                                0.dp
+                                            ),
+                                        cascading = false,
+                                    )
+                                }
                             )
-                        }
                     )
-                ).withBack
-            }
-            native.anchor = preferredDirection to this@openPopover.native
-            onClick {
-                closePopovers()
-            }
-            PopoverSemantic.onNext.frame {
-                createMenu()
+                        .withBack
+                }
+                native.anchor = preferredDirection to (anchor ?: this@openPopover).native
+                onClick { closePopovers() }
+                PopoverSemantic.onNext.frame { createMenu() }
             }
         }
-    }
 }

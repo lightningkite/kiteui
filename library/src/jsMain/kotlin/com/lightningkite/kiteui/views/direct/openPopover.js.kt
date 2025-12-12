@@ -5,9 +5,10 @@ import com.lightningkite.kiteui.views.RView
 
 actual fun RView.openPopover(
     preferredDirection: PopoverPreferredDirection,
+    anchor: RView?,
     createMenu: Frame.() -> Unit
 ) {
-    val floating = FloatingInfoHolder(this)
+    val floating = FloatingInfoHolder(this, anchor)
     floating.menuGenerator = createMenu
     floating.open()
     floating.block()
