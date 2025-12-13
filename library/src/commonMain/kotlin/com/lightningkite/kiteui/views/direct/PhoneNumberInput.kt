@@ -73,5 +73,5 @@ class PhoneNumberInput(container: ViewWriter): CoroutineScope {
     var enabled: Boolean by input::enabled
     val content: MutableReactiveValue<String> by input::content
     var hint: String by input::hint
-    var align: Align by input::align
+    var align: Align? by input::align
 }

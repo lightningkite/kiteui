@@ -679,7 +679,7 @@ data object DismissSemantic : Semantic("dsmss") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         cascading = false,
         gap = 0.dp,
-        cornerRadii = CornerRadii.Constant(0.dp),
+        cornerRadii = CornerRadii.AdaptiveToSpacing(0.dp),
         background = Color.black.applyAlpha(0.5f),
     )
 }
@@ -696,10 +696,10 @@ data object FieldSemantic : Semantic("fld") {
         outlineWidth = 1.px,
 //        gap = theme.gap / 2,
         cornerRadii = when (val base = theme.cornerRadii) {
-            is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
-            is CornerRadii.ForceConstant -> base
+            is CornerRadii.AdaptiveToSpacing -> CornerRadii.Fixed(base.value)
+            is CornerRadii.Fixed -> base
             is CornerRadii.RatioOfSize -> base
-            is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.gap * base.value)
+            is CornerRadii.RatioOfSpacing -> CornerRadii.Fixed(theme.gap * base.value)
             is CornerRadii.PerCorner -> base
         }
     )
@@ -1515,9 +1515,9 @@ class Theme(
                     ).toRGB(),
                 ).randomElevationAndCorners().randomTitleFontSettings(),
                 Theme.flat(id = id, hue = hue, saturation = 0.15f, baseBrightness = 0.8f)
-                    .copy(id = id, cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
+                    .copy(id = id, cornerRadii = CornerRadii.AdaptiveToSpacing(Random.nextDouble().rem)).randomTitleFontSettings(),
                 Theme.flat(id = id, hue = hue, saturation = 0.5f)
-                    .copy(id = id, cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
+                    .copy(id = id, cornerRadii = CornerRadii.AdaptiveToSpacing(Random.nextDouble().rem)).randomTitleFontSettings(),
             ).random(random)
         }
     }

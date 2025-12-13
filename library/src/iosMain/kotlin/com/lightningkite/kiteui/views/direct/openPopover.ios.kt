@@ -34,7 +34,7 @@ actual fun RView.openPopover(
                             it.withBack(
                                 background = Color.transparent,
                                 outlineWidth = 0.dp,
-                                cornerRadii = CornerRadii.Constant(0.dp),
+                                cornerRadii = CornerRadii.AdaptiveToSpacing(0.dp),
                                 cascading = false,
                             )
                         }

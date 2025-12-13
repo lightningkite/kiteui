@@ -61,8 +61,8 @@ actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(th
 actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
 
 fun CornerRadii.toRawCornerRadius(): String = when (this) {
-    is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
-    is CornerRadii.ForceConstant -> value.value.toString()
+    is CornerRadii.AdaptiveToSpacing -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
+    is CornerRadii.Fixed -> value.value.toString()
     is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
     is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
     is CornerRadii.PerCorner -> listOf(this.topLeft, this.topRight,  this.bottomRight, this.bottomLeft).joinToString(" ") {

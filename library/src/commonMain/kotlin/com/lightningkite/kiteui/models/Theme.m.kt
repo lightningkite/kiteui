@@ -32,7 +32,7 @@ fun Theme.Companion.material(
             it.alter(
                 cascading = false,
                 gap = 0.px,
-                cornerRadii = CornerRadii.ForceConstant(0.px),
+                cornerRadii = CornerRadii.Fixed(0.px),
                 outlineWidth = 0.px,
             ).withBackNoPadding
         },
@@ -65,7 +65,7 @@ fun Theme.Companion.material(
         MainContentSemantic.override {
             it.withBack(
                 cascading = false,
-                cornerRadii = CornerRadii.ForceConstant(0.px),
+                cornerRadii = CornerRadii.Fixed(0.px),
                 outlineWidth = 0.px,
             )
         },
@@ -92,7 +92,7 @@ fun Theme.Companion.material(
                 )
             ).withBack(
                 cascading = false,
-                cornerRadii = CornerRadii.ForceConstant(0.px),
+                cornerRadii = CornerRadii.Fixed(0.px),
                 outlineWidth = 0.px,
             )
         },

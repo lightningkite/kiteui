@@ -111,10 +111,10 @@ fun Theme.Companion.flat(
                 cascading = false,
 //                gap = it.gap / 2,
                 cornerRadii = when(val base = it.cornerRadii) {
-                    is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
-                    is CornerRadii.ForceConstant -> base
+                    is CornerRadii.AdaptiveToSpacing -> CornerRadii.Fixed(base.value)
+                    is CornerRadii.Fixed -> base
                     is CornerRadii.RatioOfSize -> base
-                    is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(it.gap * base.value)
+                    is CornerRadii.RatioOfSpacing -> CornerRadii.Fixed(it.gap * base.value)
                     is CornerRadii.PerCorner -> base
                 }
             )

@@ -87,4 +87,14 @@ actual object ViewProperties {
             else -> false
         }
     }
+
+    actual fun getHorizontalAlign(view: RView): com.lightningkite.kiteui.models.Align? {
+        val nativeView = view.native as? com.lightningkite.kiteui.views.FutureElement ?: return null
+        return nativeView.desiredHorizontalGravity ?: com.lightningkite.kiteui.models.Align.Center
+    }
+
+    actual fun getVerticalAlign(view: RView): com.lightningkite.kiteui.models.Align? {
+        val nativeView = view.native as? com.lightningkite.kiteui.views.FutureElement ?: return null
+        return nativeView.desiredVerticalGravity ?: com.lightningkite.kiteui.models.Align.Center
+    }
 }
