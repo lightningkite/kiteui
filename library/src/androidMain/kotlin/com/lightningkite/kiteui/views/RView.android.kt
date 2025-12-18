@@ -383,6 +383,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             needsLayoutParamUpdate = true
         }
 
+        // If we applied defaults, update layout params (align() modifier wasn't called)
         if (needsLayoutParamUpdate) {
             val params = view.lparams
 
