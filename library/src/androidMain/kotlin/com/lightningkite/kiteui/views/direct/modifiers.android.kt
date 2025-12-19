@@ -7,6 +7,7 @@ import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
@@ -112,6 +113,17 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
             Align.End -> Gravity.BOTTOM
             else -> Gravity.CENTER_VERTICAL
         }
+
+
+        params.width = when (horizontal) {
+            Align.Stretch -> LayoutParams.MATCH_PARENT
+            else -> LayoutParams.WRAP_CONTENT
+        }
+        params.height = when (vertical) {
+            Align.Stretch -> LayoutParams.MATCH_PARENT
+            else -> LayoutParams.WRAP_CONTENT
+        }
+
         if (params is SimplifiedLinearLayoutLayoutParams)
             params.gravity = horizontalGravity or verticalGravity
         else if (params is FrameLayout.LayoutParams)
