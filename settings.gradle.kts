@@ -13,6 +13,8 @@ pluginManagement {
 rootProject.name = "kiteui"
 
 include(":library")
+include(":library-swing")
 include(":example-app")
+include(":example-app-swing")
 include(":gradle-plugin")
 include(":test-utilities")

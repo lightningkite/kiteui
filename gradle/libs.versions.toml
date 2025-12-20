@@ -10,6 +10,8 @@ commonsLang3 = "3.19.0"
 glide = "5.0.5"
 junit = "4.13.2"
 kotlinxCoroutinesCore = "1.10.2"
+miglayoutSwing = "11.4.2"
+swingxAll = "1.6.5-1"
 kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.9.0"
 ktorVersion = "3.3.1"
@@ -41,7 +43,10 @@ commonsLang3 = { module = "org.apache.commons:commons-lang3", version = { ref = 
 glide = { module = "com.github.bumptech.glide:glide", version = { ref = "glide" } }
 junit = { module = "junit:junit", version = { ref = "junit" } }
 kotlinxCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = { ref = "kotlinxCoroutinesCore" } }
+kotlinxCoroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version = { ref = "kotlinxCoroutinesCore" } }
 kotlinxCoroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = { ref = "kotlinxCoroutinesCore" } }
+miglayout-swing = { module = "com.miglayout:miglayout-swing", version.ref = "miglayoutSwing" }
+swingx-all = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingxAll" }
 kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = { ref = "kotlinxDatetime" } }
 kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = { ref = "kotlinxSerializationJson" } }
 kotlinxSerializationProperties = { module = "org.jetbrains.kotlinx:kotlinx-serialization-properties", version = { ref = "kotlinxSerializationJson" } }
