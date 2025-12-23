@@ -13,7 +13,7 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
         background = Color.white,
         outline = separator,
         elevation = 0.px,
-        cornerRadii = CornerRadii.Constant(0.5.rem),
+        cornerRadii = CornerRadii.AdaptiveToSpacing(0.5.rem),
         gap = 0.75.rem,
         padding = Edges(0.75.rem),
         semanticOverrides = SemanticOverrides(
@@ -28,13 +28,13 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
                     outline = separator,
                     outlineWidth = 1.px,
                     foreground = Color.black,
-                    cornerRadii = CornerRadii.ForceConstant(0.5.rem)
+                    cornerRadii = CornerRadii.Fixed(0.5.rem)
                 )
             },
             BarSemantic.override { it.withBack },
             NavSemantic.override { it.withBack },
             OuterSemantic.override { it.withBack(cascading = false, gap = 1.px, padding = Edges.ZERO, background = separator) },
-            MainContentSemantic.override { it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
+            MainContentSemantic.override { it.withBack(cascading = false, cornerRadii = CornerRadii.AdaptiveToSpacing(0.px)) },
             InsetSemantic.override { it.withBack(background = it.background.backInvert()) },
             UnselectedSemantic.override { it.withBack },
             SelectedSemantic.override { it[CardSemantic] },
@@ -65,7 +65,7 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
             ListSemantic.override {
                 it.copy(id = "lsts", background = back).withBack(
                     cascading = false,
-                    cornerRadii = CornerRadii.ForceConstant(0.75.rem),
+                    cornerRadii = CornerRadii.Fixed(0.75.rem),
                     gap = 1.px,
                     padding = Edges(0.px)
                 )

@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.views.RContext
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 
-actual fun RContext.openTab(url: String) = Unit
+actual fun RContext.openLink(url: String, newTab: Boolean) {}
 actual suspend fun RContext.requestFile(mimeTypes: List<String>): FileReference? = TODO()
 actual suspend fun RContext.requestFiles(mimeTypes: List<String>): List<FileReference> = TODO()
 actual suspend fun RContext.requestCaptureSelf(mimeTypes: List<String>): FileReference? = TODO()

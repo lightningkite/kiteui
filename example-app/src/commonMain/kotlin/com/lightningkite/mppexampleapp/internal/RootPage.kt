@@ -80,6 +80,7 @@ object RootPage : Page {
                 linkPage { FormsPage }
                 linkPage { NavigationTestPage }
                 linkPage { LayoutExamplesPage }
+                linkPage { ContainerAlignmentDemoPage }
                 linkPage { VectorsTestPage }
                 linkPage { SampleLogInPage }
                 linkPage { DataLoadingExamplePage }

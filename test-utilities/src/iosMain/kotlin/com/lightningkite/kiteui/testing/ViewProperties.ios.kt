@@ -3,6 +3,8 @@
 package com.lightningkite.kiteui.testing
 
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.extensionHorizontalAlign
+import com.lightningkite.kiteui.views.extensionVerticalAlign
 import kotlinx.cinterop.useContents
 import platform.UIKit.*
 
@@ -97,5 +99,13 @@ actual object ViewProperties {
             is UIButton -> nativeView.selected
             else -> false
         }
+    }
+
+    actual fun getHorizontalAlign(view: RView): com.lightningkite.kiteui.models.Align? {
+        return view.native.extensionHorizontalAlign ?: com.lightningkite.kiteui.models.Align.Center
+    }
+
+    actual fun getVerticalAlign(view: RView): com.lightningkite.kiteui.models.Align? {
+        return view.native.extensionVerticalAlign ?: com.lightningkite.kiteui.models.Align.Center
     }
 }

@@ -7,6 +7,7 @@ import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
@@ -90,18 +91,39 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
         lastSetHorizontalAlign = horizontal
         lastSetVerticalAlign = vertical
         val params = lparams
-        val horizontalGravity = when (horizontal) {
+
+        // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+        val effectiveHorizontal = if (horizontal == Align.Stretch) {
+            parent?.newChildHorizontalAlign ?: horizontal
+        } else horizontal
+
+        val effectiveVertical = if (vertical == Align.Stretch) {
+            parent?.newChildVerticalAlign ?: vertical
+        } else vertical
+
+        val horizontalGravity = when (effectiveHorizontal) {
             Align.Start -> Gravity.START
             Align.Center -> Gravity.CENTER_HORIZONTAL
             Align.End -> Gravity.END
             else -> Gravity.CENTER_HORIZONTAL
         }
-        val verticalGravity = when (vertical) {
+        val verticalGravity = when (effectiveVertical) {
             Align.Start -> Gravity.TOP
             Align.Center -> Gravity.CENTER_VERTICAL
             Align.End -> Gravity.BOTTOM
             else -> Gravity.CENTER_VERTICAL
         }
+
+
+        params.width = when (horizontal) {
+            Align.Stretch -> LayoutParams.MATCH_PARENT
+            else -> LayoutParams.WRAP_CONTENT
+        }
+        params.height = when (vertical) {
+            Align.Stretch -> LayoutParams.MATCH_PARENT
+            else -> LayoutParams.WRAP_CONTENT
+        }
+
         if (params is SimplifiedLinearLayoutLayoutParams)
             params.gravity = horizontalGravity or verticalGravity
         else if (params is FrameLayout.LayoutParams)
@@ -110,12 +132,12 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
             params.gravity = horizontalGravity or verticalGravity
         else
             Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
-        if (horizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
+        if (effectiveHorizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT
         } else if (params.width == ViewGroup.LayoutParams.MATCH_PARENT) {
-            params.width = ViewGroup.LayoutParams.WRAP_CONTENT
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT
         }
-        if (vertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
+        if (effectiveVertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
             params.height = ViewGroup.LayoutParams.MATCH_PARENT
         } else if (params.height == ViewGroup.LayoutParams.MATCH_PARENT) {
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT
@@ -155,6 +177,42 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
 
             val myChildren: ArrayList<View> = ArrayList()
             override fun internalAddChild(index: Int, view: RView) {
+                // Apply parent's default alignment if child doesn't have explicit alignment set
+                var needsLayoutParamUpdate = false
+
+                if (view.lastSetHorizontalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildHorizontalAlign != null) {
+                    view.lastSetHorizontalAlign = newChildHorizontalAlign!!
+                    needsLayoutParamUpdate = true
+                }
+                if (view.lastSetVerticalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildVerticalAlign != null) {
+                    view.lastSetVerticalAlign = newChildVerticalAlign!!
+                    needsLayoutParamUpdate = true
+                }
+
+                // If we applied defaults, update layout params (align() modifier wasn't called)
+                if (needsLayoutParamUpdate) {
+                    val params = view.lparams
+                    val horizontalGravity = when (view.lastSetHorizontalAlign) {
+                        com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.START
+                        com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_HORIZONTAL
+                        com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.END
+                        else -> android.view.Gravity.CENTER_HORIZONTAL
+                    }
+                    val verticalGravity = when (view.lastSetVerticalAlign) {
+                        com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.TOP
+                        com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_VERTICAL
+                        com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.BOTTOM
+                        else -> android.view.Gravity.CENTER_VERTICAL
+                    }
+
+                    if (params is com.lightningkite.kiteui.views.direct.SimplifiedLinearLayoutLayoutParams)
+                        params.gravity = horizontalGravity or verticalGravity
+                    else if (params is android.widget.FrameLayout.LayoutParams)
+                        params.gravity = horizontalGravity or verticalGravity
+                    else if (params is androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams)
+                        params.gravity = horizontalGravity or verticalGravity
+                }
+
                 myChildren.add(index, view.native)
                 (native as ViewGroup).addView(view.native, index)
             }

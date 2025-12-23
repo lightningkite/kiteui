@@ -404,7 +404,6 @@ object ImageCache {
 
     inline fun get(key: String, load: () -> UIImage): UIImage {
         (imageCache.objectForKey(key) as? UIImage)?.let {
-            println("Got from base cache $it from key $key")
             return it
         }
         val loaded = load()
@@ -413,26 +412,14 @@ object ImageCache {
     }
 
     val imageCacheSized = NSCache()
-    suspend fun get(
-            key: String,
-            minWidth: Int,
-            minHeight: Int,
-            load: suspend () -> UIImage
-    ): UIImage {
+    suspend fun get(key: String, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
         val sizeKey = "$key//$minWidth//$minHeight"
-        println("Lookup $key $minWidth $minHeight")
         (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let {
-            println("Got from presized cache! $it")
             return it
         }
-        val baseCached =
-                get(
-                        key,
-                        {
-                            println("Not in base cache.  Loading")
-                            load()
-                        }
-                )
+        val baseCached = get(key, {
+            load()
+        })
         if (minWidth == 0 || minHeight == 0) return baseCached
         // Don't resize animated images - resizing would lose the animation frames
         if (baseCached.images != null) return baseCached
@@ -445,7 +432,6 @@ object ImageCache {
         return inBackground {
             val newWidth = baseCached.size.useContents { width * scaling }.roundToInt().toDouble()
             val newHeight = baseCached.size.useContents { height * scaling }.roundToInt().toDouble()
-            println("Resized image will be ${ "$newWidth x $newHeight" }")
             UIGraphicsBeginImageContextWithOptions(CGSizeMake(newWidth, newHeight), false, 0.0)
             val image =
                     try {
@@ -455,12 +441,7 @@ object ImageCache {
                         UIGraphicsEndImageContext()
                     }
             if (image == null) return@inBackground baseCached
-            println("Resized image is be ${image.size.useContents { "$width x $height" }}")
-            imageCacheSized.setObject(
-                    image,
-                    key,
-                    image.size.useContents { minWidth * minHeight * 4 }.toULong()
-            )
+            imageCacheSized.setObject(image, key, image.size.useContents { minWidth * minHeight * 4 }.toULong())
             image
         }
     }

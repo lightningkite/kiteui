@@ -118,8 +118,18 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
     beforeNextElementSetup {
         lastSetHorizontalAlign = horizontal
         lastSetVerticalAlign = vertical
-        native.extensionHorizontalAlign = horizontal
-        native.extensionVerticalAlign = vertical
+
+        // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+        val effectiveHorizontal = if (horizontal == Align.Stretch) {
+            parent?.newChildHorizontalAlign ?: horizontal
+        } else horizontal
+
+        val effectiveVertical = if (vertical == Align.Stretch) {
+            parent?.newChildVerticalAlign ?: vertical
+        } else vertical
+
+        native.extensionHorizontalAlign = effectiveHorizontal
+        native.extensionVerticalAlign = effectiveVertical
     }
         .let { return it }
 }

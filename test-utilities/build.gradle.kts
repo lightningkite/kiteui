@@ -1,9 +1,20 @@
+import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.dokka)
+}
+
+dokka {
+    // Dokka generates a new process managed by Gradle
+    dokkaGeneratorIsolation = ProcessIsolation {
+        // Configures heap size
+        maxHeapSize = "4g"
+    }
 }
 
 kotlin {
@@ -106,3 +117,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 }
+
+// Note: Publishing configuration disabled as it requires vanniktech publishing plugin
+// Uncomment when publishing is needed:
+// lkLibrary("lightningkite", "kiteui") {
+//     description.set("KiteUI's testing companion.")
+// }

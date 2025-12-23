@@ -91,10 +91,10 @@ fun Theme.Companion.flat2(
                 cascading = false,
 //                gap = it.gap / 2,
                 cornerRadii = when(val base = it.cornerRadii) {
-                    is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
-                    is CornerRadii.ForceConstant -> base
+                    is CornerRadii.AdaptiveToSpacing -> CornerRadii.Fixed(base.value)
+                    is CornerRadii.Fixed -> base
                     is CornerRadii.RatioOfSize -> base
-                    is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(it.gap * base.value)
+                    is CornerRadii.RatioOfSpacing -> CornerRadii.Fixed(it.gap * base.value)
                     is CornerRadii.PerCorner -> base
                 }
             )
@@ -108,12 +108,12 @@ fun Theme.Companion.flat2(
         NavSemantic.override {
             it.withBack(
                 cascading = false,
-                cornerRadii = CornerRadii.Constant(0.px),
+                cornerRadii = CornerRadii.AdaptiveToSpacing(0.px),
                 padding = Edges(0.px)
             )
         },
         OuterSemantic.override { it.withBack(cascading = false, gap = 1.px, padding = Edges.ZERO, background = Color.gray(0.3f)) },
-        MainContentSemantic.override { it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
+        MainContentSemantic.override { it.withBack(cascading = false, cornerRadii = CornerRadii.AdaptiveToSpacing(0.px)) },
 
         DialogSemantic.override {
             it.withBack(outlineWidth = 1.dp, padding = Edges(2.rem), cascading = false)

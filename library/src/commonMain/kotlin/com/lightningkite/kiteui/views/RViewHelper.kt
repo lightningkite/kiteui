@@ -148,6 +148,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     var lastSetHorizontalAlign: Align = Align.Stretch
     /** Cached vertical alignment for layout calculations. */
     var lastSetVerticalAlign: Align = Align.Stretch
+    /** Default horizontal alignment for newly created children when not explicitly set. */
+    var newChildHorizontalAlign: Align? = null
+    /** Default vertical alignment for newly created children when not explicitly set. */
+    var newChildVerticalAlign: Align? = null
 
     // drag 'n drop
     /** Data to be provided when this view is dragged. If null, dragging is disabled. */

@@ -248,6 +248,16 @@ actual class RowWrapping actual constructor(context: RContext) : RView(context) 
     }
 
     override fun internalAddChild(index: Int, view: RView) {
+        // Apply parent's default alignment if child doesn't have explicit alignment set
+        if (view.lastSetHorizontalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildHorizontalAlign != null) {
+            view.lastSetHorizontalAlign = newChildHorizontalAlign!!
+            view.native.extensionHorizontalAlign = newChildHorizontalAlign
+        }
+        if (view.lastSetVerticalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildVerticalAlign != null) {
+            view.lastSetVerticalAlign = newChildVerticalAlign!!
+            view.native.extensionVerticalAlign = newChildVerticalAlign
+        }
+
         if (index == native.arrangedSubviews.size)
             native.addArrangedSubview(view.native)
         else

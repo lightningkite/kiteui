@@ -40,7 +40,7 @@ fun Theme.Companion.shadCnLike(
         id = id,
         font = body,
         elevation = 0.dp,
-        cornerRadii = CornerRadii.Constant(0.75.rem),
+        cornerRadii = CornerRadii.AdaptiveToSpacing(0.75.rem),
         gap = 0.75.rem,
         padding = Edges(0.75.rem),
         outlineWidth = 0.px,
@@ -111,7 +111,7 @@ fun Theme.Companion.shadCnLike(
                     background = background.highlight2(cardHighlight),
                     cascading = false,
                     outlineWidth = 1.px,
-                    cornerRadii = CornerRadii.Constant(0.px),
+                    cornerRadii = CornerRadii.AdaptiveToSpacing(0.px),
                     padding = Edges(0.px)
                 )
             },
@@ -120,7 +120,7 @@ fun Theme.Companion.shadCnLike(
                     background = background.highlight2(cardHighlight),
                     cascading = false,
                     outlineWidth = 1.px,
-                    cornerRadii = CornerRadii.Constant(0.px),
+                    cornerRadii = CornerRadii.AdaptiveToSpacing(0.px),
                     padding = Edges(0.px)
                 )
             },
@@ -128,11 +128,11 @@ fun Theme.Companion.shadCnLike(
                 it.withBack(
                     cascading = false,
                     outlineWidth = 1.px,
-                    cornerRadii = CornerRadii.Constant(0.px),
+                    cornerRadii = CornerRadii.AdaptiveToSpacing(0.px),
                     padding = Edges(0.px)
                 )
             },
-            MainContentSemantic. override{ it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
+            MainContentSemantic. override{ it.withBack(cascading = false, cornerRadii = CornerRadii.AdaptiveToSpacing(0.px)) },
 
             DialogSemantic.override {
                 it.withBack(outlineWidth = 1.dp, padding = Edges(2.rem), cascading = false)

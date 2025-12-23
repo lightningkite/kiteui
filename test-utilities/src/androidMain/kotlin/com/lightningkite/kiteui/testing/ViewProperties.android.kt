@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.testing
 
+import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
@@ -7,7 +8,10 @@ import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.direct.SimplifiedLinearLayoutLayoutParams
+import com.lightningkite.kiteui.views.lparams
 
 /**
  * Android implementation of ViewProperties.
@@ -69,6 +73,44 @@ actual object ViewProperties {
             is RadioButton -> nativeView.isChecked
             is SwitchCompat -> nativeView.isChecked
             else -> false
+        }
+    }
+
+    actual fun getHorizontalAlign(view: RView): com.lightningkite.kiteui.models.Align? {
+        val params = view.lparams
+        val gravity = when (params) {
+            is SimplifiedLinearLayoutLayoutParams -> params.gravity
+            is android.widget.FrameLayout.LayoutParams -> params.gravity
+            is CoordinatorLayout.LayoutParams -> params.gravity
+            else -> return null
+        }
+
+        val masked = gravity and Gravity.HORIZONTAL_GRAVITY_MASK
+
+        return when (masked) {
+            Gravity.START and Gravity.HORIZONTAL_GRAVITY_MASK -> com.lightningkite.kiteui.models.Align.Start
+            Gravity.CENTER_HORIZONTAL and Gravity.HORIZONTAL_GRAVITY_MASK -> com.lightningkite.kiteui.models.Align.Center
+            Gravity.END and Gravity.HORIZONTAL_GRAVITY_MASK -> com.lightningkite.kiteui.models.Align.End
+            else -> com.lightningkite.kiteui.models.Align.Center // Default to Center when not explicitly set
+        }
+    }
+
+    actual fun getVerticalAlign(view: RView): com.lightningkite.kiteui.models.Align? {
+        val params = view.lparams
+        val gravity = when (params) {
+            is SimplifiedLinearLayoutLayoutParams -> params.gravity
+            is android.widget.FrameLayout.LayoutParams -> params.gravity
+            is CoordinatorLayout.LayoutParams -> params.gravity
+            else -> return null
+        }
+
+        val masked = gravity and Gravity.VERTICAL_GRAVITY_MASK
+
+        return when (masked) {
+            Gravity.TOP and Gravity.VERTICAL_GRAVITY_MASK -> com.lightningkite.kiteui.models.Align.Start
+            Gravity.CENTER_VERTICAL and Gravity.VERTICAL_GRAVITY_MASK -> com.lightningkite.kiteui.models.Align.Center
+            Gravity.BOTTOM and Gravity.VERTICAL_GRAVITY_MASK -> com.lightningkite.kiteui.models.Align.End
+            else -> com.lightningkite.kiteui.models.Align.Center // Default to Center when not explicitly set
         }
     }
 }

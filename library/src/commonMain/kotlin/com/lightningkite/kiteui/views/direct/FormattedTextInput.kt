@@ -16,7 +16,7 @@ expect class FormattedTextInput(context: RContext) : RViewWithAction {
     var enabled: Boolean
     val content: MutableReactiveValue<String>
     var hint: String
-    var align: Align
+    var align: Align?
     var keyboardHints: KeyboardHints
 
     fun format(

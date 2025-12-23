@@ -40,13 +40,13 @@ actual class ProgressBar actual constructor(context: RContext) : RView(context) 
         }
         run {
             val cr = when (val it = theme.cornerRadii) {
-                is CornerRadii.ForceConstant -> it.value.value
                 is CornerRadii.RatioOfSize -> if (it.ratio >= 0.5f) 9999f else it.ratio * min(
                     native.width,
                     native.height
                 )
 
-                is CornerRadii.Constant -> min((parent?.mySpacingForChildren ?: 0.px).value, it.value.value)
+                is CornerRadii.AdaptiveToSpacing -> min((parent?.mySpacingForChildren ?: 0.px).value, it.value.value)
+                is CornerRadii.Fixed -> it.value.value
                 is CornerRadii.RatioOfSpacing -> it.value * (parent?.mySpacingForChildren ?: 0.px).value
                 is CornerRadii.PerCorner -> it.value.value
             }

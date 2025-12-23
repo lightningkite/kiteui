@@ -269,7 +269,7 @@ object VectorsTestPage : Page {
                         it.copy(
                             id = "red$size",
                             background = Color.red,
-                            cornerRadii = CornerRadii.ForceConstant(2.rem)
+                            cornerRadii = CornerRadii.Fixed(2.rem)
                         ).withBack
                     }
                     image {
@@ -283,7 +283,7 @@ object VectorsTestPage : Page {
                                         GradientStop(1f, Color.red),
                                     ),
                                 ),
-                                cornerRadii = CornerRadii.ForceConstant(2.rem)
+                                cornerRadii = CornerRadii.Fixed(2.rem)
                             ).withBack
                         }
                     }
