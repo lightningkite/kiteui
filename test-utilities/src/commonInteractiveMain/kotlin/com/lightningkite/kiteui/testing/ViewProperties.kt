@@ -80,6 +80,22 @@ expect object ViewProperties {
      * @return true if checked, false otherwise or if not applicable
      */
     fun isChecked(view: RView): Boolean
+
+    /**
+     * Gets the horizontal alignment of a view within its parent.
+     *
+     * @param view The view to check
+     * @return The horizontal Align value, or null if not applicable
+     */
+    fun getHorizontalAlign(view: RView): com.lightningkite.kiteui.models.Align?
+
+    /**
+     * Gets the vertical alignment of a view within its parent.
+     *
+     * @param view The view to check
+     * @return The vertical Align value, or null if not applicable
+     */
+    fun getVerticalAlign(view: RView): com.lightningkite.kiteui.models.Align?
 }
 
 // Extension functions for easier usage
@@ -191,3 +207,27 @@ val RView.height: Int
  */
 val RView.isChecked: Boolean
     get() = ViewProperties.isChecked(this)
+
+/**
+ * Gets the horizontal alignment of this view.
+ *
+ * Example:
+ * ```
+ * val text = root.findByDebugName("centered-text")!!
+ * assertEquals(Align.Center, text.horizontalAlign)
+ * ```
+ */
+val RView.horizontalAlign: com.lightningkite.kiteui.models.Align?
+    get() = ViewProperties.getHorizontalAlign(this)
+
+/**
+ * Gets the vertical alignment of this view.
+ *
+ * Example:
+ * ```
+ * val text = root.findByDebugName("top-text")!!
+ * assertEquals(Align.Start, text.verticalAlign)
+ * ```
+ */
+val RView.verticalAlign: com.lightningkite.kiteui.models.Align?
+    get() = ViewProperties.getVerticalAlign(this)

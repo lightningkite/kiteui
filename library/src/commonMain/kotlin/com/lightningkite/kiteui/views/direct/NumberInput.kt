@@ -22,5 +22,5 @@ expect class NumberInput(context: RContext) : RViewWithAction {
     var keyboardHints: KeyboardHints
     var hint: String
     var range: ClosedRange<Double>?
-    var align: Align
+    var align: Align?
 }

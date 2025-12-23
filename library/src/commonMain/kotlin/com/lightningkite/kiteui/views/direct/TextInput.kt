@@ -20,5 +20,5 @@ expect class TextInput(context: RContext) : RViewWithAction {
     val content: MutableReactiveValue<String>
     var keyboardHints: KeyboardHints
     var hint: String
-    var align: Align
+    var align: Align?
 }
