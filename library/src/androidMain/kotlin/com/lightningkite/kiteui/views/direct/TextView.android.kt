@@ -31,30 +31,30 @@ actual class TextView actual constructor(context: RContext) :
         set(value) {
             native.text = value
         }
-    actual var align: Align
-        get() {
-            return when (native.gravity) {
-                Gravity.START -> Align.Start
-                Gravity.END -> Align.End
-                Gravity.CENTER -> Align.Center
-                Gravity.CENTER_VERTICAL -> Align.Start
-                Gravity.CENTER_HORIZONTAL -> Align.Center
-                else -> Align.Start
-            }
-        }
+
+    private var _align: Align? = null
+    private var _fontAndStyle: FontAndStyle? = null
+
+    actual var align: Align?
+        get() = _align
         set(value) {
-            when (value) {
-                Align.Start -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
-                Align.End -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_END
-                Align.Center -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_CENTER
-                Align.Stretch -> {
-                    native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
-                    native.updateLayoutParams<ViewGroup.LayoutParams> {
-                        this.width = ViewGroup.LayoutParams.MATCH_PARENT
-                    }
+            _align = value
+            applyAlign(value ?: _fontAndStyle?.align ?: Align.Start)
+        }
+
+    private fun applyAlign(value: Align) {
+        when (value) {
+            Align.Start -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
+            Align.End -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_END
+            Align.Center -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_CENTER
+            Align.Stretch -> {
+                native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
+                native.updateLayoutParams<ViewGroup.LayoutParams> {
+                    this.width = ViewGroup.LayoutParams.MATCH_PARENT
                 }
             }
         }
+    }
 
     actual var ellipsis: Boolean = true
         set(value) {
@@ -88,6 +88,7 @@ actual class TextView actual constructor(context: RContext) :
         debugPrint {
             "native.setTextColor: ${theme.id} ${theme.foreground}"
         }
+        _fontAndStyle = theme.font
         native.setTextColor(theme.foreground.colorInt())
         native.setTypeface(theme.font.typeface(context.activity))
         native.isAllCaps = theme.font.allCaps
@@ -95,6 +96,7 @@ actual class TextView actual constructor(context: RContext) :
                 (if(theme.font.underline) android.graphics.Paint.UNDERLINE_TEXT_FLAG else 0) or
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
+        applyAlign(_align ?: theme.font.align)
     }
     actual fun setBasicHtmlContent(html: String) {
         if(html.contains("<a")) {

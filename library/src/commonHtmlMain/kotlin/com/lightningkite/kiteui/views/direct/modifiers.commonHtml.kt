@@ -115,10 +115,20 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
     beforeNextElementSetup {
         lastSetHorizontalAlign = horizontal
         lastSetVerticalAlign = vertical
-        native.classes.add("h${horizontal}")
-        native.desiredHorizontalGravity = horizontal
-        native.classes.add("v${vertical}")
-        native.desiredVerticalGravity = vertical
+
+        // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+        val effectiveHorizontal = if (horizontal == Align.Stretch) {
+            parent?.newChildHorizontalAlign ?: horizontal
+        } else horizontal
+
+        val effectiveVertical = if (vertical == Align.Stretch) {
+            parent?.newChildVerticalAlign ?: vertical
+        } else vertical
+
+        native.classes.add("h${effectiveHorizontal}")
+        native.desiredHorizontalGravity = effectiveHorizontal
+        native.classes.add("v${effectiveVertical}")
+        native.desiredVerticalGravity = effectiveVertical
     }
         .let { return it }
 }

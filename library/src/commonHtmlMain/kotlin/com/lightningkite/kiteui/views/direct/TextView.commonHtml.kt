@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.parseMPNodes
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.*
 
@@ -17,15 +18,24 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         set(value) {
             native.content = if(value.isEmpty()) Typography.nbsp.toString() else value
         }
-    actual var align: Align = Align.Start
+
+    private var _align: Align? = null
+
+    actual var align: Align?
+        get() = _align
         set(value) {
-            native.style.textAlign = when (value) {
-                Align.Start -> "start"
-                Align.Center -> "center"
-                Align.End -> "end"
-                Align.Stretch -> "justify"
-            }
+            _align = value
+            applyAlign(value ?: theme.font.align)
         }
+
+    private fun applyAlign(value: Align) {
+        native.style.textAlign = when (value) {
+            Align.Start -> "start"
+            Align.Center -> "center"
+            Align.End -> "end"
+            Align.Stretch -> "justify"
+        }
+    }
     actual var ellipsis: Boolean = true
         set(value) {
             field = value
@@ -58,6 +68,12 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
                 native.setStyleProperty("text-overflow", "ellipsis")
             }
         }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        applyAlign(_align ?: theme.theme.font.align)
+    }
+
     actual fun setBasicHtmlContent(html: String) {
         native.style.whiteSpace = "pre-line"
         native.innerHtmlUnsafe = html.parseMPNodes().onEach { it.secure() }.joinToString(" ")

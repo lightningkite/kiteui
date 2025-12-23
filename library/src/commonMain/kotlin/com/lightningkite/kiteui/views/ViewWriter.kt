@@ -76,7 +76,9 @@ abstract class ViewWriter: CoroutineScopeHelpers() {
         }
     }
 
-    fun onNext(themeDerivation: ThemeDerivation) = beforeNextElementSetup {
+    @Deprecated("Use themed instead.", ReplaceWith("themed(themeDerivation)"))
+    fun onNext(themeDerivation: ThemeDerivation) = themed(themeDerivation)
+    fun themed(themeDerivation: ThemeDerivation) = beforeNextElementSetup {
         val old = themeChoice
         themeChoice = old + themeDerivation
     }
