@@ -67,6 +67,32 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
 
     init {
         native.addSubview(textField)
+
+
+        dropTargetDelegate = object : DropTargetDelegate {
+            override fun drop(event: DragEvent): Boolean {
+                // Prioritize official text mime types
+                for ((mimeType, data) in event.data.typeToData) {
+                    if (mimeType.startsWith("text/")) {
+                        (data as? String)?.let {
+                            content.value = it
+                            return true // Successfully handled the drop
+                        }
+                    }
+                }
+
+                // Fallback: accept the first string value found, regardless of mime type
+                for ((_, data) in event.data.typeToData) {
+                    (data as? String)?.let {
+                        content.value = it
+                        return true // Successfully handled the drop
+                    }
+                }
+
+                // No compatible data was found
+                return false
+            }
+        }
     }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
