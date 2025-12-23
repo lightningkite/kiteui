@@ -125,18 +125,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     private class DragShadowBuilder(val shadow: DragShadow) : View.DragShadowBuilder(shadow.view.native) {
         override fun onProvideShadowMetrics(outShadowSize: Point?, outShadowTouchPoint: Point?) {
             val view = shadow.view.native
-            outShadowSize?.set(view.width, view.height)
+            // Android cant have touch point below zero clamp to 0 or larger
+            outShadowSize?.set(view.width.coerceAtLeast(0), view.height.coerceAtLeast(0))
             outShadowTouchPoint?.set(
-                when (shadow.xAlign) {
+                (when (shadow.xAlign) {
                     Align.Start -> 0
                     Align.Center, Align.Stretch -> view.width / 2
                     Align.End -> view.width
-                } + (shadow.xOffset?.px?.roundToInt() ?: 0),
-                when (shadow.yAlign) {
+                } + (shadow.xOffset?.px?.roundToInt() ?: 0)).coerceAtLeast(0),
+                (when (shadow.yAlign) {
                     Align.Start -> 0
                     Align.Center, Align.Stretch -> view.height / 2
                     Align.End -> view.height
-                } + (view.height / 2) + (shadow.yOffset?.px?.roundToInt() ?: 0)
+                } + (shadow.yOffset?.px?.roundToInt() ?: 0)).coerceAtLeast(0)
             )
         }
     }
