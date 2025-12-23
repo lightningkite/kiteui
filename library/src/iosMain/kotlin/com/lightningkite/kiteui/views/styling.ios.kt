@@ -106,7 +106,7 @@ class CAGradientLayerResizing : CAGradientLayer {
         return backgroundMask!!
     }
 
-    var desiredCornerRadius: CornerRadii = CornerRadii.ForceConstant(0.px)
+    var desiredCornerRadius: CornerRadii = CornerRadii.Fixed(0.px)
         set(value) {
             if (this == null) return //stupid iOS issue prevention
             field = value
@@ -141,8 +141,8 @@ class CAGradientLayerResizing : CAGradientLayer {
 
         fun valueOfRadii(d: CornerRadii): Double {
             return when (d) {
-                is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-                is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.AdaptiveToSpacing -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.Fixed -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
                 is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
                 is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
                 is CornerRadii.PerCorner -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })

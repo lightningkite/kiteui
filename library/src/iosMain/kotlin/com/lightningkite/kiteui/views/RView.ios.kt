@@ -355,6 +355,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     protected open val addChildTarget: UIView get() = native
     actual override fun internalAddChild(index: Int, view: RView) {
+        // Apply parent's default alignment if child doesn't have explicit alignment set
+        if (view.lastSetHorizontalAlign == Align.Stretch && newChildHorizontalAlign != null) {
+            view.lastSetHorizontalAlign = newChildHorizontalAlign!!
+            view.native.extensionHorizontalAlign = newChildHorizontalAlign
+        }
+        if (view.lastSetVerticalAlign == Align.Stretch && newChildVerticalAlign != null) {
+            view.lastSetVerticalAlign = newChildVerticalAlign!!
+            view.native.extensionVerticalAlign = newChildVerticalAlign
+        }
+
         val existingView = children.getOrNull(index)
         val existingIndex = addChildTarget.subviews.indexOfFirst { it == existingView?.native }
         if (existingIndex == -1)

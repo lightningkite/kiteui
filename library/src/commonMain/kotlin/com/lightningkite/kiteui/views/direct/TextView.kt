@@ -15,7 +15,7 @@ import kotlin.contracts.*
 expect class TextView(context: RContext) : RView {
 
     var content: String
-    var align: Align
+    var align: Align?
     var ellipsis: Boolean
     var wraps: Boolean
     var wordBreak: WordBreak

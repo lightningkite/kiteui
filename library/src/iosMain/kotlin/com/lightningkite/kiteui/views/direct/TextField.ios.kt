@@ -99,6 +99,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
         updateHint()
+        applyAlign(_align ?: theme.font.align)
     }
 
     fun updateFont() {
@@ -187,28 +188,28 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
             field = value
             updateHint()
         }
-    actual inline var align: Align
-        get() = when (textField.textAlignment) {
-            NSTextAlignmentLeft -> Align.Start
-            NSTextAlignmentCenter -> Align.Center
-            NSTextAlignmentRight -> Align.End
-            NSTextAlignmentJustified -> Align.Stretch
-            else -> Align.Start
-        }
+    private var _align: Align? = null
+    actual var align: Align?
+        get() = _align
         set(value) {
-            textField.contentMode = when (value) {
-                Align.Start -> UIViewContentMode.UIViewContentModeLeft
-                Align.Center -> UIViewContentMode.UIViewContentModeCenter
-                Align.End -> UIViewContentMode.UIViewContentModeRight
-                Align.Stretch -> UIViewContentMode.UIViewContentModeScaleAspectFit
-            }
-            textField.textAlignment = when (value) {
-                Align.Start -> NSTextAlignmentLeft
-                Align.Center -> NSTextAlignmentCenter
-                Align.End -> NSTextAlignmentRight
-                Align.Stretch -> NSTextAlignmentJustified
-            }
+            _align = value
+            applyAlign(value ?: fontAndStyle?.align ?: Align.Start)
         }
+
+    private fun applyAlign(value: Align) {
+        textField.contentMode = when (value) {
+            Align.Start -> UIViewContentMode.UIViewContentModeLeft
+            Align.Center -> UIViewContentMode.UIViewContentModeCenter
+            Align.End -> UIViewContentMode.UIViewContentModeRight
+            Align.Stretch -> UIViewContentMode.UIViewContentModeScaleAspectFit
+        }
+        textField.textAlignment = when (value) {
+            Align.Start -> NSTextAlignmentLeft
+            Align.Center -> NSTextAlignmentCenter
+            Align.End -> NSTextAlignmentRight
+            Align.Stretch -> NSTextAlignmentJustified
+        }
+    }
     actual var enabled: Boolean
         get() = textField.enabled
         set(value) {

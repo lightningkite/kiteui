@@ -31,6 +31,7 @@ data class FontAndStyle(
     val size: Dimension = 1.rem,
     val strikethrough: Boolean = false,
     val underline: Boolean = false,
+    val align: Align = Align.Start,
 ) {
     constructor(
         font: Font = systemDefaultFont,
