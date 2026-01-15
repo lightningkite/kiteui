@@ -15,10 +15,10 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         native.setOnClickListener { view ->
             var willRemove: RView? = null
             popoverWriter(this.overlayFrame!!) {
-                willRemove?.let {
-                    overlayFrame!!.removeChild(it)
-                    willRemove = null
-                }
+                val r = willRemove
+                willRemove = null
+                r?.let { overlayFrame!!.removeChild(it) }
+
             }.run {
                 willRemove = dismissBackground {
                     themeChoice += ThemeDerivation {
