@@ -125,18 +125,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     private class DragShadowBuilder(val shadow: DragShadow) : View.DragShadowBuilder(shadow.view.native) {
         override fun onProvideShadowMetrics(outShadowSize: Point?, outShadowTouchPoint: Point?) {
             val view = shadow.view.native
-            outShadowSize?.set(view.width, view.height)
+            // Android cant have touch point below zero clamp to 0 or larger
+            outShadowSize?.set(view.width.coerceAtLeast(0), view.height.coerceAtLeast(0))
             outShadowTouchPoint?.set(
-                when (shadow.xAlign) {
+                (when (shadow.xAlign) {
                     Align.Start -> 0
                     Align.Center, Align.Stretch -> view.width / 2
                     Align.End -> view.width
-                } + (shadow.xOffset?.px?.roundToInt() ?: 0),
-                when (shadow.yAlign) {
+                } + (shadow.xOffset?.px?.roundToInt() ?: 0)).coerceAtLeast(0),
+                (when (shadow.yAlign) {
                     Align.Start -> 0
                     Align.Center, Align.Stretch -> view.height / 2
                     Align.End -> view.height
-                } + (view.height / 2) + (shadow.yOffset?.px?.roundToInt() ?: 0)
+                } + (shadow.yOffset?.px?.roundToInt() ?: 0)).coerceAtLeast(0)
             )
         }
     }
@@ -298,7 +299,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     private var animatorRotation: ValueAnimator? = null
     private var animatorScaleX: ValueAnimator? = null
     private var animatorScaleY: ValueAnimator? = null
-    
+
     actual override fun applyTheme(theme: ThemeAndBack) {
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
@@ -386,6 +387,21 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         // If we applied defaults, update layout params (align() modifier wasn't called)
         if (needsLayoutParamUpdate) {
             val params = view.lparams
+
+            if (newChildHorizontalAlign != null) {
+                params.width = when (newChildHorizontalAlign) {
+                    Align.Stretch -> LayoutParams.MATCH_PARENT
+                    else -> LayoutParams.WRAP_CONTENT
+                }
+            }
+            if (newChildVerticalAlign != null) {
+                params.height = when (newChildVerticalAlign) {
+                    Align.Stretch -> LayoutParams.MATCH_PARENT
+                    else -> LayoutParams.WRAP_CONTENT
+                }
+            }
+
+
             val horizontalGravity = when (view.lastSetHorizontalAlign) {
                 Align.Start -> android.view.Gravity.START
                 Align.Center -> android.view.Gravity.CENTER_HORIZONTAL
@@ -447,7 +463,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             oldRippleDrawable.setColor(rippleColor)
             // Use reflection to set the drawable to avoid API level issues
             try {
-                val method = RippleDrawable::class.java.getMethod("setDrawable", Int::class.javaPrimitiveType, Drawable::class.java)
+                val method = RippleDrawable::class.java.getMethod(
+                    "setDrawable",
+                    Int::class.javaPrimitiveType,
+                    Drawable::class.java
+                )
                 method.invoke(oldRippleDrawable, 0, backgroundDrawable)
             } catch (e: Exception) {
                 // Fallback to creating a new RippleDrawable
@@ -488,7 +508,7 @@ inline fun View.withoutAnimation(action: () -> Unit) {
 }
 
 
-inline fun View.debugPrint(get: ()->String) {
-    if(debugMode && viewDebugTarget?.native == this)
+inline fun View.debugPrint(get: () -> String) {
+    if (debugMode && viewDebugTarget?.native == this)
         Log.tag("viewDebugTarget").info(get())
 }
