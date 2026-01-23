@@ -4,7 +4,9 @@ import android.graphics.*
 import android.graphics.drawable.Drawable
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Shadow
+import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 /**
  * A custom Drawable that renders multiple shadows for neumorphism effects.
@@ -13,8 +15,9 @@ import kotlin.math.max
  * this drawable can render multiple shadows with different colors, offsets, and blur radii.
  * This is essential for neumorphism which requires both a light highlight shadow and a dark shadow.
  *
- * Note: This drawable requires software rendering (LAYER_TYPE_SOFTWARE) for blur effects
- * on Android versions before API 28. Hardware acceleration doesn't support BlurMaskFilter.
+ * This implementation pre-renders outer shadows to a cached bitmap, which allows shadows
+ * to extend beyond the view's bounds without requiring a software layer on the view itself.
+ * This avoids the clipping issues that occur with LAYER_TYPE_SOFTWARE.
  *
  * @property shadows The list of shadows to render.
  * @property cornerRadius The corner radius for rounded corners (same for all corners).
@@ -32,25 +35,30 @@ class NeumorphicDrawable(
         color = backgroundColor
     }
 
-    private val shadowPaints = mutableListOf<Paint>()
-    private val shadowRects = mutableListOf<RectF>()
     private val backgroundRect = RectF()
     private val backgroundPath = Path()
 
+    // Cached shadow bitmap for outer shadows
+    private var shadowBitmap: Bitmap? = null
+    private var shadowBitmapPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+    private var shadowExtent = 0f
+    private var lastBoundsWidth = 0
+    private var lastBoundsHeight = 0
+
+    // For inset shadows (drawn directly, not cached)
+    private val insetShadowPaints = mutableListOf<Paint>()
+
     init {
-        updateShadowPaints()
+        updateInsetShadowPaints()
     }
 
-    private fun updateShadowPaints() {
-        shadowPaints.clear()
-        shadowRects.clear()
-
+    private fun updateInsetShadowPaints() {
+        insetShadowPaints.clear()
         for (shadow in shadows) {
+            if (!shadow.inset) continue
             val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 style = Paint.Style.FILL
                 color = shadow.color.toInt()
-
-                // Apply blur if specified
                 if (shadow.blurRadius.value > 0) {
                     maskFilter = BlurMaskFilter(
                         shadow.blurRadius.value.coerceAtLeast(1f),
@@ -58,25 +66,117 @@ class NeumorphicDrawable(
                     )
                 }
             }
-            shadowPaints.add(paint)
-            shadowRects.add(RectF())
+            insetShadowPaints.add(paint)
         }
+    }
+
+    private fun calculateShadowExtent(): Float {
+        var maxExtent = 0f
+        for (shadow in shadows) {
+            if (shadow.inset) continue
+            val extent = shadow.blurRadius.value + shadow.spreadRadius.value +
+                    max(abs(shadow.offsetX.value), abs(shadow.offsetY.value))
+            maxExtent = max(maxExtent, extent)
+        }
+        return maxExtent
+    }
+
+    private fun createShadowBitmap(width: Int, height: Int) {
+        shadowExtent = calculateShadowExtent()
+        if (shadowExtent <= 0f || width <= 0 || height <= 0) {
+            shadowBitmap?.recycle()
+            shadowBitmap = null
+            return
+        }
+
+        val bitmapWidth = (width + shadowExtent * 2).roundToInt()
+        val bitmapHeight = (height + shadowExtent * 2).roundToInt()
+
+        if (bitmapWidth <= 0 || bitmapHeight <= 0) {
+            shadowBitmap?.recycle()
+            shadowBitmap = null
+            return
+        }
+
+        // Recycle old bitmap if size changed
+        shadowBitmap?.let {
+            if (it.width != bitmapWidth || it.height != bitmapHeight) {
+                it.recycle()
+                shadowBitmap = null
+            }
+        }
+
+        // Create new bitmap if needed
+        if (shadowBitmap == null) {
+            shadowBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
+        }
+
+        val bitmap = shadowBitmap ?: return
+        bitmap.eraseColor(android.graphics.Color.TRANSPARENT)
+
+        val canvas = Canvas(bitmap)
+
+        // The shape rect in bitmap coordinates (offset by shadowExtent)
+        val shapeRect = RectF(shadowExtent, shadowExtent, shadowExtent + width, shadowExtent + height)
+
+        // Draw each outer shadow
+        for (shadow in shadows) {
+            if (shadow.inset) continue
+
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.FILL
+                color = shadow.color.toInt()
+                if (shadow.blurRadius.value > 0) {
+                    maskFilter = BlurMaskFilter(
+                        shadow.blurRadius.value.coerceAtLeast(1f),
+                        BlurMaskFilter.Blur.NORMAL
+                    )
+                }
+            }
+
+            val shadowRect = RectF(shapeRect)
+            shadowRect.offset(shadow.offsetX.value, shadow.offsetY.value)
+            val spread = shadow.spreadRadius.value
+            shadowRect.inset(-spread, -spread)
+
+            val radii = cornerRadii
+            if (radii != null) {
+                val path = Path().apply {
+                    addRoundRect(shadowRect, radii, Path.Direction.CW)
+                }
+                canvas.drawPath(path, paint)
+            } else {
+                canvas.drawRoundRect(shadowRect, cornerRadius, cornerRadius, paint)
+            }
+        }
+
+        lastBoundsWidth = width
+        lastBoundsHeight = height
     }
 
     fun setShadows(shadows: List<Shadow>) {
         this.shadows = shadows
-        updateShadowPaints()
+        updateInsetShadowPaints()
+        // Invalidate shadow bitmap
+        shadowBitmap?.recycle()
+        shadowBitmap = null
         invalidateSelf()
     }
 
     fun setCornerRadius(radius: Float) {
         this.cornerRadius = radius
         this.cornerRadii = null
+        // Invalidate shadow bitmap
+        shadowBitmap?.recycle()
+        shadowBitmap = null
         invalidateSelf()
     }
 
     fun setCornerRadii(radii: FloatArray) {
         this.cornerRadii = radii
+        // Invalidate shadow bitmap
+        shadowBitmap?.recycle()
+        shadowBitmap = null
         invalidateSelf()
     }
 
@@ -89,44 +189,7 @@ class NeumorphicDrawable(
     override fun onBoundsChange(bounds: Rect) {
         super.onBoundsChange(bounds)
 
-        // Calculate the maximum shadow extent to ensure proper bounds
-        var maxShadowExtent = 0f
-        for (shadow in shadows) {
-            val extent = max(
-                shadow.blurRadius.value + shadow.spreadRadius.value,
-                max(
-                    kotlin.math.abs(shadow.offsetX.value),
-                    kotlin.math.abs(shadow.offsetY.value)
-                )
-            )
-            maxShadowExtent = max(maxShadowExtent, extent)
-        }
-
-        // Set up background rect (inset by shadow extent for non-inset shadows)
         backgroundRect.set(bounds)
-
-        // Update shadow rects
-        for ((index, shadow) in shadows.withIndex()) {
-            val rect = shadowRects.getOrNull(index) ?: continue
-            rect.set(backgroundRect)
-
-            if (!shadow.inset) {
-                // Outset shadows are drawn at the offset position
-                rect.offset(
-                    shadow.offsetX.value,
-                    shadow.offsetY.value
-                )
-                // Apply spread
-                val spread = shadow.spreadRadius.value
-                rect.inset(-spread, -spread)
-            } else {
-                // Inset shadows need different handling
-                rect.offset(
-                    shadow.offsetX.value,
-                    shadow.offsetY.value
-                )
-            }
-        }
 
         // Update background path
         backgroundPath.reset()
@@ -136,38 +199,37 @@ class NeumorphicDrawable(
         } else {
             backgroundPath.addRoundRect(backgroundRect, cornerRadius, cornerRadius, Path.Direction.CW)
         }
+
+        // Recreate shadow bitmap if bounds changed
+        if (bounds.width() != lastBoundsWidth || bounds.height() != lastBoundsHeight) {
+            createShadowBitmap(bounds.width(), bounds.height())
+        }
     }
 
     override fun draw(canvas: Canvas) {
         val bounds = bounds
         if (bounds.isEmpty) return
 
-        // Draw non-inset (outer) shadows first, behind the background
-        for ((index, shadow) in shadows.withIndex()) {
-            if (shadow.inset) continue
-
-            val paint = shadowPaints.getOrNull(index) ?: continue
-            val rect = shadowRects.getOrNull(index) ?: continue
-
-            val radii = cornerRadii
-            if (radii != null) {
-                val path = Path().apply {
-                    addRoundRect(rect, radii, Path.Direction.CW)
-                }
-                canvas.drawPath(path, paint)
-            } else {
-                canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
-            }
+        // Draw cached outer shadow bitmap
+        shadowBitmap?.let { bitmap ->
+            // Draw the shadow bitmap offset by -shadowExtent so it's centered on the view
+            canvas.drawBitmap(
+                bitmap,
+                bounds.left - shadowExtent,
+                bounds.top - shadowExtent,
+                shadowBitmapPaint
+            )
         }
 
         // Draw the background
         canvas.drawPath(backgroundPath, backgroundPaint)
 
         // Draw inset shadows on top of the background
-        for ((index, shadow) in shadows.withIndex()) {
+        var insetPaintIndex = 0
+        for (shadow in shadows) {
             if (!shadow.inset) continue
 
-            val paint = shadowPaints.getOrNull(index) ?: continue
+            val paint = insetShadowPaints.getOrNull(insetPaintIndex++) ?: continue
 
             // For inset shadows, we need to draw inside the background
             // Use clip to restrict drawing to the background area
@@ -215,7 +277,8 @@ class NeumorphicDrawable(
 
     override fun setAlpha(alpha: Int) {
         backgroundPaint.alpha = alpha
-        for (paint in shadowPaints) {
+        shadowBitmapPaint.alpha = alpha
+        for (paint in insetShadowPaints) {
             paint.alpha = alpha
         }
         invalidateSelf()
@@ -223,7 +286,8 @@ class NeumorphicDrawable(
 
     override fun setColorFilter(colorFilter: ColorFilter?) {
         backgroundPaint.colorFilter = colorFilter
-        for (paint in shadowPaints) {
+        shadowBitmapPaint.colorFilter = colorFilter
+        for (paint in insetShadowPaints) {
             paint.colorFilter = colorFilter
         }
         invalidateSelf()
@@ -233,9 +297,11 @@ class NeumorphicDrawable(
     override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
 
     /**
-     * Returns true if this drawable needs software rendering for proper blur effects.
+     * Returns true if this drawable has inset shadows that need software rendering.
+     * Outer shadows are pre-rendered to a bitmap, so they don't need a software layer.
      */
     fun needsSoftwareLayer(): Boolean {
-        return shadows.any { it.blurRadius.value > 0 }
+        // Only inset shadows need software layer now, since outer shadows are pre-rendered
+        return shadows.any { it.inset && it.blurRadius.value > 0 }
     }
 }

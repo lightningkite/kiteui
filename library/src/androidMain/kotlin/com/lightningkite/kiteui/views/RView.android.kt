@@ -312,6 +312,12 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             // Use neumorphic/multi-shadow rendering
             native.elevation = 0f // Disable native elevation
 
+            // Ensure parent doesn't clip children so shadows can draw outside view bounds
+            (native.parent as? ViewGroup)?.let { parentViewGroup ->
+                parentViewGroup.clipChildren = false
+                parentViewGroup.clipToPadding = false
+            }
+
             val neumorphicBg = background as? NeumorphicDrawable
             if (neumorphicBg != null) {
                 // Update existing neumorphic drawable
@@ -464,6 +470,12 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 params.gravity = horizontalGravity or verticalGravity
             else if (params is androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams)
                 params.gravity = horizontalGravity or verticalGravity
+        }
+
+        // If child has neumorphic shadows, disable clipping so shadows can draw outside child bounds
+        if (view.background is NeumorphicDrawable) {
+            (native as ViewGroup).clipChildren = false
+            (native as ViewGroup).clipToPadding = false
         }
 
         (native as ViewGroup).addView(view.native, index)
