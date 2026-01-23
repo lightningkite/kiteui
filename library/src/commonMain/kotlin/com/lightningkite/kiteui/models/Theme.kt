@@ -9,6 +9,12 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
+ * Sentinel value used in Theme.copy() to indicate shadows should not be changed.
+ * This allows distinguishing between "keep current shadows" and "set shadows to null".
+ */
+internal val SHADOWS_UNCHANGED: List<Shadow>? = emptyList()
+
+/**
  * Represents a [Theme] along with rendering instructions for background and padding.
  *
  * This class combines a theme with flags that control whether the background should be drawn
@@ -196,6 +202,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
      * @param cascading Whether theme changes cascade to nested elements.
      * @param font The font styling to apply.
      * @param elevation The elevation/shadow depth.
+     * @param shadows Custom shadows (overrides elevation when set). Use for neumorphism or multi-shadow effects.
      * @param cornerRadii The corner radius configuration.
      * @param gap The spacing between elements.
      * @param padding The padding around content.
@@ -217,6 +224,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         cascading: Boolean = true,
         font: FontAndStyle? = null,
         elevation: Dimension? = null,
+        shadows: List<Shadow>? = SHADOWS_UNCHANGED,
         cornerRadii: CornerRadii? = null,
         gap: Dimension? = null,
         padding: Edges? = null,
@@ -237,6 +245,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         cascading = cascading,
         font = font,
         elevation = elevation,
+        shadows = shadows,
         cornerRadii = cornerRadii,
         gap = gap,
         padding = padding,
@@ -260,6 +269,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
      * @param cascading Whether theme changes cascade to nested elements.
      * @param font The font styling to apply.
      * @param elevation The elevation/shadow depth.
+     * @param shadows Custom shadows (overrides elevation when set). Use for neumorphism or multi-shadow effects.
      * @param cornerRadii The corner radius configuration.
      * @param gap The spacing between elements.
      * @param padding The padding around content.
@@ -281,6 +291,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         cascading: Boolean = true,
         font: FontAndStyle? = null,
         elevation: Dimension? = null,
+        shadows: List<Shadow>? = SHADOWS_UNCHANGED,
         cornerRadii: CornerRadii? = null,
         gap: Dimension? = null,
         padding: Edges? = null,
@@ -301,6 +312,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         cascading = cascading,
         font = font,
         elevation = elevation,
+        shadows = shadows,
         cornerRadii = cornerRadii,
         gap = gap,
         padding = padding,
@@ -327,6 +339,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
      * @param cascading Whether theme changes cascade to nested elements.
      * @param font The font styling to apply.
      * @param elevation The elevation/shadow depth.
+     * @param shadows Custom shadows (overrides elevation when set). Use for neumorphism or multi-shadow effects.
      * @param cornerRadii The corner radius configuration.
      * @param gap The spacing between elements.
      * @param padding The padding around content.
@@ -348,6 +361,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         cascading: Boolean = true,
         font: FontAndStyle? = null,
         elevation: Dimension? = null,
+        shadows: List<Shadow>? = SHADOWS_UNCHANGED,
         cornerRadii: CornerRadii? = null,
         gap: Dimension? = null,
         padding: Edges? = null,
@@ -368,6 +382,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         cascading = cascading,
         font = font,
         elevation = elevation,
+        shadows = shadows,
         cornerRadii = cornerRadii,
         gap = gap,
         padding = padding,
@@ -1168,6 +1183,8 @@ sealed interface ShaderEffect {
  * @property id Unique identifier for this theme.
  * @property font The default font and styling for text.
  * @property elevation The shadow/elevation depth for elements.
+ * @property shadows Custom shadows that override elevation-based shadows. When non-null, these shadows
+ *                   are used instead of the elevation. Enables neumorphism and multi-shadow effects.
  * @property cornerRadii The corner radius configuration for rounded corners.
  * @property gap The default spacing between elements.
  * @property padding The default padding around content.
@@ -1193,6 +1210,7 @@ class Theme(
     val font: FontAndStyle = FontAndStyle(systemDefaultFont),
 
     val elevation: Dimension = 1.px,
+    val shadows: List<Shadow>? = null,
     val cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
 
     val gap: Dimension = 1.rem,
@@ -1293,6 +1311,7 @@ class Theme(
      * @param newId The unique identifier for the new theme.
      * @param font The font styling.
      * @param elevation The elevation depth.
+     * @param shadows Custom shadows (overrides elevation when set). Use for neumorphism or multi-shadow effects.
      * @param cornerRadii The corner radius configuration.
      * @param gap The element spacing.
      * @param padding The content padding.
@@ -1314,6 +1333,7 @@ class Theme(
         newId: String,
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
+        shadows: List<Shadow>? = this.shadows,
         cornerRadii: CornerRadii = this.cornerRadii,
         gap: Dimension = this.gap,
         padding: Edges = this.padding,
@@ -1333,6 +1353,7 @@ class Theme(
         id = newId,
         font = font,
         elevation = elevation,
+        shadows = shadows,
         cornerRadii = cornerRadii,
         gap = gap,
         padding = padding,
@@ -1367,6 +1388,7 @@ class Theme(
      * @param cascading Whether changes cascade to nested elements.
      * @param font The font styling override.
      * @param elevation The elevation override.
+     * @param shadows Custom shadows override (SHADOWS_UNCHANGED = keep current, null = clear shadows).
      * @param cornerRadii The corner radius override.
      * @param gap The spacing override.
      * @param padding The padding override.
@@ -1389,6 +1411,7 @@ class Theme(
         cascading: Boolean = true,
         font: FontAndStyle? = null,
         elevation: Dimension? = null,
+        shadows: List<Shadow>? = SHADOWS_UNCHANGED,
         cornerRadii: CornerRadii? = null,
         gap: Dimension? = null,
         padding: Edges? = null,
@@ -1410,6 +1433,7 @@ class Theme(
         derivationId = derivationId,
         font = font ?: this.font,
         elevation = elevation ?: this.elevation,
+        shadows = if (shadows === SHADOWS_UNCHANGED) this.shadows else shadows,
         cornerRadii = cornerRadii ?: this.cornerRadii,
         gap = gap ?: this.gap,
         padding = padding ?: this.padding,
@@ -1430,6 +1454,7 @@ class Theme(
             cascading = cascading,
             font = font,
             elevation = elevation,
+            shadows = shadows,
             cornerRadii = cornerRadii,
             gap = gap,
             padding = padding,

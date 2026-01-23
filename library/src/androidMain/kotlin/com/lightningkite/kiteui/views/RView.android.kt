@@ -254,8 +254,13 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val topRight = if (asPerCorner?.topRight != false) cr else 0f
         val bottomRight = if (asPerCorner?.bottomRight != false) cr else 0f
         val bottomLeft = if (asPerCorner?.bottomLeft != false) cr else 0f
-        backgroundBlock?.cornerRadii =
-            floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
+
+        val radii = floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
+
+        backgroundBlock?.cornerRadii = radii
+
+        // Also update NeumorphicDrawable if present
+        (background as? NeumorphicDrawable)?.setCornerRadii(radii)
     }
 
     override fun refreshPadding() {
@@ -301,22 +306,60 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     private var animatorScaleY: ValueAnimator? = null
 
     actual override fun applyTheme(theme: ThemeAndBack) {
-        if (theme.drawBackground) {
-            native.elevation = theme.theme.elevation.value
-        } else {
-            native.elevation = 0f
-        }
-        if (theme.drawBackground) {
-            val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable).also {
-                removeListener?.invoke()
-                removeListener = it.applyGradientRadiusListener(native)
+        val shadows = theme.theme.shadows
+
+        if (theme.drawBackground && shadows != null && shadows.isNotEmpty()) {
+            // Use neumorphic/multi-shadow rendering
+            native.elevation = 0f // Disable native elevation
+
+            val neumorphicBg = background as? NeumorphicDrawable
+            if (neumorphicBg != null) {
+                // Update existing neumorphic drawable
+                neumorphicBg.setShadows(shadows)
+                neumorphicBg.setBackgroundColor(theme.theme.background.colorInt())
+                updateCorners()
+            } else {
+                // Create new neumorphic drawable
+                val newBg = NeumorphicDrawable(
+                    shadows = shadows,
+                    cornerRadius = 0f, // Will be set by updateCorners()
+                    backgroundColor = theme.theme.background.colorInt()
+                )
+                backgroundBlock = null
+                background = newBg
+                updateCorners()
+
+                // Enable software layer if needed for blur effects
+                if (newBg.needsSoftwareLayer()) {
+                    native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+                }
             }
-            backgroundBlock = backgroundDrawable
-            updateCorners()
-            background = backgroundDrawable
         } else {
-            backgroundBlock = null
-            background = null
+            // Standard elevation-based shadow rendering
+            if (theme.drawBackground) {
+                native.elevation = theme.theme.elevation.value
+            } else {
+                native.elevation = 0f
+            }
+
+            // Reset layer type if we were using software rendering
+            if (background is NeumorphicDrawable) {
+                native.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
+            }
+
+            if (theme.drawBackground) {
+                val backgroundDrawable =
+                    theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable).also {
+                        removeListener?.invoke()
+                        removeListener = it.applyGradientRadiusListener(native)
+                    }
+                backgroundBlock = backgroundDrawable
+                updateCorners()
+                background = backgroundDrawable
+            } else {
+                backgroundBlock = null
+                background = null
+            }
         }
         updateTransform(theme.theme)
     }
@@ -480,13 +523,48 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected fun applyThemeWithRipple(theme: ThemeAndBack) {
-        if (theme.drawBackground) {
-            native.elevation = theme.theme.elevation.value
-        } else {
+        val shadows = theme.theme.shadows
+
+        if (theme.drawBackground && shadows != null && shadows.isNotEmpty()) {
+            // Use neumorphic/multi-shadow rendering (ripple not used with neumorphism)
+            // For neumorphism, the pressed state is indicated by concave shadows, not ripple
             native.elevation = 0f
+
+            val neumorphicBg = background as? NeumorphicDrawable
+            if (neumorphicBg != null) {
+                neumorphicBg.setShadows(shadows)
+                neumorphicBg.setBackgroundColor(theme.theme.background.colorInt())
+                updateCorners()
+            } else {
+                val newBg = NeumorphicDrawable(
+                    shadows = shadows,
+                    cornerRadius = 0f,
+                    backgroundColor = theme.theme.background.colorInt()
+                )
+                backgroundBlock = null
+                background = newBg
+                updateCorners()
+
+                if (newBg.needsSoftwareLayer()) {
+                    native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+                }
+            }
+        } else {
+            // Standard elevation-based shadow rendering with ripple
+            if (theme.drawBackground) {
+                native.elevation = theme.theme.elevation.value
+            } else {
+                native.elevation = 0f
+            }
+
+            // Reset layer type if we were using software rendering
+            if (background is NeumorphicDrawable) {
+                native.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
+            }
+
+            background = getBackgroundWithRipple(theme.theme, theme.drawBackground, background as? RippleDrawable)
+            updateCorners()
         }
-        background = getBackgroundWithRipple(theme.theme, theme.drawBackground, background as? RippleDrawable)
-        updateCorners()
         updateTransform(theme.theme)
     }
 }

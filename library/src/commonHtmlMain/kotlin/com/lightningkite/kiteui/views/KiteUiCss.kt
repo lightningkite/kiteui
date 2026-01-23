@@ -766,6 +766,14 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         return "$offsetX $offsetY $blur $spread #00000099"
     }
 
+    private fun List<Shadow>.toBoxShadow(): String {
+        if (isEmpty()) return "none"
+        return joinToString(", ") { shadow ->
+            val inset = if (shadow.inset) "inset " else ""
+            "$inset${shadow.offsetX.value} ${shadow.offsetY.value} ${shadow.blurRadius.value} ${shadow.spreadRadius.value} ${shadow.color.toWeb()}"
+        }
+    }
+
     private fun Duration.toCss() = this.toDouble(DurationUnit.SECONDS).toString() + "s"
 
     private fun BackdropFilter.toCss(): String = when (this) {
@@ -957,8 +965,19 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             addToCss(backSel, "outline-offset", it.times(-1).coerceAtLeast(theme.padding.top.times(-1)).value.toString())
 //            addToCss(backSel, "outline-offset", it.times(-1).value.toString())
         }
-        theme.diff(diff) { elevation }?.let {
-            addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
+        // Handle shadows - use explicit shadows if set, otherwise fall back to elevation
+        theme.diff(diff) { shadows }?.let { shadows ->
+            if (shadows != null && shadows.isNotEmpty()) {
+                addToCss(backSel, "box-shadow", shadows.toBoxShadow())
+            } else {
+                // shadows explicitly set to null or empty - check elevation
+                addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
+            }
+        } ?: theme.diff(diff) { elevation }?.let {
+            // shadows unchanged, but elevation changed
+            if (theme.shadows == null || theme.shadows!!.isEmpty()) {
+                addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
+            }
         }
 
         theme.diff(diff) { gap }?.let { addToCss(directSel, "--spacing", it.value.toString()) }

@@ -154,6 +154,20 @@ object ThemesPage : Page {
                             }
                         }
                     }
+                    ListSemantic.onNext.row {
+                        expanding.button {
+                            text("Neumorphism Light")
+                            onClick {
+                                appTheme set NeumorphismTheme.light()
+                            }
+                        }
+                        expanding.button {
+                            text("Neumorphism Dark")
+                            onClick {
+                                appTheme set NeumorphismTheme.dark()
+                            }
+                        }
+                    }
                     button {
                         text("Clean (iOS like)")
                         onClick {

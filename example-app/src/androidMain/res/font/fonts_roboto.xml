@@ -18,10 +18,10 @@
     android:font="@font/fonts_roboto_400_italic" />
 <font
     android:fontStyle="italic"
-    android:fontWeight="300"
-    android:font="@font/fonts_roboto_300_italic" />
-<font
-    android:fontStyle="italic"
     android:fontWeight="700"
     android:font="@font/fonts_roboto_700_italic" />
+    <font
+            android:fontStyle="italic"
+            android:fontWeight="300"
+            android:font="@font/fonts_roboto_300_italic"/>
     </font-family>
