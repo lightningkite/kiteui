@@ -186,7 +186,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 appendLine(".apply {")
                                 tab {
                                     for (qp in routable.queryParams) {
-                                        appendLine("UrlProperties.decodeFromStringMap(\"${qp.value}\", it.parameters, this.${qp.key})")
+                                        appendLine("UriFormat.decodeFromStringMap(\"${qp.value}\", it.parameters, this.${qp.key})")
                                     }
                                 }
                                 appendLine("}")

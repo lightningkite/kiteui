@@ -14,6 +14,7 @@ import com.lightningkite.readable.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.EmptySerializersModule
@@ -29,6 +30,7 @@ var DefaultSerializersModule: SerializersModule = EmptySerializersModule()
             ignoreUnknownKeys = true
         }
         UrlPropertiesCurrent = Properties(DefaultSerializersModule)
+        DefaultUriFormatCurrent = UriFormat(DefaultSerializersModule)
     }
 private var DefaultJsonCurrent: Json = Json {
     serializersModule = DefaultSerializersModule
@@ -37,6 +39,9 @@ private var DefaultJsonCurrent: Json = Json {
 val DefaultJson: Json get() = DefaultJsonCurrent
 private var UrlPropertiesCurrent: Properties = Properties(DefaultSerializersModule)
 val UrlProperties: Properties get() = UrlPropertiesCurrent
+
+private var DefaultUriFormatCurrent: UriFormat = UriFormat(DefaultSerializersModule)
+val DefaultUriFormat: UriFormat get() = DefaultUriFormatCurrent
 
 fun <T> Properties.encodeToStringMap(
     serializer: KSerializer<T>,
