@@ -83,7 +83,7 @@ data class KitchenSink(
     val clazz: NestedClass = NestedClass(SimpleClass("outermost", 1000), 1000)
 )
 
-class UriFormatTest {
+class UriFormatTests {
 
     private val format = UriFormat(EmptySerializersModule())
 
