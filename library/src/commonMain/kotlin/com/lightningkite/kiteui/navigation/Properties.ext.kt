@@ -5,43 +5,16 @@ package com.lightningkite.kiteui.navigation
 import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+import com.lightningkite.reactive.core.MutableValue
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.StructureKind
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.EmptySerializersModule
-import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.properties.Properties
 import kotlinx.serialization.serializer
 
-var DefaultSerializersModule: SerializersModule = EmptySerializersModule()
-    set(value) {
-        field = value
-        DefaultJsonCurrent = Json {
-            serializersModule = DefaultSerializersModule
-            ignoreUnknownKeys = true
-        }
-        UrlPropertiesCurrent = Properties(DefaultSerializersModule)
-        DefaultUriFormatCurrent = UriFormat(DefaultSerializersModule)
-    }
-private var DefaultJsonCurrent: Json = Json {
-    serializersModule = DefaultSerializersModule
-    ignoreUnknownKeys = true
-}
-val DefaultJson: Json get() = DefaultJsonCurrent
-private var UrlPropertiesCurrent: Properties = Properties(DefaultSerializersModule)
-val UrlProperties: Properties get() = UrlPropertiesCurrent
-
-private var DefaultUriFormatCurrent: UriFormat = UriFormat(DefaultSerializersModule)
-val DefaultUriFormat: UriFormat get() = DefaultUriFormatCurrent
+@Serializable
+private data class Wrapper<T>(val value: T)
 
 fun <T> Properties.encodeToStringMap(
     serializer: KSerializer<T>,
