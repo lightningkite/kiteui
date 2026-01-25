@@ -11,6 +11,12 @@ import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlin.jvm.JvmInline
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -61,6 +67,53 @@ value class UserName(val name: String)
 
 @Serializable
 data class ClassWithValueClass(val userId: UserId, val userName: UserName)
+
+// Contextual serialization test classes
+@Serializable
+data class CustomId(val prefix: String, val number: Int)
+
+object CustomIdSerializer : KSerializer<CustomId> {
+    override val descriptor: SerialDescriptor = kotlinx.serialization.descriptors.PrimitiveSerialDescriptor("CustomId", kotlinx.serialization.descriptors.PrimitiveKind.STRING)
+    override fun serialize(encoder: kotlinx.serialization.encoding.Encoder, value: CustomId) {
+        encoder.encodeString("${value.prefix}-${value.number}")
+    }
+    override fun deserialize(decoder: kotlinx.serialization.encoding.Decoder): CustomId {
+        val str = decoder.decodeString()
+        val parts = str.split("-")
+        return CustomId(parts[0], parts[1].toInt())
+    }
+}
+
+@Serializable
+data class ClassWithContextualField(
+    val name: String,
+    @Contextual val customId: CustomId
+)
+
+@Serializable
+data class ClassWithMultipleContextualFields(
+    @Contextual val id1: CustomId,
+    @Contextual val id2: CustomId,
+    val label: String
+)
+
+@Serializable
+data class NestedContextualClass(
+    val inner: ClassWithContextualField,
+    val value: Int
+)
+
+@Serializable
+data class ClassWithOptionalContextual(
+    val name: String,
+    @Contextual val optionalId: CustomId? = null
+)
+
+@Serializable
+data class ClassWithContextualList(
+    val name: String,
+    val ids: List<@Contextual CustomId>
+)
 
 @Serializable
 data class KitchenSink(
@@ -343,12 +396,14 @@ class UriFormatTests {
         format.encodeToStringMap(Int.serializer(), "int", 42, map)
         format.encodeToStringMap(NestedClass.serializer(), "structure", NestedClass(), map)
         format.encodeToStringMap(ListSerializer(Int.serializer()), "list", listOf(1, 2, 3, 4), map)
+        format.encodeToStringMap(MapSerializer(Int.serializer(), String.serializer()), "map", mapOf(1 to "1", 2 to "2", 3 to "3", 4 to "4"), map)
 
         println("Encoded -> ${format.encodeToString(map)}")
 
         assertEquals(42, format.decodeFromStringMap(Int.serializer(), "int", map))
         assertEquals(NestedClass(), format.decodeFromStringMap(NestedClass.serializer(), "structure", map))
         assertEquals(listOf(1, 2, 3, 4), format.decodeFromStringMap(ListSerializer(Int.serializer()), "list", map))
+        assertEquals(mapOf(1 to "1", 2 to "2", 3 to "3", 4 to "4"), format.decodeFromStringMap(MapSerializer(Int.serializer(), String.serializer()), "map", map))
     }
 
     // === Edge Cases ===
@@ -417,5 +472,126 @@ class UriFormatTests {
     @Test
     fun theKitchenSink() {
         roundTrip(KitchenSink.serializer(), KitchenSink())
+    }
+
+    // === Contextual Serialization Tests ===
+
+    private val contextualModule = SerializersModule {
+        contextual(CustomIdSerializer)
+    }
+
+    private val contextualFormat = UriFormat(contextualModule)
+
+    private fun <T> contextualRoundTrip(serializer: KSerializer<T>, value: T) {
+        val encoded = contextualFormat.encodeToString(serializer, value)
+        println("Contextual encoded '$value' -> '$encoded'")
+        val decoded = contextualFormat.decodeFromString(serializer, encoded)
+        assertEquals(value, decoded, "Contextual round-trip failed for value: $value")
+    }
+
+    @Test
+    fun testContextualField() {
+        contextualRoundTrip(
+            ClassWithContextualField.serializer(),
+            ClassWithContextualField("test", CustomId("PREFIX", 123))
+        )
+    }
+
+    @Test
+    fun testContextualFieldWithSpecialChars() {
+        contextualRoundTrip(
+            ClassWithContextualField.serializer(),
+            ClassWithContextualField("name with spaces", CustomId("ABC", 999))
+        )
+    }
+
+    @Test
+    fun testMultipleContextualFields() {
+        contextualRoundTrip(
+            ClassWithMultipleContextualFields.serializer(),
+            ClassWithMultipleContextualFields(
+                CustomId("A", 1),
+                CustomId("B", 2),
+                "label"
+            )
+        )
+    }
+
+    @Test
+    fun testNestedContextual() {
+        contextualRoundTrip(
+            NestedContextualClass.serializer(),
+            NestedContextualClass(
+                ClassWithContextualField("inner", CustomId("NESTED", 42)),
+                100
+            )
+        )
+    }
+
+    @Test
+    fun testOptionalContextualPresent() {
+        contextualRoundTrip(
+            ClassWithOptionalContextual.serializer(),
+            ClassWithOptionalContextual("present", CustomId("OPT", 10))
+        )
+    }
+
+    @Test
+    fun testOptionalContextualAbsent() {
+        contextualRoundTrip(
+            ClassWithOptionalContextual.serializer(),
+            ClassWithOptionalContextual("absent", null)
+        )
+    }
+
+    @Test
+    fun testContextualInList() {
+        contextualRoundTrip(
+            ClassWithContextualList.serializer(),
+            ClassWithContextualList(
+                "list test",
+                listOf(CustomId("L", 1), CustomId("M", 2), CustomId("N", 3))
+            )
+        )
+    }
+
+    @Test
+    fun testContextualEmptyList() {
+        contextualRoundTrip(
+            ClassWithContextualList.serializer(),
+            ClassWithContextualList("empty", emptyList())
+        )
+    }
+
+    @Test
+    fun testContextualInHeterogeneousMap() {
+        val map = mutableMapOf<String, String>()
+
+        contextualFormat.encodeToStringMap(
+            ClassWithContextualField.serializer(),
+            "ctx",
+            ClassWithContextualField("test", CustomId("HET", 55)),
+            map
+        )
+
+        println("Heterogeneous contextual encoded -> ${contextualFormat.encodeToString(map)}")
+
+        val decoded = contextualFormat.decodeFromStringMap(
+            ClassWithContextualField.serializer(),
+            "ctx",
+            map
+        )
+        assertEquals(ClassWithContextualField("test", CustomId("HET", 55)), decoded)
+    }
+
+    @Test
+    fun testContextualDirectSerialization() {
+        // Test that contextual serializers work for top-level values
+        val serializer = kotlinx.serialization.serializer<@Contextual CustomId>()
+        val value = CustomId("DIRECT", 789)
+        val encoded = contextualFormat.encodeToString(serializer, value)
+        println("Direct contextual encoded '$value' -> '$encoded'")
+        val decoded = contextualFormat.decodeFromString(serializer, encoded)
+        assertEquals(value, decoded)
     }
 }
