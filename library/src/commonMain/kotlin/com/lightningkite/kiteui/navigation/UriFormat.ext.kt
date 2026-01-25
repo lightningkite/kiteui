@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.navigation
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.serializer
 

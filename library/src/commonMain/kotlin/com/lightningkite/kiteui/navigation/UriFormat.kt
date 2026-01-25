@@ -10,6 +10,7 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.AbstractEncoder
 import kotlinx.serialization.encoding.CompositeDecoder
@@ -37,18 +38,11 @@ class UriFormat(
         return d.decodeSerializableValue(deserializer)
     }
 
-    fun <T> encodeToStringMap(serializer: SerializationStrategy<T>, value: T, out: MutableMap<String, String>) {
+    fun <T> encodeToStringMap(serializer: SerializationStrategy<T>, value: T, into: MutableMap<String, String>) {
         require(serializer.descriptor.kind is StructureKind) {
             "Only structures can be encoded into a string map."
         }
-        val e = when (serializer.descriptor.kind) {
-            StructureKind.LIST -> ListEncoder("", out)
-            StructureKind.MAP -> {
-                ensureMapHasPrimitiveKeys(serializer.descriptor)
-                MapEncoder("", out)
-            }
-            else -> ClassEncoder(out)
-        }
+        val e = getProperStructureEncoder(serializer.descriptor, into, "")
         e.encodeSerializableValue(serializer, value)
     }
 
@@ -56,16 +50,51 @@ class UriFormat(
         require(deserializer.descriptor.kind is StructureKind) {
             "Only structures can be decoded from a string map."
         }
-        val e = when (deserializer.descriptor.kind) {
-            StructureKind.LIST -> ListDecoder(map)
-            StructureKind.MAP -> {
-                ensureMapHasPrimitiveKeys(deserializer.descriptor)
-                MapDecoder(map)
-            }
-            else -> ClassDecoder(map)
-        }
+        val e = getProperStructureDecoder(deserializer.descriptor, "", map)
         return e.decodeSerializableValue(deserializer)
     }
+
+
+
+    private interface StructureDecoder : Decoder, CompositeDecoder
+    private interface StructureEncoder : Encoder, CompositeEncoder
+
+    private fun ensureMapHasPrimitiveKeys(mapDescriptor: SerialDescriptor) =
+        require(mapDescriptor.getElementDescriptor(0).kind is PrimitiveKind) {
+            "UriFormat only supports maps with primitive-type keys."
+        }
+
+    private fun getProperStructureEncoder(
+        descriptor: SerialDescriptor,
+        into: MutableMap<String, String>,
+        prefix: String = "",
+    ): StructureEncoder =
+        when (descriptor.kind) {
+            StructureKind.CLASS -> ClassEncoder(prefix, into)
+            StructureKind.LIST -> ListEncoder(prefix, into)
+            StructureKind.MAP -> {
+                ensureMapHasPrimitiveKeys(descriptor)
+                MapEncoder(prefix, into)
+            }
+            StructureKind.OBJECT -> throw UnsupportedOperationException("UriFormat does not support objects yet")
+            else -> throw IllegalArgumentException("Only structure types can be encoded as a string map")
+        }
+
+    private fun getProperStructureDecoder(
+        descriptor: SerialDescriptor,
+        prefix: String,
+        source: Map<String, String>,
+    ): StructureDecoder =
+        when (descriptor.kind) {
+            StructureKind.CLASS -> ClassDecoder(prefix, source)
+            StructureKind.LIST -> ListDecoder(prefix, source)
+            StructureKind.MAP -> {
+                ensureMapHasPrimitiveKeys(descriptor)
+                MapDecoder(prefix, source)
+            }
+            StructureKind.OBJECT -> throw UnsupportedOperationException("UriFormat does not support objects yet")
+            else -> throw IllegalArgumentException("Only structure types can be encoded as a string map")
+        }
 
     // -- ENCODING --
 
@@ -115,14 +144,7 @@ class UriFormat(
         override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
             val map = mutableMapOf<String, String>()
             encodedStructure = map
-            return when (descriptor.kind) {
-                is StructureKind.LIST -> ListEncoder("", map)
-                is StructureKind.MAP -> {
-                    ensureMapHasPrimitiveKeys(descriptor)
-                    MapEncoder("", map)
-                }
-                else -> ClassEncoder(map)
-            }
+            return getProperStructureEncoder(descriptor, map, "")
         }
     }
 
@@ -130,9 +152,9 @@ class UriFormat(
     /** Mostly ripped from kotlinx.serialization's Properties.OutMapper encoder */
     @OptIn(InternalSerializationApi::class)
     private inner class ClassEncoder(
-        val out: MutableMap<String, String> = mutableMapOf(),
-    ) : NamedValueEncoder(), CompositeEncoder {
-        constructor(map: MutableMap<String, String>, prefix: String) : this(map) { pushTag(prefix) }
+        val map: MutableMap<String, String> = mutableMapOf(),
+    ) : NamedValueEncoder(), StructureEncoder {
+        constructor(prefix: String, map: MutableMap<String, String>) : this(map) { pushTag(prefix) }
 
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
@@ -150,30 +172,18 @@ class UriFormat(
         }
 
         override fun encodeTaggedValue(tag: String, value: Any) {
-            out[tag] = value.toString()
+            map[tag] = value.toString()
         }
 
-        override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
-            return when (descriptor.kind) {
-                is StructureKind.LIST -> {
-                    val tag = popTag()  // Pop the tag since endStructure will be called on ListEncoder, not this
-                    ListEncoder(tag, out)
-                }
-                is StructureKind.MAP -> {
-                    ensureMapHasPrimitiveKeys(descriptor)
-                    val tag = popTag()  // Pop the tag since endStructure will be called on MapEncoder, not this
-                    MapEncoder(tag, out)
-                }
-                else -> this
-            }
-        }
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder =
+            getProperStructureEncoder(descriptor, map, popTag())
 
         override fun encodeTaggedNull(tag: String) {
             // ignore nulls in output
         }
 
         override fun encodeTaggedEnum(tag: String, enumDescriptor: SerialDescriptor, ordinal: Int) {
-            out[tag] = enumDescriptor.getElementName(ordinal)
+            map[tag] = enumDescriptor.getElementName(ordinal)
         }
     }
 
@@ -181,7 +191,7 @@ class UriFormat(
     private inner class ListEncoder(
         val prefix: String,
         val map: MutableMap<String, String> = mutableMapOf()
-    ) : AbstractEncoder() {
+    ) : AbstractEncoder(), StructureEncoder {
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
         private var currentIndex = 0
@@ -196,17 +206,8 @@ class UriFormat(
             map[fullTag(currentIndex++)] = value.toString()
         }
 
-        override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
-            val newPrefix = fullTag(currentIndex++)
-            return when (descriptor.kind) {
-                is StructureKind.LIST -> ListEncoder(newPrefix, map)
-                is StructureKind.MAP -> {
-                    ensureMapHasPrimitiveKeys(descriptor)
-                    MapEncoder(newPrefix, map)
-                }
-                else -> ClassEncoder(map, newPrefix)
-            }
-        }
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder =
+            getProperStructureEncoder(descriptor, map, fullTag(currentIndex++))
 
         override fun endStructure(descriptor: SerialDescriptor) {
             // Only output marker for empty lists
@@ -221,7 +222,7 @@ class UriFormat(
     private inner class MapEncoder(
         val prefix: String,
         val map: MutableMap<String, String> = mutableMapOf()
-    ) : AbstractEncoder() {
+    ) : AbstractEncoder(), StructureEncoder {
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
         private var currentKey: String? = null
@@ -254,15 +255,7 @@ class UriFormat(
             val key = currentKey ?: throw SerializationException("Map value must have a key")
             currentKey = null
             entryCount++
-            val newPrefix = fullTag(key)
-            return when (descriptor.kind) {
-                is StructureKind.LIST -> ListEncoder(newPrefix, map)
-                is StructureKind.MAP -> {
-                    ensureMapHasPrimitiveKeys(descriptor)
-                    MapEncoder(newPrefix, map)
-                }
-                else -> ClassEncoder(map, newPrefix)
-            }
+            return getProperStructureEncoder(descriptor, map, fullTag(key))
         }
 
         override fun endStructure(descriptor: SerialDescriptor) {
@@ -318,13 +311,13 @@ class UriFormat(
     /** Decodes class structures from URI query parameter format (key=value&key2=value2) */
     @OptIn(InternalSerializationApi::class)
     private inner class ClassDecoder(
+        private val prefix: String = "",
         private val map: Map<String, String>,
-        private val prefix: String = ""
-    ) : NamedValueDecoder() {
+    ) : NamedValueDecoder(), StructureDecoder {
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
         constructor(uri: String) : this(
-            uri.split('&')
+            map = uri.split('&')
                 .filter { it.isNotEmpty() }
                 .associate {
                     val index = it.indexOf('=')
@@ -359,14 +352,7 @@ class UriFormat(
             // Use currentTag (the field name being decoded) as the new prefix for the nested structure.
             // If currentTag is null (edge case), fall back to current prefix.
             val newPrefix = currentTagOrNull?.let { fullTag(it) } ?: prefix
-            return when (descriptor.kind) {
-                is StructureKind.LIST -> ListDecoder(map, newPrefix)
-                is StructureKind.MAP -> {
-                    ensureMapHasPrimitiveKeys(descriptor)
-                    MapDecoder(map, newPrefix)
-                }
-                else -> ClassDecoder(map, newPrefix)
-            }
+            return getProperStructureDecoder(descriptor, newPrefix, map)
         }
 
         @OptIn(ExperimentalSerializationApi::class)
@@ -383,15 +369,11 @@ class UriFormat(
             return deserializer.deserialize(this)
         }
 
-        override fun decodeTaggedValue(tag: String): Any {
-            val full = fullTag(tag)
-            return map[full] ?: throw SerializationException("Missing value for field '$full'")
-        }
+        override fun decodeTaggedValue(tag: String): Any =
+            map[fullTag(tag)] ?: throw SerializationException("Missing value for field '${fullTag(tag)}'")
 
-        override fun decodeTaggedString(tag: String): String {
-            val full = fullTag(tag)
-            return map[full] ?: throw SerializationException("Missing value for field '$full'")
-        }
+        override fun decodeTaggedString(tag: String): String =
+            map[fullTag(tag)] ?: throw SerializationException("Missing value for field '${fullTag(tag)}'")
 
         override fun decodeTaggedBoolean(tag: String): Boolean = decodeTaggedString(tag).toBooleanStrict()
         override fun decodeTaggedByte(tag: String): Byte = decodeTaggedString(tag).toByte()
@@ -413,9 +395,12 @@ class UriFormat(
 
     /** Decodes list structures from URI format using indexed keys (0=item1&1=item2&2=item3) */
     @OptIn(ExperimentalSerializationApi::class)
-    private inner class ListDecoder(private val map: Map<String, String>, private val prefix: String = "") : Decoder, CompositeDecoder {
+    private inner class ListDecoder(
+        private val prefix: String = "",
+        private val map: Map<String, String>,
+    ) : SequentialDecoder() {
         constructor(uri: String) : this(
-            uri.split('&')
+            map = uri.split('&')
                 .filter { it.isNotEmpty() }
                 .associate {
                     val index = it.indexOf('=')
@@ -429,9 +414,8 @@ class UriFormat(
         private var currentIndex = 0
         private val size: Int by lazy {
             // Check for empty list marker first, otherwise count indexed entries
-            if (map[prefix] == "~") {
-                0
-            } else {
+            if (map[prefix] == "~") 0
+            else {
                 var count = 0
                 while (hasKeyOrPrefix(count)) count++
                 count
@@ -446,53 +430,19 @@ class UriFormat(
             return map.containsKey(full) || map.keys.any { it.startsWith("$full.") }
         }
 
-        // Decoder interface methods for list deserialization
-        override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = this
-        override fun decodeBoolean(): Boolean = throw SerializationException("List cannot decode primitive directly")
-        override fun decodeByte(): Byte = throw SerializationException("List cannot decode primitive directly")
-        override fun decodeChar(): Char = throw SerializationException("List cannot decode primitive directly")
-        override fun decodeDouble(): Double = throw SerializationException("List cannot decode primitive directly")
-        override fun decodeFloat(): Float = throw SerializationException("List cannot decode primitive directly")
-        override fun decodeInt(): Int = throw SerializationException("List cannot decode primitive directly")
-        override fun decodeLong(): Long = throw SerializationException("List cannot decode primitive directly")
-        override fun decodeShort(): Short = throw SerializationException("List cannot decode primitive directly")
-        override fun decodeString(): String = throw SerializationException("List cannot decode primitive directly")
-        override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = throw SerializationException("List cannot decode enum directly")
-        override fun decodeInline(descriptor: SerialDescriptor): Decoder = this
-        override fun decodeNotNullMark(): Boolean = true
-        override fun decodeNull(): Nothing? = null
-
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
             return if (currentIndex < size) currentIndex else CompositeDecoder.DECODE_DONE
         }
 
         override fun decodeCollectionSize(descriptor: SerialDescriptor): Int = size
 
-        private fun currentItem(): String {
+        override fun decodeNextStringElement(): String {
             val full = fullTag(currentIndex++)
             return map[full] ?: throw SerializationException("Missing value for index '$full'")
         }
 
-        override fun decodeBooleanElement(descriptor: SerialDescriptor, index: Int): Boolean =
-            currentItem().toBooleanStrict()
-        override fun decodeByteElement(descriptor: SerialDescriptor, index: Int): Byte =
-            currentItem().toByte()
-        override fun decodeShortElement(descriptor: SerialDescriptor, index: Int): Short =
-            currentItem().toShort()
-        override fun decodeCharElement(descriptor: SerialDescriptor, index: Int): Char =
-            currentItem().single()
-        override fun decodeIntElement(descriptor: SerialDescriptor, index: Int): Int =
-            currentItem().toInt()
-        override fun decodeLongElement(descriptor: SerialDescriptor, index: Int): Long =
-            currentItem().toLong()
-        override fun decodeFloatElement(descriptor: SerialDescriptor, index: Int): Float =
-            currentItem().toFloat()
-        override fun decodeDoubleElement(descriptor: SerialDescriptor, index: Int): Double =
-            currentItem().toDouble()
-        override fun decodeStringElement(descriptor: SerialDescriptor, index: Int): String =
-            currentItem()
-
-        override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int): Decoder = this
+        override fun decodeNotNullMark(): Boolean =
+            map[fullTag(currentIndex)].let { it != null && it != "NULL" }
 
         override fun <T> decodeSerializableElement(
             descriptor: SerialDescriptor,
@@ -503,20 +453,15 @@ class UriFormat(
             val newPrefix = fullTag(currentIndex++)
             // Check if it's a nested structure (has keys with this prefix) or a simple value
             val hasNestedKeys = map.keys.any { it.startsWith("$newPrefix.") }
-            return if (hasNestedKeys || !map.containsKey(newPrefix)) {
-                // Nested structure - use appropriate decoder
-                when (deserializer.descriptor.kind) {
-                    is StructureKind.LIST -> deserializer.deserialize(ListDecoder(map, newPrefix))
-                    is StructureKind.MAP -> {
-                        ensureMapHasPrimitiveKeys(deserializer.descriptor)
-                        deserializer.deserialize(MapDecoder(map, newPrefix))
-                    }
-                    else -> deserializer.deserialize(ClassDecoder(map, newPrefix))
-                }
-            } else {
-                // Simple value
-                UriDecoder(map[newPrefix]!!).decodeSerializableValue(deserializer)
-            }
+
+            return deserializer.deserialize(
+                if (hasNestedKeys || !map.containsKey(newPrefix)) getProperStructureDecoder(
+                    deserializer.descriptor,
+                    newPrefix,
+                    map
+                )
+                else UriDecoder(map[newPrefix]!!)
+            )
         }
 
         override fun <T : Any> decodeNullableSerializableElement(
@@ -530,30 +475,25 @@ class UriFormat(
             if (value == "NULL") return null
             val hasNestedKeys = map.keys.any { it.startsWith("$newPrefix.") }
             if (!hasNestedKeys && value == null) return null
-            return if (hasNestedKeys || value == null) {
-                when (deserializer.descriptor.kind) {
-                    is StructureKind.LIST -> deserializer.deserialize(ListDecoder(map, newPrefix))
-                    is StructureKind.MAP -> deserializer.deserialize(MapDecoder(map, newPrefix))
-                    else -> deserializer.deserialize(ClassDecoder(map, newPrefix))
-                }
-            } else {
-                UriDecoder(value).decodeSerializableValue(deserializer)
-            }
+            return deserializer.deserialize(
+                if (hasNestedKeys || value == null) getProperStructureDecoder(
+                    deserializer.descriptor,
+                    newPrefix,
+                    map
+                )
+                else UriDecoder(value)
+            )
         }
-
-        override fun decodeSequentially(): Boolean = true
-
-        override fun endStructure(descriptor: SerialDescriptor) { /* Nothing to do */ }
     }
 
     /** Decodes Map<String, T> from URI format using string keys directly */
     @OptIn(ExperimentalSerializationApi::class)
     private inner class MapDecoder(
+        private val prefix: String = "",
         private val map: Map<String, String>,
-        private val prefix: String = ""
-    ) : Decoder, CompositeDecoder {
+    ) : SequentialDecoder() {
         constructor(uri: String) : this(
-            uri.split('&')
+            map = uri.split('&')
                 .filter { it.isNotEmpty() }
                 .associate {
                     val index = it.indexOf('=')
@@ -567,45 +507,25 @@ class UriFormat(
         // Discover all keys that belong to this map (have the right prefix)
         private val keys: List<String> by lazy {
             // Check for empty map marker
-            if (map[prefix] == "~") {
-                emptyList()
-            } else {
-                val prefixDot = if (prefix.isEmpty()) "" else "$prefix."
-                map.keys
-                    .filter { key ->
-                        if (prefix.isEmpty()) {
-                            // Top-level: any key without a dot, or keys that are prefixes of nested structures
-                            !key.contains('.') || map.keys.none { it == key.substringBefore('.') }
-                        } else {
-                            key.startsWith(prefixDot)
-                        }
-                    }
-                    .map { key ->
-                        if (prefix.isEmpty()) key.substringBefore('.')
-                        else key.removePrefix(prefixDot).substringBefore('.')
-                    }
-                    .distinct()
-            }
+            if (map[prefix] == "~") return@lazy emptyList()
+
+            val prefixDot = if (prefix.isEmpty()) "" else "$prefix."
+            map.keys
+                .asSequence()
+                .let { seq ->
+                    if (prefix.isEmpty()) seq   // top level
+                    else seq.filter { it.startsWith(prefixDot) }
+                }
+                .map { key ->
+                    if (prefix.isEmpty()) key.substringBefore('.')
+                    else key.removePrefix(prefixDot).substringBefore('.')
+                }
+                .distinct()
+                .toList()
         }
 
         // Current position: even = returning key index, odd = returning value index
         private var currentIndex = 0
-
-        override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = this
-
-        override fun decodeBoolean(): Boolean = throw SerializationException("Map cannot decode primitive directly")
-        override fun decodeByte(): Byte = throw SerializationException("Map cannot decode primitive directly")
-        override fun decodeChar(): Char = throw SerializationException("Map cannot decode primitive directly")
-        override fun decodeDouble(): Double = throw SerializationException("Map cannot decode primitive directly")
-        override fun decodeFloat(): Float = throw SerializationException("Map cannot decode primitive directly")
-        override fun decodeInt(): Int = throw SerializationException("Map cannot decode primitive directly")
-        override fun decodeLong(): Long = throw SerializationException("Map cannot decode primitive directly")
-        override fun decodeShort(): Short = throw SerializationException("Map cannot decode primitive directly")
-        override fun decodeString(): String = throw SerializationException("Map cannot decode primitive directly")
-        override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = throw SerializationException("Map cannot decode enum directly")
-        override fun decodeInline(descriptor: SerialDescriptor): Decoder = this
-        override fun decodeNotNullMark(): Boolean = true
-        override fun decodeNull(): Nothing? = null
 
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
             // Maps encode as key0, value0, key1, value1, ...
@@ -622,9 +542,8 @@ class UriFormat(
             return keys[keyIndex]
         }
 
-        // Keys are at even indices
-        override fun decodeStringElement(descriptor: SerialDescriptor, index: Int): String {
-            val result = if (index % 2 == 0) {
+        override fun decodeNextStringElement(): String {
+            val result = if (currentIndex % 2 == 0) {
                 // This is a key
                 currentKey()
             } else {
@@ -636,24 +555,7 @@ class UriFormat(
             return result
         }
 
-        override fun decodeBooleanElement(descriptor: SerialDescriptor, index: Int): Boolean =
-            decodeStringElement(descriptor, index).toBooleanStrict()
-        override fun decodeByteElement(descriptor: SerialDescriptor, index: Int): Byte =
-            decodeStringElement(descriptor, index).toByte()
-        override fun decodeShortElement(descriptor: SerialDescriptor, index: Int): Short =
-            decodeStringElement(descriptor, index).toShort()
-        override fun decodeCharElement(descriptor: SerialDescriptor, index: Int): Char =
-            decodeStringElement(descriptor, index).single()
-        override fun decodeIntElement(descriptor: SerialDescriptor, index: Int): Int =
-            decodeStringElement(descriptor, index).toInt()
-        override fun decodeLongElement(descriptor: SerialDescriptor, index: Int): Long =
-            decodeStringElement(descriptor, index).toLong()
-        override fun decodeFloatElement(descriptor: SerialDescriptor, index: Int): Float =
-            decodeStringElement(descriptor, index).toFloat()
-        override fun decodeDoubleElement(descriptor: SerialDescriptor, index: Int): Double =
-            decodeStringElement(descriptor, index).toDouble()
-
-        override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int): Decoder = this
+        override fun decodeNotNullMark(): Boolean = map.containsKey(currentKey())
 
         override fun <T> decodeSerializableElement(
             descriptor: SerialDescriptor,
@@ -663,26 +565,21 @@ class UriFormat(
         ): T {
             val result = if (index % 2 == 0) {
                 // This is a key - decode as simple value
-                UriDecoder(currentKey()).decodeSerializableValue(deserializer)
+                deserializer.deserialize(UriDecoder(currentKey()))
             } else {
                 // This is a value
                 val key = currentKey()
                 val newPrefix = fullTag(key)
                 val hasNestedKeys = map.keys.any { it.startsWith("$newPrefix.") }
-                if (hasNestedKeys || !map.containsKey(newPrefix)) {
-                    // Nested structure
-                    when (deserializer.descriptor.kind) {
-                        is StructureKind.LIST -> deserializer.deserialize(ListDecoder(map, newPrefix))
-                        is StructureKind.MAP -> {
-                            ensureMapHasPrimitiveKeys(deserializer.descriptor)
-                            deserializer.deserialize(MapDecoder(map, newPrefix))
-                        }
-                        else -> deserializer.deserialize(ClassDecoder(map, newPrefix))
-                    }
-                } else {
-                    // Simple value
-                    UriDecoder(map[newPrefix]!!).decodeSerializableValue(deserializer)
-                }
+
+                deserializer.deserialize(
+                    if (hasNestedKeys || !map.containsKey(newPrefix)) getProperStructureDecoder(
+                        deserializer.descriptor,
+                        newPrefix,
+                        map
+                    )
+                    else UriDecoder(map[newPrefix]!!)
+                )
             }
             currentIndex++
             return result
@@ -706,15 +603,14 @@ class UriFormat(
             if (value == "NULL") return null
             val hasNestedKeys = map.keys.any { it.startsWith("$newPrefix.") }
             if (!hasNestedKeys && value == null) return null
-            return if (hasNestedKeys || value == null) {
-                when (deserializer.descriptor.kind) {
-                    is StructureKind.LIST -> deserializer.deserialize(ListDecoder(map, newPrefix))
-                    is StructureKind.MAP -> deserializer.deserialize(MapDecoder(map, newPrefix))
-                    else -> deserializer.deserialize(ClassDecoder(map, newPrefix))
-                }
-            } else {
-                UriDecoder(value).decodeSerializableValue(deserializer)
-            }
+            return deserializer.deserialize(
+                if (hasNestedKeys || value == null) getProperStructureDecoder(
+                    deserializer.descriptor,
+                    newPrefix,
+                    map
+                )
+                else UriDecoder(value)
+            )
         }
 
         override fun decodeSequentially(): Boolean = true
@@ -722,8 +618,50 @@ class UriFormat(
         override fun endStructure(descriptor: SerialDescriptor) { /* Nothing to do */ }
     }
 
-    private fun ensureMapHasPrimitiveKeys(mapDescriptor: SerialDescriptor) =
-        require(mapDescriptor.getElementDescriptor(0).kind is PrimitiveKind) {
-            "UriFormat only supports maps with primitive-type keys."
-        }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private abstract class SequentialDecoder : StructureDecoder {
+        override fun decodeBoolean(): Boolean = throw SerializationException("${this::class} cannot decode primitive directly")
+        override fun decodeByte(): Byte = throw SerializationException("${this::class} cannot decode primitive directly")
+        override fun decodeChar(): Char = throw SerializationException("${this::class} cannot decode primitive directly")
+        override fun decodeDouble(): Double = throw SerializationException("${this::class} cannot decode primitive directly")
+        override fun decodeFloat(): Float = throw SerializationException("${this::class} cannot decode primitive directly")
+        override fun decodeInt(): Int = throw SerializationException("${this::class} cannot decode primitive directly")
+        override fun decodeLong(): Long = throw SerializationException("${this::class} cannot decode primitive directly")
+        override fun decodeShort(): Short = throw SerializationException("${this::class} cannot decode primitive directly")
+        override fun decodeString(): String = throw SerializationException("${this::class} cannot decode primitive directly")
+        override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = throw SerializationException("${this::class} cannot decode enum directly")
+        override fun decodeInline(descriptor: SerialDescriptor): Decoder = this
+        override fun decodeNull(): Nothing? = null
+
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = this
+
+
+        abstract fun decodeNextStringElement(): String
+
+        override fun decodeBooleanElement(descriptor: SerialDescriptor, index: Int): Boolean =
+            decodeNextStringElement().toBooleanStrict()
+        override fun decodeByteElement(descriptor: SerialDescriptor, index: Int): Byte =
+            decodeNextStringElement().toByte()
+        override fun decodeShortElement(descriptor: SerialDescriptor, index: Int): Short =
+            decodeNextStringElement().toShort()
+        override fun decodeCharElement(descriptor: SerialDescriptor, index: Int): Char =
+            decodeNextStringElement().single()
+        override fun decodeIntElement(descriptor: SerialDescriptor, index: Int): Int =
+            decodeNextStringElement().toInt()
+        override fun decodeLongElement(descriptor: SerialDescriptor, index: Int): Long =
+            decodeNextStringElement().toLong()
+        override fun decodeFloatElement(descriptor: SerialDescriptor, index: Int): Float =
+            decodeNextStringElement().toFloat()
+        override fun decodeDoubleElement(descriptor: SerialDescriptor, index: Int): Double =
+            decodeNextStringElement().toDouble()
+        override fun decodeStringElement(descriptor: SerialDescriptor, index: Int): String =
+            decodeNextStringElement()
+
+        override fun decodeSequentially(): Boolean = true
+
+        override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int): Decoder = this
+
+        override fun endStructure(descriptor: SerialDescriptor) { }
+    }
 }
