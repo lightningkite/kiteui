@@ -68,6 +68,28 @@ value class UserName(val name: String)
 @Serializable
 data class ClassWithValueClass(val userId: UserId, val userName: UserName)
 
+// Object test classes
+@Serializable
+object SingletonObject
+
+@Serializable
+object AnotherSingleton
+
+@Serializable
+data class ClassWithObject(val name: String, val singleton: SingletonObject)
+
+@Serializable
+sealed class SealedWithObject {
+    @Serializable
+    object EmptyCase : SealedWithObject()
+
+    @Serializable
+    data class DataCase(val value: Int) : SealedWithObject()
+}
+
+@Serializable
+data class ClassWithSealedObject(val item: SealedWithObject)
+
 // Contextual serialization test classes
 @Serializable
 data class CustomId(val prefix: String, val number: Int)
@@ -386,6 +408,37 @@ class UriFormatTests {
         roundTrip(
             ClassWithListElem.serializer(),
             ClassWithListElem(listOf())
+        )
+    }
+
+    // === Object Tests ===
+
+    @Test
+    fun testSingletonObject() {
+        roundTrip(SingletonObject.serializer(), SingletonObject)
+    }
+
+    @Test
+    fun testClassWithObject() {
+        roundTrip(
+            ClassWithObject.serializer(),
+            ClassWithObject("test", SingletonObject)
+        )
+    }
+
+    @Test
+    fun testSealedWithObjectCase() {
+        roundTrip(
+            ClassWithSealedObject.serializer(),
+            ClassWithSealedObject(SealedWithObject.EmptyCase)
+        )
+    }
+
+    @Test
+    fun testSealedWithDataCase() {
+        roundTrip(
+            ClassWithSealedObject.serializer(),
+            ClassWithSealedObject(SealedWithObject.DataCase(42))
         )
     }
 

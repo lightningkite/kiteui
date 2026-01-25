@@ -27,23 +27,106 @@ import kotlinx.serialization.internal.NamedValueEncoder
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.collections.set
 
+/**
+ * A kotlinx.serialization [StringFormat] that encodes Kotlin objects to and from URI query string format.
+ *
+ * URI query format uses `key=value` pairs separated by `&`, with nested structures represented using
+ * dot notation (e.g., `parent.child=value`). Values are URL-encoded to handle special characters.
+ *
+ * ## Supported Types
+ * - All primitive types (Boolean, Byte, Short, Int, Long, Float, Double, Char, String)
+ * - Enums (serialized by name)
+ * - Nullable types (null represented as "NULL")
+ * - Data classes and structures (fields become key-value pairs)
+ * - Lists (indexed as `list.0=first&list.1=second`)
+ * - Maps with primitive/enum keys (keys become field names)
+ * - Value classes (automatically unwrapped)
+ * - Polymorphic types (discriminator stored as `type` field)
+ * - Contextual serializers (via [serializersModule])
+ *
+ * ## Examples
+ * ```kotlin
+ * @Serializable
+ * data class User(val name: String, val age: Int)
+ *
+ * val format = UriFormat(EmptySerializersModule())
+ * val encoded = format.encodeToString(User.serializer(), User("Alice", 30))
+ * // Result: "name=Alice&age=30"
+ *
+ * val decoded = format.decodeFromString(User.serializer(), "name=Bob&age=25")
+ * // Result: User(name="Bob", age=25)
+ * ```
+ *
+ * ## Nested Structures
+ * ```kotlin
+ * @Serializable
+ * data class Address(val city: String)
+ * @Serializable
+ * data class Person(val name: String, val address: Address)
+ *
+ * // Encodes as: "name=Alice&address.city=Seattle"
+ * ```
+ *
+ * ## Empty Collections
+ * Empty lists and maps are marked with `~` to distinguish them from missing values:
+ * - Empty list: `listField=~`
+ * - Empty map: `mapField=~`
+ *
+ * @param serializersModule The module providing contextual and polymorphic serializers.
+ */
 class UriFormat(
     override val serializersModule: SerializersModule
 ) : StringFormat {
+
+    /**
+     * Encodes the given [value] to a URI query string using the provided [serializer].
+     *
+     * @param serializer The serialization strategy for type [T].
+     * @param value The value to encode.
+     * @return A URI query string representation of the value.
+     */
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
         val e = UriEncoder()
         e.encodeSerializableValue(serializer, value)
         return e.getUri()
     }
 
+    /**
+     * Decodes a value of type [T] from a URI query [string] using the provided [deserializer].
+     *
+     * @param deserializer The deserialization strategy for type [T].
+     * @param string The URI query string to decode.
+     * @return The decoded value.
+     * @throws SerializationException If the string cannot be decoded to the expected type.
+     */
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         val d = UriDecoder(string)
         return d.decodeSerializableValue(deserializer)
     }
 
+    /**
+     * Encodes a pre-built map of key-value pairs into a URI query string.
+     *
+     * This is a utility function for converting an already-flattened map into query string format.
+     * Values should already be URI-encoded if necessary.
+     *
+     * @param map The map of key-value pairs to encode.
+     * @return A URI query string in the format `key1=value1&key2=value2`.
+     */
     fun encodeToString(map: Map<String, String>): String =
         map.entries.joinToString("&") { "${it.key}=${it.value}" }
 
+    /**
+     * Encodes a structure value into a mutable string map.
+     *
+     * The structure's fields are flattened into key-value pairs and added to [dest].
+     * This is useful for building up a query string from multiple values.
+     *
+     * @param serializer The serialization strategy for type [T]. Must be a structure type.
+     * @param value The value to encode.
+     * @param dest The destination map to receive the encoded key-value pairs.
+     * @throws IllegalArgumentException If the serializer describes a non-structure type.
+     */
     fun <T> encodeToStringMap(serializer: SerializationStrategy<T>, value: T, dest: MutableMap<String, String>) {
         require(serializer.descriptor.unwrap().kind.isStructure()) {
             "Only structures can be encoded into a string map."
@@ -51,6 +134,20 @@ class UriFormat(
         StringMapEncoder(prefix = "", dest).encodeSerializableValue(serializer, value)
     }
 
+    /**
+     * Encodes a value into a mutable string map under a specified key prefix.
+     *
+     * For primitive/enum types, the value is stored directly at [key].
+     * For structure types, fields are stored with [key] as a prefix (e.g., `key.field=value`).
+     *
+     * This enables heterogeneous encoding where multiple different types can be stored
+     * in the same map under different keys.
+     *
+     * @param serializer The serialization strategy for type [T].
+     * @param key The key or prefix under which to store the encoded value.
+     * @param value The value to encode.
+     * @param dest The destination map to receive the encoded key-value pairs.
+     */
     fun <T> encodeToStringMap(serializer: SerializationStrategy<T>, key: String, value: T, dest: MutableMap<String, String>) {
         if (serializer.descriptor.unwrap().kind.isNonStructure()) {
             dest[key] = encodeToString(serializer, value)
@@ -58,6 +155,17 @@ class UriFormat(
         else StringMapEncoder(prefix = key, dest).encodeSerializableValue(serializer, value)
     }
 
+    /**
+     * Decodes a structure value from a string map.
+     *
+     * The map's key-value pairs are interpreted as flattened structure fields.
+     *
+     * @param deserializer The deserialization strategy for type [T]. Must be a structure type.
+     * @param source The source map containing the encoded key-value pairs.
+     * @return The decoded value.
+     * @throws IllegalArgumentException If the deserializer describes a non-structure type.
+     * @throws SerializationException If required fields are missing or values are malformed.
+     */
     fun <T> decodeFromStringMap(deserializer: DeserializationStrategy<T>, source: Map<String, String>): T {
         require(deserializer.descriptor.unwrap().kind.isStructure()) {
             "Only structures can be decoded from a string map."
@@ -65,12 +173,36 @@ class UriFormat(
         return StringMapDecoder(source, prefix = "").decodeSerializableValue(deserializer)
     }
 
+    /**
+     * Decodes a value from a string map using a specified key prefix.
+     *
+     * For primitive/enum types, the value is read directly from [key].
+     * For structure types, fields are read with [key] as a prefix (e.g., `key.field`).
+     *
+     * This enables heterogeneous decoding where multiple different types were stored
+     * in the same map under different keys.
+     *
+     * @param deserializer The deserialization strategy for type [T].
+     * @param key The key or prefix from which to read the encoded value.
+     * @param source The source map containing the encoded key-value pairs.
+     * @return The decoded value.
+     * @throws SerializationException If the key is missing or values are malformed.
+     */
     fun <T> decodeFromStringMap(deserializer: DeserializationStrategy<T>, key: String, source: Map<String, String>): T =
         if (deserializer.descriptor.unwrap().kind.isNonStructure()) {
             decodeFromString(deserializer, source[key] ?: throw SerializationException("Missing key $key"))
         }
         else StringMapDecoder(source, prefix = key).decodeSerializableValue(deserializer)
 
+    /**
+     * Checks if a map contains any keys that start with the given prefix.
+     *
+     * Useful for determining if a nested structure or collection exists in the map.
+     *
+     * @param map The map to search.
+     * @param key The key prefix to look for.
+     * @return `true` if any key in the map starts with [key], `false` otherwise.
+     */
     fun mapContainsKey(map: Map<String, String>, key: String) = map.keys.any { it.startsWith(key) }
 
     // -- Implementation Helpers --
@@ -110,8 +242,8 @@ class UriFormat(
                 ensureMapHasEncodableKeys(descriptor)
                 MapEncoder(prefix, into)
             }
-            StructureKind.OBJECT -> throw UnsupportedOperationException("UriFormat does not support objects yet")
-            else -> throw IllegalArgumentException("Only structure types can be encoded as a string map. Got ${descriptor.kind} (${descriptor.serialName}).")
+            StructureKind.OBJECT -> ObjectEncoder(prefix, into)
+            else -> throw SerializationException("Only structure types can be encoded as a string map. Got ${descriptor.kind} (${descriptor.serialName}).")
         }
     }
 
@@ -129,13 +261,20 @@ class UriFormat(
                 ensureMapHasEncodableKeys(descriptor)
                 MapDecoder(prefix, source)
             }
-            StructureKind.OBJECT -> throw UnsupportedOperationException("UriFormat does not support objects yet")
-            else -> throw IllegalArgumentException("Only structure types can be encoded as a string map. Got ${descriptor.kind} (${descriptor.serialName}).")
+            StructureKind.OBJECT -> ObjectDecoder(prefix, source)
+            else -> throw SerializationException("Only structure types can be encoded as a string map. Got ${descriptor.kind} (${descriptor.serialName}).")
         }
     }
 
     // -- ENCODING --
 
+    /**
+     * Top-level encoder for serializing a single value to URI query string format.
+     *
+     * Handles the distinction between primitive values (encoded directly) and
+     * structure types (delegated to appropriate structure encoders). Ensures only
+     * one value is encoded per instance.
+     */
     private inner class UriEncoder : Encoder {
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
@@ -184,6 +323,12 @@ class UriFormat(
         }
     }
 
+    /**
+     * Encoder for serializing directly into a string map with an optional key prefix.
+     *
+     * Used by [encodeToStringMap] to encode values into an existing mutable map.
+     * Delegates structure encoding to the appropriate specialized encoder.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     private inner class StringMapEncoder(val prefix: String, val dest: MutableMap<String, String>) : AbstractEncoder() {
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
@@ -193,7 +338,15 @@ class UriFormat(
     }
 
 
-    /** Mostly ripped from kotlinx.serialization's Properties.OutMapper encoder */
+    /**
+     * Encoder for class/object structures using named fields.
+     *
+     * Encodes each field as a key-value pair using the field name as the key.
+     * Nested structures use dot notation (e.g., `parent.child=value`).
+     * Handles polymorphic types by encoding a `type` discriminator field.
+     *
+     * Based on kotlinx.serialization's Properties.OutMapper encoder.
+     */
     @OptIn(InternalSerializationApi::class)
     private inner class ClassEncoder(
         val map: MutableMap<String, String> = mutableMapOf(),
@@ -231,6 +384,13 @@ class UriFormat(
         }
     }
 
+    /**
+     * Encoder for list/array structures using indexed keys.
+     *
+     * Elements are encoded with their index as the key (e.g., `list.0=first&list.1=second`).
+     * Empty lists are marked with `~` at the prefix key to distinguish from missing values.
+     * Nested structures within the list use the index as part of their key prefix.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     private inner class ListEncoder(
         val prefix: String,
@@ -261,7 +421,14 @@ class UriFormat(
         }
     }
 
-    /** Encodes Map<String, T> using string keys directly as field names */
+    /**
+     * Encoder for map structures using primitive/enum keys directly as field names.
+     *
+     * Map entries are encoded with the key's string representation as the field name
+     * (e.g., `Map("a" to 1, "b" to 2)` becomes `a=1&b=2`).
+     * Empty maps are marked with `~` at the prefix key.
+     * Only primitive and enum key types are supported; structure keys will throw.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     private inner class MapEncoder(
         val prefix: String,
@@ -313,10 +480,44 @@ class UriFormat(
         }
     }
 
+    /**
+     * Encoder for Kotlin object singletons.
+     *
+     * Objects have no properties to encode. A marker (`~`) is written at the prefix
+     * to indicate the object's presence, which is important when objects are nested
+     * inside other structures.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    private inner class ObjectEncoder(
+        val prefix: String,
+        val map: MutableMap<String, String>
+    ) : AbstractEncoder(), StructureEncoder {
+        override val serializersModule: SerializersModule = this@UriFormat.serializersModule
+
+        override fun encodeValue(value: Any) {
+            // Objects have no properties, this should not be called
+        }
+
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder = this
+
+        override fun endStructure(descriptor: SerialDescriptor) {
+            // Write a marker to indicate the object exists (important for nested objects)
+            if (prefix.isNotEmpty()) {
+                map[prefix] = "~"
+            }
+        }
+    }
+
 
 
     // -- DECODING --
 
+    /**
+     * Top-level decoder for deserializing a single value from URI query string format.
+     *
+     * Handles primitive values directly and delegates structure types to specialized
+     * decoders. Parses the URI string into a key-value map for structure decoding.
+     */
     private inner class UriDecoder(private val uri: String) : Decoder {
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
@@ -358,6 +559,12 @@ class UriFormat(
             )
     }
 
+    /**
+     * Decoder for deserializing directly from a string map with an optional key prefix.
+     *
+     * Used by [decodeFromStringMap] to decode values from an existing map.
+     * Delegates structure decoding to the appropriate specialized decoder.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     private inner class StringMapDecoder(val source: Map<String, String>, val prefix: String) : AbstractDecoder() {
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
@@ -368,7 +575,14 @@ class UriFormat(
             getProperStructureDecoder(descriptor, prefix, source)
     }
 
-    /** Decodes class structures from URI query parameter format (key=value&key2=value2) */
+    /**
+     * Decoder for class/object structures using named fields.
+     *
+     * Decodes fields by looking up their names as keys in the map (with optional prefix).
+     * Handles polymorphic types by reading the `type` discriminator field.
+     * Supports nullable fields by checking for key presence.
+     * Nested structures are decoded by creating a new decoder with an extended prefix.
+     */
     @OptIn(InternalSerializationApi::class)
     private inner class ClassDecoder(
         private val prefix: String = "",
@@ -408,8 +622,11 @@ class UriFormat(
         @OptIn(ExperimentalSerializationApi::class)
         override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
             if (deserializer is AbstractPolymorphicSerializer<*>) {
-                val typeName = map[fullTag("type")]
-                    ?: throw SerializationException("Missing 'type' field for polymorphic deserialization")
+                // For polymorphic types, the type discriminator is nested under the field name
+                // e.g., for field "item", the type is at "item.type"
+                val typeKey = currentTagOrNull?.let { fullTag("$it.type") } ?: fullTag("type")
+                val typeName = map[typeKey]
+                    ?: throw SerializationException("Missing 'type' field for polymorphic deserialization at '$typeKey'")
 
                 @Suppress("UNCHECKED_CAST")
                 val actualDeserializer = deserializer.findPolymorphicSerializer(this, typeName)
@@ -443,7 +660,14 @@ class UriFormat(
         override fun decodeTaggedNotNullMark(tag: String): Boolean = hasKeyOrPrefix(tag)
     }
 
-    /** Decodes list structures from URI format using indexed keys (0=item1&1=item2&2=item3) */
+    /**
+     * Decoder for list/array structures using indexed keys.
+     *
+     * Decodes elements by looking up sequential indices (e.g., `prefix.0`, `prefix.1`).
+     * The list size is determined by counting consecutive existing indices.
+     * Empty lists are recognized by the `~` marker at the prefix key.
+     * Supports both primitive elements and nested structures.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     private inner class ListDecoder(
         private val prefix: String = "",
@@ -526,7 +750,14 @@ class UriFormat(
         }
     }
 
-    /** Decodes Map<String, T> from URI format using string keys directly */
+    /**
+     * Decoder for map structures using primitive/enum keys.
+     *
+     * Discovers map entries by finding all keys with the given prefix and extracts
+     * the first path segment as the map key. Returns key-value pairs in sequence.
+     * Empty maps are recognized by the `~` marker at the prefix key.
+     * Only primitive and enum key types are supported.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     private inner class MapDecoder(
         private val prefix: String = "",
@@ -648,7 +879,34 @@ class UriFormat(
         override fun endStructure(descriptor: SerialDescriptor) { /* Nothing to do */ }
     }
 
+    /**
+     * Decoder for Kotlin object singletons.
+     *
+     * Objects have no properties to decode. This decoder immediately signals
+     * that decoding is complete, allowing the deserializer to return the singleton instance.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    private inner class ObjectDecoder(
+        private val prefix: String,
+        private val map: Map<String, String>
+    ) : AbstractDecoder(), StructureDecoder {
+        override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
+        override fun decodeElementIndex(descriptor: SerialDescriptor): Int = CompositeDecoder.DECODE_DONE
+
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = this
+
+        override fun endStructure(descriptor: SerialDescriptor) { /* Nothing to do */ }
+    }
+
+
+    /**
+     * Base class for sequential decoders (lists and maps) that iterate through elements in order.
+     *
+     * Provides common infrastructure for decoders that process elements sequentially
+     * rather than by named fields. Subclasses implement [decodeNextStringElement] to
+     * provide the next string value, and [decodeSerializableElement] for complex types.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     private abstract class SequentialDecoder : StructureDecoder {
         override fun decodeBoolean(): Boolean = throw SerializationException("${this::class} cannot decode primitive directly")

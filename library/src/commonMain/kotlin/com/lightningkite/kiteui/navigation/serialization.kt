@@ -30,6 +30,3 @@ val UrlProperties: Properties get() = UrlPropertiesCurrent
 
 private var DefaultUriFormatCurrent: UriFormat = UriFormat(DefaultSerializersModule)
 val DefaultUriFormat: UriFormat get() = DefaultUriFormatCurrent
-
-fun <K, V> mapOfNotNull(vararg entries: Pair<K, V>?): Map<K, V> =
-    entries.filterNotNull().toMap()
