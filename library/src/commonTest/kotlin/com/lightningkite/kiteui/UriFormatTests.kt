@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 
 // Test data classes
 @Serializable
-data class SimpleClass(val name: String, val age: Int)
+data class SimpleClass(val name: String = "name", val age: Int = 0)
 
 @Serializable
 data class ClassWithOptional(val required: String, val optional: String? = null)
@@ -36,7 +36,7 @@ data class ClassWithAllPrimitives(
 )
 
 @Serializable
-data class NestedClass(val inner: SimpleClass, val value: Int)
+data class NestedClass(val inner: SimpleClass = SimpleClass(), val value: Int = 42)
 
 @Serializable
 enum class TestEnum { FIRST, SECOND, THIRD }
@@ -336,6 +336,21 @@ class UriFormatTests {
         )
     }
 
+    @Test
+    fun testHeterogeneousEncoding() {
+        val map = mutableMapOf<String, String>()
+
+        format.encodeToStringMap(Int.serializer(), "int", 42, map)
+        format.encodeToStringMap(NestedClass.serializer(), "structure", NestedClass(), map)
+        format.encodeToStringMap(ListSerializer(Int.serializer()), "list", listOf(1, 2, 3, 4), map)
+
+        println("Encoded -> ${format.encodeToString(map)}")
+
+        assertEquals(42, format.decodeFromStringMap(Int.serializer(), "int", map))
+        assertEquals(NestedClass(), format.decodeFromStringMap(NestedClass.serializer(), "structure", map))
+        assertEquals(listOf(1, 2, 3, 4), format.decodeFromStringMap(ListSerializer(Int.serializer()), "list", map))
+    }
+
     // === Edge Cases ===
 
     @Test
@@ -374,6 +389,13 @@ class UriFormatTests {
                 2 to SimpleClass("second", 1)
             )
         )
+        roundTrip(
+            MapSerializer(TestEnum.serializer(), SimpleClass.serializer()),
+            mapOf(
+                TestEnum.FIRST to SimpleClass("first", 0),
+                TestEnum.SECOND to SimpleClass("second", 1)
+            )
+        )
         var failedCorrectly = false  // only support primitive keys
         try {
             roundTrip(
@@ -384,7 +406,7 @@ class UriFormatTests {
                 )
             )
         } catch (e: Exception) {
-            if (e.message == "UriFormat only supports maps with primitive-type keys.") {
+            if (e.message == "UriFormat only supports maps with primitive and enum-type keys.") {
                 failedCorrectly = true
             }
             else throw e

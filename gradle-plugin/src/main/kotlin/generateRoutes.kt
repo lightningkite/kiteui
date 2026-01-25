@@ -186,7 +186,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 appendLine(".apply {")
                                 tab {
                                     for ((key, property) in routable.queryParams) {
-                                        appendLine("it.parameters[\"$key\"]?.let { $property valueSet DefaultUriFormat.decodeFromString(it) }")
+                                        appendLine("if (DefaultUriFormat.mapContainsKey(it.parameters, \"$key\")) $property valueSet DefaultUriFormat.decodeFromStringMap(\"$key\", it.parameters)")
                                     }
                                 }
                                 appendLine("}")
@@ -206,7 +206,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 appendLine(").apply {")
                                 tab {
                                     for ((key, property) in routable.queryParams) {
-                                        appendLine("it.parameters[\"$key\"]?.let { $property valueSet DefaultUriFormat.decodeFromString(it) }")
+                                        appendLine("if (DefaultUriFormat.mapContainsKey(it.parameters, \"$key\")) $property valueSet DefaultUriFormat.decodeFromStringMap(\"$key\", it.parameters)")
                                     }
                                 }
                                 appendLine("}")
@@ -229,16 +229,14 @@ internal fun generateAutoroutes(sources: File, out: File) {
                         appendLine("${routable.name}::class to label@{")
                         tab {
                             appendLine("if (it !is ${routable.name}) return@label null")
+                            appendLine("val params = mutableMapOf<String, String>()")
+                            for ((key, property) in routable.queryParams) {
+                                appendLine("it.$property.state.getOrNull()?.let { DefaultUriFormat.encodeToStringMap(\"$key\", it, params) }")
+                            }
                             appendLine("RouteRendered(UrlLikePath(")
                             tab {
                                 appendLine("segments = listOf($rendered),")
-                                appendLine("parameters = mapOfNotNull(")
-                                tab {
-                                    for ((key, property) in routable.queryParams) {
-                                        appendLine("it.$property.state.getOrNull()?.let { \"$key\" to DefaultUriFormat.encodeToString(it) },")
-                                    }
-                                }
-                                appendLine(")")
+                                appendLine("parameters = params")
                             }
                             appendLine("), listOf(${routable.queryParams.keys.joinToString { param -> "it.${param}" }}))")
                         }

@@ -8,10 +8,13 @@ import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
+import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.getContextualDescriptor
+import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.AbstractEncoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.CompositeEncoder
@@ -38,63 +41,98 @@ class UriFormat(
         return d.decodeSerializableValue(deserializer)
     }
 
-    fun <T> encodeToStringMap(serializer: SerializationStrategy<T>, value: T, into: MutableMap<String, String>) {
-        require(serializer.descriptor.kind is StructureKind) {
+    fun encodeToString(map: Map<String, String>): String =
+        map.entries.joinToString("&") { "${it.key}=${it.value}" }
+
+    fun <T> encodeToStringMap(serializer: SerializationStrategy<T>, value: T, dest: MutableMap<String, String>) {
+        require(serializer.descriptor.unwrap().kind.isStructure()) {
             "Only structures can be encoded into a string map."
         }
-        val e = getProperStructureEncoder(serializer.descriptor, into, "")
-        e.encodeSerializableValue(serializer, value)
+        StringMapEncoder(prefix = "", dest).encodeSerializableValue(serializer, value)
     }
 
-    fun <T> decodeFromStringMap(deserializer: DeserializationStrategy<T>, map: Map<String, String>): T {
-        require(deserializer.descriptor.kind is StructureKind) {
+    fun <T> encodeToStringMap(serializer: SerializationStrategy<T>, key: String, value: T, dest: MutableMap<String, String>) {
+        if (serializer.descriptor.unwrap().kind.isNonStructure()) {
+            dest[key] = encodeToString(serializer, value)
+        }
+        else StringMapEncoder(prefix = key, dest).encodeSerializableValue(serializer, value)
+    }
+
+    fun <T> decodeFromStringMap(deserializer: DeserializationStrategy<T>, source: Map<String, String>): T {
+        require(deserializer.descriptor.unwrap().kind.isStructure()) {
             "Only structures can be decoded from a string map."
         }
-        val e = getProperStructureDecoder(deserializer.descriptor, "", map)
-        return e.decodeSerializableValue(deserializer)
+        return StringMapDecoder(source, prefix = "").decodeSerializableValue(deserializer)
     }
 
-
-
-    private interface StructureDecoder : Decoder, CompositeDecoder
-    private interface StructureEncoder : Encoder, CompositeEncoder
-
-    private fun ensureMapHasPrimitiveKeys(mapDescriptor: SerialDescriptor) =
-        require(mapDescriptor.getElementDescriptor(0).kind is PrimitiveKind) {
-            "UriFormat only supports maps with primitive-type keys."
+    fun <T> decodeFromStringMap(deserializer: DeserializationStrategy<T>, key: String, source: Map<String, String>): T =
+        if (deserializer.descriptor.unwrap().kind.isNonStructure()) {
+            decodeFromString(deserializer, source[key] ?: throw SerializationException("Missing key $key"))
         }
+        else StringMapDecoder(source, prefix = key).decodeSerializableValue(deserializer)
 
+    fun mapContainsKey(map: Map<String, String>, key: String) = map.keys.any { it.startsWith(key) }
+
+    // -- Implementation Helpers --
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private tailrec fun SerialDescriptor.unwrap(): SerialDescriptor = when {
+        kind == SerialKind.CONTEXTUAL -> serializersModule.getContextualDescriptor(this)?.unwrap() ?: this
+        isInline -> getElementDescriptor(0).unwrap()
+        else     -> this
+    }
+
+    private fun SerialKind.isNonStructure() = this is PrimitiveKind || this == SerialKind.ENUM
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private fun SerialKind.isStructure() = this is StructureKind || this is PolymorphicKind
+
+    private interface StructureEncoder : Encoder, CompositeEncoder
+    private interface StructureDecoder : Decoder, CompositeDecoder
+
+    private fun ensureMapHasEncodableKeys(mapDescriptor: SerialDescriptor) {
+        require(mapDescriptor.getElementDescriptor(0).kind.isNonStructure()) {
+            "UriFormat only supports maps with primitive and enum-type keys."
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
     private fun getProperStructureEncoder(
         descriptor: SerialDescriptor,
         into: MutableMap<String, String>,
         prefix: String = "",
-    ): StructureEncoder =
-        when (descriptor.kind) {
-            StructureKind.CLASS -> ClassEncoder(prefix, into)
+    ): StructureEncoder {
+        val descriptor = descriptor.unwrap()
+        return when (descriptor.kind) {
+            StructureKind.CLASS, is PolymorphicKind -> ClassEncoder(prefix, into)
             StructureKind.LIST -> ListEncoder(prefix, into)
             StructureKind.MAP -> {
-                ensureMapHasPrimitiveKeys(descriptor)
+                ensureMapHasEncodableKeys(descriptor)
                 MapEncoder(prefix, into)
             }
             StructureKind.OBJECT -> throw UnsupportedOperationException("UriFormat does not support objects yet")
-            else -> throw IllegalArgumentException("Only structure types can be encoded as a string map")
+            else -> throw IllegalArgumentException("Only structure types can be encoded as a string map. Got ${descriptor.kind} (${descriptor.serialName}).")
         }
+    }
 
+    @OptIn(ExperimentalSerializationApi::class)
     private fun getProperStructureDecoder(
         descriptor: SerialDescriptor,
         prefix: String,
         source: Map<String, String>,
-    ): StructureDecoder =
-        when (descriptor.kind) {
-            StructureKind.CLASS -> ClassDecoder(prefix, source)
+    ): StructureDecoder {
+        val descriptor = descriptor.unwrap()
+        return when (descriptor.kind) {
+            StructureKind.CLASS, is PolymorphicKind -> ClassDecoder(prefix, source)
             StructureKind.LIST -> ListDecoder(prefix, source)
             StructureKind.MAP -> {
-                ensureMapHasPrimitiveKeys(descriptor)
+                ensureMapHasEncodableKeys(descriptor)
                 MapDecoder(prefix, source)
             }
             StructureKind.OBJECT -> throw UnsupportedOperationException("UriFormat does not support objects yet")
-            else -> throw IllegalArgumentException("Only structure types can be encoded as a string map")
+            else -> throw IllegalArgumentException("Only structure types can be encoded as a string map. Got ${descriptor.kind} (${descriptor.serialName}).")
         }
+    }
 
     // -- ENCODING --
 
@@ -102,9 +140,7 @@ class UriFormat(
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
         fun getUriOrNull(): String? =
-            singleElementUri ?: encodedStructure?.let { map ->
-                map.entries.joinToString("&") { "${it.key}=${encodeURIComponent(it.value)}" }
-            }
+            singleElementUri ?: encodedStructure?.let(::encodeToString)
 
         fun getUri(): String = getUriOrNull() ?: "NULL"
 
@@ -148,6 +184,14 @@ class UriFormat(
         }
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
+    private inner class StringMapEncoder(val prefix: String, val dest: MutableMap<String, String>) : AbstractEncoder() {
+        override val serializersModule: SerializersModule = this@UriFormat.serializersModule
+
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder =
+            getProperStructureEncoder(descriptor, dest, prefix)
+    }
+
 
     /** Mostly ripped from kotlinx.serialization's Properties.OutMapper encoder */
     @OptIn(InternalSerializationApi::class)
@@ -172,7 +216,7 @@ class UriFormat(
         }
 
         override fun encodeTaggedValue(tag: String, value: Any) {
-            map[tag] = value.toString()
+            map[tag] = encodeURIComponent(value.toString())
         }
 
         override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder =
@@ -183,7 +227,7 @@ class UriFormat(
         }
 
         override fun encodeTaggedEnum(tag: String, enumDescriptor: SerialDescriptor, ordinal: Int) {
-            map[tag] = enumDescriptor.getElementName(ordinal)
+            map[tag] = encodeURIComponent(enumDescriptor.getElementName(ordinal))
         }
     }
 
@@ -203,7 +247,7 @@ class UriFormat(
         }
 
         override fun encodeValue(value: Any) {
-            map[fullTag(currentIndex++)] = value.toString()
+            map[fullTag(currentIndex++)] = encodeURIComponent(value.toString())
         }
 
         override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder =
@@ -245,11 +289,14 @@ class UriFormat(
                 currentKey = value.toString()
             } else {
                 // This is a value - write it with the stored key
-                map[fullTag(key)] = value.toString()
+                map[fullTag(key)] = encodeURIComponent(value.toString())
                 currentKey = null
                 entryCount++
             }
         }
+
+        override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) =
+            encodeValue(enumDescriptor.getElementName(index))
 
         override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
             val key = currentKey ?: throw SerializationException("Map value must have a key")
@@ -273,7 +320,7 @@ class UriFormat(
     private inner class UriDecoder(private val uri: String) : Decoder {
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
-        private val decoded = decodeURIComponent(uri)
+        private val decoded get() = decodeURIComponent(uri)
 
         @ExperimentalSerializationApi
         override fun decodeNull(): Nothing? = null
@@ -298,14 +345,27 @@ class UriFormat(
         override fun decodeInline(descriptor: SerialDescriptor): Decoder = this
 
         override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
-            when (descriptor.kind) {
-                is StructureKind.LIST -> ListDecoder(uri)
-                is StructureKind.MAP -> {
-                    ensureMapHasPrimitiveKeys(descriptor)
-                    MapDecoder(uri)
-                }
-                else -> ClassDecoder(uri)
-            }
+            getProperStructureDecoder(
+                descriptor,
+                prefix = "",
+                uri.split('&')
+                    .filter { it.isNotEmpty() }
+                    .associate {
+                        val index = it.indexOf('=')
+                        if (index == -1) it to ""
+                        else it.substring(0, index) to decodeURIComponent(it.substring(index + 1))
+                    }
+            )
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private inner class StringMapDecoder(val source: Map<String, String>, val prefix: String) : AbstractDecoder() {
+        override val serializersModule: SerializersModule = this@UriFormat.serializersModule
+
+        override fun decodeElementIndex(descriptor: SerialDescriptor): Int = throw UnsupportedOperationException()
+
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
+            getProperStructureDecoder(descriptor, prefix, source)
     }
 
     /** Decodes class structures from URI query parameter format (key=value&key2=value2) */
@@ -315,16 +375,6 @@ class UriFormat(
         private val map: Map<String, String>,
     ) : NamedValueDecoder(), StructureDecoder {
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
-
-        constructor(uri: String) : this(
-            map = uri.split('&')
-                .filter { it.isNotEmpty() }
-                .associate {
-                    val index = it.indexOf('=')
-                    if (index == -1) it to ""
-                    else it.substring(0, index) to decodeURIComponent(it.substring(index + 1))
-                }
-        )
 
         private var currentIndex = 0
 
@@ -399,16 +449,6 @@ class UriFormat(
         private val prefix: String = "",
         private val map: Map<String, String>,
     ) : SequentialDecoder() {
-        constructor(uri: String) : this(
-            map = uri.split('&')
-                .filter { it.isNotEmpty() }
-                .associate {
-                    val index = it.indexOf('=')
-                    if (index == -1) it to ""
-                    else it.substring(0, index) to decodeURIComponent(it.substring(index + 1))
-                }
-        )
-
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
         private var currentIndex = 0
@@ -492,16 +532,6 @@ class UriFormat(
         private val prefix: String = "",
         private val map: Map<String, String>,
     ) : SequentialDecoder() {
-        constructor(uri: String) : this(
-            map = uri.split('&')
-                .filter { it.isNotEmpty() }
-                .associate {
-                    val index = it.indexOf('=')
-                    if (index == -1) it to ""
-                    else it.substring(0, index) to decodeURIComponent(it.substring(index + 1))
-                }
-        )
-
         override val serializersModule: SerializersModule = this@UriFormat.serializersModule
 
         // Discover all keys that belong to this map (have the right prefix)

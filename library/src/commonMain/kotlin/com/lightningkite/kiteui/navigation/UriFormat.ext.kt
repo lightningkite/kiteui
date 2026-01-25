@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.navigation
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.serializer
 
@@ -21,3 +20,9 @@ inline fun <reified T> UriFormat.encodeToStringMap(value: T): Map<String, String
 
 inline fun <reified T> UriFormat.decodeFromStringMap(map: Map<String, String>): T =
     decodeFromStringMap(serializersModule.serializer(), map)
+
+inline fun <reified T> UriFormat.encodeToStringMap(key: String, value: T, dest: MutableMap<String, String>) =
+    encodeToStringMap(serializersModule.serializer(), key, value, dest)
+
+inline fun <reified T> UriFormat.decodeFromStringMap(key: String, source: Map<String, String>): T =
+    decodeFromStringMap(serializersModule.serializer(), key, source)
