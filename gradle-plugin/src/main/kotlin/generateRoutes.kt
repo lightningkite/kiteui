@@ -155,6 +155,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
             appendLine("package $topPackage")
             appendLine("")
             appendLine("import com.lightningkite.kiteui.navigation.*")
+            appendLine("import com.lightningkite.kotlinx.serialization.uri.*")
             allRoutables
                 .map { "import ${it.packageName}.${it.name}" }
                 .toSet()

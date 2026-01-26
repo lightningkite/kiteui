@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui.navigation
 
+import com.lightningkite.kotlinx.serialization.uri.UriFormat
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.EmptySerializersModule
