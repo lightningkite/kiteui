@@ -223,7 +223,10 @@ internal fun resourcesIos(
                 is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"${it.key}\", \"${r.source.extension}\")"
                 is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(\"${it.key}\", \"${r.source.extension}\")"
                 is Resource.Binary -> {
-                    usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()"
+                    usesBlob = true
+                    val mimeType =
+                        java.net.URLConnection.guessContentTypeFromName(r.source.name) ?: "application/octet-stream"
+                    "actual suspend fun ${r.name}(): Blob = Blob(NSDataAsset(\"${it.key}\")!!.data, \"$mimeType\")"
                 }
 
                 is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
@@ -233,7 +236,12 @@ internal fun resourcesIos(
         }
 
     val imports = mutableListOf("import com.lightningkite.kiteui.models.*")
-        .also { if (usesBlob) it.add("import com.lightningkite.kiteui.Blob") }
+        .also {
+            if (usesBlob) {
+                it.add("import com.lightningkite.kiteui.Blob")
+                it.add("import platform.UIKit.NSDataAsset")
+            }
+        }
         .joinToString("\n")
 
     outKt.writeText(
@@ -319,9 +327,13 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
                 is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(R.raw.${it.key.snakeCase()})"
                 is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
                 is Resource.Binary -> {
-                    usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()"
-                }
+                    usesBlob = true
+                    // Guess mime type from file name (e.g. "image/png"), fallback to octet-stream
+                    val mimeType =
+                        java.net.URLConnection.guessContentTypeFromName(r.source.name) ?: "application/octet-stream"
 
+                    "actual suspend fun ${r.name}(): Blob = Blob(AndroidAppContext.applicationCtx.resources.openRawResource(R.raw.${it.key.snakeCase()}).readBytes(), \"$mimeType\")"
+                }
                 else -> ""
             }
         }
