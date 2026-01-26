@@ -19,3 +19,4 @@ LocalTest.kt
 xcuserdata
 library.podspec
 local
+.kbuild

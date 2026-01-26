@@ -106,15 +106,33 @@ actual class FutureElement actual constructor() {
             out.append("</")
             out.append(tag)
             out.append('>')
+        } else if (innerHtmlUnsafe != null) {
+            out.append('>')
+            out.append(innerHtmlUnsafe)  // Intentionally not escaped - caller is responsible for safety
+            out.append("</")
+            out.append(tag)
+            out.append('>')
         } else if (content != null) {
             out.append('>')
             out.appendSafe(content ?: "")
             out.append("</")
             out.append(tag)
             out.append('>')
-        } else {
+        } else if (tag in voidElements) {
             out.append("/>")
+        } else {
+            out.append("></")
+            out.append(tag)
+            out.append('>')
         }
+    }
+
+    companion object {
+        // HTML5 void elements that can self-close
+        private val voidElements = setOf(
+            "area", "base", "br", "col", "embed", "hr", "img", "input",
+            "link", "meta", "param", "source", "track", "wbr"
+        )
     }
 }
 
