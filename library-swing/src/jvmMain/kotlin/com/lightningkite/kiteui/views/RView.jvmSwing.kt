@@ -108,24 +108,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    // Child alignment defaults - sync to native component for layout managers to read
-    override var newChildHorizontalAlign: Align?
-        get() = super.newChildHorizontalAlign
-        set(value) {
-            super.newChildHorizontalAlign = value
-            if (native is JComponent) {
-                (native as JComponent).putClientProperty("kiteui.newChildHorizontalAlign", value)
-            }
-        }
-
-    override var newChildVerticalAlign: Align?
-        get() = super.newChildVerticalAlign
-        set(value) {
-            super.newChildVerticalAlign = value
-            if (native is JComponent) {
-                (native as JComponent).putClientProperty("kiteui.newChildVerticalAlign", value)
-            }
-        }
+    // Child alignment defaults - use base class implementation
+    // Layout managers can access alignment values directly from the RView
 
     // Drag and drop support
     private var dragGestureRecognizer: DragGestureRecognizer? = null
