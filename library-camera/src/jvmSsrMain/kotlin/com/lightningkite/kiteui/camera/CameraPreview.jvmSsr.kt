@@ -4,8 +4,8 @@ package com.lightningkite.kiteui.camera
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.MutableReactive
+import com.lightningkite.reactive.core.Signal
 
 /**
  * SSR stub for CameraPreview.
@@ -18,7 +18,7 @@ actual class CameraPreview actual constructor(context: RContext) : RView(context
         native.classes.add("camera-preview-ssr-placeholder")
     }
 
-    actual val hasPermissions: MutableReactive<Boolean> = Constant(false)
+    actual val hasPermissions: MutableReactive<Boolean> = Signal(false)
 
     actual fun onBarcode(formats: Set<BarcodeFormat>, action: (List<BarcodeResult>) -> Unit) {
         // No-op for SSR
