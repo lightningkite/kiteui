@@ -60,6 +60,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":library"))
+                api(project(":library-lottie"))  // by Claude - for LottieRendererTestPage
             }
         }
 

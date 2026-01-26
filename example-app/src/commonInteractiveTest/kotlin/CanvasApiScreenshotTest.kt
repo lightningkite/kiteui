@@ -189,14 +189,14 @@ class CanvasApiScreenshotTest {
                 sizeConstraints(width = 100.px, height = 100.px).canvas {
                     delegate = object : CanvasDelegate() {
                         override fun draw(context: DrawingContext2D) = with(context) {
+                            // by Claude - updated to new LinearGradient API
                             fillPaint = LinearGradient(
                                 stops = listOf(
                                     GradientStop(0f, Color.red),
                                     GradientStop(0.5f, Color.yellow),
                                     GradientStop(1f, Color.green)
                                 ),
-                                x0 = 10.0, y0 = 50.0,
-                                x1 = 90.0, y1 = 50.0
+                                angle = Angle.zero  // left-to-right
                             )
                             fillRect(10.0, 10.0, 80.0, 80.0)
                         }
@@ -216,14 +216,13 @@ class CanvasApiScreenshotTest {
                 sizeConstraints(width = 100.px, height = 100.px).canvas {
                     delegate = object : CanvasDelegate() {
                         override fun draw(context: DrawingContext2D) = with(context) {
+                            // by Claude - updated to new RadialGradient API
                             fillPaint = RadialGradient(
                                 stops = listOf(
                                     GradientStop(0f, Color.white),
                                     GradientStop(0.5f, Color.blue),
                                     GradientStop(1f, Color.fromHexString("#000080"))
-                                ),
-                                cx = 50.0, cy = 50.0,
-                                radius = 40.0
+                                )
                             )
                             beginPath()
                             appendArc(50.0, 50.0, 40.0, Angle.zero, Angle(1f), false)

@@ -187,6 +187,7 @@ class ShadowTestDelegate : CanvasDelegate() {
 
 
 class LinearGradientTestDelegate : CanvasDelegate() {
+    // by Claude - updated to new LinearGradient API (no longer uses absolute coordinates)
     override fun draw(context: DrawingContext2D) = with(context) {
         fillPaint = LinearGradient(
             stops = listOf(
@@ -194,23 +195,21 @@ class LinearGradientTestDelegate : CanvasDelegate() {
                 GradientStop(0.5f, Color.yellow),
                 GradientStop(1f, Color.green)
             ),
-            x0 = 10.0, y0 = 50.0,
-            x1 = 90.0, y1 = 50.0
+            angle = Angle.zero  // left-to-right gradient
         )
         fillRect(10.0, 10.0, 80.0, 80.0)
     }
 }
 
 class RadialGradientTestDelegate : CanvasDelegate() {
+    // by Claude - updated to new RadialGradient API (no longer uses absolute coordinates)
     override fun draw(context: DrawingContext2D) = with(context) {
         fillPaint = RadialGradient(
             stops = listOf(
                 GradientStop(0f, Color.white),
                 GradientStop(0.5f, Color.blue),
                 GradientStop(1f, Color.fromHexString("#000080"))
-            ),
-            cx = 50.0, cy = 50.0,
-            radius = 40.0
+            )
         )
         beginPath()
         appendArc(50.0, 50.0, 40.0, Angle.zero, Angle(1f), false)
