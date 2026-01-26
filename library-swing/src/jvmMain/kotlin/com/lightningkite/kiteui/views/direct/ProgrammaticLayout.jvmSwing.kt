@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.views.ScrollableMouseTransparentPanel
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.px
@@ -11,11 +12,10 @@ import java.awt.Component
 import java.awt.Container
 import java.awt.Dimension as AwtDimension
 import java.awt.LayoutManager
-import javax.swing.JPanel
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    override val native = JPanel().apply {
+    override val native = ScrollableMouseTransparentPanel().apply {
         layout = ProgrammaticLayoutManager()
     }
 

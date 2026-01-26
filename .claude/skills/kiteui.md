@@ -59,7 +59,7 @@ dependencies {
 ```kotlin
 @Routable("my-page")
 object MyPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render() {
         col {
             h1("My Page Title")
             text("Content goes here")
@@ -72,7 +72,7 @@ object MyPage : Page {
 ```kotlin
 @Routable("user/{userId}")
 class UserProfilePage(val userId: String) : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render() {
         col {
             h1("User Profile")
             text("User ID: $userId")
@@ -85,7 +85,7 @@ class UserProfilePage(val userId: String) : Page {
 ```kotlin
 @Routable("counter")
 object CounterPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render() {
         val count = Signal(0)
 
         col {
@@ -382,7 +382,8 @@ count.value = 5
 count.value++
 ```
 
-### Property - Another name for Signal
+### Property - Old name for Signal
+`Property` is an older name for `Signal`. They are the same thing.
 ```kotlin
 val email = Property("")
 textInput { content bind email }
@@ -393,11 +394,12 @@ textInput { content bind email }
 val title: Reactive<String> = Constant("Welcome")
 ```
 
-### Shared - Computed Reactive Value
+### remember / shared - Computed Reactive Value
+`remember` is a cached computed value. `shared` is an older name for the same thing.
 ```kotlin
 val firstName = Signal("John")
 val lastName = Signal("Doe")
-val fullName = shared { "${firstName()} ${lastName()}" }
+val fullName = remember { "${firstName()} ${lastName()}" }
 
 text { ::content { fullName() } }
 ```
@@ -507,12 +509,18 @@ link {
 
 ### Using Built-in Themes
 ```kotlin
-// Available themes
-Theme.clean()
-Theme.flat()
-Theme.flat2()
-Theme.m3()
-Theme.shadCnLike("theme-name")
+// Available theme factories (each takes configuration parameters)
+Theme.clean(primary = Color.blue)
+Theme.flat(id = "my-flat", hue = Angle(0.5f), saturation = 0.15f, baseBrightness = 0.8f)
+Theme.flat2(id = "my-flat2", hue = Angle(0.5f))
+Theme.material3(id = "my-m3", primary = Color.fromHex(0xFF6200EE.toInt()))
+Theme.shadCnLike(id = "my-theme", ...)
+
+// Or use helper objects for random themes
+MaterialLikeTheme.randomLight()
+MaterialLikeTheme.randomDark()
+M3Theme.randomLight()
+M3Theme.randomDark()
 ```
 
 ### Applying Semantics
@@ -786,7 +794,7 @@ expanding.scrolling.card.col {
 
 ### State Management
 1. Use `Signal` for mutable state
-2. Use `shared` for computed values
+2. Use `remember` for computed values (older code may use `shared`)
 3. Use `LateInitProperty` for async-loaded data
 4. Prefer reactive functions (`::content { }`) over manual updates
 
@@ -806,7 +814,7 @@ expanding.scrolling.card.col {
 2. Use `Recycler2` for long lists that need virtualization
 3. Keep view hierarchy shallow
 4. Batch child operations when possible
-5. Use `shared` to avoid redundant calculations
+5. Use `remember` to avoid redundant calculations
 
 ## Common Patterns
 
@@ -814,7 +822,7 @@ expanding.scrolling.card.col {
 ```kotlin
 @Routable("login")
 object LoginPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render() {
         val email = Signal("")
         val password = Signal("")
 
@@ -874,10 +882,10 @@ object LoginPage : Page {
 ```kotlin
 @Routable("users")
 object UsersPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render() {
         val searchQuery = Signal("")
         val users = Signal(listOf<User>())
-        val filteredUsers = shared {
+        val filteredUsers = remember {
             val query = searchQuery().lowercase()
             users().filter { it.name.lowercase().contains(query) }
         }
@@ -908,7 +916,7 @@ object UsersPage : Page {
 ```kotlin
 @Routable("product/{id}")
 class ProductPage(val id: String) : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render() {
         val product = LateInitProperty<Product>()
 
         launch {

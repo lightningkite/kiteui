@@ -52,6 +52,9 @@ kotlin {
                 api(libs.miglayout.swing)
                 api(libs.swingx.all)
                 api(libs.kotlinxCoroutinesSwing)
+
+                // JInput for gamepad support (2.0.10 is an uber jar with natives included)
+                api(libs.jinput)
             }
         }
     }

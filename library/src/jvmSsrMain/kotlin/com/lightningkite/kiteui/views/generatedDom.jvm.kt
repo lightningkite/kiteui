@@ -1154,7 +1154,12 @@ actual inline var FutureElementAttributes.heightString: String?
     set(value) { this["height"] = value?.toString() }
 actual inline var FutureElementAttributes.hidden: Boolean?
     get() = this["hidden"]?.toBoolean()
-    set(value) { this["hidden"] = value?.toString() }
+    set(value) {
+        // Boolean attributes in HTML: presence means true, absence means false
+        // Do not output hidden='false' as CSS [hidden] selector matches by attribute presence
+        if (value == true) this["hidden"] = "true"
+        else this.underlyingMap.remove("hidden")
+    }
 actual inline var FutureElementAttributes.high: Double?
     get() = this["high"]?.toDouble()
     set(value) { this["high"] = value?.toString() }

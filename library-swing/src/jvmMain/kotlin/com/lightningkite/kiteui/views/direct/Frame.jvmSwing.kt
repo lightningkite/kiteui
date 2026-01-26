@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.views.MouseTransparentPanel
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import java.awt.LayoutManager
@@ -14,7 +15,7 @@ import javax.swing.JPanel
 actual typealias Frame = FrameImpl
 
 class FrameImpl(context: RContext) : RView(context) {
-    override val native = JPanel().apply {
+    override val native = MouseTransparentPanel().apply {
         layout = FrameLayoutManager()
     }
 }

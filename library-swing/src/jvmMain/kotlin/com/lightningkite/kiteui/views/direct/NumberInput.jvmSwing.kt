@@ -272,6 +272,9 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             (backgroundColor.alpha * 255).toInt().coerceIn(0, 255)
         )
 
+        // Number inputs must be opaque to show their background
+        native.isOpaque = true
+
         // Set caret color (text cursor)
         native.caretColor = native.foreground
 

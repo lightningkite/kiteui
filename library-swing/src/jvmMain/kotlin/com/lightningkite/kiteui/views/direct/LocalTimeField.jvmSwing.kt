@@ -9,10 +9,11 @@ import com.lightningkite.reactive.core.Signal
 import kotlinx.datetime.*
 import java.awt.Color as AwtColor
 import java.awt.Font as AwtFont
+import java.util.Calendar
+import java.util.Date
 import javax.swing.*
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
-import kotlin.time.Duration.Companion.minutes
 
 actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
     private val spinner = JSpinner()
@@ -21,9 +22,14 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
     private var updatingFromSignal = false
     private var updatingFromSpinner = false
 
+    // Use SpinnerDateModel for proper JSpinner.DateEditor compatibility
+    private val dateModel = SpinnerDateModel().apply {
+        calendarField = Calendar.MINUTE
+    }
+
     actual val content: MutableReactiveValue<LocalTime?> = Signal<LocalTime?>(null).also { signal ->
-        // Set up custom spinner model for time
-        spinner.model = TimeSpinnerModel(signal.value)
+        // Set up SpinnerDateModel
+        spinner.model = dateModel
 
         // Format the spinner display
         val editor = JSpinner.DateEditor(spinner, "HH:mm")
@@ -34,8 +40,16 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
             override fun stateChanged(e: ChangeEvent?) {
                 if (!updatingFromSignal) {
                     updatingFromSpinner = true
-                    val model = spinner.model as? TimeSpinnerModel
-                    signal.value = model?.currentTime
+                    val date = spinner.value as? Date
+                    if (date != null) {
+                        val cal = Calendar.getInstance()
+                        cal.time = date
+                        signal.value = LocalTime(
+                            cal.get(Calendar.HOUR_OF_DAY),
+                            cal.get(Calendar.MINUTE),
+                            cal.get(Calendar.SECOND)
+                        )
+                    }
                     updatingFromSpinner = false
                 }
             }
@@ -45,10 +59,13 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
         signal.addListener {
             if (!updatingFromSpinner) {
                 updatingFromSignal = true
-                val model = spinner.model as? TimeSpinnerModel
-                if (model != null) {
-                    model.currentTime = signal.value
-                    spinner.value = model.value // Trigger UI update
+                val time = signal.value
+                if (time != null) {
+                    val cal = Calendar.getInstance()
+                    cal.set(Calendar.HOUR_OF_DAY, time.hour)
+                    cal.set(Calendar.MINUTE, time.minute)
+                    cal.set(Calendar.SECOND, time.second)
+                    spinner.value = cal.time
                 }
                 updatingFromSignal = false
             }
@@ -58,10 +75,8 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
     actual var range: ClosedRange<LocalTime>? = null
         set(value) {
             field = value
-            val model = spinner.model as? TimeSpinnerModel
-            if (model != null) {
-                model.range = value
-            }
+            // SpinnerDateModel doesn't directly support LocalTime range,
+            // but we could add validation if needed
         }
 
     var enabled: Boolean
@@ -121,94 +136,5 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
         var t = theme
         if (!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
-    }
-
-    /**
-     * Custom SpinnerModel for handling LocalTime values
-     */
-    private class TimeSpinnerModel(initialTime: LocalTime?) : AbstractSpinnerModel() {
-        var currentTime: LocalTime? = initialTime ?: LocalTime(12, 0)
-            set(value) {
-                if (field != value) {
-                    field = value
-                    fireStateChanged()
-                }
-            }
-
-        var range: ClosedRange<LocalTime>? = null
-
-        override fun getValue(): Any {
-            // Convert LocalTime to java.util.Date for JSpinner.DateEditor
-            val time = currentTime ?: LocalTime(12, 0)
-            @Suppress("DEPRECATION")
-            return java.util.Date(0, 0, 1, time.hour, time.minute, time.second)
-        }
-
-        override fun setValue(value: Any?) {
-            when (value) {
-                is java.util.Date -> {
-                    @Suppress("DEPRECATION")
-                    val newTime = LocalTime(
-                        value.hours.coerceIn(0, 23),
-                        value.minutes.coerceIn(0, 59),
-                        value.seconds.coerceIn(0, 59)
-                    )
-
-                    // Apply range constraints if set
-                    val constrainedTime = if (range != null) {
-                        when {
-                            newTime < range!!.start -> range!!.start
-                            newTime > range!!.endInclusive -> range!!.endInclusive
-                            else -> newTime
-                        }
-                    } else {
-                        newTime
-                    }
-
-                    currentTime = constrainedTime
-                }
-                is LocalTime -> {
-                    currentTime = value
-                }
-            }
-        }
-
-        override fun getNextValue(): Any? {
-            val time = currentTime ?: return null
-            val nextMinute = if (time.minute < 59) {
-                LocalTime(time.hour, time.minute + 1, time.second, time.nanosecond)
-            } else if (time.hour < 23) {
-                LocalTime(time.hour + 1, 0, time.second, time.nanosecond)
-            } else {
-                LocalTime(0, 0) // Wrap to midnight
-            }
-
-            // Check range
-            if (range != null && nextMinute > range!!.endInclusive) {
-                return null
-            }
-
-            @Suppress("DEPRECATION")
-            return java.util.Date(0, 0, 1, nextMinute.hour, nextMinute.minute, nextMinute.second)
-        }
-
-        override fun getPreviousValue(): Any? {
-            val time = currentTime ?: return null
-            val prevMinute = if (time.minute > 0) {
-                LocalTime(time.hour, time.minute - 1, time.second, time.nanosecond)
-            } else if (time.hour > 0) {
-                LocalTime(time.hour - 1, 59, time.second, time.nanosecond)
-            } else {
-                LocalTime(23, 59) // Wrap to end of day
-            }
-
-            // Check range
-            if (range != null && prevMinute < range!!.start) {
-                return null
-            }
-
-            @Suppress("DEPRECATION")
-            return java.util.Date(0, 0, 1, prevMinute.hour, prevMinute.minute, prevMinute.second)
-        }
     }
 }

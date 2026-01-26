@@ -27,7 +27,8 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     private var dragStartX: Int? = null
 
     init {
-        // Add mouse listeners for swipe gestures
+        // Add mouse listeners for swipe gestures only
+        // Click forwarding is handled by leaf components (ClickThroughLabel, IconComponent)
         native.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
                 dragStartX = e.x

@@ -5,9 +5,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
+import com.lightningkite.kiteui.gamepad.Gamepads
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -233,5 +236,20 @@ abstract class KiteUiActivity : AppCompatActivity() {
         if(!mainNavigator.goBack()) {
             super.onBackPressed()
         }
+    }
+
+    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        if (Gamepads.handleMotionEvent(event)) return true
+        return super.onGenericMotionEvent(event)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (Gamepads.handleKeyDown(keyCode, event)) return true
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        if (Gamepads.handleKeyUp(keyCode, event)) return true
+        return super.onKeyUp(keyCode, event)
     }
 }

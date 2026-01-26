@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.views.ClickThroughSeparator
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import java.awt.Color as AwtColor
@@ -12,7 +13,8 @@ import javax.swing.SwingConstants
 actual typealias Separator = SeparatorImpl
 
 class SeparatorImpl(context: RContext) : RView(context) {
-    override val native = JSeparator().apply {
+    // Use ClickThroughSeparator so it doesn't block clicks from parent Link/Button
+    override val native = ClickThroughSeparator().apply {
         // Set minimum sizes to ensure separator is visible
         minimumSize = AwtDimension(1, 1)
         preferredSize = AwtDimension(1, 1)

@@ -250,6 +250,12 @@ class ImagePanel(
             repaint()
         }
 
+    // Make click-through if not zoomable, so images don't block clicks from parent Link/Button
+    // Zoomable images need to receive mouse events for panning/zooming
+    override fun contains(x: Int, y: Int): Boolean {
+        return if (zoomState != null) super.contains(x, y) else false
+    }
+
     override fun getPreferredSize(): java.awt.Dimension {
         if (sizeless) {
             return java.awt.Dimension(0, 0)

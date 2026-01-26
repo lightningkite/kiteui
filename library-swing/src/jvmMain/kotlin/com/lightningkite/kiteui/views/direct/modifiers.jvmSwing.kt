@@ -68,17 +68,105 @@ actual fun ViewWriter.changingWeight(amount: TypedReactiveContext<*>.() -> Float
  */
 private const val HORIZONTAL_ALIGN_PROPERTY = "kiteui.horizontalAlign"
 private const val VERTICAL_ALIGN_PROPERTY = "kiteui.verticalAlign"
+private const val HORIZONTAL_ALIGN_EXPLICIT = "kiteui.horizontalAlignExplicit"
+private const val VERTICAL_ALIGN_EXPLICIT = "kiteui.verticalAlignExplicit"
+private const val NEW_CHILD_HORIZONTAL_ALIGN_PROPERTY = "kiteui.newChildHorizontalAlign"
+private const val NEW_CHILD_VERTICAL_ALIGN_PROPERTY = "kiteui.newChildVerticalAlign"
 
 /**
- * Extension properties to get/set alignment on JComponent
+ * Extension properties to get/set alignment on JComponent.
+ * When getting alignment, checks if explicitly set, otherwise falls back to parent's newChild* alignment, then Stretch.
  */
 var javax.swing.JComponent.horizontalAlign: Align
-    get() = getClientProperty(HORIZONTAL_ALIGN_PROPERTY) as? Align ?: Align.Stretch
-    set(value) = putClientProperty(HORIZONTAL_ALIGN_PROPERTY, value)
+    get() {
+        val explicit = getClientProperty(HORIZONTAL_ALIGN_EXPLICIT) as? Boolean ?: false
+        if (explicit) {
+            return getClientProperty(HORIZONTAL_ALIGN_PROPERTY) as? Align ?: Align.Stretch
+        }
+        // Fall back to parent's newChildHorizontalAlign if not explicitly set
+        val parent = this.parent
+        if (parent is javax.swing.JComponent) {
+            val parentDefault = parent.newChildHorizontalAlign
+            if (parentDefault != null) return parentDefault
+        }
+        return Align.Stretch
+    }
+    set(value) {
+        putClientProperty(HORIZONTAL_ALIGN_PROPERTY, value)
+        putClientProperty(HORIZONTAL_ALIGN_EXPLICIT, true)
+    }
 
 var javax.swing.JComponent.verticalAlign: Align
-    get() = getClientProperty(VERTICAL_ALIGN_PROPERTY) as? Align ?: Align.Stretch
-    set(value) = putClientProperty(VERTICAL_ALIGN_PROPERTY, value)
+    get() {
+        val explicit = getClientProperty(VERTICAL_ALIGN_EXPLICIT) as? Boolean ?: false
+        if (explicit) {
+            return getClientProperty(VERTICAL_ALIGN_PROPERTY) as? Align ?: Align.Stretch
+        }
+        // Fall back to parent's newChildVerticalAlign if not explicitly set
+        val parent = this.parent
+        if (parent is javax.swing.JComponent) {
+            val parentDefault = parent.newChildVerticalAlign
+            if (parentDefault != null) return parentDefault
+        }
+        return Align.Stretch
+    }
+    set(value) {
+        putClientProperty(VERTICAL_ALIGN_PROPERTY, value)
+        putClientProperty(VERTICAL_ALIGN_EXPLICIT, true)
+    }
+
+/**
+ * Extension properties for parent containers to set default alignment for new children.
+ */
+var javax.swing.JComponent.newChildHorizontalAlign: Align?
+    get() = getClientProperty(NEW_CHILD_HORIZONTAL_ALIGN_PROPERTY) as? Align
+    set(value) = putClientProperty(NEW_CHILD_HORIZONTAL_ALIGN_PROPERTY, value)
+
+var javax.swing.JComponent.newChildVerticalAlign: Align?
+    get() = getClientProperty(NEW_CHILD_VERTICAL_ALIGN_PROPERTY) as? Align
+    set(value) = putClientProperty(NEW_CHILD_VERTICAL_ALIGN_PROPERTY, value)
+
+/**
+ * Helper function to layout a child component within a container respecting its alignment properties.
+ * Used by container layout managers (Button, Link, ExternalLink, Frame) to properly center content.
+ */
+fun layoutChildWithAlignment(
+    child: java.awt.Component,
+    insets: java.awt.Insets,
+    availableWidth: Int,
+    availableHeight: Int
+) {
+    // Get alignment from child component
+    val horizontalAlign = if (child is javax.swing.JComponent) child.horizontalAlign else Align.Stretch
+    val verticalAlign = if (child is javax.swing.JComponent) child.verticalAlign else Align.Stretch
+
+    // Calculate child size based on alignment
+    val prefSize = child.preferredSize
+    val childWidth = when (horizontalAlign) {
+        Align.Stretch -> availableWidth
+        else -> prefSize.width.coerceAtMost(availableWidth)
+    }
+    val childHeight = when (verticalAlign) {
+        Align.Stretch -> availableHeight
+        else -> prefSize.height.coerceAtMost(availableHeight)
+    }
+
+    // Calculate position based on alignment
+    val x = when (horizontalAlign) {
+        Align.Start -> insets.left
+        Align.Center -> insets.left + (availableWidth - childWidth) / 2
+        Align.End -> insets.left + (availableWidth - childWidth)
+        Align.Stretch -> insets.left
+    }
+    val y = when (verticalAlign) {
+        Align.Start -> insets.top
+        Align.Center -> insets.top + (availableHeight - childHeight) / 2
+        Align.End -> insets.top + (availableHeight - childHeight)
+        Align.Stretch -> insets.top
+    }
+
+    child.setBounds(x, y, childWidth, childHeight)
+}
 
 @ViewModifierDsl3
 actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
@@ -160,8 +248,38 @@ actual fun ViewWriter.textPopover(message: String): ViewWriter {
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: com.lightningkite.kiteui.models.SizeConstraints): ViewWriter {
     return beforeNextElementSetup {
-        // TODO: Implement size constraints
-        // Store constraints for layout
+        if (native is javax.swing.JComponent) {
+            val component = native as javax.swing.JComponent
+
+            // Apply size constraints using Swing's preferred/minimum/maximum size
+            val prefSize = component.preferredSize
+            val minSize = component.minimumSize
+            val maxSize = component.maximumSize
+
+            // Calculate new dimensions based on constraints
+            val newPrefWidth = constraints.width?.value?.toInt() ?: prefSize.width
+            val newPrefHeight = constraints.height?.value?.toInt() ?: prefSize.height
+
+            val newMinWidth = constraints.minWidth?.value?.toInt() ?: minSize.width
+            val newMinHeight = constraints.minHeight?.value?.toInt() ?: minSize.height
+
+            val newMaxWidth = constraints.maxWidth?.value?.toInt() ?: maxSize.width
+            val newMaxHeight = constraints.maxHeight?.value?.toInt() ?: maxSize.height
+
+            // Set preferred size - use explicit width/height if set, otherwise use min as preference if set
+            val preferredWidth = constraints.width?.value?.toInt()
+                ?: constraints.minWidth?.value?.toInt()
+                ?: prefSize.width
+            val preferredHeight = constraints.height?.value?.toInt()
+                ?: constraints.minHeight?.value?.toInt()
+                ?: prefSize.height
+
+            component.preferredSize = java.awt.Dimension(preferredWidth, preferredHeight)
+            component.minimumSize = java.awt.Dimension(newMinWidth, newMinHeight)
+            component.maximumSize = java.awt.Dimension(newMaxWidth, newMaxHeight)
+
+            parent?.native?.revalidate()
+        }
     }
 }
 

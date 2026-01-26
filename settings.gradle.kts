@@ -14,6 +14,10 @@ rootProject.name = "kiteui"
 
 include(":library")
 include(":library-swing")
+include(":library-lottie")
+include(":library-lottie-swing")
+include(":library-lottie-jvm")
+include(":library-camera")
 include(":example-app")
 include(":example-app-swing")
 include(":gradle-plugin")

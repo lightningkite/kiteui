@@ -226,6 +226,9 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             (backgroundColor.alpha * 255).toInt().coerceIn(0, 255)
         )
 
+        // Text fields must be opaque to show their background
+        textField.isOpaque = true
+
         // Set caret color (text cursor)
         textField.caretColor = textField.foreground
 
