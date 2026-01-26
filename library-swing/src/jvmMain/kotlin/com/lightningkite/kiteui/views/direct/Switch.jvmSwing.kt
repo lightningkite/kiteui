@@ -14,7 +14,20 @@ import java.awt.RenderingHints
 import javax.swing.JToggleButton
 
 actual class Switch actual constructor(context: RContext) : RView(context) {
+    // Store theme colors for use in paintComponent
+    private var uncheckedTrackColor: AwtColor = AwtColor.GRAY
+    private var uncheckedThumbColor: AwtColor = AwtColor.WHITE
+    private var checkedTrackColor: AwtColor = AwtColor.BLUE
+    private var checkedThumbColor: AwtColor = AwtColor.WHITE
+
     override val native = object : JToggleButton() {
+        init {
+            // Set fixed size so switch doesn't stretch (similar to web version)
+            preferredSize = java.awt.Dimension(50, 25)
+            minimumSize = java.awt.Dimension(50, 25)
+            maximumSize = java.awt.Dimension(50, 25) // Prevent stretching in layouts
+        }
+
         override fun paintComponent(g: Graphics) {
             val g2d = g as Graphics2D
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -26,11 +39,11 @@ actual class Switch actual constructor(context: RContext) : RView(context) {
             val thumbSize = trackHeight * 0.8f
             val trackWidth = width.toFloat()
 
-            // Draw track
+            // Draw track using stored theme colors
             val trackColor = if (isSelected) {
-                foreground.brighter()
+                checkedTrackColor
             } else {
-                background.darker()
+                uncheckedTrackColor
             }
             g2d.color = trackColor
             g2d.fillRoundRect(
@@ -42,7 +55,7 @@ actual class Switch actual constructor(context: RContext) : RView(context) {
                 trackHeight.toInt()
             )
 
-            // Draw thumb
+            // Draw thumb using stored theme colors
             val thumbX = if (isSelected) {
                 trackWidth - thumbSize - (trackHeight - thumbSize) / 2
             } else {
@@ -50,7 +63,7 @@ actual class Switch actual constructor(context: RContext) : RView(context) {
             }
             val thumbY = trackY + (trackHeight - thumbSize) / 2
 
-            g2d.color = if (isSelected) foreground else background.brighter()
+            g2d.color = if (isSelected) checkedThumbColor else uncheckedThumbColor
             g2d.fillOval(
                 thumbX.toInt(),
                 thumbY.toInt(),
@@ -87,18 +100,21 @@ actual class Switch actual constructor(context: RContext) : RView(context) {
         super.applyTheme(theme)
         val t = theme.theme
 
-        // Unchecked state: use highlighted background
-        val uncheckedColor = t.background.closestColor().highlight(0.3f)
-        native.background = AwtColor(
-            uncheckedColor.red,
-            uncheckedColor.green,
-            uncheckedColor.blue,
-            uncheckedColor.alpha
-        )
+        // Unchecked state: use highlighted background for track
+        val uncheckedBg = t.background.closestColor().highlight(0.3f)
+        uncheckedTrackColor = uncheckedBg.toAwt()
 
-        // Checked state: use important semantic background
-        val checkedColor = t[ImportantSemantic].theme.background.closestColor()
-        native.foreground = checkedColor.toAwt()
+        // Unchecked thumb: use even more highlighted background for contrast
+        val uncheckedThumb = uncheckedBg.highlight(0.4f)
+        uncheckedThumbColor = uncheckedThumb.toAwt()
+
+        // Checked state: use important semantic background for track
+        val checkedBg = t[ImportantSemantic].theme.background.closestColor()
+        checkedTrackColor = checkedBg.toAwt()
+
+        // Checked thumb: use foreground color for maximum contrast
+        val checkedThumb = t.foreground.closestColor()
+        checkedThumbColor = checkedThumb.toAwt()
 
         native.repaint()
     }

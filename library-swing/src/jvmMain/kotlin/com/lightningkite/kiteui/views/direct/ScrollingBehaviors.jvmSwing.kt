@@ -9,8 +9,57 @@ import java.awt.Point
 import java.awt.Rectangle
 import java.awt.event.AdjustmentEvent
 import java.awt.event.AdjustmentListener
+import java.awt.AWTEvent
+import java.awt.Component
+import java.awt.Container
+import java.awt.Toolkit
+import java.awt.event.MouseWheelEvent
+import java.lang.ref.WeakReference
 import javax.swing.JScrollPane
 import javax.swing.SwingUtilities
+
+/**
+ * Global handler for mouse wheel events that forwards them to the appropriate ScrollView.
+ * This is needed because BasicScrollPaneUI doesn't handle wheel events when scroll bars
+ * are hidden (policy NEVER), and we want scrolling to work with hidden scroll bars.
+ */
+object ScrollWheelHandler {
+    private val scrollViews = mutableListOf<WeakReference<ScrollView>>()
+    private var initialized = false
+
+    fun register(scrollView: ScrollView) {
+        // Clean up dead references
+        scrollViews.removeAll { it.get() == null }
+        scrollViews.add(WeakReference(scrollView))
+
+        if (!initialized) {
+            initialized = true
+            Toolkit.getDefaultToolkit().addAWTEventListener({ event ->
+                if (event is MouseWheelEvent) {
+                    handleWheelEvent(event)
+                }
+            }, AWTEvent.MOUSE_WHEEL_EVENT_MASK)
+        }
+    }
+
+    private fun handleWheelEvent(e: MouseWheelEvent) {
+        // Find the scroll view that contains this component
+        val component = e.component ?: return
+
+        // Walk up the component tree to find a JScrollPane
+        var current: Component? = component
+        while (current != null) {
+            if (current is JScrollPane) {
+                // Find the ScrollView that owns this JScrollPane
+                val scrollView = scrollViews.mapNotNull { it.get() }.find { it.native === current }
+                if (scrollView != null && scrollView.handleWheelEvent(e)) {
+                    return
+                }
+            }
+            current = current.parent
+        }
+    }
+}
 
 class ScrollingBehaviorsImpl(val scrollPane: JScrollPane) : ScrollingBehaviors {
     override val horizontal: Boolean = scrollPane.horizontalScrollBarPolicy != JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
@@ -107,21 +156,45 @@ class ScrollingBehaviorsImpl(val scrollPane: JScrollPane) : ScrollingBehaviors {
             }
         }
 
+    private var smoothScrollTimer: javax.swing.Timer? = null
+
     override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         SwingUtilities.invokeLater {
-            // Swing doesn't natively support animated scrolling, but we can implement smooth scrolling
-            if (animated) {
-                // Simple smooth scroll implementation
-                val currentX = scrollPane.horizontalScrollBar.value
-                val currentY = scrollPane.verticalScrollBar.value
-                val targetX = left.toInt()
-                val targetY = top.toInt()
+            // Cancel any existing animation
+            smoothScrollTimer?.stop()
+            smoothScrollTimer = null
 
-                // For now, just jump to position
-                // TODO: Implement smooth animation using Timer
-                scrollPane.viewport.viewPosition = Point(targetX, targetY)
+            val targetX = left.toInt()
+            val targetY = top.toInt()
+
+            if (animated) {
+                // Smooth scroll implementation using easing
+                val startX = scrollPane.viewport.viewPosition.x
+                val startY = scrollPane.viewport.viewPosition.y
+                val startTime = System.currentTimeMillis()
+                val duration = 300L // 300ms duration for smooth feel
+
+                smoothScrollTimer = javax.swing.Timer(16) { // ~60fps
+                    val elapsed = System.currentTimeMillis() - startTime
+                    val progress = (elapsed.toDouble() / duration).coerceIn(0.0, 1.0)
+
+                    // Ease-out cubic function for natural deceleration
+                    val eased = 1 - Math.pow(1 - progress, 3.0)
+
+                    val currentX = startX + ((targetX - startX) * eased).toInt()
+                    val currentY = startY + ((targetY - startY) * eased).toInt()
+
+                    scrollPane.viewport.viewPosition = Point(currentX, currentY)
+
+                    if (progress >= 1.0) {
+                        smoothScrollTimer?.stop()
+                        smoothScrollTimer = null
+                        // Ensure we land exactly on target
+                        scrollPane.viewport.viewPosition = Point(targetX, targetY)
+                    }
+                }.apply { start() }
             } else {
-                scrollPane.viewport.viewPosition = Point(left.toInt(), top.toInt())
+                scrollPane.viewport.viewPosition = Point(targetX, targetY)
             }
         }
     }
@@ -166,20 +239,39 @@ class ScrollingBehaviorsImpl(val scrollPane: JScrollPane) : ScrollingBehaviors {
     }
 }
 
-class ScrollView(context: RContext, horizontal: Boolean, vertical: Boolean) : RView(context) {
+class ScrollView(context: RContext, private val scrollsHorizontally: Boolean, private val scrollsVertically: Boolean) : RView(context) {
     override val native = JScrollPane().apply {
-        horizontalScrollBarPolicy = if (horizontal) {
+        horizontalScrollBarPolicy = if (scrollsHorizontally) {
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         } else {
             JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
         }
-        verticalScrollBarPolicy = if (vertical) {
+        verticalScrollBarPolicy = if (scrollsVertically) {
             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
         } else {
             JScrollPane.VERTICAL_SCROLLBAR_NEVER
         }
         // Make viewport transparent by default - background will be set by applyTheme
         viewport.isOpaque = false
+
+        // Custom wheel listener that works even when scrollbars are hidden.
+        // BasicScrollPaneUI's default handler checks scrollbar.isVisible() which fails
+        // when policy is NEVER, so we implement our own scrolling logic.
+        addMouseWheelListener { e ->
+            if (!isWheelScrollingEnabled) return@addMouseWheelListener
+
+            val scrollBar = if (scrollsVertically) verticalScrollBar else horizontalScrollBar
+            if (scrollBar == null) return@addMouseWheelListener
+
+            // Calculate scroll amount (similar to BasicScrollPaneUI logic)
+            val scrollAmount = e.scrollAmount * e.wheelRotation * scrollBar.unitIncrement
+            val newValue = (scrollBar.value + scrollAmount).coerceIn(scrollBar.minimum, scrollBar.maximum - scrollBar.visibleAmount)
+
+            if (newValue != scrollBar.value) {
+                scrollBar.value = newValue
+                e.consume()
+            }
+        }
     }
 
     override fun applyTheme(theme: com.lightningkite.kiteui.models.ThemeAndBack) {
@@ -195,17 +287,49 @@ class ScrollView(context: RContext, horizontal: Boolean, vertical: Boolean) : RV
         }
     }
 
+    init {
+        // Register this scroll view for global wheel event handling
+        ScrollWheelHandler.register(this)
+    }
+
     override fun internalAddChild(index: Int, view: RView) {
         // JScrollPane can only have one viewport view
         // If adding first child, set it as the viewport view
         if (index == 0) {
             SwingUtilities.invokeLater {
-                native.setViewportView(view.native)
+                // If the child is a Scrollable panel, tell it which direction we're scrolling
+                val childNative = view.native
+                if (childNative is ScrollableLinearPanel) {
+                    // If horizontal scrolling is enabled, the content should grow horizontally
+                    // If only vertical scrolling is enabled, the content should grow vertically
+                    childNative.isVerticalScrolling = !scrollsHorizontally
+                } else if (childNative is com.lightningkite.kiteui.views.ScrollableMouseTransparentPanel) {
+                    // Same for ScrollableMouseTransparentPanel (used by ProgrammaticLayout)
+                    childNative.isVerticalScrolling = !scrollsHorizontally
+                }
+                native.setViewportView(childNative)
             }
         } else {
             // JScrollPane only supports one child in the viewport
             throw UnsupportedOperationException("ScrollView can only have one child. Wrap multiple children in a container first.")
         }
+    }
+
+    fun handleWheelEvent(e: java.awt.event.MouseWheelEvent): Boolean {
+        if (!native.isWheelScrollingEnabled) return false
+
+        val scrollBar = if (scrollsVertically) native.verticalScrollBar else native.horizontalScrollBar
+        if (scrollBar == null) return false
+
+        // Calculate scroll amount
+        val scrollAmount = e.scrollAmount * e.wheelRotation * scrollBar.unitIncrement
+        val newValue = (scrollBar.value + scrollAmount).coerceIn(scrollBar.minimum, scrollBar.maximum - scrollBar.visibleAmount)
+
+        if (newValue != scrollBar.value) {
+            scrollBar.value = newValue
+            return true
+        }
+        return false
     }
 
     override fun internalRemoveChild(index: Int) {

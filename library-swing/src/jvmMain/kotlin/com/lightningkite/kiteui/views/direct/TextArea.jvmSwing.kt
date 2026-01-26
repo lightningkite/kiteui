@@ -116,6 +116,9 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         // Set background color (for text area itself)
         native.background = t.background.toAwtColor()
 
+        // Text areas must be opaque to show their background
+        native.isOpaque = true
+
         // Set placeholder color (lighter version of foreground)
         val placeholderColor = t.foreground.closestColor().withAlpha(0.5f)
         placeholderColorValue = placeholderColor.toAwt()

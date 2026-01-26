@@ -11,11 +11,25 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
+import javax.swing.Timer
 
 actual object AppState {
     internal val _animationFrame = BasicListenable()
+    private var animationTimer: Timer? = null
+
     actual val animationFrame: Listenable
-        get() = _animationFrame
+        get() {
+            // Start the animation timer on first access (lazy initialization)
+            if (animationTimer == null) {
+                animationTimer = Timer(16) { // ~60fps
+                    _animationFrame.invokeAll()
+                }.apply {
+                    isRepeats = true
+                    start()
+                }
+            }
+            return _animationFrame
+        }
     internal val _windowInfo = Signal(WindowStatistics(1920.px, 1080.px, 1f))
     actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo

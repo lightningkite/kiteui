@@ -18,7 +18,10 @@ import java.awt.Component
 import javax.swing.*
 
 actual class Select actual constructor(context: RContext) : RView(context) {
-    override val native = JComboBox<Any>()
+    override val native = JComboBox<Any>().apply {
+        // Ensure dropdown has reasonable minimum size
+        minimumSize = java.awt.Dimension(80, 24)
+    }
 
     actual var enabled: Boolean
         get() = native.isEnabled

@@ -86,13 +86,18 @@ actual class Canvas actual constructor(context: RContext) : RView(context) {
                 }
             })
 
-            // Add mouse wheel listener
+            // Add mouse wheel listener - propagate to parent scroll pane if delegate doesn't handle it
             addMouseWheelListener { e ->
-                delegate?.onWheel(
+                val handled = delegate?.onWheel(
                     0.0, // No horizontal scroll in basic MouseWheelEvent
                     e.preciseWheelRotation,
                     e.preciseWheelRotation
-                )
+                ) ?: false
+
+                // If the delegate didn't handle the event, propagate to parent scroll pane
+                if (!handled) {
+                    parent?.dispatchEvent(e)
+                }
             }
 
             // Add keyboard listeners

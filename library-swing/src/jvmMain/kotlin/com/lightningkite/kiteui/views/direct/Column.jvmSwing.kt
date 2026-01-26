@@ -270,8 +270,42 @@ class LinearLayoutManager(
     }
 }
 
+/**
+ * A JPanel that implements Scrollable for proper behavior inside JScrollPane.
+ * Adapts its scrolling behavior based on whether its layout is vertical or horizontal:
+ * - Vertical layout: constrain width to viewport, allow height to grow
+ * - Horizontal layout: constrain height to viewport, allow width to grow
+ */
+class ScrollableLinearPanel : JPanel(), javax.swing.Scrollable {
+    /**
+     * Whether the primary scroll direction is vertical.
+     * When true (vertical scrolling): track viewport width, allow height to grow
+     * When false (horizontal scrolling): track viewport height, allow width to grow
+     */
+    var isVerticalScrolling: Boolean = true
+        set(value) {
+            field = value
+            revalidate()
+        }
+
+    override fun getScrollableTracksViewportWidth(): Boolean = isVerticalScrolling  // For vertical scroll, constrain width
+    override fun getScrollableTracksViewportHeight(): Boolean = !isVerticalScrolling  // For horizontal scroll, constrain height
+
+    override fun getPreferredScrollableViewportSize(): java.awt.Dimension = preferredSize
+
+    override fun getScrollableUnitIncrement(visibleRect: java.awt.Rectangle?, orientation: Int, direction: Int): Int = 20
+
+    override fun getScrollableBlockIncrement(visibleRect: java.awt.Rectangle?, orientation: Int, direction: Int): Int {
+        return if (orientation == javax.swing.SwingConstants.VERTICAL) {
+            visibleRect?.height ?: 100
+        } else {
+            visibleRect?.width ?: 100
+        }
+    }
+}
+
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
-    override val native = JPanel()
+    override val native = ScrollableLinearPanel()
     private val layoutManager = LinearLayoutManager(vertical = true)
 
     init {
@@ -310,10 +344,180 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 }
 
 actual class RowWrapping actual constructor(context: RContext) : RView(context) {
-    override val native = JPanel()
+    override val native = ScrollableWrapPanel()
+    private val layoutManager get() = native.wrapLayout
+
+    override var gap: Dimension?
+        get() = super.gap
+        set(value) {
+            super.gap = value
+            layoutManager.gap = (value ?: theme.gap).value.roundToInt()
+            native.revalidate()
+        }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        layoutManager.gap = (gap ?: theme.theme.gap).value.roundToInt()
+    }
+}
+
+/**
+ * A JPanel that implements Scrollable to track viewport width for proper wrapping inside scroll panes.
+ */
+class ScrollableWrapPanel : JPanel(), javax.swing.Scrollable {
+    val wrapLayout = WrapLayoutManager()
 
     init {
-        // TODO: Implement wrapping layout (could use MigLayout or custom layout manager)
-        native.layout = LinearLayoutManager(vertical = false)
+        layout = wrapLayout
+    }
+
+    override fun getScrollableTracksViewportWidth(): Boolean = true  // Force width to match viewport
+    override fun getScrollableTracksViewportHeight(): Boolean = false  // Allow height to grow
+
+    override fun getPreferredScrollableViewportSize(): AwtDimension = preferredSize
+
+    override fun getScrollableUnitIncrement(visibleRect: java.awt.Rectangle?, orientation: Int, direction: Int): Int = 20
+
+    override fun getScrollableBlockIncrement(visibleRect: java.awt.Rectangle?, orientation: Int, direction: Int): Int {
+        return if (orientation == javax.swing.SwingConstants.VERTICAL) {
+            visibleRect?.height ?: 100
+        } else {
+            visibleRect?.width ?: 100
+        }
+    }
+}
+
+/**
+ * A layout manager that wraps components into multiple rows, like CSS flex-wrap.
+ */
+class WrapLayoutManager(var gap: Int = 8) : LayoutManager2 {
+
+    override fun addLayoutComponent(comp: Component?, constraints: Any?) {}
+    override fun addLayoutComponent(name: String?, comp: Component?) {}
+    override fun removeLayoutComponent(comp: Component?) {}
+    override fun getLayoutAlignmentX(target: Container): Float = 0.5f
+    override fun getLayoutAlignmentY(target: Container): Float = 0.5f
+    override fun invalidateLayout(target: Container) {}
+    override fun maximumLayoutSize(target: Container): AwtDimension = AwtDimension(Int.MAX_VALUE, Int.MAX_VALUE)
+
+    /**
+     * Find the effective available width by looking for ancestor scroll pane viewport.
+     */
+    private fun findEffectiveWidth(parent: Container): Int {
+        val insets = parent.insets
+
+        // First check if parent already has a reasonable width
+        if (parent.width > 0) {
+            return parent.width - insets.left - insets.right
+        }
+
+        // Look for ancestor JScrollPane and use its viewport width
+        var ancestor: Container? = parent.parent
+        while (ancestor != null) {
+            if (ancestor is javax.swing.JScrollPane) {
+                val viewportWidth = ancestor.viewport.width
+                if (viewportWidth > 0) {
+                    // Account for any insets between viewport and this component
+                    return viewportWidth - insets.left - insets.right
+                }
+            }
+            ancestor = ancestor.parent
+        }
+
+        return 0
+    }
+
+    override fun preferredLayoutSize(parent: Container): AwtDimension {
+        val insets = parent.insets
+        val availableWidth = findEffectiveWidth(parent)
+
+        if (availableWidth <= 0) {
+            // No width constraint yet, calculate as single row
+            var totalWidth = 0
+            var maxHeight = 0
+            var count = 0
+            for (i in 0 until parent.componentCount) {
+                val child = parent.getComponent(i)
+                if (!child.isVisible) continue
+                val size = child.preferredSize
+                if (count > 0) totalWidth += gap
+                totalWidth += size.width
+                maxHeight = max(maxHeight, size.height)
+                count++
+            }
+            return AwtDimension(totalWidth + insets.left + insets.right, maxHeight + insets.top + insets.bottom)
+        }
+
+        // Calculate wrapped layout
+        val rows = calculateRows(parent, availableWidth)
+        val totalHeight = rows.sumOf { it.height } + max(0, (rows.size - 1) * gap)
+        val maxRowWidth = rows.maxOfOrNull { it.width } ?: 0
+
+        return AwtDimension(maxRowWidth + insets.left + insets.right, totalHeight + insets.top + insets.bottom)
+    }
+
+    override fun minimumLayoutSize(parent: Container): AwtDimension {
+        val insets = parent.insets
+        var maxWidth = 0
+        var maxHeight = 0
+        for (i in 0 until parent.componentCount) {
+            val child = parent.getComponent(i)
+            if (!child.isVisible) continue
+            val size = child.minimumSize
+            maxWidth = max(maxWidth, size.width)
+            maxHeight = max(maxHeight, size.height)
+        }
+        return AwtDimension(maxWidth + insets.left + insets.right, maxHeight + insets.top + insets.bottom)
+    }
+
+    override fun layoutContainer(parent: Container) {
+        val insets = parent.insets
+        val availableWidth = parent.width - insets.left - insets.right
+
+        if (availableWidth <= 0) return
+
+        val rows = calculateRows(parent, availableWidth)
+
+        var y = insets.top
+        for (row in rows) {
+            var x = insets.left
+            for (child in row.components) {
+                val size = child.preferredSize
+                child.setBounds(x, y, size.width, row.height)
+                x += size.width + gap
+            }
+            y += row.height + gap
+        }
+    }
+
+    private data class Row(val components: MutableList<Component> = mutableListOf(), var width: Int = 0, var height: Int = 0)
+
+    private fun calculateRows(parent: Container, availableWidth: Int): List<Row> {
+        val rows = mutableListOf<Row>()
+        var currentRow = Row()
+
+        for (i in 0 until parent.componentCount) {
+            val child = parent.getComponent(i)
+            if (!child.isVisible) continue
+
+            val size = child.preferredSize
+            val neededWidth = if (currentRow.components.isEmpty()) size.width else currentRow.width + gap + size.width
+
+            if (neededWidth > availableWidth && currentRow.components.isNotEmpty()) {
+                // Start new row
+                rows.add(currentRow)
+                currentRow = Row()
+            }
+
+            currentRow.components.add(child)
+            currentRow.width = if (currentRow.components.size == 1) size.width else currentRow.width + gap + size.width
+            currentRow.height = max(currentRow.height, size.height)
+        }
+
+        if (currentRow.components.isNotEmpty()) {
+            rows.add(currentRow)
+        }
+
+        return rows
     }
 }

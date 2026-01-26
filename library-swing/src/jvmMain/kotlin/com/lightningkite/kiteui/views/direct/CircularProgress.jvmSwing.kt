@@ -2,12 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.toAwt
+import com.lightningkite.kiteui.views.ClickThroughProgressBar
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import javax.swing.JProgressBar
 
 actual class CircularProgress actual constructor(context: RContext) : RView(context) {
-    override val native = JProgressBar()
+    // Use ClickThroughProgressBar so it doesn't block clicks from parent Link/Button
+    override val native = ClickThroughProgressBar()
 
     actual var ratio: Float = 0f
         set(value) {

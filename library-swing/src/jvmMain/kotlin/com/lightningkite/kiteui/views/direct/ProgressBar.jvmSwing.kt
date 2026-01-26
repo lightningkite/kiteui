@@ -2,12 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.toAwt
+import com.lightningkite.kiteui.views.ClickThroughProgressBar
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import javax.swing.JProgressBar
 
 actual class ProgressBar actual constructor(context: RContext) : RView(context) {
-    override val native = JProgressBar(0, 100).apply {
+    // Use ClickThroughProgressBar so it doesn't block clicks from parent Link/Button
+    override val native = ClickThroughProgressBar(0, 100).apply {
         // Set progress bar to be horizontal (default) and determinate
         isIndeterminate = false
     }

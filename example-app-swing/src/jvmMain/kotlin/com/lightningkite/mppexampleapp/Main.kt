@@ -72,7 +72,12 @@ fun main() {
             // Show the window
             frame.isVisible = true
 
+            // Start test server for automation
+            val testServer = SwingTestServer(frame)
+            testServer.start()
+
             println("KiteUI Example App launched successfully on Swing!")
+            println("Test server listening on port 18888")
         } catch (e: Exception) {
             System.err.println("Error initializing app:")
             e.printStackTrace()

@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.views.direct.RoundedBorder
 import java.awt.Component
 import java.awt.Container
 import java.awt.Point
@@ -9,6 +10,8 @@ import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
 import java.awt.dnd.*
 import javax.swing.*
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: Component
@@ -71,6 +74,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             super.ignoreInteraction = value
             native.isEnabled = !value
             native.isFocusable = !value
+            // Set client property so MouseTransparentPanel can check it in contains()
+            if (native is JComponent) {
+                (native as JComponent).putClientProperty("kiteui.ignoreInteraction", value)
+            }
         }
 
     override var paddingByEdge: Edges?
@@ -101,37 +108,179 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
+    // Child alignment defaults - sync to native component for layout managers to read
+    override var newChildHorizontalAlign: Align?
+        get() = super.newChildHorizontalAlign
+        set(value) {
+            super.newChildHorizontalAlign = value
+            if (native is JComponent) {
+                (native as JComponent).putClientProperty("kiteui.newChildHorizontalAlign", value)
+            }
+        }
+
+    override var newChildVerticalAlign: Align?
+        get() = super.newChildVerticalAlign
+        set(value) {
+            super.newChildVerticalAlign = value
+            if (native is JComponent) {
+                (native as JComponent).putClientProperty("kiteui.newChildVerticalAlign", value)
+            }
+        }
+
     // Drag and drop support
+    private var dragGestureRecognizer: DragGestureRecognizer? = null
+    private var currentDragGestureListener: DragGestureListener? = null
+
     override var dragData: DragData?
         get() = super.dragData
         set(value) {
             super.dragData = value
-            if (value == null) {
-                if (native is JComponent) {
-                    (native as JComponent).transferHandler = null
+            if (native is JComponent) {
+                val comp = native as JComponent
+
+                // Remove existing gesture recognizer if any
+                dragGestureRecognizer?.let { recognizer ->
+                    currentDragGestureListener?.let { listener ->
+                        recognizer.removeDragGestureListener(listener)
+                    }
+                    dragGestureRecognizer = null
+                    currentDragGestureListener = null
                 }
-            } else {
-                if (native is JComponent) {
-                    val comp = native as JComponent
-                    comp.transferHandler = object : TransferHandler() {
-                        override fun getSourceActions(c: JComponent): Int = COPY_OR_MOVE
 
-                        override fun createTransferable(c: JComponent): Transferable {
-                            return object : Transferable {
-                                override fun getTransferDataFlavors(): Array<DataFlavor> {
-                                    return arrayOf(DataFlavor.stringFlavor)
-                                }
+                if (value == null) {
+                    comp.transferHandler = null
+                } else {
+                    // Create transferable for the drag data
+                    val transferable = object : Transferable {
+                        override fun getTransferDataFlavors(): Array<DataFlavor> {
+                            return arrayOf(DataFlavor.stringFlavor)
+                        }
 
-                                override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {
-                                    return flavor == DataFlavor.stringFlavor
-                                }
+                        override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {
+                            return flavor == DataFlavor.stringFlavor
+                        }
 
-                                override fun getTransferData(flavor: DataFlavor): Any {
-                                    return value.data ?: ""
-                                }
-                            }
+                        override fun getTransferData(flavor: DataFlavor): Any {
+                            return value.data
                         }
                     }
+
+                    // Set up drag gesture recognizer to initiate the drag
+                    val dragSource = DragSource.getDefaultDragSource()
+                    val listener = DragGestureListener { dge ->
+                        dragSource.startDrag(
+                            dge,
+                            DragSource.DefaultCopyDrop,
+                            transferable,
+                            object : DragSourceListener {
+                                override fun dragEnter(dsde: DragSourceDragEvent) {}
+                                override fun dragOver(dsde: DragSourceDragEvent) {}
+                                override fun dropActionChanged(dsde: DragSourceDragEvent) {}
+                                override fun dragExit(dse: DragSourceEvent) {}
+                                override fun dragDropEnd(dsde: DragSourceDropEvent) {}
+                            }
+                        )
+                    }
+                    currentDragGestureListener = listener
+                    dragGestureRecognizer = dragSource.createDefaultDragGestureRecognizer(
+                        comp,
+                        DnDConstants.ACTION_COPY_OR_MOVE,
+                        listener
+                    )
+                }
+            }
+        }
+
+    // Drop target support
+    override var dropTargetDelegate: DropTargetDelegate?
+        get() = super.dropTargetDelegate
+        set(value) {
+            super.dropTargetDelegate = value
+            if (native is JComponent) {
+                val comp = native as JComponent
+                if (value == null) {
+                    comp.dropTarget = null
+                } else {
+                    comp.dropTarget = DropTarget(comp, DnDConstants.ACTION_COPY_OR_MOVE, object : DropTargetListener {
+                        private fun DropTargetDragEvent.toDragEvent(): DragEvent {
+                            val transferable = transferable
+                            val typeToData = mutableMapOf<String, String>()
+                            for (flavor in transferable.transferDataFlavors) {
+                                if (flavor == DataFlavor.stringFlavor) {
+                                    try {
+                                        val data = transferable.getTransferData(flavor) as? String
+                                        if (data != null) {
+                                            typeToData["text/plain"] = data
+                                        }
+                                    } catch (e: Exception) {
+                                        // Ignore
+                                    }
+                                }
+                            }
+                            return DragEvent(
+                                data = DragData("", typeToData),
+                                xInView = location.x.toDouble(),
+                                yInView = location.y.toDouble()
+                            )
+                        }
+
+                        private fun DropTargetDropEvent.toDragEvent(): DragEvent {
+                            val transferable = transferable
+                            val typeToData = mutableMapOf<String, String>()
+                            for (flavor in transferable.transferDataFlavors) {
+                                if (flavor == DataFlavor.stringFlavor) {
+                                    try {
+                                        val data = transferable.getTransferData(flavor) as? String
+                                        if (data != null) {
+                                            typeToData["text/plain"] = data
+                                        }
+                                    } catch (e: Exception) {
+                                        // Ignore
+                                    }
+                                }
+                            }
+                            return DragEvent(
+                                data = DragData("", typeToData),
+                                xInView = location.x.toDouble(),
+                                yInView = location.y.toDouble()
+                            )
+                        }
+
+                        override fun dragEnter(dtde: DropTargetDragEvent) {
+                            if (value.enter(dtde.toDragEvent())) {
+                                dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE)
+                            } else {
+                                dtde.rejectDrag()
+                            }
+                        }
+
+                        override fun dragOver(dtde: DropTargetDragEvent) {
+                            if (value.over(dtde.toDragEvent())) {
+                                dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE)
+                            } else {
+                                dtde.rejectDrag()
+                            }
+                        }
+
+                        override fun dropActionChanged(dtde: DropTargetDragEvent) {
+                            // No-op
+                        }
+
+                        override fun dragExit(dte: DropTargetEvent) {
+                            val fakeEvent = DragEvent(
+                                data = DragData("", emptyMap()),
+                                xInView = 0.0,
+                                yInView = 0.0
+                            )
+                            value.exit(fakeEvent)
+                        }
+
+                        override fun drop(dtde: DropTargetDropEvent) {
+                            dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE)
+                            val handled = value.drop(dtde.toDragEvent())
+                            dtde.dropComplete(handled)
+                        }
+                    }, true)
                 }
             }
         }
@@ -169,13 +318,77 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             // Store the theme for subclasses to use
             comp.putClientProperty("kiteui.theme", theme)
 
+            val t = theme.theme
+
+            // Get padding - apply if theme.padding is true OR if paddingByEdge is explicitly set
+            val paddingInsets = if (paddingByEdge != null) {
+                val p = paddingByEdge!!
+                java.awt.Insets(
+                    p.top.px.toInt(),
+                    p.left.px.toInt(),
+                    p.bottom.px.toInt(),
+                    p.right.px.toInt()
+                )
+            } else if (theme.padding) {
+                // Clickable elements get padding from theme even without background
+                val p = t.padding
+                java.awt.Insets(
+                    p.top.px.toInt(),
+                    p.left.px.toInt(),
+                    p.bottom.px.toInt(),
+                    p.right.px.toInt()
+                )
+            } else {
+                null
+            }
+
             // Apply background if drawBackground is true
             if (theme.drawBackground) {
-                val backgroundColor = theme.theme.background.closestColor()
+                val backgroundColor = t.background.closestColor()
                 comp.background = backgroundColor.toAwt()
-                comp.isOpaque = true
+                comp.isOpaque = false // Set to false so border can paint rounded background
+
+                // Calculate corner radius
+                val cornerRadiusPx = when (val cr = t.cornerRadii) {
+                    is CornerRadii.RatioOfSpacing -> (cr.value * t.gap.value).toInt()
+                    is CornerRadii.Fixed -> cr.value.value.toInt()
+                    is CornerRadii.AdaptiveToSpacing -> min(t.gap.value, cr.value.value).toInt()
+                    is CornerRadii.RatioOfSize -> {
+                        if (cr.ratio >= 0.5f) 9999
+                        else (cr.ratio * min(comp.width, comp.height)).toInt()
+                    }
+                    is CornerRadii.PerCorner -> cr.value.value.toInt()
+                }.coerceAtLeast(0)
+
+                // Get border styling
+                val outlineColor = t.outline.closestColor()
+                val borderColor = outlineColor.toAwt()
+                val borderThickness = t.outlineWidth.value.toInt().coerceAtLeast(0)
+
+                // Apply rounded border with padding
+                if (cornerRadiusPx > 0 || borderThickness > 0) {
+                    comp.border = RoundedBorder(
+                        borderColor, borderThickness, cornerRadiusPx, backgroundColor.toAwt(),
+                        paddingInsets ?: java.awt.Insets(0, 0, 0, 0)
+                    )
+                } else if (paddingInsets != null) {
+                    // Just padding, no rounded corners or border
+                    comp.border = BorderFactory.createEmptyBorder(
+                        paddingInsets.top, paddingInsets.left, paddingInsets.bottom, paddingInsets.right
+                    )
+                } else {
+                    comp.border = null
+                }
             } else {
                 comp.isOpaque = false
+                // Apply padding even without background (for clickable elements)
+                if (paddingInsets != null) {
+                    comp.border = BorderFactory.createEmptyBorder(
+                        paddingInsets.top, paddingInsets.left, paddingInsets.bottom, paddingInsets.right
+                    )
+                } else {
+                    comp.border = null
+                }
             }
         }
     }
