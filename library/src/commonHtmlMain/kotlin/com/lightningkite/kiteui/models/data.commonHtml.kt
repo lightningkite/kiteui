@@ -2,12 +2,12 @@
 
 package com.lightningkite.kiteui.models
 
-import com.lightningkite.kiteui.encodeURIComponent
+import com.lightningkite.kotlinx.serialization.uri.encodeURIComponent
 
 actual data class DimensionRaw(
     val px: Double = 0.0,
     val rem: Double = 0.0,
-): Comparable<DimensionRaw> {
+) : Comparable<DimensionRaw> {
     val roughPx get() = px + rem * 16
     override fun toString(): String {
         return when {
@@ -16,11 +16,14 @@ actual data class DimensionRaw(
             else -> "calc(${px}px + ${rem}rem)"
         }
     }
+
     override fun compareTo(other: DimensionRaw): Int = roughPx.compareTo(other.roughPx)
+
     companion object {
         val zero = DimensionRaw()
     }
 }
+
 fun Dimension(
     px: Double = 0.0,
     rem: Double = 0.0,
@@ -45,18 +48,22 @@ actual operator fun Dimension.plus(other: Dimension): Dimension = Dimension(
     px = this.value.px + other.value.px,
     rem = this.value.rem + other.value.rem,
 )
+
 actual operator fun Dimension.minus(other: Dimension): Dimension = Dimension(
     px = this.value.px - other.value.px,
     rem = this.value.rem - other.value.rem,
 )
+
 actual operator fun Dimension.times(other: Float): Dimension = Dimension(
     px = this.value.px * other,
     rem = this.value.rem * other,
 )
+
 actual operator fun Dimension.div(other: Float): Dimension = Dimension(
     px = this.value.px / other,
     rem = this.value.rem / other,
 )
+
 actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(this, other)
 actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
 
@@ -65,7 +72,7 @@ fun CornerRadii.toRawCornerRadius(): String = when (this) {
     is CornerRadii.Fixed -> value.value.toString()
     is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
     is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
-    is CornerRadii.PerCorner -> listOf(this.topLeft, this.topRight,  this.bottomRight, this.bottomLeft).joinToString(" ") {
+    is CornerRadii.PerCorner -> listOf(this.topLeft, this.topRight, this.bottomRight, this.bottomLeft).joinToString(" ") {
         if (it) "${value.value}" else "0px"
     }
 }
@@ -85,10 +92,10 @@ data class FontDirect(
 actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
 actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
 
-actual sealed class ImageSource actual constructor(): VisualMediaSource
+actual sealed class ImageSource actual constructor() : VisualMediaSource
 actual data class ImageResource(val relativeUrl: String) : ImageSource()
 
-actual sealed class VideoSource actual constructor(): VisualMediaSource
+actual sealed class VideoSource actual constructor() : VisualMediaSource
 actual data class VideoResource(val relativeUrl: String) : VideoSource()
 
 actual sealed class AudioSource actual constructor()
@@ -117,6 +124,7 @@ actual class ScreenTransition(
     val exit: ScreenTransitionPart,
 ) {
     operator fun plus(other: ScreenTransition) = ScreenTransition(name = name + other.name, enter = enter + other.enter, exit = exit + other.exit)
+
     actual companion object {
         actual val None: ScreenTransition = ScreenTransition(
             name = "None",
@@ -129,10 +137,12 @@ actual class ScreenTransition(
                 to = mapOf(),
             ),
         )
+
         private fun translate(dir: String, from: Int, to: Int) = ScreenTransitionPart(
             from = mapOf("transform" to "translate$dir(${from}%)"),
             to = mapOf("transform" to "translate$dir(${to}%)"),
         )
+
         actual val Push: ScreenTransition = ScreenTransition(
             name = "Push",
             enter = translate("X", 100, 0),
@@ -195,21 +205,23 @@ fun ImageVector.vectorToSvgDataUrl(): String {
         append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width.value}\" height=\"${height.value}\" viewBox=\"$viewBoxMinX $viewBoxMinY $viewBoxWidth $viewBoxHeight\">")
         append("<defs>")
         paths.forEachIndexed { index: Int, path: ImageVector.Path ->
-            when(val p = path.fillColor) {
+            when (val p = path.fillColor) {
                 is LinearGradient -> {
                     append("<linearGradient id=\"fill$index\" gradientTransform=\"rotate(${p.angle.degrees}, 0.5, 0.5)\">")
-                    for(stop in p.stops) {
+                    for (stop in p.stops) {
                         append("<stop stop-color=\"${stop.color.toAlphalessWeb()}\" stop-opacity=\"${stop.color.alpha}\" offset=\"${stop.ratio.times(100).toInt()}%\"/>")
                     }
                     append("</linearGradient>")
                 }
+
                 is RadialGradient -> {
                     append("<radialGradient id=\"fill$index\">")
-                    for(stop in p.stops) {
+                    for (stop in p.stops) {
                         append("<stop stop-color=\"${stop.color.toAlphalessWeb()}\" stop-opacity=\"${stop.color.alpha}\" offset=\"${stop.ratio.times(100).toInt()}%\"/>")
                     }
                     append("</radialGradient>")
                 }
+
                 else -> {}
             }
         }
@@ -217,7 +229,7 @@ fun ImageVector.vectorToSvgDataUrl(): String {
         paths.forEachIndexed { index, path ->
             append(
                 "<path fill-rule=\"evenodd\" d=\"${path.path}\" stroke=\"${path.strokeColor?.toWeb() ?: Color.transparent.toWeb()}\" stroke-width=\"${path.strokeWidth ?: 0}\" fill=\"${
-                    when(val f = path.fillColor) {
+                    when (val f = path.fillColor) {
                         is LinearGradient -> "url(#fill$index)"
                         is RadialGradient -> "url(#fill$index)"
                         is FadingColor -> f.base.toWeb()
