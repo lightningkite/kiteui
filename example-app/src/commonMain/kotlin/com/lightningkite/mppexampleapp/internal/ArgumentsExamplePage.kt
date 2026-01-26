@@ -10,9 +10,15 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.forEachUpdating
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.core.*
+import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
-@Routable("arguments-example/{id}")
-class ArgumentsExamplePage(val id: String): Page {
+@Serializable
+@JvmInline
+value class IdWrapper(val id: String)
+
+@Routable("arguments-example/{id}/{id2}")
+class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): Page {
 
     @QueryParameter
     val toAdd = Signal("")
@@ -22,10 +28,10 @@ class ArgumentsExamplePage(val id: String): Page {
 
     override fun ViewWriter.render() {
         col {
-            transitionId = htmlElementId
+            transitionId = id
             h1 { content = "Hello world!" }
             text {
-                content = "My item ID is ${htmlElementId}"
+                content = "My item ID is ${id}"
                 transitionId = "itemid"
             }
             text {
@@ -38,7 +44,7 @@ class ArgumentsExamplePage(val id: String): Page {
                     val a = toAdd()
                     val b = list()
                     return@label {
-                        ArgumentsExamplePage("$htmlElementId-plus").also {
+                        ArgumentsExamplePage("$id-plus").also {
                             it.toAdd.value = a
                             it.list.value = b
                         }
