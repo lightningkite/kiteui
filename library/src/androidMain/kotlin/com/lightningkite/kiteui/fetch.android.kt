@@ -30,6 +30,7 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 
 val client: HttpClient
@@ -352,7 +353,10 @@ actual fun FileReference.bytes(): Long {
             cursor.moveToFirst()
             cursor.getLong(nameIndex)
         }
-        ?: return -1L
+        ?: uri.path?.let { path -> // if it is null with the content resolver check if it is an app scope file
+            val file = File(path)
+            if (file.exists()) file.length() else null
+        } ?: return -1L
 }
 
 //actual suspend fun Blob.byteArray(): ByteArray = data
