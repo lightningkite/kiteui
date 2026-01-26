@@ -26,7 +26,7 @@ class SsrContextTest {
         context.title = "Test Page"
         context.description = "A test page for SSR"
 
-        val result = context.render {
+        val result = context.renderAndSerialize {  // by Claude - use renderAndSerialize to get SsrResult
             col {
                 h1("Hello SSR!")
                 text("This is server-side rendered content.")
@@ -55,7 +55,7 @@ class SsrContextTest {
         val context = SsrContext("/")
         context.title = "Themed Page"
 
-        val result = context.render {
+        val result = context.renderAndSerialize {  // by Claude - use renderAndSerialize to get SsrResult
             Theme.flat2("test", hue = 0.6.turns).onNext.scrolling.col {
                 sizeConstraints(width = 50.rem).card.col {
                     h1("Welcome to my Website")
@@ -91,7 +91,7 @@ class SsrContextTest {
         context.metaTags["og:title"] = "Full Document Test"
         context.metaTags["og:type"] = "website"
 
-        val result = context.render {
+        val result = context.renderAndSerialize {  // by Claude - use renderAndSerialize to get SsrResult
             col {
                 h1("Hello World")
                 text("Content goes here")
@@ -147,11 +147,12 @@ class SsrContextTest {
         context2.preload("data", "context2-data")
 
         // Render in both contexts
-        val result1 = context1.render {
+        // by Claude - use renderAndSerialize to get SsrResult
+        val result1 = context1.renderAndSerialize {
             text("Content 1")
         }
 
-        val result2 = context2.render {
+        val result2 = context2.renderAndSerialize {
             text("Content 2")
         }
 
@@ -168,7 +169,7 @@ class SsrContextTest {
     fun testVoidElementsRenderCorrectly() {
         val context = SsrContext("/")
 
-        val result = context.render {
+        val result = context.renderAndSerialize {  // by Claude - use renderAndSerialize to get SsrResult
             col {
                 textInput { }  // Should render as <input ... />
                 text("Line 1")
