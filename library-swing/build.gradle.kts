@@ -32,6 +32,7 @@ kotlin {
                 api(libs.comLightningkiteReactive)
                 api(libs.kotlinxSerializationJson)
                 api(libs.kotlinxSerializationProperties)
+                api(libs.kotlinxSerializationUri)  // by Claude - needed for UriFormat and encodeURIComponent
                 api(libs.kotlinxDatetime)
                 api(libs.kotlinxCoroutinesCore)
             }
