@@ -60,8 +60,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":library"))
-                api(project(":library-lottie"))
-                api(project(":library-camera"))
+                // library-lottie and library-camera are on separate feature branches
             }
         }
 

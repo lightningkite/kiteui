@@ -35,25 +35,9 @@ fun main() {
         if (e is Exception) e.printStackTrace2()
     }
 
-    smartRoot(appTheme) {
+    root(appTheme) {
         app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
-
-        document.addEventListener("keydown", { e ->
-            e as KeyboardEvent
-            if(e.ctrlKey && e.code == KeyCodes.letter('E')) {
-                e.preventDefault()
-                e.stopPropagation()
-                println("Preparing export")
-                AppScope.launch {
-                    val s = context.dynamicCss.emit()
-                    println("Export ready, downloading")
-                    context.download("static.css", Blob(arrayOf(s), BlobPropertyBag(
-                        type = "text/html"
-                    )
-                    ))
-                }
-            }
-        })
+        // Note: smartRoot and SSR hydration are on version-7-ssr branch
     }
 
 }

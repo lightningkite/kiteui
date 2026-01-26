@@ -67,15 +67,15 @@ object RootPage : Page {
                 linkPage { TestingGroundPage }
                 linkPage { LeakCheckerPage }
                 linkPage { ExperimentPage }
-                linkPage { LazyListTestPage }
+                // linkPage { LazyListTestPage } // version-7-lazy-list branch
                 linkPage { Recycler2TestPage }
                 linkPage { RecyclerFilterTestPage }
                 linkPage { HorizontalRecyclerViewPage }
                 linkPage { InfiniteImagesPage }
                 linkPage { AudioPage }
-                linkPage { AudioTestPage }
-                linkPage { LottieExamplePage }
-                linkPage { LottieRendererTestPage }
+                // linkPage { AudioTestPage } // version-7-audio-draft branch
+                // linkPage { LottieExamplePage } // version-7-lottie branch
+                // linkPage { LottieRendererTestPage } // version-7-lottie branch
                 linkPage { PlatformSpecificPage }
                 linkPage { VideoElementPage }
                 linkPage { ViewPagerElementPage }
@@ -92,7 +92,7 @@ object RootPage : Page {
                 linkPage { LoadAnimationTestPage }
                 linkPage { WebSocketPage }
                 linkPage { CanvasSamplePage }
-                linkPage { CanvasApiTestPage }
+                // linkPage { CanvasApiTestPage } // version-7-canvas-api branch
                 linkPage { GraphExamplePage }
                 linkPage { PongSamplePage }
                 linkPage { ReactivityPage }
@@ -101,10 +101,10 @@ object RootPage : Page {
                 linkPage { FullScreenPage() }
                 linkPage { RecyclerViewTestPage }
                 linkPage { ImageTestPage }
-                linkPage { CameraScannerTestPage }
+                // linkPage { CameraScannerTestPage } // version-7-camera-draft branch
                 linkPage { PerformanceTestPage }
                 linkPage { DatePickerExamplePage }
-                linkPage { SsrResourceExamplePage() }
+                // linkPage { SsrResourceExamplePage() } // version-7-ssr branch
                 run {
                     val screen = { ArgumentsExamplePage("test-id").also { it.toAdd.value = "Preset" } }
                     card.link {

@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.ssr.HydrationContext
 import kotlinx.browser.document
 import kotlinx.dom.addClass
 import kotlinx.dom.hasClass
@@ -33,14 +32,13 @@ actual class FutureElement actual constructor() {
      * Attaches event listeners and syncs state without recreating the element.
      * @return true if hydration succeeded, false if tag mismatch occurred
      *
-     * Updated by Claude to record hydration statistics.
+     * Note: Full hydration support is on version-7-ssr branch
      */
     fun hydrate(existingElement: Element): Boolean {
         // Validate tag match
         if (tag.lowercase() != existingElement.tagName.lowercase()) {
             console.warn("Hydration mismatch: expected <$tag>, found <${existingElement.tagName}>")
             console.warn("  Parent: ${existingElement.parentElement?.tagName}, classes: ${existingElement.parentElement?.className}")
-            HydrationContext.recordMismatch()
             return false
         }
 
@@ -77,9 +75,6 @@ actual class FutureElement actual constructor() {
         elementToDo.forEach { it(existingElement) }
         elementToDo.clear()
 
-        // Record successful hydration - by Claude
-        HydrationContext.recordHydrated()
-
         // Debug visualization: add subtle green outline to hydrated elements - by Claude
         if (debugMode) {
             (existingElement as? HTMLElement)?.style?.outline = "1px solid rgba(0, 200, 0, 0.3)"
@@ -92,7 +87,7 @@ actual class FutureElement actual constructor() {
      * Recursively hydrate this element and all children.
      * @return true if hydration succeeded, false if tag mismatch occurred
      *
-     * Updated by Claude to record hydration statistics and handle mismatches gracefully.
+     * Note: Full hydration support is on version-7-ssr branch
      */
     fun hydrateRecursive(existingElement: Element): Boolean {
         if (!hydrate(existingElement)) return false
@@ -104,12 +99,9 @@ actual class FutureElement actual constructor() {
             if (existingChild != null) {
                 if (!childFuture.hydrateRecursive(existingChild)) {
                     // Child hydration failed - replace SSR element with fresh JS element
-                    // This ensures the JS FutureElement is properly linked to DOM
-                    // by Claude
                     val newElement = childFuture.create()
                     existingChild.parentElement?.replaceChild(newElement, existingChild)
-                    HydrationContext.recordCreated()
-                    // Debug visualization: add red outline to newly created elements - by Claude
+                    // Debug visualization: add red outline to newly created elements
                     if (debugMode) {
                         (newElement as? HTMLElement)?.style?.outline = "1px solid rgba(255, 0, 0, 0.5)"
                     }
@@ -119,10 +111,9 @@ actual class FutureElement actual constructor() {
                 if (debugMode) {
                     console.warn("Hydration: RView has more children than DOM at index $index")
                 }
-                HydrationContext.recordCreated()
                 val newElement = childFuture.create()
                 existingElement.appendChild(newElement)
-                // Debug visualization: add orange outline for newly appended elements - by Claude
+                // Debug visualization: add orange outline for newly appended elements
                 if (debugMode) {
                     (newElement as? HTMLElement)?.style?.outline = "1px solid rgba(255, 165, 0, 0.5)"
                 }
@@ -130,8 +121,6 @@ actual class FutureElement actual constructor() {
         }
 
         // Remove extra DOM children that don't have corresponding RView children
-        // This prevents duplicate content from SSR elements that don't exist in JS render
-        // Optimized to calculate count upfront and avoid repeated length checks - by Claude
         val extraCount = existingElement.children.length - lastChildren.size
         if (extraCount > 0) {
             if (debugMode) {
