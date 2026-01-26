@@ -311,12 +311,20 @@ private fun DrawingContext2D.applyPaintToAndroidPaint(
             target.color = paint.toInt()
         }
         is LinearGradient -> {
-            val x0 = paint.x0?.toFloat() ?: 0f
-            val y0 = paint.y0?.toFloat() ?: 0f
-            val x1 = paint.x1?.toFloat() ?: width.toFloat()
-            val y1 = paint.y1?.toFloat() ?: 0f
-
             if (paint.stops.isNotEmpty()) {
+                // Calculate gradient endpoints based on angle
+                // angle=0 means left-to-right, angle increases clockwise
+                val angleRad = paint.angle.radians.toDouble()
+                val cos = kotlin.math.cos(angleRad).toFloat()
+                val sin = kotlin.math.sin(angleRad).toFloat()
+                val centerX = width.toFloat() / 2
+                val centerY = height.toFloat() / 2
+                val halfDiag = (kotlin.math.sqrt(width * width + height * height) / 2).toFloat()
+                val x0 = centerX - cos * halfDiag
+                val y0 = centerY - sin * halfDiag
+                val x1 = centerX + cos * halfDiag
+                val y1 = centerY + sin * halfDiag
+
                 val colors = paint.stops.map { it.color.toInt() }.toIntArray()
                 val positions = paint.stops.map { it.ratio }.toFloatArray()
                 target.shader = android.graphics.LinearGradient(
@@ -330,9 +338,10 @@ private fun DrawingContext2D.applyPaintToAndroidPaint(
             }
         }
         is RadialGradient -> {
-            val cx = paint.cx?.toFloat() ?: (width / 2).toFloat()
-            val cy = paint.cy?.toFloat() ?: (height / 2).toFloat()
-            val radius = paint.radius?.toFloat() ?: (minOf(width, height) / 2).toFloat()
+            // RadialGradient uses center of canvas and radius as half the minimum dimension
+            val cx = (width / 2).toFloat()
+            val cy = (height / 2).toFloat()
+            val radius = (minOf(width, height) / 2).toFloat()
 
             if (paint.stops.isNotEmpty() && radius > 0) {
                 val colors = paint.stops.map { it.color.toInt() }.toIntArray()

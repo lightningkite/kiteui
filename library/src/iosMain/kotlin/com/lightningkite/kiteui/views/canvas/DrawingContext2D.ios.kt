@@ -311,10 +311,18 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
     internal fun fillWithGradient(gradient: LinearGradient) {
         val cgGradient = createCGGradient(gradient.stops) ?: return
 
-        val x0 = gradient.x0 ?: 0.0
-        val y0 = gradient.y0 ?: 0.0
-        val x1 = gradient.x1 ?: width
-        val y1 = gradient.y1 ?: 0.0
+        // Calculate gradient endpoints based on angle
+        // angle=0 means left-to-right, angle increases clockwise
+        val angleRad = gradient.angle.radians.toDouble()
+        val cos = kotlin.math.cos(angleRad)
+        val sin = kotlin.math.sin(angleRad)
+        val centerX = width / 2
+        val centerY = height / 2
+        val halfDiag = kotlin.math.sqrt(width * width + height * height) / 2
+        val x0 = centerX - cos * halfDiag
+        val y0 = centerY - sin * halfDiag
+        val x1 = centerX + cos * halfDiag
+        val y1 = centerY + sin * halfDiag
 
         CGContextDrawLinearGradient(
             wraps,
@@ -328,11 +336,12 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
     internal fun fillWithGradient(gradient: RadialGradient) {
         val cgGradient = createCGGradient(gradient.stops) ?: return
 
-        val cx = gradient.cx ?: (width / 2)
-        val cy = gradient.cy ?: (height / 2)
-        val r = gradient.radius ?: (minOf(width, height) / 2)
-        val fx = gradient.fx ?: cx
-        val fy = gradient.fy ?: cy
+        // RadialGradient uses center of canvas and radius as half the minimum dimension
+        val cx = width / 2
+        val cy = height / 2
+        val r = minOf(width, height) / 2
+        val fx = cx
+        val fy = cy
 
         CGContextDrawRadialGradient(
             wraps,

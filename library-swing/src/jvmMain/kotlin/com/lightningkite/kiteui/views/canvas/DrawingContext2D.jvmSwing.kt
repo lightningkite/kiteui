@@ -438,41 +438,27 @@ private fun LinearGradient.toAwtGradient(context: DrawingContext2D): java.awt.Pa
     if (stops.isEmpty()) return java.awt.Color.BLACK
     if (stops.size == 1) return stops[0].color.toAwt()
 
-    // Determine start and end points
-    val startX: Float
-    val startY: Float
-    val endX: Float
-    val endY: Float
+    // Calculate from angle - use the context bounds
+    val w = context.width.toFloat()
+    val h = context.height.toFloat()
+    val angleRad = angle.radians.toDouble()
 
-    if (x0 != null && y0 != null && x1 != null && y1 != null) {
-        // Use explicit coordinates
-        startX = x0.toFloat()
-        startY = y0.toFloat()
-        endX = x1.toFloat()
-        endY = y1.toFloat()
-    } else {
-        // Calculate from angle - use the context bounds
-        val w = context.width.toFloat()
-        val h = context.height.toFloat()
-        val angleRad = angle.radians.toDouble()
+    // For a linear gradient, we calculate the points along the gradient line
+    // that would cover the entire rectangle
+    val cos = cos(angleRad).toFloat()
+    val sin = sin(angleRad).toFloat()
 
-        // For a linear gradient, we calculate the points along the gradient line
-        // that would cover the entire rectangle
-        val cos = cos(angleRad).toFloat()
-        val sin = sin(angleRad).toFloat()
+    // Find the gradient line through the center
+    val cx = w / 2f
+    val cy = h / 2f
 
-        // Find the gradient line through the center
-        val cx = w / 2f
-        val cy = h / 2f
+    // Calculate the half-diagonal that covers the rectangle
+    val halfDiag = kotlin.math.sqrt(w * w + h * h) / 2f
 
-        // Calculate the half-length of the gradient line that covers the rectangle
-        val halfLength = (kotlin.math.abs(cos) * w + kotlin.math.abs(sin) * h) / 2f
-
-        startX = cx - cos * halfLength
-        startY = cy - sin * halfLength
-        endX = cx + cos * halfLength
-        endY = cy + sin * halfLength
-    }
+    val startX = cx - cos * halfDiag
+    val startY = cy - sin * halfDiag
+    val endX = cx + cos * halfDiag
+    val endY = cy + sin * halfDiag
 
     // Avoid zero-length gradient
     if (startX == endX && startY == endY) {
@@ -497,23 +483,12 @@ private fun RadialGradient.toAwtGradient(context: DrawingContext2D): java.awt.Pa
     if (stops.isEmpty()) return java.awt.Color.BLACK
     if (stops.size == 1) return stops[0].color.toAwt()
 
-    // Determine center and radius
-    val centerX: Float
-    val centerY: Float
-    val radiusVal: Float
-
-    if (cx != null && cy != null && radius != null) {
-        centerX = cx.toFloat()
-        centerY = cy.toFloat()
-        radiusVal = radius.toFloat()
-    } else {
-        // Default to center of the context with radius as half the smaller dimension
-        val w = context.width.toFloat()
-        val h = context.height.toFloat()
-        centerX = w / 2f
-        centerY = h / 2f
-        radiusVal = kotlin.math.min(w, h) / 2f
-    }
+    // Default to center of the context with radius as half the smaller dimension
+    val w = context.width.toFloat()
+    val h = context.height.toFloat()
+    val centerX = w / 2f
+    val centerY = h / 2f
+    val radiusVal = kotlin.math.min(w, h) / 2f
 
     // Avoid zero radius
     if (radiusVal <= 0f) {
@@ -521,8 +496,8 @@ private fun RadialGradient.toAwtGradient(context: DrawingContext2D): java.awt.Pa
     }
 
     // Focal point (defaults to center)
-    val focalX = fx?.toFloat() ?: centerX
-    val focalY = fy?.toFloat() ?: centerY
+    val focalX = centerX
+    val focalY = centerY
 
     val fractions = stops.map { it.ratio }.toFloatArray()
     val colors = stops.map { it.color.toAwt() }.toTypedArray()

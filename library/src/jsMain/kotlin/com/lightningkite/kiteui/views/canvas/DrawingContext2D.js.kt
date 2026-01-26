@@ -42,33 +42,20 @@ actual var DrawingContext2D.fillPaint: Paint
 private fun Paint.toCanvasStyle(ctx: DrawingContext2D): dynamic = when(this) {
     is Color -> toWeb()
     is LinearGradient -> {
-        // Calculate gradient line based on provided coordinates or angle
-        val gradX0: Double
-        val gradY0: Double
-        val gradX1: Double
-        val gradY1: Double
-        if (x0 != null && y0 != null && x1 != null && y1 != null) {
-            // Use explicit coordinates
-            gradX0 = x0
-            gradY0 = y0
-            gradX1 = x1
-            gradY1 = y1
-        } else {
-            // Use angle relative to canvas bounds
-            val w = ctx.width
-            val h = ctx.height
-            val radians = angle.radians.toDouble()
-            val cos = kotlin.math.cos(radians)
-            val sin = kotlin.math.sin(radians)
-            // Calculate gradient line through center of canvas
-            val centerX = w / 2.0
-            val centerY = h / 2.0
-            val length = kotlin.math.max(w, h)
-            gradX0 = centerX - cos * length / 2.0
-            gradY0 = centerY - sin * length / 2.0
-            gradX1 = centerX + cos * length / 2.0
-            gradY1 = centerY + sin * length / 2.0
-        }
+        // Calculate gradient line based on angle
+        val w = ctx.width
+        val h = ctx.height
+        val radians = angle.radians.toDouble()
+        val cos = kotlin.math.cos(radians)
+        val sin = kotlin.math.sin(radians)
+        // Calculate gradient line through center of canvas
+        val centerX = w / 2.0
+        val centerY = h / 2.0
+        val halfDiag = kotlin.math.sqrt(w * w + h * h) / 2.0
+        val gradX0 = centerX - cos * halfDiag
+        val gradY0 = centerY - sin * halfDiag
+        val gradX1 = centerX + cos * halfDiag
+        val gradY1 = centerY + sin * halfDiag
         val gradient = ctx.createLinearGradient(gradX0, gradY0, gradX1, gradY1)
         for (stop in stops) {
             gradient.addColorStop(stop.ratio.toDouble(), stop.color.toWeb())
@@ -76,17 +63,15 @@ private fun Paint.toCanvasStyle(ctx: DrawingContext2D): dynamic = when(this) {
         gradient
     }
     is RadialGradient -> {
-        // Calculate gradient circle based on provided coordinates or default to canvas center
+        // RadialGradient uses center of canvas and radius as half the minimum dimension
         val w = ctx.width
         val h = ctx.height
-        val gradCx = cx ?: (w / 2.0)
-        val gradCy = cy ?: (h / 2.0)
-        val gradRadius = radius ?: (kotlin.math.min(w, h) / 2.0)
-        val gradFx = fx ?: gradCx
-        val gradFy = fy ?: gradCy
+        val gradCx = w / 2.0
+        val gradCy = h / 2.0
+        val gradRadius = kotlin.math.min(w, h) / 2.0
         // createRadialGradient(x0, y0, r0, x1, y1, r1)
         // Inner circle (focal point) to outer circle (gradient boundary)
-        val gradient = ctx.createRadialGradient(gradFx, gradFy, 0.0, gradCx, gradCy, gradRadius)
+        val gradient = ctx.createRadialGradient(gradCx, gradCy, 0.0, gradCx, gradCy, gradRadius)
         for (stop in stops) {
             gradient.addColorStop(stop.ratio.toDouble(), stop.color.toWeb())
         }
