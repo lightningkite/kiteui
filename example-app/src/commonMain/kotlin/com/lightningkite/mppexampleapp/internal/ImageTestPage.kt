@@ -1,6 +1,8 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.ImageRaw
+import com.lightningkite.kiteui.models.ImageRemote
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
@@ -28,7 +30,7 @@ object ImageTestPage : Page {
                     scaleType = ImageScaleType.Crop
                 }
 
-                text("scaleType = ${ImageScaleType.Stretch}")
+                text(" Tests scaleType = ${ImageScaleType.Stretch}")
                 centered.sizeConstraints(
                     width = 6.rem,
                     height = 6.rem
@@ -37,6 +39,21 @@ object ImageTestPage : Page {
                     scaleType = ImageScaleType.Stretch
                 }
 
+                text("Resource .GIF from Resource")
+                val gif = rememberSuspending {
+                    ImageRaw(Resources.imagesGifTest())
+                }
+                centered.sizeConstraints(
+                    width = 20.rem,
+                    height = 20.rem
+                ).image {
+                    ::source{ gif() }
+                }
+
+                text("Remote gif ")
+                centered.sizeConstraints(width = 20.rem,height=20.rem).image{
+                    source = ImageRemote("https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif")
+                }
             }
         }
 }
