@@ -6,13 +6,8 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.AndroidAppContext
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -21,6 +16,9 @@ import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.http.content.OutgoingContent
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.jvm.javaio.toByteReadChannel
 import io.ktor.websocket.*
 import java.net.UnknownHostException
 import kotlin.time.Duration.Companion.milliseconds
@@ -32,6 +30,7 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 
 val client: HttpClient
@@ -80,8 +79,15 @@ actual suspend fun fetch(
                     }
                     is RequestBodyFile -> {
                         contentType(ContentType.parse(body.content.mimeType()))
-                        with(AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)) {
-                            this?.readBytes()?.let { setBody(it) }
+
+                        val inputStream = AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)
+
+                        if (inputStream != null) {
+                            setBody(object : OutgoingContent.ReadChannelContent() {
+                                override val contentType: ContentType = ContentType.parse(body.content.mimeType())
+                                override val contentLength: Long = body.bytes
+                                override fun readFrom(): ByteReadChannel = inputStream.toByteReadChannel()
+                            })
                         }
                     }
                     is RequestBodyText -> {
@@ -347,7 +353,10 @@ actual fun FileReference.bytes(): Long {
             cursor.moveToFirst()
             cursor.getLong(nameIndex)
         }
-        ?: return -1L
+        ?: uri.path?.let { path -> // if it is null with the content resolver check if it is an app scope file
+            val file = File(path)
+            if (file.exists()) file.length() else null
+        } ?: return -1L
 }
 
 //actual suspend fun Blob.byteArray(): ByteArray = data
