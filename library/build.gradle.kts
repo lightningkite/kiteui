@@ -64,6 +64,7 @@ kotlin {
                 api(libs.kotlinxSerializationProperties)
                 api(libs.kotlinxDatetime)
                 api(libs.kotlinxCoroutinesCore)
+                api(libs.kotlinxSerializationUri)
             }
         }
         val commonTest by getting {

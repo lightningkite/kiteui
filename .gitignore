@@ -20,3 +20,4 @@ xcuserdata
 library.podspec
 local
 .kbuild
+/.claude/settings.local.json
