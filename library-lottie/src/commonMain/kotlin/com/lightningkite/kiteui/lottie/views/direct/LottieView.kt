@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.lottie.views.direct
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.lottie.models.LottieSource
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
@@ -18,6 +20,8 @@ import kotlin.time.Duration
  * @param source The Lottie animation source (Remote URL or raw JSON)
  * @param description Accessibility description for the animation
  */
+@ExperimentalKiteUi
+@Untested
 expect class LottieView(
     context: RContext,
     source: LottieSource,

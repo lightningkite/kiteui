@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.gamepad
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.Untested
 import com.lightningkite.reactive.core.Listenable
 import com.lightningkite.reactive.core.ReactiveValue
 
@@ -22,6 +24,8 @@ import com.lightningkite.reactive.core.ReactiveValue
  * Gamepads.stopPolling()
  * ```
  */
+@ExperimentalKiteUi
+@Untested
 expect object Gamepads {
     /**
      * Maximum number of gamepads supported simultaneously.

@@ -1,6 +1,8 @@
 // by Claude
 package com.lightningkite.kiteui.audio
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.Untested
 import com.lightningkite.reactive.core.Reactive
 
 /**
@@ -25,6 +27,8 @@ import com.lightningkite.reactive.core.Reactive
  *
  * @param format The audio format to capture (default: 24kHz mono PCM16)
  */
+@ExperimentalKiteUi
+@Untested
 expect class AudioCapture(format: AudioFormat = AudioFormat()) {
     /** The audio format being captured */
     val format: AudioFormat

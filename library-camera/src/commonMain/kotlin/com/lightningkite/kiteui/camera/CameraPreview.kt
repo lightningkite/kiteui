@@ -1,6 +1,8 @@
 // by Claude
 package com.lightningkite.kiteui.camera
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
@@ -53,6 +55,8 @@ data class BarcodeResult(
  * }
  * ```
  */
+@ExperimentalKiteUi
+@Untested
 expect class CameraPreview(context: RContext) : RView {
     /**
      * Captures a photo from the camera.

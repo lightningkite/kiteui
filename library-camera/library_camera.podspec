@@ -9,8 +9,8 @@ Pod::Spec.new do |spec|
     spec.vendored_frameworks      = 'build/cocoapods/framework/library_camera.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '14.0'
-
-
+                
+                
     if !Dir.exist?('build/cocoapods/framework/library_camera.framework') || Dir.empty?('build/cocoapods/framework/library_camera.framework')
         raise "
 
@@ -21,16 +21,16 @@ Pod::Spec.new do |spec|
 
         Alternatively, proper pod installation is performed during Gradle sync in the IDE (if Podfile location is set)"
     end
-
+                
     spec.xcconfig = {
         'ENABLE_USER_SCRIPT_SANDBOXING' => 'NO',
     }
-
+                
     spec.pod_target_xcconfig = {
         'KOTLIN_PROJECT_PATH' => ':library-camera',
         'PRODUCT_MODULE_NAME' => 'library_camera',
     }
-
+                
     spec.script_phases = [
         {
             :name => 'Build library_camera',
@@ -50,5 +50,5 @@ Pod::Spec.new do |spec|
             SCRIPT
         }
     ]
-
+                
 end

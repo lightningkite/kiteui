@@ -1,6 +1,8 @@
 // by Claude
 package com.lightningkite.kiteui.audio
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.Untested
 import com.lightningkite.reactive.core.Reactive
 
 /**
@@ -23,6 +25,8 @@ import com.lightningkite.reactive.core.Reactive
  *
  * @param format The audio format to play (default: 24kHz mono PCM16)
  */
+@ExperimentalKiteUi
+@Untested
 expect class AudioPlayback(format: AudioFormat = AudioFormat()) {
     /** The audio format being played */
     val format: AudioFormat
