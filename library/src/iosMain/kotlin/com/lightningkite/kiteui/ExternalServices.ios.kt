@@ -575,32 +575,54 @@ private fun Blob.saveToTemporaryFile(name: String): NSURL {
 }
 
 private suspend fun copyFilesToCameraRoll(files: List<NSURL>) {
-    val hasPermission =
-        PHPhotoLibrary.authorizationStatusForAccessLevel(PHAccessLevelAddOnly) == PHAuthorizationStatusAuthorized
-    if (!hasPermission) {
-        Log.warn("Lacking Camera Roll add access")
-        val newPermission = withContext(Dispatchers.Main) {
-            suspendCoroutine { continuation ->
-                PHPhotoLibrary.requestAuthorizationForAccessLevel(PHAccessLevelAddOnly) {
-                    continuation.resume(it)
-                }
-            }
-        }
+    val fileManager = NSFileManager.defaultManager
+    // process the media entries to be saved temporarely with the correct file extensions so they can be saved to the gallery
+    val mediaEntries = files.mapNotNull { originalUrl ->
+            val path = originalUrl.path ?: return@mapNotNull null
 
-        if (newPermission != PHAuthorizationStatusAuthorized) throw Exception("User rejected Camera Roll add permission")
+            val fileHandle = NSFileHandle.fileHandleForReadingAtPath(path)
+            val headerData = fileHandle?.readDataOfLength(20.toULong()) // Read 20 bytes for safety
+            fileHandle?.closeFile()
+
+            if (headerData == null) return@mapNotNull null
+
+            val (isVideo, targetExt) = identifyMedia(headerData)
+
+        val tempPath = "${NSTemporaryDirectory()}${NSUUID.UUID().UUIDString}.$targetExt"
+        val destinationUrl = NSURL.fileURLWithPath(tempPath)
+
+        fileManager.removeItemAtPath(tempPath, error = null)
+        if (fileManager.copyItemAtURL(originalUrl, destinationUrl, error = null)) {
+            return@mapNotNull destinationUrl to isVideo
+        } else {
+            println("DEBUG: Failed to copy file to temp directory")
+            null
+        }
     }
 
-    return suspendCoroutine {
+    if (mediaEntries.isEmpty()) {
+        println("DEBUG: No valid media entries to process")
+        return
+    }
+
+    // 3. Perform Changes
+    return suspendCoroutine { continuation ->
         PHPhotoLibrary.sharedPhotoLibrary().performChanges({
-            files.forEach {
-                PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(it)
+            mediaEntries.forEach { (url, isVideo) ->
+                if (isVideo) {
+                    PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(url)
+                } else {
+                    PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(url)
+                }
             }
-        }) { success, _ ->
+        }) { success, error ->
             dispatch_async(dispatch_get_main_queue()) {
                 if (success) {
-                    it.resume(Unit)
+                    continuation.resume(Unit)
                 } else {
-                    it.resumeWithException(Exception("Unable to make changes to remember photo library"))
+                    val msg = error?.localizedDescription
+                    val code = error?.code
+                    continuation.resumeWithException(Exception("Photo Library Error: $code $msg"))
                 }
             }
         }
@@ -622,6 +644,46 @@ actual suspend fun RContext.download(
 
         DownloadLocation.Pictures -> {
             copyFilesToCameraRoll(temporaryFiles)
+        }
+    }
+}
+
+
+// Helper to identify content and return (isVideo, extension)
+private fun identifyMedia(data: NSData): Pair<Boolean, String> {
+    val bytes = data.bytes()?.reinterpret<platform.posix.uint8_tVar>() ?: return false to "jpg"
+    val length = data.length.toInt()
+
+    // Helper to check string at offset
+    fun checkSignature(offset: Int, signature: String): Boolean {
+        if (offset + signature.length > length) return false
+        for (i in signature.indices) {
+            if (bytes[offset + i].toInt().toChar() != signature[i]) return false
+        }
+        return true
+    }
+
+    return when {
+        // VIDEOS (Look for ftyp at offset 4)
+        checkSignature(4, "ftypmp42") || checkSignature(4, "ftypisom") || checkSignature(4, "ftypMSNV") -> true to "mp4"
+        checkSignature(4, "ftypqt") -> true to "mov"
+
+        // IMAGES
+        // HEIC/HEIF (Often starts with ftypheic or ftypheix)
+        checkSignature(4, "ftypheic") || checkSignature(4, "ftypmif1") -> false to "heic"
+
+        // JPEG: FF D8 FF
+        bytes[0].toInt() == 0xFF && bytes[1].toInt() == 0xD8 -> false to "jpg"
+
+        // PNG: 89 50 4E 47
+        bytes[0].toInt() == 0x89 && bytes[1].toInt() == 0x50 -> false to "png"
+
+        // GIF: GIF8
+        checkSignature(0, "GIF8") -> false to "gif"
+
+        else -> {
+            println("DEBUG: Unknown signature, defaulting to jpg")
+            false to "jpg"
         }
     }
 }
