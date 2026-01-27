@@ -70,7 +70,7 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 // Spec-compliant BarcodeDetector polyfill using ZXing WASM
-                implementation(npm("barcode-detector", "2.3.6"))
+                implementation(npm("barcode-detector", "3.0.8"))  // by Claude - version 2.3.6 doesn't exist
             }
         }
 
