@@ -27,6 +27,7 @@ timber = "5.0.1"
 transition = "1.6.0"
 vannitechPublishing = "0.34.0"
 dokka = "2.1.0"
+uriEncoding = "0.0.1-4"
 
 
 [libraries]
@@ -45,6 +46,7 @@ kotlinxCoroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-tes
 kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = { ref = "kotlinxDatetime" } }
 kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = { ref = "kotlinxSerializationJson" } }
 kotlinxSerializationProperties = { module = "org.jetbrains.kotlinx:kotlinx-serialization-properties", version = { ref = "kotlinxSerializationJson" } }
+kotlinxSerializationUri = { module = "com.lightningkite:kotlinx-serialization-uri", version = { ref = "uriEncoding" } }
 ktor-client-okhttp-jvm = { module = "io.ktor:ktor-client-okhttp-jvm", version.ref = "ktorVersion" }
 ktorClientCio = { module = "io.ktor:ktor-client-cio", version = { ref = "ktorVersion" } }
 ktorClientCore = { module = "io.ktor:ktor-client-core", version = { ref = "ktorVersion" } }
