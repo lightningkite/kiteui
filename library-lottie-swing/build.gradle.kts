@@ -12,7 +12,7 @@ plugins {
 kotlin {
     jvm {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_1_8)
+            jvmTarget.set(JvmTarget.JVM_11)
         }
     }
 
@@ -23,28 +23,38 @@ kotlin {
     }
 
     sourceSets {
-        val jvmMain by getting {
+        val commonMain by getting {
+            // Share source code from library-lottie's commonMain
+            kotlin.srcDir("${project(":library-lottie").projectDir}/src/commonMain/kotlin")
+
             dependencies {
                 api(project(":library-swing"))
-                // Share LottieSource models from library-lottie
-                api(project(":library-lottie"))
+            }
+        }
 
+        val jvmMain by getting {
+            kotlin.srcDir("src/jvmMain/kotlin")
+
+            dependencies {
                 // JavaFX for embedding WebView in Swing
                 val os = System.getProperty("os.name").lowercase()
+                val arch = System.getProperty("os.arch").lowercase()
                 val platform = when {
-                    os.contains("mac") -> "mac"
+                    os.contains("mac") -> if (arch.contains("aarch64") || arch.contains("arm64")) "mac-aarch64" else "mac"
                     os.contains("win") -> "win"
-                    else -> "linux"
+                    else -> if (arch.contains("aarch64") || arch.contains("arm64")) "linux-aarch64" else "linux"
                 }
                 api("org.openjfx:javafx-swing:21:$platform")
                 api("org.openjfx:javafx-web:21:$platform")
                 api("org.openjfx:javafx-base:21:$platform")
                 api("org.openjfx:javafx-graphics:21:$platform")
+                api("org.openjfx:javafx-controls:21:$platform")
+                api("org.openjfx:javafx-media:21:$platform")
             }
         }
     }
 }
 
 lkLibrary("lightningkite", "kiteui-lottie-swing") {
-    description.set("KiteUI Lottie Animation Support for Swing (Desktop)")
+    description.set("KiteUI Lottie Animation Support for JVM (Swing/Desktop)")
 }

@@ -34,7 +34,8 @@ kotlin {
             // Source code shared via symlink: src/commonMain -> ../../example-app/src/commonMain
             dependencies {
                 api(project(":library-swing"))
-                api(project(":library-lottie-jvm"))
+                api(project(":library-lottie-swing"))
+                api(project(":library-camera-swing"))
             }
         }
 

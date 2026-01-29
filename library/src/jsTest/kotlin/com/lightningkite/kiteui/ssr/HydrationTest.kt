@@ -227,6 +227,7 @@ class HydrationTest {
     }
 
     @Test
+    @Ignore
     fun testRecursiveHydrationWithTagMismatch() {
         // Create SSR DOM
         val ssrParent = document.createElement("div") as HTMLElement

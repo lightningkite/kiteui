@@ -26,7 +26,7 @@ class SsrContextTest {
         context.title = "Test Page"
         context.description = "A test page for SSR"
 
-        val result = context.render {
+        context.render {
             col {
                 h1("Hello SSR!")
                 text("This is server-side rendered content.")
@@ -35,6 +35,7 @@ class SsrContextTest {
                 }
             }
         }
+        val result = context.serialize()
 
         // Verify HTML contains expected content
         assertTrue(result.html.contains("Hello SSR!"), "HTML should contain heading text")
@@ -55,7 +56,7 @@ class SsrContextTest {
         val context = SsrContext("/")
         context.title = "Themed Page"
 
-        val result = context.render {
+        context.render {
             Theme.flat2("test", hue = 0.6.turns).onNext.scrolling.col {
                 sizeConstraints(width = 50.rem).card.col {
                     h1("Welcome to my Website")
@@ -73,6 +74,7 @@ class SsrContextTest {
                 }
             }
         }
+        val result = context.serialize()
 
         // Verify HTML
         assertTrue(result.html.contains("Welcome to my Website"), "HTML should contain heading")
@@ -90,13 +92,13 @@ class SsrContextTest {
         context.description = "Testing complete HTML document rendering"
         context.metaTags["og:title"] = "Full Document Test"
         context.metaTags["og:type"] = "website"
-
-        val result = context.render {
+        context.render {
             col {
                 h1("Hello World")
                 text("Content goes here")
             }
         }
+        val result = context.serialize()
 
         val document = SsrDocument(baseHref = "/")
         val html = document.render(result)
@@ -147,13 +149,15 @@ class SsrContextTest {
         context2.preload("data", "context2-data")
 
         // Render in both contexts
-        val result1 = context1.render {
+        context1.render {
             text("Content 1")
         }
+        val result1 = context1.serialize()
 
-        val result2 = context2.render {
+        context2.render {
             text("Content 2")
         }
+        val result2 = context2.serialize()
 
         // Verify they're isolated
         assertTrue(result1.title == "Page 1", "Context 1 title should be Page 1")
@@ -168,7 +172,7 @@ class SsrContextTest {
     fun testVoidElementsRenderCorrectly() {
         val context = SsrContext("/")
 
-        val result = context.render {
+        context.render {
             col {
                 textInput { }  // Should render as <input ... />
                 text("Line 1")
@@ -176,6 +180,7 @@ class SsrContextTest {
                 text("Line 2")
             }
         }
+        val result = context.serialize()
 
         // Input should self-close
         assertTrue(result.html.contains("<input") && result.html.contains("/>"), "Input should self-close")

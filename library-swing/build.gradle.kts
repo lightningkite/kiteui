@@ -34,6 +34,7 @@ kotlin {
                 api(libs.kotlinxSerializationProperties)
                 api(libs.kotlinxDatetime)
                 api(libs.kotlinxCoroutinesCore)
+                api(libs.kotlinxSerializationUri)
             }
         }
 

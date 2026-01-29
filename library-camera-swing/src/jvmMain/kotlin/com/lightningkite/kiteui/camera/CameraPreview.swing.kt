@@ -5,6 +5,9 @@ import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.reactive.core.*
+import java.awt.*
+import javax.swing.*
+import javax.swing.SwingUtilities
 
 /**
  * SSR stub for CameraPreview.
@@ -12,10 +15,8 @@ import com.lightningkite.reactive.core.*
  * This renders as an empty placeholder div.
  */
 actual class CameraPreview actual constructor(context: RContext) : RView(context) {
-    init {
-        native.tag = "div"
-        native.classes.add("camera-preview-ssr-placeholder")
-    }
+    private val panel = JPanel(BorderLayout())
+    override val native: Component = panel
 
     actual val hasPermissions: MutableReactive<Boolean> = Signal(false)
 
