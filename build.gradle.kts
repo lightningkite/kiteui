@@ -23,6 +23,7 @@ allprojects {
         mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
         maven("https://jitpack.io")
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") // For Skiko Android
         google()
         mavenCentral()
     }

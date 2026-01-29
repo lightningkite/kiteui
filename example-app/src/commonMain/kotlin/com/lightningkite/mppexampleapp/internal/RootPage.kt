@@ -52,6 +52,7 @@ object RootPage : Page {
                     }
                 }
 
+                linkPage { ClickTestPage }
                 linkPage { RowWrappingPage }
                 linkPage { CoveringTestPage }
                 linkPage { PopoverTestingPage }
@@ -66,11 +67,15 @@ object RootPage : Page {
                 linkPage { TestingGroundPage }
                 linkPage { LeakCheckerPage }
                 linkPage { ExperimentPage }
+                linkPage { LazyListTestPage }
                 linkPage { Recycler2TestPage }
                 linkPage { RecyclerFilterTestPage }
                 linkPage { HorizontalRecyclerViewPage }
                 linkPage { InfiniteImagesPage }
                 linkPage { AudioPage }
+                linkPage { AudioTestPage }
+                linkPage { LottieExamplePage }
+                linkPage { LottieRendererTestPage }
                 linkPage { PlatformSpecificPage }
                 linkPage { VideoElementPage }
                 linkPage { ViewPagerElementPage }
@@ -87,6 +92,7 @@ object RootPage : Page {
                 linkPage { LoadAnimationTestPage }
                 linkPage { WebSocketPage }
                 linkPage { CanvasSamplePage }
+                linkPage { CanvasApiTestPage }
                 linkPage { GraphExamplePage }
                 linkPage { PongSamplePage }
                 linkPage { ReactivityPage }
@@ -95,8 +101,10 @@ object RootPage : Page {
                 linkPage { FullScreenPage() }
                 linkPage { RecyclerViewTestPage }
                 linkPage { ImageTestPage }
+                linkPage { CameraScannerTestPage }
                 linkPage { PerformanceTestPage }
                 linkPage { DatePickerExamplePage }
+                linkPage { SsrResourceExamplePage() }
                 run {
                     val screen = { ArgumentsExamplePage("test-id").also { it.toAdd.value = "Preset" } }
                     card.link {

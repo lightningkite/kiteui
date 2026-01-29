@@ -229,8 +229,7 @@ private val showHideWorker = label@{
             val y =
                 parentStyle.display == "grid" ||
                         parentStyle.display == "flex" && parentStyle.flexDirection.contains("column") ||
-                        parentStyle.display != "flex" && (displayValuesPreHide[on]
-                    ?: myStyle.display).let { it.contains("block") && !it.contains("inline") }
+                        parentStyle.display != "flex" && parent.classList.contains("optimized")
             val weighted = myStyle.flexGrow.takeIf { it.isNotBlank() && it != "0" }
             val usingFlexGap = parentStyle.display == "flex"
 
