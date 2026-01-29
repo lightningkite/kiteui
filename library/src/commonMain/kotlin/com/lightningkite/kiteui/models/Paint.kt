@@ -19,13 +19,28 @@ data class FadingColor(val base: Color, val alternate: Color): Paint {
     override fun map(mapper: (Color) -> Color): Paint = FadingColor(base = mapper(base), alternate = mapper(alternate))
 }
 data class GradientStop(val ratio: Float, val color: Color)
+/**
+ * Linear gradient paint.
+ *
+ * For canvas drawing, use [x0], [y0], [x1], [y1] to specify absolute start/end points.
+ * When these are null, the gradient uses [angle] relative to the drawing bounds.
+ */
 data class LinearGradient(
     val stops: List<GradientStop>,
     /**
-     * Zero is left to right, angle added is clockwise
+     * Zero is left to right, angle added is clockwise.
+     * Used when x0/y0/x1/y1 are not specified.
      */
     val angle: Angle = Angle.zero,
     val screenStatic: Boolean = false,
+    /** Start point X coordinate for canvas gradients. */
+    val x0: Double? = null,
+    /** Start point Y coordinate for canvas gradients. */
+    val y0: Double? = null,
+    /** End point X coordinate for canvas gradients. */
+    val x1: Double? = null,
+    /** End point Y coordinate for canvas gradients. */
+    val y1: Double? = null,
 ) : Paint {
     companion object {
         val INVALID = LinearGradient(listOf())
@@ -57,9 +72,26 @@ data class LinearGradient(
     fun invert() = copy(stops = stops.map { it.copy(color = it.color.invert()) })
 }
 
+/**
+ * Radial gradient paint.
+ *
+ * For canvas drawing, use [cx], [cy], [radius] to specify the gradient circle.
+ * Optionally use [fx], [fy] for a focal point different from the center.
+ * When these are null, the gradient centers in the drawing bounds.
+ */
 data class RadialGradient(
     val stops: List<GradientStop>,
     val screenStatic: Boolean = false,
+    /** Center X coordinate for canvas gradients. */
+    val cx: Double? = null,
+    /** Center Y coordinate for canvas gradients. */
+    val cy: Double? = null,
+    /** Radius for canvas gradients. */
+    val radius: Double? = null,
+    /** Focal point X coordinate (defaults to cx if null). */
+    val fx: Double? = null,
+    /** Focal point Y coordinate (defaults to cy if null). */
+    val fy: Double? = null,
 ) : Paint {
     override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {

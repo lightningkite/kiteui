@@ -60,17 +60,26 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":library"))
+                api(project(":library-lottie"))
+                api(project(":library-camera"))
             }
         }
 
         val commonHtmlMain by creating {
             dependsOn(commonMain)
         }
+
         val jsMain by getting {
             dependsOn(commonHtmlMain)
             dependencies {
                 implementation(devNpm("webpack-bundle-analyzer", "4.10.2"))
             }
+        }
+
+        val androidMain by getting {
+        }
+
+        val iosMain by getting {
         }
 
         val commonTest by getting {
@@ -98,6 +107,11 @@ kotlin {
     sourceSets {
         val jvmSsrMain by getting {
             dependsOn(get("commonHtmlMain"))
+            dependencies {
+                implementation(libs.ktorServerCore)
+                implementation(libs.ktorServerNetty)
+                implementation(libs.kotlinxCoroutinesSwing) // Provides Dispatchers.Main for JVM
+            }
         }
     }
 //    jvm("jvmSwing")
@@ -142,7 +156,7 @@ android {
 
     defaultConfig {
         applicationId = "com.lightningkite.kiteuiexample"
-        minSdk = 23
+        minSdk = 24  // library-skia (Skiko) requires API 24+
         targetSdk = 36
         versionCode = 1
         versionName = project.version.toString()
@@ -190,3 +204,33 @@ fun env(name: String, profile: String) {
     }
 }
 env("lk", "lk")
+
+// SSR Server run task (runs server mode by default)
+tasks.register<JavaExec>("ssrServerRun") {
+    group = "application"
+    description = "Run the SSR server (default) or prerender with --args=\"prerender <outputDir>\""
+    mainClass.set("com.lightningkite.mppexampleapp.SsrPrerenderKt")
+    val jvmSsrCompilation = kotlin.targets.getByName<org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget>("jvmSsr")
+        .compilations.getByName("main")
+    classpath = files(
+        jvmSsrCompilation.output.allOutputs,
+        jvmSsrCompilation.runtimeDependencyFiles
+    )
+    dependsOn("jvmSsrJar")
+}
+
+// Convenience task for prerendering
+tasks.register<JavaExec>("ssrPrerender") {
+    group = "application"
+    description = "Prerender all SSR pages to ./local/prerendered"
+    mainClass.set("com.lightningkite.mppexampleapp.SsrPrerenderKt")
+    args = listOf("prerender", "${project.rootDir}/local/prerendered")
+    val jvmSsrCompilation = kotlin.targets.getByName<org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget>("jvmSsr")
+        .compilations.getByName("main")
+    classpath = files(
+        jvmSsrCompilation.output.allOutputs,
+        jvmSsrCompilation.runtimeDependencyFiles
+    )
+    dependsOn("jvmSsrJar")
+}
+
