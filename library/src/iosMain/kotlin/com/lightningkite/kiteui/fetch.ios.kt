@@ -28,6 +28,7 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import platform.Foundation.*
 import platform.UniformTypeIdentifiers.*
 import platform.posix.memcpy
+import kotlin.coroutines.resumeWithException
 
 val client = HttpClient {
     install(WebSockets)
@@ -79,15 +80,35 @@ actual suspend fun fetch(
                         }
 
                         is RequestBodyFile -> {
-                            val mime = body.content.suggestedType
-                                ?: (body.content.provider.registeredContentTypes.firstOrNull() as? UTType ?: UTTypeData)
-                            // Type is dyn.age8u (null)
-                            contentType(ContentType.parse(mime.preferredMIMEType ?: throw Exception("No mime type found from file")))
-                            val fileData = suspendCoroutine {
-                                body.content.provider.loadDataRepresentationForContentType(mime) { data, error ->
-                                    if (error != null) throw Exception(error.description)
-                                    val rawData = data?.toByteArray() ?: throw Exception("Data is null")
-                                    it.resume(rawData)
+                            // 1. Resolve the UTType just like before
+                            val type = body.content.suggestedType
+                                ?: (body.content.provider.registeredContentTypes.firstOrNull() as? UTType)
+                                ?: UTTypeData
+
+                            // 2. FIX: Fallback to octet-stream instead of throwing an Exception
+                            val mimeString = type.preferredMIMEType ?: "application/octet-stream"
+                            contentType(ContentType.parse(mimeString))
+
+                            val fileData = suspendCoroutine { continuation ->
+                                body.content.provider.loadDataRepresentationForContentType(type) { data, error ->
+                                    if (error != null) {
+                                        // If the specific type fails, sometimes falling back to UTTypeData works
+                                        if (type != UTTypeData) {
+                                            body.content.provider.loadDataRepresentationForContentType(UTTypeData) { data2, error2 ->
+                                                if(error2 != null) {
+                                                    continuation.resumeWithException(Exception(error2.description))
+                                                } else {
+                                                    val rawData = data2?.toByteArray() ?: throw Exception("Data is null")
+                                                    continuation.resume(rawData)
+                                                }
+                                            }
+                                        } else {
+                                            continuation.resumeWithException(Exception(error.description))
+                                        }
+                                    } else {
+                                        val rawData = data?.toByteArray() ?: throw Exception("Data is null")
+                                        continuation.resume(rawData)
+                                    }
                                 }
                             }
                             setBody(fileData)
@@ -328,11 +349,35 @@ actual class FileReference(val provider: NSItemProvider, val suggestedType: UTTy
 
 
 actual fun Blob.mimeType(): String = type
-actual fun FileReference.mimeType(): String = suggestedType?.preferredMIMEType ?: "application/octet-stream"
+actual fun FileReference.mimeType(): String {
+    // 1. Try the explicit suggested type
+    // 2. Fallback to the first registered type in the provider
+    // 3. Fallback to generic Data type
+    val type = suggestedType
+        ?: (provider.registeredContentTypes.firstOrNull() as? UTType)
+        ?: UTTypeData
 
+    return type.preferredMIMEType ?: "application/octet-stream"
+}
 actual fun FileReference.fileName(): String {
-    val extension = suggestedType?.preferredFilenameExtension ?: ""
-    return "${provider.suggestedName ?: ""}.$extension"
+    val type = suggestedType
+        ?: (provider.registeredContentTypes.firstOrNull() as? UTType)
+        ?: UTTypeData
+
+    val extension = type.preferredFilenameExtension ?: ""
+
+    // 1. Try the system suggested name
+    // 2. If null, create a unique one using a timestamp
+    val name = provider.suggestedName ?: run {
+        val timestamp = NSDate().timeIntervalSince1970.toLong()
+        "file_$timestamp"
+    }
+
+    return if (extension.isNotBlank()) {
+        "$name.$extension"
+    } else {
+        name
+    }
 }
 
 fun String.nsdata(): NSData? =
