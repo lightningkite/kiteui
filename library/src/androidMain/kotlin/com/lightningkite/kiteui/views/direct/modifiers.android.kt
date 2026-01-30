@@ -134,12 +134,14 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
             Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
         if (effectiveHorizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT
-        } else if (params.width == ViewGroup.LayoutParams.MATCH_PARENT) {
-            params.height = ViewGroup.LayoutParams.WRAP_CONTENT
+        } else if (params.width == ViewGroup.LayoutParams.MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+            // In a horizontal row, MATCH_PARENT width conflicts with weighted siblings - use WRAP_CONTENT instead
+            params.width = ViewGroup.LayoutParams.WRAP_CONTENT
         }
         if (effectiveVertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
             params.height = ViewGroup.LayoutParams.MATCH_PARENT
-        } else if (params.height == ViewGroup.LayoutParams.MATCH_PARENT) {
+        } else if (params.height == ViewGroup.LayoutParams.MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.VERTICAL) {
+            // In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT
         }
     }
