@@ -1,15 +1,22 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.navigation.CanBlockBack
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*
+import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.core.Signal
 
 
 @Routable("navigation")
-object NavigationTestPage : Page {
+object NavigationTestPage : Page, CanBlockBack {
+    override fun onNavigateAwayAttempt(): Boolean {
+        return !blockNavigateAway.value
+    }
+    val blockNavigateAway = Signal(false)
 
     override fun ViewWriter.render(): Unit = run {
         col {
@@ -39,6 +46,15 @@ object NavigationTestPage : Page {
                     navSelector("Top and Left Navigation", ViewWriter::appNavTopAndLeft)
                 }
             }
+
+
+            row {
+                checkbox {
+                    checked bind blockNavigateAway
+                }
+                text("Require confirmation before leaving page.")
+            }
+
             h2 { content = "Table of Contents" }
 
             card.row {

@@ -80,7 +80,12 @@ actual suspend fun fetch(
                     is RequestBodyFile -> {
                         contentType(ContentType.parse(body.content.mimeType()))
 
-                        val inputStream = AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)
+                        val inputStream =
+                            AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)
+                                ?: body.content.uri.path?.let { path ->
+                                    val file = File(path)
+                                    if (file.exists()) file.inputStream() else null
+                                }
 
                         if (inputStream != null) {
                             setBody(object : OutgoingContent.ReadChannelContent() {
@@ -316,6 +321,8 @@ actual class FileReference(val uri: Uri)
 actual fun Blob.mimeType() = type
 actual fun FileReference.mimeType() = when (uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
+        ?: MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))         // if it is null with the content resolver check if it is an app scope file
     ContentResolver.SCHEME_FILE ->
         MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))
 
@@ -330,7 +337,10 @@ actual fun FileReference.fileName(): String {
             val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
             cursor.moveToFirst()
             cursor.getString(nameIndex)
-        }
+        } ?: uri.path?.let { path -> // if it is null with the content resolver check if it is an app scope file
+        val file = File(path)
+        if (file.exists()) file.name else "Unknown File Name"
+    }
         ?: return "Unknown File Name"
 }
 
@@ -369,7 +379,11 @@ actual fun FileReference.bytes(): Long {
 actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
 actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) {
     withContext(Dispatchers.IO) {
-        AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.reader(Charsets.UTF_8).readText()
+        AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)?.reader(Charsets.UTF_8)?.readText()
+            ?: uri.path?.let { path ->
+                // if it is null with the content resolver check if it is an app scope file
+                File(path).readText()
+            }!!
     }
 }
 
