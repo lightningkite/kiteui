@@ -45,7 +45,6 @@ fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainL
             dialogPageNavigator = it
         }
         main.bindToPlatform(context)
-        this.addListenerForNavigateAway(main)
         pageNavigator = main
         overlayFrame = this
         coordinatorFrame = this

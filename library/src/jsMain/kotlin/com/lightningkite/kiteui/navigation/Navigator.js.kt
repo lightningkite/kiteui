@@ -46,6 +46,15 @@ var PageNavigatorUseExperimentalBehavior: Boolean
     }
 
 actual fun PageNavigator.bindToPlatform(context: RContext) {
+    val beforeUnload = { event: Event ->
+        val canLeave = this.currentPage.state.raw?.let { it as? CanBlockBack }?.onNavigateAwayAttempt() ?: true
+        if (!canLeave) {
+            event.preventDefault();
+            event.asDynamic().returnValue = ""; // Required for Chrome
+        }
+    }
+    window.addEventListener("beforeunload", beforeUnload)
+
     when (PageNavigatorBehavior.current) {
         PageNavigatorBehavior.Separate -> {
             val log: Log? = LogRoot.tag("ScreenStack.bindToPlatform")
@@ -349,23 +358,6 @@ private fun Location.urlLike() = UrlLikePath(
     parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
         .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
 )
-
-
-actual fun ViewWriter.addListenerForNavigateAway(pageNav: PageNavigator) {
-    val beforeUnload = { event: Event ->
-        val canLeave = pageNav.currentPage.state.raw?.let { it as? CanBlockBack }?.onNavigateAwayAttempt() ?: true
-
-        if (!canLeave) {
-            event.preventDefault();
-            event.asDynamic().returnValue = ""; // Required for Chrome
-        }
-    }
-    window.addEventListener("beforeunload", beforeUnload)
-
-    onRemove {
-        window.removeEventListener("beforeunload", beforeUnload)
-    }
-}
 
 actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
     return window.confirm(

@@ -1,16 +1,11 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.rContextAddonInit
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.reflect.KProperty
-
+import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.Signal
+import com.lightningkite.reactive.core.remember
 
 
 @Deprecated("Use PageNavigator directly instead", ReplaceWith("PageNavigator", "com.lightningkite.kiteui.navigation.PageNavigator"))
@@ -23,49 +18,53 @@ class PageNavigator(private val routesGetter: ()->Routes) {
     fun navigateUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
     fun resetUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
 
-    val stack: MutableReactiveValue<List<Page>> = object : MutableReactiveValue<List<Page>>, BaseReactiveValue<List<Page>>(listOf()) {
-        override fun valueSet(value: List<Page>) {
-            val canNavigate = (stack.value.last() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true
-            val confirmed = if (canNavigate) true else askForConfirmNavigateAway()
-            if (confirmed) {
-                super.valueSet(value)
-            }
+    val stack: Signal<List<Page>> = Signal(listOf())
+
+    val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
+    val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
+
+    private val allowNavigate get(): Boolean {
+        val notBlocked = (stack.value.last() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true
+        return if (notBlocked) true else askForConfirmNavigateAway()
+    }
+
+    fun navigate(screen: Page) {
+        if (allowNavigate) {
+            stack.value += screen
         }
     }
 
-    fun wrap(screen: Page): Page = screen
-    
-    val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
-    val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
-    
-    fun navigate(screen: Page) = navigateRaw(wrap(screen))
-    fun replace(screen: Page) = replaceRaw(wrap(screen))
-    fun reset(screen: Page) = resetRaw(wrap(screen))
-    fun navigateRaw(screen: Page) {
-        stack.valueSet(stack.value + screen)
+    fun replace(screen: Page) {
+        if (allowNavigate) {
+            stack.value = stack.value.dropLast(1) + screen
+        }
     }
-    fun replaceRaw(screen: Page) {
-        stack.valueSet(stack.value.dropLast(1) + screen)
-    }
-    fun resetRaw(screen: Page) {
-        stack.valueSet(listOf(screen))
+
+    fun reset(screen: Page) {
+        if (allowNavigate) {
+            stack.value = listOf(screen)
+        }
     }
 
     fun goBack(): Boolean {
-        if(stack.value.size <= 1)
+        if(stack.value.size <= 1 || !allowNavigate) {
             return false
-        stack.valueSet(stack.value.dropLast(1))
+        }
+        stack.value = stack.value.dropLast(1)
         return true
     }
 
     fun dismiss(): Boolean {
-        if(stack.value.isEmpty())
+        if(stack.value.isEmpty() || !allowNavigate) {
             return false
-        stack.valueSet(stack.value.dropLast(1))
+        }
+        stack.value = stack.value.dropLast(1)
         return true
     }
     fun clear() {
-        stack.valueSet(listOf())
+        if (allowNavigate) {
+            stack.value = listOf()
+        }
     }
     fun isStackEmpty(): Boolean = stack.value.isEmpty()
 
@@ -83,8 +82,7 @@ class PageNavigator(private val routesGetter: ()->Routes) {
 
 expect fun PageNavigator.bindToPlatform(context: RContext)
 
-expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
-expect fun ViewWriter.addListenerForNavigateAway(pageNav: PageNavigator)
+internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 
 var ViewWriter.pageNavigator by rContextAddonInit<PageNavigator>()
 var ViewWriter.mainPageNavigator by rContextAddonInit<PageNavigator>()

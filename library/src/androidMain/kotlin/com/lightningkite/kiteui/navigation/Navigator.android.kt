@@ -6,8 +6,6 @@ import com.lightningkite.kiteui.views.ViewWriter
 actual fun PageNavigator.bindToPlatform(context: RContext) {
 }
 
-actual fun ViewWriter.addListenerForNavigateAway(pageNav: PageNavigator) {}
-
 actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
     return true
 }
