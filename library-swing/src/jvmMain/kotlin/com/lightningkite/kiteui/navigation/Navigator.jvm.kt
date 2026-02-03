@@ -8,3 +8,7 @@ actual fun PageNavigator.bindToPlatform(context: RContext) {
         navigateUrlLikePath("/")
     }
 }
+
+actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
+    return true
+}
