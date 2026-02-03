@@ -132,8 +132,7 @@ class CAGradientLayerResizing : CAGradientLayer {
         if (radii.bottomLeft) cornersList.add(UIRectCornerBottomLeft)
         if (radii.bottomRight) cornersList.add(UIRectCornerBottomRight)
 
-        // Handle case where no corners are selected to prevent crash or empty mask
-        val corners = if(cornersList.isEmpty()) 0.toULong() else cornersList.reduce { acc, current -> acc or current }
+        val corners = cornersList.reduce { acc, current -> acc or current }
 
         val path = UIBezierPath.bezierPathWithRoundedRect(
             rect = bounds,
@@ -147,7 +146,7 @@ class CAGradientLayerResizing : CAGradientLayer {
         }
         mask = maskLayer
 
-        // 🚫 TURN OFF SYSTEM BORDER (But save it first!)
+        // TURN OFF SYSTEM BORDER (But save it first!)
         // If the system currently has a border, save it.
         // If it's 0 (because we cleared it previously), rely on our cached 'actual' values.
         if (borderWidth > 0.0) {
@@ -170,13 +169,9 @@ class CAGradientLayerResizing : CAGradientLayer {
         borderShape!!.apply {
             frame = bounds
             this.path = path.CGPath
-            // FIX: Use the 'actual' variables we saved, NOT the property we just cleared
             lineWidth = actualBorderWidth
             strokeColor = actualBorderColor
         }
-
-        // CRITICAL: Do NOT restore borderWidth/borderColor here.
-        // Leaving them as 0.0 ensures only your custom rounded shape is visible.
     }
 
 
