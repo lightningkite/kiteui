@@ -24,7 +24,7 @@ class PageNavigator(private val routesGetter: ()->Routes) {
     val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
 
     private val allowNavigate get(): Boolean {
-        val notBlocked = (stack.value.last() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true
+        val notBlocked = (stack.value.lastOrNull() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true
         return if (notBlocked) true else askForConfirmNavigateAway()
     }
 
