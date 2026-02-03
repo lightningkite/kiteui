@@ -92,7 +92,8 @@ class CAGradientLayerResizing : CAGradientLayer {
 
     private var borderShape: CAShapeLayer? = null
 
-
+    private var actualBorderWidth: CGFloat = 0.0
+    private var actualBorderColor: CGColorRef? = null
 
     /**
      * In some cases, we need a separate layer to mask views. The actual CAGradientLayerResizing layer cannot be used
@@ -124,13 +125,15 @@ class CAGradientLayerResizing : CAGradientLayer {
         }
 
     private fun applyPerCornerRadii(radii: CornerRadii.PerCorner, value: Double) {
+
         val cornersList = mutableListOf<UIRectCorner>()
         if (radii.topLeft) cornersList.add(UIRectCornerTopLeft)
         if (radii.topRight) cornersList.add(UIRectCornerTopRight)
         if (radii.bottomLeft) cornersList.add(UIRectCornerBottomLeft)
         if (radii.bottomRight) cornersList.add(UIRectCornerBottomRight)
 
-        val corners = cornersList.reduce { acc, current -> acc or current }
+        // Handle case where no corners are selected to prevent crash or empty mask
+        val corners = if(cornersList.isEmpty()) 0.toULong() else cornersList.reduce { acc, current -> acc or current }
 
         val path = UIBezierPath.bezierPathWithRoundedRect(
             rect = bounds,
@@ -138,34 +141,44 @@ class CAGradientLayerResizing : CAGradientLayer {
             cornerRadii = CGSizeMake(value, value)
         )
 
-        // ---- MASK (for clipping content) ----
+        // ---- Mask ----
         val maskLayer = CAShapeLayer().apply {
             this.path = path.CGPath
         }
-        this.mask = maskLayer
+        mask = maskLayer
 
-        // ---- BORDER (visual outline) ----
+        // 🚫 TURN OFF SYSTEM BORDER (But save it first!)
+        // If the system currently has a border, save it.
+        // If it's 0 (because we cleared it previously), rely on our cached 'actual' values.
+        if (borderWidth > 0.0) {
+            actualBorderWidth = borderWidth
+            actualBorderColor = borderColor
+        }
+
+        // Disable the system border so it doesn't draw a square box
+        borderWidth = 0.0
+        borderColor = null
+
+        // ---- Custom Border ----
         if (borderShape == null) {
             borderShape = CAShapeLayer().also { shape ->
                 shape.fillColor = null
-                shape.lineWidth = this.borderWidth
-                shape.strokeColor = this.borderColor
-                addSublayer(shape)   // ✅ shape is non-null here
-            }
-            borderShape = CAShapeLayer().apply {
-                fillColor = null
-                lineWidth = this@CAGradientLayerResizing.borderWidth
-                strokeColor = this@CAGradientLayerResizing.borderColor
+                addSublayer(shape)
             }
         }
 
         borderShape!!.apply {
             frame = bounds
             this.path = path.CGPath
-            lineWidth = this@CAGradientLayerResizing.borderWidth
-            strokeColor = this@CAGradientLayerResizing.borderColor
+            // FIX: Use the 'actual' variables we saved, NOT the property we just cleared
+            lineWidth = actualBorderWidth
+            strokeColor = actualBorderColor
         }
+
+        // CRITICAL: Do NOT restore borderWidth/borderColor here.
+        // Leaving them as 0.0 ensures only your custom rounded shape is visible.
     }
+
 
 
     fun refreshCorners() {
