@@ -93,7 +93,7 @@ class CAGradientLayerResizing : CAGradientLayer {
     private var borderShape: CAShapeLayer? = null
 
     private var actualBorderWidth: CGFloat = 0.0
-    private var actualBorderColor: CGColorRef? = null
+    private var actualBorderColor: UIColor? = null
 
     /**
      * In some cases, we need a separate layer to mask views. The actual CAGradientLayerResizing layer cannot be used
@@ -151,8 +151,7 @@ class CAGradientLayerResizing : CAGradientLayer {
         // If it's 0 (because we cleared it previously), rely on our cached 'actual' values.
         if (borderWidth > 0.0) {
             actualBorderWidth = borderWidth
-            actualBorderColor = borderColor
-        }
+            actualBorderColor = borderColor?.let { UIColor.colorWithCGColor(it) }        }
 
         // Disable the system border so it doesn't draw a square box
         borderWidth = 0.0
@@ -170,8 +169,7 @@ class CAGradientLayerResizing : CAGradientLayer {
             frame = bounds
             this.path = path.CGPath
             lineWidth = actualBorderWidth
-            strokeColor = actualBorderColor
-        }
+            strokeColor = actualBorderColor?.CGColor        }
     }
 
 
