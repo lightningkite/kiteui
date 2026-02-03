@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.PersistentProperty
 import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -44,6 +46,15 @@ var PageNavigatorUseExperimentalBehavior: Boolean
     }
 
 actual fun PageNavigator.bindToPlatform(context: RContext) {
+    val beforeUnload = { event: Event ->
+        val canLeave = this.currentPage.state.raw?.let { it as? CanBlockBack }?.onNavigateAwayAttempt() ?: true
+        if (!canLeave) {
+            event.preventDefault();
+            event.asDynamic().returnValue = ""; // Required for Chrome
+        }
+    }
+    window.addEventListener("beforeunload", beforeUnload)
+
     when (PageNavigatorBehavior.current) {
         PageNavigatorBehavior.Separate -> {
             val log: Log? = LogRoot.tag("ScreenStack.bindToPlatform")
@@ -347,3 +358,9 @@ private fun Location.urlLike() = UrlLikePath(
     parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
         .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
 )
+
+actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
+    return window.confirm(
+        "Are you sure you want to leave this page?\nChanges will not be saved."
+    )
+}
