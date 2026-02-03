@@ -9,6 +9,9 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlin.reflect.KProperty
+
+
 
 @Deprecated("Use PageNavigator directly instead", ReplaceWith("PageNavigator", "com.lightningkite.kiteui.navigation.PageNavigator"))
 typealias KiteUiNavigator = PageNavigator
@@ -20,7 +23,16 @@ class PageNavigator(private val routesGetter: ()->Routes) {
     fun navigateUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
     fun resetUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
 
-    val stack: Signal<List<Page>> = Signal(listOf())
+    val stack: MutableReactiveValue<List<Page>> = object : MutableReactiveValue<List<Page>>, BaseReactiveValue<List<Page>>(listOf()) {
+        override fun valueSet(value: List<Page>) {
+            val canNavigate = (stack.value.last() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true
+            val confirmed = if (canNavigate) true else askForConfirmNavigateAway()
+            if (confirmed) {
+                super.valueSet(value)
+            }
+        }
+    }
+
     fun wrap(screen: Page): Page = screen
     
     val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
@@ -29,32 +41,31 @@ class PageNavigator(private val routesGetter: ()->Routes) {
     fun navigate(screen: Page) = navigateRaw(wrap(screen))
     fun replace(screen: Page) = replaceRaw(wrap(screen))
     fun reset(screen: Page) = resetRaw(wrap(screen))
-
     fun navigateRaw(screen: Page) {
-        stack.value += screen
+        stack.valueSet(stack.value + screen)
     }
     fun replaceRaw(screen: Page) {
-        stack.value = stack.value.dropLast(1) + screen
+        stack.valueSet(stack.value.dropLast(1) + screen)
     }
     fun resetRaw(screen: Page) {
-        stack.value = listOf(screen)
+        stack.valueSet(listOf(screen))
     }
 
     fun goBack(): Boolean {
         if(stack.value.size <= 1)
             return false
-        stack.value = stack.value.dropLast(1)
+        stack.valueSet(stack.value.dropLast(1))
         return true
     }
 
     fun dismiss(): Boolean {
         if(stack.value.isEmpty())
             return false
-        stack.value = stack.value.dropLast(1)
+        stack.valueSet(stack.value.dropLast(1))
         return true
     }
     fun clear() {
-        stack.value = listOf()
+        stack.valueSet(listOf())
     }
     fun isStackEmpty(): Boolean = stack.value.isEmpty()
 
@@ -71,6 +82,9 @@ class PageNavigator(private val routesGetter: ()->Routes) {
 }
 
 expect fun PageNavigator.bindToPlatform(context: RContext)
+
+expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
+expect fun ViewWriter.addListenerForNavigateAway(pageNav: PageNavigator)
 
 var ViewWriter.pageNavigator by rContextAddonInit<PageNavigator>()
 var ViewWriter.mainPageNavigator by rContextAddonInit<PageNavigator>()

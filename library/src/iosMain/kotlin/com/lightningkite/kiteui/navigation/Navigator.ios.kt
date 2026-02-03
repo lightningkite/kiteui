@@ -2,10 +2,17 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ViewWriter
 import platform.Foundation.NSUserActivity
 
 private var postedLandingUrl: UrlLikePath? = null
 private var lastBoundPageNavigator: PageNavigator? = null
+
+actual fun ViewWriter.addListenerForNavigateAway(pageNav: PageNavigator) {}
+
+actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
+    return true
+}
 
 actual fun PageNavigator.bindToPlatform(context: RContext) {
     lastBoundPageNavigator = this
