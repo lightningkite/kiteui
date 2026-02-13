@@ -20,3 +20,8 @@ actual fun createObjectURL(blob: Blob): String {
 actual fun createObjectURL(fileReference: FileReference): String {
     return URL.createObjectURL(fileReference)
 }
+
+// by Claude - revoke blob URLs to prevent memory leaks
+actual fun revokeObjectURL(url: String) {
+    URL.revokeObjectURL(url)
+}

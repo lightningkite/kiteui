@@ -69,6 +69,14 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.id = value
         }
 
+    // by Claude - allows setting semantic HTML tag from common code for SEO
+    override var htmlElementTag: String?
+        get() = super.htmlElementTag
+        set(value) {
+            super.htmlElementTag = value
+            if (value != null) native.tag = value
+        }
+
     // drag 'n drop
     override var dragData: DragData?
         get() = super.dragData

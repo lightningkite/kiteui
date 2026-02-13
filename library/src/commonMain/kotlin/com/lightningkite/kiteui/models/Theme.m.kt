@@ -192,7 +192,7 @@ fun Theme.randomElevationAndCorners() = when (Random.nextInt(0, 3)) {
     )
 
     1 -> copy(
-        id = "${Random.nextInt()}",
+    id = "${Random.nextInt()}",
         outlineWidth = Random.nextInt(1, 4).dp,
         cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
     )
@@ -200,7 +200,7 @@ fun Theme.randomElevationAndCorners() = when (Random.nextInt(0, 3)) {
     else -> copy(
         id = "${Random.nextInt()}",
         outlineWidth = Random.nextInt(1, 4).dp,
-        elevation = Random.nextInt(2, 4).dp,
-        cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
-    )
+    elevation = Random.nextInt(2, 4).dp,
+    cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+)
 }

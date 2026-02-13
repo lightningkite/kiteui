@@ -272,6 +272,18 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     // Map to track active animators for each view property
     companion object {
         private val activeAnimators = mutableMapOf<String, ValueAnimator>()
+        // by Claude - cache reflected Method to avoid repeated getMethod() calls on every clickable element
+        private val rippleSetDrawableMethod: java.lang.reflect.Method? by lazy {
+            try {
+                RippleDrawable::class.java.getMethod(
+                    "setDrawable",
+                    Int::class.javaPrimitiveType,
+                    Drawable::class.java
+                )
+            } catch (e: Exception) {
+                null
+            }
+        }
     }
 
     private fun animateProperty(targetValue: Float, existingAnimator: ValueAnimator?, getter: ()->Float, setter: (Float)->Unit): ValueAnimator? {
@@ -351,9 +363,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val wasFocusable = native.isFocusable
         val hasInteractiveParent =
             generateSequence(this) { it.parent }.any { (it.native.isClickable || it.native.isFocusable) && it !is CoordinatorFrame }
-//        val previousTrace =
-//            generateSequence(this) { it.parent }.map { "  ${it} - ${it.native}, clickable: ${it.native.isClickable}, focusable: ${it.native.isFocusable}" }
-//                .toList()
         debugPrint {
             buildString {
                 appendLine("--postsetup--")
@@ -461,16 +470,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         backgroundBlock = backgroundDrawable
         if (oldRippleDrawable != null) {
             oldRippleDrawable.setColor(rippleColor)
-            // Use reflection to set the drawable to avoid API level issues
-            try {
-                val method = RippleDrawable::class.java.getMethod(
-                    "setDrawable",
-                    Int::class.javaPrimitiveType,
-                    Drawable::class.java
-                )
-                method.invoke(oldRippleDrawable, 0, backgroundDrawable)
-            } catch (e: Exception) {
-                // Fallback to creating a new RippleDrawable
+            // by Claude - use cached reflected Method to avoid repeated getMethod() lookup
+            val method = rippleSetDrawableMethod
+            if (method != null) {
+                try {
+                    method.invoke(oldRippleDrawable, 0, backgroundDrawable)
+                } catch (e: Exception) {
+                    return RippleDrawable(rippleColor, backgroundDrawable, null)
+                }
+            } else {
                 return RippleDrawable(rippleColor, backgroundDrawable, null)
             }
             return oldRippleDrawable

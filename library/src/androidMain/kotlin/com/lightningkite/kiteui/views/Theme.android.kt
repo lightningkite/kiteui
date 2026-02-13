@@ -53,19 +53,20 @@ private class MyGradientDrawable(): GradientDrawable() {
         }
         val animationStartColors = lastSetColors ?: intArrayOf(0, 0)
         val animationGoalColors = goal
+        // by Claude - pre-allocate frame buffer and cache Color conversions to avoid per-frame allocations at 60fps
+        val frameBuffer = IntArray(animationStartColors.size)
+        val startColors = Array(animationStartColors.size) { Color.fromInt(animationStartColors[it]) }
+        val goalColors = Array(animationGoalColors.size) { Color.fromInt(animationGoalColors[it]) }
         animator = ValueAnimator.ofFloat(0f, 1f).also {
             it.duration = duration.inWholeMilliseconds
             it.interpolator = AccelerateDecelerateInterpolator()
             it.addUpdateListener { it ->
                 if(setInstance > myInstance) return@addUpdateListener
                 val f = it.animatedFraction
-                set(IntArray(animationStartColors.size) { index ->
-                    Color.interpolate(
-                        Color.fromInt(animationStartColors[index]),
-                        Color.fromInt(animationGoalColors[index]),
-                        f
-                    ).toInt()
-                }, ratios)
+                for (index in frameBuffer.indices) {
+                    frameBuffer[index] = Color.interpolate(startColors[index], goalColors[index], f).toInt()
+                }
+                set(frameBuffer, ratios)
             }
             it.doOnEnd {
                 if(setInstance > myInstance) return@doOnEnd
