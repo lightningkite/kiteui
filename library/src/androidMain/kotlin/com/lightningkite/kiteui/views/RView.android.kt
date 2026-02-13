@@ -397,13 +397,18 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         if (needsLayoutParamUpdate) {
             val params = view.lparams
 
-            if (newChildHorizontalAlign != null) {
+            // Don't overwrite width/height if weight was set (expanding modifier)
+            val hasWeight = view.lastSetWeight != null && view.lastSetWeight!! > 0f
+            val isHorizontalLayout =
+                (native as? com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout)?.orientation == com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout.HORIZONTAL
+
+            if (newChildHorizontalAlign != null && !(hasWeight && isHorizontalLayout)) {
                 params.width = when (newChildHorizontalAlign) {
                     Align.Stretch -> LayoutParams.MATCH_PARENT
                     else -> LayoutParams.WRAP_CONTENT
                 }
             }
-            if (newChildVerticalAlign != null) {
+            if (newChildVerticalAlign != null && !(hasWeight && !isHorizontalLayout)) {
                 params.height = when (newChildVerticalAlign) {
                     Align.Stretch -> LayoutParams.MATCH_PARENT
                     else -> LayoutParams.WRAP_CONTENT

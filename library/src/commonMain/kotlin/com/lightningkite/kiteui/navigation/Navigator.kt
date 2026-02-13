@@ -1,14 +1,12 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.rContextAddonInit
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.Signal
+import com.lightningkite.reactive.core.remember
+
 
 @Deprecated("Use PageNavigator directly instead", ReplaceWith("PageNavigator", "com.lightningkite.kiteui.navigation.PageNavigator"))
 typealias KiteUiNavigator = PageNavigator
@@ -21,40 +19,52 @@ class PageNavigator(private val routesGetter: ()->Routes) {
     fun resetUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
 
     val stack: Signal<List<Page>> = Signal(listOf())
-    fun wrap(screen: Page): Page = screen
-    
+
     val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
     val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
-    
-    fun navigate(screen: Page) = navigateRaw(wrap(screen))
-    fun replace(screen: Page) = replaceRaw(wrap(screen))
-    fun reset(screen: Page) = resetRaw(wrap(screen))
 
-    fun navigateRaw(screen: Page) {
-        stack.value += screen
+    private val allowNavigate get(): Boolean {
+        val notBlocked = (stack.value.lastOrNull() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true
+        return if (notBlocked) true else askForConfirmNavigateAway()
     }
-    fun replaceRaw(screen: Page) {
-        stack.value = stack.value.dropLast(1) + screen
+
+    fun navigate(screen: Page) {
+        if (allowNavigate) {
+            stack.value += screen
+        }
     }
-    fun resetRaw(screen: Page) {
-        stack.value = listOf(screen)
+
+    fun replace(screen: Page) {
+        if (allowNavigate) {
+            stack.value = stack.value.dropLast(1) + screen
+        }
+    }
+
+    fun reset(screen: Page) {
+        if (allowNavigate) {
+            stack.value = listOf(screen)
+        }
     }
 
     fun goBack(): Boolean {
-        if(stack.value.size <= 1)
+        if(stack.value.size <= 1 || !allowNavigate) {
             return false
+        }
         stack.value = stack.value.dropLast(1)
         return true
     }
 
     fun dismiss(): Boolean {
-        if(stack.value.isEmpty())
+        if(stack.value.isEmpty() || !allowNavigate) {
             return false
+        }
         stack.value = stack.value.dropLast(1)
         return true
     }
     fun clear() {
-        stack.value = listOf()
+        if (allowNavigate) {
+            stack.value = listOf()
+        }
     }
     fun isStackEmpty(): Boolean = stack.value.isEmpty()
 
@@ -71,6 +81,8 @@ class PageNavigator(private val routesGetter: ()->Routes) {
 }
 
 expect fun PageNavigator.bindToPlatform(context: RContext)
+
+internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 
 var ViewWriter.pageNavigator by rContextAddonInit<PageNavigator>()
 var ViewWriter.mainPageNavigator by rContextAddonInit<PageNavigator>()
