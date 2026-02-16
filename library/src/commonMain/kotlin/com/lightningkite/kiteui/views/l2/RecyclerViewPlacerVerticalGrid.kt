@@ -46,7 +46,8 @@ class RecyclerViewPlacerVerticalGrid(
             width = cellSize,
             height = 10000.0
         )
-        val cellOffsets = (0..<columns).map {
+        // Use DoubleArray to avoid boxing - by Claude
+        val cellOffsets = DoubleArray(columns) {
             paddingTop + it * gap + it * cellSize
         }
 

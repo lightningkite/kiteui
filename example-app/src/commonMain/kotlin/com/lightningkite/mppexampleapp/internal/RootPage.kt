@@ -67,7 +67,6 @@ object RootPage : Page {
                 linkPage { TestingGroundPage }
                 linkPage { LeakCheckerPage }
                 linkPage { ExperimentPage }
-                linkPage { LazyListTestPage }
                 linkPage { Recycler2TestPage }
                 linkPage { RecyclerFilterTestPage }
                 linkPage { HorizontalRecyclerViewPage }

@@ -12,3 +12,5 @@ import com.lightningkite.readable.*
 
 internal actual fun RView.nativeAnimateShow() {}
 internal actual fun RView.nativeAnimateHide() {}
+// by Claude - no-op for SSR (no animation runtime)
+internal actual fun RView.nativeAnimateWeight(fromWeight: Float, toWeight: Float) {}

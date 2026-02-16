@@ -129,6 +129,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         return native.screenRectangle()
     }
 
+    actual override fun parentRectangle(): Rect? {
+        return native.parentRectangle()
+    }
+
     override fun leakDetect() {
         WeakReference(native).checkLeakAfterDelay(1000)
         native.actualElementForLeakTracking?.let {
@@ -228,6 +232,7 @@ expect class FutureElement {
     fun focus()
     fun blur()
     fun screenRectangle(): Rect?
+    fun parentRectangle(): Rect?
 }
 
 expect fun RView.nativeScrollIntoView(

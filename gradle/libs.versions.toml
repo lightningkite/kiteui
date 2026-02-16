@@ -17,6 +17,8 @@ kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.9.0"
 ktorVersion = "3.3.1"
 ktx = "1.17.0"
+kfc = "16.5.0"
+jsPlainObjects = "2.3.0"
 lkGradleHelpers = "4.0.6"
 material = "1.13.0"
 lottie = "6.4.0"
@@ -89,3 +91,5 @@ comLightningkiteTestingManual = { id = "com.lightningkite.testing.manual", versi
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 vannitechPublishing = { id = "com.vanniktech.maven.publish", version = { ref = "vannitechPublishing" } }
 dokka = { id = "org.jetbrains.dokka", version = { ref = "dokka" } }
+kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
+kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }

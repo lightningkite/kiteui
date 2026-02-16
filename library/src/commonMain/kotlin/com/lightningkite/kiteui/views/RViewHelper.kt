@@ -652,6 +652,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     }
 
     abstract fun screenRectangle(): Rect?
+    abstract fun parentRectangle(): Rect?
 
 
     // Calculation context

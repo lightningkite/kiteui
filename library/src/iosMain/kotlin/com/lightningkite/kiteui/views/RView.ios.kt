@@ -146,6 +146,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             )
         }
     }
+    actual override fun parentRectangle(): Rect? {
+        return native.frame.useContents {
+            Rect(
+                left = (origin.x),
+                right = (origin.x + size.width),
+                top = (origin.y),
+                bottom = (origin.y + size.height),
+            )
+        }
+    }
 
     actual override fun scrollIntoView(
         horizontal: Align?,

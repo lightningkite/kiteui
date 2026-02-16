@@ -232,6 +232,14 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             bottom = r.bottom.toDouble(),
         )
     }
+    actual override fun parentRectangle(): Rect? {
+        return Rect(
+            left = native.left.toDouble(),
+            top = native.top.toDouble(),
+            right = native.right.toDouble(),
+            bottom = native.bottom.toDouble(),
+        )
+    }
 
     protected var background: Drawable? = null
         set(value) {

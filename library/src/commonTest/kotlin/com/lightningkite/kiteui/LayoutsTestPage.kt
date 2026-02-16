@@ -16,7 +16,7 @@ import kotlin.test.assertEquals
 class LayoutsTestPage : Page {
     val checks = ArrayList<() -> Unit>()
     override fun ViewWriter.render(): Unit {
-        fun RView.parentRectangle() = parent!!.let { rectangleRelativeTo(it) }!!
+        fun RView.parentRelativeRect() = parent!!.let { rectangleRelativeTo(it) }!!
         card.col {
             checks += { println(parentRectangle()) }
             val start = text("Start")
@@ -24,7 +24,7 @@ class LayoutsTestPage : Page {
             card.frame {
                 above = this
                 checks += {
-                    assertEquals(start.parentRectangle().bottom + theme.gap.viewUnits, parentRectangle().top, 1.0)
+                    assertEquals(start.parentRectangle()?.bottom?.plus(theme.gap.viewUnits) ?: 0.0, parentRectangle()?.top ?: 0.0, 1.0)
                 }
             }
             h2("Sample").apply {

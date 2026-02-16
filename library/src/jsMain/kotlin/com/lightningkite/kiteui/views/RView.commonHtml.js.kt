@@ -204,6 +204,12 @@ actual class FutureElement actual constructor() {
             )
         }
     }
+    actual fun parentRectangle(): Rect? {
+        return element?.let {
+            it as HTMLElement
+            Rect(left = it.offsetLeft.toDouble(), top = it.offsetTop.toDouble(), right = it.offsetLeft.toDouble() + it.scrollWidth.toDouble(), bottom = it.offsetTop.toDouble() + it.scrollHeight.toDouble())
+        }
+    }
 
     actual var xmlns: String? = null
     actual var tag: String = "tag"

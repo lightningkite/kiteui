@@ -28,4 +28,14 @@ interface ScrollingBehaviors {
      * Should not interrupt animations.
      */
     fun scrollToKeepAnimations(x: Double, y: Double)
+
+    /**
+     * Disables browser scroll anchoring on this scroll container.
+     * On web, the browser auto-adjusts scrollTop when content is added above the viewport
+     * (CSS overflow-anchor). This conflicts with manual scroll compensation (e.g., transform-based
+     * anchoring in virtualized lists). Call this to opt out of browser scroll anchoring.
+     * No-op on non-web platforms.
+     * by Claude
+     */
+    fun disableScrollAnchoring() {}
 }

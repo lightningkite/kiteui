@@ -51,6 +51,7 @@ actual class FutureElement actual constructor() {
     actual fun focus() {}
     actual fun blur() {}
     actual fun screenRectangle(): Rect? = null
+    actual fun parentRectangle(): Rect? = null
 
     actual inline fun flushClasses() {}
 

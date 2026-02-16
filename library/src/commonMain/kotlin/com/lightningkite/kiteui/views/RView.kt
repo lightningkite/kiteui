@@ -63,6 +63,12 @@ expect abstract class RView constructor(context: RContext) : RViewHelper {
     override fun screenRectangle(): Rect?
 
     /**
+     * Returns the absolute screen rectangle for this view, or null if the view is not currently visible.
+     * Coordinates are relative to the screen/window origin.
+     */
+    override fun parentRectangle(): Rect?
+
+    /**
      * Applies the given theme to this view's visual appearance.
      * This method is called automatically when the theme changes and should update
      * platform-specific rendering properties.
