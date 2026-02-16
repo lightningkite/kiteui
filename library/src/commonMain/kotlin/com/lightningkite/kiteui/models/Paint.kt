@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.models
 
+import kotlinx.serialization.Serializable
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -14,10 +15,12 @@ fun Paint.applyAlpha(alpha: Float): Paint = map { it.applyAlpha(alpha) }
 fun Paint.lighten(ratio: Float): Paint = map { it.lighten(ratio) }
 fun Paint.darken(ratio: Float): Paint = map { it.darken(ratio) }
 
+@Serializable
 data class FadingColor(val base: Color, val alternate: Color): Paint {
     override fun closestColor(): Color = base
     override fun map(mapper: (Color) -> Color): Paint = FadingColor(base = mapper(base), alternate = mapper(alternate))
 }
+@Serializable
 data class GradientStop(val ratio: Float, val color: Color)
 /**
  * Linear gradient paint.
@@ -79,6 +82,7 @@ data class LinearGradient(
  * Optionally use [fx], [fy] for a focal point different from the center.
  * When these are null, the gradient centers in the drawing bounds.
  */
+@Serializable
 data class RadialGradient(
     val stops: List<GradientStop>,
     val screenStatic: Boolean = false,
@@ -114,6 +118,7 @@ data class RadialGradient(
     }
 }
 
+@Serializable
 data class Color(
     val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
 ) : Paint {
@@ -318,6 +323,7 @@ data class Color(
     }
 }
 
+@Serializable
 data class HSVColor(
     val alpha: Float = 1f, val hue: Angle = Angle(0f), val saturation: Float = 0f, val value: Float = 0f
 ) {
@@ -355,6 +361,7 @@ data class HSVColor(
     }
 }
 
+@Serializable
 data class HSPColor(
     val alpha: Float = 1f, val hue: Angle = Angle(0f), val saturation: Float = 0f, val brightness: Float = 0f
 ) {

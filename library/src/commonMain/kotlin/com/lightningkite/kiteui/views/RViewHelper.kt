@@ -213,11 +213,15 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     var themeAndBack: ThemeAndBack = Theme.Companion.placeholder.withBack
         private set(value) {
             if (value != field) {
+                val oldCascading = field.theme.let { it.revert ?: it }
                 field = value
                 applyTheme(value)
                 refreshPadding()
-                for (child in internalChildren) {
-                    child.refreshTheming()
+                val newCascading = value.theme.let { it.revert ?: it }
+                if (oldCascading !== newCascading) {
+                    for (child in internalChildren) {
+                        child.refreshTheming()
+                    }
                 }
             }
         }
@@ -648,6 +652,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     }
 
     abstract fun screenRectangle(): Rect?
+    abstract fun parentRectangle(): Rect?
 
 
     // Calculation context
@@ -674,6 +679,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
      * with CSS or JavaScript when rendered to HTML.
      */
     open var htmlElementId: String? = null
+
+    // by Claude - allows setting semantic HTML tag from common code for SEO
+    open var htmlElementTag: String? = null
 
     /**
      * Convenience operator allowing actions to be invoked with this view as the context.

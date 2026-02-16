@@ -12,6 +12,7 @@ import org.w3c.dom.HTMLImageElement
 actual fun RawImageViewLike.nativeLoad(url: String?) {
     native.onElement {
         it as HTMLImageElement
+        it.alt = description  // by Claude - SEO alt attribute on actual DOM element
         it.onerror = { dyn, msg, a, b, c -> _state.state = ReactiveState.exception(Exception("Failed to load image: $msg")) }
         it.onload = label@{ _state.state = ReactiveState(Unit) }
         it.src = url ?: ""
