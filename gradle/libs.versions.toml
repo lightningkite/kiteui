@@ -33,7 +33,7 @@ timber = "5.0.1"
 transition = "1.6.0"
 vannitechPublishing = "0.34.0"
 dokka = "2.1.0"
-uriEncoding = "0.0.1-4"
+uriEncoding = "0.0.1-6"
 
 
 [libraries]

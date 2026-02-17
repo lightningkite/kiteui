@@ -1,5 +1,5 @@
 // by Claude
-package com.lightningkite.kiteui.views.l2
+package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.SizeConstraints

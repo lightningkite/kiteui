@@ -1,5 +1,5 @@
 // by Claude
-package com.lightningkite.kiteui.views.l2
+package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
@@ -40,7 +40,7 @@ actual fun RView.setTranslation(x: Double, y: Double) {
 
 /**
  * Disables CSS transition animations on the transform property.
- * Used by WindowedList3 to prevent the browser from animating transform changes
+ * Used by WindowedList to prevent the browser from animating transform changes
  * that are meant to be instant position corrections.
  * by Claude
  */

@@ -5,11 +5,11 @@ import kotlin.math.abs
 import kotlin.math.max
 
 /**
- * Pure-logic simulation of WindowedList3's windowed list algorithm.
+ * Pure-logic simulation of WindowedList's windowed list algorithm.
  *
  * Operates on abstract numbers instead of platform views. All positions are computed from
  * the simulator's own state (spacer sizes + transform + cumulative item heights), replacing
- * the real WindowedList3's reliance on screenRectangle()/getBoundingClientRect.
+ * the real WindowedList's reliance on screenRectangle()/getBoundingClientRect.
  *
  * This enables unit testing the algorithm's append/prepend/trim/settle decisions without
  * needing a real browser or native layout engine.
@@ -90,7 +90,7 @@ class WindowedListSimulator(
         return renderedItemEnd(renderedItems.lastIndex)
     }
 
-    // --- Estimation helpers (match WindowedList3) --- by Claude
+    // --- Estimation helpers (match WindowedList) --- by Claude
 
     fun estimatePositionOf(index: Int): Double {
         var pos = 0.0
@@ -138,7 +138,7 @@ class WindowedListSimulator(
 
         // Remove items beyond new bounds
         while (renderedItems.isNotEmpty() && renderedItems.last().index >= totalItemCount) {
-            val item = renderedItems.removeLast()
+            val item = renderedItems.removeAt(renderedItems.lastIndex)
             heightCache[item.index] = item.height
         }
 
@@ -319,7 +319,7 @@ class WindowedListSimulator(
 
         // Remove from end
         repeat(endTrimCount) {
-            val item = renderedItems.removeLast()
+            val item = renderedItems.removeAt(renderedItems.lastIndex)
             heightCache[item.index] = item.height
         }
 
@@ -327,7 +327,7 @@ class WindowedListSimulator(
         if (startTrimCount > 0) {
             var removedHeight = 0.0
             repeat(startTrimCount) {
-                val item = renderedItems.removeFirst()
+                val item = renderedItems.removeAt(0)
                 heightCache[item.index] = item.height
                 removedHeight += item.height + gap
             }

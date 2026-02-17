@@ -441,7 +441,7 @@ class WindowedList<T>(
 
         // Remove from end (no transform adjustment needed)
         repeat(endTrimCount) {
-            val item = renderedItems.removeLast()
+            val item = renderedItems.removeAt(renderedItems.lastIndex)
             // Re-measure actual current size before removing from DOM
             val actualSize = (item.end - item.start).let { if (it > 0) it else item.measuredSize }
             heightCache[item.index] = actualSize
@@ -452,7 +452,7 @@ class WindowedList<T>(
         if (startTrimCount > 0) {
             var removedHeight = 0.0
             repeat(startTrimCount) {
-                val item = renderedItems.removeFirst()
+                val item = renderedItems.removeAt(0)
                 // Re-measure actual current size before removing from DOM
                 val actualSize = (item.end - item.start).let { if (it > 0) it else item.measuredSize }
                 heightCache[item.index] = actualSize
@@ -794,7 +794,7 @@ class WindowedList<T>(
         // Remove items beyond new list bounds
         var removedCount = 0
         while (renderedItems.isNotEmpty() && renderedItems.last().index >= totalItemCount) {
-            val item = renderedItems.removeLast()
+            val item = renderedItems.removeAt(renderedItems.lastIndex)
             contentContainer.removeChild(item.view)
             heightCache[item.index] = item.measuredSize
             removedCount++

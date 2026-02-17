@@ -223,7 +223,7 @@ object WindowedListTestPage : Page {
             // The windowed list - by Claude
             expanding.frame {
                 val useVariableHeights = variableHeights.state.getOrNull() ?: false
-                val wl = windowedList3(data, {
+                val wl = windowedList(data, {
                     log = Log.tag("WL")
                     this.initialRenderCount = 10
                     this.initialRenderIndex = 0

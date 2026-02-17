@@ -1,5 +1,5 @@
 // by Claude
-package com.lightningkite.kiteui.views.l2
+package com.lightningkite.kiteui.views.direct
 
 import android.view.ViewGroup
 import com.lightningkite.kiteui.models.Dimension
@@ -31,7 +31,7 @@ actual fun RView.setSizeConstraints(
     minHeight?.let { view.minimumHeight = it.px.toInt() }
 
     // Note: maxWidth and maxHeight require DesiredSizeView wrapper in the full implementation
-    // For spacers in Recycler3, we only need width/height which works with layout params
+    // For spacers in WindowedList, we only need width/height which works with layout params
 
     view.layoutParams = params
     view.requestLayout()
