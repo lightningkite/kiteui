@@ -22,3 +22,21 @@ annotation class Hash
 )
 
 annotation class InternalKiteUi
+
+@Suppress
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "This may change, use it at your own risk"
+)
+annotation class ExperimentalKiteUi
+
+@Suppress
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "This hasn't been tested thoroughly enough to recommend use.  Use at your own risk."
+)
+annotation class Untested

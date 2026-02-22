@@ -149,9 +149,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     /** Cached vertical alignment for layout calculations. */
     var lastSetVerticalAlign: Align = Align.Stretch
     /** Default horizontal alignment for newly created children when not explicitly set. */
-    var newChildHorizontalAlign: Align? = null
+    open var newChildHorizontalAlign: Align? = null
     /** Default vertical alignment for newly created children when not explicitly set. */
-    var newChildVerticalAlign: Align? = null
+    open var newChildVerticalAlign: Align? = null
 
     // drag 'n drop
     /** Data to be provided when this view is dragged. If null, dragging is disabled. */
@@ -497,7 +497,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
                 listenForStatus(reactive)
             }
         })
-        add(Dispatchers.Main.immediate)
+        // Use ssrDispatcher if set (for SSR synchronous execution), otherwise use Main dispatcher
+        add(context.ssrDispatcher ?: Dispatchers.Main.immediate)
     }
 
     /**

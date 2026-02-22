@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.ssr.HydrationContext
 import kotlinx.browser.document
 import kotlinx.dom.addClass
 import kotlinx.dom.hasClass
@@ -26,10 +28,123 @@ actual class FutureElement actual constructor() {
             attributes.native = value
         }
 
-    fun hydrate(value: Element) {
-        id = value.id
-        content = value.innerHTML.takeUnless { it.isBlank() }
-        this.element = value
+    /**
+     * Hydrate this FutureElement with an existing DOM element.
+     * Attaches event listeners and syncs state without recreating the element.
+     * @return true if hydration succeeded, false if tag mismatch occurred
+     *
+     * Updated by Claude to record hydration statistics.
+     */
+    fun hydrate(existingElement: Element): Boolean {
+        // Validate tag match
+        if (tag.lowercase() != existingElement.tagName.lowercase()) {
+            console.warn("Hydration mismatch: expected <$tag>, found <${existingElement.tagName}>")
+            console.warn("  Parent: ${existingElement.parentElement?.tagName}, classes: ${existingElement.parentElement?.className}")
+            HydrationContext.recordMismatch()
+            return false
+        }
+
+        // Capture pending classes before linking element (ClassSet switches to DOM after element is set)
+        val pendingClasses = classes.toList()
+
+        // Link to existing element
+        this.element = existingElement
+        id = existingElement.id.takeIf { it.isNotBlank() }
+
+        // Apply pending event listeners
+        forEach(eventsBack) { name, handler ->
+            existingElement.asDynamic()[name] = handler
+        }
+
+        // Apply pending styles (sync differences)
+        (existingElement as? HTMLElement)?.style?.let { style ->
+            forEach(futureStyles) { k, v -> style.setProperty(k, v) }
+        } ?: (existingElement as? SVGElement)?.style?.let { style ->
+            forEach(futureStyles) { k, v -> style.setProperty(k, v) }
+        }
+
+        // Apply pending attributes
+        forEach(futureAttributes) { k, v -> existingElement.setAttribute(k, v) }
+
+        // Sync classes - add any missing, but don't remove SSR classes
+        pendingClasses.forEach { cls ->
+            if (!existingElement.classList.contains(cls)) {
+                existingElement.classList.add(cls)
+            }
+        }
+
+        // Execute pending operations
+        elementToDo.forEach { it(existingElement) }
+        elementToDo.clear()
+
+        // Record successful hydration - by Claude
+        HydrationContext.recordHydrated()
+
+        // Debug visualization: add subtle green outline to hydrated elements - by Claude
+        if (debugMode) {
+            (existingElement as? HTMLElement)?.style?.outline = "1px solid rgba(0, 200, 0, 0.3)"
+        }
+
+        return true
+    }
+
+    /**
+     * Recursively hydrate this element and all children.
+     * @return true if hydration succeeded, false if tag mismatch occurred
+     *
+     * Updated by Claude to record hydration statistics and handle mismatches gracefully.
+     */
+    fun hydrateRecursive(existingElement: Element): Boolean {
+        if (!hydrate(existingElement)) return false
+
+        // Hydrate children by position
+        val existingChildren = existingElement.children
+        lastChildren.forEachIndexed { index, childFuture ->
+            val existingChild = existingChildren.item(index)
+            if (existingChild != null) {
+                if (!childFuture.hydrateRecursive(existingChild)) {
+                    // Child hydration failed - replace SSR element with fresh JS element
+                    // This ensures the JS FutureElement is properly linked to DOM
+                    // by Claude
+                    val newElement = childFuture.create()
+                    existingChild.parentElement?.replaceChild(newElement, existingChild)
+                    HydrationContext.recordCreated()
+                    // Debug visualization: add red outline to newly created elements - by Claude
+                    if (debugMode) {
+                        (newElement as? HTMLElement)?.style?.outline = "1px solid rgba(255, 0, 0, 0.5)"
+                    }
+                }
+            } else {
+                // More RView children than DOM children - append new ones
+                if (debugMode) {
+                    console.warn("Hydration: RView has more children than DOM at index $index")
+                }
+                HydrationContext.recordCreated()
+                val newElement = childFuture.create()
+                existingElement.appendChild(newElement)
+                // Debug visualization: add orange outline for newly appended elements - by Claude
+                if (debugMode) {
+                    (newElement as? HTMLElement)?.style?.outline = "1px solid rgba(255, 165, 0, 0.5)"
+                }
+            }
+        }
+
+        // Remove extra DOM children that don't have corresponding RView children
+        // This prevents duplicate content from SSR elements that don't exist in JS render
+        // Optimized to calculate count upfront and avoid repeated length checks - by Claude
+        val extraCount = existingElement.children.length - lastChildren.size
+        if (extraCount > 0) {
+            if (debugMode) {
+                console.warn("Hydration: Removing $extraCount extra DOM children from <${existingElement.tagName}>")
+            }
+            repeat(extraCount) {
+                existingElement.lastElementChild?.let { extra ->
+                    existingElement.removeChild(extra)
+                }
+            }
+        }
+
+        return true
     }
 
     inline fun onElement(crossinline action: (Element) -> Unit) {
