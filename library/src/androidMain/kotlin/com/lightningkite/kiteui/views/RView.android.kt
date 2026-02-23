@@ -266,11 +266,13 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     override fun refreshPadding() {
         super.refreshPadding()
         val value = appliedPadding
+        // Add shadow extent to padding so neumorphic shadows render within view bounds
+        val shadowExtra = (background as? NeumorphicDrawable)?.shadowExtent?.roundToInt() ?: 0
         native.setPadding(
-            value.left.value.toInt(),
-            value.top.value.toInt(),
-            value.right.value.toInt(),
-            value.bottom.value.toInt(),
+            value.left.value.toInt() + shadowExtra,
+            value.top.value.toInt() + shadowExtra,
+            value.right.value.toInt() + shadowExtra,
+            value.bottom.value.toInt() + shadowExtra,
         )
     }
 
@@ -312,12 +314,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             // Use neumorphic/multi-shadow rendering
             native.elevation = 0f // Disable native elevation
 
-            // Ensure parent doesn't clip children so shadows can draw outside view bounds
-            (native.parent as? ViewGroup)?.let { parentViewGroup ->
-                parentViewGroup.clipChildren = false
-                parentViewGroup.clipToPadding = false
-            }
-
             val neumorphicBg = background as? NeumorphicDrawable
             if (neumorphicBg != null) {
                 // Update existing neumorphic drawable
@@ -340,6 +336,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
+            // Refresh padding to account for shadow extent
+            refreshPadding()
         } else {
             // Standard elevation-based shadow rendering
             if (theme.drawBackground) {
@@ -477,12 +475,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 params.gravity = horizontalGravity or verticalGravity
         }
 
-        // If child has neumorphic shadows, disable clipping so shadows can draw outside child bounds
-        if (view.background is NeumorphicDrawable) {
-            (native as ViewGroup).clipChildren = false
-            (native as ViewGroup).clipToPadding = false
-        }
-
         (native as ViewGroup).addView(view.native, index)
         if (fullyStarted) ViewCompat.requestApplyInsets(view.native)
         if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("internalAddChild($index $view) failed on $this: Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
@@ -566,6 +558,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
+            // Refresh padding to account for shadow extent
+            refreshPadding()
         } else {
             // Standard elevation-based shadow rendering with ripple
             if (theme.drawBackground) {
