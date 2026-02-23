@@ -1,9 +1,15 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.CornerRadii
+import com.lightningkite.kiteui.models.CornerRadii.Fixed
 import com.lightningkite.kiteui.models.ImageRaw
 import com.lightningkite.kiteui.models.ImageRemote
 import com.lightningkite.kiteui.models.ImageScaleType
+import com.lightningkite.kiteui.models.Semantic
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
@@ -17,12 +23,22 @@ object ImageTestPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
+
+    data object ImageSemantic : Semantic("imageSemantic") {
+        override fun default(theme: Theme): ThemeAndBack = theme.copy(
+            id = "imageSemantic",
+            cornerRadii = Fixed(5.rem),
+        ).withBackNoPadding
+    }
+
+
+
     override fun ViewWriter.render(): Unit = run {
             scrolling.sizeConstraints(width = 40.rem).col {
 
                 text("scaleType = ${ImageScaleType.Crop}")
 
-                 centered.sizeConstraints(
+                ImageSemantic.onNext.centered.sizeConstraints(
                     width = 6.rem,
                     height = 6.rem
                 ).image {
@@ -31,10 +47,7 @@ object ImageTestPage : Page {
                 }
 
                 text(" Tests scaleType = ${ImageScaleType.Stretch}")
-                centered.sizeConstraints(
-                    width = 6.rem,
-                    height = 6.rem
-                ).image {
+                ImageSemantic.onNext.image {
                     source = Resources.imagesSnowyBackground
                     scaleType = ImageScaleType.Stretch
                 }

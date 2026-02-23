@@ -8,9 +8,11 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Looper
+import android.graphics.Outline
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
@@ -254,8 +256,23 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val topRight = if (asPerCorner?.topRight != false) cr else 0f
         val bottomRight = if (asPerCorner?.bottomRight != false) cr else 0f
         val bottomLeft = if (asPerCorner?.bottomLeft != false) cr else 0f
-        backgroundBlock?.cornerRadii =
-            floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
+
+        val radii = floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
+
+        // When a view has corner radii and draws a background, clip children to the
+        // rounded outline. This matches web behavior where border-radius + overflow: hidden
+        // clips content (e.g. images inside a rounded frame).
+        if (cr > 0f && themeAndBack.drawBackground) {
+            native.outlineProvider = object : ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: Outline) {
+                    outline.setRoundRect(0, 0, view.width, view.height, cr)
+                }
+            }
+            native.clipToOutline = true
+        } else if (!native.clipToOutline) {
+            // Reset if no corner radii
+            native.outlineProvider = ViewOutlineProvider.BACKGROUND
+        }
     }
 
     override fun refreshPadding() {
