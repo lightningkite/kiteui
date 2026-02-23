@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import android.graphics.*
 import android.graphics.drawable.Drawable
 import com.lightningkite.kiteui.models.Shadow
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -265,9 +266,11 @@ class NeumorphicDrawable(
 
         // Draw outer shadows
         outerCacheEntry?.let { entry ->
-            drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
-            drawMatrix.postTranslate(bounds.left.toFloat(), bounds.top.toFloat())
-            canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
+            if (!entry.bitmap.isRecycled) {
+                drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
+                drawMatrix.postTranslate(bounds.left.toFloat(), bounds.top.toFloat())
+                canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
+            }
         }
 
         // Draw background
@@ -275,9 +278,11 @@ class NeumorphicDrawable(
 
         // Draw inset shadows
         insetCacheEntry?.let { entry ->
-            drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
-            drawMatrix.postTranslate(backgroundRect.left, backgroundRect.top)
-            canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
+            if (!entry.bitmap.isRecycled) {
+                drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
+                drawMatrix.postTranslate(backgroundRect.left, backgroundRect.top)
+                canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
+            }
         }
     }
 
@@ -318,14 +323,13 @@ internal object ShadowBitmapCache {
         val inverseScale: Float,
         private val key: Key
     ) {
-        private var refCount = 1
+        private val refCount = AtomicInteger(1)
         fun acquire(): Entry {
-            refCount++; return this
+            refCount.incrementAndGet(); return this
         }
 
         fun release() {
-            refCount--
-            if (refCount <= 0) {
+            if (refCount.decrementAndGet() <= 0) {
                 synchronized(cache) {
                     // Only remove from cache if this is still the cached entry
                     if (cache[key] === this) cache.remove(key)
