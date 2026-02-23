@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.models
 
 import kotlinx.datetime.format.Padding
+import kotlin.random.Random
 
 /**
  * Creates a neumorphism-style theme with soft, extruded appearance using dual shadows.
@@ -277,13 +278,21 @@ object NeumorphismTheme {
     fun light(
         id: String = "neumorphism-light",
         accentColor: Color = Color.fromHex(0xFF6200EE.toInt()),
-    ) = this(
-        id = id,
-        baseColor = Color.gray(0.9f),
-        accentColor = accentColor,
-        lightShadowColor = Color.white.applyAlpha(0.8f),
-        darkShadowColor = Color.black.applyAlpha(0.12f),
-    )
+
+        ): Theme {
+        val shadowDistance = (1..20).random()
+        return this(
+            id = id,
+            baseColor = Color.gray(0.9f),
+            accentColor = accentColor,
+            lightShadowColor = Color.white.applyAlpha(0.8f),
+            darkShadowColor = Color.black.applyAlpha(0.12f),
+//        shadowDistance = (1..25).random().dp,
+            shadowDistance = shadowDistance.dp,
+//            shadowBlur = (15..50).random().dp,
+            shadowBlur = (shadowDistance..30).random().dp
+        )
+    }
 
     /**
      * Creates a dark neumorphism theme.

@@ -66,9 +66,16 @@ class NeumorphicDrawable(
         var maxExtent = 0f
         for (shadow in shadows) {
             if (shadow.inset) continue
-            val extent = shadow.blurRadius.value + shadow.spreadRadius.value +
+            // Use 60% of blur radius - the outer portion of the Gaussian blur
+            // is barely visible, so reserving full extent wastes space.
+            val extent = shadow.blurRadius.value * 0.8f + shadow.spreadRadius.value * 0.5f +
+////            val extent = shadow.blurRadius.value + shadow.spreadRadius.value +
+//
                     max(abs(shadow.offsetX.value), abs(shadow.offsetY.value))
+//            println("DEBUG extent ${extent}")
+//            println("DEBUG maxExtent ${maxExtent}")
             maxExtent = max(maxExtent, extent)
+
         }
         return maxExtent
     }
