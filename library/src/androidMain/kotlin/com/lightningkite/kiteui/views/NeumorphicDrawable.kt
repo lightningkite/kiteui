@@ -14,6 +14,10 @@ import kotlin.math.roundToInt
  * so no software layer is ever needed. Shadows are rendered WITHIN the
  * drawable's bounds by insetting the background shape, avoiding clipping
  * issues with ScrollView and other clipping containers.
+ *
+ * Shadow bitmaps are rendered at half resolution since blur makes full
+ * resolution unnecessary. Bitmaps are shared across drawables with the
+ * same shadow config and dimensions via [ShadowBitmapCache].
  */
 class NeumorphicDrawable(
     private var shadows: List<Shadow>,
@@ -30,18 +34,13 @@ class NeumorphicDrawable(
     private val backgroundRect = RectF()
     private val backgroundPath = Path()
 
-    // Cached bitmaps
-    private var outerShadowBitmap: Bitmap? = null
-    private var insetShadowBitmap: Bitmap? = null
+    // Cached bitmap references (shared via ShadowBitmapCache)
+    private var outerCacheEntry: ShadowBitmapCache.Entry? = null
+    private var insetCacheEntry: ShadowBitmapCache.Entry? = null
     private val bitmapPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+    private val drawMatrix = Matrix()
     private var lastBgWidth = 0
     private var lastBgHeight = 0
-
-    // Reusable objects to avoid allocations in draw/create
-    private val tmpPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val tmpRect = RectF()
-    private val tmpPath = Path()
-    private val tmpPath2 = Path()
 
     /**
      * The calculated extent that outer shadows extend beyond the background shape.
@@ -50,17 +49,17 @@ class NeumorphicDrawable(
     var shadowExtent = 0f
         private set
 
-    private var hasOuterShadows = false
-    private var hasInsetShadows = false
+    private var outerShadows = emptyList<Shadow>()
+    private var insetShadows = emptyList<Shadow>()
 
     init {
         shadowExtent = calculateShadowExtent()
-        categoriseShadows()
+        categorizeShadows()
     }
 
-    private fun categoriseShadows() {
-        hasOuterShadows = shadows.any { !it.inset }
-        hasInsetShadows = shadows.any { it.inset }
+    private fun categorizeShadows() {
+        outerShadows = shadows.filter { !it.inset }
+        insetShadows = shadows.filter { it.inset }
     }
 
     private fun calculateShadowExtent(): Float {
@@ -74,160 +73,129 @@ class NeumorphicDrawable(
         return maxExtent
     }
 
-    companion object {
-        // Cap bitmap size to avoid OOM / "trying to draw too large bitmap" crashes
-        private const val MAX_BITMAP_PIXELS = 4096 * 4096
+    private fun updateBitmaps(bgWidth: Int, bgHeight: Int) {
+        if (bgWidth <= 0 || bgHeight <= 0) {
+            releaseBitmaps()
+            return
+        }
+
+        // Outer shadow bitmap
+        if (outerShadows.isNotEmpty() && shadowExtent > 0f) {
+            val key = ShadowBitmapCache.Key(
+                bgWidth,
+                bgHeight,
+                cornerRadius,
+                cornerRadii?.contentHashCode() ?: 0,
+                outerShadows
+            )
+            outerCacheEntry = ShadowBitmapCache.getOrCreate(key, shadowExtent) { bitmapCanvas, scale ->
+                renderOuterShadows(bitmapCanvas, bgWidth, bgHeight, scale)
+            }
+        } else {
+            outerCacheEntry?.release()
+            outerCacheEntry = null
+        }
+
+        // Inset shadow bitmap
+        if (insetShadows.isNotEmpty()) {
+            val key = ShadowBitmapCache.Key(
+                bgWidth,
+                bgHeight,
+                cornerRadius,
+                cornerRadii?.contentHashCode() ?: 0,
+                insetShadows
+            )
+            insetCacheEntry = ShadowBitmapCache.getOrCreate(key, 0f) { bitmapCanvas, scale ->
+                renderInsetShadows(bitmapCanvas, bgWidth, bgHeight, scale)
+            }
+        } else {
+            insetCacheEntry?.release()
+            insetCacheEntry = null
+        }
+
+        lastBgWidth = bgWidth
+        lastBgHeight = bgHeight
     }
 
-    private fun createOuterShadowBitmap(bgWidth: Int, bgHeight: Int) {
-        if (!hasOuterShadows || shadowExtent <= 0f || bgWidth <= 0 || bgHeight <= 0) {
-            outerShadowBitmap?.recycle()
-            outerShadowBitmap = null
-            return
-        }
+    private fun renderOuterShadows(canvas: Canvas, bgWidth: Int, bgHeight: Int, scale: Float) {
+        val extent = shadowExtent * scale
+        val shapeRect = RectF(extent, extent, extent + bgWidth * scale, extent + bgHeight * scale)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+        val path = Path()
 
-        val bitmapWidth = (bgWidth + shadowExtent * 2).roundToInt()
-        val bitmapHeight = (bgHeight + shadowExtent * 2).roundToInt()
+        for (shadow in outerShadows) {
+            paint.color = shadow.color.toInt()
+            paint.maskFilter = if (shadow.blurRadius.value > 0)
+                BlurMaskFilter((shadow.blurRadius.value * scale).coerceAtLeast(1f), BlurMaskFilter.Blur.NORMAL)
+            else null
 
-        if (bitmapWidth <= 0 || bitmapHeight <= 0 || bitmapWidth.toLong() * bitmapHeight > MAX_BITMAP_PIXELS) {
-            outerShadowBitmap?.recycle()
-            outerShadowBitmap = null
-            return
-        }
+            val r = RectF(shapeRect)
+            r.offset(shadow.offsetX.value * scale, shadow.offsetY.value * scale)
+            val spread = shadow.spreadRadius.value * scale
+            r.inset(-spread, -spread)
 
-        // Reuse existing bitmap if size matches
-        outerShadowBitmap?.let {
-            if (it.width == bitmapWidth && it.height == bitmapHeight) {
-                it.eraseColor(android.graphics.Color.TRANSPARENT)
-            } else {
-                it.recycle()
-                outerShadowBitmap = null
-            }
-        }
-
-        if (outerShadowBitmap == null) {
-            outerShadowBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
-        }
-
-        val bitmap = outerShadowBitmap ?: return
-        val canvas = Canvas(bitmap)
-        val shapeRect = RectF(shadowExtent, shadowExtent, shadowExtent + bgWidth, shadowExtent + bgHeight)
-
-        for (shadow in shadows) {
-            if (shadow.inset) continue
-
-            tmpPaint.reset()
-            tmpPaint.isAntiAlias = true
-            tmpPaint.style = Paint.Style.FILL
-            tmpPaint.color = shadow.color.toInt()
-            if (shadow.blurRadius.value > 0) {
-                tmpPaint.maskFilter = BlurMaskFilter(
-                    shadow.blurRadius.value.coerceAtLeast(1f),
-                    BlurMaskFilter.Blur.NORMAL
-                )
-            }
-
-            tmpRect.set(shapeRect)
-            tmpRect.offset(shadow.offsetX.value, shadow.offsetY.value)
-            val spread = shadow.spreadRadius.value
-            tmpRect.inset(-spread, -spread)
-
+            val cr = cornerRadius * scale
             val radii = cornerRadii
             if (radii != null) {
-                tmpPath.reset()
-                tmpPath.addRoundRect(tmpRect, radii, Path.Direction.CW)
-                canvas.drawPath(tmpPath, tmpPaint)
+                path.reset()
+                path.addRoundRect(r, radii.map { it * scale }.toFloatArray(), Path.Direction.CW)
+                canvas.drawPath(path, paint)
             } else {
-                canvas.drawRoundRect(tmpRect, cornerRadius, cornerRadius, tmpPaint)
+                canvas.drawRoundRect(r, cr, cr, paint)
             }
         }
     }
 
-    private fun createInsetShadowBitmap(bgWidth: Int, bgHeight: Int) {
-        if (!hasInsetShadows || bgWidth <= 0 || bgHeight <= 0) {
-            insetShadowBitmap?.recycle()
-            insetShadowBitmap = null
-            return
-        }
-
-        if (bgWidth.toLong() * bgHeight > MAX_BITMAP_PIXELS) {
-            insetShadowBitmap?.recycle()
-            insetShadowBitmap = null
-            return
-        }
-
-        // Reuse existing bitmap if size matches
-        insetShadowBitmap?.let {
-            if (it.width == bgWidth && it.height == bgHeight) {
-                it.eraseColor(android.graphics.Color.TRANSPARENT)
-            } else {
-                it.recycle()
-                insetShadowBitmap = null
-            }
-        }
-
-        if (insetShadowBitmap == null) {
-            insetShadowBitmap = Bitmap.createBitmap(bgWidth, bgHeight, Bitmap.Config.ARGB_8888)
-        }
-
-        val bitmap = insetShadowBitmap ?: return
-        val canvas = Canvas(bitmap)
-
-        // Clip to the background shape (in bitmap-local coordinates: 0,0 to bgWidth,bgHeight)
-        val clipRect = RectF(0f, 0f, bgWidth.toFloat(), bgHeight.toFloat())
+    private fun renderInsetShadows(canvas: Canvas, bgWidth: Int, bgHeight: Int, scale: Float) {
+        val clipRect = RectF(0f, 0f, bgWidth * scale, bgHeight * scale)
+        val cr = cornerRadius * scale
         val clipPath = Path()
         val radii = cornerRadii
         if (radii != null) {
-            clipPath.addRoundRect(clipRect, radii, Path.Direction.CW)
+            clipPath.addRoundRect(clipRect, radii.map { it * scale }.toFloatArray(), Path.Direction.CW)
         } else {
-            clipPath.addRoundRect(clipRect, cornerRadius, cornerRadius, Path.Direction.CW)
+            clipPath.addRoundRect(clipRect, cr, cr, Path.Direction.CW)
         }
         canvas.clipPath(clipPath)
 
-        for (shadow in shadows) {
-            if (!shadow.inset) continue
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+        val outerPath = Path()
+        val innerPath = Path()
 
-            tmpPaint.reset()
-            tmpPaint.isAntiAlias = true
-            tmpPaint.style = Paint.Style.FILL
-            tmpPaint.color = shadow.color.toInt()
-            if (shadow.blurRadius.value > 0) {
-                tmpPaint.maskFilter = BlurMaskFilter(
-                    shadow.blurRadius.value.coerceAtLeast(1f),
-                    BlurMaskFilter.Blur.NORMAL
-                )
-            }
+        for (shadow in insetShadows) {
+            paint.color = shadow.color.toInt()
+            paint.maskFilter = if (shadow.blurRadius.value > 0)
+                BlurMaskFilter((shadow.blurRadius.value * scale).coerceAtLeast(1f), BlurMaskFilter.Blur.NORMAL)
+            else null
 
-            // Inset shadow: draw a ring (outer minus inner) to create edge shadow effect
-            val spread = shadow.spreadRadius.value
-            val blur = shadow.blurRadius.value
+            val spread = shadow.spreadRadius.value * scale
+            val blur = shadow.blurRadius.value * scale
             val expansion = blur + spread
 
             val innerRect = RectF(clipRect)
-            innerRect.offset(shadow.offsetX.value, shadow.offsetY.value)
+            innerRect.offset(shadow.offsetX.value * scale, shadow.offsetY.value * scale)
+            val outerRect = RectF(innerRect).apply { inset(-expansion * 2, -expansion * 2) }
 
-            val outerRect = RectF(innerRect)
-            outerRect.inset(-expansion * 2, -expansion * 2)
-
-            tmpPath.reset()
-            tmpPath2.reset()
+            outerPath.reset()
+            innerPath.reset()
             if (radii != null) {
-                tmpPath.addRoundRect(outerRect, radii, Path.Direction.CW)
-                tmpPath2.addRoundRect(innerRect, radii, Path.Direction.CCW)
+                val scaledRadii = radii.map { it * scale }.toFloatArray()
+                outerPath.addRoundRect(outerRect, scaledRadii, Path.Direction.CW)
+                innerPath.addRoundRect(innerRect, scaledRadii, Path.Direction.CCW)
             } else {
-                tmpPath.addRoundRect(outerRect, cornerRadius, cornerRadius, Path.Direction.CW)
-                tmpPath2.addRoundRect(innerRect, cornerRadius, cornerRadius, Path.Direction.CCW)
+                outerPath.addRoundRect(outerRect, cr, cr, Path.Direction.CW)
+                innerPath.addRoundRect(innerRect, cr, cr, Path.Direction.CCW)
             }
-            tmpPath.addPath(tmpPath2)
-            canvas.drawPath(tmpPath, tmpPaint)
+            outerPath.addPath(innerPath)
+            canvas.drawPath(outerPath, paint)
         }
     }
 
-    private fun invalidateBitmaps() {
-        outerShadowBitmap?.recycle()
-        outerShadowBitmap = null
-        insetShadowBitmap?.recycle()
-        insetShadowBitmap = null
+    private fun releaseBitmaps() {
+        outerCacheEntry?.release()
+        outerCacheEntry = null
+        insetCacheEntry?.release()
+        insetCacheEntry = null
         lastBgWidth = 0
         lastBgHeight = 0
     }
@@ -235,21 +203,21 @@ class NeumorphicDrawable(
     fun setShadows(shadows: List<Shadow>) {
         this.shadows = shadows
         shadowExtent = calculateShadowExtent()
-        categoriseShadows()
-        invalidateBitmaps()
+        categorizeShadows()
+        releaseBitmaps()
         invalidateSelf()
     }
 
     fun setCornerRadius(radius: Float) {
         this.cornerRadius = radius
         this.cornerRadii = null
-        invalidateBitmaps()
+        releaseBitmaps()
         invalidateSelf()
     }
 
     fun setCornerRadii(radii: FloatArray) {
         this.cornerRadii = radii
-        invalidateBitmaps()
+        releaseBitmaps()
         invalidateSelf()
     }
 
@@ -262,7 +230,6 @@ class NeumorphicDrawable(
     override fun onBoundsChange(bounds: Rect) {
         super.onBoundsChange(bounds)
 
-        // Background is inset from bounds by shadowExtent
         backgroundRect.set(
             bounds.left + shadowExtent,
             bounds.top + shadowExtent,
@@ -270,7 +237,6 @@ class NeumorphicDrawable(
             bounds.bottom - shadowExtent
         )
 
-        // Update background path
         backgroundPath.reset()
         val radii = cornerRadii
         if (radii != null) {
@@ -279,14 +245,10 @@ class NeumorphicDrawable(
             backgroundPath.addRoundRect(backgroundRect, cornerRadius, cornerRadius, Path.Direction.CW)
         }
 
-        // Recreate bitmaps if background size changed
         val bgWidth = backgroundRect.width().roundToInt()
         val bgHeight = backgroundRect.height().roundToInt()
         if (bgWidth != lastBgWidth || bgHeight != lastBgHeight) {
-            lastBgWidth = bgWidth
-            lastBgHeight = bgHeight
-            createOuterShadowBitmap(bgWidth, bgHeight)
-            createInsetShadowBitmap(bgWidth, bgHeight)
+            updateBitmaps(bgWidth, bgHeight)
         }
     }
 
@@ -294,17 +256,21 @@ class NeumorphicDrawable(
         val bounds = bounds
         if (bounds.isEmpty) return
 
-        // Draw cached outer shadow bitmap
-        outerShadowBitmap?.let {
-            canvas.drawBitmap(it, bounds.left.toFloat(), bounds.top.toFloat(), bitmapPaint)
+        // Draw outer shadows
+        outerCacheEntry?.let { entry ->
+            drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
+            drawMatrix.postTranslate(bounds.left.toFloat(), bounds.top.toFloat())
+            canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
         }
 
-        // Draw the background
+        // Draw background
         canvas.drawPath(backgroundPath, backgroundPaint)
 
-        // Draw cached inset shadow bitmap (positioned at backgroundRect origin)
-        insetShadowBitmap?.let {
-            canvas.drawBitmap(it, backgroundRect.left, backgroundRect.top, bitmapPaint)
+        // Draw inset shadows
+        insetCacheEntry?.let { entry ->
+            drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
+            drawMatrix.postTranslate(backgroundRect.left, backgroundRect.top)
+            canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
         }
     }
 
@@ -323,8 +289,84 @@ class NeumorphicDrawable(
     @Deprecated("Deprecated in Java")
     override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
 
-    /**
-     * All shadows are pre-rendered to bitmaps, so no software layer is needed.
-     */
+    /** All shadows are pre-rendered to bitmaps, so no software layer is needed. */
     fun needsSoftwareLayer(): Boolean = false
+}
+
+/**
+ * LRU cache for shadow bitmaps. Elements with the same shadow configuration and dimensions
+ * share a single bitmap, dramatically reducing memory on pages with many cards/buttons.
+ */
+internal object ShadowBitmapCache {
+    data class Key(
+        val bgWidth: Int,
+        val bgHeight: Int,
+        val cornerRadius: Float,
+        val cornerRadiiHash: Int,
+        val shadows: List<Shadow>
+    )
+
+    class Entry(
+        val bitmap: Bitmap,
+        val inverseScale: Float,
+        private val key: Key
+    ) {
+        private var refCount = 1
+        fun acquire(): Entry {
+            refCount++; return this
+        }
+
+        fun release() {
+            refCount--
+            if (refCount <= 0) {
+                synchronized(cache) {
+                    // Only remove from cache if this is still the cached entry
+                    if (cache[key] === this) cache.remove(key)
+                }
+                bitmap.recycle()
+            }
+        }
+    }
+
+    private const val MAX_CACHE_SIZE = 64
+    private const val MAX_BITMAP_PIXELS = 4096 * 4096
+
+    // Render at half resolution - shadows are blurry so quality loss is invisible
+    private const val SCALE = 0.5f
+
+    private val cache = LinkedHashMap<Key, Entry>(16, 0.75f, true)
+
+    fun getOrCreate(key: Key, shadowExtent: Float, render: (Canvas, Float) -> Unit): Entry? {
+        synchronized(cache) {
+            cache[key]?.let { return it.acquire() }
+        }
+
+        val scaledBgW = (key.bgWidth * SCALE).roundToInt()
+        val scaledBgH = (key.bgHeight * SCALE).roundToInt()
+        val scaledExtent = (shadowExtent * SCALE).roundToInt()
+        val bitmapW = scaledBgW + scaledExtent * 2
+        val bitmapH = scaledBgH + scaledExtent * 2
+
+        if (bitmapW <= 0 || bitmapH <= 0 || bitmapW.toLong() * bitmapH > MAX_BITMAP_PIXELS) {
+            return null
+        }
+
+        val bitmap = Bitmap.createBitmap(bitmapW, bitmapH, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        render(canvas, SCALE)
+
+        val entry = Entry(bitmap, 1f / SCALE, key)
+
+        synchronized(cache) {
+            // Evict oldest entries if cache is full
+            while (cache.size >= MAX_CACHE_SIZE) {
+                val oldest = cache.entries.iterator().next()
+                cache.remove(oldest.key)
+                oldest.value.release()
+            }
+            cache[key] = entry.acquire() // cache holds a ref
+        }
+
+        return entry
+    }
 }
