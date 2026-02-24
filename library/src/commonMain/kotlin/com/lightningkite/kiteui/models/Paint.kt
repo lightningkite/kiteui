@@ -195,16 +195,16 @@ data class Color(
             val values = value.replace(")", "").replace("rgba(", "").replace("rgb(", "").split(" ", ",")
             return when {
                 (values.size > 3) -> Color(
-                    red = values[0].toFloatOrNull() ?: 0f,
-                    green = values[1].toFloatOrNull() ?: 0f,
-                    blue = values[2].toFloatOrNull() ?: 0f,
-                    alpha = values[3].toFloatOrNull() ?: 0f,
+                    red = values[0].toInt().floatize(),
+                    green = values[1].toInt().floatize(),
+                    blue = values[2].toInt().floatize(),
+                    alpha = values[3].toInt().floatize(),
                 )
 
                 (values.size > 2) -> Color(
-                    red = values[0].toFloatOrNull() ?: 0f,
-                    green = values[1].toFloatOrNull() ?: 0f,
-                    blue = values[2].toFloatOrNull() ?: 0f,
+                    red = values[0].toInt().floatize(),
+                    green = values[1].toInt().floatize(),
+                    blue = values[2].toInt().floatize(),
                 )
                 else -> transparent
             }
@@ -433,6 +433,60 @@ data class HSPColor(
                 hue = left.hue + (left.hue angleTo right.hue) * ratio,
                 saturation = left.saturation.times(invRatio) + right.saturation.times(ratio),
                 brightness = left.brightness.times(invRatio) + right.brightness.times(ratio)
+            )
+        }
+    }
+}
+
+
+@Serializable
+data class HSLColor(
+    val alpha: Float = 1f,
+    val hue: Angle = Angle(0f),
+    val saturation: Float = 0f,
+    val lightness: Float = 0f
+) {
+    fun toRGB(): Color {
+        val h = hue.turns.mod(1f)
+        val s = saturation.coerceIn(0f, 1f)
+        val l = lightness.coerceIn(0f, 1f)
+        if (s == 0f) return Color(alpha = alpha, red = l, green = l, blue = l)
+        val q = if (l < 0.5f) l * (1f + s) else l + s - l * s
+        val p = 2f * l - q
+        fun hue2rgb(p: Float, q: Float, t0: Float): Float {
+            var t = t0
+            if (t < 0f) t += 1f
+            if (t > 1f) t -= 1f
+            return when {
+                t < 1f / 6f -> p + (q - p) * 6f * t
+                t < 1f / 2f -> q
+                t < 2f / 3f -> p + (q - p) * (2f / 3f - t) * 6f
+                else -> p
+            }
+        }
+        val r = hue2rgb(p, q, h + 1f / 3f)
+        val g = hue2rgb(p, q, h)
+        val b = hue2rgb(p, q, h - 1f / 3f)
+        return Color(alpha = alpha, red = r, green = g, blue = b)
+    }
+
+    companion object {
+        fun interpolate(left: HSLColor, right: HSLColor, ratio: Float): HSLColor {
+            val inv = 1f - ratio
+            return HSLColor(
+                alpha = left.alpha * inv + right.alpha * ratio,
+                hue = left.hue + (left.hue angleTo right.hue) * ratio,
+                saturation = left.saturation * inv + right.saturation * ratio,
+                lightness = left.lightness * inv + right.lightness * ratio
+            )
+        }
+        fun fromWeb(color: String): HSLColor {
+            val items = color.substringAfter("(").substringBefore(")").split(",")
+            return HSLColor(
+                hue = items[0].toFloat().degrees,
+                saturation = items[1].removeSuffix("%").toFloat().div(100),
+                lightness = items[2].removeSuffix("%").toFloat().div(100),
+                alpha = items.getOrNull(3)?.toFloat() ?: 1f,
             )
         }
     }
