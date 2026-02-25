@@ -3,7 +3,9 @@ package com.lightningkite.kiteui.views
 import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.res.ColorStateList
+import android.graphics.Path
 import android.graphics.Point
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
@@ -262,15 +264,24 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         // When a view has corner radii and draws a background, clip children to the
         // rounded outline. This matches web behavior where border-radius + overflow: hidden
         // clips content (e.g. images inside a rounded frame).
+        // We use Outline.setPath() with the per-corner radii array so PerCorner is respected.
+        // A rounded rect path is always convex, so this works on API 21+.
         if (cr > 0f && themeAndBack.drawBackground) {
+            val capturedRadii = radii.copyOf()
             native.outlineProvider = object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
-                    outline.setRoundRect(0, 0, view.width, view.height, cr)
+                    val path = Path().apply {
+                        addRoundRect(
+                            RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
+                            capturedRadii,
+                            Path.Direction.CW
+                        )
+                    }
+                    outline.setPath(path)
                 }
             }
             native.clipToOutline = true
         } else if (!native.clipToOutline) {
-            // Reset if no corner radii
             native.outlineProvider = ViewOutlineProvider.BACKGROUND
         }
     }
