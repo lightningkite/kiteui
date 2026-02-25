@@ -64,7 +64,8 @@ data class UrlLikePath(
         }
     }
 
-    fun render() = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.also { println("Got params: $it") }?.entries?.joinToString(
+    // by Claude - removed debug println that fired on every route render
+    fun render() = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
         "&",
         "?"
     ) { "${it.key}=${encodeURIComponent(it.value)}" } ?: "")

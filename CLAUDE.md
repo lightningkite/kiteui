@@ -58,7 +58,8 @@ This is a multi-module Gradle project:
 ### Running Example App
 ```bash
 # Run JS/Web version with Vite (development)
-./gradlew :example-app:jsRun
+# IMPORTANT: Always use Gradle tasks to run the dev server, NOT manual HTTP servers
+./gradlew :example-app:viteRun
 
 # Run JS/Web version (production build)
 # Use run configuration: "ExampleJSRun prod"
@@ -69,6 +70,8 @@ This is a multi-module Gradle project:
 # Run JVM version
 ./gradlew :example-app:jvmRun
 ```
+
+**Note for Claude:** When testing JS/Web changes, always use `./gradlew :example-app:viteRun` to start the dev server. Do NOT use Python HTTP servers or other manual servers - they don't handle SPA routing correctly.
 
 ### Publishing
 ```bash
