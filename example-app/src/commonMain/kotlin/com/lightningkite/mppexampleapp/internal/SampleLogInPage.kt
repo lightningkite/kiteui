@@ -36,6 +36,7 @@ object SampleLogInPage : Page {
                     h1 { content = "My App" }
                     sizeConstraints(width = 20.rem).field("Email") {
                         fieldTheme.textInput {
+                            debugName = "emailInput"
                             hint = "Email"
                             keyboardHints = KeyboardHints.email
                             content bind email
@@ -43,6 +44,7 @@ object SampleLogInPage : Page {
                     }
                     sizeConstraints(width = 20.rem).field("Password") {
                         fieldTheme.textInput {
+                            debugName = "passwordInput"
                             hint = "Password"
                             keyboardHints = KeyboardHints.password
                             content bind password
@@ -55,6 +57,7 @@ object SampleLogInPage : Page {
                         }
                     }
                     centered.sizeConstraints(width = 15.rem).important.button {
+                        debugName = "loginButton"
                         h6 { content = "Log In" }
                         onClick {
                             delay(1000)

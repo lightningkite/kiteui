@@ -53,6 +53,14 @@ actual abstract class RawImageViewLike(
         }
     }
 
+    // by Claude
+    override var accessibilityValue: String?
+        get() = description
+        set(value) { super.accessibilityValue = value }
+
+    // by Claude
+    override val accessibilityType: String get() = "Image"
+
     protected fun ImageSource?.toUrl(): String? {
         // by Claude - revoke previous blob URL before creating a new one
         currentBlobUrl?.let { revokeObjectURL(it) }

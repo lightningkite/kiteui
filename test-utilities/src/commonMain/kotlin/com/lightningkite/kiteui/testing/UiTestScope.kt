@@ -1,0 +1,165 @@
+// by Claude - unified UI test scope using AI driver primitives
+package com.lightningkite.kiteui.testing
+
+import com.lightningkite.kiteui.MockExternalServices
+import com.lightningkite.kiteui.aidriver.*
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.views.RView
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+
+/**
+ * A test scope that uses the same primitives as the AI driver CLI.
+ *
+ * Mental model equivalence:
+ * ```
+ * CLI:  ./ui snapshot web-1          Kotlin: snapshot()
+ * CLI:  ./ui perform web-1 click btn Kotlin: click("btn")
+ * CLI:  ./ui wait web-1 --page Home  Kotlin: waitForPage("Home")
+ * ```
+ *
+ * Constructed by [uiTest] — not meant to be created directly.
+ */
+class UiTestScope(
+    val root: RView,
+    val navigator: PageNavigator?,
+    private val idle: suspend () -> Unit = {},
+) {
+    // by Claude - convenience accessor for the MockExternalServices if one was injected via UiTestConfig
+    val mockExternalServices: MockExternalServices?
+        get() = root.context.addons["externalServices"] as? MockExternalServices
+
+    // ---- Snapshot (read state) ----
+
+    /** Full snapshot of the current UI tree. Same as CLI `./ui snapshot`. */
+    suspend fun snapshot(): UiSnapshot {
+        idle()
+        return buildSnapshot(root, navigator)
+    }
+
+    /** Find a component by its path ID in the current snapshot. */
+    suspend fun find(id: String): UiComponent? = snapshot().findById(id)
+
+    /** Assert a component exists and return it. Throws if not found. */
+    suspend fun require(id: String): UiComponent =
+        find(id) ?: throw AssertionError(
+            "Component '$id' not found.\nCurrent snapshot:\n${snapshot().renderText()}"
+        )
+
+    // ---- Perform (mutate state) ----
+
+    /** Dispatch a UiAction against the view tree. Same as CLI `./ui perform`. */
+    suspend fun perform(action: UiAction): ActionDispatchResult {
+        val result = dispatchAction(action, root, navigator)
+        if (!result.success) {
+            throw AssertionError("Action failed: $action: ${result.error}")
+        }
+        idle()
+        return result
+    }
+
+    /** Click a component by path ID. Same as `./ui perform <app> click <id>`. */
+    suspend fun click(targetId: String) = perform(UiAction.Click(targetId))
+
+    /** Set a value on a component. Same as `./ui perform <app> setValue <id> <value>`. */
+    suspend fun setValue(targetId: String, value: String) =
+        perform(UiAction.SetValue(targetId, value))
+
+    /** Navigate to a URL-like route. Same as `./ui perform <app> navigate <route>`. */
+    suspend fun navigate(route: String) = perform(UiAction.Navigate(route))
+
+    /** Go back in the navigation stack. Same as `./ui perform <app> back`. */
+    suspend fun back() = perform(UiAction.Back)
+
+    // ---- Wait (poll for state) ----
+
+    /**
+     * Wait until a condition on the snapshot is true.
+     * Throws [AssertionError] on timeout.
+     */
+    suspend fun waitFor(
+        timeout: Duration = 5.seconds,
+        description: String = "condition",
+        condition: (UiSnapshot) -> Boolean
+    ) {
+        try {
+            withTimeout(timeout) {
+                while (true) {
+                    idle()
+                    val snap = buildSnapshot(root, navigator)
+                    if (condition(snap)) return@withTimeout
+                    yield()
+                }
+            }
+        } catch (_: kotlinx.coroutines.TimeoutCancellationException) {
+            val snap = buildSnapshot(root, navigator)
+            throw AssertionError(
+                "Timed out waiting for $description after $timeout.\n" +
+                "Final snapshot:\n${snap.renderText()}"
+            )
+        }
+    }
+
+    /** Wait for the current page to match. Same as CLI `./ui wait --page`. */
+    suspend fun waitForPage(pageName: String, timeout: Duration = 5.seconds) =
+        waitFor(timeout, description = "page=$pageName") { it.page == pageName }
+
+    /** Wait for a component to appear. Same as CLI `./ui wait --component`. */
+    suspend fun waitForComponent(id: String, timeout: Duration = 5.seconds) =
+        waitFor(timeout, description = "component=$id") { it.findById(id) != null }
+
+    /** Wait for a component to disappear. Same as CLI `./ui wait --componentGone`. */
+    suspend fun waitForComponentGone(id: String, timeout: Duration = 5.seconds) =
+        waitFor(timeout, description = "componentGone=$id") { it.findById(id) == null }
+
+    /** Wait for a component to become enabled. Same as CLI `./ui wait --enabled`. */
+    suspend fun waitForEnabled(id: String, timeout: Duration = 5.seconds) =
+        waitFor(timeout, description = "enabled=$id") {
+            it.findById(id)?.enabled == true
+        }
+
+    // ---- Assertions (convenience) ----
+
+    /** Assert the current page name matches. */
+    suspend fun assertPage(expected: String) {
+        val snap = snapshot()
+        if (snap.page != expected) {
+            throw AssertionError("Expected page '$expected' but was '${snap.page}'")
+        }
+    }
+
+    /** Assert a component has the expected value. */
+    suspend fun assertValue(id: String, expected: String) {
+        val component = require(id)
+        if (component.value != expected) {
+            throw AssertionError(
+                "Expected '$id' to have value '$expected' but was '${component.value}'"
+            )
+        }
+    }
+
+    /** Assert a component is visible. */
+    suspend fun assertVisible(id: String) {
+        val component = require(id)
+        if (!component.visible) throw AssertionError("Expected '$id' to be visible")
+    }
+
+    /** Assert a component is enabled. */
+    suspend fun assertEnabled(id: String) {
+        val component = require(id)
+        if (!component.enabled) throw AssertionError("Expected '$id' to be enabled")
+    }
+
+    /** Assert a component is disabled. */
+    suspend fun assertDisabled(id: String) {
+        val component = require(id)
+        if (component.enabled) throw AssertionError("Expected '$id' to be disabled")
+    }
+
+    /** Print the current snapshot as text (for debugging). */
+    suspend fun dumpSnapshot() {
+        println(snapshot().renderText())
+    }
+}

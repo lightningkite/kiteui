@@ -22,6 +22,7 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.launch
 
 actual class Select actual constructor(context: RContext): RView(context) {
     override val native = Spinner(context.activity).apply {
@@ -73,6 +74,9 @@ actual class Select actual constructor(context: RContext): RView(context) {
 
         background = layerDrawable
     }
+
+    private var _accessibilityRenderedValue: String? = null  // by Claude
+    private var _accessibilitySetter: ((String) -> Unit)? = null  // by Claude
 
     actual fun <T> bind(
         edits: MutableReactive<T>,
@@ -147,8 +151,15 @@ actual class Select actual constructor(context: RContext): RView(context) {
                 suppressChange = false
             }
         }
+        _accessibilitySetter = { text ->  // by Claude
+            @Suppress("UNCHECKED_CAST")
+            val item = list.firstOrNull { render(it) == text }
+                ?: throw IllegalArgumentException("No option matching '$text'")
+            launch { edits set item }
+        }
         reactiveScope {
             val currentlySelected = edits()
+            _accessibilityRenderedValue = render(currentlySelected)  // by Claude
             val index = list.indexOf(currentlySelected)
             if (index != -1 && !suppressChange) {
                 suppressChange = true
@@ -156,6 +167,22 @@ actual class Select actual constructor(context: RContext): RView(context) {
                 suppressChange = false
             }
         }
+    }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = _accessibilityRenderedValue
+        set(value) {
+            val setter = _accessibilitySetter ?: throw IllegalStateException("Select not bound")
+            setter(value ?: throw IllegalArgumentException("Cannot set null on Select"))
+        }
+
+    // by Claude - select supports click and setValue
+    override val accessibilityActions: Set<String> get() = setOf("click", "setValue")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "click" -> { native.performClick(); null }
+        "setValue" -> { accessibilityValue = value; null }
+        else -> super.performAccessibilityAction(action, value)
     }
 }
 

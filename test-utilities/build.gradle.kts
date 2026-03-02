@@ -51,6 +51,7 @@ kotlin {
             dependencies {
                 api(project(":library"))
                 implementation(kotlin("test"))
+                implementation(libs.kotlinxCoroutinesTest) // by Claude - for runTest in uiTest()
             }
         }
 

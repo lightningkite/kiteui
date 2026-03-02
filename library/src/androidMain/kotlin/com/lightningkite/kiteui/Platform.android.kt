@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui
 
+import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.view.View
 import androidx.core.view.WindowCompat
@@ -14,6 +15,11 @@ actual val Platform.Companion.usesTouchscreen: Boolean
     get() = true
 actual val Platform.Companion.userAgent: String
     get() = "Android ${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})"
+
+// by Claude - check if the app was built with debuggable flag
+actual val Platform.Companion.isDevelopment: Boolean
+    get() = (AndroidAppContext.applicationCtx?.applicationInfo?.flags ?: 0) and
+            ApplicationInfo.FLAG_DEBUGGABLE != 0
 
 actual fun setStatusBarColor(color: Color) {
     val window = AndroidAppContext.activityCtx?.window

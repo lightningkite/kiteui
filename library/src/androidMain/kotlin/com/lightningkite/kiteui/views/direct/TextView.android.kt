@@ -98,6 +98,14 @@ actual class TextView actual constructor(context: RContext) :
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
         applyAlign(_align ?: theme.font.align)
     }
+    // by Claude
+    override var accessibilityValue: String?
+        get() = content
+        set(value) { super.accessibilityValue = value }
+
+    // by Claude
+    override val accessibilityType: String get() = "Text"
+
     actual fun setBasicHtmlContent(html: String) {
         if(html.contains("<a")) {
             native.movementMethod = LinkMovementMethod.getInstance()

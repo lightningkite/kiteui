@@ -1,9 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewDsl
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -37,4 +35,12 @@ actual class Switch actual constructor(context: RContext) : RView(context) {
                     }
             }
         }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readBooleanValue(checked)
+        set(value) = writeBooleanValue(checked, value)
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performBooleanAction(checked, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }

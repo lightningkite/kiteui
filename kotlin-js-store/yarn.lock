@@ -2622,6 +2622,11 @@ mocha@11.7.1:
     yargs-parser "^21.1.1"
     yargs-unparser "^2.0.0"
 
+modern-screenshot@4.6.8:
+  version "4.6.8"
+  resolved "https://registry.yarnpkg.com/modern-screenshot/-/modern-screenshot-4.6.8.tgz#68f9037c64c1744b9900c88c827c802aa8309589"
+  integrity sha512-GJkv/yWPOJTlxj1LZDU2k474cDyOWL+LVaqTdDWQwQ5d8zIuTz1892+1cV9V0ZpK6HYZFo/+BNLBbierO9d2TA==
+
 mrmime@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/mrmime/-/mrmime-2.0.1.tgz#bc3e87f7987853a54c9850eeb1f1078cd44adddc"

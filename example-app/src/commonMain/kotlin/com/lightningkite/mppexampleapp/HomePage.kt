@@ -111,15 +111,20 @@ class HomePage : Page {
                 col {
                     text("Here is a basic counter:")
                     row {
-                        expanding.centered.text { ::content { number().toString() } }
+                        expanding.centered.text {
+                            debugName = "counter"
+                            ::content { number().toString() }
+                        }
                         col {
                             important.button {
+                                debugName = "increment"
                                 text("+")
                                 action = Action("Increment", Icon.add, frequencyCap = 0.milliseconds) {
                                     number.value++
                                 }
                             }
                             important.button {
+                                debugName = "decrement"
                                 text("-")
                                 action = Action("Decrement", Icon.remove, frequencyCap = 0.milliseconds) {
                                     number.value--

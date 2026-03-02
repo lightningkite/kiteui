@@ -15,7 +15,9 @@ import platform.UIKit.UIView
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     override val native = LinearLayout()
-    
+
+    // by Claude
+    override val accessibilityType: String get() = if (vertical) "Column" else "Row"
 
     actual var vertical: Boolean
         get() = native.horizontal.not()

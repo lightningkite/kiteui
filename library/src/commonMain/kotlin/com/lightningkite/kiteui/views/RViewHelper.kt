@@ -67,6 +67,26 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     override val representsView: RView get() = this as RView
 
     /**
+     * Used for testing and AI services to get or set the value of a field without interacting with the UI.
+     * Returns null by default; override in specific view classes (TextInput, Checkbox, etc.) to expose the value.
+     */
+    open var accessibilityValue: String?
+        get() = null
+        set(value) {
+            throw IllegalArgumentException("You cannot set the value in this view.")
+        }
+
+    // by Claude - semantic type for AI and accessibility; defaults to class simpleName
+    open val accessibilityType: String get() = this::class.simpleName ?: "View"
+
+    // by Claude - set of action names this view supports (e.g. "click", "setValue")
+    open val accessibilityActions: Set<String> get() = emptySet()
+
+    // by Claude - execute an accessibility action; returns null on success, error message on failure
+    open fun performAccessibilityAction(action: String, value: String? = null): String? =
+        "Action '$action' not supported on ${accessibilityType}"
+
+    /**
      * Flag indicating whether this view has been shut down.
      * Once true, operations on this view will log warnings and may not function correctly.
      */
@@ -682,6 +702,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
 
     // by Claude - allows setting semantic HTML tag from common code for SEO
     open var htmlElementTag: String? = null
+
+    // by Claude - accessible description for this view, used by screen readers and AI automation
+    open var ariaDescription: String? = null
 
     /**
      * Convenience operator allowing actions to be invoked with this view as the context.

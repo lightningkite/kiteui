@@ -61,6 +61,11 @@ actual class Link actual constructor(context: RContext): RView(context) {
     }
 
     override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+
+    // by Claude - Link supports click for AI driver navigation
+    override val accessibilityActions: Set<String> get() = setOf("click")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "click" -> { native.performClick(); null }
+        else -> super.performAccessibilityAction(action, value)
+    }
 }
-
-

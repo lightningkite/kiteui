@@ -7,8 +7,7 @@ import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.RViewWithAction
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -59,4 +58,12 @@ actual class LocalTimeField actual constructor(context: RContext) :
     }
 
     override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readNullableValue(content)
+        set(value) = writeNullableValue(content, value) { LocalTime.parse(it) }
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performNullableSetValueAction(content, { LocalTime.parse(it) }, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }

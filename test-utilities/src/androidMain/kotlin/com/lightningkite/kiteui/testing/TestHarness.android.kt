@@ -28,7 +28,8 @@ import java.io.File
  * initialize KiteUI on Android.
  */
 actual class TestHarness {
-    actual val supported: Boolean = true
+    // by Claude - set supported=false when Robolectric isn't available (e.g. commonTest without @RunWith)
+    actual val supported: Boolean
     actual val async: AsyncTestSupport = AsyncTestSupport()
     private var controller: org.robolectric.android.controller.ActivityController<TestActivity>? = null
     private var rootView: RView? = null
@@ -36,12 +37,19 @@ actual class TestHarness {
     init {
         // Initialize AndroidAppContext as early as possible
         // This is required because Theme's static initialization accesses AndroidAppContext.oneRem
-        try {
+        supported = try {
             com.lightningkite.kiteui.views.AndroidAppContext.applicationCtx
+            true
         } catch (e: UninitializedPropertyAccessException) {
-            // Not initialized yet, initialize it now
-            com.lightningkite.kiteui.views.AndroidAppContext.applicationCtx =
-                RuntimeEnvironment.getApplication()
+            // Not initialized yet, initialize it now via Robolectric
+            try {
+                com.lightningkite.kiteui.views.AndroidAppContext.applicationCtx =
+                    RuntimeEnvironment.getApplication()
+                true
+            } catch (e: Exception) {
+                // Robolectric not available (test not run with RobolectricTestRunner)
+                false
+            }
         }
     }
 

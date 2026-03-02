@@ -46,7 +46,13 @@ kotlin {
     iosSimulatorArm64()
     js(IR) {
         binaries.executable()
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+        }
     }
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")

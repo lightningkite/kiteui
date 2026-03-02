@@ -1,0 +1,3 @@
+#!/bin/sh
+# by Claude - shortcut for AI driver CLI
+exec "$(dirname "$0")/ai-driver-server/build/install/ai-driver-server/bin/ai-driver-server" "$@"

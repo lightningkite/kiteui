@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions

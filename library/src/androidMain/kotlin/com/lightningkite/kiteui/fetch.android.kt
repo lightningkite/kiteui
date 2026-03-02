@@ -317,6 +317,15 @@ class WebSocketWrapper(val url: String) : WebSocket {
 
 actual class FileReference(val uri: Uri)
 
+// by Claude - create FileReference from raw bytes for testing/mocking
+actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+    val ext = fileName.substringAfterLast('.', "tmp")
+    val cacheDir = AndroidAppContext.applicationCtx.cacheDir
+    val tempFile = java.io.File.createTempFile("kiteui-mock-", ".$ext", cacheDir)
+    tempFile.deleteOnExit()
+    tempFile.writeBytes(bytes)
+    return FileReference(Uri.fromFile(tempFile))
+}
 
 actual fun Blob.mimeType() = type
 actual fun FileReference.mimeType() = when (uri.scheme) {

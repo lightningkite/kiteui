@@ -84,6 +84,9 @@ actual class Frame actual constructor(context: RContext) : RView(context) {
 }
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
+    // by Claude
+    override val accessibilityType: String get() = if (vertical) "Column" else "Row"
+
     init {
         native.tag = "div"
         native.style.flexDirection = "column"

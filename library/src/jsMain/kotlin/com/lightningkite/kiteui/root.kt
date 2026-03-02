@@ -23,9 +23,7 @@ import org.w3c.dom.Element
 fun root(theme: Theme, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CalculationContext by AppScope {
-        override val context: RContext = RContext(basePath).also {
-            ExternalServices.baseContext = it
-        }
+        override val context: RContext = RContext(basePath)
         override val representsView: RView? = null
 
         override fun willAddChild(view: RView) {
@@ -41,9 +39,7 @@ fun root(theme: Theme, app: ViewWriter.()->Unit) {
 fun root(theme: Reactive<Theme>, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CalculationContext by AppScope {
-        override val context: RContext = RContext(basePath).also {
-            ExternalServices.baseContext = it
-        }
+        override val context: RContext = RContext(basePath)
         override val representsView: RView? = null
 
         override fun willAddChild(view: RView) {
@@ -145,7 +141,6 @@ private fun hydrateRootInternal(
     // by Claude
     val rContext = RContext(basePath).apply {
         ssrDispatcher = Dispatchers.Unconfined
-        ExternalServices.baseContext = this  // Set consistently for both theme variants
     }
 
     // Track current child index for matching against SSR DOM

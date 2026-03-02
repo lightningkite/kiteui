@@ -35,7 +35,10 @@ object ClickTestPage : Page {
             // Status display
             card.col {
                 h3 { content = "Last Clicked:" }
-                text { ::content { lastClicked() } }
+                text {
+                    debugName = "lastClicked"
+                    ::content { lastClicked() }
+                }
             }
 
             // Grid of numbered buttons
@@ -46,6 +49,7 @@ object ClickTestPage : Page {
                 row {
                     for (i in 1..3) {
                         weight(1f).button {
+                            debugName = "button$i"
                             text { content = "Button $i" }
                             onClick { logClick("Button $i") }
                         }
@@ -54,6 +58,7 @@ object ClickTestPage : Page {
                 row {
                     for (i in 4..6) {
                         weight(1f).button {
+                            debugName = "button$i"
                             text { content = "Button $i" }
                             onClick { logClick("Button $i") }
                         }
@@ -62,6 +67,7 @@ object ClickTestPage : Page {
                 row {
                     for (i in 7..9) {
                         weight(1f).button {
+                            debugName = "button$i"
                             text { content = "Button $i" }
                             onClick { logClick("Button $i") }
                         }
@@ -113,8 +119,9 @@ object ClickTestPage : Page {
 
             // Clear button
             button {
+                debugName = "clearLog"
                 text { content = "Clear Log" }
-                onClick {
+                onClick(frequencyCap = null) {
                     lastClicked.value = "(none)"
                     clickLog.value = mutableListOf()
                 }

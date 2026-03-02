@@ -65,4 +65,11 @@ actual class LocalDateTimeField actual constructor(context: RContext) :
 
     override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
 
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readNullableValue(content)
+        set(value) = writeNullableValue(content, value) { LocalDateTime.parse(it) }
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performNullableSetValueAction(content, { LocalDateTime.parse(it) }, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }

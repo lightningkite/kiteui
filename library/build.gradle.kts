@@ -76,7 +76,13 @@ kotlin {
                 implementation(project(":test-utilities"))
             }
         }
+        // by Claude - shared source set for platforms with interactive UI (Android, iOS, JS)
+        val commonInteractiveMain by creating {
+            dependsOn(commonMain)
+        }
+
         val androidMain by getting {
+            dependsOn(commonInteractiveMain)
             dependencies {
                 api(libs.appcompat)
                 api(libs.ktx)
@@ -107,6 +113,7 @@ kotlin {
         }
 
         val iosMain by getting {
+            dependsOn(commonInteractiveMain)
             dependencies {
                 implementation(libs.ktorClientDarwin)
                 implementation(libs.ktorClientWebsockets)
@@ -128,6 +135,12 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
+            dependsOn(commonInteractiveMain)
+            dependencies {
+                // by Claude - AI driver screenshot support. Loaded via dynamic import() only when
+                // screenshots are requested, so this does NOT increase main bundle size.
+                implementation(npm("modern-screenshot", "4.6.8"))
+            }
         }
     }
 

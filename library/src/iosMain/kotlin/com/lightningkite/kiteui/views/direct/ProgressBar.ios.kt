@@ -19,6 +19,14 @@ actual class ProgressBar actual constructor(context: RContext) : RView(context) 
         native.progressLayer.tintColor = theme[CardSemantic].theme.foreground.closestColor().toUiColor()
     }
     actual var ratio by native::progress
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = ratio.toString()
+        set(value) { super.accessibilityValue = value }
+
+    // by Claude
+    override val accessibilityType: String get() = "ProgressBar"
 }
 
 @OptIn(ExperimentalForeignApi::class)

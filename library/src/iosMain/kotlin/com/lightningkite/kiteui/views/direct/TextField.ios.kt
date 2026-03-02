@@ -231,5 +231,13 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         if (textField.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readStringValue(content)
+        set(value) = writeStringValue(content, value)
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performStringSetValueAction(content, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }
 

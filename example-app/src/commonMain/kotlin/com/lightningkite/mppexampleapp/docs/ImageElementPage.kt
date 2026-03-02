@@ -1,6 +1,5 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -42,9 +41,9 @@ object ImageElementPage: DocPage {
                         expanding.button {
                             text("Pick")
                             onClick {
-                                ExternalServices.requestFile(listOf("image/*")) {
-                                    if(it != null) currentImage.value = ImageLocal(it)
-                                }
+                                externalServices.requestFile(listOf("image/*"))
+                                    ?.let(::ImageLocal)
+                                    ?.let { currentImage.value = it }
                             }
                         }
                     }

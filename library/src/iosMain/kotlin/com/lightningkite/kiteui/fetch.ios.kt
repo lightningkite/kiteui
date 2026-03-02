@@ -347,6 +347,18 @@ class WebSocketWrapper(val url: String) : WebSocket {
 actual class Blob(val data: NSData, val type: String = "application/octet-stream")
 actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
 
+// by Claude - create FileReference from raw bytes for testing/mocking
+@OptIn(ExperimentalForeignApi::class)
+actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+    val nsData = bytes.usePinned { pinned ->
+        NSData.dataWithBytes(pinned.addressOf(0), bytes.size.toULong())
+    }
+    val utType = UTType.typeWithMIMEType(mimeType) ?: UTTypeData
+    val provider = NSItemProvider(item = nsData, typeIdentifier = utType.identifier)
+    provider.suggestedName = fileName
+    return FileReference(provider, utType)
+}
+
 
 actual fun Blob.mimeType(): String = type
 actual fun FileReference.mimeType(): String {

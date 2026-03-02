@@ -160,6 +160,14 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         if(native.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readStringValue(content)
+        set(value) = writeStringValue(content, value)
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performStringSetValueAction(content, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }
 
 private class TextAreaDelegate() : NSObject(), UITextViewDelegateProtocol {

@@ -40,4 +40,11 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
             launch { action() }
         }
     }
+
+    // by Claude - ExternalLink supports click for AI driver
+    override val accessibilityActions: Set<String> get() = setOf("click")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "click" -> { native.click(); null }
+        else -> super.performAccessibilityAction(action, value)
+    }
 }

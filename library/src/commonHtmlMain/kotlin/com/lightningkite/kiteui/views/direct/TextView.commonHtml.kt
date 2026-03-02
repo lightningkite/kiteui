@@ -78,5 +78,13 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         native.style.whiteSpace = "pre-line"
         native.innerHtmlUnsafe = html.parseMPNodes().onEach { it.secure() }.joinToString(" ")
     }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = content
+        set(value) { super.accessibilityValue = value }
+
+    // by Claude
+    override val accessibilityType: String get() = "Text"
 }
 

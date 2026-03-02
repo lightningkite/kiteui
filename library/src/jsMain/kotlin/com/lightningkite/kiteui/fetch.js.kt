@@ -24,6 +24,7 @@ import org.w3c.dom.events.Event
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
 import org.w3c.files.BlobPropertyBag
+import org.w3c.files.FilePropertyBag
 import org.w3c.files.File
 import org.w3c.xhr.BLOB
 import org.w3c.xhr.ProgressEvent
@@ -167,6 +168,12 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
 actual typealias Blob = org.w3c.files.Blob
 actual typealias FileReference = File
 
+// by Claude - create FileReference (JS File) from raw bytes for testing/mocking
+actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+    // ByteArray in Kotlin/JS is backed by Int8Array; wrap in a Blob first, then File
+    val blob = Blob(arrayOf(bytes.asDynamic()), BlobPropertyBag(type = mimeType))
+    return File(arrayOf(blob), fileName, FilePropertyBag(type = mimeType))
+}
 
 actual fun Blob.mimeType(): String {
     return this.type
