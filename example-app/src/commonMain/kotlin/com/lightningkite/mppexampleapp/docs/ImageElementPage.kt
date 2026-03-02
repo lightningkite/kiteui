@@ -1,6 +1,8 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.bytes
+import com.lightningkite.kiteui.compressed
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.requestFile
@@ -68,6 +70,17 @@ object ImageElementPage: DocPage {
                                 context.requestFile(listOf("image/*"))
                                     ?.let(::ImageLocal)
                                     ?.let { currentImage.value = it }
+                            }
+                        }
+                        // by Claude - demonstrate image compression
+                        expanding.button {
+                            text("Pick & Compress")
+                            onClick {
+                                val file = context.requestFile(listOf("image/*")) ?: return@onClick
+                                val original = ImageLocal(file)
+                                val compressed = original.compressed()
+                                currentImage.value = compressed
+                                println("Compressed: original ${file.bytes()} bytes -> ${compressed.data.bytes()} bytes")
                             }
                         }
                     }

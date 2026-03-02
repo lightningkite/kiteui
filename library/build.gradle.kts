@@ -101,6 +101,7 @@ kotlin {
                 api(libs.media3Ui)
                 api(libs.media3Common)
                 api(libs.androidxAutofill)
+                api(libs.exifinterface)
             }
         }
         val androidUnitTest by getting {
