@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.seconds
 
 val defaultTheme = Theme.flat2("flat2default", 0.6.turns).customize(
     newId = "asdf",
-    transitionDuration = 1.seconds,
+    transitionDuration = 0.2.seconds,
     bodyTransitions = ScreenTransitions.HorizontalSlide
 )
 //val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
