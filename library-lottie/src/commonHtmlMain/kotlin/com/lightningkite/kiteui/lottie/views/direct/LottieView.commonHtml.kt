@@ -1,8 +1,11 @@
 package com.lightningkite.kiteui.lottie.views.direct
 
+import com.lightningkite.kiteui.lottie.LottieColor
+import com.lightningkite.kiteui.lottie.applyColorTransform
 import com.lightningkite.kiteui.lottie.models.LottieRaw
 import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
+import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.reactive.core.*
@@ -47,6 +50,17 @@ actual class LottieView actual constructor(
         get() = _autoPlay
         set(value) { _autoPlay = value }
 
+    internal var originalJson: String? = null
+    private var _colorTransform: ((LottieColor) -> Color)? = null
+    actual var colorTransform: ((LottieColor) -> Color)?
+        get() = _colorTransform
+        set(value) {
+            _colorTransform = value
+            val json = originalJson ?: return
+            val finalJson = if (value != null) applyColorTransform(json, value) else json
+            nativeReloadWithJson(finalJson)
+        }
+
     internal val _completedPlay = mutableListOf<() -> Unit>()
     actual val completedPlay: Listenable = object : Listenable {
         override fun addListener(listener: () -> Unit): () -> Unit {
@@ -68,6 +82,7 @@ actual class LottieView actual constructor(
                 native.setAttribute("data-lottie-url", value.url)
             }
             is LottieRaw -> {
+                originalJson = value.json
                 native.setAttribute("data-lottie-json", value.json)
             }
         }
@@ -94,3 +109,4 @@ internal expect fun LottieView.nativePause()
 internal expect fun LottieView.nativeStop()
 internal expect fun LottieView.nativeSeekToFrame(frame: Int)
 internal expect fun LottieView.nativeSeekToProgress(progress: Float)
+internal expect fun LottieView.nativeReloadWithJson(json: String)

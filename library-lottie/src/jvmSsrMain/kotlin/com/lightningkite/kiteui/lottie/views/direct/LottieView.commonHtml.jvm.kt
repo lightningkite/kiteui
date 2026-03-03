@@ -48,3 +48,7 @@ internal actual fun LottieView.nativeSeekToFrame(frame: Int) {
 internal actual fun LottieView.nativeSeekToProgress(progress: Float) {
     // No-op for SSR
 }
+
+internal actual fun LottieView.nativeReloadWithJson(json: String) {
+    // No-op for SSR
+}

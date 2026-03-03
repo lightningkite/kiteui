@@ -163,3 +163,56 @@ internal actual fun LottieView.nativeSeekToProgress(progress: Float) {
         anim.goToAndStop(frame, true)
     }
 }
+
+internal actual fun LottieView.nativeReloadWithJson(json: String) {
+    native.onElement { element ->
+        val oldAnim = animationInstance
+        val savedProgress = if (oldAnim != null) {
+            val total = oldAnim.totalFrames as? Double ?: 0.0
+            val current = oldAnim.currentFrame as? Double ?: 0.0
+            if (total > 0) (current / total).toFloat() else 0f
+        } else 0f
+        val wasPlaying = oldAnim?.isPaused != true
+
+        // Destroy old instance
+        oldAnim?.destroy()
+
+        try {
+            val lib = lottieLib ?: return@onElement
+            val params: dynamic = js("{}")
+            params.container = element
+            params.renderer = "svg"
+            params.loop = _loop
+            params.autoplay = false
+            params.animationData = JSON.parse(json)
+
+            val anim = lib.loadAnimation(params)
+            animationInstance = anim
+
+            anim.addEventListener("DOMLoaded") {
+                val totalFrames = anim.totalFrames as? Double ?: 0.0
+                val frameRate = anim.frameRate as? Double ?: 30.0
+                if (totalFrames > 0 && frameRate > 0) {
+                    _duration.state = ReactiveState(((totalFrames / frameRate) * 1000).toLong().milliseconds)
+                }
+                // Restore playback state
+                val frame = (savedProgress * totalFrames).toInt()
+                if (wasPlaying) {
+                    anim.goToAndPlay(frame, true)
+                } else {
+                    anim.goToAndStop(frame, true)
+                }
+            }
+
+            anim.addEventListener("complete") {
+                if (!_loop) {
+                    _completedPlay.forEach { it() }
+                }
+            }
+
+            anim.setSpeed(_speed)
+        } catch (e: Exception) {
+            // Silently fail on reload
+        }
+    }
+}

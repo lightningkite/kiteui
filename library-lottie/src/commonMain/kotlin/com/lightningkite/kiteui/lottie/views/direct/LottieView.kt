@@ -2,7 +2,9 @@ package com.lightningkite.kiteui.lottie.views.direct
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Untested
+import com.lightningkite.kiteui.lottie.LottieColor
 import com.lightningkite.kiteui.lottie.models.LottieSource
+import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.reactive.core.*
@@ -77,4 +79,11 @@ expect class LottieView(
 
     /** Seek to a specific progress value (0.0 to 1.0) */
     fun seekToProgress(progress: Float)
+
+    /**
+     * Optional color transform applied to all colors in the animation.
+     * When set, the animation is reloaded with transformed colors.
+     * Use with reactive binding (::colorTransform) to update when theme changes.
+     */
+    var colorTransform: ((LottieColor) -> Color)?
 }
