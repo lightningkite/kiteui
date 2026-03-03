@@ -21,7 +21,7 @@ import kotlin.math.abs
 
 fun ViewWriter.colorPicker(color: MutableReactive<Color>) {
     col {
-        val selectedType = Signal(ColorPickerOptions.HSP)
+        val selectedType = Signal(ColorPickerOptions.RGB)
         val debounced = color.debounce(100)
 
         sizeConstraints(minWidth = 12.rem).row {
@@ -66,9 +66,9 @@ fun ViewWriter.colorPicker(color: MutableReactive<Color>) {
         ).forEach {
             row {
                 it.forEach { c ->
-                    themed(ThemeDerivation {
+                    sizeConstraints(width = 1.5.rem, height = 1.5.rem).themed(ThemeDerivation {
                         it.copy(id = "color_${c.toInt()}", background = c).withBack
-                    }).sizeConstraints(width = 1.5.rem, height = 1.5.rem).button {
+                    }).button {
                         onClick {
                             color.set(c)
                         }
