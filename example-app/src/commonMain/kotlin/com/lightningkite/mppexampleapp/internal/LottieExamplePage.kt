@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.lottie.views.direct.LottieView
 import com.lightningkite.kiteui.lottie.views.direct.lottie
+import com.lightningkite.kiteui.models.Color
 import com.lightningkite.reactive.core.*
 
 @Routable("lottie")
@@ -21,7 +22,7 @@ object LottieExamplePage : Page {
 
     override fun ViewWriter.render(): Unit = run {
         scrolling.col {
-            h1 { content = "Lottie Animation Examples" }
+            h1 { content = "Lottie Animation Examples Test" }
 
             text { content = "Lottie is a library for rendering After Effects animations exported as JSON." }
 
@@ -35,6 +36,24 @@ object LottieExamplePage : Page {
                 loop = true
                 autoPlay = true
             }
+
+            h2 { content = "Loading Animation with altered Colors" }
+            sizeConstraints(width = 200.px, height = 200.px).lottie(
+                url = LOADING_ANIMATION,
+                description = "Loading spinner animation"
+            ) {
+                loop = true
+                autoPlay = true
+                colorTransform = { lottieColor ->
+                    lottieColor.layerIndex?.let { index ->
+                        val themeColor = theme.background.closestColor()
+                        val amountToAdjustAtEachSteps = ((0.25 * index)).toFloat()
+                        if (themeColor.perceivedBrightness > 0.50) themeColor.darken(amountToAdjustAtEachSteps)
+                        else themeColor.lighten(amountToAdjustAtEachSteps)
+                    } ?: lottieColor.color
+                }
+            }
+
 
             space()
 

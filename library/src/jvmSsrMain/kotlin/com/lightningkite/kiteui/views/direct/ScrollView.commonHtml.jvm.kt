@@ -72,6 +72,11 @@ actual class ScrollingBehaviorImpl actual constructor(
     actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
     }
 
+    actual override fun disableScrollAnchoring() {
+        // by Claude
+        native.classes += "suppress-overflow-anchors"
+    }
+
     actual override fun scrollToKeepAnimations(x: Double, y: Double) {
         TODO("Not yet implemented")
     }

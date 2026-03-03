@@ -38,7 +38,7 @@ module "web" {
     aws.acm = aws.acm
   }
   deployment_name = "kiteui"
-  dist_folder = "../../build/vite/dist"
+  dist_folder = "../../build/dist/js/production"
   domain_name = "kiteui.cs.lightningkite.com"
   domain_name_zone = "cs.lightningkite.com"
   react_mode = true

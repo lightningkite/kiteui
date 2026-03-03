@@ -16,19 +16,22 @@ import kotlin.test.assertEquals
 class LayoutsTestPage : Page {
     val checks = ArrayList<() -> Unit>()
     override fun ViewWriter.render(): Unit {
-        fun RView.parentRectangle() = parent!!.let { rectangleRelativeTo(it) }!!
+        fun RView.parentRelativeRect() = parent!!.let { rectangleRelativeTo(it) }!!
         card.col {
-            checks += { println(parentRectangle()) }
+            checks += { println(screenRectangle()) }
+            println("Checking card.col {")
             val start = text("Start")
             lateinit var above: RView
             card.frame {
                 above = this
                 checks += {
-                    assertEquals(start.parentRectangle().bottom + theme.gap.viewUnits, parentRectangle().top, 1.0)
+                    println("Checking above = this")
+                    assertEquals(start.screenRectangle()?.bottom?.plus(theme.gap.viewUnits) ?: 0.0, screenRectangle()?.top ?: 0.0, 1.0)
                 }
             }
             h2("Sample").apply {
                 checks += {
+                    println("Checking h2('Sample').apply {")
                     assertEquals(true, parent?.themeAndBack?.drawBackground)
                     assertEquals(true, parent?.themeAndBack?.padding)
                     assertEquals(
@@ -41,18 +44,22 @@ class LayoutsTestPage : Page {
             row {
                 expanding.text("Left").apply {
                     checks += {
+                        println("Checking expanding.text('Left').apply {")
+                        println("Left at ${this.screenRectangle()} inside of ${this@row.screenRectangle()}.  Gap is ${theme.gap.viewUnits}")
                         assertEquals(
-                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) - theme.gap.viewUnits / 2,
-                            (parentRectangle()?.right ?: 0.0),
+                            (this@row.screenRectangle()?.left ?: 0.0) + (this@row.screenRectangle()?.width?.div(2) ?: 0.0) - theme.gap.viewUnits / 2,
+                            (screenRectangle()?.right ?: 0.0),
                             1.0
                         )
                     }
                 }
                 expanding.text("Right").apply {
                     checks += {
+                        println("Checking expanding.text('Right').apply {")
+                        println("Right at ${this.screenRectangle()} inside of ${this@row.screenRectangle()}.  Gap is ${theme.gap.viewUnits}")
                         assertEquals(
-                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) + theme.gap.viewUnits / 2,
-                            (parentRectangle()?.left ?: 0.0),
+                            (this@row.screenRectangle()?.left ?: 0.0) + (this@row.screenRectangle()?.width?.div(2) ?: 0.0) + theme.gap.viewUnits / 2,
+                            (screenRectangle()?.left ?: 0.0),
                             1.0
                         )
                     }

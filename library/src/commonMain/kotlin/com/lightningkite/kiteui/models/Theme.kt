@@ -1108,6 +1108,85 @@ val H5Semantic = HeaderSizeSemantic(5)
  */
 val H6Semantic = HeaderSizeSemantic(6)
 
+// ================================
+// Markdown-specific semantics (by Claude)
+// ================================
+
+/**
+ * Semantic for markdown blockquotes.
+ * Applies a subtle highlight background with increased left padding for indentation.
+ */
+data object BlockquoteSemantic : Semantic("mdq") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        background = theme.background.closestColor().highlight(-0.05f),
+        padding = Edges(left = theme.gap * 2, top = theme.gap, right = theme.gap, bottom = theme.gap),
+    )
+}
+
+/**
+ * Semantic for markdown code blocks.
+ * Applies a monospace font with contrasting background and rounded corners.
+ */
+data object CodeBlockSemantic : Semantic("mdc") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        font = theme.font.copy(font = systemDefaultFixedWidthFont),
+        background = theme.background.closestColor().highlight(-0.1f),
+        cornerRadii = CornerRadii.Fixed(0.25.rem),
+    )
+}
+
+/**
+ * Semantic for inline code spans.
+ * Applies a slightly smaller monospace font without background.
+ */
+data object InlineCodeSemantic : Semantic("mdic") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+        font = theme.font.copy(font = systemDefaultFixedWidthFont, size = theme.font.size * 0.9),
+    )
+}
+
+/**
+ * Semantic for markdown horizontal rules/thematic breaks.
+ * Renders as a separator line with no padding.
+ */
+data object HorizontalRuleSemantic : Semantic("mdhr") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        background = theme.separator,
+        padding = Edges(0.px),
+    )
+}
+
+/**
+ * Semantic for list markers (bullets, numbers).
+ * Applies slightly dimmed foreground color.
+ */
+data object ListMarkerSemantic : Semantic("mdlm") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+        foreground = theme.foreground.applyAlpha(0.7f),
+    )
+}
+
+/**
+ * Semantic for table headers in markdown.
+ * Applies bold styling for header cells.
+ */
+data object TableHeaderSemantic : Semantic("mdth") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+        font = theme.font.copy(weight = 700),
+    )
+}
+
+/**
+ * Semantic for table cells in markdown.
+ * Provides padding and borders for table cells.
+ */
+data object TableCellSemantic : Semantic("mdtd") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        outlineWidth = 1.px,
+        outline = theme.separator,
+    )
+}
+
 /**
  * Represents visual transformations that can be applied to UI elements.
  *

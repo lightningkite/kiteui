@@ -4,15 +4,20 @@ import android.animation.Animator
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieCompositionFactory
 import com.airbnb.lottie.LottieDrawable
+import com.lightningkite.kiteui.fetch
+import com.lightningkite.kiteui.lottie.LottieColor
+import com.lightningkite.kiteui.lottie.applyColorTransform
 import com.lightningkite.kiteui.lottie.models.LottieRaw
 import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
+import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -33,32 +38,60 @@ actual class LottieView actual constructor(
     private val _duration = RawReactive<Duration?>(ReactiveState(null))
     actual val duration: Reactive<Duration?> = _duration
 
-    init {
-        when (val value = source) {
-            is LottieRemote -> {
-                LottieCompositionFactory.fromUrl(context.activity, value.url)
-                    .addListener { composition ->
-                        lottieView.setComposition(composition)
-                        _duration.state = ReactiveState(composition.duration.toLong().milliseconds)
-                        _state.state = ReactiveState(Unit)
-                        if (autoPlay) lottieView.playAnimation()
-                    }
-                    .addFailureListener { e ->
-                        _state.state = ReactiveState.exception(Exception(e))
-                    }
+    private var originalJson: String? = null
+    private var _colorTransform: ((LottieColor) -> Color)? = null
+
+    actual var colorTransform: ((LottieColor) -> Color)?
+        get() = _colorTransform
+        set(value) {
+            _colorTransform = value
+            reloadWithTransform()
+        }
+
+    private fun loadJsonComposition(json: String) {
+        val transform = _colorTransform
+        val finalJson = if (transform != null) applyColorTransform(json, transform) else json
+        val cacheKey = "lottie-${finalJson.hashCode()}"
+        LottieCompositionFactory.fromJsonString(finalJson, cacheKey)
+            .addListener { composition ->
+                lottieView.setComposition(composition)
+                _duration.state = ReactiveState(composition.duration.toLong().milliseconds)
+                _state.state = ReactiveState(Unit)
+                if (autoPlay) lottieView.playAnimation()
             }
-            is LottieRaw -> {
-                val cacheKey = value.cacheKey ?: value.json.hashCode().toString()
-                LottieCompositionFactory.fromJsonString(value.json, cacheKey)
-                    .addListener { composition ->
-                        lottieView.setComposition(composition)
-                        _duration.state = ReactiveState(composition.duration.toLong().milliseconds)
-                        _state.state = ReactiveState(Unit)
-                        if (autoPlay) lottieView.playAnimation()
-                    }
-                    .addFailureListener { e ->
-                        _state.state = ReactiveState.exception(Exception(e))
-                    }
+            .addFailureListener { e ->
+                _state.state = ReactiveState.exception(Exception(e))
+            }
+    }
+
+    private fun reloadWithTransform() {
+        val json = originalJson ?: return
+        val wasPlaying = lottieView.isAnimating
+        val savedProgress = lottieView.progress
+
+        val transform = _colorTransform
+        val finalJson = if (transform != null) applyColorTransform(json, transform) else json
+        val cacheKey = "lottie-ct-${finalJson.hashCode()}"
+
+        LottieCompositionFactory.fromJsonString(finalJson, cacheKey)
+            .addListener { composition ->
+                lottieView.setComposition(composition)
+                lottieView.progress = savedProgress
+                if (wasPlaying) lottieView.resumeAnimation()
+            }
+    }
+
+    init {
+        launch {
+            try {
+                val json = when (val src = source) {
+                    is LottieRaw -> src.json
+                    is LottieRemote -> fetch(src.url).text()
+                }
+                originalJson = json
+                loadJsonComposition(json)
+            } catch (e: Exception) {
+                _state.state = ReactiveState.exception(e)
             }
         }
 

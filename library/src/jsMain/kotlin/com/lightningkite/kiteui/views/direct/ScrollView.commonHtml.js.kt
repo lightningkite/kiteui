@@ -177,6 +177,13 @@ actual class ScrollingBehaviorImpl actual constructor(
         native.setStyleProperty("scroll-snap-type", "unset")
     }
 
+    actual override fun disableScrollAnchoring() {
+        // Adds CSS class that sets overflow-anchor: none on children,
+        // preventing browser from auto-adjusting scrollTop when content is
+        // added above the viewport. by Claude
+        native.classes += "suppress-overflow-anchors"
+    }
+
     actual override fun scrollToKeepAnimations(x: Double, y: Double) {
         val myInstance = ++scrollToInstance
         on.debugPrint { ("ScrollView.scrollToKeepAnimations($x, $y)") }

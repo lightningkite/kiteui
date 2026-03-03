@@ -156,6 +156,7 @@ class Recycler2(
 
     private var activeCells = ArrayList<MyCell<*>>()
     private var reuseableCells = ArrayList<MyCell<*>>()
+    private val usedCells = HashSet<MyCell<*>>() // by Claude - reused across layout passes to avoid allocation
 
     fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
         activeCells.find { it.index == toIndex }?.let {
@@ -599,10 +600,12 @@ class Recycler2(
 
             // Time to run the placer.
             //  Track the used cells so that we can handle them properly later
-            val usedCells = HashSet<MyCell<*>>()
-
-            activeCells.toSet().intersect(reuseableCells.toSet()).forEach {
-                log?.log("WARNING!!! Active and reusable cell $it")
+            // Debug check - only pay the cost when logging is enabled - by Claude
+            log?.let { l ->
+                val reuseableSet = reuseableCells.toHashSet()
+                for (cell in activeCells) {
+                    if (cell in reuseableSet) l.log("WARNING!!! Active and reusable cell $cell")
+                }
             }
 
             fun runPlacer() {
@@ -616,32 +619,40 @@ class Recycler2(
                     bottom = viewport.bottom + overdraw,
                 )
 //                // Just nuke the offscreen cells immediately.
+                // O(n) partition instead of O(n²) individual removes - by Claude
                 val previousCells = activeCells.toList()
-                val instantDismissCount = activeCells.toList().count {
+                var instantDismissCount = 0
+                activeCells.clear()
+                for (cell in previousCells) {
                     if (!rectOverlaps(
-                            it.left,
-                            it.top,
-                            it.right,
-                            it.bottom,
-                            overdraw.left,
-                            overdraw.top,
-                            overdraw.right,
-                            overdraw.bottom,
+                            cell.left, cell.top, cell.right, cell.bottom,
+                            overdraw.left, overdraw.top, overdraw.right, overdraw.bottom,
                         )
                     ) {
-                        it.view.shown = false
-                        activeCells.remove(it)
-                        if(recycling) {
-                            reuseableCells.add(it)
+                        cell.view.shown = false
+                        if (recycling) {
+                            reuseableCells.add(cell)
                         } else {
-                            cells.removeChild(it.view)
+                            cells.removeChild(cell.view)
                         }
-                        true
-                    } else false
+                        instantDismissCount++
+                    } else {
+                        activeCells.add(cell)
+                    }
                 }
                 log?.log("OFFSCREEN CELLS DISMISSED: ${instantDismissCount}")
 
                 if (data.range.isEmpty()) return
+
+                // Build ID map for O(1) cell lookup during placement - by Claude
+                val activeCellsByID = HashMap<Any?, MyCell<Any?>>(activeCells.size * 2)
+                for (cell in activeCells) {
+                    cell.data.state.handle(
+                        success = { activeCellsByID[rendererSet.id(it)] = cell },
+                        exception = {},
+                        notReady = {}
+                    )
+                }
 
                 log?.log("RUN PLACER IN $viewport, anchor is $anchor")
                 placer.place(
@@ -654,15 +665,8 @@ class Recycler2(
                         val renderer = rendererSet.renderer(item)
                         val id = rendererSet.id(item)
                         //Pulling a cell should prefer (in order) same item ID, off-screen, create new
-                        (activeCells.find {
-                            it.data.state.handle(
-                                success = {
-                                    rendererSet.id(it) == id
-                                },
-                                exception = { false },
-                                notReady = { false }
-                            )
-                        }?.also {
+                        // O(1) ID lookup via map instead of O(n) linear scan - by Claude
+                        (activeCellsByID.remove(id)?.also {
                             // Same item ID: Data change should be animated here
                             it.onPullForPlacing(size, ReactiveState(item), index, inProgress)
                         } ?: reuseableCells.takeIf { recycling }?.popOrNull {  it.type == renderer }?.also {
@@ -791,24 +795,35 @@ class Recycler2(
                 }
             }
 
-            // Dismiss the cells we don't need anymore
-            val unusedCells = activeCells - usedCells
-            unusedCells.forEach {
-                log?.log("Dismissing cell at ${it.index}")
+            // Dismiss unused cells - inlined for O(1) removal via removeAt - by Claude
+            for (i in activeCells.lastIndex downTo 0) {
+                val cell = activeCells[i]
+                if (cell in usedCells) continue
+                log?.log("Dismissing cell at ${cell.index}")
                 if (rectOverlaps(
-                        it.left,
-                        it.top,
-                        it.right,
-                        it.bottom,
-                        viewport.left,
-                        viewport.top,
-                        viewport.right,
-                        viewport.bottom,
+                        cell.left, cell.top, cell.right, cell.bottom,
+                        viewport.left, viewport.top, viewport.right, viewport.bottom,
                     )
                 ) {
-                    it.animatedDismiss()
+                    cell.view.opacity = 0.0
+                    val reuse = reuseableCells
+                    activeCells.removeAt(i)
+                    afterTimeout(cell.view.theme.transitionDuration.inWholeMilliseconds) {
+                        cell.view.shown = false
+                        if (recycling) {
+                            reuse.add(cell)
+                        } else {
+                            cells.removeChild(cell.view)
+                        }
+                    }
                 } else {
-                    it.instantDismiss()
+                    cell.view.shown = false
+                    activeCells.removeAt(i)
+                    if (recycling) {
+                        reuseableCells.add(cell)
+                    } else {
+                        cells.removeChild(cell.view)
+                    }
                 }
             }
 
@@ -858,19 +873,21 @@ class Recycler2(
                 if (fakeScrollInControl) return@let
                 if (activeCells.isEmpty()) return@let
 
-                fun MyCell<*>.visibleRatio(): Double {
-                    // Return the ratio of area inside the viewport.
-                    val h = (min(right, viewport.right) - max(left, viewport.left)) / (right - left)
-                    val v = (min(bottom, viewport.bottom) - max(top, viewport.top)) / (bottom - top)
-                    return (h * v).takeIf { !it.isNaN() && it >= 0.0 } ?: 0.0
+                // Single-pass calculation for fake scroll ratio - by Claude
+                var totalWeight = 0.0
+                var weightedIndexSum = 0.0
+                var weightedPositionSum = 0.0
+                for (cell in activeCells) {
+                    val h = (min(cell.right, viewport.right) - max(cell.left, viewport.left)) / (cell.right - cell.left)
+                    val v = (min(cell.bottom, viewport.bottom) - max(cell.top, viewport.top)) / (cell.bottom - cell.top)
+                    val ratio = (h * v).let { if (it.isNaN() || it < 0.0) 0.0 else it }
+                    totalWeight += ratio
+                    weightedIndexSum += ratio * (cell.index + 0.5)
+                    weightedPositionSum += ratio * (if (vertical) (cell.top + cell.bottom) / 2 else (cell.left + cell.right) / 2)
                 }
-
-                val totalWeight = activeCells.sumOf { it.visibleRatio() }
                 if (totalWeight == 0.0) return@let
-                val averageIndex = activeCells.sumOf { it.visibleRatio() * (it.index + 0.5) } / totalWeight
-                val averagePosition =
-                    if (vertical) activeCells.sumOf { it.visibleRatio() * (it.top + it.bottom) / 2 } / totalWeight
-                    else activeCells.sumOf { it.visibleRatio() * (it.left + it.right) / 2 }
+                val averageIndex = weightedIndexSum / totalWeight
+                val averagePosition = weightedPositionSum / totalWeight
                 val estimatedElementPx = (if (vertical) viewport.height else viewport.width) / totalWeight
                 val totalElements = (data.range.last - data.range.first + 1)
                 val estimatedTotalPx = estimatedElementPx * totalElements
@@ -904,8 +921,20 @@ class Recycler2(
                     dx * dx + dy * dy
                 }?.index ?: 0
             }
-            _displayedRangeFirst.value = (activeCells.minOfOrNull { it.index } ?: 0)
-            _displayedRangeLast.value = (activeCells.maxOfOrNull { it.index } ?: 0)
+            // Combined min/max in single pass - by Claude
+            if (activeCells.isEmpty()) {
+                _displayedRangeFirst.value = 0
+                _displayedRangeLast.value = 0
+            } else {
+                var minIdx = Int.MAX_VALUE
+                var maxIdx = Int.MIN_VALUE
+                for (cell in activeCells) {
+                    if (cell.index < minIdx) minIdx = cell.index
+                    if (cell.index > maxIdx) maxIdx = cell.index
+                }
+                _displayedRangeFirst.value = minIdx
+                _displayedRangeLast.value = maxIdx
+            }
             needToLayoutFirst = false
             log?.log("LAYOUT COMPLETE")
 //            if(didJump) stahp = true

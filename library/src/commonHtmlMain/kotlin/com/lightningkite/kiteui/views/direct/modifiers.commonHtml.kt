@@ -89,25 +89,39 @@ actual fun ViewWriter.weight(amount: Float): ViewWriter {
         .let { return it }
 }
 
+// by Claude - wrapper pattern for animation-aware weight changes
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
-    beforeNextElementSetup {
-        reactiveScope {
-            val amount = amount()
-            lastSetWeight = amount
-            if (amount != 0f) {
-                native.style.flexGrow = "$amount"
-                native.style.flexShrink = "$amount"
-                native.style.flexBasis = "0"
-            } else {
-                native.style.flexGrow = "0"
-                native.style.flexShrink = "0"
-                native.style.flexBasis = "auto"
+    return write(object : RViewWriter(context) {
+        init {
+            native.tag = "div"
+            native.classes.add("noInteraction")
+            native.classes.add("kiteui-stack")
+            var previousAmount: Float? = null
+            reactive {
+                val newAmount = amount()
+                val oldAmount = previousAmount
+                previousAmount = newAmount
+                lastSetWeight = newAmount
+                if (areAnimationsEnabled && fullyStarted && oldAmount != null && oldAmount != newAmount) {
+                    nativeAnimateWeight(oldAmount, newAmount)
+                } else {
+                    // Apply immediately (initial render or animations disabled)
+                    native.style.flexGrow = "$newAmount"
+                    native.style.flexShrink = "$newAmount"
+                    native.style.flexBasis = if (newAmount != 0f) "0" else "auto"
+                }
+                parent?.native?.classes?.add("childHasWeight")
             }
-            parent?.native?.classes?.add("childHasWeight")
         }
-    }
-        .let { return it }
+        override fun internalAddChild(index: Int, view: RView) {
+            super.internalAddChild(index, view)
+            view.themeTakeNonCascadingFromParent = true
+            Frame.internalAddChildStack(this, index, view)
+        }
+        override val mySpacingForChildren: Dimension
+            get() = parent?.mySpacingForChildren ?: 0.px
+    }) {}
 }
 
 @ViewModifierDsl3
@@ -224,10 +238,6 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 
 @ViewModifierDsl3
 actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
-//    // TODO: include old animation code
-//    beforeNextElementSetup {
-//        ::exists.invoke(condition)
-//    }
     var v: RView? = null
     return write(object: RViewWriter(context) {
         init {
@@ -270,3 +280,5 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
 
 internal expect fun RView.nativeAnimateShow()
 internal expect fun RView.nativeAnimateHide()
+// by Claude - expect for weight animation
+internal expect fun RView.nativeAnimateWeight(fromWeight: Float, toWeight: Float)

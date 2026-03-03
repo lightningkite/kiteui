@@ -2,10 +2,13 @@ package com.lightningkite.kiteui.lottie.views.direct
 
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.lottie.LottieRenderer
+import com.lightningkite.kiteui.lottie.LottieColor
+import com.lightningkite.kiteui.lottie.applyColorTransform
 import com.lightningkite.kiteui.lottie.models.LottieAnimation
 import com.lightningkite.kiteui.lottie.models.LottieRaw
 import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
+import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
@@ -44,10 +47,12 @@ actual class LottieView actual constructor(
     override val native: UIView get() = canvasView
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var originalJson: String? = null
     private var animation: LottieAnimation? = null
     private var renderer: LottieRenderer? = null
     private var animationStartTime: TimeSource.Monotonic.ValueTimeMark? = null
     private var pausedProgress: Float = 0f
+    private var _colorTransform: ((LottieColor) -> Color)? = null
 
     private val _state = RawReactive<Unit>()
     actual val state: Reactive<Unit> = _state
@@ -94,6 +99,31 @@ actual class LottieView actual constructor(
         }
     }
 
+    actual var colorTransform: ((LottieColor) -> Color)?
+        get() = _colorTransform
+        set(value) {
+            _colorTransform = value
+            reloadWithTransform()
+        }
+
+    private fun reloadWithTransform() {
+        val json = originalJson ?: return
+        val transform = _colorTransform
+        val finalJson = if (transform != null) applyColorTransform(json, transform) else json
+
+        val wasPlaying = _playing.state.get()
+        val savedProgress = if (wasPlaying) calculateCurrentProgress(animation ?: return) else pausedProgress
+
+        animation = LottieAnimation.parse(finalJson)
+        renderer = animation?.let { LottieRenderer(it) }
+
+        pausedProgress = savedProgress
+        if (wasPlaying) {
+            animationStartTime = TimeSource.Monotonic.markNow()
+        }
+        canvasView.setNeedsDisplay()
+    }
+
     init {
         canvasView.lottieView = this
         canvasView.accessibilityLabel = description
@@ -108,12 +138,14 @@ actual class LottieView actual constructor(
                 val json = when (val src = source) {
                     is LottieRaw -> src.json
                     is LottieRemote -> {
-                        // Fetch the animation JSON from URL
                         fetch(src.url).text()
                     }
                 }
 
-                animation = LottieAnimation.parse(json)
+                originalJson = json
+                val finalJson = _colorTransform?.let { applyColorTransform(json, it) } ?: json
+
+                animation = LottieAnimation.parse(finalJson)
                 renderer = animation?.let { LottieRenderer(it) }
 
                 animation?.let { anim ->
