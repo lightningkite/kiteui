@@ -4,8 +4,11 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.androidLibrary)
+    signing
+    alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
 }
 
@@ -121,6 +124,6 @@ android {
 
 // Note: Publishing configuration disabled as it requires vanniktech publishing plugin
 // Uncomment when publishing is needed:
-// lkLibrary("lightningkite", "kiteui") {
-//     description.set("KiteUI's testing companion.")
-// }
+lkLibrary("lightningkite", "kiteui") {
+    description.set("KiteUI's testing companion.")
+}

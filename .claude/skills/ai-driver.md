@@ -1,397 +1,736 @@
-# AI Driver — LLM-Driven UI Automation for KiteUI
+# KiteUI AI Driver — Testing & Debugging with `kiteui-drive`
 
-Use this skill when you need to visually test, interact with, or automate a running KiteUI app.
-The AI driver lets you take UI snapshots, click buttons, fill forms, navigate pages, and verify
-visual state — all from CLI commands via the Bash tool.
+Use this skill when you need to visually test, interact with, debug, or write automated tests for a running KiteUI app. The AI driver lets you take UI snapshots, click buttons, fill forms, navigate pages, read logs, take screenshots, and verify state — all from CLI commands or from automated Kotlin tests.
+
+## Prerequisites
+
+```bash
+# Install (once per KiteUI version)
+./gradlew aiDriverInstall
+
+# Ensure ~/.kiteui/bin is on your PATH
+export PATH="$HOME/.kiteui/bin:$PATH"
+
+# Start the daemon
+kiteui-drive start
+```
+
+If `kiteui-drive` is not found, the project may need to publish KiteUI to maven local first:
+```bash
+./gradlew publishToMavenLocal
+./gradlew aiDriverInstall
+```
+
+On JVM (including tests), the daemon auto-starts when `AiDriver.connect()` is called.
 
 ## Architecture
 
 ```
-┌─────────────┐   WebSocket    ┌────────────┐    HTTP     ┌──────────┐
-│  KiteUI App │ ◄──────────► │   Daemon   │ ◄──────────► │ CLI (./ui) │
-│ (browser,   │  ws://:7474   │ (JVM proc) │  http://:7475│ (you run │
-│  Android,   │               │            │              │  these)  │
-│  iOS)       │               └────────────┘              └──────────┘
+┌─────────────┐   WebSocket    ┌────────────┐    HTTP     ┌──────────────────┐
+│  KiteUI App │ ◄──────────► │   Daemon   │ ◄──────────► │ CLI (kiteui-drive) │
+│ (browser,   │  ws://:7474   │ (JVM proc) │  http://:7475│  (you run these)  │
+│  Android,   │               │            │              └──────────────────┘
+│  iOS)       │               └────────────┘
 └─────────────┘
 ```
 
 - **App** connects outbound to daemon on `ws://localhost:7474/app` (auto-reconnects)
 - **Daemon** bridges between apps and CLI commands
-- **CLI** (`./ui`) sends commands to daemon via HTTP POST to `:7475/cli`
+- **CLI** (`kiteui-drive`) sends commands to daemon via HTTP POST to `:7475/cli`
 
-## Setup — Getting Everything Running
+---
 
-### Prerequisites
-- The ai-driver-server distribution must be built (one-time)
-- A KiteUI app must be running with `AiDriver.connect()` wired in
+# Part 1: Interactive Testing & Debugging with CLI
 
-### Quick Setup (recommended)
+Use these commands via the Bash tool to explore, test, and debug a running app.
+
+## Getting Started
+
 ```bash
-# One command: builds server, starts daemon
-./ui-setup
+kiteui-drive list                    # See connected apps and their IDs
+kiteui-drive snapshot <appId>        # See the full UI tree
 ```
 
-### Manual Setup (step by step)
+App IDs are set by the app via `AiDriver.connect(appId = "myapp")`. First instance gets the bare name; duplicates get `-2`, `-3` suffixes.
+
+## Reading UI State
+
+### Snapshots
 ```bash
-# 1. Build the server distribution (only needed once, or after server code changes)
-./gradlew :ai-driver-server:installDist
-
-# 2. Start the daemon in background
-./ui start &
-
-# 3. Verify daemon is running
-./ui status
-
-# 4. Start a KiteUI app (e.g., the example app web version)
-./gradlew :example-app:viteRun &
-# NOTE: User must open their browser to the viteRun URL (usually http://localhost:5173)
-
-# 5. Wait for app to connect, then list connected apps
-./ui list
+kiteui-drive snapshot <app>                           # Full tree
+kiteui-drive snapshot <app> --component navigatorView # Scope to subtree
+kiteui-drive snapshot <app> --search "Welcome"        # Filter by value text
+kiteui-drive snapshot <app> --format Json             # Machine-readable JSON
 ```
 
-### Checking if Already Running
+Snapshot output looks like:
+```
+Page: HomePage ()
+[navigatorView] SwapView (value="navigatorView")
+  [navigatorView/0] Frame
+    [navigatorView/0/0] Column
+      [navigatorView/0/0/0] Text (value="Welcome")
+      [counter] Text (value="0")
+      [increment] Button (value="increment", actions=[click,longClick])
+```
+
+**Component IDs** use shortened paths:
+- **Named views** (with `debugName` or `ariaDescription`) reset the path: just `counter`
+- **Unnamed views** accumulate from their nearest named ancestor: `navigatorView/0/0/3`
+
+### Screenshots
 ```bash
-# Check daemon
-./ui status     # Returns "Daemon running. Connected apps: N" if up
-
-# Check connected apps
-./ui list       # Lists app IDs like "web-1 (js) - KiteUI Example"
+kiteui-drive screenshot <app>                          # Auto-named file
+kiteui-drive screenshot <app> --path debug.png         # Specific path
 ```
 
-## CLI Command Reference
-
-All commands go through `./ui <command> [args] [--options]`.
-
-Required args are positional (in order). Optional args use `--name value` syntax.
-Boolean flags use just `--name` (presence = true).
-
-### Daemon Management
+### Logs
 ```bash
-./ui start                              # Start daemon (foreground, blocks)
-./ui start &                            # Start daemon (background)
-./ui start --port 7474 --cliPort 7475   # Custom ports
-./ui status                             # "Daemon running. Connected apps: N"
-./ui stop                               # Stop daemon
+kiteui-drive logs <app>                    # Last 200 entries
+kiteui-drive logs <app> --lines 50         # Last 50
+kiteui-drive logs <app> --level Warn       # Only Warn and Error
+kiteui-drive logs <app> --tag "network"    # Filter by tag substring
 ```
 
-### App Discovery
+## Performing Actions
+
 ```bash
-./ui list                               # List all connected apps
-# Output: "web-1 (js) - KiteUI Example"
-
-./ui info web-1                         # App details
-# Output: "App: KiteUI Example\nPlatform: js\nID: web-1"
+kiteui-drive perform <app> click <targetId>
+kiteui-drive perform <app> longClick <targetId>
+kiteui-drive perform <app> setValue <targetId> <value>
+kiteui-drive perform <app> navigate <route>
+kiteui-drive perform <app> back
+kiteui-drive perform <app> forward
+kiteui-drive perform <app> scroll <targetId> --dy 500
+kiteui-drive perform <app> custom <command> --data "payload"
 ```
 
-### Snapshots — Reading the UI Tree
+## Waiting for Conditions
+
 ```bash
-./ui snapshot web-1                     # Text format (human-readable)
-./ui snapshot web-1 --format Json       # JSON format (machine-readable)
-./ui snapshot web-1 --component path/to/element  # Scope to subtree
-```
-
-**Text snapshot output format:**
-```
-Page: HomePage (/)
-[nav] frame
-  [nav/homeLink] link (value="Home", actions=[click])
-  [nav/docsLink] link (value="Documentation", actions=[click])
-[content] col
-  [content/title] text (value="Welcome to KiteUI")
-  [content/counter] button (value="Count: 0", actions=[click])
-  [content/emailField] textInput (value="", actions=[click,setValue])
-```
-
-Each line: `[componentId] type (properties)`
-- `componentId` — slash-separated path from root (use this for targeting actions)
-- `type` — view type (text, button, textInput, link, col, row, frame, etc.)
-- `value` — current text/value of the component
-- `actions` — what you can do with it (click, setValue, longClick, scroll)
-- `disabled` — shown when component is not interactive
-- `hidden` — shown when component is not visible
-
-### Performing Actions
-```bash
-# Click a component
-./ui perform web-1 click content/counter
-
-# Set a text input's value
-./ui perform web-1 setValue content/emailField hello@example.com
-
-# Navigate to a route
-./ui perform web-1 navigate docs/cheat-sheet
-
-# Go back in navigation
-./ui perform web-1 back
-
-# Scroll a container
-./ui perform web-1 scroll content/list --dy 500
-
-# Long-click
-./ui perform web-1 longClick content/item
-```
-
-**Action syntax:** `./ui perform <appId> <actionType> [actionArgs] [--optionalArgs]`
-
-| Action | Positional Args | Optional Args |
-|--------|----------------|---------------|
-| `click` | `<targetId>` | — |
-| `longClick` | `<targetId>` | — |
-| `setValue` | `<targetId>` `<value>` | — |
-| `scroll` | `<targetId>` | `--dx <float>` `--dy <float>` |
-| `navigate` | `<route>` | — |
-| `back` | — | — |
-| `forward` | — | — |
-
-### Waiting for Conditions
-```bash
-# Wait for a specific page
-./ui wait web-1 --page HomePage
-
-# Wait for a component to appear
-./ui wait web-1 --component content/loginBtn
-
-# Wait for a component to disappear
-./ui wait web-1 --componentGone content/loadingSpinner
-
-# Wait for a component to become enabled
-./ui wait web-1 --enabled content/submitBtn
-
-# Wait for any state change
-./ui wait web-1 --change
-
-# Wait for a specific URL
-./ui wait web-1 --url /dashboard
-
-# Custom timeout (default 10000ms)
-./ui wait web-1 --component content/results --timeout 30000
+kiteui-drive wait <app> --page HomePage
+kiteui-drive wait <app> --component loginBtn
+kiteui-drive wait <app> --componentGone loadingSpinner
+kiteui-drive wait <app> --enabled submitBtn
+kiteui-drive wait <app> --change                         # Any state change
+kiteui-drive wait <app> --timeout 30000                  # Custom timeout (ms)
 ```
 
 Multiple conditions can be combined — all must be met simultaneously.
 
-### Screenshots
+## Mocking External Services
+
 ```bash
-./ui screenshot web-1                           # Auto-named file
-./ui screenshot web-1 --path my-screenshot.png  # Specific path
+kiteui-drive mock <app> file /path/to/photo.jpg
+kiteui-drive mock <app> file /path/to/doc.pdf --mimeType application/pdf
+kiteui-drive mock <app> geolocation 37.7749 -122.4194
+kiteui-drive mock <app> geolocation 37.7749 -122.4194 --accuracy 5.0
 ```
 
-### Mocking External Services
+Mocks are FIFO queues — the next call to the corresponding external service dequeues the mock.
+
+## Debugging Workflow
+
+When something isn't working right:
+
 ```bash
-# Queue a mock file pick response (next requestFile() call returns this file)
-./ui mock web-1 file /path/to/photo.jpg
-./ui mock web-1 file /path/to/doc.pdf --mimeType application/pdf
+# 1. What's on screen?
+kiteui-drive snapshot <app>
 
-# Queue a mock geolocation response
-./ui mock web-1 geolocation 37.7749 -122.4194
-./ui mock web-1 geolocation 37.7749 -122.4194 --accuracy 5.0
+# 2. Any errors in the logs?
+kiteui-drive logs <app> --level Warn
+
+# 3. Take a screenshot for visual context
+kiteui-drive screenshot <app> --path debug.png
+
+# 4. Try interacting and see what changes
+kiteui-drive perform <app> click <someButton>
+kiteui-drive snapshot <app> --search "error"
+
+# 5. Check full logs for context
+kiteui-drive logs <app>
 ```
 
-Mock responses are queued FIFO — the next call to the corresponding external service
-method dequeues and returns the mock. When the queue is empty, falls through to the
-real platform implementation (or returns null on SSR).
+## Explore-then-Act Pattern
 
-### Recording Interactions
+When working with an unfamiliar app:
+
 ```bash
-./ui record web-1 start          # Start recording
-# ... perform actions ...
-./ui record web-1 stop           # Stop recording
-./ui record web-1 export         # Export as CLI commands
-./ui record web-1 export-kotlin  # Export as Kotlin test code
+# 1. Discover what's running
+kiteui-drive list
+
+# 2. See the full UI tree to understand layout and IDs
+kiteui-drive snapshot <app>
+
+# 3. Navigate to the page you care about
+kiteui-drive perform <app> navigate /some/route
+
+# 4. Find specific elements
+kiteui-drive snapshot <app> --search "Submit"
+
+# 5. Interact with the UI
+kiteui-drive perform <app> setValue emailField user@test.com
+kiteui-drive perform <app> click submitBtn
+
+# 6. Verify the result
+kiteui-drive wait <app> --page SuccessPage --timeout 10000
+kiteui-drive snapshot <app>
 ```
 
-## Component IDs — How Views Get Their Path
+## Recording Interactions
 
-Component IDs in snapshots are built by walking the view tree. Each segment comes from (in priority order):
+Record manual interactions and export them as test code:
 
-1. **`debugName`** — Set via `"myName".testId - view { }` modifier
-2. **`ariaDescription`** — Set via `"My Description".ariaDescription - view { }`, converted to camelCase
-3. **Numeric index** — Fallback: child position among siblings (e.g., `0`, `1`, `2`)
-
-Full path is slash-separated: `parent/child/grandchild`
-
-**Tip:** Views with `testId` or `ariaDescription` get stable, meaningful IDs. Views without them get numeric indices that may shift when the UI changes.
-
-## Common Workflows
-
-### Workflow: Inspect Current Page
 ```bash
-./ui snapshot web-1
-# Read the output to understand what's on screen, what components exist, what actions are available
+kiteui-drive record <app> start
+# ... interact with the app manually ...
+kiteui-drive record <app> stop
+kiteui-drive record <app> export-kotlin   # Generate uiTest code
+kiteui-drive record <app> export          # CLI command format
 ```
 
-### Workflow: Click a Button and Verify
-```bash
-./ui perform web-1 click content/incrementBtn
-./ui wait web-1 --change
-./ui snapshot web-1
-# Check the snapshot to verify the button click had the expected effect
-```
+---
 
-### Workflow: Fill a Form
-```bash
-./ui perform web-1 setValue form/emailField user@example.com
-./ui perform web-1 setValue form/passwordField secret123
-./ui perform web-1 click form/submitBtn
-./ui wait web-1 --page DashboardPage --timeout 15000
-```
+# Part 2: Writing Automated UI Tests
 
-### Workflow: Navigate and Verify
-```bash
-./ui perform web-1 navigate docs/cheat-sheet
-./ui wait web-1 --page CheatSheet
-./ui snapshot web-1
-```
+## Overview
 
-### Workflow: Full Test Sequence
-```bash
-# Start fresh
-./ui snapshot web-1                               # See initial state
-./ui perform web-1 click nav/docsLink             # Navigate
-./ui wait web-1 --change                          # Wait for navigation
-./ui snapshot web-1                               # Verify new page
-./ui perform web-1 back                           # Go back
-./ui wait web-1 --page HomePage                   # Verify we're back
-```
+KiteUI tests are written once in common Kotlin and run on all platforms (JVM SSR, Android, iOS, JS). The test framework reuses the same snapshot and action-dispatch primitives as the CLI.
 
-## Troubleshooting
-
-### "Error: AI driver daemon is not running"
-The daemon process isn't running. Start it:
-```bash
-./ui start --daemon &
-```
-If the binary doesn't exist, rebuild: `./gradlew :ai-driver-server:installDist`
-
-### "No apps connected"
-The KiteUI app isn't running or hasn't connected yet.
-- Ensure the app is running (e.g., `./gradlew :example-app:viteRun` + browser open)
-- The app must have `AiDriver.connect()` wired in (example app already does)
-- Wait a few seconds — WebSocket connection takes a moment after app load
-
-### "App 'web-1' not found"
-The app disconnected or the ID changed. Run `./ui list` to see current app IDs.
-App IDs are generated fresh on each connection (e.g., `web-1`, `web-2`).
-
-### Stale daemon (commands fail unexpectedly)
-If you rebuilt the server, the running daemon may be from an old build:
-```bash
-./ui stop
-./gradlew :ai-driver-server:installDist
-./ui start --daemon &
-```
-
-### "Action 'click' not supported on <ViewType>"
-The view class doesn't declare `click` in its `accessibilityActions`. This needs to be added in the platform-specific view implementation.
-
-### Timeout on wait
-Increase the timeout or check that the condition is correct:
-```bash
-./ui wait web-1 --component content/myElement --timeout 30000
-```
-
-## Automated Testing — `uiTest()` and `UiTestScope`
-
-The same `buildSnapshot()` and `dispatchAction()` primitives that power the CLI also drive
-automated UI tests. Tests are written **once** in common code and run on all platforms.
-
-### CLI ↔ Test Equivalence
-
-| CLI Command | UiTestScope Kotlin |
-|---|---|
-| `./ui snapshot web-1` | `snapshot()` |
-| `./ui perform web-1 click btn` | `click("btn")` |
-| `./ui perform web-1 setValue email foo` | `setValue("email", "foo")` |
-| `./ui perform web-1 navigate /dashboard` | `navigate("/dashboard")` |
-| `./ui perform web-1 back` | `back()` |
-| `./ui wait web-1 --page Dashboard` | `waitForPage("Dashboard")` |
-| `./ui wait web-1 --component btn` | `waitForComponent("btn")` |
-| `./ui wait web-1 --componentGone spinner` | `waitForComponentGone("spinner")` |
-| `./ui wait web-1 --enabled submit` | `waitForEnabled("submit")` |
-
-### Writing a Test
-
-```kotlin
-@Test
-fun loginFlow() = uiTest(content = {
-    // Build UI inline — same ViewWriter DSL as production code
-    val email = Signal("")
-    textInput { debugName = "email"; content bind email }
-    button {
-        debugName = "submit"
-        text("Log In")
-        onClick(frequencyCap = null) { /* handle login */ }
-    }
-}) {
-    // UiTestScope methods match CLI commands
-    setValue("email", "user@example.com")
-    assertValue("email", "user@example.com")
-    click("submit")
-    // waitForPage("Dashboard")
-}
-```
-
-### Key APIs (UiTestScope)
-
-- **Read**: `snapshot()`, `find(id)`, `require(id)`
-- **Write**: `click(id)`, `setValue(id, value)`, `navigate(route)`, `back()`
-- **Wait**: `waitFor(condition)`, `waitForPage(name)`, `waitForComponent(id)`, `waitForComponentGone(id)`, `waitForEnabled(id)`
-- **Assert**: `assertPage(name)`, `assertValue(id, expected)`, `assertVisible(id)`, `assertEnabled(id)`, `assertDisabled(id)`
-- **Mock**: `mockExternalServices` — accessor for `MockExternalServices` when injected via config
-- **Debug**: `dumpSnapshot()`
-
-### Mocking External Services in Tests
-
-```kotlin
-@Test
-fun testFileUpload() = uiTest(
-    config = UiTestConfig(
-        externalServices = MockExternalServices().apply {
-            pendingFileResponses.add(createFileReferenceFromBytes(
-                bytes = "test-content".encodeToByteArray(),
-                mimeType = "text/plain",
-                fileName = "test.txt"
-            ))
-        }
-    ),
-    content = { /* UI with file upload */ }
-) {
-    click("uploadButton")
-    // The next requestFile() call returns the mock file
-    val mock = mockExternalServices!!
-    assert(mock.calls.any { it is MockExternalServices.Call.RequestFile })
-}
-```
-
-**MockExternalServices queues**: `pendingFileResponses`, `pendingFilesResponses`,
-`pendingCaptureResponses`, `pendingGeolocation`. Each dequeues FIFO when the
-corresponding method is called. When empty, delegates to real impl (or returns null on SSR).
-
-### Platform Targets
-
-- **JVM SSR** — Fastest: pure JVM, no emulator/browser. Uses `SsrContext` directly.
-- **Android** — Uses Robolectric `TestHarness`
-- **JS** — Uses browser DOM `TestHarness`
-- **iOS** — Uses native `TestHarness`
-
-JVM SSR is recommended for CI since it has no platform dependencies.
+**JVM SSR is the fastest test target** — pure JVM, no emulator/browser/simulator needed.
 
 ### Running Tests
-
 ```bash
-./gradlew :library:jvmSsrTest     # SSR (fastest)
-./gradlew :library:androidUnitTest # Android/Robolectric
-./gradlew :library:jsTest          # JS/browser
+./gradlew :<module>:jvmSsrTest                           # All SSR tests (fastest)
+./gradlew :<module>:jvmSsrTest --tests "*.MyTestClass"   # Single class
+./gradlew :<module>:testDebugUnitTest                     # Android/Robolectric
+./gradlew :<module>:jsBrowserTest                         # JS/browser
+./gradlew :<module>:iosSimulatorArm64Test                 # iOS simulator
 ```
 
-## Key Source Files
+### Dependencies
 
-- `library/src/commonMain/.../aidriver/` — Protocol types + client + shared dispatch (`ActionDispatcherCommon.kt`)
-- `library/src/commonInteractiveMain/.../aidriver/` — Shared snapshot walker
-- `library/src/{android,ios,js}Main/.../aidriver/` — Platform action dispatch (with screenshot support)
-- `library/src/jvmSsrMain/.../aidriver/` — SSR snapshot walker + action dispatch
-- `test-utilities/src/commonMain/.../testing/` — `UiTestScope`, `UiSnapshotExtensions`, `uiTest()` expect
-- `test-utilities/src/{androidMain,iosMain,jsMain,jvmSsrMain}/.../testing/` — Platform `uiTest()` actuals
+In your module's `build.gradle.kts`:
+```kotlin
+kotlin {
+    sourceSets {
+        commonTest {
+            dependencies {
+                implementation("com.lightningkite.kiteui:kiteui-test-utilities:<version>")
+                implementation(kotlin("test"))
+            }
+        }
+    }
+}
+```
+
+## Test Structure
+
+```kotlin
+import com.lightningkite.kiteui.testing.*
+import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.core.Signal
+import kotlin.test.Test
+
+class MyFeatureTest {
+    @Test
+    fun myTest() = uiTest(
+        config = UiTestConfig(/* optional config */),
+        content = {
+            // ViewWriter DSL — build the UI to test
+        }
+    ) {
+        // UiTestScope — interact and assert
+    }
+}
+```
+
+### UiTestConfig Options
+
+```kotlin
+UiTestConfig(
+    theme = myTheme,                              // optional, defaults to Theme(id = "test")
+    navigator = PageNavigator { AutoRoutes },     // optional, for navigation tests
+    externalServices = MockExternalServices(),     // optional, for file/geo mocking
+    customCommands = mapOf(                        // optional, for custom actions
+        "reset" to { root, data -> null }
+    ),
+)
+```
+
+## Test Patterns
+
+### Pattern 1: Testing a Component Directly
+
+For testing a single component or page in isolation — no navigator needed.
+
+```kotlin
+// Helper that sets up the page for all tests in this class
+private fun myPageTest(block: suspend UiTestScope.() -> Unit) {
+    uiTest(content = {
+        with(MyPage()) { render() }
+    }, block = block)
+}
+
+@Test
+fun displaysInitialValue() = myPageTest {
+    assertValue("counter", "0")
+}
+
+@Test
+fun incrementWorks() = myPageTest {
+    click("increment")
+    assertValue("counter", "1")
+    click("increment")
+    assertValue("counter", "2")
+}
+```
+
+### Pattern 2: Testing with Inline UI
+
+For testing specific reactive behaviors without a pre-built page.
+
+```kotlin
+@Test
+fun formValidation() = uiTest(content = {
+    val email = Signal("")
+    textInput { debugName = "email"; content bind email }
+    text { debugName = "error"; ::content { if ("@" !in email()) "Invalid email" else "" } }
+    button {
+        debugName = "submit"
+        text("Submit")
+        ::enabled { "@" in email() }
+    }
+}) {
+    assertDisabled("submit")
+    assertValue("error", "Invalid email")
+    setValue("email", "user@example.com")
+    assertEnabled("submit")
+    assertValue("error", "")
+}
+```
+
+### Pattern 3: Testing Navigation
+
+For testing page transitions and routing. Requires a `PageNavigator`.
+
+```kotlin
+private fun navTest(block: suspend UiTestScope.() -> Unit) {
+    val navigator = PageNavigator { AutoRoutes }
+    navigator.reset(HomePage())
+    uiTest(
+        config = UiTestConfig(navigator = navigator),
+        content = { navigatorView(navigator) },
+        block = block
+    )
+}
+
+@Test
+fun navigateToDetails() = navTest {
+    navigate("/items/123")
+    assertPage("ItemDetailPage")
+    assertVisible("itemTitle")
+    back()
+    assertPage("HomePage")
+}
+
+@Test
+fun clickNavigates() = navTest {
+    click("itemLink")
+    waitForPage("ItemDetailPage")
+}
+```
+
+### Pattern 4: Testing with Mock External Services
+
+For testing file pickers, camera capture, geolocation, etc.
+
+```kotlin
+private fun mockTest(
+    setupMock: MockExternalServices.() -> Unit = {},
+    block: suspend UiTestScope.() -> Unit
+) {
+    val mock = MockExternalServices()
+    mock.setupMock()
+    uiTest(
+        config = UiTestConfig(externalServices = mock),
+        content = { with(UploadPage()) { render() } },
+        block = block
+    )
+}
+
+@Test
+fun fileUpload() = mockTest(
+    setupMock = {
+        pendingFileResponses.add(
+            createFileReferenceFromBytes("test data".encodeToByteArray(), "image/png", "photo.png")
+        )
+    }
+) {
+    click("uploadBtn")
+    // MockExternalServices returns the queued file to the next requestFile() call
+    waitForComponent("uploadedFileName")
+    assertValue("uploadedFileName", "photo.png")
+
+    // Verify the app called the right service method
+    val mock = mockExternalServices!!
+    val call = mock.calls.filterIsInstance<MockExternalServices.Call.RequestFile>().single()
+    assertEquals(listOf("image/*"), call.mimeTypes)
+}
+```
+
+### Pattern 5: Testing with Custom Commands
+
+For resetting state, injecting test data, or other test-specific hooks.
+
+```kotlin
+@Test
+fun resetCommand() = uiTest(
+    config = UiTestConfig(
+        customCommands = mapOf(
+            "reset" to { root, _ ->
+                // Reset app state; return null = success, string = error
+                null
+            },
+            "setUser" to { root, data ->
+                // Inject test data
+                null
+            }
+        )
+    ),
+    content = { with(MyPage()) { render() } }
+) {
+    custom("setUser", """{"name":"Test User"}""")
+    assertValue("userName", "Test User")
+    custom("reset")
+    assertValue("userName", "")
+}
+```
+
+### Pattern 6: Using Logs for Verification
+
+When you need to verify that internal behavior occurred (API calls, state changes, etc.).
+
+```kotlin
+@Test
+fun buttonLogsAction() = uiTest(content = {
+    button {
+        debugName = "action"
+        text("Do Thing")
+        onClick(frequencyCap = null) {
+            Log.tag("myFeature").info("Action triggered")
+        }
+    }
+}) {
+    click("action")
+    val entries = logs()
+    assert(entries.any { it.tag == "myFeature" && "Action triggered" in it.message })
+}
+```
+
+## UiTestScope API Reference
+
+### Read State
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `snapshot()` | `UiSnapshot` | Full UI tree |
+| `find(id)` | `UiComponent?` | Find component by ID (null if missing) |
+| `require(id)` | `UiComponent` | Find component or throw with snapshot dump |
+| `dumpSnapshot()` | — | Print snapshot to stdout (debugging) |
+| `logs(lines)` | `List<LogEntry>` | Read captured log buffer |
+
+### Perform Actions
+| Method | Description |
+|--------|-------------|
+| `click(id)` | Click a component |
+| `setValue(id, value)` | Set text input / select value |
+| `navigate(route)` | Navigate to a URL route |
+| `back()` | Go back in navigation |
+| `custom(command, data?)` | Invoke a custom command handler |
+| `perform(UiAction)` | Low-level: dispatch any UiAction |
+
+All action methods throw `AssertionError` on failure.
+
+### Wait for Conditions
+| Method | Description |
+|--------|-------------|
+| `waitFor(timeout, description) { snap -> bool }` | Generic wait with lambda |
+| `waitForPage(name, timeout)` | Wait for page name match |
+| `waitForComponent(id, timeout)` | Wait for component to appear |
+| `waitForComponentGone(id, timeout)` | Wait for component to disappear |
+| `waitForEnabled(id, timeout)` | Wait for component to become enabled |
+
+Default timeout: 5 seconds. All throw `AssertionError` on timeout with snapshot dump.
+
+### Assertions
+| Method | Description |
+|--------|-------------|
+| `assertPage(expected)` | Assert current page name |
+| `assertValue(id, expected)` | Assert component's value |
+| `assertVisible(id)` | Assert component is visible |
+| `assertEnabled(id)` | Assert component is enabled |
+| `assertDisabled(id)` | Assert component is disabled |
+
+All throw `AssertionError` with descriptive messages including a snapshot dump on failure.
+
+### Snapshot Extensions (on `UiSnapshot`)
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `findById(id)` | `UiComponent?` | Search by full ID or last segment |
+| `findByValue(text)` | `UiComponent?` | First component whose value contains text |
+| `findByType(type)` | `List<UiComponent>` | All components of a given type |
+| `findAll { predicate }` | `List<UiComponent>` | All matching components |
+| `renderText()` | `String` | Human-readable text tree |
+
+### UiComponent Fields
+```kotlin
+data class UiComponent(
+    val id: String,           // path ID (e.g. "navigatorView/0/3" or "submitBtn")
+    val type: String,         // "Button", "Text", "TextInput", "Column", "Row", etc.
+    val value: String?,       // current text/value
+    val enabled: Boolean,     // interactive?
+    val visible: Boolean,     // on screen?
+    val actions: List<String>,// ["click", "setValue", "longClick", "scroll"]
+    val children: List<UiComponent>
+)
+```
+
+---
+
+# Part 2b: Remote UI Testing (Against a Live App)
+
+Run the same `UiTestScope` API against a **live, already-running app** connected to the daemon — useful for integration testing against real servers or testing on actual devices.
+
+## How It Works
+
+Instead of rendering UI in-process, `remoteUiTest()` sends snapshot/perform/logs commands to the daemon's HTTP API, which forwards them to the connected app. The test API is identical to local `uiTest()`.
+
+```
+┌──────────────┐    HTTP      ┌────────────┐   WebSocket   ┌─────────────┐
+│  JVM Test    │ ──────────► │   Daemon   │ ◄──────────► │  Live App   │
+│ (remoteUi    │  :7475/cli   │ (JVM proc) │  ws://:7474   │ (any        │
+│  Test)       │              │            │               │  platform)  │
+└──────────────┘              └────────────┘               └─────────────┘
+```
+
+## Prerequisites
+
+1. Daemon running: `kiteui-drive start`
+2. App connected: `AiDriver.connect()` called in the app
+3. App visible: `kiteui-drive list` shows the app ID
+
+## Usage
+
+```kotlin
+import com.lightningkite.kiteui.testing.*
+import kotlin.test.Test
+
+class LiveAppTest {
+    @Test
+    fun dashboardLoads() = remoteUiTest(appId = "web") {
+        navigate("/dashboard")
+        waitForPage("DashboardPage")
+        assertVisible("dashboardTitle")
+        assertValue("dashboardTitle", "Welcome")
+    }
+
+    @Test
+    fun loginFlow() = remoteUiTest(appId = "web") {
+        navigate("/login")
+        waitForComponent("emailInput")
+        setValue("emailInput", "user@example.com")
+        setValue("passwordInput", "password123")
+        click("loginButton")
+        waitForPage("HomePage")
+        assertVisible("homeTitle")
+    }
+}
+```
+
+Run with:
+```bash
+./gradlew :<module>:jvmSsrTest --tests "*.LiveAppTest"
+```
+
+## `remoteUiTest()` Parameters
+
+```kotlin
+remoteUiTest(
+    appId = "web",           // Required — connected app ID from `kiteui-drive list`
+    host = "localhost",      // Optional — daemon host
+    port = 7475,             // Optional — daemon CLI port
+) {
+    // UiTestScope — same API as uiTest()
+}
+```
+
+## Screenshots
+
+Remote tests can capture screenshots from the live app and save them to disk — useful for app store screenshots, visual regression testing, or documentation.
+
+```kotlin
+class AppStoreScreenshots {
+    @Test
+    fun captureHomeScreen() = remoteUiTest(appId = "android-1") {
+        navigate("/home")
+        waitForPage("HomePage")
+        screenshotToFile("screenshots/home-android.png")
+    }
+
+    @Test
+    fun captureProfileScreen() = remoteUiTest(appId = "ios-1") {
+        navigate("/profile")
+        waitForPage("ProfilePage")
+        screenshotToFile("screenshots/profile-ios.png")
+    }
+}
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `screenshot()` | `ByteArray?` | Raw PNG bytes (null if unsupported) |
+| `screenshotToFile(path)` | — | Save PNG to disk (creates parent dirs) |
+
+`screenshotToFile` is a JVM extension on `UiTestScope` — available in `remoteUiTest` blocks.
+
+## Differences from Local `uiTest()`
+
+| | `uiTest()` (local) | `remoteUiTest()` (remote) |
+|--|---------------------|---------------------------|
+| UI rendering | In-process | External app |
+| Speed | Milliseconds | Network round-trip per call |
+| Screenshots | Not supported | `screenshot()` / `screenshotToFile()` |
+| `mockExternalServices` | Available | Returns null |
+| `customCommands` | Via UiTestConfig | Not available |
+| Platform | All (Android, iOS, JS, JVM SSR) | JVM SSR only |
+| Server connectivity | Mocked/local | Real (app's actual server) |
+
+## Tips
+
+- Use longer timeouts for `waitFor*` calls (network + real server latency)
+- The app must stay connected to the daemon throughout the test
+- Remote tests are ideal for smoke tests, integration tests, and app store screenshot capture; use local `uiTest()` for fast unit-level UI tests
+
+---
+
+# Part 3: CLI-to-Test Workflow
+
+The most effective way to write tests is to **explore interactively first**, then **translate to automated tests**.
+
+## Step 1: Explore the App
+
+```bash
+kiteui-drive list
+kiteui-drive snapshot <app>
+```
+
+Identify the component IDs, page names, and actions available.
+
+## Step 2: Interact and Verify Manually
+
+```bash
+kiteui-drive perform <app> setValue emailField test@example.com
+kiteui-drive perform <app> click submitBtn
+kiteui-drive wait <app> --page DashboardPage
+kiteui-drive snapshot <app> --search "Welcome"
+```
+
+Once you've confirmed the flow works, translate each step into test code.
+
+## Step 3: Write the Test
+
+Map CLI commands directly to `UiTestScope` methods:
+
+| CLI Command | Test Code |
+|------------|-----------|
+| `kiteui-drive snapshot <app>` | `snapshot()` or `dumpSnapshot()` |
+| `kiteui-drive snapshot <app> --component X` | `find("X")` or `require("X")` |
+| `kiteui-drive perform <app> click X` | `click("X")` |
+| `kiteui-drive perform <app> setValue X value` | `setValue("X", "value")` |
+| `kiteui-drive perform <app> navigate /path` | `navigate("/path")` |
+| `kiteui-drive perform <app> back` | `back()` |
+| `kiteui-drive wait <app> --page Name` | `waitForPage("Name")` |
+| `kiteui-drive wait <app> --component X` | `waitForComponent("X")` |
+| `kiteui-drive wait <app> --componentGone X` | `waitForComponentGone("X")` |
+| `kiteui-drive wait <app> --enabled X` | `waitForEnabled("X")` |
+| `kiteui-drive logs <app>` | `logs()` |
+| `kiteui-drive screenshot <app>` | (not available in tests) |
+
+## Step 4: Use Recording for Scaffolding
+
+If the interaction is complex, record it and export as Kotlin:
+
+```bash
+kiteui-drive record <app> start
+# interact manually...
+kiteui-drive record <app> stop
+kiteui-drive record <app> export-kotlin
+```
+
+This generates `UiTestScope` code you can paste into a test and refine.
+
+---
+
+# Troubleshooting
+
+### "kiteui-drive not installed"
+```bash
+./gradlew aiDriverInstall
+```
+
+### "Daemon not running"
+```bash
+kiteui-drive start
+# or
+./gradlew aiDriverStart
+```
+
+### "No apps connected"
+- App must be running with `AiDriver.connect()` wired in
+- For web: browser must be open to the app URL
+- Wait a few seconds for WebSocket handshake
+
+### "App 'myapp' not found"
+Run `kiteui-drive list` to see current app IDs.
+
+### Component not found in snapshot
+- Check that the component has a `debugName` or `ariaDescription` set
+- Use `kiteui-drive snapshot <app>` to see all available IDs
+- Unnamed components use index-based paths like `navigatorView/0/2`
+
+### Stale daemon after version upgrade
+```bash
+./gradlew aiDriverInstall
+kiteui-drive stop && kiteui-drive start
+```
+
+### Test timeout
+- Increase timeout: `waitForPage("Name", timeout = 15_000)`
+- Check that the condition is reachable — use `dumpSnapshot()` for debugging
+- For JVM SSR tests, reactive updates are synchronous so timeouts usually mean the condition is wrong
+
+---
+
+# Daemon Management (Gradle Tasks)
+
+These tasks are registered by the KiteUI Gradle plugin on every project that applies it:
+
+```bash
+./gradlew aiDriverInstall    # Download fat JAR from Maven, install to ~/.kiteui/
+./gradlew aiDriverStart      # Start daemon if not already running
+./gradlew aiDriverStop       # Stop daemon
+```
+
+---
+
+# Key Source Files (in the kiteui repo)
+
+- `library/src/commonMain/.../aidriver/` — Protocol types, client, shared dispatch, log buffer
+- `library/src/commonMain/.../aidriver/AiDriverAutoStart.kt` — Auto-start expect/actual
+- `library/src/commonInteractiveMain/.../aidriver/` — Shared snapshot walker (Android, iOS, JS)
+- `library/src/jvmSsrMain/.../aidriver/` — SSR snapshot walker + action dispatch + auto-start
+- `test-utilities/src/commonMain/.../testing/` — `UiTestBackend`, `LocalUiTestBackend`, `UiTestScope`, `uiTest()`
+- `test-utilities/src/jvmSsrMain/.../testing/` — `RemoteUiTestBackend`, `remoteUiTest()`
+- `test-utilities/src/{androidMain,iosMain,jsMain,jvmSsrMain}/` — Platform `uiTest()` actuals
 - `ai-driver-server/src/main/kotlin/.../server/` — Daemon + CLI server
-- `./ui` — CLI wrapper script
-- `./ui-setup` — Build + start daemon script
+- `gradle-plugin/src/main/kotlin/aiDriverTasks.kt` — Gradle tasks for install/start/stop

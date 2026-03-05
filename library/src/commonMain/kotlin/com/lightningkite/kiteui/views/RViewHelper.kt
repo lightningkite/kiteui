@@ -82,6 +82,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     // by Claude - set of action names this view supports (e.g. "click", "setValue")
     open val accessibilityActions: Set<String> get() = emptySet()
 
+    // by Claude - whether this view is enabled for interaction; override in controls with their own enabled property
+    open val accessibilityEnabled: Boolean get() = !ignoreInteraction
+
     // by Claude - execute an accessibility action; returns null on success, error message on failure
     open fun performAccessibilityAction(action: String, value: String? = null): String? =
         "Action '$action' not supported on ${accessibilityType}"
@@ -347,6 +350,14 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
      * to modify the child list.
      */
     val children: List<RView> get() = internalChildren
+
+    /**
+     * Children that should be considered "active" for AI driver snapshots and path resolution.
+     * Defaults to [children]. Overridden by [SwapView][com.lightningkite.kiteui.views.direct.SwapView]
+     * to exclude stale children that are animating out, returning only the current view.
+     */
+    // by Claude - filters out stale SwapView children for accurate AI driver snapshots
+    open val activeChildren: List<RView> get() = children
 
     /**
      * Called before a child view is added. This sets the child's parent reference.

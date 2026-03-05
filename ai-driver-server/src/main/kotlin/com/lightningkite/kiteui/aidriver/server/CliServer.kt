@@ -6,6 +6,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 
 private val json = Json { encodeDefaults = true; ignoreUnknownKeys = true; prettyPrint = true }
@@ -31,7 +32,13 @@ private suspend fun handleCommand(command: CliCommand): String {
     return when (command) {
         is CliCommand.List -> {
             val apps = AppRegistry.all()
-            if (apps.isEmpty()) "No apps connected"
+            // by Claude - JSON format for programmatic access from remote test backend
+            if (command.format == CliCommand.List.ListFormat.Json) {
+                json.encodeToString(
+                    ListSerializer(ConnectedApp.serializer()),
+                    apps.map { ConnectedApp(it.appId, it.platform, it.appName) }
+                )
+            } else if (apps.isEmpty()) "No apps connected"
             else apps.joinToString("\n") { "${it.appId} (${it.platform}) - ${it.appName}" }
         }
         is CliCommand.Info -> {
@@ -39,10 +46,28 @@ private suspend fun handleCommand(command: CliCommand): String {
                 ?: return "App '${command.appId}' not found"
             "App: ${app.appName}\nPlatform: ${app.platform}\nID: ${app.appId}"
         }
+        // by Claude - server-side snapshot filtering for --component and --search
         is CliCommand.Snapshot -> {
             val app = AppRegistry.get(command.appId)
                 ?: return "App '${command.appId}' not found"
-            val snapshot = app.requestSnapshot(command.component)
+            var snapshot = app.requestSnapshot()
+
+            // Scope to subtree if --component specified
+            command.component?.let { componentId ->
+                val found = snapshot.findById(componentId)
+                    ?: return "Component '$componentId' not found.\nCurrent snapshot:\n${formatSnapshotText(snapshot)}"
+                snapshot = snapshot.copy(components = listOf(found))
+            }
+
+            // Filter by value text if --search specified
+            command.search?.let { searchText ->
+                val filtered = filterBySearch(snapshot, searchText)
+                if (filtered.components.isEmpty()) {
+                    return "No components matching '$searchText' found.\nFull snapshot:\n${formatSnapshotText(snapshot)}"
+                }
+                snapshot = filtered
+            }
+
             if (command.format == CliCommand.Snapshot.Format.Text) formatSnapshotText(snapshot)
             else json.encodeToString(UiSnapshot.serializer(), snapshot)
         }
@@ -52,10 +77,15 @@ private suspend fun handleCommand(command: CliCommand): String {
             val result = app.requestScreenshot()
             if (result.error != null) return "Screenshot failed: ${result.error}"
             val base64 = result.base64 ?: return "No screenshot data returned"
-            val bytes = java.util.Base64.getDecoder().decode(base64)
-            val path = command.path ?: "screenshot-${command.appId}-${System.currentTimeMillis()}.png"
-            java.io.File(path).writeBytes(bytes)
-            "Screenshot saved to: $path"
+            // by Claude - Base64 format returns raw base64 for remote test backend
+            if (command.format == CliCommand.Screenshot.Format.Base64) {
+                base64
+            } else {
+                val bytes = java.util.Base64.getDecoder().decode(base64)
+                val path = command.path ?: "screenshot-${command.appId}-${System.currentTimeMillis()}.png"
+                java.io.File(path).writeBytes(bytes)
+                "Screenshot saved to: $path"
+            }
         }
         is CliCommand.Perform -> {
             val app = AppRegistry.get(command.appId) ?: return "App '${command.appId}' not found"
@@ -127,6 +157,25 @@ private suspend fun handleCommand(command: CliCommand): String {
                 }
             }
         }
+        // by Claude - fetch and display buffered log entries from a connected app
+        is CliCommand.Logs -> {
+            val app = AppRegistry.get(command.appId) ?: return "App '${command.appId}' not found"
+            var entries = app.requestLogs(command.lines)
+            command.level?.let { minLevel ->
+                entries = entries.filter { it.level >= minLevel }
+            }
+            command.tag?.let { tagFilter ->
+                entries = entries.filter { tagFilter in it.tag }
+            }
+            // by Claude - support JSON format for remote test backend
+            if (command.format == CliCommand.Logs.Format.Json) {
+                json.encodeToString(ListSerializer(LogEntry.serializer()), entries)
+            } else if (entries.isEmpty()) "No log entries"
+            else entries.joinToString("\n") { e ->
+                val ts = java.time.Instant.ofEpochMilli(e.timestamp).toString().substringAfter("T").substringBefore("Z")
+                "${ts} [${e.level.name.uppercase().padEnd(5)}] ${if (e.tag.isNotEmpty()) "${e.tag}: " else ""}${e.message}"
+            }
+        }
         is CliCommand.Status -> "Daemon running. Connected apps: ${AppRegistry.all().size}"
         is CliCommand.Stop -> {
             // Signal shutdown via a background thread so the response can be sent first
@@ -138,6 +187,19 @@ private suspend fun handleCommand(command: CliCommand): String {
         }
         is CliCommand.Start -> "Daemon already running"
     }
+}
+
+// by Claude - keep only components whose subtree contains a value match, preserving tree structure
+private fun filterBySearch(snapshot: UiSnapshot, text: String): UiSnapshot {
+    fun filterComponent(comp: UiComponent): UiComponent? {
+        val matchingSelf = comp.value?.contains(text, ignoreCase = true) == true
+        val filteredChildren = comp.children.mapNotNull { filterComponent(it) }
+        return if (matchingSelf || filteredChildren.isNotEmpty()) {
+            comp.copy(children = if (matchingSelf) comp.children else filteredChildren)
+        } else null
+    }
+    val filtered = snapshot.components.mapNotNull { filterComponent(it) }
+    return snapshot.copy(components = filtered)
 }
 
 private fun formatSnapshotText(snapshot: UiSnapshot): String = buildString {

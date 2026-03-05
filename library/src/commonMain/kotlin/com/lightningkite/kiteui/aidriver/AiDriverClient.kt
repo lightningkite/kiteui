@@ -136,6 +136,11 @@ object AiDriver {
                 val result = dispatchAction(msg.action, root, navigatorProvider())
                 socket.send(result.toAppMessage(msg.requestId))
             }
+            // by Claude - respond with buffered log entries
+            is DaemonMessage.RequestLogs -> {
+                val entries = AiDriverLogBuffer.entries(msg.lines)
+                socket.send(AppMessage.LogsResponse(msg.requestId, entries))
+            }
             // by Claude - handle mock injection from daemon
             is DaemonMessage.QueueMockFile -> {
                 try {

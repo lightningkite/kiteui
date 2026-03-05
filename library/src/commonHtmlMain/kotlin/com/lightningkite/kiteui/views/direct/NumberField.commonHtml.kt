@@ -38,8 +38,11 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         override var value: Double?
             get() = native.attributes.valueString?.filter { it.isDigit() || it in setOf('-', '.') }?.toDoubleOrNull()
             set(value) {
-                if(native.attributes.valueString != value?.commaString())
+                if(native.attributes.valueString != value?.commaString()) {
                     native.attributes.valueString = value?.commaString()
+                    // by Claude - must notify listeners so bind propagates programmatic setValue
+                    invokeAllListeners()
+                }
             }
     }
 

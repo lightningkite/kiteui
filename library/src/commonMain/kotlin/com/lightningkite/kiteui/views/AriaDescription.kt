@@ -57,14 +57,14 @@ fun String.toAiId(): String =
 fun RView.resolveAiPath(path: String): RView? {
     val segments = path.split("/").filter { it.isNotEmpty() }
 
-    // Try direct path resolution
+    // Try direct path resolution using activeChildren to skip stale SwapView children
     var current: RView = this
     var resolved = true
     for (segment in segments) {
         val next = when {
             segment == ".." -> current.parent
-            segment.all(Char::isDigit) -> current.children.getOrNull(segment.toInt())
-            else -> current.children.find {
+            segment.all(Char::isDigit) -> current.activeChildren.getOrNull(segment.toInt())
+            else -> current.activeChildren.find {
                 it.debugName == segment || (it as? RViewHelper)?.ariaDescription?.toAiId() == segment
             }
         }
@@ -83,7 +83,8 @@ fun RView.resolveAiPath(path: String): RView? {
 
 // by Claude - depth-first search for a view by debugName or ariaDescription
 private fun RView.deepSearchByName(name: String): RView? {
-    for (child in children) {
+    // by Claude - use activeChildren to skip stale SwapView children
+    for (child in activeChildren) {
         if (child.debugName == name || (child as? RViewHelper)?.ariaDescription?.toAiId() == name) return child
         child.deepSearchByName(name)?.let { return it }
     }

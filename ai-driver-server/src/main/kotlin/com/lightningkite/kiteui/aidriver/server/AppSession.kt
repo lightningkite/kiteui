@@ -41,6 +41,9 @@ class AppSession(
             is AppMessage.ActionResult -> {
                 pendingRequests.remove(msg.requestId)?.complete(msg)
             }
+            is AppMessage.LogsResponse -> {
+                pendingRequests.remove(msg.requestId)?.complete(msg)
+            }
             is AppMessage.Changed -> {
                 // App state changed - request a fresh snapshot to update the flow
                 try {
@@ -89,6 +92,16 @@ class AppSession(
             DaemonMessage.RequestScreenshot(requestId)))
 
         return withTimeout(15_000) { deferred.await() } as AppMessage.ScreenshotResponse
+    }
+
+    // by Claude - request buffered log entries from the connected app
+    suspend fun requestLogs(lines: Int = 200): List<LogEntry> {
+        val deferred = CompletableDeferred<AppMessage>()
+        val requestId = "logs-${requestCounter.incrementAndGet()}"
+        pendingRequests[requestId] = deferred
+        session.send(json.encodeToString(DaemonMessage.serializer(), DaemonMessage.RequestLogs(requestId, lines)))
+        val result = withTimeout(10_000) { deferred.await() }
+        return (result as AppMessage.LogsResponse).entries
     }
 
     // by Claude - send a daemon message and wait for an ActionResult response

@@ -33,6 +33,15 @@ sealed class AppMessage {
         val result: String? = null
     ) : AppMessage()
 
+    /** Response to a [DaemonMessage.RequestLogs]. */
+    // by Claude - log entries response for remote test backend
+    @Serializable @SerialName("logsResponse")
+    data class LogsResponse(
+        val requestId: String,
+        val entries: List<LogEntry> = emptyList(),
+        val error: String? = null
+    ) : AppMessage()
+
     /** Lightweight push notification when navigation or state changes. */
     @Serializable @SerialName("changed")
     data object Changed : AppMessage()

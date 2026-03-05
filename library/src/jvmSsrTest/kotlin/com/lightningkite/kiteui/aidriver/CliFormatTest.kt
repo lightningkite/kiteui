@@ -8,7 +8,7 @@ class CliFormatTest {
     // ---- Parse tests ----
 
     @Test fun parseList() {
-        assertEquals(CliCommand.List, CliFormat.parse(listOf("list")))
+        assertEquals(CliCommand.List(), CliFormat.parse(listOf("list")))
     }
 
     @Test fun parseInfo() {
@@ -117,7 +117,7 @@ class CliFormatTest {
     // ---- Encode tests ----
 
     @Test fun encodeList() {
-        assertEquals(listOf("list"), CliFormat.encode(CliCommand.List))
+        assertEquals(listOf("list", "--format", "Text"), CliFormat.encode(CliCommand.List()))
     }
 
     @Test fun encodeInfo() {
@@ -233,7 +233,7 @@ class CliFormatTest {
     // ---- Round-trip tests (encode → parse → equals original) ----
 
     @Test fun roundTrip_list() {
-        val cmd = CliCommand.List
+        val cmd = CliCommand.List()
         assertEquals(cmd, CliFormat.parse(CliFormat.encode(cmd)))
     }
 

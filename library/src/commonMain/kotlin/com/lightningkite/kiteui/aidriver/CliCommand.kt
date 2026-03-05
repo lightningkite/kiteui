@@ -12,8 +12,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class CliCommand {
     /** List all currently connected app instances. */
+    // by Claude - added format for structured JSON responses
     @Serializable @SerialName("list")
-    data object List : CliCommand()
+    data class List(val format: ListFormat = ListFormat.Text) : CliCommand() {
+        @Serializable
+        enum class ListFormat { Text, Json }
+    }
 
     /** Show info about a specific connected app. */
     @Serializable @SerialName("info")
@@ -28,6 +32,7 @@ sealed class CliCommand {
     data class Snapshot(
         val appId: String,
         val component: String? = null,
+        val search: String? = null, // by Claude - filter to components whose value contains this text
         val settings: UiSnapshotSettings = UiSnapshotSettings(),
         val format: Format = Format.Text
     ) : CliCommand() {
@@ -37,10 +42,19 @@ sealed class CliCommand {
 
     /**
      * Capture a screenshot from the app.
-     * @param path optional local file path to save PNG; if null, returns base64
+     * @param path local file path to save PNG (used when format is SaveToFile)
+     * @param format SaveToFile (default) saves to daemon disk; Base64 returns raw base64 in the response
      */
+    // by Claude - added Base64 format for remote test backend
     @Serializable @SerialName("screenshot")
-    data class Screenshot(val appId: String, val path: String? = null) : CliCommand()
+    data class Screenshot(
+        val appId: String,
+        val path: String? = null,
+        val format: Format = Format.SaveToFile
+    ) : CliCommand() {
+        @Serializable
+        enum class Format { SaveToFile, Base64 }
+    }
 
     /** Click a UI component by its absolute path ID. */
     @Serializable @SerialName("perform")
@@ -73,6 +87,19 @@ sealed class CliCommand {
     @Serializable @SerialName("mock")
     data class Mock(val appId: String, val mockType: MockType) : CliCommand()
 
+    // by Claude - fetch buffered log entries from a connected app
+    @Serializable @SerialName("logs")
+    data class Logs(
+        val appId: String,
+        val lines: Int = 200,
+        val level: LogLevel? = null,
+        val tag: String? = null,
+        val format: Format = Format.Text // by Claude - JSON format for remote test backend
+    ) : CliCommand() {
+        @Serializable
+        enum class Format { Text, Json }
+    }
+
     /** Start the daemon process. */
     @Serializable @SerialName("start")
     data class Start(
@@ -89,6 +116,14 @@ sealed class CliCommand {
     @Serializable @SerialName("status")
     data object Status : CliCommand()
 }
+
+// by Claude - structured app info returned by List command in JSON format
+@Serializable
+data class ConnectedApp(
+    val appId: String,
+    val platform: String,
+    val appName: String
+)
 
 // by Claude - types of mock responses that can be queued via CLI
 @Serializable

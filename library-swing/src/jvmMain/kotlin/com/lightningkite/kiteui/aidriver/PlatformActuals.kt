@@ -10,3 +10,6 @@ actual suspend fun buildSnapshot(root: RView, navigator: PageNavigator?): UiSnap
 
 actual suspend fun dispatchAction(action: UiAction, root: RView, navigator: PageNavigator?): ActionDispatchResult =
     TODO("AI driver action dispatch not implemented for Swing")
+
+// by Claude - Swing desktop could auto-start the daemon but not yet implemented
+internal actual fun tryAutoStartDaemon(port: Int) { /* no-op on Swing for now */ }

@@ -12,7 +12,15 @@ data class UiSnapshot(
     val url: String,
     val settings: UiSnapshotSettings,
     val components: List<UiComponent>
-)
+) {
+    // by Claude - recursive search by full path or last segment
+    fun findById(id: String): UiComponent? {
+        for (c in components) {
+            c.findById(id)?.let { return it }
+        }
+        return null
+    }
+}
 
 @Serializable
 data class UiSnapshotSettings(
@@ -48,6 +56,15 @@ data class UiComponent(
     val actions: Set<String> = setOf(),
     val children: List<UiComponent> = listOf()
 ) {
+    // by Claude - recursive search by full path or last segment
+    fun findById(id: String): UiComponent? {
+        if (this.id == id || this.id.endsWith("/$id")) return this
+        for (c in children) {
+            c.findById(id)?.let { return it }
+        }
+        return null
+    }
+
     fun render(builder: StringBuilder, tab: Int) {
         builder.append(" ".repeat(tab * 2))
         builder.append("$id: $type")

@@ -30,6 +30,10 @@ sealed class DaemonMessage {
         val fileName: String
     ) : DaemonMessage()
 
+    // by Claude - request buffered log entries from the app
+    @Serializable @SerialName("requestLogs")
+    data class RequestLogs(val requestId: String, val lines: Int = 200) : DaemonMessage()
+
     // by Claude - queue a mock geolocation response on the app's MockExternalServices
     @Serializable @SerialName("queueMockGeolocation")
     data class QueueMockGeolocation(

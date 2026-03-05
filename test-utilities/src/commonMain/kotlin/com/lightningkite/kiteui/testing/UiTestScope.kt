@@ -20,24 +20,27 @@ import kotlin.time.Duration.Companion.seconds
  * CLI:  ./ui wait web-1 --page Home  Kotlin: waitForPage("Home")
  * ```
  *
- * Constructed by [uiTest] — not meant to be created directly.
+ * Constructed by [uiTest] (local) or [remoteUiTest] (remote) — not meant to be created directly.
  */
+// by Claude - refactored to use UiTestBackend for pluggable local/remote execution
 class UiTestScope(
-    val root: RView,
-    val navigator: PageNavigator?,
-    private val idle: suspend () -> Unit = {},
+    val backend: UiTestBackend,
 ) {
+    /** Backward-compatible constructor for local testing. */
+    constructor(
+        root: RView,
+        navigator: PageNavigator?,
+        idle: suspend () -> Unit = {},
+    ) : this(LocalUiTestBackend(root, navigator, idle))
+
     // by Claude - convenience accessor for the MockExternalServices if one was injected via UiTestConfig
     val mockExternalServices: MockExternalServices?
-        get() = root.context.addons["externalServices"] as? MockExternalServices
+        get() = (backend as? LocalUiTestBackend)?.root?.context?.addons?.get("externalServices") as? MockExternalServices
 
     // ---- Snapshot (read state) ----
 
     /** Full snapshot of the current UI tree. Same as CLI `./ui snapshot`. */
-    suspend fun snapshot(): UiSnapshot {
-        idle()
-        return buildSnapshot(root, navigator)
-    }
+    suspend fun snapshot(): UiSnapshot = backend.snapshot()
 
     /** Find a component by its path ID in the current snapshot. */
     suspend fun find(id: String): UiComponent? = snapshot().findById(id)
@@ -52,11 +55,10 @@ class UiTestScope(
 
     /** Dispatch a UiAction against the view tree. Same as CLI `./ui perform`. */
     suspend fun perform(action: UiAction): ActionDispatchResult {
-        val result = dispatchAction(action, root, navigator)
+        val result = backend.perform(action)
         if (!result.success) {
             throw AssertionError("Action failed: $action: ${result.error}")
         }
-        idle()
         return result
     }
 
@@ -73,6 +75,10 @@ class UiTestScope(
     /** Go back in the navigation stack. Same as `./ui perform <app> back`. */
     suspend fun back() = perform(UiAction.Back)
 
+    /** Read the last [lines] log entries captured by the AI driver log buffer. */
+    // by Claude - convenience for reading logs in tests
+    suspend fun logs(lines: Int = 200): List<LogEntry> = backend.logs(lines)
+
     // ---- Wait (poll for state) ----
 
     /**
@@ -87,14 +93,13 @@ class UiTestScope(
         try {
             withTimeout(timeout) {
                 while (true) {
-                    idle()
-                    val snap = buildSnapshot(root, navigator)
+                    val snap = backend.snapshot()
                     if (condition(snap)) return@withTimeout
                     yield()
                 }
             }
         } catch (_: kotlinx.coroutines.TimeoutCancellationException) {
-            val snap = buildSnapshot(root, navigator)
+            val snap = backend.snapshot()
             throw AssertionError(
                 "Timed out waiting for $description after $timeout.\n" +
                 "Final snapshot:\n${snap.renderText()}"
@@ -162,4 +167,14 @@ class UiTestScope(
     suspend fun dumpSnapshot() {
         println(snapshot().renderText())
     }
+
+    // ---- Screenshots ----
+
+    /**
+     * Capture a screenshot as PNG bytes from the app.
+     * Returns null if the backend doesn't support screenshots (e.g. local SSR tests).
+     * Supported by [RemoteUiTestBackend] for capturing from live Android/iOS/web apps.
+     */
+    // by Claude - screenshot support for remote testing (app store screenshots, etc.)
+    suspend fun screenshot(): ByteArray? = backend.screenshot()
 }

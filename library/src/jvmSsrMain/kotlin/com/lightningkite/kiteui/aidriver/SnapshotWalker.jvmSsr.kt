@@ -31,10 +31,12 @@ actual suspend fun buildSnapshot(root: RView, navigator: PageNavigator?): UiSnap
             id = id,
             type = helper.accessibilityType,
             value = value,
-            enabled = !helper.ignoreInteraction,
+            // by Claude - uses accessibilityEnabled which checks both ignoreInteraction and native disabled
+            enabled = helper.accessibilityEnabled,
             visible = shown && visible,
             actions = helper.accessibilityActions,
-            children = children.mapIndexed { i, child -> child.toComponent(id, i) }
+            // by Claude - use activeChildren to skip stale SwapView children
+            children = activeChildren.mapIndexed { i, child -> child.toComponent(id, i) }
         )
     }
 
@@ -42,6 +44,6 @@ actual suspend fun buildSnapshot(root: RView, navigator: PageNavigator?): UiSnap
         page = pageName,
         url = url,
         settings = UiSnapshotSettings(),
-        components = root.children.mapIndexed { i, child -> child.toComponent("", i) }
+        components = root.activeChildren.mapIndexed { i, child -> child.toComponent("", i) }
     )
 }
