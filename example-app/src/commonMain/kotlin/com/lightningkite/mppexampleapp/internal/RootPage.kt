@@ -12,11 +12,14 @@ import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.h1
+import com.lightningkite.kiteui.views.direct.h2
 import com.lightningkite.kiteui.views.direct.link
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.direct.separator
+import com.lightningkite.kiteui.views.direct.space
+import com.lightningkite.kiteui.views.direct.subtext
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.direct.weight
 import com.lightningkite.kiteui.views.expanding
@@ -24,6 +27,7 @@ import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.docs.VideoElementPage
 import com.lightningkite.mppexampleapp.docs.ViewPagerElementPage
 import com.lightningkite.mppexampleapp.internal.SliderExamplePage
+import com.lightningkite.mppexampleapp.internal.ColorTestPage
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -40,6 +44,7 @@ object RootPage : Page {
                 separator()
                 text("These test pages aren't necessarily meant to be examples of what you can do with KiteUI.  They are meant to be a way to test out new features and find bugs.  They are also meant to be a way to test out different layouts and components.  However, you may find them interesting.")
             }
+            space()
             ListSemantic.onNext.col {
 
                 fun ViewWriter.linkPage(screen: () -> Page) = card.link {
@@ -52,58 +57,97 @@ object RootPage : Page {
                     }
                 }
 
-                linkPage { ClickTestPage }
+
+                fun ViewWriter.sectionLabel(label: String) {
+                    space()
+                    subtext { content = label }
+                }
+
+                sectionLabel("Core UI & Controls")
+                linkPage { ControlsPage }
+                linkPage { ThemesPage }
+                linkPage { ColorTestPage }
+                linkPage { SliderExamplePage }
+                linkPage { DialogSamplesPage }
+                linkPage { DatePickerExamplePage }
+
+
+
+                sectionLabel("Layout & Containers")
+                linkPage { LayoutExamplesPage }
+                linkPage { ContainerAlignmentDemoPage }
                 linkPage { RowWrappingPage }
-                linkPage { CoveringTestPage }
-                linkPage { PopoverTestingPage }
-                linkPage { SwapViewPage }
-                linkPage { DragPage }
-                linkPage { RichTextButtonPage }
-                linkPage { R2VPPage }
                 linkPage { ProgrammaticLayoutTestPage }
+                linkPage { FullScreenPage() }
+                linkPage { SwapViewPage }
+                linkPage { ViewPagerElementPage }
+
+                sectionLabel("Navigation")
+                linkPage { NavigationTestPage }
+                linkPage { TestingGroundPage }
+
+                sectionLabel("Forms & Input")
+                linkPage { FormsPage }
+                linkPage { FormattedInputTests() }
+                linkPage { RichTextButtonPage }
+                linkPage { SampleLogInPage }
+
+                sectionLabel("Scrolling & Visibility")
                 linkPage { SpecialScrollTest }
                 linkPage { ScrollIntoViewTest }
-                linkPage { FormattedInputTests() }
-                linkPage { TestingGroundPage }
-                linkPage { LeakCheckerPage }
-                linkPage { ExperimentPage }
+                linkPage { CoveringTestPage }
+                linkPage { PopoverTestingPage }
+
+                sectionLabel("Recycler / Lists")
+                linkPage { RecyclerViewTestPage }
                 linkPage { Recycler2TestPage }
                 linkPage { RecyclerFilterTestPage }
                 linkPage { HorizontalRecyclerViewPage }
                 linkPage { InfiniteImagesPage }
+                linkPage { R2VPPage }
+
+                sectionLabel("Media")
+                linkPage { ImageTestPage }
+                linkPage { VideoElementPage }
                 linkPage { AudioPage }
                 linkPage { AudioTestPage }
+                linkPage { CameraScannerTestPage }
+
+                sectionLabel("Animation")
+                linkPage { LoadAnimationTestPage }
                 linkPage { LottieExamplePage }
                 linkPage { LottieRendererTestPage }
-                linkPage { PlatformSpecificPage }
-                linkPage { VideoElementPage }
-                linkPage { ViewPagerElementPage }
-                linkPage { ThemesPage }
-                linkPage { ControlsPage }
-                linkPage { SliderExamplePage }
-                linkPage { FormsPage }
-                linkPage { NavigationTestPage }
-                linkPage { LayoutExamplesPage }
-                linkPage { ContainerAlignmentDemoPage }
-                linkPage { VectorsTestPage }
-                linkPage { SampleLogInPage }
-                linkPage { DataLoadingExamplePage }
-                linkPage { LoadAnimationTestPage }
-                linkPage { WebSocketPage }
+
+                sectionLabel("Graphics & Canvas")
                 linkPage { CanvasSamplePage }
                 linkPage { CanvasApiTestPage }
+                linkPage { VectorsTestPage }
                 linkPage { GraphExamplePage }
                 linkPage { PongSamplePage }
-                linkPage { ReactivityPage }
-                linkPage { DialogSamplesPage }
+
+                sectionLabel("Data & Networking")
+                linkPage { DataLoadingExamplePage }
+                linkPage { WebSocketPage }
                 linkPage { ExternalServicesPage }
-                linkPage { FullScreenPage() }
-                linkPage { RecyclerViewTestPage }
-                linkPage { ImageTestPage }
-                linkPage { CameraScannerTestPage }
-                linkPage { PerformanceTestPage }
-                linkPage { DatePickerExamplePage }
                 linkPage { SsrResourceExamplePage() }
+
+                sectionLabel("Reactivity & State")
+                linkPage { ReactivityPage }
+
+                sectionLabel("Platform & Device")
+                linkPage { PlatformSpecificPage }
+
+                sectionLabel("Performance & Diagnostics")
+                linkPage { PerformanceTestPage }
+                linkPage { LeakCheckerPage }
+
+                sectionLabel("Interaction & Gestures")
+                linkPage { ClickTestPage }
+                linkPage { DragPage }
+
+                sectionLabel("Misc / Experimental")
+                linkPage { ExperimentPage }
+
                 run {
                     val screen = { ArgumentsExamplePage("test-id").also { it.toAdd.value = "Preset" } }
                     card.link {
