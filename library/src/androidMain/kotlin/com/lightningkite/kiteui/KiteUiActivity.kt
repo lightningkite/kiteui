@@ -172,9 +172,9 @@ abstract class KiteUiActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent?.data?.let {
+        intent.data?.let { it ->
             val path = UrlLikePath(
                 segments = it.path?.split('/')?.filter { it.isNotBlank() } ?: listOf(),
                 parameters = it.query?.removePrefix("?")?.split('&')?.associate {

@@ -56,7 +56,7 @@ class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: 
             keyboardHeight - (view.get()?.window?.safeAreaInsets?.useContents { this.bottom } ?: 0.0)
 //            }
         afterTimeout((keyboardAnimationDuration * 1000.0).toLong()) {
-            view.get()?.findFirstResponderChild()?.scrollToMe(true)
+            view.get()?.findFirstResponderChild()?.scrollToMeCenter(true)
         }
     }
 
