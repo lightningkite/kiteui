@@ -3,14 +3,18 @@ package com.lightningkite.kiteui.views
 import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.res.ColorStateList
+import android.graphics.Path
 import android.graphics.Point
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Looper
+import android.graphics.Outline
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
@@ -262,8 +266,32 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val topRight = if (asPerCorner?.topRight != false) cr else 0f
         val bottomRight = if (asPerCorner?.bottomRight != false) cr else 0f
         val bottomLeft = if (asPerCorner?.bottomLeft != false) cr else 0f
-        backgroundBlock?.cornerRadii =
-            floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
+
+        val radii = floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
+
+        // When a view has corner radii and draws a background, clip children to the
+        // rounded outline. This matches web behavior where border-radius + overflow: hidden
+        // clips content (e.g. images inside a rounded frame).
+        // We use Outline.setPath() with the per-corner radii array so PerCorner is respected.
+        // A rounded rect path is always convex, so this works on API 21+.
+        if (cr > 0f && themeAndBack.drawBackground) {
+            val capturedRadii = radii.copyOf()
+            native.outlineProvider = object : ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: Outline) {
+                    val path = Path().apply {
+                        addRoundRect(
+                            RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
+                            capturedRadii,
+                            Path.Direction.CW
+                        )
+                    }
+                    outline.setPath(path)
+                }
+            }
+            native.clipToOutline = true
+        } else if (!native.clipToOutline) {
+            native.outlineProvider = ViewOutlineProvider.BACKGROUND
+        }
     }
 
     override fun refreshPadding() {
