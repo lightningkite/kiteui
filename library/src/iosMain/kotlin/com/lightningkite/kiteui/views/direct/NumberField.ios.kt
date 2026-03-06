@@ -113,8 +113,11 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         override var value: Double?
             get() = (textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull()
             set(value) {
-                if(textField.text != (value?.commaString() ?: ""))
+                if(textField.text != (value?.commaString() ?: "")) {
                     textField.text = value?.commaString() ?: ""
+                    // by Claude - fire change event so reactive listeners are notified on programmatic updates
+                    textField.sendActionsForControlEvents(UIControlEventEditingChanged)
+                }
             }
         override fun addListener(listener: () -> Unit): () -> Unit {
             return textField.onEvent(this@NumberInput, UIControlEventEditingChanged, listener)

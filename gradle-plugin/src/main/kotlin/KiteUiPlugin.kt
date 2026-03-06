@@ -44,6 +44,9 @@ class KiteUiPlugin : Plugin<Project> {
             }
         }
 
+        // by Claude - register AI driver install/start/stop tasks
+        registerAiDriverTasks(project)
+
         tasks.register("kiteuiResourcesCommon", Task::class.java).apply {
             val task = this.get()
             group = "kiteui"

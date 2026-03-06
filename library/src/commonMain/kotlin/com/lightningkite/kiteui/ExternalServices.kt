@@ -52,9 +52,9 @@ interface ExternalServicesAccess : ExternalLinksAccess, FilePickerAccess, FileDo
 var ViewWriter.externalServices: ExternalServicesAccess by rContextAddonGenerate { externalServicesAccessDefault(context) }
 
 // by Claude - convenience extension on RContext for use outside ViewWriter scope.
-// Uses same addons cache key as the ViewWriter property to pick up mocks.
+// Uses getOrPutRoot so the default is shared across the context tree and picks up mocks.
 val RContext.externalServices: ExternalServicesAccess
-    get() = addons.getOrPut("externalServices") { externalServicesAccessDefault(this) } as ExternalServicesAccess
+    get() = addons.getOrPutRoot("externalServices") { externalServicesAccessDefault(this) } as ExternalServicesAccess
 
 // Convenience extensions on RContext delegating to externalServices
 fun RContext.openLink(url: String, newTab: Boolean = true) = externalServices.openLink(url, newTab)

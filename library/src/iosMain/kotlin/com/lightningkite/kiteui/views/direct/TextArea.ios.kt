@@ -97,8 +97,11 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         override var value: String
             get() = textField.text
             set(value) {
-                if(textField.text != value)
+                if(textField.text != value) {
                     textField.text = value
+                    // by Claude - notify listeners on programmatic updates (UITextView has no sendActionsForControlEvents)
+                    delegate.listeners.forEach { it() }
+                }
             }
         override fun addListener(listener: () -> Unit): () -> Unit {
             delegate.listeners.add(listener)

@@ -45,9 +45,13 @@ object Daemon {
         appServer.start(wait = false)
         cliServer.start(wait = false)
 
+        // by Claude - auto-setup adb reverse for Android devices
+        AdbReverse.start(scope, port)
+
         println("AI driver daemon started. Run 'ui list' to see connected apps.")
 
         Runtime.getRuntime().addShutdownHook(Thread {
+            AdbReverse.stop()
             appServer.stop(1000, 5000)
             cliServer.stop(1000, 5000)
         })

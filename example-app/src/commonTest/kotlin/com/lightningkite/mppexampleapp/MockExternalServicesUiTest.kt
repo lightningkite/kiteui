@@ -107,4 +107,27 @@ class MockExternalServicesUiTest {
         assertNotNull(mockExternalServices, "mockExternalServices should be accessible from UiTestScope")
         assertIs<MockExternalServices>(mockExternalServices)
     }
+
+    // by Claude - tests the mockFile() API which uses the same path as the AI driver daemon
+    @Test
+    fun mockFileViaBackendApi() = uiTest(
+        content = { with(MockExternalServicesTestPage) { render() } }
+    ) {
+        // Queue a mock file via the backend API (same path the daemon uses)
+        mockFile("hello world".encodeToByteArray(), "image/png", "test-photo.png")
+        // Click the file picker button — should consume the mock
+        click("pickFile")
+        // Verify the UI updated to show the mock file's name
+        assertValue("fileStatus", "test-photo.png")
+    }
+
+    // by Claude - tests the mockGeolocation() API which uses the same path as the AI driver daemon
+    @Test
+    fun mockGeolocationViaBackendApi() = uiTest(
+        content = { with(MockExternalServicesTestPage) { render() } }
+    ) {
+        mockGeolocation(40.0, -111.0, 5.0)
+        click("getLocation")
+        assertValue("locationResult", "40.0,-111.0")
+    }
 }

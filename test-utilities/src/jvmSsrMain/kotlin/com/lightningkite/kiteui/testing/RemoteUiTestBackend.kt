@@ -83,4 +83,46 @@ class RemoteUiTestBackend(
         }
         return java.util.Base64.getDecoder().decode(base64)
     }
+
+    // by Claude - mock support for remote tests, sends bytes to daemon which forwards to app
+    override suspend fun mockFile(bytes: ByteArray, mimeType: String, fileName: String) {
+        // Write bytes to a temp file so the daemon can read it via CliCommand.Mock
+        val tempFile = java.io.File.createTempFile("kiteui-mock-", "-$fileName")
+        try {
+            tempFile.writeBytes(bytes)
+            val response = postCommand(
+                CliCommand.Mock(appId = appId, mockType = MockType.File(tempFile.absolutePath, mimeType))
+            )
+            if (response.startsWith("Failed:") || response.startsWith("ERROR:")) {
+                throw RuntimeException("Mock file failed: $response")
+            }
+        } finally {
+            tempFile.delete()
+        }
+    }
+
+    // by Claude - explicit capture mock routes to pendingCaptureResponses
+    override suspend fun mockCapture(bytes: ByteArray, mimeType: String, fileName: String) {
+        val tempFile = java.io.File.createTempFile("kiteui-mock-", "-$fileName")
+        try {
+            tempFile.writeBytes(bytes)
+            val response = postCommand(
+                CliCommand.Mock(appId = appId, mockType = MockType.Capture(tempFile.absolutePath, mimeType))
+            )
+            if (response.startsWith("Failed:") || response.startsWith("ERROR:")) {
+                throw RuntimeException("Mock capture failed: $response")
+            }
+        } finally {
+            tempFile.delete()
+        }
+    }
+
+    override suspend fun mockGeolocation(latitude: Double, longitude: Double, accuracyInMeters: Double) {
+        val response = postCommand(
+            CliCommand.Mock(appId = appId, mockType = MockType.Geolocation(latitude, longitude, accuracyInMeters))
+        )
+        if (response.startsWith("Failed:") || response.startsWith("ERROR:")) {
+            throw RuntimeException("Mock geolocation failed: $response")
+        }
+    }
 }

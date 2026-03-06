@@ -77,15 +77,19 @@ class MockExternalServices(
         else delegate?.requestFiles(mimeTypes) ?: emptyList()
     }
 
+    // by Claude - fall back to pendingFileResponses so mockFile() works for capture too
     override suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? {
         calls.add(Call.RequestCaptureSelf(mimeTypes))
         return if (pendingCaptureResponses.isNotEmpty()) pendingCaptureResponses.removeAt(0)
+        else if (pendingFileResponses.isNotEmpty()) pendingFileResponses.removeAt(0)
         else delegate?.requestCaptureSelf(mimeTypes)
     }
 
+    // by Claude - fall back to pendingFileResponses so mockFile() works for capture too
     override suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? {
         calls.add(Call.RequestCaptureEnvironment(mimeTypes))
         return if (pendingCaptureResponses.isNotEmpty()) pendingCaptureResponses.removeAt(0)
+        else if (pendingFileResponses.isNotEmpty()) pendingFileResponses.removeAt(0)
         else delegate?.requestCaptureEnvironment(mimeTypes)
     }
 

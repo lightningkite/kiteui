@@ -15,37 +15,80 @@ fun registerAiDriverTasks(project: Project) {
     project.tasks.register("aiDriverInstall") {
         group = "kiteui"
         description = "Install the AI driver server globally at ~/.kiteui/"
+
+        // by Claude - when inside the kiteui repo, depend on installDist so we build from source
+        val serverProject = project.rootProject.findProject(":ai-driver-server")
+        if (serverProject != null) {
+            dependsOn(":ai-driver-server:installDist")
+        }
+
         doLast {
-            val version = resolveKiteUiVersion(project)
             val installDir = File(System.getProperty("user.home"), ".kiteui/ai-driver")
             val binDir = File(System.getProperty("user.home"), ".kiteui/bin")
-            installDir.mkdirs()
-            binDir.mkdirs()
 
-            // Resolve fat JAR from Maven
-            val dep = project.dependencies.create(
-                "com.lightningkite.kiteui:ai-driver-server:$version"
-            )
-            val config = project.configurations.detachedConfiguration(dep)
-            config.isTransitive = false
-            val jar = config.singleFile
+            if (serverProject != null) {
+                // by Claude - local build: copy installDist output to ~/.kiteui/ai-driver/
+                val distDir = File(serverProject.layout.buildDirectory.asFile.get(), "install/ai-driver-server")
+                if (!distDir.exists()) {
+                    throw GradleException("installDist output not found at $distDir")
+                }
 
-            // Clean old versions and copy new JAR
-            installDir.listFiles { f -> f.name.endsWith(".jar") }?.forEach { it.delete() }
-            val targetJar = File(installDir, jar.name)
-            jar.copyTo(targetJar, overwrite = true)
-            File(installDir, "version.txt").writeText(version)
+                // by Claude - use rm -rf to handle macOS extended attributes that block Java's delete
+                if (installDir.exists()) {
+                    ProcessBuilder("rm", "-rf", installDir.absolutePath)
+                        .start().waitFor()
+                }
+                project.copy {
+                    from(distDir)
+                    into(installDir)
+                }
 
-            // Write shell wrapper with absolute path to the installed JAR
-            val wrapper = File(binDir, "kiteui-drive")
-            wrapper.writeText(
-                "#!/bin/sh\n" +
-                "# by Claude - global CLI for KiteUI AI driver\n" +
-                "exec java -jar \"${targetJar.absolutePath}\" \"\$@\"\n"
-            )
-            wrapper.setExecutable(true)
+                // Write shell wrapper pointing to the distribution's bin script
+                binDir.mkdirs()
+                val distBin = File(installDir, "bin/ai-driver-server")
+                distBin.setExecutable(true)
+                val wrapper = File(binDir, "kiteui-drive")
+                wrapper.writeText(
+                    "#!/bin/sh\n" +
+                    "# by Claude - global CLI for KiteUI AI driver (local build)\n" +
+                    "exec \"${distBin.absolutePath}\" \"\$@\"\n"
+                )
+                wrapper.setExecutable(true)
 
-            println("Installed kiteui-drive $version to ~/.kiteui/")
+                val version = serverProject.version.toString()
+                File(installDir, "version.txt").writeText(version)
+                println("Installed kiteui-drive (local build) to ~/.kiteui/")
+            } else {
+                // External project: resolve fat JAR from Maven
+                val version = resolveKiteUiVersion(project)
+                installDir.mkdirs()
+                binDir.mkdirs()
+
+                val dep = project.dependencies.create(
+                    "com.lightningkite.kiteui:ai-driver-server:$version"
+                )
+                val config = project.configurations.detachedConfiguration(dep)
+                config.isTransitive = false
+                val jar = config.singleFile
+
+                // Clean old versions and copy new JAR
+                installDir.listFiles { f -> f.name.endsWith(".jar") }?.forEach { it.delete() }
+                val targetJar = File(installDir, jar.name)
+                jar.copyTo(targetJar, overwrite = true)
+                File(installDir, "version.txt").writeText(version)
+
+                // Write shell wrapper with absolute path to the installed JAR
+                val wrapper = File(binDir, "kiteui-drive")
+                wrapper.writeText(
+                    "#!/bin/sh\n" +
+                    "# by Claude - global CLI for KiteUI AI driver\n" +
+                    "exec java -jar \"${targetJar.absolutePath}\" \"\$@\"\n"
+                )
+                wrapper.setExecutable(true)
+
+                println("Installed kiteui-drive $version to ~/.kiteui/")
+            }
+
             if (System.getenv("PATH")?.contains(".kiteui/bin") != true) {
                 println("Add to your shell profile: export PATH=\"\$HOME/.kiteui/bin:\$PATH\"")
             }

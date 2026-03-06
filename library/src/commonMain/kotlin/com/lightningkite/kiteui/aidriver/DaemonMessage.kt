@@ -27,7 +27,8 @@ sealed class DaemonMessage {
         val requestId: String,
         val base64: String,
         val mimeType: String,
-        val fileName: String
+        val fileName: String,
+        val capture: Boolean = false // by Claude - true → pendingCaptureResponses, false → pendingFileResponses
     ) : DaemonMessage()
 
     // by Claude - request buffered log entries from the app

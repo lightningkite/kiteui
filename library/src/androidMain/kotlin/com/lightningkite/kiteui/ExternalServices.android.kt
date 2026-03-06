@@ -59,7 +59,8 @@ class AndroidExternalServices(private val ctx: RContext) : ExternalServicesAcces
     }
 
     override suspend fun requestFile(mimeTypes: List<String>) = suspendCancellableCoroutine { cont ->
-        if (mimeTypes.any { !it.startsWith("image/") || !it.startsWith("video/") }) {
+        // by Claude - fixed: was || which is always true; need && to check if mime type is neither image nor video
+        if (mimeTypes.any { !it.startsWith("image/") && !it.startsWith("video/") }) {
             val od = ActivityResultContracts.OpenDocument()
             ctx.activity.startActivityForResult(
                 od.createIntent(ctx.activity, mimeTypes.toTypedArray())
@@ -83,7 +84,8 @@ class AndroidExternalServices(private val ctx: RContext) : ExternalServicesAcces
     }
 
     override suspend fun requestFiles(mimeTypes: List<String>) = suspendCancellableCoroutine { cont ->
-        if (mimeTypes.any { !it.startsWith("image/") || !it.startsWith("video/") }) {
+        // by Claude - fixed: was || which is always true; need && to check if mime type is neither image nor video
+        if (mimeTypes.any { !it.startsWith("image/") && !it.startsWith("video/") }) {
             val od = ActivityResultContracts.OpenDocument()
             ctx.activity.startActivityForResult(
                 od.createIntent(ctx.activity, mimeTypes.toTypedArray())

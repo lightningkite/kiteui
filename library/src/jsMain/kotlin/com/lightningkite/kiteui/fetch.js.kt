@@ -157,10 +157,12 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
                 }
             }
     }
+    // by Claude — Bug 3: fixed header parsing; was truncating values at first colon and
+    // incorrectly splitting on semicolons (which are part of the value, not separators)
     actual val headers: HttpHeaders by lazy {
-        httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.flatMap {
-            val s = it.split(":")
-            s[1].trim().splitToSequence(';').map { s[0].trim() to it }
+        httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.map {
+            val s = it.split(":", limit = 2)
+            s[0].trim() to s[1].trim()
         })
     }
 }

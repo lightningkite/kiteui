@@ -132,6 +132,11 @@ sealed class MockType {
     @Serializable @SerialName("file")
     data class File(val path: String, val mimeType: String? = null) : MockType()
 
+    // by Claude - explicit capture mock for camera selfie/environment capture
+    /** Queue a mock camera capture response. CLI: `./ui mock <app> capture <path> [--mimeType ...]` */
+    @Serializable @SerialName("capture")
+    data class Capture(val path: String, val mimeType: String? = null) : MockType()
+
     /** Queue a mock geolocation response. CLI: `./ui mock <app> geolocation <lat> <lng> [--accuracy ...]` */
     @Serializable @SerialName("geolocation")
     data class Geolocation(

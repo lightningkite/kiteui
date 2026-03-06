@@ -65,7 +65,12 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
     actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = textField.text ?: ""
-            set(value) { textField.text = value }
+            set(value) {
+                if (textField.text == value) return
+                textField.text = value
+                // by Claude - fire change event so reactive listeners are notified on programmatic updates
+                textField.sendActionsForControlEvents(UIControlEventEditingChanged)
+            }
         override fun addListener(listener: () -> Unit): () -> Unit {
             return textField.onEvent(this@AutoCompleteTextField, UIControlEventEditingChanged, listener)
         }

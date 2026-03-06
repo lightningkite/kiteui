@@ -45,8 +45,10 @@ object AiDriver {
         if (socket != null) return
         val platform = Platform.current.name.lowercase()
 
-        // retryWebsocket handles all reconnection with exponential backoff — no manual loop needed
-        val raw = retryWebsocket("ws://$host:$port/app", pingTime = 30_000L)
+        // by Claude — use a separate gate so AiDriver connection failures don't block app network
+        // (the daemon may not be running, and that shouldn't affect real API calls)
+        val aiDriverGate = ConnectivityGate()
+        val raw = retryWebsocket("ws://$host:$port/app", pingTime = 30_000L, gate = aiDriverGate)
         val typed = raw.typed(json, AppMessage.serializer(), DaemonMessage.serializer())
 
         // Send Register and hook into navigator on every successful connection
@@ -141,13 +143,14 @@ object AiDriver {
                 val entries = AiDriverLogBuffer.entries(msg.lines)
                 socket.send(AppMessage.LogsResponse(msg.requestId, entries))
             }
-            // by Claude - handle mock injection from daemon
+            // by Claude - handle mock injection from daemon; routes to correct queue based on capture flag
             is DaemonMessage.QueueMockFile -> {
                 try {
                     val mock = ensureMockInstalled(rootViewProvider)
                     val bytes = Base64.Default.decode(msg.base64)
                     val fileRef = createFileReferenceFromBytes(bytes, msg.mimeType, msg.fileName)
-                    mock.pendingFileResponses.add(fileRef)
+                    if (msg.capture) mock.pendingCaptureResponses.add(fileRef)
+                    else mock.pendingFileResponses.add(fileRef)
                     socket.send(AppMessage.ActionResult(msg.requestId))
                 } catch (e: Exception) {
                     socket.send(AppMessage.ActionResult(msg.requestId, error = "Failed to queue mock file: ${e.message}"))

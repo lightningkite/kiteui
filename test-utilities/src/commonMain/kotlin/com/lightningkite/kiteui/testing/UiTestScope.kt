@@ -177,4 +177,37 @@ class UiTestScope(
      */
     // by Claude - screenshot support for remote testing (app store screenshots, etc.)
     suspend fun screenshot(): ByteArray? = backend.screenshot()
+
+    // ---- Mock external services ----
+
+    // by Claude - queue a mock file to be returned by the next requestFile() call
+    /**
+     * Queue a mock file to be returned by the next `externalServices.requestFile()` call in the app.
+     * Works for both local and remote tests.
+     *
+     * Example:
+     * ```kotlin
+     * mockFile("hello".encodeToByteArray(), "text/plain", "test.txt")
+     * click("uploadButton")  // triggers requestFile() which returns the mock
+     * ```
+     */
+    suspend fun mockFile(bytes: ByteArray, mimeType: String, fileName: String) =
+        backend.mockFile(bytes, mimeType, fileName)
+
+    // by Claude - queue a mock capture to be returned by the next requestCaptureSelf/requestCaptureEnvironment call
+    /**
+     * Queue a mock file to be returned specifically by the next camera capture call
+     * (`requestCaptureSelf` or `requestCaptureEnvironment`).
+     * Use [mockFile] if you don't care whether it's consumed by a file picker or capture.
+     */
+    suspend fun mockCapture(bytes: ByteArray, mimeType: String, fileName: String) =
+        backend.mockCapture(bytes, mimeType, fileName)
+
+    // by Claude - queue a mock geolocation to be returned by the next getCurrentPosition() call
+    /**
+     * Queue a mock geolocation result to be returned by the next `externalServices.getCurrentPosition()` call.
+     * Works for both local and remote tests.
+     */
+    suspend fun mockGeolocation(latitude: Double, longitude: Double, accuracyInMeters: Double = 10.0) =
+        backend.mockGeolocation(latitude, longitude, accuracyInMeters)
 }

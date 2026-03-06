@@ -16,7 +16,8 @@ actual class RContext(
     val kiteUiCss: KiteUiCss = KiteUiCss(dynamicCss),
 ) : RContextHelper() {
     val id = Random.nextInt()
-    actual fun split(): RContext = RContext(basePath, dynamicCss, kiteUiCss).apply { addons.putAll(this@RContext.addons) }
+    // by Claude - use addons.child() for lazy parent lookup instead of copying
+    actual fun split(): RContext = RContext(basePath, dynamicCss, kiteUiCss).apply { addons = this@RContext.addons.child() }
     actual override val darkMode: Boolean? get() = null
     override fun toString(): String = "RContext@$id"
     actual var immersiveMode: Boolean = false
