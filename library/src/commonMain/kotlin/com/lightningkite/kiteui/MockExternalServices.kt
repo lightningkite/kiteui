@@ -27,9 +27,8 @@ class MockExternalServices(
 ) : ExternalServicesAccess {
 
     // --- Queued responses (FIFO) ---
+    // by Claude - single queue for all file-related requests (picker, capture, multi-file)
     val pendingFileResponses = mutableListOf<FileReference?>()
-    val pendingFilesResponses = mutableListOf<List<FileReference>>()
-    val pendingCaptureResponses = mutableListOf<FileReference?>()
     val pendingGeolocation = mutableListOf<GeolocationResult>()
 
     // --- Recorded calls ---
@@ -73,23 +72,20 @@ class MockExternalServices(
 
     override suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> {
         calls.add(Call.RequestFiles(mimeTypes))
-        return if (pendingFilesResponses.isNotEmpty()) pendingFilesResponses.removeAt(0)
+        return if (pendingFileResponses.isNotEmpty()) listOfNotNull(pendingFileResponses.removeAt(0))
         else delegate?.requestFiles(mimeTypes) ?: emptyList()
     }
 
-    // by Claude - fall back to pendingFileResponses so mockFile() works for capture too
+    // by Claude - all file/capture requests share one queue
     override suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? {
         calls.add(Call.RequestCaptureSelf(mimeTypes))
-        return if (pendingCaptureResponses.isNotEmpty()) pendingCaptureResponses.removeAt(0)
-        else if (pendingFileResponses.isNotEmpty()) pendingFileResponses.removeAt(0)
+        return if (pendingFileResponses.isNotEmpty()) pendingFileResponses.removeAt(0)
         else delegate?.requestCaptureSelf(mimeTypes)
     }
 
-    // by Claude - fall back to pendingFileResponses so mockFile() works for capture too
     override suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? {
         calls.add(Call.RequestCaptureEnvironment(mimeTypes))
-        return if (pendingCaptureResponses.isNotEmpty()) pendingCaptureResponses.removeAt(0)
-        else if (pendingFileResponses.isNotEmpty()) pendingFileResponses.removeAt(0)
+        return if (pendingFileResponses.isNotEmpty()) pendingFileResponses.removeAt(0)
         else delegate?.requestCaptureEnvironment(mimeTypes)
     }
 

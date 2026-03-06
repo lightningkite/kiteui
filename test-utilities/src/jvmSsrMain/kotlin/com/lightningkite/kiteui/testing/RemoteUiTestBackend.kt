@@ -101,22 +101,6 @@ class RemoteUiTestBackend(
         }
     }
 
-    // by Claude - explicit capture mock routes to pendingCaptureResponses
-    override suspend fun mockCapture(bytes: ByteArray, mimeType: String, fileName: String) {
-        val tempFile = java.io.File.createTempFile("kiteui-mock-", "-$fileName")
-        try {
-            tempFile.writeBytes(bytes)
-            val response = postCommand(
-                CliCommand.Mock(appId = appId, mockType = MockType.Capture(tempFile.absolutePath, mimeType))
-            )
-            if (response.startsWith("Failed:") || response.startsWith("ERROR:")) {
-                throw RuntimeException("Mock capture failed: $response")
-            }
-        } finally {
-            tempFile.delete()
-        }
-    }
-
     override suspend fun mockGeolocation(latitude: Double, longitude: Double, accuracyInMeters: Double) {
         val response = postCommand(
             CliCommand.Mock(appId = appId, mockType = MockType.Geolocation(latitude, longitude, accuracyInMeters))

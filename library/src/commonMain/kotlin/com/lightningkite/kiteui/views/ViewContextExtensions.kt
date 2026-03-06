@@ -19,7 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 @Suppress("UNCHECKED_CAST")
 fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
     override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-        thisRef.context.addons.getOrPutRoot(property.name) { init } as T
+        thisRef.context.addons.getOrPut(property.name) { init } as T
 
     override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
         thisRef.context.addons[property.name] = value
@@ -30,7 +30,7 @@ fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : Read
 fun <T> rContextAddonGenerate(init: ViewWriter.() -> T): ReadWriteProperty<ViewWriter, T> =
     object : ReadWriteProperty<ViewWriter, T> {
         override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-            thisRef.context.addons.getOrPutRoot(property.name) { init(thisRef) } as T
+            thisRef.context.addons.getOrPut(property.name) { init(thisRef) } as T
 
         override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
             thisRef.context.addons[property.name] = value
@@ -40,7 +40,7 @@ fun <T> rContextAddonGenerate(init: ViewWriter.() -> T): ReadWriteProperty<ViewW
 @Suppress("UNCHECKED_CAST")
 fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
     override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-        thisRef.context.addons.getOrPutRoot(property.name) { throw IllegalStateException("${property.name} has not been initialized. ${thisRef.context}") } as T
+        thisRef.context.addons.getOrPut(property.name) { throw IllegalStateException("${property.name} has not been initialized. ${thisRef.context}") } as T
 
     override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
         thisRef.context.addons[property.name] = value

@@ -128,14 +128,9 @@ data class ConnectedApp(
 // by Claude - types of mock responses that can be queued via CLI
 @Serializable
 sealed class MockType {
-    /** Queue a mock file pick response. CLI: `./ui mock <app> file <path> [--mimeType ...]` */
+    /** Queue a mock file response (works for file picker, camera capture, etc.). CLI: `./ui mock <app> file <path> [--mimeType ...]` */
     @Serializable @SerialName("file")
     data class File(val path: String, val mimeType: String? = null) : MockType()
-
-    // by Claude - explicit capture mock for camera selfie/environment capture
-    /** Queue a mock camera capture response. CLI: `./ui mock <app> capture <path> [--mimeType ...]` */
-    @Serializable @SerialName("capture")
-    data class Capture(val path: String, val mimeType: String? = null) : MockType()
 
     /** Queue a mock geolocation response. CLI: `./ui mock <app> geolocation <lat> <lng> [--accuracy ...]` */
     @Serializable @SerialName("geolocation")

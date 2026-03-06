@@ -33,20 +33,12 @@ interface UiTestBackend {
     // by Claude - mock file and geolocation support for testing file pickers and location
     /**
      * Queue a mock file to be returned by the next file-related call (requestFile, requestCaptureSelf, etc.).
+     * All file/capture requests share a single queue.
      * @param bytes raw file content
      * @param mimeType MIME type (e.g. "image/png")
      * @param fileName suggested file name (e.g. "photo.png")
      */
     suspend fun mockFile(bytes: ByteArray, mimeType: String, fileName: String)
-
-    // by Claude - explicit capture mock for precision testing (targets pendingCaptureResponses only)
-    /**
-     * Queue a mock file to be returned specifically by the next capture call
-     * (requestCaptureSelf or requestCaptureEnvironment).
-     * Use [mockFile] if you don't care whether it's consumed by a file picker or camera capture.
-     */
-    suspend fun mockCapture(bytes: ByteArray, mimeType: String, fileName: String) =
-        mockFile(bytes, mimeType, fileName)
 
     /**
      * Queue a mock geolocation result to be returned by the next [ExternalServicesAccess.getCurrentPosition] call.

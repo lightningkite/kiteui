@@ -21,8 +21,9 @@ object Daemon {
     fun start(port: Int = 7474, cliPort: Int = 7475, daemon: Boolean = false) {
         println("Starting AI driver daemon on ws://localhost:$port (CLI on http://localhost:$cliPort)")
 
-        // WebSocket server for app connections
-        val appServer = embeddedServer(Netty, port = port) {
+        // by Claude - bind to localhost only; the daemon is a local dev tool and should
+        // never be exposed on the network (it can drive UI and inject mocks)
+        val appServer = embeddedServer(Netty, port = port, host = "127.0.0.1") {
             install(WebSockets) {
                 // by Claude - keep connections alive; KiteUI retryWebsocket pings every 30s via text frame
                 pingPeriod = 20.seconds
@@ -35,8 +36,8 @@ object Daemon {
             }
         }
 
-        // HTTP server for CLI commands
-        val cliServer = embeddedServer(Netty, port = cliPort) {
+        // HTTP server for CLI commands (localhost only)
+        val cliServer = embeddedServer(Netty, port = cliPort, host = "127.0.0.1") {
             routing {
                 cliRoutes()
             }

@@ -194,15 +194,6 @@ class UiTestScope(
     suspend fun mockFile(bytes: ByteArray, mimeType: String, fileName: String) =
         backend.mockFile(bytes, mimeType, fileName)
 
-    // by Claude - queue a mock capture to be returned by the next requestCaptureSelf/requestCaptureEnvironment call
-    /**
-     * Queue a mock file to be returned specifically by the next camera capture call
-     * (`requestCaptureSelf` or `requestCaptureEnvironment`).
-     * Use [mockFile] if you don't care whether it's consumed by a file picker or capture.
-     */
-    suspend fun mockCapture(bytes: ByteArray, mimeType: String, fileName: String) =
-        backend.mockCapture(bytes, mimeType, fileName)
-
     // by Claude - queue a mock geolocation to be returned by the next getCurrentPosition() call
     /**
      * Queue a mock geolocation result to be returned by the next `externalServices.getCurrentPosition()` call.

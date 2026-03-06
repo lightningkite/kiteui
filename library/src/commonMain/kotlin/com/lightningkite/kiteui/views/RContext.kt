@@ -31,37 +31,23 @@ abstract class RContextHelper {
     abstract val darkMode: Boolean?
 }
 
-// by Claude - map with parent chain for lazy lookup. Reads check parent on miss, explicit writes go to local.
-// Used by RContext so that split() contexts inherit parent addons without copying.
-// getOrPut writes defaults to the root so they're shared across the whole context tree.
+// by Claude - scoped key-value store with parent chain for lazy lookup.
+// Reads check local first, then walk up the parent chain.
+// Explicit set() writes to local, shadowing the parent for that subtree.
+// getOrPut() writes new defaults to the root so they're shared across all children.
+// Not a MutableMap — the parent chain semantics don't match the MutableMap contract.
 class ChainMap<K, V>(
     private val parent: ChainMap<K, V>? = null
-) : MutableMap<K, V> {
+) {
     private val local = HashMap<K, V>()
     private val root: ChainMap<K, V> get() = parent?.root ?: this
 
-    override val size: Int get() = keys.size
-    override fun isEmpty(): Boolean = local.isEmpty() && (parent?.isEmpty() != false)
-    override fun containsKey(key: K): Boolean = local.containsKey(key) || (parent?.containsKey(key) == true)
-    override fun containsValue(value: V): Boolean = local.containsValue(value) || (parent?.containsValue(value) == true)
-    override fun get(key: K): V? = if (local.containsKey(key)) local[key] else parent?.get(key)
-    override fun put(key: K, value: V): V? = local.put(key, value)
-    override fun remove(key: K): V? = local.remove(key)
-    override fun putAll(from: Map<out K, V>) = local.putAll(from)
-    override fun clear() = local.clear()
-    override val keys: MutableSet<K> get() = (parent?.keys.orEmpty() + local.keys).toMutableSet()
-    override val values: MutableCollection<V> get() = keys.mapNotNull { get(it) }.toMutableList()
-    override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
-        get() = keys.associateWith { get(it) as V }.entries.map {
-            object : MutableMap.MutableEntry<K, V> {
-                override val key = it.key
-                override val value = it.value
-                override fun setValue(newValue: V): V = put(key, newValue) as V
-            }
-        }.toMutableSet()
+    operator fun get(key: K): V? = if (local.containsKey(key)) local[key] else parent?.get(key)
+    operator fun set(key: K, value: V) { local[key] = value }
+    fun containsKey(key: K): Boolean = local.containsKey(key) || (parent?.containsKey(key) == true)
 
-    /** Like MutableMap.getOrPut, but writes new defaults to the root so they're shared across all children. */
-    fun getOrPutRoot(key: K, defaultValue: () -> V): V {
+    /** Returns existing value if found anywhere in the chain; otherwise writes [defaultValue] to the root and returns it. */
+    fun getOrPut(key: K, defaultValue: () -> V): V {
         get(key)?.let { return it }
         if (containsKey(key)) {
             @Suppress("UNCHECKED_CAST")

@@ -143,14 +143,13 @@ object AiDriver {
                 val entries = AiDriverLogBuffer.entries(msg.lines)
                 socket.send(AppMessage.LogsResponse(msg.requestId, entries))
             }
-            // by Claude - handle mock injection from daemon; routes to correct queue based on capture flag
+            // by Claude - handle mock injection from daemon
             is DaemonMessage.QueueMockFile -> {
                 try {
                     val mock = ensureMockInstalled(rootViewProvider)
                     val bytes = Base64.Default.decode(msg.base64)
                     val fileRef = createFileReferenceFromBytes(bytes, msg.mimeType, msg.fileName)
-                    if (msg.capture) mock.pendingCaptureResponses.add(fileRef)
-                    else mock.pendingFileResponses.add(fileRef)
+                    mock.pendingFileResponses.add(fileRef)
                     socket.send(AppMessage.ActionResult(msg.requestId))
                 } catch (e: Exception) {
                     socket.send(AppMessage.ActionResult(msg.requestId, error = "Failed to queue mock file: ${e.message}"))

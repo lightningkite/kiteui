@@ -44,11 +44,6 @@ class LocalUiTestBackend(
         ensureMock().pendingFileResponses.add(createFileReferenceFromBytes(bytes, mimeType, fileName))
     }
 
-    // by Claude - explicit capture mock targets pendingCaptureResponses queue
-    override suspend fun mockCapture(bytes: ByteArray, mimeType: String, fileName: String) {
-        ensureMock().pendingCaptureResponses.add(createFileReferenceFromBytes(bytes, mimeType, fileName))
-    }
-
     override suspend fun mockGeolocation(latitude: Double, longitude: Double, accuracyInMeters: Double) {
         ensureMock().pendingGeolocation.add(GeolocationResult(latitude, longitude, accuracyInMeters))
     }

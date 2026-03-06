@@ -148,21 +148,6 @@ private suspend fun handleCommand(command: CliCommand): String {
                     )
                     if (result.error != null) "Failed: ${result.error}" else "OK: queued file mock '${file.name}' ($mimeType)"
                 }
-                // by Claude - capture mock routes to pendingCaptureResponses for requestCaptureSelf/requestCaptureEnvironment
-                is MockType.Capture -> {
-                    val file = java.io.File(mockType.path)
-                    if (!file.exists()) return "File not found: ${mockType.path}"
-                    val bytes = file.readBytes()
-                    val base64 = java.util.Base64.getEncoder().encodeToString(bytes)
-                    val mimeType = mockType.mimeType
-                        ?: java.nio.file.Files.probeContentType(file.toPath())
-                        ?: "application/octet-stream"
-                    val result = app.sendAndAwait(
-                        DaemonMessage.QueueMockFile(requestId, base64, mimeType, file.name, capture = true),
-                        requestId
-                    )
-                    if (result.error != null) "Failed: ${result.error}" else "OK: queued capture mock '${file.name}' ($mimeType)"
-                }
                 is MockType.Geolocation -> {
                     val result = app.sendAndAwait(
                         DaemonMessage.QueueMockGeolocation(requestId, mockType.latitude, mockType.longitude, mockType.accuracy),

@@ -18,7 +18,9 @@ class AppSession(
 ) {
     private val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
     private val requestCounter = AtomicInteger(0)
-    private val pendingRequests = mutableMapOf<String, CompletableDeferred<AppMessage>>()
+    // by Claude - ConcurrentHashMap for thread safety: onMessage runs on Daemon.scope (Dispatchers.IO)
+    // while request methods run on caller coroutines, so concurrent access is possible
+    private val pendingRequests = java.util.concurrent.ConcurrentHashMap<String, CompletableDeferred<AppMessage>>()
 
     // Flow of snapshots for wait() polling
     private val snapshotFlow = MutableSharedFlow<UiSnapshot>(
