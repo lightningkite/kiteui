@@ -42,14 +42,13 @@ sealed class CliCommand {
 
     /**
      * Capture a screenshot from the app.
-     * @param path local file path to save PNG (used when format is SaveToFile)
-     * @param format SaveToFile (default) saves to daemon disk; Base64 returns raw base64 in the response
+     * SaveToFile writes to `~/.kiteui/screenshots/` and returns the path.
+     * Base64 returns raw base64 in the response (used by remote test backend).
      */
-    // by Claude - added Base64 format for remote test backend
+    // by Claude - removed arbitrary path param; screenshots always go to a fixed directory
     @Serializable @SerialName("screenshot")
     data class Screenshot(
         val appId: String,
-        val path: String? = null,
         val format: Format = Format.SaveToFile
     ) : CliCommand() {
         @Serializable
