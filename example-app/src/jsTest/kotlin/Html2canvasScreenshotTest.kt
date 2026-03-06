@@ -1,19 +1,11 @@
 // by Claude - verifies html2canvas screenshot produces a real PNG, not blank
 package com.lightningkite.mppexampleapp
 
-import com.lightningkite.kiteui.aidriver.UiAction
-import com.lightningkite.kiteui.aidriver.dispatchAction
 import com.lightningkite.kiteui.testing.uiTest
 import com.lightningkite.kiteui.testing.UiTestConfig
 import com.lightningkite.kiteui.views.direct.*
-import kotlinx.browser.document
-import org.w3c.dom.HTMLAnchorElement
-import org.w3c.dom.url.URL
-import org.w3c.files.Blob
-import org.w3c.files.BlobPropertyBag
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class Html2canvasScreenshotTest {
@@ -31,10 +23,9 @@ class Html2canvasScreenshotTest {
             }
         }
     ) {
-        val result = dispatchAction(UiAction.Screenshot, root, navigator)
-        println("Screenshot result: success=${result.success}, error=${result.error}, bytes=${result.bytes?.size}")
-        assertTrue(result.success, "Screenshot should succeed: ${result.error}")
-        val bytes = result.bytes!!
+        val bytes = screenshot()
+        assertNotNull(bytes, "Screenshot should succeed")
+        println("Screenshot result: ${bytes.size} bytes")
         // A blank/trivial PNG is ~100-200 bytes. A real screenshot with text should be much larger.
         assertTrue(bytes.size > 500, "Screenshot should be non-trivial (got ${bytes.size} bytes)")
         // Verify PNG magic bytes

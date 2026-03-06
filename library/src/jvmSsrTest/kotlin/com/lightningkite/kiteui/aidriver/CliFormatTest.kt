@@ -43,10 +43,10 @@ class CliFormatTest {
         )
     }
 
-    @Test fun parseScreenshot_withFormatBase64() {
+    @Test fun parseScreenshot_withPath() {
         assertEquals(
-            CliCommand.Screenshot("android-1", format = CliCommand.Screenshot.Format.Base64),
-            CliFormat.parse(listOf("screenshot", "android-1", "--format", "Base64"))
+            CliCommand.Screenshot("android-1", path = "out.png"),
+            CliFormat.parse(listOf("screenshot", "android-1", "--path", "out.png"))
         )
     }
 
@@ -248,7 +248,7 @@ class CliFormatTest {
     }
 
     @Test fun roundTrip_screenshot() {
-        val cmd = CliCommand.Screenshot("android-1")
+        val cmd = CliCommand.Screenshot("android-1", path = "shot.png")
         assertEquals(cmd, CliFormat.parse(CliFormat.encode(cmd)))
     }
 

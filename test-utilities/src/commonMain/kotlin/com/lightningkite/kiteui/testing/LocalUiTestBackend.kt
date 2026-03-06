@@ -28,6 +28,12 @@ class LocalUiTestBackend(
         return result
     }
 
+    // by Claude - delegate screenshot to the platform-specific dispatchAction implementation
+    override suspend fun screenshot(): ByteArray? {
+        val result = dispatchAction(UiAction.Screenshot, root, navigator)
+        return result.bytes
+    }
+
     override suspend fun logs(lines: Int): List<LogEntry> =
         AiDriverLogBuffer.entries(lines)
 

@@ -25,10 +25,59 @@ fun main(args: Array<String>) {
         is CliCommand.Start -> {
             Daemon.start(command.port, command.cliPort, command.daemon)
         }
+        // by Claude - CLI client handles file writing for screenshots (server only returns base64)
+        is CliCommand.Screenshot -> {
+            if (command.format == CliCommand.Screenshot.Format.Base64) {
+                sendCliCommand(command, 7475)
+            } else {
+                handleScreenshotSave(command, 7475)
+            }
+        }
         else -> {
             // Forward to running daemon via HTTP
             sendCliCommand(command, 7475)
         }
+    }
+}
+
+// by Claude - fetch screenshot as base64 from server, write file on CLI client side
+private fun handleScreenshotSave(command: CliCommand.Screenshot, cliPort: Int) {
+    // Always request Base64 from the server regardless of the user's format choice
+    val base64Command = command.copy(format = CliCommand.Screenshot.Format.Base64)
+    val response = try {
+        sendCliCommandRaw(base64Command, cliPort)
+    } catch (e: java.net.ConnectException) {
+        System.err.println("Error: AI driver daemon is not running. Start it with: java -jar ai-driver-server.jar start")
+        return
+    }
+    if (response.startsWith("Screenshot failed:") || response.startsWith("App '") || response.startsWith("No screenshot")) {
+        System.err.println(response)
+        return
+    }
+    val bytes = java.util.Base64.getDecoder().decode(response)
+    val path = command.path ?: "screenshot-${command.appId}-${System.currentTimeMillis()}.png"
+    java.io.File(path).writeBytes(bytes)
+    println("Screenshot saved to: $path")
+}
+
+private fun sendCliCommandRaw(command: CliCommand, cliPort: Int): String {
+    val json = Json { encodeDefaults = true }
+    val body = json.encodeToString(CliCommand.serializer(), command)
+    val url = URL("http://localhost:$cliPort/cli")
+    val conn = url.openConnection() as HttpURLConnection
+    try {
+        conn.requestMethod = "POST"
+        conn.doOutput = true
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.outputStream.use { it.write(body.toByteArray()) }
+        val responseCode = conn.responseCode
+        return if (responseCode in 200..299) {
+            conn.inputStream.bufferedReader().readText()
+        } else {
+            conn.errorStream?.bufferedReader()?.readText() ?: "HTTP $responseCode"
+        }
+    } finally {
+        conn.disconnect()
     }
 }
 
@@ -62,7 +111,7 @@ private fun printUsage() {
           list                                                          List connected apps
           info <appId>                                                  Show app info
           snapshot <appId> [--component path] [--format Text|Json]     Get UI snapshot
-          screenshot <appId> [--format SaveToFile|Base64]               Take screenshot (saves to ~/.kiteui/screenshots/)
+          screenshot <appId> [--path file.png]                         Take screenshot
           perform <appId> --action <click:id|longClick:id|setValue:id:val|scroll:id|navigate:route|back|forward>
                                                                         Perform a UI action
           wait <appId> [--page PageName] [--component id]              Wait for condition

@@ -71,22 +71,13 @@ private suspend fun handleCommand(command: CliCommand): String {
             if (command.format == CliCommand.Snapshot.Format.Text) formatSnapshotText(snapshot)
             else json.encodeToString(UiSnapshot.serializer(), snapshot)
         }
-        // by Claude - screenshots always write to ~/.kiteui/screenshots/ to prevent path traversal
+        // by Claude - server always returns base64; file writing is the CLI client's responsibility
         is CliCommand.Screenshot -> {
             val app = AppRegistry.get(command.appId)
                 ?: return "App '${command.appId}' not found"
             val result = app.requestScreenshot()
             if (result.error != null) return "Screenshot failed: ${result.error}"
-            val base64 = result.base64 ?: return "No screenshot data returned"
-            if (command.format == CliCommand.Screenshot.Format.Base64) {
-                base64
-            } else {
-                val bytes = java.util.Base64.getDecoder().decode(base64)
-                val dir = java.io.File(System.getProperty("user.home"), ".kiteui/screenshots").also { it.mkdirs() }
-                val file = java.io.File(dir, "screenshot-${command.appId}-${System.currentTimeMillis()}.png")
-                file.writeBytes(bytes)
-                "Screenshot saved to: ${file.absolutePath}"
-            }
+            result.base64 ?: return "No screenshot data returned"
         }
         is CliCommand.Perform -> {
             val app = AppRegistry.get(command.appId) ?: return "App '${command.appId}' not found"
