@@ -11,9 +11,9 @@ import kotlinx.serialization.json.Json
 internal class TelemetryExporter(private val config: TelemetryConfig) {
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = false }
 
-    // Buffers — accessed only from main thread (same threading model as all KiteUI)
-    private val spanBuffer = ArrayDeque<OtlpSpan>()
-    private val logBuffer = ArrayDeque<OtlpLogRecord>()
+    // by Claude - buffers are internal for test access; accessed only from main thread (same threading model as all KiteUI)
+    internal val spanBuffer = ArrayDeque<OtlpSpan>()
+    internal val logBuffer = ArrayDeque<OtlpLogRecord>()
 
     // Metric aggregators keyed by "name|attributesHash"
     internal val counters = HashMap<String, CounterAggregator>()

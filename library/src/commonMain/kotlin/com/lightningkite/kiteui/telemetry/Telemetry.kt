@@ -127,6 +127,21 @@ object Telemetry {
         exporter = null
     }
 
+    // by Claude - resets state without network calls, for test isolation only
+    internal fun resetForTesting() {
+        exporter?.stop()
+        _config = null
+        exporter = null
+    }
+
+    // by Claude - configure without starting flush loop or lifecycle hooks, for test isolation only.
+    // Tests can't use the real configure() because AppScope/Dispatchers.Main aren't available.
+    internal fun configureForTesting(config: TelemetryConfig) {
+        resetForTesting()
+        _config = config
+        exporter = TelemetryExporter(config)
+    }
+
     // by Claude - chains into the existing Throwable_report global to capture exceptions as OTel log records
     private fun installExceptionCapture() {
         val previousHandler = Throwable_report
