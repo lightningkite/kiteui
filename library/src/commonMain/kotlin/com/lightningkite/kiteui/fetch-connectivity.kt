@@ -107,18 +107,22 @@ suspend fun connectivityFetch(
     headers: suspend () -> HttpHeaders = { httpHeaders() },
     body: RequestBody?,
 ): RequestResponse {
-    // by Claude - telemetry: capture timing and generate span ID for traceparent propagation
+    // by Claude - telemetry: capture timing, trace context, and span ID BEFORE any suspension.
+    // Read from coroutineContext so structured concurrency carries the right page span,
+    // even if the user navigates while this request is in flight.
     val telemetryActive = Telemetry.isActive
     val startMs = if (telemetryActive) clockMillis() else 0.0
     val startNanos = if (telemetryActive) IdGenerator.nanosString() else ""
     val spanId = if (telemetryActive) IdGenerator.spanId() else ""
+    val traceId = if (telemetryActive) coroutineContext.traceId() else ""
+    val parentSpanId = if (telemetryActive) coroutineContext.spanId() else ""
 
     // by Claude - wrap headers to inject W3C traceparent, giving the server end-to-end correlation
     val tracedHeaders: suspend () -> HttpHeaders = if (telemetryActive) {
         {
             headers().also { h ->
                 val sampled = if ((Telemetry.config?.traceSamplingRate ?: 1.0) >= 1.0) "01" else "00"
-                h.set("traceparent", "00-${Telemetry.currentTraceId}-$spanId-$sampled")
+                h.set("traceparent", "00-$traceId-$spanId-$sampled")
             }
         }
     } else headers
@@ -158,9 +162,9 @@ suspend fun connectivityFetch(
         if (exporter != null && kotlin.random.Random.nextDouble() <= (Telemetry.config?.traceSamplingRate ?: 1.0)) {
             exporter.addSpan(
                 OtlpSpan(
-                    traceId = Telemetry.currentTraceId,
+                    traceId = traceId,
                     spanId = spanId,
-                    parentSpanId = Telemetry.currentSpanId, // links to the page span
+                    parentSpanId = parentSpanId, // links to the page span, captured before suspension
                     name = "HTTP ${method.name}",
                     kind = 3, // SPAN_KIND_CLIENT
                     startTimeUnixNano = startNanos,
