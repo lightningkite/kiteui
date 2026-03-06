@@ -94,8 +94,18 @@ typealias Console = Log
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
 typealias ConsoleRoot = Log.Companion
 
+// by Claude - mutable interceptor chain; telemetry and AI driver both hook in here.
+// When set, all Log.xxx() calls go through the interceptor before reaching LogRoot.
+var logInterceptor: Log? = null
+
 interface Log {
-    companion object: Log by LogRoot
+    companion object : Log {
+        override fun tag(tag: String): Log = (logInterceptor ?: LogRoot).tag(tag)
+        override fun log(vararg entries: Any?) = (logInterceptor ?: LogRoot).log(*entries)
+        override fun error(vararg entries: Any?) = (logInterceptor ?: LogRoot).error(*entries)
+        override fun info(vararg entries: Any?) = (logInterceptor ?: LogRoot).info(*entries)
+        override fun warn(vararg entries: Any?) = (logInterceptor ?: LogRoot).warn(*entries)
+    }
     fun tag(tag: String): Log
     fun log(vararg entries: Any?)
     fun error(vararg entries: Any?)
