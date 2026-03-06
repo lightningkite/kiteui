@@ -62,7 +62,7 @@ private fun printUsage() {
           list                                                          List connected apps
           info <appId>                                                  Show app info
           snapshot <appId> [--component path] [--format Text|Json]     Get UI snapshot
-          screenshot <appId> [--path file.png]                         Take screenshot
+          screenshot <appId> [--format SaveToFile|Base64]               Take screenshot (saves to ~/.kiteui/screenshots/)
           perform <appId> --action <click:id|longClick:id|setValue:id:val|scroll:id|navigate:route|back|forward>
                                                                         Perform a UI action
           wait <appId> [--page PageName] [--component id]              Wait for condition
