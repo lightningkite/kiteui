@@ -76,6 +76,26 @@ class TelemetryContextTest {
         assertNull(element)
     }
 
+    // --- TelemetryContext.current() factory ---
+
+    @Test
+    fun currentCapturesFromExistingContext() = runTest {
+        val parent = TelemetryContext(traceId = "aabb1122ccdd3344eeff5566aabb7788", spanId = "1122334455667788")
+        withContext(parent) {
+            val captured = TelemetryContext.current()
+            assertEquals("aabb1122ccdd3344eeff5566aabb7788", captured.traceId)
+            assertEquals("1122334455667788", captured.spanId)
+        }
+    }
+
+    @Test
+    fun currentFallsBackToGlobals() = runTest {
+        // No TelemetryContext in scope — should read from Telemetry globals
+        val captured = TelemetryContext.current()
+        assertEquals(Telemetry.currentTraceId, captured.traceId)
+        assertEquals(Telemetry.currentSpanId, captured.spanId)
+    }
+
     @Test
     fun childCoroutineInheritsContext() = runTest {
         val ctx = TelemetryContext(traceId = "parent_trace_id_00000000000000", spanId = "parent_span_1234")

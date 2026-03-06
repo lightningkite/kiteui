@@ -53,16 +53,12 @@ page: ItemDetailPage (client)
 
 Trace context is captured **before** any coroutine suspension in `connectivityFetch()`. This means even if the user navigates to a different page while an HTTP request is in-flight, the span is correctly attributed to the page that initiated the request — not the page that's visible when it completes.
 
-For background coroutines launched with a custom scope, you can install `TelemetryContext` to carry trace context:
+For background coroutines launched with a custom scope, use `TelemetryContext.current()` to carry the caller's trace context:
 
 ```kotlin
 // Inside a page action:
-val ctx = TelemetryContext(
-    traceId = Telemetry.currentTraceId,
-    spanId = Telemetry.currentSpanId,
-)
-launch(ctx) {
-    // connectivityFetch() calls here will inherit this trace context
+launch(TelemetryContext.current()) {
+    // connectivityFetch() calls here inherit the parent's trace context
     val data = connectivityFetch(url = "...", body = null)
 }
 ```
