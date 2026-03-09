@@ -5,7 +5,12 @@ import com.lightningkite.kiteui.models.ImageLocal
 import kotlinx.cinterop.*
 import kotlinx.coroutines.test.runTest
 import platform.CoreGraphics.*
+import platform.Foundation.NSData
+import platform.Foundation.dataWithBytes
 import platform.UIKit.*
+import platform.UniformTypeIdentifiers.UTTypeData
+import platform.UniformTypeIdentifiers.UTType
+import platform.UniformTypeIdentifiers.typeWithMIMEType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -40,9 +45,17 @@ class ImageCompressionTest {
         return pngData.toByteArray()
     }
 
+    // by Claude - inline FileReference creation to avoid dependency on createFileReferenceFromBytes
+    @OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
     private fun createTestFileReference(width: Int, height: Int): FileReference {
         val pngBytes = createTestImagePngBytes(width, height)
-        return createFileReferenceFromBytes(pngBytes, "image/png", "test-${width}x${height}.png")
+        val nsData = pngBytes.usePinned { pinned ->
+            NSData.dataWithBytes(pinned.addressOf(0), pngBytes.size.toULong())
+        }
+        val utType = UTType.typeWithMIMEType("image/png") ?: UTTypeData
+        val provider = platform.Foundation.NSItemProvider(item = nsData, typeIdentifier = utType.identifier)
+        provider.suggestedName = "test-${width}x${height}.png"
+        return FileReference(provider, utType)
     }
 
     @Test
