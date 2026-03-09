@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import com.lightningkite.kiteui.gamepad.Gamepads
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -101,6 +102,17 @@ abstract class KiteUiActivity : AppCompatActivity() {
         }
         this.savedInstanceState = savedInstanceState
         onNewIntent(intent)
+
+        // Use modern back handling API instead of deprecated onBackPressed()
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (!mainNavigator.goBack()) {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        })
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -230,12 +242,6 @@ abstract class KiteUiActivity : AppCompatActivity() {
         animator = null
         super.onPause()
         AppState._inForeground.value = false
-    }
-
-    override fun onBackPressed() {
-        if(!mainNavigator.goBack()) {
-            super.onBackPressed()
-        }
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {

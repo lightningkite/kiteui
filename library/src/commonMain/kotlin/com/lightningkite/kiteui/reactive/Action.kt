@@ -41,7 +41,8 @@ fun Action(
 }
 
 class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.milliseconds) : Action by wraps {
-    private var lastInvoked = TimeSource.Monotonic.markNow()
+    // initialize in the past so the first invocation is never suppressed
+    private var lastInvoked = TimeSource.Monotonic.markNow() - frequencyCap - 1.milliseconds
 
     override fun startAction(scope: CoroutineScope) {
         if (lastInvoked.elapsedNow() > frequencyCap) {
