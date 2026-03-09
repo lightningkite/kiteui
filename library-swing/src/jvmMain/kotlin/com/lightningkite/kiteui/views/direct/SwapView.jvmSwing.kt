@@ -22,6 +22,8 @@ import javax.swing.JPanel
 import javax.swing.Timer
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
+    // by Claude - only expose the current (last) child for AI driver snapshots and path resolution
+    override val activeChildren: List<RView> get() = listOfNotNull(children.lastOrNull())
     // Track the current content size to prevent layout jumping during animations
     private var contentPreferredSize: Dimension = Dimension(0, 0)
 

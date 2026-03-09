@@ -37,7 +37,8 @@ actual class RContext(activity: KiteUiActivity): RContextHelper() {
             }
         }
 
-    actual fun split() = activityOrNull?.let { RContext(it).also { it.addons.putAll(addons) } }
+    // by Claude - use addons.child() for lazy parent lookup instead of copying
+    actual fun split() = activityOrNull?.let { RContext(it).also { it.addons = addons.child() } }
         ?: throw IllegalStateException("Cannot split RContext: Activity has been destroyed")
 
     actual var immersiveMode: Boolean = false

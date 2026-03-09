@@ -40,7 +40,10 @@ object ReactivityPage : Page {
             card.col {
                 h2 { content = "Data" }
                 field("Locally Stored Value") {
-                    textInput { content bind local }
+                    textInput {
+                        debugName = "localInput"
+                        content bind local
+                    }
                 }
                 field("Persistent Value - this will stay between refreshes") {
                     textInput { content bind persist }
@@ -58,7 +61,10 @@ object ReactivityPage : Page {
 
             card.col {
                 h2 { content = "Using reactiveScope()" }
-                text { reactiveScope { content = "local = ${local()}" } }
+                text {
+                    debugName = "localDisplay"
+                    reactiveScope { content = "local = ${local()}" }
+                }
                 text { reactiveScope { content = "persist = ${persist()}" } }
                 text { reactiveScope { content = "indirect = ${indirect()}" } }
                 text { reactiveScope { content = "debounced = ${debounced()}" } }

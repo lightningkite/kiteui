@@ -15,4 +15,12 @@ actual class ProgressBar actual constructor(context: RContext): RView(context) {
         set(value) {
             native.attributes.valueDouble = value.toDouble()
         }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = ratio.toString()
+        set(value) { super.accessibilityValue = value }
+
+    // by Claude
+    override val accessibilityType: String get() = "ProgressBar"
 }

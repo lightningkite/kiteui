@@ -3,7 +3,6 @@
 package com.lightningkite.kiteui.views
 
 
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
@@ -56,7 +55,7 @@ class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: 
             keyboardHeight - (view.get()?.window?.safeAreaInsets?.useContents { this.bottom } ?: 0.0)
 //            }
         afterTimeout((keyboardAnimationDuration * 1000.0).toLong()) {
-            view.get()?.findFirstResponderChild()?.scrollToMeCenter(true)
+            view.get()?.findFirstResponderChild()?.scrollToMe(true)
         }
     }
 

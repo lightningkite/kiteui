@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import com.lightningkite.kiteui.gamepad.Gamepads
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -51,9 +52,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
     private val safeInsetsProperty = Signal<Edges>(Edges.ZERO)
     val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
         override val representsView: RView? = null
-        override val context: RContext = RContext(this@KiteUiActivity).also {
-            ExternalServices.baseContext = it
-        }
+        override val context: RContext = RContext(this@KiteUiActivity)
         init {
             safeInsets = safeInsetsProperty
         }
@@ -101,6 +100,17 @@ abstract class KiteUiActivity : AppCompatActivity() {
         }
         this.savedInstanceState = savedInstanceState
         onNewIntent(intent)
+
+        // by Claude - Use modern back handling API instead of deprecated onBackPressed()
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (!mainNavigator.goBack()) {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        })
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -172,9 +182,9 @@ abstract class KiteUiActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent) {
+    override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        intent.data?.let { it ->
+        intent?.data?.let {
             val path = UrlLikePath(
                 segments = it.path?.split('/')?.filter { it.isNotBlank() } ?: listOf(),
                 parameters = it.query?.removePrefix("?")?.split('&')?.associate {
@@ -230,12 +240,6 @@ abstract class KiteUiActivity : AppCompatActivity() {
         animator = null
         super.onPause()
         AppState._inForeground.value = false
-    }
-
-    override fun onBackPressed() {
-        if(!mainNavigator.goBack()) {
-            super.onBackPressed()
-        }
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {

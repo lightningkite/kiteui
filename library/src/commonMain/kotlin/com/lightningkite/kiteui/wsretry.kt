@@ -19,16 +19,14 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 
+// by Claude — Bug 9: removed artificial 100ms delay; resume immediately on connect
 suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
     suspendCancellableCoroutine<Unit> {
         var alreadyResumed = false
         onOpen {
-            AppScope.launch {
-                delay(100L)
-                if (!alreadyResumed) {
-                    alreadyResumed = true
-                    it.resume(Unit)
-                }
+            if (!alreadyResumed) {
+                alreadyResumed = true
+                it.resume(Unit)
             }
         }
         onClose { code ->
@@ -59,8 +57,7 @@ fun retryWebsocket(
     log: Log? = null,
 ): RetryWebsocket {
     log?.log("Creating")
-    val baseDelay = 1000L
-    var currentDelay = baseDelay
+    // by Claude — Bug 7: removed dead `currentDelay` (was never read; ConnectivityGate handles backoff)
     var lastConnect = 0.0
     val connected = Signal(false).also {
         it.addListener {
@@ -76,28 +73,37 @@ fun retryWebsocket(
     var instanceCount: Int = 0
     var currentWebSocketId = -1
     suspend fun reset() {
+        // by Claude — Bug 2: update ID first so old socket's handlers are considered stale
         val id = instanceCount++
         currentWebSocketId = id
+        // by Claude — Bug 2: close old socket to prevent leaked connections and stale events
+        currentWebSocket?.close(1000, "Reconnecting")
         currentWebSocket = underlyingSocket().also { socket ->
             var pings: Job? = null
+            // by Claude — Bug 2: all handlers check staleness to ignore events from old sockets
             socket.onOpen {
+                if (id != currentWebSocketId) return@onOpen
                 log?.log("$id onOpen")
                 onOpenList.toList().forEach { l -> l() }
             }
             socket.onMessage {
+                if (id != currentWebSocketId) return@onMessage
                 log?.log("$id onMessage $it")
                 lastPong = clockMillis()
                 if (it.isNotBlank()) onMessageList.toList().forEach { l -> l(it) }
             }
             socket.onBinaryMessage {
+                if (id != currentWebSocketId) return@onBinaryMessage
                 log?.log("$id onBinaryMessage $it")
                 onBinaryMessageList.toList().forEach { l -> l(it) }
             }
             socket.onClose {
+                if (id != currentWebSocketId) return@onClose
                 log?.log("$id onClose $it")
                 onCloseList.toList().forEach { l -> l(it) }
             }
             socket.onOpen {
+                if (id != currentWebSocketId) return@onOpen
                 lastConnect = clockMillis()
                 lastPong = lastConnect
                 connected.value = true
@@ -105,12 +111,17 @@ fun retryWebsocket(
                 pings = AppScope.launch {
                     while (true) {
                         delay(pingTime)
+                        if (id != currentWebSocketId) return@launch
                         val now = clockMillis()
                         when {
-                            lastPong < now - (pingTime * 3) -> socket.close(
-                                3000,
-                                "Server did not respond to three consecutive pings."
-                            )
+                            // by Claude — Bug 10: exit ping loop after sending close
+                            lastPong < now - (pingTime * 3) -> {
+                                socket.close(
+                                    3000,
+                                    "Server did not respond to three consecutive pings."
+                                )
+                                return@launch
+                            }
 
                             lastPong < now - pingTime.times(0.8) -> socket.send(" ")
                         }
@@ -118,9 +129,8 @@ fun retryWebsocket(
                 }
             }
             socket.onClose {
+                if (id != currentWebSocketId) return@onClose
                 pings?.cancel()
-                currentDelay *= 2
-                if (connected.value && clockMillis() - lastConnect > (pingTime * 2)) currentDelay = baseDelay
                 connected.value = false
             }
         }

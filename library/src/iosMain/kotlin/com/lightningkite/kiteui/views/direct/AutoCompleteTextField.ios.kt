@@ -65,7 +65,12 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
     actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = textField.text ?: ""
-            set(value) { textField.text = value }
+            set(value) {
+                if (textField.text == value) return
+                textField.text = value
+                // by Claude - fire change event so reactive listeners are notified on programmatic updates
+                textField.sendActionsForControlEvents(UIControlEventEditingChanged)
+            }
         override fun addListener(listener: () -> Unit): () -> Unit {
             return textField.onEvent(this@AutoCompleteTextField, UIControlEventEditingChanged, listener)
         }
@@ -137,5 +142,13 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
             }
         }
     actual var suggestions: List<String> = listOf()
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readStringValue(content)
+        set(value) = writeStringValue(content, value)
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performStringSetValueAction(content, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }
 

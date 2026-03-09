@@ -15,8 +15,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.RViewWithAction
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -166,6 +165,14 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             }
         }
     }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readStringValue(content)
+        set(value) = writeStringValue(content, value)
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performStringSetValueAction(content, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 
     init {
         keyboardHints = KeyboardHints(KeyboardCase.Sentences)

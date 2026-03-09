@@ -72,6 +72,14 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
                 native.attributes.maxString = null
             }
         }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readNullableValue(content)
+        set(value) = writeNullableValue(content, value) { LocalDateTime.parse(it) }
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performNullableSetValueAction(content, { LocalDateTime.parse(it) }, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }
 
 
@@ -136,6 +144,14 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
                 native.attributes.maxString = null
             }
         }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readNullableValue(content)
+        set(value) = writeNullableValue(content, value) { LocalDate.parse(it) }
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performNullableSetValueAction(content, { LocalDate.parse(it) }, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }
 
 actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
@@ -199,6 +215,14 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
                 native.attributes.maxString = null
             }
         }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readNullableValue(content)
+        set(value) = writeNullableValue(content, value) { LocalTime.parse(it) }
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performNullableSetValueAction(content, { LocalTime.parse(it) }, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }
 
 //@Suppress("ACTUAL_WITHOUT_EXPECT")

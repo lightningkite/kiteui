@@ -1,0 +1,131 @@
+// by Claude - entry point: delegates to daemon or sends CLI command to daemon
+package com.lightningkite.kiteui.aidriver.server
+
+import com.lightningkite.kiteui.aidriver.CliCommand
+import com.lightningkite.kiteui.aidriver.CliFormat
+import kotlinx.serialization.json.Json
+import java.net.HttpURLConnection
+import java.net.URL
+
+// by Claude - default CLI port for the daemon HTTP interface
+private const val DEFAULT_CLI_PORT = 7475
+
+fun main(args: Array<String>) {
+    if (args.isEmpty()) {
+        printUsage()
+        return
+    }
+
+    val command = try {
+        CliFormat.parse(args.toList())
+    } catch (e: Exception) {
+        System.err.println("Error: ${e.message}")
+        printUsage()
+        return
+    }
+
+    when (command) {
+        is CliCommand.Start -> {
+            Daemon.start(command.port, command.cliPort, command.daemon)
+        }
+        // by Claude - CLI client handles file writing for screenshots (server only returns base64)
+        is CliCommand.Screenshot -> {
+            if (command.format == CliCommand.Screenshot.Format.Base64) {
+                sendCliCommand(command, DEFAULT_CLI_PORT)
+            } else {
+                handleScreenshotSave(command, DEFAULT_CLI_PORT)
+            }
+        }
+        // by Claude - find returns exit code 1 on NOT_FOUND so bash scripts can detect failure
+        is CliCommand.Find -> {
+            val response = try {
+                sendCliCommandRaw(command, DEFAULT_CLI_PORT)
+            } catch (e: java.net.ConnectException) {
+                System.err.println("Error: AI driver daemon is not running. Start it with: kiteui-drive start")
+                return
+            }
+            println(response)
+            if (response.startsWith("NOT_FOUND:")) {
+                kotlin.system.exitProcess(1)
+            }
+        }
+        else -> {
+            // Forward to running daemon via HTTP
+            sendCliCommand(command, DEFAULT_CLI_PORT)
+        }
+    }
+}
+
+// by Claude - fetch screenshot as base64 from server, write file on CLI client side
+private fun handleScreenshotSave(command: CliCommand.Screenshot, cliPort: Int) {
+    // Always request Base64 from the server regardless of the user's format choice
+    val base64Command = command.copy(format = CliCommand.Screenshot.Format.Base64)
+    val response = try {
+        sendCliCommandRaw(base64Command, cliPort)
+    } catch (e: java.net.ConnectException) {
+        System.err.println("Error: AI driver daemon is not running. Start it with: kiteui-drive start")
+        return
+    }
+    if (response.startsWith("Screenshot failed:") || response.startsWith("App '") || response.startsWith("No screenshot")) {
+        System.err.println(response)
+        return
+    }
+    val bytes = java.util.Base64.getDecoder().decode(response)
+    val path = command.path ?: "screenshot-${command.appId}-${System.currentTimeMillis()}.png"
+    java.io.File(path).writeBytes(bytes)
+    println("Screenshot saved to: $path")
+}
+
+private fun sendCliCommandRaw(command: CliCommand, cliPort: Int): String {
+    val json = Json { encodeDefaults = true }
+    val body = json.encodeToString(CliCommand.serializer(), command)
+    val url = URL("http://localhost:$cliPort/cli")
+    val conn = url.openConnection() as HttpURLConnection
+    try {
+        conn.requestMethod = "POST"
+        conn.doOutput = true
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.outputStream.use { it.write(body.toByteArray()) }
+        val responseCode = conn.responseCode
+        return if (responseCode in 200..299) {
+            conn.inputStream.bufferedReader().readText()
+        } else {
+            conn.errorStream?.bufferedReader()?.readText() ?: "HTTP $responseCode"
+        }
+    } finally {
+        conn.disconnect()
+    }
+}
+
+// by Claude - delegates to sendCliCommandRaw for proper error handling on HTTP 4xx/5xx
+private fun sendCliCommand(command: CliCommand, cliPort: Int) {
+    try {
+        println(sendCliCommandRaw(command, cliPort))
+    } catch (e: java.net.ConnectException) {
+        System.err.println("Error: AI driver daemon is not running. Start it with: kiteui-drive start")
+    }
+}
+
+private fun printUsage() {
+    println("""
+        AI Driver CLI - LLM-driven UI automation for KiteUI apps
+
+        Usage: ui <command> [options]
+
+        Commands:
+          start [--port 7474] [--cliPort 7475] [--daemon]              Start the daemon
+          stop                                                          Stop the daemon
+          status                                                        Show daemon status
+          list                                                          List connected apps
+          info <appId>                                                  Show app info
+          snapshot <appId> [--component path] [--search text]            Get UI snapshot
+                         [--interactiveOnly] [--format Text|Json]
+          find <appId> [--value text] [--type Type] [--action click]   Find components
+                       [--id partial] [--limit 10] [--format Text|Json]
+          screenshot <appId> [--path file.png]                         Take screenshot
+          perform <appId> --action <click:id|longClick:id|setValue:id:val|scroll:id|navigate:route|back|forward>
+                                                                       Perform a UI action
+          wait <appId> [--page PageName] [--component id]              Wait for condition
+          record <appId> <start|stop|export|export-kotlin>             Record interactions
+    """.trimIndent())
+}

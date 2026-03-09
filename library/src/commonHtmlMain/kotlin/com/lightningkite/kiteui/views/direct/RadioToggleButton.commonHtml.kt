@@ -66,4 +66,12 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         set(value) {
             input.attributes.disabled = !value
         }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readBooleanValue(checked)
+        set(value) = writeBooleanValue(checked, value)
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performBooleanAction(checked, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }

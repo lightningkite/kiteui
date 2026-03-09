@@ -1,0 +1,51 @@
+#!/bin/sh
+# by Claude - one-command setup for AI driver system
+# Builds the server distribution and starts the daemon.
+# Usage: ./ui-setup
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Step 1: Build the server distribution
+echo "Building AI driver server..."
+./gradlew :ai-driver-server:installDist --quiet >/dev/null 2>&1 || {
+    echo "Quiet build failed. Retrying with output for diagnostics..."
+    ./gradlew :ai-driver-server:installDist
+}
+
+# Step 2: Stop any existing daemon (ignore errors if not running)
+"$SCRIPT_DIR/ui" stop 2>/dev/null || true
+sleep 1
+
+# Step 3: Start daemon in background (no --daemon flag; & backgrounds the blocking start)
+echo "Starting daemon..."
+"$SCRIPT_DIR/ui" start >/dev/null 2>&1 &
+DAEMON_PID=$!
+
+# Step 4: Wait for daemon to be ready (up to 30 seconds)
+READY=false
+for i in $(seq 1 30); do
+    if "$SCRIPT_DIR/ui" status >/dev/null 2>&1; then
+        READY=true
+        break
+    fi
+    sleep 1
+done
+
+if [ "$READY" = true ]; then
+    echo "Daemon ready (PID $DAEMON_PID)"
+else
+    echo "WARNING: Daemon may not be ready yet (still starting up)"
+fi
+
+echo ""
+echo "AI driver daemon is running."
+echo "  Apps connect to:  ws://localhost:7474/app"
+echo "  CLI endpoint:     http://localhost:7475/cli"
+echo ""
+echo "Next steps:"
+echo "  1. Start a KiteUI app:  ./gradlew :example-app:viteRun"
+echo "  2. Open the app in your browser"
+echo "  3. Check connection:    ./ui list"
+echo "  4. Take a snapshot:     ./ui snapshot <appId>"

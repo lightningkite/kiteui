@@ -30,7 +30,8 @@ actual class RContext(window: Window) : RContextHelper() {
         }
 
     actual fun split(): RContext = windowOrNull?.let {
-        RContext(it).also { it.addons.putAll(addons) }
+        // by Claude - use addons.child() for lazy parent lookup instead of copying
+        RContext(it).also { it.addons = addons.child() }
     } ?: throw IllegalStateException("Cannot split RContext: Window has been destroyed")
 
     actual var immersiveMode: Boolean = false

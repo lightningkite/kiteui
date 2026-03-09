@@ -1,5 +1,8 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.aidriver.AiDriver
+import com.lightningkite.kiteui.isDevelopment
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.*
@@ -21,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 
 val defaultTheme = Theme.flat2("flat2default", 0.6.turns).customize(
     newId = "asdf",
-    transitionDuration = 0.2.seconds,
+    transitionDuration = 1.seconds,
     bodyTransitions = ScreenTransitions.HorizontalSlide
 )
 //val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
@@ -29,34 +32,36 @@ val appTheme = Signal<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): Unit {
     RViewHelper.leakDetection = true
-//    return frame {
-//        this.forcedSafeInsets = Edges(100.dp)
-//        col {
-//            text("A")
-//            text("B")
-//            text("C")
-//        }
-//    }
-    return appNav(navigator, dialog) {
-        appName = "KiteUI Sample App"
-        ::navItems {
-            listOf(
-                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
-                NavLink(title = { "Test Pages" }, icon = { Icon.home }) { { RootPage } },
+    val rootView = produceOne {
+        appNav(navigator, dialog) {
+            appName = "KiteUI Sample App"
+            ::navItems {
+                listOf(
+                    NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
+                    NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
+                    NavLink(title = { "Test Pages" }, icon = { Icon.home }) { { RootPage } },
+                )
+            }
+
+            ::exists {
+                navigator.currentPage() !is UseFullPage
+            }
+
+            actions = listOf(
+                NavLink(
+                    title = { "Search" },
+                    icon = { Icon.search },
+                    destination = { { DocSearchPage } }
+                ),
             )
         }
-
-        ::exists {
-            navigator.currentPage() !is UseFullPage
-        }
-
-        actions = listOf(
-            NavLink(
-                title = { "Search" },
-                icon = { Icon.search },
-                destination = { { DocSearchPage } }
-            ),
+    }
+    // by Claude - connect AI driver for LLM-driven UI automation (dev builds only)
+    if (Platform.isDevelopment) {
+        AiDriver.connect(
+            appName = "KiteUI Sample App",
+            rootViewProvider = { rootView },
+            navigatorProvider = { navigator }
         )
     }
 }

@@ -34,16 +34,16 @@ object ExternalServicesPage : Page {
             row {
                 button {
                     text { content = "openTab" }
-                    onClick { context.openTab("https://google.com") }
+                    onClick { externalServices.openTab("https://google.com") }
                 }
 
                 button {
                     text { content = "openTab (mail)" }
-                    onClick { context.openTab("mailto:joseph@lightningkite.com") }
+                    onClick { externalServices.openTab("mailto:joseph@lightningkite.com") }
                 }
                 button {
                     text { content = "openTab (phone)" }
-                    onClick { context.openTab("tel:8013693729") }
+                    onClick { externalServices.openTab("tel:8013693729") }
                 }
             }
             row {
@@ -65,12 +65,12 @@ object ExternalServicesPage : Page {
             scrollingHorizontally.row {
                 button {
                     text("Open Map")
-                    onClick { context.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
+                    onClick { externalServices.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
                 }
                 button {
                     text("Open Event")
                     onClick {
-                        context.openEvent(
+                        externalServices.openEvent(
                             title = "Test Event",
                             description = "This is a test event from the KiteUI Tester app.",
                             location = "255 S 300 W Logan, UT 84321",
@@ -83,7 +83,7 @@ object ExternalServicesPage : Page {
                 button {
                     text("Download")
                     onClick {
-                        context.download(
+                        externalServices.download(
                             "yes.png",
                             "https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png"
                         )
@@ -92,7 +92,7 @@ object ExternalServicesPage : Page {
                 button {
                     text("Share")
                     onClick {
-                        context.share(
+                        externalServices.share(
                             "Cool Thing",
                             "Check out this cool thing!",
                             "https://github.com/lightningkite/kiteui"
@@ -104,7 +104,7 @@ object ExternalServicesPage : Page {
                     onClick {
                         val blob =
                             fetch("https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png").blob()
-                        context.share(listOf("Captain_Falcon.png" to blob))
+                        externalServices.share(listOf("Captain_Falcon.png" to blob))
                     }
                 }
             }
@@ -113,7 +113,7 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "download image" }
                     onClick {
-                        ExternalServices.download(
+                        externalServices.download(
                             "test.jpg",
                             "https://picsum.photos/200/300",
                             DownloadLocation.Downloads
@@ -123,7 +123,7 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "download gallery image" }
                     onClick {
-                        ExternalServices.download(
+                        externalServices.download(
                             "test.jpg",
                             "https://picsum.photos/200/300",
                             DownloadLocation.Pictures
@@ -134,7 +134,7 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "download csv" }
                     onClick {
-                        ExternalServices.download(
+                        externalServices.download(
                             "file.csv",
                             """
                                 name,phone
@@ -152,14 +152,14 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "requestFile" }
                     onClick {
-                        println(context.requestFile(listOf("*/*")))
+                        println(externalServices.requestFile(listOf("*/*")))
                     }
                 }
 
                 button {
                     text { content = "requestFiles" }
                     onClick {
-                        println(context.requestFiles(listOf("*/*")))
+                        println(externalServices.requestFiles(listOf("*/*")))
                     }
                 }
             }
@@ -168,7 +168,7 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "requestFile image" }
                     onClick {
-                        image.value = context.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
+                        image.value = externalServices.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
                     }
                 }
 
@@ -176,7 +176,7 @@ object ExternalServicesPage : Page {
                     text { content = "requestFiles image" }
                     onClick {
                         image.value =
-                            context.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
+                            externalServices.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
                     }
                 }
             }
@@ -185,7 +185,7 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "requestCaptureSelf" }
                     onClick {
-                        image.value = context.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
+                        image.value = externalServices.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
                     }
                 }
 
@@ -193,7 +193,7 @@ object ExternalServicesPage : Page {
                     text { content = "requestCaptureEnvironment" }
                     onClick {
                         image.value =
-                            context.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
+                            externalServices.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
                     }
                 }
             }
@@ -215,7 +215,7 @@ object ExternalServicesPage : Page {
 //                    }
 //
 //
-//                    onClick{context.setClipboardText(clip.await())}
+//                    onClick{externalServices.setClipboardText(clip.await())}
 //                }
 //            }
         }

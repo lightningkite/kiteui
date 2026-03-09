@@ -1,11 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.openTab
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
@@ -21,7 +21,7 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
                 launch {
                     onNavigate.invoke()
                     value?.let {
-                        ExternalServices.openTab(it)
+                        context.openTab(it)
                     }
                 }
             }
@@ -46,4 +46,11 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
     }
 
     override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+
+    // by Claude - external link supports click
+    override val accessibilityActions: Set<String> get() = setOf("click")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "click" -> { native.performClick(); null }
+        else -> super.performAccessibilityAction(action, value)
+    }
 }

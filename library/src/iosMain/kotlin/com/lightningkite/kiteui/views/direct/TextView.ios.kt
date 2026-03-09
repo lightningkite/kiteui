@@ -162,6 +162,14 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         updateFont()
         native.linkSetup(html.contains("<a"))
     }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = content
+        set(value) { super.accessibilityValue = value }
+
+    // by Claude
+    override val accessibilityType: String get() = "Text"
 }
 
 // Calculated from font sizes shown at https://developer.apple.com/design/human-interface-guidelines/typography#Specifications
