@@ -8,9 +8,7 @@ import platform.CoreGraphics.*
 import platform.Foundation.NSData
 import platform.Foundation.dataWithBytes
 import platform.UIKit.*
-import platform.UniformTypeIdentifiers.UTTypeData
-import platform.UniformTypeIdentifiers.UTType
-import platform.UniformTypeIdentifiers.typeWithMIMEType
+import platform.UniformTypeIdentifiers.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
