@@ -45,15 +45,31 @@ This is a multi-module Gradle project:
 ```
 
 ### Testing
-```bash
-# Run all tests
-./gradlew allTests
 
-# Run tests for specific platform
-./gradlew :library:jvmTest
-./gradlew :library:jsTest
-./gradlew :library:iosX64Test
+See **[docs/RUNNING_TESTS.md](docs/RUNNING_TESTS.md)** for the full guide including prerequisites, gotchas, and how to write tests.
+
+```bash
+# Fastest — no external tools needed
+./gradlew :example-app:jvmSsrTest
+
+# Android (Robolectric, no device needed)
+./gradlew :example-app:testDebugUnitTest
+
+# iOS (requires running Simulator)
+./gradlew :example-app:iosSimulatorArm64Test
+
+# JS/Web (requires Chrome)
+./gradlew :example-app:jsBrowserTest
+
+# All platforms at once
+./gradlew :example-app:allTests
+
+# Filter to a specific test class (JVM SSR and Android only)
+./gradlew :example-app:jvmSsrTest --tests "*.MyTestClass"
+./gradlew :example-app:testDebugUnitTest --tests "*.MyTestClass"
 ```
+
+Substitute `:library:` for `:example-app:` to run library tests instead.
 
 ### Running Example App
 ```bash
