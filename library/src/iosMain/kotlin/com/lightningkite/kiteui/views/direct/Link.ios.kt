@@ -66,5 +66,21 @@ actual class Link actual constructor(context: RContext): RView(context) {
         if(native.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+
+    // by Claude - Link supports click for AI driver navigation
+    override val accessibilityActions: Set<String> get() = setOf("click")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "click" -> {
+            onClick?.let { launch { it() } }
+            to?.invoke()?.let { destination ->
+                launch {
+                    onNavigate?.invoke()
+                    if (resetsStack) onNavigator.reset(destination) else onNavigator.navigate(destination)
+                }
+            }
+            null
+        }
+        else -> super.performAccessibilityAction(action, value)
+    }
 }
 

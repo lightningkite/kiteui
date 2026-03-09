@@ -122,4 +122,12 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         native.maximumTrackTintColor = t.background.closestColor().toUiColor()
         native.thumbTintColor = t.foreground.closestColor().toUiColor()
     }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readNonNullValue(value)
+        set(v) = writeNonNullValue(value, v) { it.toFloatOrNull() ?: throw IllegalArgumentException("Cannot parse '$it' as Float") }
+    override val accessibilityActions get() = SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performNonNullSetValueAction(this.value, { it.toFloatOrNull() ?: throw IllegalArgumentException("Cannot parse '$it' as Float") }, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }

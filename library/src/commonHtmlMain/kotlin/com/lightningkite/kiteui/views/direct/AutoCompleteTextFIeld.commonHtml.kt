@@ -50,6 +50,14 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
             native.style.fontSize = value.value.toString()
         }
 
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readStringValue(content)
+        set(value) = writeStringValue(content, value)
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performStringSetValueAction(content, action, value) { a, v -> super.performAccessibilityAction(a, v) }
+
     actual var suggestions: List<String> = listOf()
         set(value) {
             field = value

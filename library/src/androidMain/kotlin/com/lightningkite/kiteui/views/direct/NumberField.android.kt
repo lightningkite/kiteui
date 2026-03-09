@@ -163,6 +163,14 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         }
     }
 
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readNullableValue(content)
+        set(value) = writeNullableValue(content, value) { it.toDoubleOrNull() }
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performNullableSetValueAction(content, { it.toDoubleOrNull() }, action, value) { a, v -> super.performAccessibilityAction(a, v) }
+
     init {
         keyboardHints = KeyboardHints.decimal
         align = Align.End

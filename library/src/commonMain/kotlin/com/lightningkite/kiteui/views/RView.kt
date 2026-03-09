@@ -146,6 +146,13 @@ abstract class RViewWithAction(context: RContext) : RView(context) {
         actionStatusRemove?.invoke()
         actionStatusRemove = value?.let { listenForWorking(it) }
     }
+
+    // by Claude - views with an action support clicking by default
+    override val accessibilityActions: Set<String> get() = setOf("click")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "click" -> { this.action?.startAction(this); null }
+        else -> super.performAccessibilityAction(action, value)
+    }
 }
 
 /**
@@ -176,6 +183,13 @@ abstract class RViewWithSecondaryAction(context: RContext) : RViewWithAction(con
     open fun secondaryActionSet(value: Action?) {
         secondaryActionStatusRemove?.invoke()
         secondaryActionStatusRemove = value?.let { listenForWorking(it) }
+    }
+
+    // by Claude - adds longClick to the action set
+    override val accessibilityActions: Set<String> get() = setOf("click", "longClick")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "longClick" -> { this.secondaryAction?.startAction(this); null }
+        else -> super.performAccessibilityAction(action, value)
     }
 }
 

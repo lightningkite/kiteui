@@ -49,6 +49,14 @@ constructor(
     }
 
     override val disableBackground = true
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = description
+        set(value) { super.accessibilityValue = value }
+
+    // by Claude
+    override val accessibilityType: String get() = "Image"
 }
 
 // Helper function to create an animated UIImage from data (supports GIF)

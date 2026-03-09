@@ -46,6 +46,14 @@ actual abstract class RawImageViewLike constructor(
     actual val scaleType: ImageScaleType,
 ) : RView(context){
     actual abstract val state: Reactive<Unit>
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = description
+        set(value) { super.accessibilityValue = value }
+
+    // by Claude
+    override val accessibilityType: String get() = "Image"
 }
 
 

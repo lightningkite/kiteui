@@ -57,4 +57,11 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
         if(native.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+
+    // by Claude - ExternalLink supports click for AI driver
+    override val accessibilityActions: Set<String> get() = setOf("click")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "click" -> { native.sendActionsForControlEvents(UIControlEventTouchUpInside); null }
+        else -> super.performAccessibilityAction(action, value)
+    }
 }

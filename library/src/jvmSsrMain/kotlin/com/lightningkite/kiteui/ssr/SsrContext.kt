@@ -113,6 +113,9 @@ class SsrContext(
     /** The rendered frame - stored for deferred serialization */
     private var renderedFrame: Frame? = null
 
+    /** The rendered root frame, for testing or inspection. */ // by Claude
+    val rootFrame: Frame? get() = renderedFrame
+
     /**
      * Render content using the ViewWriter DSL.
      * Builds the component tree but defers HTML serialization.

@@ -33,6 +33,14 @@ actual class CircularProgress actual constructor(context: RContext) : RView(cont
     actual var ratio: Float
         get() = native.progress /100f
         set(value) { native.setProgress((value * 100)) }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = ratio.toString()
+        set(value) { super.accessibilityValue = value }
+
+    // by Claude
+    override val accessibilityType: String get() = "CircularProgress"
 }
 
 

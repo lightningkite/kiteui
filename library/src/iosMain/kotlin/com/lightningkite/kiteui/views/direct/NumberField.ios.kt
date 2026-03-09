@@ -113,8 +113,11 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         override var value: Double?
             get() = (textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull()
             set(value) {
-                if(textField.text != (value?.commaString() ?: ""))
+                if(textField.text != (value?.commaString() ?: "")) {
                     textField.text = value?.commaString() ?: ""
+                    // by Claude - fire change event so reactive listeners are notified on programmatic updates
+                    textField.sendActionsForControlEvents(UIControlEventEditingChanged)
+                }
             }
         override fun addListener(listener: () -> Unit): () -> Unit {
             return textField.onEvent(this@NumberInput, UIControlEventEditingChanged, listener)
@@ -207,4 +210,12 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         if(textField.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readNullableValue(content)
+        set(value) = writeNullableValue(content, value) { it.toDoubleOrNull() }
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performNullableSetValueAction(content, { it.toDoubleOrNull() }, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }

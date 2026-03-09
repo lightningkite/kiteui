@@ -27,6 +27,8 @@ actual class Select actual constructor(context: RContext): RView(context) {
         textField.inputView = UIPickerView()
     }
 
+    private var _accessibilitySetter: ((String) -> Unit)? = null  // by Claude
+
     actual fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
@@ -70,6 +72,12 @@ actual class Select actual constructor(context: RContext): RView(context) {
             picker.setDataSource(null)
             picker.setDelegate(null)
         }
+        _accessibilitySetter = { text ->  // by Claude
+            @Suppress("UNCHECKED_CAST")
+            val item = source.list.firstOrNull { render(it) == text }
+                ?: throw IllegalArgumentException("No option matching '$text'")
+            launch { edits set item }
+        }
     }
 
     var fontAndStyle: FontAndStyle? = null
@@ -88,6 +96,22 @@ actual class Select actual constructor(context: RContext): RView(context) {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
         } ?: UIFont.systemFontOfSize(16.0)
         textField.textAlignment = alignment
+    }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = textField.text
+        set(value) {
+            val setter = _accessibilitySetter ?: throw IllegalStateException("Select not bound")
+            setter(value ?: throw IllegalArgumentException("Cannot set null on Select"))
+        }
+
+    // by Claude - select supports click and setValue
+    override val accessibilityActions: Set<String> get() = setOf("click", "setValue")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "click" -> null  // click is handled at the native level
+        "setValue" -> { accessibilityValue = value; null }
+        else -> super.performAccessibilityAction(action, value)
     }
 
     actual var enabled: Boolean

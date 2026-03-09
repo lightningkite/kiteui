@@ -23,6 +23,8 @@ import com.lightningkite.readable.*
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout(context.activity)
+    // by Claude - only expose the current (last) child for AI driver snapshots and path resolution
+    override val activeChildren: List<RView> get() = listOfNotNull(children.lastOrNull())
 
     companion object {
         val swapTimeMakeViewPerformance = PerformanceInfo("swapTimeMakeView")

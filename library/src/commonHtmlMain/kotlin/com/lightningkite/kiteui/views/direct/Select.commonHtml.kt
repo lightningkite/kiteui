@@ -10,6 +10,7 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -18,6 +19,9 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         native.tag = "select"
         native.classes.add("editable")
     }
+
+    private var _accessibilityRenderedValue: String? = null  // by Claude
+    private var _accessibilitySetter: ((String) -> Unit)? = null  // by Claude
 
     actual fun <T> bind(
         edits: MutableReactive<T>,
@@ -43,6 +47,7 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         var alreadyHandled = false
         reactiveScope {
             val newValue = edits()
+            _accessibilityRenderedValue = render(newValue)  // by Claude
             val list = data.state.getOrNull() ?: listOf()
             if (alreadyHandled) return@reactiveScope
             alreadyHandled = true
@@ -59,6 +64,28 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         native.addEventListener("change") {
             setAction.startAction(this)
         }
+        _accessibilitySetter = { text ->  // by Claude
+            @Suppress("UNCHECKED_CAST")
+            val item = list.firstOrNull { render(it) == text }
+                ?: throw IllegalArgumentException("No option matching '$text'")
+            launch { edits set item }
+        }
+    }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = _accessibilityRenderedValue
+        set(value) {
+            val setter = _accessibilitySetter ?: throw IllegalStateException("Select not bound")
+            setter(value ?: throw IllegalArgumentException("Cannot set null on Select"))
+        }
+
+    // by Claude - select supports click and setValue
+    override val accessibilityActions: Set<String> get() = setOf("click", "setValue")
+    override fun performAccessibilityAction(action: String, value: String?): String? = when (action) {
+        "click" -> null  // click is handled at the native level
+        "setValue" -> { accessibilityValue = value; null }
+        else -> super.performAccessibilityAction(action, value)
     }
 
     actual var enabled: Boolean

@@ -6,6 +6,9 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
+    // by Claude - only expose the current (last) child for AI driver snapshots and path resolution
+    override val activeChildren: List<RView> get() = listOfNotNull(children.lastOrNull())
+
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")

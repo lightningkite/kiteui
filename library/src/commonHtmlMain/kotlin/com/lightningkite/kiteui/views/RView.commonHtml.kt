@@ -55,6 +55,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             else native.classes.remove("noInteraction")
         }
 
+    // by Claude - controls like Button store enabled in native.attributes.disabled, not ignoreInteraction
+    override val accessibilityEnabled: Boolean
+        get() = !ignoreInteraction && native.attributes.disabled != true
+
     override var debugName: String?
         get() = super.debugName
         set(value) {

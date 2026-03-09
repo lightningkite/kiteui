@@ -56,6 +56,8 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.gap = (gap ?: theme.gap).value.roundToInt()
     }
+    // by Claude
+    override val accessibilityType: String get() = if (vertical) "Column" else "Row"
 }
 
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {

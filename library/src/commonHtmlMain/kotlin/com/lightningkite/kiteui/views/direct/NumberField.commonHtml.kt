@@ -38,8 +38,11 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         override var value: Double?
             get() = native.attributes.valueString?.filter { it.isDigit() || it in setOf('-', '.') }?.toDoubleOrNull()
             set(value) {
-                if(native.attributes.valueString != value?.commaString())
+                if(native.attributes.valueString != value?.commaString()) {
                     native.attributes.valueString = value?.commaString()
+                    // by Claude - must notify listeners so bind propagates programmatic setValue
+                    invokeAllListeners()
+                }
             }
     }
 
@@ -143,6 +146,14 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
     actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
+
+    // by Claude
+    override var accessibilityValue: String?
+        get() = readNullableValue(content)
+        set(value) = writeNullableValue(content, value) { it.toDoubleOrNull() }
+    override val accessibilityActions get() = CLICK_AND_SET_VALUE_ACTIONS
+    override fun performAccessibilityAction(action: String, value: String?) =
+        performNullableSetValueAction(content, { it.toDoubleOrNull() }, action, value) { a, v -> super.performAccessibilityAction(a, v) }
 }
 
 expect val NumberInput.selectionStart: Int?

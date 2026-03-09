@@ -14,9 +14,11 @@ import com.lightningkite.kiteui.views.withoutAnimation
 
 
 actual class SwapView actual constructor(context: RContext): RView(context) {
-    
+
     override val native = FrameLayout()
     private var currentView: RView? = null
+    // by Claude - only expose the current (last) child for AI driver snapshots and path resolution
+    override val activeChildren: List<RView> get() = listOfNotNull(children.lastOrNull())
 
     init {
         native.clipsToBounds = true
