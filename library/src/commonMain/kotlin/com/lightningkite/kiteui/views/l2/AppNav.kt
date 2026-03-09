@@ -182,7 +182,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
         }
         val tabsHandleBottom = remember { appNav.existsProperty() && !AppState.softInputOpen() }
         beforeNextElementSetup {
-            // by Claude - Apply bottom safe insets when keyboard is open, since the tab bar
+            // Apply bottom safe insets when keyboard is open, since the tab bar
             // (which normally handles the bottom inset) is hidden during keyboard input.
             applySafeInsets { edges ->
                 Edges(

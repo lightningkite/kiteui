@@ -33,7 +33,6 @@ class WaitGate(permit: Boolean = false) {
         permit = false
     }
     val continuations = ArrayList<Continuation<Unit>>()
-    // by Claude — Bug 5: clean up cancelled continuations to prevent memory leaks
     suspend fun await(): Unit {
         if (permit) return
         else return suspendCancellableCoroutine {
@@ -102,7 +101,6 @@ object Connectivity {
     val lastConnectivityIssueCode: Signal<Short> = Signal(0)
 }
 
-// by Claude — Bug 6: check stop connectivity codes on ALL responses, not just retries
 suspend fun connectivityFetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,

@@ -157,8 +157,6 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
                 }
             }
     }
-    // by Claude — Bug 3: fixed header parsing; was truncating values at first colon and
-    // incorrectly splitting on semicolons (which are part of the value, not separators)
     actual val headers: HttpHeaders by lazy {
         httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.map {
             val s = it.split(":", limit = 2)
@@ -170,7 +168,6 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
 actual typealias Blob = org.w3c.files.Blob
 actual typealias FileReference = File
 
-// by Claude - create FileReference (JS File) from raw bytes for testing/mocking
 actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
     // ByteArray in Kotlin/JS is backed by Int8Array; wrap in a Blob first, then File
     val blob = Blob(arrayOf(bytes.asDynamic()), BlobPropertyBag(type = mimeType))
@@ -198,7 +195,6 @@ actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(org.w3c.dom.WebSocket(url))
 }
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
 class WebSocketWrapper(val native: org.w3c.dom.WebSocket, val log: Log? = Log.tag("WS to ${native.url}").infoOrAbove()) : WebSocket {
     private val opened = Clock.System.now()
     private val stopListeningToDebugKill = killAllSockets.addListener {

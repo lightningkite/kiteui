@@ -63,7 +63,6 @@ actual suspend fun fetch(
     onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
     onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
 ): RequestResponse {
-    // by Claude — add request/response logging matching JVM SSR/Android behavior
     return run {
         try {
             fetchLog.log("-> $method $url")
@@ -183,7 +182,6 @@ actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
 actual class RequestResponse(val wraps: HttpResponse) {
     actual val status: Short get() = wraps.status.value.toShort()
     actual val ok: Boolean get() = wraps.status.isSuccess()
-    // by Claude — Bug 4: wrap exceptions in ConnectionException, matching Android/JVM behavior
     actual suspend fun text(): String {
         try {
             return wraps.bodyAsText()
@@ -248,7 +246,6 @@ class WebSocketWrapper(val url: String) : WebSocket {
         AppScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
-                    // by Claude — Bug 1: flag to ensure onClose fires exactly once
                     var onCloseFired = false
                     withContext(Dispatchers.Main) {
                         onOpen.forEach { it() }
@@ -301,7 +298,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
                                 else -> {}
                             }
                         } catch (e: ClosedReceiveChannelException) {
-                            break // by Claude — channel closed, exit loop
+                            break
                         }
                     }
                     withContext(Dispatchers.Main) {
@@ -355,7 +352,6 @@ class WebSocketWrapper(val url: String) : WebSocket {
 actual class Blob(val data: NSData, val type: String = "application/octet-stream")
 actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
 
-// by Claude - create FileReference from raw bytes for testing/mocking
 @OptIn(ExperimentalForeignApi::class)
 actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
     val nsData = bytes.usePinned { pinned ->

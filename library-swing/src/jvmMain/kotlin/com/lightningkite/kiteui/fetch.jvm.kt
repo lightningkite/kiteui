@@ -186,7 +186,6 @@ class WebSocketWrapper(val url: String) : WebSocket {
         AppScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
-                    // by Claude — Bug 1: flag to ensure onClose fires exactly once
                     var onCloseFired = false
                     withContext(Dispatchers.Main) {
                         onOpen.forEach { it() }
@@ -239,7 +238,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
                                 else -> {}
                             }
                         } catch (e: ClosedReceiveChannelException) {
-                            break // by Claude — channel closed, exit loop
+                            break
                         }
                     }
                     withContext(Dispatchers.Main) {
@@ -292,9 +291,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
 
 actual class FileReference(val file: File)
 
-// by Claude - create FileReference from raw bytes for testing/mocking
 actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
-    // by Claude - use a subdirectory so the original fileName is preserved for fileName()
     val dir = File(System.getProperty("java.io.tmpdir"), "kiteui-mock-${System.nanoTime()}")
     dir.mkdirs()
     dir.deleteOnExit()

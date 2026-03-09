@@ -220,7 +220,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
         @Suppress("OPT_IN_USAGE")
         AppScope.launch(Dispatchers.IO) {
             try {
-                // by Claude - Retry on UnknownHostException, same Android DNS bug as HTTP fetch
+                // Retry on UnknownHostException, same Android DNS bug as HTTP fetch
                 // https://github.com/square/okhttp/issues/8200
                 val maxRetries = 5
                 var attempt = 0
@@ -229,7 +229,6 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         attempt++
                         client.webSocket(url) {
                             attempt = 0 // Reset on successful connection
-                            // by Claude — Bug 1: flag to ensure onClose fires exactly once
                             var onCloseFired = false
                             withContext(Dispatchers.Main) {
                                 onOpen.forEach { it() }
@@ -384,10 +383,6 @@ actual fun FileReference.fileName(): String {
 }
 
 actual class Blob(val data: ByteArray, val type: String)
-
-// by Claude — Bug 8: removed unused webSocketClient (CIO engine); WebSocket connections use
-// `client` (OkHttp via AndroidAppContext.ktorClient). The JVM variants properly alias
-// client = webSocketClient, but Android doesn't use this at all.
 
 actual fun Blob.bytes(): Long = data.size.toLong()
 actual fun FileReference.bytes(): Long {

@@ -103,7 +103,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         this.savedInstanceState = savedInstanceState
         onNewIntent(intent)
 
-        // by Claude - Use modern back handling API instead of deprecated onBackPressed()
+        // Use modern back handling API instead of deprecated onBackPressed()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (!mainNavigator.goBack()) {

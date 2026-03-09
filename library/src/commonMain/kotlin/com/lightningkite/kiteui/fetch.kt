@@ -56,7 +56,6 @@ expect class RequestResponse {
 expect class Blob
 expect class FileReference
 
-// by Claude - create a FileReference from raw bytes, useful for mocking file picks in tests
 expect fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference
 
 expect fun String.toBlob(contentType: String = "text/plain"): Blob

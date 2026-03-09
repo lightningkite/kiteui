@@ -57,7 +57,6 @@ fun retryWebsocket(
     log: Log? = null,
 ): RetryWebsocket {
     log?.log("Creating")
-    // by Claude — Bug 7: removed dead `currentDelay` (was never read; ConnectivityGate handles backoff)
     var lastConnect = 0.0
     val connected = Signal(false).also {
         it.addListener {
@@ -73,14 +72,11 @@ fun retryWebsocket(
     var instanceCount: Int = 0
     var currentWebSocketId = -1
     suspend fun reset() {
-        // by Claude — Bug 2: update ID first so old socket's handlers are considered stale
         val id = instanceCount++
         currentWebSocketId = id
-        // by Claude — Bug 2: close old socket to prevent leaked connections and stale events
         currentWebSocket?.close(1000, "Reconnecting")
         currentWebSocket = underlyingSocket().also { socket ->
             var pings: Job? = null
-            // by Claude — Bug 2: all handlers check staleness to ignore events from old sockets
             socket.onOpen {
                 if (id != currentWebSocketId) return@onOpen
                 log?.log("$id onOpen")
