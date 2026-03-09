@@ -13,6 +13,9 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.CoroutineScope
 
+// by Claude - all rContextAddon defaults write to the root RContext so they're shared across the tree.
+// Explicit sets (via the setter) write to the local context, shadowing the root for that subtree.
+
 @Suppress("UNCHECKED_CAST")
 fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
     override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =

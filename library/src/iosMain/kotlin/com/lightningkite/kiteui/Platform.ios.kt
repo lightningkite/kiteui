@@ -16,3 +16,8 @@ actual fun setStatusBarColor(color: Color) {
 
 actual val Platform.Companion.current: Platform
     get() = Platform.iOS
+
+// by Claude - true when running a debug binary (Xcode debug builds)
+@OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+actual val Platform.Companion.isDevelopment: Boolean
+    get() = kotlin.native.Platform.isDebugBinary

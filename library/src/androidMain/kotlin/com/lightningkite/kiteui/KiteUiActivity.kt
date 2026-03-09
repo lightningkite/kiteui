@@ -51,9 +51,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
     private val safeInsetsProperty = Signal<Edges>(Edges.ZERO)
     val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
         override val representsView: RView? = null
-        override val context: RContext = RContext(this@KiteUiActivity).also {
-            ExternalServices.baseContext = it
-        }
+        override val context: RContext = RContext(this@KiteUiActivity)
         init {
             safeInsets = safeInsetsProperty
         }
