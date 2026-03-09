@@ -180,15 +180,25 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
                 ::shown { appNav.existsProperty() }
             }
         }
+        val tabsHandleBottom = remember { appNav.existsProperty() && !AppState.softInputOpen() }
         beforeNextElementSetup {
-            applySafeInsets(top = false, bottom = false)
+            // by Claude - Apply bottom safe insets when keyboard is open, since the tab bar
+            // (which normally handles the bottom inset) is hidden during keyboard input.
+            applySafeInsets { edges ->
+                Edges(
+                    left = edges.left,
+                    top = if(appNav.existsProperty()) 0.px else edges.top,
+                    right = edges.right,
+                    bottom = if (!tabsHandleBottom()) edges.bottom else 0.px,
+                )
+            }
         }.expanding.navigatorView(pageNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         nav.navGroupTabs(appNav.navItemsProperty) {
             applySafeInsets(top = false)
             debugName = "navGroupTabs"
             showOnPrint = false
-            ::shown { appNav.existsProperty() && !AppState.softInputOpen() }
+            ::shown { tabsHandleBottom() }
         }
     }
 }
