@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.extensionStrongRef
+import com.lightningkite.kiteui.views.rootView
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -37,6 +38,8 @@ import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.posix.int64_t
+import platform.UIKit.*
+import platform.CoreGraphics.*
 
 actual fun RContext.openLink(url: String, newTab: Boolean) {
     UIApplication.sharedApplication.openURL(
@@ -56,7 +59,6 @@ private val mostTypes = listOf(
     UTTypeSourceCode,
 )
 
-lateinit var rootView: UIView
 actual suspend fun RContext.requestFile(mimeTypes: List<String>): FileReference? = run {
     val onlyMedia = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
     val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/" )}
@@ -634,10 +636,13 @@ actual suspend fun RContext.download(
     blob: Blob,
     preferredDestination: DownloadLocation
 ) {
+    println("---- Saving temp")
     val temporaryFiles = listOf(blob.saveToTemporaryFile(name))
+    println("---- Saving temp 1")
     when (preferredDestination) {
         DownloadLocation.Downloads -> {
             withContext(Dispatchers.Main) {
+                println("---- Saving temp 2")
                 showShareSheet(items = temporaryFiles)
             }
         }

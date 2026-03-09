@@ -3,7 +3,6 @@
 package com.lightningkite.kiteui.views
 
 
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
@@ -73,6 +72,8 @@ class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: 
     }
 }
 
+lateinit var rootView: UIView
+
 fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> Unit) {
     definesPresentationContext = true
     val job = SupervisorJob()
@@ -102,6 +103,8 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     subview.rightAnchor.constraintEqualToAnchor(view.rightAnchor).setActive(true)
     val bottom = view.bottomAnchor.constraintEqualToAnchor(subview.bottomAnchor)
     bottom.setActive(true)
+
+    rootView = subview
 
     val observer: KeyboardObserver = KeyboardObserver(
         WeakReference(bottom),
