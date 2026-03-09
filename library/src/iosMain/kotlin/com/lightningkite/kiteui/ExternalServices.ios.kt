@@ -636,13 +636,10 @@ actual suspend fun RContext.download(
     blob: Blob,
     preferredDestination: DownloadLocation
 ) {
-    println("---- Saving temp")
     val temporaryFiles = listOf(blob.saveToTemporaryFile(name))
-    println("---- Saving temp 1")
     when (preferredDestination) {
         DownloadLocation.Downloads -> {
             withContext(Dispatchers.Main) {
-                println("---- Saving temp 2")
                 showShareSheet(items = temporaryFiles)
             }
         }
