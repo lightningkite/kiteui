@@ -50,50 +50,50 @@ interface GeolocationAccess {
 interface ExternalServicesAccess : ExternalLinksAccess, FilePickerAccess, FileDownloadAccess, SharingAccess, CalendarAccess, GeolocationAccess
 
 // by Claude - deprecated singleton for migration; callers should use RContext.externalServices instead
-@Deprecated("Use RContext.externalServices or ViewWriter.externalServices instead. This singleton will be removed.", level = DeprecationLevel.ERROR)
+@Deprecated("Use RContext.externalServices or ViewWriter.externalServices instead. This singleton will be removed.", level = DeprecationLevel.WARNING)
 object ExternalServices {
-    @Deprecated("Use RContext.externalServices instead", level = DeprecationLevel.ERROR)
+    @Deprecated("Use RContext.externalServices instead", level = DeprecationLevel.WARNING)
     lateinit var baseContext: RContext
 
-    @Suppress("DEPRECATION_ERROR")
+    @Suppress("DEPRECATION")
     private val ctx get() = baseContext
 
-    @Deprecated("Use RContext.openLink instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.openLink(url)", "com.lightningkite.kiteui.openLink"))
+    @Deprecated("Use RContext.openLink instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.openLink(url)", "com.lightningkite.kiteui.openLink"))
     fun openTab(url: String) = ctx.openLink(url)
 
-    @Deprecated("Use RContext.requestFile instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.requestFile(mimeTypes)", "com.lightningkite.kiteui.requestFile"))
+    @Deprecated("Use RContext.requestFile instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.requestFile(mimeTypes)", "com.lightningkite.kiteui.requestFile"))
     suspend fun requestFile(mimeTypes: kotlin.collections.List<String> = listOf("*/*")): FileReference? = ctx.requestFile(mimeTypes)
 
-    @Deprecated("Use RContext.requestFiles instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.requestFiles(mimeTypes)", "com.lightningkite.kiteui.requestFiles"))
+    @Deprecated("Use RContext.requestFiles instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.requestFiles(mimeTypes)", "com.lightningkite.kiteui.requestFiles"))
     suspend fun requestFiles(mimeTypes: kotlin.collections.List<String> = listOf("*/*")): kotlin.collections.List<FileReference> = ctx.requestFiles(mimeTypes)
 
-    @Deprecated("Use RContext.requestCaptureSelf instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.requestCaptureSelf(mimeTypes)", "com.lightningkite.kiteui.requestCaptureSelf"))
+    @Deprecated("Use RContext.requestCaptureSelf instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.requestCaptureSelf(mimeTypes)", "com.lightningkite.kiteui.requestCaptureSelf"))
     suspend fun requestCaptureSelf(mimeTypes: kotlin.collections.List<String> = listOf("image/*")): FileReference? = ctx.requestCaptureSelf(mimeTypes)
 
-    @Deprecated("Use RContext.requestCaptureEnvironment instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.requestCaptureEnvironment(mimeTypes)", "com.lightningkite.kiteui.requestCaptureEnvironment"))
+    @Deprecated("Use RContext.requestCaptureEnvironment instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.requestCaptureEnvironment(mimeTypes)", "com.lightningkite.kiteui.requestCaptureEnvironment"))
     suspend fun requestCaptureEnvironment(mimeTypes: kotlin.collections.List<String> = listOf("image/*")): FileReference? = ctx.requestCaptureEnvironment(mimeTypes)
 
-    @Deprecated("Use RContext.setClipboardText instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.setClipboardText(value)", "com.lightningkite.kiteui.setClipboardText"))
+    @Deprecated("Use RContext.setClipboardText instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.setClipboardText(value)", "com.lightningkite.kiteui.setClipboardText"))
     fun setClipboardText(value: String) = ctx.setClipboardText(value)
 
-    @Deprecated("Use RContext.download instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.download(name, blob, preferredDestination)", "com.lightningkite.kiteui.download"))
+    @Deprecated("Use RContext.download instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.download(name, blob, preferredDestination)", "com.lightningkite.kiteui.download"))
     @JsName("downloadBlob")
     suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation = DownloadLocation.Downloads) = ctx.download(name, blob, preferredDestination)
 
-    @Deprecated("Use RContext.download instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.download(name, url, preferredDestination, onDownloadProgress)", "com.lightningkite.kiteui.download"))
+    @Deprecated("Use RContext.download instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.download(name, url, preferredDestination, onDownloadProgress)", "com.lightningkite.kiteui.download"))
     suspend fun download(name: String, url: String, preferredDestination: DownloadLocation = DownloadLocation.Downloads, onDownloadProgress: ((progress: Float) -> Unit)? = null) = ctx.download(name, url, preferredDestination, onDownloadProgress)
 
-    @Deprecated("Use RContext.share instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.share(namesToBlobs)", "com.lightningkite.kiteui.share"))
+    @Deprecated("Use RContext.share instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.share(namesToBlobs)", "com.lightningkite.kiteui.share"))
     @JsName("shareBlob")
     suspend fun share(namesToBlobs: kotlin.collections.List<Pair<String, Blob>>) = ctx.share(namesToBlobs)
 
-    @Deprecated("Use RContext.share instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.share(title, message, url)", "com.lightningkite.kiteui.share"))
+    @Deprecated("Use RContext.share instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.share(title, message, url)", "com.lightningkite.kiteui.share"))
     fun share(title: String, message: String? = null, url: String? = null) = ctx.share(title, message, url)
 
-    @Deprecated("Use RContext.openEvent instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.openEvent(title, description, location, start, end, zone)", "com.lightningkite.kiteui.openEvent"))
+    @Deprecated("Use RContext.openEvent instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.openEvent(title, description, location, start, end, zone)", "com.lightningkite.kiteui.openEvent"))
     fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) = ctx.openEvent(title, description, location, start, end, zone)
 
-    @Deprecated("Use RContext.openMap instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("context.openMap(latitude, longitude, label, zoom)", "com.lightningkite.kiteui.openMap"))
+    @Deprecated("Use RContext.openMap instead", level = DeprecationLevel.WARNING, replaceWith = ReplaceWith("context.openMap(latitude, longitude, label, zoom)", "com.lightningkite.kiteui.openMap"))
     fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null) = ctx.openMap(latitude, longitude, label, zoom)
 }
 
