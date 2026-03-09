@@ -2,18 +2,6 @@
 package com.lightningkite.kiteui.views
 
 /**
- * Accessible description for this view.
- * On Android, sets contentDescription; on iOS, sets accessibilityLabel;
- * on Web, sets the aria-label attribute.
- * Also used as a fallback ID by the AI driver when no explicit testId is set.
- */
-var RView.ariaDescription: String?
-    get() = (this as RViewHelper).ariaDescription
-    set(value) {
-        (this as RViewHelper).ariaDescription = value
-    }
-
-/**
  * Modifier to set an aria description on the next view element.
  *
  * Example:
