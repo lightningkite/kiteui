@@ -72,5 +72,9 @@ actual val Platform.Companion.userAgent: String
     get() = SsrUserAgentContext.get()
         ?: "JVM ${Runtime.version()} ${System.getProperty("os.name") ?: "Unknown"}"
 
+// by Claude - SSR is always a development server
+actual val Platform.Companion.isDevelopment: Boolean
+    get() = true
+
 actual fun setStatusBarColor(color: Color) {
 }
