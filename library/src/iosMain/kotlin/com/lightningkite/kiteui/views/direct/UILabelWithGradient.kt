@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
@@ -23,7 +22,7 @@ import kotlin.experimental.ExperimentalNativeApi
 
 
 @OptIn(ExperimentalNativeApi::class)
-class UILabelWithGradient : UIView(CGRectZero.readValue()) {
+class UILabelWithGradient(val context: RContext) : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false
@@ -156,8 +155,8 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         val link = label.attributedText?.attribute(NSLinkAttributeName, indexOfCharacter, effectiveRange = null)
 
         when(link) {
-            is NSURL -> ExternalServices.openTab(link.toString())
-            is NSString -> ExternalServices.openTab(link as String)
+            is NSURL -> context.openTab(link.toString())
+            is NSString -> context.openTab(link as String)
         }
 
     }
