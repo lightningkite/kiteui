@@ -169,8 +169,6 @@ private val mostTypes = listOf(
     UTTypeSourceCode,
 )
 
-lateinit var rootView: UIView
-
 private suspend fun RContext.requestFileImpl(mimeTypes: List<String>): FileReference? = run {
     val onlyMedia = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
     val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/") }
@@ -589,10 +587,11 @@ private fun identifyMedia(data: NSData): Pair<Boolean, String> {
 
 fun RContext.showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
     present(UIActivityViewController(messages + items, null).apply {
-        popoverPresentationController?.sourceView = rootView
+        val uiView = this@showShareSheet.controller.view
+        popoverPresentationController?.sourceView = uiView
         popoverPresentationController?.sourceRect = CGRectMake(
-            rootView.frame.useContents { origin.x + size.width / 2 },
-            rootView.frame.useContents { origin.y + size.height / 2 },
+            uiView.frame.useContents { origin.x + size.width / 2 },
+            uiView.frame.useContents { origin.y + size.height / 2 },
             1.0, 1.0
         )
     })
