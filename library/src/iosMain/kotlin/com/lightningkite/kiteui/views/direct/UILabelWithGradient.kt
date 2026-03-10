@@ -22,7 +22,7 @@ import kotlin.experimental.ExperimentalNativeApi
 
 
 @OptIn(ExperimentalNativeApi::class)
-class UILabelWithGradient(val context: RContext) : UIView(CGRectZero.readValue()) {
+class UILabelWithGradient(val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false
@@ -155,8 +155,8 @@ class UILabelWithGradient(val context: RContext) : UIView(CGRectZero.readValue()
         val link = label.attributedText?.attribute(NSLinkAttributeName, indexOfCharacter, effectiveRange = null)
 
         when(link) {
-            is NSURL -> context.openTab(link.toString())
-            is NSString -> context.openTab(link as String)
+            is NSURL -> context.get()?.openTab(link.toString())
+            is NSString -> context.get()?.openTab(link as String)
         }
 
     }

@@ -42,7 +42,7 @@ import platform.UIKit.UIView
 
 @OptIn(ExperimentalForeignApi::class)
 actual class Code actual constructor(context: RContext) : RView(context) {
-    val actualNative = UILabelWithLayerBackground(context)
+    val actualNative = UILabelWithLayerBackground(WeakReference(context))
     override val native: UIView = actualNative
     val label get() = actualNative.label
 

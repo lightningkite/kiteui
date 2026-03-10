@@ -16,7 +16,7 @@ import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 
 @OptIn(ExperimentalNativeApi::class)
-class UILabelWithLayerBackground(val context: RContext) : UIView(CGRectZero.readValue()) {
+class UILabelWithLayerBackground(val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
     init {
         userInteractionEnabled = false
     }
@@ -102,8 +102,8 @@ class UILabelWithLayerBackground(val context: RContext) : UIView(CGRectZero.read
         val link = label.attributedText?.attribute(NSLinkAttributeName, indexOfCharacter, effectiveRange = null)
 
         when(link) {
-            is NSURL -> context.openTab(link.toString())
-            is NSString -> context.openTab(link as String)
+            is NSURL -> context.get()?.openTab(link.toString())
+            is NSString -> context.get()?.openTab(link as String)
         }
 
     }
