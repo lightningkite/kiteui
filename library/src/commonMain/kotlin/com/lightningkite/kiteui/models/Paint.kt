@@ -192,16 +192,22 @@ data class Color(
 
         fun fromHexString(value: String): Color = fromHex(value.replace("#", "").toInt(16))
         fun fromRgbString(value: String): Color {
-            val values = value.replace(")", "").replace("rgba(", "").replace("rgb(", "").split(" ", ",")
+            val values = value
+                .replace(")", "")
+                .replace("rgba(", "")
+                .replace("rgb(", "")
+                .split(",", " ")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+
             return when {
-                (values.size > 3) -> Color(
+                values.size >= 4 -> Color(
                     red = values[0].toInt().floatize(),
                     green = values[1].toInt().floatize(),
                     blue = values[2].toInt().floatize(),
                     alpha = values[3].toInt().floatize(),
                 )
-
-                (values.size > 2) -> Color(
+                values.size >= 3 -> Color(
                     red = values[0].toInt().floatize(),
                     green = values[1].toInt().floatize(),
                     blue = values[2].toInt().floatize(),
