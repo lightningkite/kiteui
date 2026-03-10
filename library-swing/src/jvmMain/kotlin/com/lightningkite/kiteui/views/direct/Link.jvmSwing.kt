@@ -24,6 +24,7 @@ import javax.swing.JButton
 import javax.swing.JPanel
 
 actual class Link actual constructor(context: RContext) : RView(context) {
+    override val driverActions get() = super.driverActions + linkDriverActions()
     // Content panel where children are placed - mouse transparent so clicks reach JButton
     private val contentPanel = object : JPanel() {
         init {

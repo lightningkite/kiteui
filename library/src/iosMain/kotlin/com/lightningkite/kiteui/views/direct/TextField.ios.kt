@@ -20,6 +20,8 @@ import platform.objc.sel_registerName
 
 
 actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = textInputDriverValue()
+    override val driverActions get() = super.driverActions + textInputDriverActions()
     companion object {
         var alwaysToolbar = false
     }

@@ -66,6 +66,7 @@ ktorClientWebsockets = { module = "io.ktor:ktor-client-websockets", version = { 
 ktorServerCore = { module = "io.ktor:ktor-server-core", version = { ref = "ktorVersion" } }
 ktorServerNetty = { module = "io.ktor:ktor-server-netty", version = { ref = "ktorVersion" } }
 ktorServerHtmlBuilder = { module = "io.ktor:ktor-server-html-builder", version = { ref = "ktorVersion" } }
+ktorServerWebsockets = { module = "io.ktor:ktor-server-websockets", version = { ref = "ktorVersion" } }
 ktx = { module = "androidx.core:core", version = { ref = "ktx" } }
 lkGradleHelpers = { module = "com.lightningkite:lk-gradle-helpers", version = { ref = "lkGradleHelpers" } }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
@@ -92,4 +93,5 @@ roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 vannitechPublishing = { id = "com.vanniktech.maven.publish", version = { ref = "vannitechPublishing" } }
 dokka = { id = "org.jetbrains.dokka", version = { ref = "dokka" } }
 kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
+
 kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }

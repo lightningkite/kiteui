@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 
 actual class Button actual constructor(context: RContext): RViewWithSecondaryAction(context) {
+    override val driverActions get() = super.driverActions + buttonDriverActions()
     val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0

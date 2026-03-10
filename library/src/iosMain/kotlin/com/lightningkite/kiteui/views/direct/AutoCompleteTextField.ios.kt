@@ -17,6 +17,8 @@ import platform.darwin.NSObject
 
 
 actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = autoCompleteDriverValue()
+    override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo

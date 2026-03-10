@@ -95,13 +95,25 @@ typealias Console = Log
 typealias ConsoleRoot = Log.Companion
 
 interface Log {
-    companion object: Log by LogRoot
+    companion object: Log {
+        override fun tag(tag: String): Log = (logInterceptor ?: LogRoot).tag(tag)
+        override fun log(vararg entries: Any?) = (logInterceptor ?: LogRoot).log(*entries)
+        override fun error(vararg entries: Any?) = (logInterceptor ?: LogRoot).error(*entries)
+        override fun info(vararg entries: Any?) = (logInterceptor ?: LogRoot).info(*entries)
+        override fun warn(vararg entries: Any?) = (logInterceptor ?: LogRoot).warn(*entries)
+    }
     fun tag(tag: String): Log
     fun log(vararg entries: Any?)
     fun error(vararg entries: Any?)
     fun info(vararg entries: Any?)
     fun warn(vararg entries: Any?)
 }
+
+/**
+ * Optional log interceptor. When set, all `Log.Companion` calls are forwarded through this
+ * instead of directly to [LogRoot]. Used by the AI driver to buffer log output.
+ */
+var logInterceptor: Log? = null
 fun Log.infoOrAbove(): Log = object : Log by this {
     override fun log(vararg entries: Any?) {}
 }

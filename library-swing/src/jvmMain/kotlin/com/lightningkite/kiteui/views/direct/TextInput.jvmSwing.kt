@@ -19,6 +19,8 @@ import javax.swing.text.DocumentFilter
 import javax.swing.text.JTextComponent
 
 actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = textInputDriverValue()
+    override val driverActions get() = super.driverActions + textInputDriverActions()
     private var textField: JTextComponent = JTextField()
     override val native: JTextComponent
         get() = textField

@@ -12,6 +12,8 @@ import com.lightningkite.readable.*
 
 
 actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = textInputDriverValue()
+    override val driverActions get() = super.driverActions + textInputDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")

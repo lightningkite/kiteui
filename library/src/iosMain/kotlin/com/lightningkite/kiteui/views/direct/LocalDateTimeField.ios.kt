@@ -18,6 +18,8 @@ import platform.UIKit.*
 
 
 actual class LocalDateField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = localDateDriverValue()
+    override val driverActions get() = super.driverActions + localDateDriverActions()
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
@@ -98,6 +100,8 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
 }
 
 actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = localTimeDriverValue()
+    override val driverActions get() = super.driverActions + localTimeDriverActions()
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
@@ -181,6 +185,8 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 }
 
 actual class LocalDateTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = localDateTimeDriverValue()
+    override val driverActions get() = super.driverActions + localDateTimeDriverActions()
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }

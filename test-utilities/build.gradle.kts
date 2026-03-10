@@ -102,6 +102,9 @@ kotlin {
         val jvmSsrMain by getting {
             // Note: dependsOn(commonMain) is automatic from hierarchy template
             dependsOn(get("commonHtmlMain"))
+            dependencies {
+                implementation(libs.kotlinxCoroutinesTest)
+            }
         }
     }
 }
