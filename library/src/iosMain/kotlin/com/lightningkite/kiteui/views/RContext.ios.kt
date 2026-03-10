@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
@@ -12,9 +11,9 @@ import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
 actual class RContext(val controller: UIViewController, val parent: RContext? = null) : RContextHelper() {
-    init { if(parent == null) ExternalServices.baseContext = this }
-    actual fun split(): RContext = RContext(controller).apply { addons.putAll(this@RContext.addons) }
-    fun split(controller: UIViewController): RContext = RContext(controller, this@RContext).apply { addons.putAll(this@RContext.addons) }
+    // by Claude - use addons.child() for lazy parent lookup instead of copying
+    actual fun split(): RContext = RContext(controller).apply { addons = this@RContext.addons.child() }
+    fun split(controller: UIViewController): RContext = RContext(controller, this@RContext).apply { addons = this@RContext.addons.child() }
 
     actual override val darkMode: Boolean?
         get() = when (controller.traitCollection.userInterfaceStyle) {
