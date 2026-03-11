@@ -10,10 +10,11 @@ import com.lightningkite.readable.*
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
-actual class RContext(val controller: UIViewController, val parent: RContext? = null) : RContextHelper() {
+actual class RContext(val controller: UIViewController, val parent: RContext? = null) : RContextHelper(parent) {
     // by Claude - use addons.child() for lazy parent lookup instead of copying
-    actual fun split(): RContext = RContext(controller).apply { addons = this@RContext.addons.child() }
-    fun split(controller: UIViewController): RContext = RContext(controller, this@RContext).apply { addons = this@RContext.addons.child() }
+    actual fun split(): RContext = RContext(controller, this)
+
+    fun split(controller: UIViewController): RContext = RContext(controller, this@RContext)
 
     actual override val darkMode: Boolean?
         get() = when (controller.traitCollection.userInterfaceStyle) {

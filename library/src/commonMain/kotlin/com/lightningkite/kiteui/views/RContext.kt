@@ -26,8 +26,10 @@ expect class RContext: RContextHelper {
     var immersiveMode: Boolean
     companion object
 }
-abstract class RContextHelper {
-    var addons: ChainMap<String, Any?> = ChainMap()
+
+abstract class RContextHelper(parent: RContext?) {
+    val addons: ChainMap<String, Any?> = parent?.addons?.child() ?: ChainMap()
+
     abstract val darkMode: Boolean?
 }
 

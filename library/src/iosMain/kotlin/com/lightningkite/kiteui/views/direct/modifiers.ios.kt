@@ -3,7 +3,6 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
@@ -11,10 +10,6 @@ import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlinx.cinterop.*
 import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UILongPressGestureRecognizer

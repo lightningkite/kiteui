@@ -5,7 +5,7 @@ import java.lang.ref.WeakReference
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
-actual class RContext(window: Window) : RContextHelper() {
+actual class RContext(window: Window, parent: RContext? = null) : RContextHelper(parent) {
     private val windowRef = WeakReference(window)
 
     /**
@@ -31,7 +31,7 @@ actual class RContext(window: Window) : RContextHelper() {
 
     actual fun split(): RContext = windowOrNull?.let {
         // by Claude - use addons.child() for lazy parent lookup instead of copying
-        RContext(it).also { it.addons = addons.child() }
+        RContext(it, parent = this)
     } ?: throw IllegalStateException("Cannot split RContext: Window has been destroyed")
 
     actual var immersiveMode: Boolean = false

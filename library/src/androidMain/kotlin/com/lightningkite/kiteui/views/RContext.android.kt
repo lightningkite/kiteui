@@ -11,7 +11,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import java.lang.ref.WeakReference
 
-actual class RContext(activity: KiteUiActivity): RContextHelper() {
+actual class RContext(activity: KiteUiActivity, parent: RContext? = null): RContextHelper(parent) {
     private val activityRef = WeakReference(activity)
 
     /**
@@ -38,7 +38,7 @@ actual class RContext(activity: KiteUiActivity): RContextHelper() {
         }
 
     // by Claude - use addons.child() for lazy parent lookup instead of copying
-    actual fun split() = activityOrNull?.let { RContext(it).also { it.addons = addons.child() } }
+    actual fun split() = activityOrNull?.let { RContext(it, parent = this) }
         ?: throw IllegalStateException("Cannot split RContext: Activity has been destroyed")
 
     actual var immersiveMode: Boolean = false

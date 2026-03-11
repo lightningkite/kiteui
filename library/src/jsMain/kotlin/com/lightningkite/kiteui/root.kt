@@ -16,13 +16,14 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import org.w3c.dom.Element
 
 fun root(theme: Theme, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
-    object : ViewWriter(), CalculationContext by AppScope {
+    object : ViewWriter(), CoroutineScope by AppScope {
         override val context: RContext = RContext(basePath).also {
             ExternalServices.baseContext = it
         }
@@ -40,7 +41,7 @@ fun root(theme: Theme, app: ViewWriter.()->Unit) {
 
 fun root(theme: Reactive<Theme>, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
-    object : ViewWriter(), CalculationContext by AppScope {
+    object : ViewWriter(), CoroutineScope by AppScope {
         override val context: RContext = RContext(basePath).also {
             ExternalServices.baseContext = it
         }
@@ -152,7 +153,7 @@ private fun hydrateRootInternal(
     var childIndex = 0
     val pendingHydrations = mutableListOf<Pair<RView, Element>>()
 
-    val viewWriter = object : ViewWriter(), CalculationContext by AppScope {
+    val viewWriter = object : ViewWriter(), CoroutineScope by AppScope {
         override val context: RContext = rContext
         override val representsView: RView? = null
 

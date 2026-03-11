@@ -3,12 +3,8 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.navigation.pageNavigator
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.CoroutineScope
@@ -78,10 +74,10 @@ fun ViewWriter.keepPopoverOpen(lifecycle: CoroutineScope) {
     lifecycle.onRemove { popoverKeepOpen-- }
 }
 
-fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = false, close: ()->Unit): ViewWriter {
+fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = false, close: () -> Unit): ViewWriter {
     popoverCloser?.invoke()
     popoverCloser = close
-    val writer = object : ViewWriter(), CalculationContext by this {
+    val writer = object : ViewWriter(), CoroutineScope by this {
         override val representsView: RView? = overlay.representsView
         override val context: RContext = this@popoverWriter.context.split()
         override fun willAddChild(view: RView) = overlay.willAddChild(view)

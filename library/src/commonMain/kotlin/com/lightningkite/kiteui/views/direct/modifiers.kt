@@ -6,15 +6,10 @@ import com.lightningkite.kiteui.models.ForcePaddingSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ViewModifierDsl3
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 
 @ViewModifierDsl3
