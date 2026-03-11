@@ -1,8 +1,8 @@
 // by Claude - generates W3C-compliant trace IDs (32 hex chars) and span IDs (16 hex chars)
 package com.lightningkite.kiteui.telemetry
 
-import kotlinx.datetime.Clock
 import kotlin.random.Random
+import kotlin.time.Clock
 
 internal object IdGenerator {
     private val hexChars = "0123456789abcdef"
