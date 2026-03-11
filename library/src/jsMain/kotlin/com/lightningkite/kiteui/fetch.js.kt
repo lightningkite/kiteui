@@ -238,6 +238,7 @@ fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
 actual suspend fun Blob.text(): String = jsTextBlob(this).await()
 actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
 actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
+actual fun ByteArray.toBlob(contentType: String): Blob = Blob(arrayOf(this), options = BlobPropertyBag(type = contentType))
 actual suspend fun Blob.toByteArray(): ByteArray = Int8Array((asDynamic().arrayBuffer() as Promise<ArrayBuffer>).await()).toByteArray()
 
     /** Returns a new [ByteArray] containing all the elements of this [Int8Array]. */
