@@ -1,141 +1,85 @@
-// by Claude - tests for Telemetry singleton lifecycle, exception capture, verbose logging, and noop behavior.
-// Uses configureForTesting() to bypass AppScope/Dispatchers.Main which aren't available in unit tests.
 package com.lightningkite.kiteui.telemetry
 
 import kotlin.test.*
 
 class TelemetryConfigureTest {
 
-    @BeforeTest
-    fun reset() {
-        Telemetry.resetForTesting()
-    }
+    private fun testConfig(
+        endpoint: String = "http://localhost:0/otlp",
+        serviceName: String = "kiteui-app",
+        serviceVersion: String = "",
+        traceSamplingRate: Double = 1.0,
+        logMinSeverity: OtlpSeverity = OtlpSeverity.WARN,
+    ) = TelemetryConfig(
+        endpoint = endpoint,
+        serviceName = serviceName,
+        serviceVersion = serviceVersion,
+        traceSamplingRate = traceSamplingRate,
+        logMinSeverity = logMinSeverity,
+    )
 
-    @AfterTest
-    fun cleanup() {
-        Telemetry.resetForTesting()
-    }
-
-    // --- Configure lifecycle ---
-
-    @Test
-    fun isInactiveBeforeConfigure() {
-        assertFalse(Telemetry.isActive)
-        assertNull(Telemetry.config)
-        assertNull(Telemetry.exporter)
-    }
+    // --- Constructor ---
 
     @Test
-    fun configureForTestingActivatesTelemetry() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-        ))
-        assertTrue(Telemetry.isActive)
-        assertNotNull(Telemetry.config)
-        assertNotNull(Telemetry.exporter)
+    fun constructorCreatesExporter() {
+        val t = Telemetry(testConfig())
+        assertNotNull(t.exporter)
     }
 
     @Test
-    fun configureStoresConfigValues() {
-        Telemetry.configureForTesting(TelemetryConfig(
+    fun constructorStoresConfigValues() {
+        val t = Telemetry(testConfig(
             endpoint = "http://example.com/otlp",
             serviceName = "my-test-app",
             serviceVersion = "2.0.0",
             traceSamplingRate = 0.5,
         ))
-        val config = Telemetry.config!!
-        assertEquals("http://example.com/otlp", config.endpoint)
-        assertEquals("my-test-app", config.serviceName)
-        assertEquals("2.0.0", config.serviceVersion)
-        assertEquals(0.5, config.traceSamplingRate)
-    }
-
-    @Test
-    fun doubleConfigureForTestingResets() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://first.com/otlp",
-            serviceName = "first",
-        ))
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://second.com/otlp",
-            serviceName = "second",
-        ))
-        // configureForTesting resets and reconfigures
-        assertEquals("second", Telemetry.config!!.serviceName)
+        assertEquals("http://example.com/otlp", t.config.endpoint)
+        assertEquals("my-test-app", t.config.serviceName)
+        assertEquals("2.0.0", t.config.serviceVersion)
+        assertEquals(0.5, t.config.traceSamplingRate)
     }
 
     // --- Verbose logging ---
 
     @Test
     fun setVerboseLoggingChangesMinSeverity() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-            logMinSeverity = OtlpSeverity.WARN,
-        ))
-        assertEquals(OtlpSeverity.WARN, Telemetry.config!!.logMinSeverity)
+        val t = Telemetry(testConfig(logMinSeverity = OtlpSeverity.WARN))
+        assertEquals(OtlpSeverity.WARN, t.logMinSeverity)
 
-        Telemetry.setVerboseLogging(true)
-        assertEquals(OtlpSeverity.DEBUG, Telemetry.config!!.logMinSeverity)
+        t.setVerboseLogging(true)
+        assertEquals(OtlpSeverity.DEBUG, t.logMinSeverity)
 
-        Telemetry.setVerboseLogging(false)
-        assertEquals(OtlpSeverity.WARN, Telemetry.config!!.logMinSeverity)
-    }
-
-    @Test
-    fun setVerboseLoggingIsNoopWhenNotConfigured() {
-        // Should not crash or have any effect
-        Telemetry.setVerboseLogging(true)
-        assertFalse(Telemetry.isActive)
+        t.setVerboseLogging(false)
+        assertEquals(OtlpSeverity.WARN, t.logMinSeverity)
     }
 
     // --- Counter and histogram delegation ---
 
     @Test
     fun counterDelegatesToExporter() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-        ))
-        Telemetry.counter("custom.count", 5)
-        assertEquals(1, Telemetry.exporter!!.counters.size)
-        val snapshot = Telemetry.exporter!!.counters.values.single().snapshot(IdGenerator.nanosString())
+        val t = Telemetry(testConfig())
+        t.counter("custom.count", 5)
+        assertEquals(1, t.exporter.counters.size)
+        val snapshot = t.exporter.counters.values.single().snapshot(Telemetry.nanosString())
         assertEquals(5L, snapshot!!.sum!!.dataPoints.single().asInt)
     }
 
     @Test
     fun histogramDelegatesToExporter() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-        ))
-        Telemetry.histogram("custom.latency", 42.0)
-        assertEquals(1, Telemetry.exporter!!.histograms.size)
-    }
-
-    @Test
-    fun counterIsNoopWhenNotConfigured() {
-        // Should not crash
-        Telemetry.counter("noop.counter")
-        assertFalse(Telemetry.isActive)
-    }
-
-    @Test
-    fun histogramIsNoopWhenNotConfigured() {
-        // Should not crash
-        Telemetry.histogram("noop.latency", 99.0)
-        assertFalse(Telemetry.isActive)
+        val t = Telemetry(testConfig())
+        t.histogram("custom.latency", 42.0)
+        assertEquals(1, t.exporter.histograms.size)
     }
 
     // --- Exception capture ---
 
     @Test
     fun recordExceptionCreatesLogRecord() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-        ))
-        val exporter = Telemetry.exporter!!
+        val t = Telemetry(testConfig())
+        t.recordException(IllegalStateException("test error"), "TestContext")
 
-        Telemetry.recordException(IllegalStateException("test error"), "TestContext")
-
-        val record = exporter.logBuffer.single()
+        val record = t.exporter.logBuffer.single()
         assertEquals(OtlpSeverity.ERROR.number, record.severityNumber)
         assertTrue(record.body?.stringValue?.contains("test error") == true,
             "Body should contain exception message")
@@ -143,15 +87,11 @@ class TelemetryConfigureTest {
 
     @Test
     fun recordExceptionIncludesAttributes() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-        ))
-        val exporter = Telemetry.exporter!!
+        val t = Telemetry(testConfig())
+        t.recordException(IllegalArgumentException("bad arg"), "MyScreen")
 
-        Telemetry.recordException(IllegalArgumentException("bad arg"), "MyScreen")
-
-        val record = exporter.logBuffer.single()
-        val attrs = record.attributes!!
+        val record = t.exporter.logBuffer.single()
+        val attrs = record.attributes
         val typeAttr = attrs.find { it.key == "exception.type" }
         assertNotNull(typeAttr)
         assertEquals("IllegalArgumentException", typeAttr.value.stringValue)
@@ -167,59 +107,31 @@ class TelemetryConfigureTest {
 
     @Test
     fun recordExceptionOmitsContextWhenEmpty() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-        ))
-        val exporter = Telemetry.exporter!!
+        val t = Telemetry(testConfig())
+        t.recordException(RuntimeException("oops"), "")
 
-        Telemetry.recordException(RuntimeException("oops"), "")
-
-        val record = exporter.logBuffer.single()
-        val ctxAttr = record.attributes?.find { it.key == "exception.context" }
+        val record = t.exporter.logBuffer.single()
+        val ctxAttr = record.attributes.find { it.key == "exception.context" }
         assertNull(ctxAttr, "Empty context should not produce exception.context attribute")
     }
 
     @Test
-    fun recordExceptionIsNoopWhenNotConfigured() {
-        // Should not crash
-        Telemetry.recordException(RuntimeException("noop"), "test")
-    }
-
-    @Test
     fun recordExceptionIncludesTraceContext() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-        ))
-        Telemetry.recordException(RuntimeException("traced"), "ctx")
+        val t = Telemetry(testConfig())
+        t.recordException(RuntimeException("traced"), "ctx")
 
-        val record = Telemetry.exporter!!.logBuffer.single()
-        assertEquals(Telemetry.currentTraceId, record.traceId)
+        val record = t.exporter.logBuffer.single()
+        assertEquals(t.currentTraceId, record.traceId)
     }
 
     @Test
     fun recordExceptionIncludesSessionId() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-        ))
-        Telemetry.recordException(RuntimeException("session"), "ctx")
+        val t = Telemetry(testConfig())
+        t.recordException(RuntimeException("session"), "ctx")
 
-        val record = Telemetry.exporter!!.logBuffer.single()
-        val sessionAttr = record.attributes?.find { it.key == "session.id" }
+        val record = t.exporter.logBuffer.single()
+        val sessionAttr = record.attributes.find { it.key == "session.id" }
         assertNotNull(sessionAttr)
-        assertEquals(Telemetry.sessionId, sessionAttr.value.stringValue)
-    }
-
-    // --- Reset ---
-
-    @Test
-    fun resetForTestingClearsState() {
-        Telemetry.configureForTesting(TelemetryConfig(
-            endpoint = "http://localhost:0/otlp",
-        ))
-        assertTrue(Telemetry.isActive)
-        Telemetry.resetForTesting()
-        assertFalse(Telemetry.isActive)
-        assertNull(Telemetry.config)
-        assertNull(Telemetry.exporter)
+        assertEquals(t.sessionId, sessionAttr.value.stringValue)
     }
 }

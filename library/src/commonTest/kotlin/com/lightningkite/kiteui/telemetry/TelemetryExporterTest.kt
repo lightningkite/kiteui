@@ -1,4 +1,3 @@
-// by Claude - tests for TelemetryExporter buffer operations, overflow, and aggregator delegation
 package com.lightningkite.kiteui.telemetry
 
 import kotlin.test.*
@@ -15,16 +14,16 @@ class TelemetryExporterTest {
     )
 
     private fun testSpan(name: String = "test.span") = OtlpSpan(
-        traceId = IdGenerator.traceId(),
-        spanId = IdGenerator.spanId(),
+        traceId = Telemetry.traceId(),
+        spanId = Telemetry.spanId(),
         name = name,
         kind = 1,
-        startTimeUnixNano = IdGenerator.nanosString(),
-        endTimeUnixNano = IdGenerator.nanosString(),
+        startTimeUnixNano = Telemetry.nanosString(),
+        endTimeUnixNano = Telemetry.nanosString(),
     )
 
     private fun testLog(body: String = "test log") = OtlpLogRecord(
-        timeUnixNano = IdGenerator.nanosString(),
+        timeUnixNano = Telemetry.nanosString(),
         severityNumber = OtlpSeverity.WARN.number,
         severityText = OtlpSeverity.WARN.text,
         body = OtlpAnyValue(stringValue = body),
@@ -90,7 +89,7 @@ class TelemetryExporterTest {
         exporter.incrementCounter("test.count", 3)
         exporter.incrementCounter("test.count", 7)
         val counter = exporter.counters.values.single()
-        val snapshot = counter.snapshot(IdGenerator.nanosString())
+        val snapshot = counter.snapshot(Telemetry.nanosString())
         assertNotNull(snapshot)
         assertEquals(10L, snapshot.sum!!.dataPoints.single().asInt)
     }
@@ -114,7 +113,7 @@ class TelemetryExporterTest {
         exporter.incrementCounter("test", attributes = attrs)
         exporter.incrementCounter("test", attributes = attrs)
         assertEquals(1, exporter.counters.size, "Same name+attributes should reuse aggregator")
-        val snapshot = exporter.counters.values.single().snapshot(IdGenerator.nanosString())
+        val snapshot = exporter.counters.values.single().snapshot(Telemetry.nanosString())
         assertEquals(2L, snapshot!!.sum!!.dataPoints.single().asInt)
     }
 
@@ -133,7 +132,7 @@ class TelemetryExporterTest {
         exporter.recordHistogram("latency", 10.0)
         exporter.recordHistogram("latency", 20.0)
         val hist = exporter.histograms.values.single()
-        val snapshot = hist.snapshot(IdGenerator.nanosString())!!
+        val snapshot = hist.snapshot(Telemetry.nanosString())!!
         val dp = snapshot.histogram!!.dataPoints.single()
         assertEquals(2L, dp.count)
         assertEquals(30.0, dp.sum)

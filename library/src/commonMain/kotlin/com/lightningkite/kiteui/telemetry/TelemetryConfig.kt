@@ -1,4 +1,3 @@
-// by Claude - configuration for KiteUI OpenTelemetry export
 package com.lightningkite.kiteui.telemetry
 
 /**

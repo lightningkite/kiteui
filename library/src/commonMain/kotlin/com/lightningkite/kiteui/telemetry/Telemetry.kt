@@ -1,161 +1,329 @@
-// by Claude - public API for KiteUI OpenTelemetry integration.
-// Call Telemetry.configure() once at app startup; everything else is automatic.
 package com.lightningkite.kiteui.telemetry
 
-import com.lightningkite.kiteui.LogRoot
-import com.lightningkite.kiteui.Throwable_report
+import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.reactive.core.AppScope
+import kotlin.random.Random
+import kotlin.time.Clock
+import kotlinx.coroutines.launch
 
 /**
  * KiteUI's built-in OpenTelemetry integration.
  *
- * Minimal usage:
+ * Usage:
  * ```kotlin
- * Telemetry.configure(
+ * val telemetry = Telemetry(TelemetryConfig(
  *     endpoint = "https://otlp-gateway-prod-us-central-0.grafana.net/otlp",
  *     headers = mapOf("Authorization" to "Basic $base64Token")
- * )
+ * ))
+ * telemetry.install()
  * ```
  *
- * When configured, the following are auto-instrumented:
+ * When installed, the following are auto-instrumented:
  * - HTTP request spans and latency histograms
  * - Page navigation spans and view counters
  * - App lifecycle (cold start, foreground sessions)
  * - Connectivity issues
  * - Warn/Error log records and exception reports
- *
- * When not configured, overhead is a single boolean check per instrumentation point.
  */
-object Telemetry {
-    private var _config: TelemetryConfig? = null
+class Telemetry(val config: TelemetryConfig) {
 
-    /** Current configuration, or null if not yet configured. */
-    val config: TelemetryConfig? get() = _config
+    // ===== Instance state =====
 
-    internal var exporter: TelemetryExporter? = null
+    val sessionId: String = spanId()
+    var currentTraceId: String = traceId()
+        internal set
+    var currentSpanId: String = ""
+        internal set
+
+    internal val exporter: TelemetryExporter = TelemetryExporter(config)
+
+    /** Effective log severity — mutable to support [setVerboseLogging]. */
+    var logMinSeverity: OtlpSeverity = config.logMinSeverity
         private set
 
-    /** Whether telemetry has been configured and is active. */
-    val isActive: Boolean get() = _config != null
-
-    // by Claude - session ID generated once per app launch, attached to all exported data
-    internal val sessionId: String = IdGenerator.spanId()
-
-    // by Claude - current trace context for correlating spans and logs
-    internal var currentTraceId: String = IdGenerator.traceId()
-    internal var currentSpanId: String = ""
-
     private val log = LogRoot.tag("Telemetry")
+    private val coldStartNanos = nanosString()
+    private var lastForegroundNanos: String = ""
+    private var foregroundSpanId: String = ""
+
+    // Navigation tracking
+    private var navCleanup: (() -> Unit)? = null
+    private var lastPageName: String? = null
+    private var lastPageStartNanos: String = ""
+    private var lastPageSpanId: String = ""
+
+    // Saved hooks for cleanup in shutdown
+    private var previousThrowableReport: ((Throwable, String) -> Unit)? = null
+
+    // ===== Installation =====
 
     /**
-     * Configure and activate telemetry export with minimal parameters.
-     * All auto-instrumentation hooks are installed automatically.
+     * Installs all global hooks (log interceptor, exception capture, fetch instrumentation,
+     * navigation binding, lifecycle tracking). Call after construction.
      *
-     * @param endpoint OTLP HTTP endpoint (e.g. "https://otlp-gateway-prod-us-central-0.grafana.net/otlp")
-     * @param headers HTTP headers for authentication (e.g. mapOf("Authorization" to "Basic ..."))
-     * @param serviceName Identifies this app in the telemetry backend
+     * Separated from construction so tests can create instances without triggering
+     * AppScope/lifecycle hooks.
      */
-    fun configure(
-        endpoint: String,
-        headers: Map<String, String> = emptyMap(),
-        serviceName: String = "kiteui-app",
-    ) {
-        configure(
-            TelemetryConfig(
-                endpoint = endpoint,
-                headers = headers,
-                serviceName = serviceName,
+    fun install(navigator: PageNavigator) {
+        activeTelemetry = this
+
+        // Log interceptor
+        TelemetryLog(this).install()
+
+        // Exception capture — chains into the existing Throwable_report global
+        previousThrowableReport = Throwable_report
+        val previous = Throwable_report
+        Throwable_report = { throwable, context ->
+            previous(throwable, context)
+            recordException(throwable, context)
+        }
+
+        // Fetch interceptor
+        fetchInterceptor = { url, method, headers, body, proceed ->
+            instrumentFetch(url, method, headers, body, proceed)
+        }
+
+        // Navigation hook
+        bindNavigation(navigator)
+
+        // Lifecycle tracking — cold start span
+        val nowNanos = nanosString()
+        exporter.addSpan(
+            OtlpSpan(
+                traceId = currentTraceId,
+                spanId = spanId(),
+                name = "app.cold_start",
+                kind = 1, // SPAN_KIND_INTERNAL
+                startTimeUnixNano = coldStartNanos,
+                endTimeUnixNano = nowNanos,
+                attributes = listOf(
+                    OtlpKeyValue("session.id", OtlpAnyValue(stringValue = sessionId)),
+                    OtlpKeyValue("os.type", OtlpAnyValue(stringValue = Platform.current.name.lowercase())),
+                ),
+            )
+        )
+
+        // Lifecycle tracking — foreground/background sessions
+        lastForegroundNanos = nanosString()
+        foregroundSpanId = spanId()
+        AppState.inForeground.addListener {
+            if (AppState.inForeground.value) {
+                onForeground()
+            } else {
+                onBackground()
+            }
+        }
+
+        // Lifecycle tracking — connectivity issues
+        Connectivity.lastConnectivityIssueCode.addListener {
+            val code = Connectivity.lastConnectivityIssueCode.value
+            if (code != 0.toShort()) {
+                exporter.incrementCounter(
+                    "connectivity.issues",
+                    attributes = listOf(
+                        OtlpKeyValue("connectivity.issue_code", OtlpAnyValue(intValue = code.toLong()))
+                    )
+                )
+                exporter.addLog(
+                    OtlpLogRecord(
+                        timeUnixNano = nanosString(),
+                        severityNumber = OtlpSeverity.WARN.number,
+                        severityText = OtlpSeverity.WARN.text,
+                        body = OtlpAnyValue(stringValue = "Connectivity issue: status code $code"),
+                        attributes = listOf(
+                            OtlpKeyValue("connectivity.issue_code", OtlpAnyValue(intValue = code.toLong())),
+                            OtlpKeyValue("session.id", OtlpAnyValue(stringValue = sessionId)),
+                        ),
+                    )
+                )
+            }
+        }
+
+        // Start the background flush loop
+        exporter.startFlushLoop()
+
+        log.info("Telemetry configured: endpoint=${config.endpoint}, service=${config.serviceName}")
+    }
+
+    // ===== Fetch instrumentation =====
+
+    private suspend fun instrumentFetch(
+        url: String,
+        method: HttpMethod,
+        headers: HttpHeaders,
+        body: RequestBody?,
+        proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse,
+    ): RequestResponse {
+        val startMs = clockMillis()
+        val startNanos = nanosString()
+        val fetchSpanId = spanId()
+        val ctx = kotlin.coroutines.coroutineContext
+        val fetchTraceId = ctx.traceId()
+        val parentSpanId = ctx.spanId()
+
+        val sampled = if (config.traceSamplingRate >= 1.0) "01" else "00"
+        headers.set("traceparent", "00-$fetchTraceId-$fetchSpanId-$sampled")
+
+        val response = proceed(url, method, headers, body)
+
+        val durationMs = clockMillis() - startMs
+        val endNanos = nanosString()
+        val host = url.substringAfter("://").substringBefore("/").substringBefore("?")
+
+        // Record span (subject to sampling)
+        if (Random.nextDouble() <= config.traceSamplingRate) {
+            exporter.addSpan(
+                OtlpSpan(
+                    traceId = fetchTraceId,
+                    spanId = fetchSpanId,
+                    parentSpanId = parentSpanId,
+                    name = "HTTP ${method.name}",
+                    kind = 3, // SPAN_KIND_CLIENT
+                    startTimeUnixNano = startNanos,
+                    endTimeUnixNano = endNanos,
+                    attributes = listOf(
+                        OtlpKeyValue("http.request.method", OtlpAnyValue(stringValue = method.name)),
+                        OtlpKeyValue("url.full", OtlpAnyValue(stringValue = url)),
+                        OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)),
+                    ),
+                )
+            )
+        }
+
+        // Always record latency histogram (cheap aggregation, not sampled)
+        exporter.recordHistogram(
+            name = "http.client.request.duration",
+            value = durationMs,
+            unit = "ms",
+            attributes = listOf(
+                OtlpKeyValue("http.request.method", OtlpAnyValue(stringValue = method.name)),
+                OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)),
+            )
+        )
+
+        return response
+    }
+
+    // ===== Lifecycle (foreground/background) =====
+
+    private fun onForeground() {
+        lastForegroundNanos = nanosString()
+        foregroundSpanId = spanId()
+        exporter.incrementCounter("app.foreground_count")
+    }
+
+    private fun onBackground() {
+        if (lastForegroundNanos.isEmpty()) return
+
+        if (Random.nextDouble() <= config.traceSamplingRate) {
+            exporter.addSpan(
+                OtlpSpan(
+                    traceId = currentTraceId,
+                    spanId = foregroundSpanId,
+                    name = "app.foreground_session",
+                    kind = 1, // SPAN_KIND_INTERNAL
+                    startTimeUnixNano = lastForegroundNanos,
+                    endTimeUnixNano = nanosString(),
+                    attributes = listOf(
+                        OtlpKeyValue("session.id", OtlpAnyValue(stringValue = sessionId)),
+                    ),
+                )
+            )
+        }
+
+        lastForegroundNanos = ""
+
+        // Flush aggressively on background; the OS may kill the app
+        AppScope.launch { flush() }
+    }
+
+    // ===== Navigation tracking =====
+
+    internal fun bindNavigation(navigator: PageNavigator) {
+        navCleanup?.invoke()
+        navCleanup = navigator.stack.addListener {
+            val page = navigator.stack.value.lastOrNull()
+            val pageName = page?.let { it::class.simpleName } ?: "empty"
+
+            if (pageName != lastPageName) {
+                endCurrentPageSpan()
+
+                lastPageName = pageName
+                lastPageStartNanos = nanosString()
+                lastPageSpanId = spanId()
+                currentSpanId = lastPageSpanId
+
+                // Page view counter (always, not sampled — cheap aggregation)
+                exporter.incrementCounter(
+                    name = "navigation.page_views",
+                    attributes = listOf(
+                        OtlpKeyValue("page.name", OtlpAnyValue(stringValue = pageName)),
+                    )
+                )
+            }
+        }
+    }
+
+    private fun endCurrentPageSpan() {
+        val name = lastPageName ?: return
+        if (Random.nextDouble() > config.traceSamplingRate) return
+
+        exporter.addSpan(
+            OtlpSpan(
+                traceId = currentTraceId,
+                spanId = lastPageSpanId,
+                name = "page: $name",
+                kind = 1, // SPAN_KIND_INTERNAL
+                startTimeUnixNano = lastPageStartNanos,
+                endTimeUnixNano = nanosString(),
+                attributes = listOf(
+                    OtlpKeyValue("page.name", OtlpAnyValue(stringValue = name)),
+                    OtlpKeyValue("session.id", OtlpAnyValue(stringValue = sessionId)),
+                ),
             )
         )
     }
 
-    /**
-     * Configure and activate telemetry export with full control.
-     * All auto-instrumentation hooks are installed automatically.
-     */
-    fun configure(config: TelemetryConfig) {
-        if (_config != null) {
-            log.warn("Telemetry already configured; ignoring reconfiguration")
-            return
-        }
-        _config = config
-        exporter = TelemetryExporter(config)
-
-        // Install auto-instrumentation hooks
-        TelemetryLog.install()
-        installExceptionCapture()
-        TelemetryLifecycle.install()
-        // Fetch instrumentation is inline in connectivityFetch() — checks Telemetry.isActive
-        // Navigation instrumentation is auto-bound in appBase() — checks Telemetry.isActive
-
-        // Start the background flush loop
-        exporter?.startFlushLoop()
-
-        log.info("Telemetry configured: endpoint=${config.endpoint}, service=${config.serviceName}")
-    }
+    // ===== Public API =====
 
     /**
      * Temporarily enable verbose (DEBUG+) log shipping for investigation.
      * Call with `false` to restore the default (WARN+).
      */
     fun setVerboseLogging(enabled: Boolean) {
-        val config = _config ?: return
-        _config = config.copy(
-            logMinSeverity = if (enabled) OtlpSeverity.DEBUG else OtlpSeverity.WARN
-        )
+        logMinSeverity = if (enabled) OtlpSeverity.DEBUG else OtlpSeverity.WARN
     }
 
     /** Record a custom counter metric. */
     fun counter(name: String, value: Long = 1, attributes: List<OtlpKeyValue> = emptyList()) {
-        exporter?.incrementCounter(name, value, attributes)
+        exporter.incrementCounter(name, value, attributes)
     }
 
     /** Record a custom histogram metric value. */
     fun histogram(name: String, value: Double, unit: String = "ms", attributes: List<OtlpKeyValue> = emptyList()) {
-        exporter?.recordHistogram(name, value, unit, attributes)
+        exporter.recordHistogram(name, value, unit, attributes)
     }
 
     /** Flush all buffered data immediately. Call before app termination or on background. */
     suspend fun flush() {
-        exporter?.flushAll()
+        exporter.flushAll()
     }
 
     /** Shut down telemetry, flush remaining data, and remove hooks. */
     suspend fun shutdown() {
-        exporter?.flushAll()
-        exporter?.stop()
-        _config = null
-        exporter = null
-    }
-
-    // by Claude - resets state without network calls, for test isolation only
-    internal fun resetForTesting() {
-        exporter?.stop()
-        _config = null
-        exporter = null
-    }
-
-    // by Claude - configure without starting flush loop or lifecycle hooks, for test isolation only.
-    // Tests can't use the real configure() because AppScope/Dispatchers.Main aren't available.
-    internal fun configureForTesting(config: TelemetryConfig) {
-        resetForTesting()
-        _config = config
-        exporter = TelemetryExporter(config)
-    }
-
-    // by Claude - chains into the existing Throwable_report global to capture exceptions as OTel log records
-    private fun installExceptionCapture() {
-        val previousHandler = Throwable_report
-        Throwable_report = { throwable, context ->
-            previousHandler(throwable, context)
-            recordException(throwable, context)
-        }
+        exporter.flushAll()
+        exporter.stop()
+        if (activeTelemetry === this) activeTelemetry = null
+        fetchInterceptor = null
+        previousThrowableReport?.let { Throwable_report = it }
     }
 
     internal fun recordException(throwable: Throwable, context: String) {
-        val exporter = exporter ?: return
         exporter.addLog(
             OtlpLogRecord(
-                timeUnixNano = IdGenerator.nanosString(),
+                timeUnixNano = nanosString(),
                 severityNumber = OtlpSeverity.ERROR.number,
                 severityText = OtlpSeverity.ERROR.text,
                 body = OtlpAnyValue(stringValue = throwable.stackTraceToString()),
@@ -171,5 +339,33 @@ object Telemetry {
                 spanId = currentSpanId,
             )
         )
+    }
+
+    // ===== ID Generation (companion — pure functions, no instance state) =====
+
+    companion object {
+        private const val hexChars = "0123456789abcdef"
+
+        /** 32 hex chars (16 bytes) — W3C trace ID */
+        fun traceId(): String = randomHex(32)
+
+        /** 16 hex chars (8 bytes) — W3C span ID */
+        fun spanId(): String = randomHex(16)
+
+        /** Current time as nanoseconds-since-epoch string, suitable for OTLP timestamps. */
+        fun nanosString(): String {
+            val millis = Clock.System.now().toEpochMilliseconds()
+            return (millis * 1_000_000L).toString()
+        }
+
+        private fun randomHex(length: Int): String {
+            val bytes = Random.nextBytes(length / 2)
+            return buildString(length) {
+                for (b in bytes) {
+                    append(hexChars[(b.toInt() shr 4) and 0xf])
+                    append(hexChars[b.toInt() and 0xf])
+                }
+            }
+        }
     }
 }

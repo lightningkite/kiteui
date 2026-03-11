@@ -1,4 +1,3 @@
-// by Claude - tests for TelemetryLog severity filtering, delegate chain, and tag propagation
 package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.Log
@@ -27,12 +26,12 @@ class TelemetryLogTest {
     }
 
     private var savedInterceptor: Log? = null
+    private lateinit var telemetry: Telemetry
 
     @BeforeTest
     fun saveState() {
         savedInterceptor = logInterceptor
-        // Ensure Telemetry is configured so log recording works
-        Telemetry.configureForTesting(TelemetryConfig(
+        telemetry = Telemetry(TelemetryConfig(
             endpoint = "http://localhost:0/otlp",
             logMinSeverity = OtlpSeverity.WARN,
             maxBatchSize = 10_000, // prevent auto-flush
@@ -42,7 +41,6 @@ class TelemetryLogTest {
     @AfterTest
     fun restoreState() {
         logInterceptor = savedInterceptor
-        Telemetry.resetForTesting()
     }
 
     // --- Delegate chain preservation ---
@@ -51,16 +49,16 @@ class TelemetryLogTest {
     fun installPreservesExistingInterceptor() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
+        TelemetryLog(telemetry).install()
         // TelemetryLog should now be the interceptor, with recording as delegate
-        assertSame(TelemetryLog, logInterceptor)
+        assertIs<TelemetryLog>(logInterceptor)
     }
 
     @Test
     fun delegateReceivesAllCalls() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
+        TelemetryLog(telemetry).install()
 
         Log.log("debug msg")
         Log.info("info msg")
@@ -80,8 +78,8 @@ class TelemetryLogTest {
     fun severityFilteringDropsBelowMinimum() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
-        val exporter = Telemetry.exporter!!
+        TelemetryLog(telemetry).install()
+        val exporter = telemetry.exporter
 
         // Default min severity is WARN, so log() and info() should NOT be recorded as OTel logs
         Log.log("debug message")
@@ -103,10 +101,10 @@ class TelemetryLogTest {
     fun verboseLoggingShipsDEBUG() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
-        val exporter = Telemetry.exporter!!
+        TelemetryLog(telemetry).install()
+        val exporter = telemetry.exporter
 
-        Telemetry.setVerboseLogging(true)
+        telemetry.setVerboseLogging(true)
         Log.log("debug now visible")
         Log.info("info now visible")
 
@@ -122,11 +120,11 @@ class TelemetryLogTest {
     fun logRecordContainsBody() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
+        TelemetryLog(telemetry).install()
 
         Log.warn("something", "went", "wrong")
 
-        val record = Telemetry.exporter!!.logBuffer.single()
+        val record = telemetry.exporter.logBuffer.single()
         assertEquals("something went wrong", record.body?.stringValue)
     }
 
@@ -134,26 +132,26 @@ class TelemetryLogTest {
     fun logRecordContainsSessionId() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
+        TelemetryLog(telemetry).install()
 
         Log.error("test")
 
-        val record = Telemetry.exporter!!.logBuffer.single()
-        val sessionAttr = record.attributes?.find { it.key == "session.id" }
+        val record = telemetry.exporter.logBuffer.single()
+        val sessionAttr = record.attributes.find { it.key == "session.id" }
         assertNotNull(sessionAttr, "Log record should have session.id attribute")
-        assertEquals(Telemetry.sessionId, sessionAttr.value.stringValue)
+        assertEquals(telemetry.sessionId, sessionAttr.value.stringValue)
     }
 
     @Test
     fun logRecordContainsTraceContext() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
+        TelemetryLog(telemetry).install()
 
         Log.error("test")
 
-        val record = Telemetry.exporter!!.logBuffer.single()
-        assertEquals(Telemetry.currentTraceId, record.traceId)
+        val record = telemetry.exporter.logBuffer.single()
+        assertEquals(telemetry.currentTraceId, record.traceId)
     }
 
     // --- Tag propagation ---
@@ -162,7 +160,7 @@ class TelemetryLogTest {
     fun taggedLogIncludesTagAttribute() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
+        TelemetryLog(telemetry).install()
 
         Log.tag("MyComponent").warn("tagged warning")
 
@@ -172,8 +170,8 @@ class TelemetryLogTest {
         assertEquals("MyComponent", delegateEntry.tag)
 
         // OTel record should include tag
-        val record = Telemetry.exporter!!.logBuffer.single()
-        val tagAttr = record.attributes?.find { it.key == "log.tag" }
+        val record = telemetry.exporter.logBuffer.single()
+        val tagAttr = record.attributes.find { it.key == "log.tag" }
         assertNotNull(tagAttr, "Tagged log should have log.tag attribute")
         assertEquals("MyComponent", tagAttr.value.stringValue)
     }
@@ -182,12 +180,12 @@ class TelemetryLogTest {
     fun nestedTagsConcatenate() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
+        TelemetryLog(telemetry).install()
 
         Log.tag("Parent").tag("Child").warn("nested")
 
-        val record = Telemetry.exporter!!.logBuffer.single()
-        val tagAttr = record.attributes?.find { it.key == "log.tag" }
+        val record = telemetry.exporter.logBuffer.single()
+        val tagAttr = record.attributes.find { it.key == "log.tag" }
         assertNotNull(tagAttr)
         assertEquals("Parent/Child", tagAttr.value.stringValue)
     }
@@ -196,12 +194,12 @@ class TelemetryLogTest {
     fun untaggedLogHasNoTagAttribute() {
         val recording = RecordingLog()
         logInterceptor = recording
-        TelemetryLog.install()
+        TelemetryLog(telemetry).install()
 
         Log.error("no tag")
 
-        val record = Telemetry.exporter!!.logBuffer.single()
-        val tagAttr = record.attributes?.find { it.key == "log.tag" }
+        val record = telemetry.exporter.logBuffer.single()
+        val tagAttr = record.attributes.find { it.key == "log.tag" }
         assertNull(tagAttr, "Untagged log should not have log.tag attribute")
     }
 }

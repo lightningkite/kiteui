@@ -1,5 +1,3 @@
-// by Claude - batching exporter that sends OTLP JSON to the configured endpoint
-// Uses suppressConnectivityIssues so export failures never affect the app's connectivity gate.
 package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.*
@@ -11,7 +9,7 @@ import kotlinx.serialization.json.Json
 internal class TelemetryExporter(private val config: TelemetryConfig) {
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = false }
 
-    // by Claude - buffers are internal for test access; accessed only from main thread (same threading model as all KiteUI)
+    // Buffers are internal for test access; accessed only from main thread (same threading model as all KiteUI)
     internal val spanBuffer = ArrayDeque<OtlpSpan>()
     internal val logBuffer = ArrayDeque<OtlpLogRecord>()
 
@@ -96,7 +94,7 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
 
     private suspend fun flushMetrics() {
         val metrics = mutableListOf<OtlpMetric>()
-        val now = IdGenerator.nanosString()
+        val now = Telemetry.nanosString()
 
         for ((_, counter) in counters) {
             counter.snapshot(now)?.let { metrics.add(it) }
@@ -124,10 +122,10 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
 
     private suspend fun sendOtlp(path: String, body: String) {
         try {
-            // by Claude - use suppressConnectivityIssues so telemetry export never triggers
+            // Use suppressConnectivityIssues so telemetry export never triggers
             // the app's ConnectivityGate or retry UI
             val response = suppressConnectivityIssues {
-                fetch(
+                fetchRaw(
                     url = config.endpoint.trimEnd('/') + path,
                     method = HttpMethod.POST,
                     headers = httpHeaders(
@@ -141,7 +139,7 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
                 LogRoot.tag("Telemetry").warn("Export rejected for $path: ${response.status} — $responseBody")
             }
         } catch (e: Exception) {
-            // by Claude - telemetry export failure is silent; never crash the app for observability
+            // Telemetry export failure is silent; never crash the app for observability
             LogRoot.tag("Telemetry").warn("Export failed for $path: ${e.message}")
         }
     }

@@ -19,7 +19,35 @@ suspend inline fun fetch(
     headers: HttpHeaders = httpHeaders(),
     body: FileReference
 ) = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
-expect suspend fun fetch(
+
+/** Hook for telemetry or other interceptors to wrap all HTTP requests. */
+var fetchInterceptor: (suspend (
+    url: String,
+    method: HttpMethod,
+    headers: HttpHeaders,
+    body: RequestBody?,
+    proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse,
+) -> RequestResponse)? = null
+
+suspend fun fetch(
+    url: String,
+    method: HttpMethod = HttpMethod.GET,
+    headers: HttpHeaders = httpHeaders(),
+    body: RequestBody? = null,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
+): RequestResponse {
+    val interceptor = fetchInterceptor
+    return if (interceptor != null) {
+        interceptor(url, method, headers, body) { u, m, h, b ->
+            fetchRaw(u, m, h, b, onUploadProgress, onDownloadProgress)
+        }
+    } else {
+        fetchRaw(url, method, headers, body, onUploadProgress, onDownloadProgress)
+    }
+}
+
+expect suspend fun fetchRaw(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),

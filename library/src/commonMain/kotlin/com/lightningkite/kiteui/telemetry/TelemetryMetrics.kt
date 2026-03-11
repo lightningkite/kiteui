@@ -1,6 +1,3 @@
-// by Claude - client-side metric aggregation: counters and histograms
-// Aggregated locally to minimize export volume; flushed as OTLP cumulative temporality
-// (required by Prometheus-compatible backends like Grafana Mimir).
 package com.lightningkite.kiteui.telemetry
 
 /**
@@ -12,7 +9,7 @@ internal class CounterAggregator(
     val attributes: List<OtlpKeyValue>,
 ) {
     private var value: Long = 0L
-    private val startNanos: String = IdGenerator.nanosString()
+    private val startNanos: String = Telemetry.nanosString()
 
     fun add(delta: Long = 1) {
         value += delta
@@ -51,7 +48,6 @@ internal class HistogramAggregator(
     val bounds: List<Double> = DEFAULT_LATENCY_BOUNDS,
 ) {
     companion object {
-        // by Claude - bucket boundaries tuned for typical HTTP latency (ms)
         val DEFAULT_LATENCY_BOUNDS = listOf(
             0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0,
             250.0, 500.0, 1000.0, 2500.0, 5000.0, 10000.0
@@ -63,7 +59,7 @@ internal class HistogramAggregator(
     private var min: Double = Double.MAX_VALUE
     private var max: Double = -Double.MAX_VALUE
     private var bucketCounts = LongArray(bounds.size + 1) // +1 for overflow bucket
-    private val startNanos: String = IdGenerator.nanosString()
+    private val startNanos: String = Telemetry.nanosString()
 
     fun record(value: Double) {
         count++

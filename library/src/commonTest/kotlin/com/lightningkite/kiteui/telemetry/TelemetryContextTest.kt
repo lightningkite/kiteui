@@ -1,4 +1,3 @@
-// by Claude - tests for TelemetryContext coroutine context element and fallback behavior
 package com.lightningkite.kiteui.telemetry
 
 import kotlinx.coroutines.test.runTest
@@ -8,6 +7,13 @@ import kotlin.coroutines.coroutineContext
 import kotlin.test.*
 
 class TelemetryContextTest {
+
+    private fun testConfig() = TelemetryConfig(endpoint = "http://localhost:0/otlp")
+
+    @AfterTest
+    fun cleanup() {
+        activeTelemetry = null
+    }
 
     @Test
     fun traceIdFromContextElement() = runTest {
@@ -26,36 +32,38 @@ class TelemetryContextTest {
     }
 
     @Test
-    fun fallsBackToGlobalTraceId() = runTest {
-        // No TelemetryContext in coroutine context — should fall back to Telemetry.currentTraceId
+    fun fallsBackToActiveTelemetryTraceId() = runTest {
+        val t = Telemetry(testConfig())
+        activeTelemetry = t
         val result = coroutineContext.traceId()
-        assertEquals(Telemetry.currentTraceId, result)
+        assertEquals(t.currentTraceId, result)
     }
 
     @Test
-    fun fallsBackToGlobalSpanId() = runTest {
-        val savedSpanId = Telemetry.currentSpanId
-        Telemetry.currentSpanId = "fallback12345678"
-        try {
-            val result = coroutineContext.spanId()
-            assertEquals("fallback12345678", result)
-        } finally {
-            Telemetry.currentSpanId = savedSpanId
-        }
+    fun fallsBackToActiveTelemetrySpanId() = runTest {
+        val t = Telemetry(testConfig())
+        t.currentSpanId = "fallback12345678"
+        activeTelemetry = t
+        val result = coroutineContext.spanId()
+        assertEquals("fallback12345678", result)
+    }
+
+    @Test
+    fun fallsBackToEmptyWhenNoTelemetry() = runTest {
+        activeTelemetry = null
+        assertEquals("", coroutineContext.traceId())
+        assertEquals("", coroutineContext.spanId())
     }
 
     @Test
     fun contextElementOverridesGlobal() = runTest {
-        val savedSpanId = Telemetry.currentSpanId
-        Telemetry.currentSpanId = "global_span_0000"
-        try {
-            val ctx = TelemetryContext(traceId = "context_trace_override00000000", spanId = "context_span_ovr")
-            withContext(ctx) {
-                assertEquals("context_trace_override00000000", coroutineContext.traceId())
-                assertEquals("context_span_ovr", coroutineContext.spanId())
-            }
-        } finally {
-            Telemetry.currentSpanId = savedSpanId
+        val t = Telemetry(testConfig())
+        t.currentSpanId = "global_span_0000"
+        activeTelemetry = t
+        val ctx = TelemetryContext(traceId = "context_trace_override00000000", spanId = "context_span_ovr")
+        withContext(ctx) {
+            assertEquals("context_trace_override00000000", coroutineContext.traceId())
+            assertEquals("context_span_ovr", coroutineContext.spanId())
         }
     }
 
@@ -89,11 +97,12 @@ class TelemetryContextTest {
     }
 
     @Test
-    fun currentFallsBackToGlobals() = runTest {
-        // No TelemetryContext in scope — should read from Telemetry globals
+    fun currentFallsBackToActiveTelemetry() = runTest {
+        val t = Telemetry(testConfig())
+        activeTelemetry = t
         val captured = TelemetryContext.current()
-        assertEquals(Telemetry.currentTraceId, captured.traceId)
-        assertEquals(Telemetry.currentSpanId, captured.spanId)
+        assertEquals(t.currentTraceId, captured.traceId)
+        assertEquals(t.currentSpanId, captured.spanId)
     }
 
     @Test

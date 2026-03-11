@@ -1,9 +1,9 @@
-// by Claude - coroutine context element for trace context propagation.
-// Flows through structured concurrency so child coroutines (e.g. fetch calls inside
-// page actions) inherit the correct trace/span context even across suspension points.
 package com.lightningkite.kiteui.telemetry
 
 import kotlin.coroutines.CoroutineContext
+
+/** The currently installed [Telemetry] instance, set by [Telemetry.install]. */
+internal var activeTelemetry: Telemetry? = null
 
 /**
  * Carries trace context through the coroutine hierarchy.
@@ -11,7 +11,7 @@ import kotlin.coroutines.CoroutineContext
  * Installed automatically on page coroutine scopes by the navigation instrumentation.
  * Read by `connectivityFetch` to set `traceparent` headers and `parentSpanId` on HTTP spans.
  *
- * Falls back to [Telemetry.currentTraceId]/[Telemetry.currentSpanId] when not present
+ * Falls back to the active [Telemetry] instance's current trace/span ID when not present
  * in the coroutine context (e.g. code running outside a page's scope).
  */
 data class TelemetryContext(
@@ -23,7 +23,7 @@ data class TelemetryContext(
         /**
          * Captures the current trace context from the calling coroutine.
          * Reads from an existing [TelemetryContext] in the coroutine hierarchy first,
-         * falling back to [Telemetry.currentTraceId]/[Telemetry.currentSpanId].
+         * falling back to the active [Telemetry] instance's current IDs.
          *
          * Usage:
          * ```kotlin
@@ -32,7 +32,6 @@ data class TelemetryContext(
          * }
          * ```
          */
-        // by Claude
         suspend fun current(): TelemetryContext {
             val ctx = kotlin.coroutines.coroutineContext
             return TelemetryContext(
@@ -43,9 +42,9 @@ data class TelemetryContext(
     }
 }
 
-/** Read trace context from the coroutine context, falling back to the global Telemetry singleton. */
+/** Read trace context from the coroutine context, falling back to the active Telemetry instance. */
 internal fun CoroutineContext.traceId(): String =
-    this[TelemetryContext]?.traceId ?: Telemetry.currentTraceId
+    this[TelemetryContext]?.traceId ?: activeTelemetry?.currentTraceId ?: ""
 
 internal fun CoroutineContext.spanId(): String =
-    this[TelemetryContext]?.spanId ?: Telemetry.currentSpanId
+    this[TelemetryContext]?.spanId ?: activeTelemetry?.currentSpanId ?: ""

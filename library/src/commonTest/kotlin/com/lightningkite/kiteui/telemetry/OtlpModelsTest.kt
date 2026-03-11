@@ -1,4 +1,3 @@
-// by Claude - tests for OTLP model serialization roundtrips
 package com.lightningkite.kiteui.telemetry
 
 import kotlinx.serialization.json.Json

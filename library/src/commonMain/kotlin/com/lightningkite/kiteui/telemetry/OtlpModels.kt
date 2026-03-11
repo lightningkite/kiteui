@@ -1,4 +1,4 @@
-// by Claude - OTLP JSON wire format models for traces, metrics, and logs
+// OTLP JSON wire format models for traces, metrics, and logs.
 // Follows the proto3 JSON mapping: https://opentelemetry.io/docs/specs/otlp/
 package com.lightningkite.kiteui.telemetry
 
@@ -170,7 +170,6 @@ data class OtlpLogRecord(
     val spanId: String = "",
 )
 
-// by Claude - severity levels matching OTLP SeverityNumber spec
 enum class OtlpSeverity(val number: Int, val text: String) {
     TRACE(1, "TRACE"),
     DEBUG(5, "DEBUG"),

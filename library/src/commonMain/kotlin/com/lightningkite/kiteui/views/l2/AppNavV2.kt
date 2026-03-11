@@ -4,8 +4,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.telemetry.Telemetry
-import com.lightningkite.kiteui.telemetry.TelemetryNavigation
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
@@ -47,8 +45,6 @@ fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainL
             dialogPageNavigator = it
         }
         main.bindToPlatform(context)
-        // by Claude - auto-bind navigation telemetry when active
-        if (Telemetry.isActive) TelemetryNavigation.bind(main)
         pageNavigator = main
         overlayFrame = this
         coordinatorFrame = this

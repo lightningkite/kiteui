@@ -94,8 +94,7 @@ typealias Console = Log
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
 typealias ConsoleRoot = Log.Companion
 
-// by Claude - mutable interceptor chain; telemetry and AI driver both hook in here.
-// When set, all Log.xxx() calls go through the interceptor before reaching LogRoot.
+// Mutable interceptor chain; telemetry and AI driver both hook in here.
 var logInterceptor: Log? = null
 
 interface Log {

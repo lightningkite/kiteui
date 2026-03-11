@@ -55,7 +55,7 @@ val client = HttpClient {
     }
 }
 
-actual suspend fun fetch(
+actual suspend fun fetchRaw(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
