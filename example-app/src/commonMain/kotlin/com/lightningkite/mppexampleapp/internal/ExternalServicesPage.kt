@@ -3,208 +3,277 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Clock
-import kotlin.time.Instant
+import com.lightningkite.kiteui.views.expanding
+import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.kiteui.views.l2.titledSection
+import com.lightningkite.kiteui.views.l2.toast
+import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.Signal
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.builtins.ListSerializer
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
 
 @Routable("external-services")
 object ExternalServicesPage : Page {
     override val title: Reactive<String>
         get() = super.title
-    val image = Signal<ImageSource?>(null)
+
     override fun ViewWriter.render(): Unit = run {
         scrolling.col {
             padded.col {
                 h1 { content = "This screen demonstrates various some external access." }
-            //                text { content = "Note the use of the multi-layer 'Reactive' in `fetching`." }
             }
 
-            row {
-                button {
-                    text { content = "openTab" }
-                    onClick { context.openTab("https://google.com") }
-                }
+            titledSection(
+                titleSetup = { content = "Open tab" },
+                content = {
+                    subtext("Using `externalLink {}`")
+                    card.externalLink {
+                        text { content = "Open (https://google.com)" }
+                        to = "https://google.com"
+                    }
 
-                button {
-                    text { content = "openTab (mail)" }
-                    onClick { context.openTab("mailto:joseph@lightningkite.com") }
+                    card.externalLink {
+                        text { content = "openTab (mail)" }
+                        to = "mailto:joseph@lightningkite.com"
+                    }
+                    card.externalLink {
+                        text { content = "openTab (phone)" }
+                        to = "tel:8013693729"
+                    }
                 }
-                button {
-                    text { content = "openTab (phone)" }
-                    onClick { context.openTab("tel:8013693729") }
-                }
-            }
-            row {
-                externalLink {
-                    text { content = "openTab" }
-                    to = "https://google.com"
-                }
+            )
+//            titledSection(
+//                titleSetup = { content = "Open tab" },
+//                content = {
+//                    subtext("Using `context.openTab()`")
+//
+//                    card.button {
+//                        text { content = "Open (https://google.com)" }
+//                        onClick { context.openTab("https://google.com") }
+//                    }
+//
+//                    card.button {
+//                        text { content = "openTab (mail)" }
+//                        onClick { context.openTab("mailto:joseph@lightningkite.com") }
+//                    }
+//                    card.button {
+//                        text { content = "openTab (phone)" }
+//                        onClick { context.openTab("tel:8013693729") }
+//                    }
+//                }
+//            )
 
-                externalLink {
-                    text { content = "openTab (mail)" }
-                    to = "mailto:joseph@lightningkite.com"
+            titledSection(
+                titleSetup = { content = "Open Map" },
+                content = {
+                    card.button {
+                        text("Open Map (Null Island)")
+                        onClick { context.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
+                    }
                 }
-                externalLink {
-                    text { content = "openTab (phone)" }
-                    to = "tel:8013693729"
+            )
+            titledSection(
+                titleSetup = { content = "Open Event" },
+                content = {
+                    card.button {
+                        text("Open Event")
+                        onClick {
+                            context.openEvent(
+                                title = "Test Event",
+                                description = "This is a test event from the KiteUI Tester app.",
+                                location = "255 S 300 W Logan, UT 84321",
+                                start = Clock.System.now().plus(1.hours)
+                                    .toLocalDateTime(TimeZone.currentSystemDefault()),
+                                end = Clock.System.now().plus(2.hours).toLocalDateTime(TimeZone.currentSystemDefault()),
+                                zone = TimeZone.currentSystemDefault()
+                            )
+                        }
+                    }
                 }
-            }
+            )
+            titledSection(
+                titleSetup = { content = "Share" },
+                content = {
+                    row {
+                        card.button {
+                            text("Share KiteUI")
+                            onClick {
+                                context.share(
+                                    "Cool Thing",
+                                    "Check out this cool thing!",
+                                    "https://github.com/lightningkite/kiteui"
+                                )
+                            }
+                        }
+                        card.button {
+                            text("Share image")
+                            onClick {
+                                val blob =
+                                    fetch("https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png").blob()
+                                context.share(listOf("Captain_Falcon.png" to blob))
+                            }
+                        }
+                    }
+                }
+            )
 
-            scrollingHorizontally.row {
-                button {
-                    text("Open Map")
-                    onClick { context.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
-                }
-                button {
-                    text("Open Event")
-                    onClick {
-                        context.openEvent(
-                            title = "Test Event",
-                            description = "This is a test event from the KiteUI Tester app.",
-                            location = "255 S 300 W Logan, UT 84321",
-                            start = Clock.System.now().plus(1.hours).toLocalDateTime(TimeZone.currentSystemDefault()),
-                            end = Clock.System.now().plus(2.hours).toLocalDateTime(TimeZone.currentSystemDefault()),
-                            zone = TimeZone.currentSystemDefault()
-                        )
-                    }
-                }
-                button {
-                    text("Download")
-                    onClick {
-                        context.download(
-                            "yes.png",
-                            "https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png"
-                        )
-                    }
-                }
-                button {
-                    text("Share")
-                    onClick {
-                        context.share(
-                            "Cool Thing",
-                            "Check out this cool thing!",
-                            "https://github.com/lightningkite/kiteui"
-                        )
-                    }
-                }
-                button {
-                    text("Share image")
-                    onClick {
-                        val blob =
-                            fetch("https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png").blob()
-                        context.share(listOf("Captain_Falcon.png" to blob))
-                    }
-                }
-            }
+            titledSection(
+                titleSetup = { content = "Download" },
+                content = {
+                    scrollingHorizontally.row {
+                        card.button {
+                            text { content = "Image" }
+                            onClick {
+                                context.download(
+                                    "test.jpg",
+                                    "https://picsum.photos/200/300",
+                                    DownloadLocation.Downloads
+                                )
+                            }
+                        }
+                        card.button {
+                            text { content = "Image to Gallery" }
+                            onClick {
+                                context.download(
+                                    "test.jpg",
+                                    "https://picsum.photos/200/300",
+                                    DownloadLocation.Pictures
+                                )
+                            }
+                        }
 
-            scrollingHorizontally.row {
-                button {
-                    text { content = "download image" }
-                    onClick {
-                        ExternalServices.download(
-                            "test.jpg",
-                            "https://picsum.photos/200/300",
-                            DownloadLocation.Downloads
-                        )
-                    }
-                }
-                button {
-                    text { content = "download gallery image" }
-                    onClick {
-                        ExternalServices.download(
-                            "test.jpg",
-                            "https://picsum.photos/200/300",
-                            DownloadLocation.Pictures
-                        )
-                    }
-                }
-
-                button {
-                    text { content = "download csv" }
-                    onClick {
-                        ExternalServices.download(
-                            "file.csv",
-                            """
+                        card.button {
+                            text { content = "CSV file" }
+                            onClick {
+                                context.download(
+                                    "kiteui_example.csv",
+                                    """
                                 name,phone
                                 Joseph Ivie,8013693729
                                 Dan Ostler,9876543210,
                                 Brady Svedin,4632180951
                             """.trimIndent().toBlob("text/csv; charset=utf-8; header=present")
-                        )
+                                )
+                                toast { text { content = "Check downloads for file kiteui_example.csv" } }
+                            }
+                        }
+                        card.button {
+                            onClick {
+                                try {
+                                    context.download("kiteui_example.txt", "Hello from KiteUI!".toBlob())
+                                    toast { text { content = "Check downloads for file kiteui_example.txt" } }
+                                } catch (e: Exception) {
+                                    e.printStackTrace2()
+                                }
+
+                            }
+                            text("TXT file")
+                        }
+                    }
+                })
+
+            titledSection(
+                titleSetup = { content = "Request Files" },
+                content = {
+                    row {
+                        card.button {
+                            text { content = "SingleFile (requestFile)" }
+                            onClick {
+                                context.requestFile(listOf("*/*"))
+                            }
+                        }
+
+                        card.button {
+                            text { content = "Multiple Files" }
+                            onClick {
+                                context.requestFiles(listOf("*/*"))
+                            }
+                        }
+                    }
+
+                    val photo = Signal<FileReference?>(null)
+                    row {
+                        card.button {
+                            text { content = "Single Image (requestFile(listOf(\"image/*\"))" }
+                            onClick {
+                                photo.value = context.requestFile(listOf("image/*"))
+                            }
+                        }
+
+                        card.button {
+                            text { content = "Multiple Images" }
+                            onClick {
+                                photo.value = context.requestFiles(listOf("image/*")).firstOrNull()
+                            }
+                        }
+                    }
+
+                    row {
+                        card.button {
+                            text { content = "requestCaptureSelf" }
+                            onClick {
+                                photo.value = context.requestCaptureSelf(listOf("image/*"))
+                            }
+                        }
+
+                        card.button {
+                            text { content = "requestCaptureEnvironment" }
+                            onClick {
+                                photo.value =
+                                    context.requestCaptureEnvironment(listOf("image/*"))
+                            }
+                        }
+                    }
+
+                    sizeConstraints(height = 30.rem).image {
+                        rView::shown { photo() != null }
+                        ::source { photo()?.let { ImageLocal(it) } }
+                        scaleType = ImageScaleType.Crop
+                    }
+                })
+
+
+            titledSection(
+                titleSetup = { content = "Geolocation" },
+                content = {
+                    card.button {
+                        onClick {
+                            try {
+                                val location = context.getCurrentPosition()
+                                dialog {
+                                    col {
+                                        text("Location")
+                                        space()
+                                        text {
+                                            ::content { "Latitude: ${location.latitude}" }
+                                            ::content { "Longitude: ${location.longitude}" }
+                                        }
+                                    }
+                                }
+
+                            } catch (e: Exception) {
+                                e.printStackTrace2()
+                                throw Exception("This probably isn't working because permissions haven't been granted")
+                            }
+                        }
+                        row {
+                            text("Get Current Location")
+                            expanding.space()
+                            icon { source = Icon.home }
+                        }
                     }
                 }
-            }
-
-            row {
-
-                button {
-                    text { content = "requestFile" }
-                    onClick {
-                        println(context.requestFile(listOf("*/*")))
-                    }
-                }
-
-                button {
-                    text { content = "requestFiles" }
-                    onClick {
-                        println(context.requestFiles(listOf("*/*")))
-                    }
-                }
-            }
-
-            row {
-                button {
-                    text { content = "requestFile image" }
-                    onClick {
-                        image.value = context.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
-                    }
-                }
-
-                button {
-                    text { content = "requestFiles image" }
-                    onClick {
-                        image.value =
-                            context.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
-                    }
-                }
-            }
-
-            row {
-                button {
-                    text { content = "requestCaptureSelf" }
-                    onClick {
-                        image.value = context.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
-                    }
-                }
-
-                button {
-                    text { content = "requestCaptureEnvironment" }
-                    onClick {
-                        image.value =
-                            context.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
-                    }
-                }
-            }
-
-            sizeConstraints(height = 30.rem).image {
-                ::source { image.invoke() }
-                scaleType = ImageScaleType.Crop
-            }
+            )
+            space(4.0)
 //            row {
 //                textField { content bind clip }
-//                button {
+//                card.button {
 //                    row {
 //                        icon {
 //                            source = Icon.copy

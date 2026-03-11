@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
@@ -112,7 +113,7 @@ actual class RawImageView actual constructor(
         }
         when (val value = source) {
             is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
-            is ImageRaw -> Glide.with(native).load(value.data.data).finish()
+            is ImageRaw -> native.setImageRaw(value, _state)
             is ImageRemote -> Glide.with(native).load(value.url).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> {
@@ -254,7 +255,7 @@ actual class SizelessRawImageView actual constructor(
         }
         when (val value = source) {
             is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
-            is ImageRaw -> Glide.with(native).load(value.data.data).finish()
+            is ImageRaw -> native.setImageRaw(value, _state)
             is ImageRemote -> Glide.with(native).load(value.url).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> native.setImageDrawable(PathDrawable(value))
@@ -387,7 +388,7 @@ actual class RawImageViewZoomable actual constructor(
         }
         when (val value = source) {
             is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
-            is ImageRaw -> Glide.with(native).load(value.data.data).finish()
+            is ImageRaw -> native.setImageRaw(value, _state)
             is ImageRemote -> Glide.with(native).load(value.url).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> {
@@ -400,3 +401,17 @@ actual class RawImageViewZoomable actual constructor(
 }
 
 actual typealias ZoomState = Matrix
+
+// Bypass Glide for ImageRaw to avoid bitmap pooling/recycling issues.
+// Glide manages bitmap lifecycle and may recycle the decoded bitmap after onLoadCleared,
+// but RawImageView has no reload mechanism, causing the image to disappear.
+private fun AppCompatImageView.setImageRaw(value: ImageRaw, state: RawReactive<Unit>) {
+    val bytes = value.data.data
+    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    if (bitmap != null) {
+        setImageBitmap(bitmap)
+        state.state = ReactiveState(Unit)
+    } else {
+        state.state = ReactiveState.exception(IllegalArgumentException("Could not decode image data"))
+    }
+}

@@ -17,7 +17,7 @@ import platform.UIKit.*
 @OptIn(ExperimentalNativeApi::class)
 actual class TextView actual constructor(context: RContext) : RView(context) {
     override val driverValue: String? get() = content
-    override val native = UILabelWithLayerBackground()
+    override val native = UILabelWithLayerBackground(WeakReference(context))
 //    init {
 //        native.rContext = context
 //        onRemove { native.rContext = null }

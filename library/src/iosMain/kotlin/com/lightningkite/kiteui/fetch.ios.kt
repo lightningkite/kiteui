@@ -450,3 +450,4 @@ actual suspend fun FileReference.text(): String {
 }
 
 actual fun String.toBlob(contentType: String): Blob = Blob(this.nsdata()!!, contentType)
+actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this.toNSData(), contentType)
