@@ -2,6 +2,8 @@ package com.lightningkite.kiteui.testing
 
 import com.lightningkite.kiteui.views.DriverActionException
 import kotlinx.coroutines.delay
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
  * Test DSL built on text-based driver commands.
@@ -88,6 +90,38 @@ class UiTestScope(val backend: UiTestBackend) {
     /** Send a raw command string. */
     suspend fun raw(command: String): String =
         backend.command(command)
+
+    // --- Mock external services ---
+
+    /**
+     * Queue a mock file for the next `requestFile()` / `requestFiles()` / `requestCapture*()` call.
+     * The file is created from [bytes] with the given [mimeType] and [fileName].
+     *
+     * Lazily installs a [MockExternalServices] wrapper if one isn't already present.
+     */
+    @OptIn(ExperimentalEncodingApi::class)
+    suspend fun mockFile(bytes: ByteArray, mimeType: String = "application/octet-stream", fileName: String = "mock-file"): String =
+        backend.command(cmd("mock", "file", Base64.encode(bytes), mimeType, fileName))
+
+    /**
+     * Queue a null response for the next file picker call (simulates user cancellation).
+     */
+    suspend fun mockFileCancel(): String =
+        backend.command(cmd("mock", "fileNull"))
+
+    /**
+     * Queue a mock geolocation response for the next `getCurrentPosition()` call.
+     */
+    suspend fun mockGeolocation(latitude: Double, longitude: Double, accuracyMeters: Double = 0.0): String =
+        backend.command(cmd("mock", "geolocation", latitude.toString(), longitude.toString(), accuracyMeters.toString()))
+
+    /** Clear the recorded call log on [MockExternalServices]. */
+    suspend fun mockClearCalls(): String =
+        backend.command(cmd("mock", "clearCalls"))
+
+    /** Get the recorded call log from [MockExternalServices]. */
+    suspend fun mockCalls(): String =
+        backend.command(cmd("mock", "calls"))
 
     // --- Assertions ---
 

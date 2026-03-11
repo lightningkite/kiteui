@@ -97,6 +97,13 @@ kiteui-drive <app> <path> snapshot                 # Snapshot a single element s
 kiteui-drive <app> navigate /some/route            # Navigate to URL path
 kiteui-drive <app> back back                       # Go back in navigation
 kiteui-drive <app> logs 50                         # Get recent log entries
+
+# Mocking external services (file picker, geolocation, etc.)
+kiteui-drive <app> mock file <base64> <mime> <name> # Queue a mock file for next requestFile()
+kiteui-drive <app> mock fileNull                    # Queue a null (user cancelled) file response
+kiteui-drive <app> mock geolocation <lat> <lon> [accuracy]  # Queue a mock geolocation
+kiteui-drive <app> mock calls                       # Show recorded external service calls
+kiteui-drive <app> mock clearCalls                  # Clear the recorded call log
 ```
 
 The `<app>` parameter supports prefix matching: `myapp` matches `myapp-web-ABC`.
@@ -199,6 +206,86 @@ navigatorView/0/14/3: 3: TextInput = "text" [setValue]
 | View with dragData | `getDragData` | — |
 | View with dropTarget | `drop` (base64 drag data) | — |
 
+## Mocking External Services
+
+The `mock` command family lets you inject mock responses for external services like file pickers and geolocation. This is essential for testing flows that involve `context.requestFile()`, `context.getCurrentPosition()`, etc., since these normally show native OS dialogs that can't be driven programmatically.
+
+Mock commands lazily install a `MockExternalServices` wrapper on the app's root context. Once installed, it intercepts all external service calls, queuing responses you provide and recording every call made.
+
+### mock file
+
+Queues a file for the next `requestFile()`, `requestFiles()`, `requestCaptureSelf()`, or `requestCaptureEnvironment()` call. The file is created from base64-encoded bytes.
+
+```
+mock	file	<base64-bytes>	<mimeType>	<fileName>
+```
+
+Multiple files can be queued — they're consumed FIFO.
+
+### mock fileNull
+
+Queues a `null` response, simulating user cancellation of the file picker.
+
+```
+mock	fileNull
+```
+
+### mock geolocation
+
+Queues a location for the next `getCurrentPosition()` call.
+
+```
+mock	geolocation	<latitude>	<longitude>	[accuracyMeters]
+```
+
+### mock calls / mock clearCalls
+
+View or clear the recorded call log. Useful for asserting that a specific external service was called.
+
+```
+mock	calls
+mock	clearCalls
+```
+
+### Example: Testing a file upload flow
+
+```kotlin
+@Test
+fun uploadTest() = uiTest(
+    content = {
+        col {
+            button {
+                debugName = "upload"
+                onClick {
+                    val file = context.requestFile(listOf("image/*"))
+                    // handle file...
+                }
+            }
+        }
+    }
+) {
+    // Queue a mock file, then trigger the upload
+    mockFile("hello".encodeToByteArray(), "text/plain", "test.txt")
+    click("upload")
+
+    // Verify the call was made
+    val calls = mockCalls()
+    assertTrue(calls.contains("RequestFile"))
+}
+```
+
+You can also pass a pre-configured `MockExternalServices` directly to `uiTest`:
+
+```kotlin
+val mock = MockExternalServices()
+mock.pendingFileResponses.addLast(
+    createFileReferenceFromBytes("data".encodeToByteArray(), "text/plain", "file.txt")
+)
+uiTest(mockExternalServices = mock, content = { /* ... */ }) {
+    // mock is already installed — no need to call mockFile()
+}
+```
+
 ## Error Handling
 
 Driver actions throw `DriverActionException` on failure. The WebSocket handler catches these and returns `"ERROR: ClassName: message"` to the client. Common errors:
@@ -271,6 +358,11 @@ Requires: relay server running + app connected. Same `UiTestScope` API — tests
 | `find(query, target)` | Search for views by name/value/type/action |
 | `logs(count)` | Get recent log entries |
 | `raw(command)` | Send raw command string |
+| `mockFile(bytes, mime, name)` | Queue a mock file for next file picker call |
+| `mockFileCancel()` | Queue a null (cancelled) file picker response |
+| `mockGeolocation(lat, lon, accuracy)` | Queue a mock geolocation response |
+| `mockCalls()` | Get recorded external service call log |
+| `mockClearCalls()` | Clear the recorded call log |
 | `assertValue(target, expected)` | Assert view has expected value |
 | `assertVisible(target)` | Assert view exists and is visible |
 | `assertNotVisible(target)` | Assert view is hidden or missing |

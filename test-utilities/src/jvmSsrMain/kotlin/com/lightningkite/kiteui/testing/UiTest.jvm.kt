@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.testing
 
+import com.lightningkite.kiteui.MockExternalServices
+import com.lightningkite.kiteui.externalServices
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.Frame
@@ -9,6 +11,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 
 actual fun uiTest(
+    mockExternalServices: MockExternalServices?,
     content: ViewWriter.() -> Unit,
     block: suspend UiTestScope.() -> Unit,
 ) {
@@ -18,6 +21,9 @@ actual fun uiTest(
     try {
         val context = RContext("/")
         val root = Frame(context)
+        if (mockExternalServices != null) {
+            context.addons[ViewWriter::externalServices.name] = mockExternalServices
+        }
         content(root)
         root.postSetup()
 

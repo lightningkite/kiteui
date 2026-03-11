@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.reactive.Action
@@ -335,6 +336,150 @@ class DriverTest {
     ) {
         assertFailsWith<DriverActionException>("Back without navigator should throw") {
             back()
+        }
+    }
+
+    // --- Mock external services ---
+
+    @Test
+    fun mockFileQueuedAndReturnedByRequestFile() = uiTest(
+        content = {
+            col {
+                val fileName = Signal("")
+                button {
+                    debugName = "upload"
+                    text("Upload")
+                    onClick {
+                        val file = context.requestFile(listOf("image/*"))
+                        fileName.value = file?.fileName() ?: "cancelled"
+                    }
+                }
+                text {
+                    debugName = "result"
+                    ::content { "File: ${fileName()}" }
+                }
+            }
+        }
+    ) {
+        // Queue a mock file before clicking
+        mockFile("hello".encodeToByteArray(), "text/plain", "test.txt")
+
+        // Click the upload button — requestFile() returns the queued mock
+        click("upload")
+
+        // Verify the file was received
+        val snap = snapshot("result")
+        assertTrue(snap.contains("File: test.txt"), "Should show mock filename: $snap")
+
+        // Verify the call was recorded
+        val calls = mockCalls()
+        assertTrue(calls.contains("RequestFile"), "Should record RequestFile call: $calls")
+    }
+
+    @Test
+    fun mockFileCancelReturnsNull() = uiTest(
+        content = {
+            col {
+                val status = Signal("")
+                button {
+                    debugName = "upload"
+                    text("Upload")
+                    onClick {
+                        val file = context.requestFile()
+                        status.value = if (file == null) "cancelled" else "got file"
+                    }
+                }
+                text {
+                    debugName = "status"
+                    ::content { status() }
+                }
+            }
+        }
+    ) {
+        mockFileCancel()
+        click("upload")
+        val snap = snapshot("status")
+        assertTrue(snap.contains("cancelled"), "Should show cancelled: $snap")
+    }
+
+    @Test
+    fun mockGeolocationReturnsMockedPosition() = uiTest(
+        content = {
+            col {
+                val location = Signal("")
+                button {
+                    debugName = "locate"
+                    text("Locate")
+                    onClick {
+                        val pos = context.getCurrentPosition()
+                        location.value = "${pos.latitude},${pos.longitude}"
+                    }
+                }
+                text {
+                    debugName = "location"
+                    ::content { location() }
+                }
+            }
+        }
+    ) {
+        mockGeolocation(37.7749, -122.4194)
+        click("locate")
+        val snap = snapshot("location")
+        assertTrue(snap.contains("37.7749"), "Should contain latitude: $snap")
+        assertTrue(snap.contains("-122.4194"), "Should contain longitude: $snap")
+    }
+
+    @Test
+    fun mockClearCallsResetsLog() = uiTest(
+        content = {
+            col {
+                button {
+                    debugName = "btn"
+                    text("Go")
+                    onClick { context.requestFile() }
+                }
+            }
+        }
+    ) {
+        mockFileCancel()
+        click("btn")
+        val callsBefore = mockCalls()
+        assertTrue(callsBefore.contains("RequestFile"), "Should have recorded call: $callsBefore")
+
+        mockClearCalls()
+        val callsAfter = mockCalls()
+        assertEquals("No calls recorded", callsAfter, "Should be empty after clear")
+    }
+
+    @Test
+    fun mockExternalServicesPassedToUiTest() {
+        val mock = MockExternalServices()
+        mock.pendingFileResponses.addLast(
+            createFileReferenceFromBytes("direct".encodeToByteArray(), "text/plain", "direct.txt")
+        )
+        uiTest(
+            mockExternalServices = mock,
+            content = {
+                col {
+                    val name = Signal("")
+                    button {
+                        debugName = "pick"
+                        text("Pick")
+                        onClick {
+                            val file = context.requestFile()
+                            name.value = file?.fileName() ?: "none"
+                        }
+                    }
+                    text {
+                        debugName = "name"
+                        ::content { name() }
+                    }
+                }
+            }
+        ) {
+            click("pick")
+            val snap = snapshot("name")
+            assertTrue(snap.contains("direct.txt"), "Should use directly-provided mock: $snap")
         }
     }
 
