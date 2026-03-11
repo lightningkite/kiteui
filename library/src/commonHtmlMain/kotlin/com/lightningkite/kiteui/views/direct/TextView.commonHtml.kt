@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class TextView actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = content
     init {
         native.tag = "p"
         native.content = Typography.nbsp.toString()

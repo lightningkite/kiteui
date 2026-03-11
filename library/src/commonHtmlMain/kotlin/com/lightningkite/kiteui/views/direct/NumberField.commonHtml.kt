@@ -14,6 +14,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = numberInputDriverValue()
+    override val driverActions get() = super.driverActions + numberInputDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")

@@ -17,6 +17,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class RadioButton actual constructor(context: RContext): RView(context) {
+    override val driverValue: String? get() = radioDriverValue()
+    override val driverActions get() = super.driverActions + radioDriverActions()
     override val native = android.widget.RadioButton(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         val theme = theme.theme

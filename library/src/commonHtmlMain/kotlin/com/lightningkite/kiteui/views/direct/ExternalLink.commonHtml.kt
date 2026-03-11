@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 
 
 actual class ExternalLink actual constructor(context: RContext) : RView(context) {
+    override val driverActions get() = super.driverActions + externalLinkDriverActions()
     init {
         themeChoice += ClickableSemantic
         native.tag = "a"

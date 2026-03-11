@@ -11,6 +11,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class Button actual constructor(context: RContext) : RViewWithSecondaryAction(context) {
+    override val driverActions get() = super.driverActions + buttonDriverActions()
     override val native = FrameLayoutButton()
 
     init {

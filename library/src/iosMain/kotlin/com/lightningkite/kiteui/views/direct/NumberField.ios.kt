@@ -21,6 +21,8 @@ import platform.objc.sel_registerName
 
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = numberInputDriverValue()
+    override val driverActions get() = super.driverActions + numberInputDriverActions()
     override val native = WrapperView()
     val trigger: NSObject = object: NSObject() {
         @ObjCAction

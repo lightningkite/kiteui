@@ -14,6 +14,12 @@ import kotlin.time.Duration.Companion.milliseconds
 
 
 actual class Select actual constructor(context: RContext) : RView(context) {
+    private var _driverSelectedDisplay: String? = null
+    private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
+    override val driverValue: String? get() = _driverSelectedDisplay
+    override val driverActions get() = super.driverActions + buildMap {
+        _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
+    }
     init {
         native.tag = "select"
         native.classes.add("editable")
@@ -58,6 +64,15 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         }
         native.addEventListener("change") {
             setAction.startAction(this)
+        }
+        // Driver support: track selected display and allow setValue
+        reactiveScope {
+            _driverSelectedDisplay = render(edits())
+        }
+        _driverSelectSetValue = { displayText ->
+            val item = list.firstOrNull { render(it) == displayText }
+                ?: throw com.lightningkite.kiteui.views.DriverActionException("No option matching '$displayText'")
+            edits.set(item)
         }
     }
 

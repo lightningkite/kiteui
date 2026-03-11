@@ -14,6 +14,8 @@ import platform.UIKit.UIView
 
 
 actual class ToggleButton actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = toggleDriverValue()
+    override val driverActions get() = super.driverActions + toggleDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
     actual inline var enabled: Boolean
         get() = native.enabled

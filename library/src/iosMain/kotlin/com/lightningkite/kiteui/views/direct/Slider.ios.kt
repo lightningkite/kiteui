@@ -11,6 +11,8 @@ import com.lightningkite.readable.*
 import platform.UIKit.*
 
 actual class Slider actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = sliderDriverValue()
+    override val driverActions get() = super.driverActions + sliderDriverActions()
     override val native = UISlider()
 
     private val valueProp = Signal(0.5f)

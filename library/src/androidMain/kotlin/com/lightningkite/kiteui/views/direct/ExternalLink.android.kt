@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.views.RView
 import kotlinx.coroutines.launch
 
 actual class ExternalLink actual constructor(context: RContext) : RView(context) {
+    override val driverActions get() = super.driverActions + externalLinkDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
