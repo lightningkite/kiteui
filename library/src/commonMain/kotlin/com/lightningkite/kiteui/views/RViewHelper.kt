@@ -718,6 +718,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             (this@RViewHelper as RView).scrollIntoView(Align.Center, Align.Center, animate = false)
             "OK"
         }
+        put("getAlignment") {
+            "horizontal=${lastSetHorizontalAlign} vertical=${lastSetVerticalAlign}"
+        }
         if (dragData != null) put("getDragData") {
             val data = dragData ?: throw DriverActionException("no dragData on this view")
             val serialized = buildString {
@@ -767,7 +770,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         htmlElementTag?.let { append(" ($it)") }
         if (!shown) append(" (hidden)")
         else if (!visible) append(" (invisible)")
-        driverActions.keys.filter { it != "snapshot" && it != "screenshot" && it != "find" && it != "scroll" && it != "scrollIntoView" }.takeUnless { it.isEmpty() }?.let {
+        driverActions.keys.filter { it != "snapshot" && it != "screenshot" && it != "find" && it != "scroll" && it != "scrollIntoView" && it != "getAlignment" }.takeUnless { it.isEmpty() }?.let {
             append(" [${it.joinToString(", ")}]")
         }
     }

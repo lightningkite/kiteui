@@ -81,6 +81,10 @@ class UiTestScope(val backend: UiTestBackend) {
     suspend fun logs(count: Int = 50): String =
         backend.command(cmd("logs", count.toString()))
 
+    /** Get alignment of a view. Returns "horizontal=X vertical=Y". */
+    suspend fun getAlignment(target: String): String =
+        backend.command(cmd(target, "getAlignment"))
+
     /** Send a raw command string. */
     suspend fun raw(command: String): String =
         backend.command(command)
