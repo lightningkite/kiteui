@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import com.lightningkite.kiteui.telemetry.*
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 
 class WaitGate(permit: Boolean = false) {
@@ -38,6 +38,7 @@ class WaitGate(permit: Boolean = false) {
         if (permit) return
         else return suspendCancellableCoroutine {
             continuations.add(it)
+            it.invokeOnCancellation { _ -> continuations.remove(it) }
         }
     }
     fun abandon() {
@@ -129,23 +130,23 @@ suspend fun connectivityFetch(
 
     val response = if(coroutineContext[ConnectivityIssueSuppress.Key] == null) {
         Connectivity.fetchGate.run("$method $url") {
-            try {
+            val response = try {
                 fetch(url = url, method = method, headers = tracedHeaders(), body = body)
             } catch(e: ConnectionException) {
                 // Perform a single retry immediately
                 Log.warn("Forced retry on $method $url")
-                val r = try {
+                try {
                     fetch(url = url, method = method, headers = tracedHeaders(), body = body)
                 } catch(e: ConnectionException) {
                     Connectivity.lastConnectivityIssueCode.value = 0
                     throw e
                 }
-                if (r.status in Connectivity.stopConnectivityCodes) {
-                    Connectivity.lastConnectivityIssueCode.value = r.status
-                    throw ConnectionException("Status code ${r.status}")
-                }
-                r
             }
+            if (response.status in Connectivity.stopConnectivityCodes) {
+                Connectivity.lastConnectivityIssueCode.value = response.status
+                throw ConnectionException("Status code ${response.status}")
+            }
+            response
         }
     } else {
         fetch(url = url, method = method, headers = tracedHeaders(), body = body)

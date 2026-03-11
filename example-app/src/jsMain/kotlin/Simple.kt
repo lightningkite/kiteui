@@ -35,7 +35,7 @@ fun main() {
         if (e is Exception) e.printStackTrace2()
     }
 
-    root(appTheme) {
+    smartRoot(appTheme) {
         app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
 
         document.addEventListener("keydown", { e ->

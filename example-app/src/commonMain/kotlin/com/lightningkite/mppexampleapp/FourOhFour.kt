@@ -11,8 +11,10 @@ import com.lightningkite.kiteui.views.direct.text
 @FallbackRoute
 @Routable("/notfound")
 class FourOhFour() : Page {
-    override fun ViewWriter.render() = col {
-        h1 { content = "Not Found" }
-        text { content = "Sorry, couldn't find what you were looking for." }
+    override fun ViewWriter.render() {
+        col {
+            h1 { content = "Not Found" }
+            text { content = "Sorry, couldn't find what you were looking for." }
+        }
     }
 }

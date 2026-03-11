@@ -15,7 +15,7 @@ import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.datetime.*
 import platform.CoreGraphics.CGRectMake
-import platform.CoreLocation.CLLocationCoordinate2DMake
+import platform.CoreLocation.*
 import platform.CoreServices.kUTTypeMovie
 import platform.EventKit.EKEntityType
 import platform.EventKit.EKEvent
@@ -38,13 +38,126 @@ import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.posix.int64_t
 
-actual fun RContext.openLink(url: String, newTab: Boolean) {
-    UIApplication.sharedApplication.openURL(
-        url = NSURL(string = url),
-        options = mapOf<Any?, Any?>(),
-        completionHandler = {}
-    )
+// by Claude
+
+// Strong-reference holder for CLLocationManager delegates (weak property) — by Claude
+private val geoKeepAlive = HashSet<Any>()
+
+class IosExternalServices(private val ctx: RContext) : ExternalServicesAccess {
+
+    override fun openLink(url: String, newTab: Boolean) {
+        UIApplication.sharedApplication.openURL(
+            url = NSURL(string = url),
+            options = mapOf<Any?, Any?>(),
+            completionHandler = {}
+        )
+    }
+
+    override fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) =
+        ctx.openMapImpl(latitude, longitude, label, zoom)
+
+    override suspend fun requestFile(mimeTypes: List<String>): FileReference? = ctx.requestFileImpl(mimeTypes)
+    override suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> = ctx.requestFilesImpl(mimeTypes)
+    override suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? = ctx.requestCaptureSelfImpl(mimeTypes)
+    override suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? = ctx.requestCaptureEnvironmentImpl(mimeTypes)
+
+    override fun setClipboardText(value: String) {
+        UIPasteboard.generalPasteboard.string = value
+    }
+
+    override suspend fun download(name: String, url: String, preferredDestination: DownloadLocation, onDownloadProgress: ((progress: Float) -> Unit)?) =
+        ctx.downloadMultiple(mapOf(url to name), preferredDestination, onDownloadProgress)
+
+    override suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
+        val temporaryFiles = listOf(blob.saveToTemporaryFile(name))
+        when (preferredDestination) {
+            DownloadLocation.Downloads -> withContext(Dispatchers.Main) { ctx.showShareSheet(items = temporaryFiles) }
+            DownloadLocation.Pictures -> copyFilesToCameraRoll(temporaryFiles)
+        }
+    }
+
+    override suspend fun share(namesToBlobs: List<Pair<String, Blob>>) =
+        ctx.showShareSheet(items = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) })
+
+    override fun share(title: String, message: String?, url: String?) =
+        ctx.showShareSheet(messages = listOf(message), items = listOf(url?.let { NSURL(string = it) }))
+
+    override fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) =
+        ctx.openEventImpl(title, description, location, start, end, zone)
+
+    // by Claude — geolocation via CLLocationManager
+    override suspend fun getCurrentPosition(): GeolocationResult {
+        return suspendCancellableCoroutine { cont ->
+            val manager = CLLocationManager()
+            val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
+                override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) {
+                    val location = didUpdateLocations.lastOrNull() as? CLLocation
+                    if (location != null) {
+                        manager.stopUpdatingLocation()
+                        geoKeepAlive.remove(this)
+                        val result = location.coordinate.useContents {
+                            GeolocationResult(
+                                latitude = latitude,
+                                longitude = longitude,
+                                accuracyInMeters = location.horizontalAccuracy,
+                            )
+                        }
+                        cont.resume(result)
+                    }
+                }
+
+                override fun locationManager(manager: CLLocationManager, didFailWithError: platform.Foundation.NSError) {
+                    manager.stopUpdatingLocation()
+                    geoKeepAlive.remove(this)
+                    cont.resumeWithException(
+                        Exception("Geolocation error: ${didFailWithError.localizedDescription}")
+                    )
+                }
+
+                override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) {
+                    when (manager.authorizationStatus) {
+                        kCLAuthorizationStatusAuthorizedWhenInUse,
+                        kCLAuthorizationStatusAuthorizedAlways -> {
+                            manager.requestLocation()
+                        }
+                        kCLAuthorizationStatusDenied,
+                        kCLAuthorizationStatusRestricted -> {
+                            geoKeepAlive.remove(this)
+                            cont.resumeWithException(Exception("Location permission denied"))
+                        }
+                        else -> {}
+                    }
+                }
+            }
+
+            geoKeepAlive.add(delegate)
+            manager.delegate = delegate
+            manager.desiredAccuracy = kCLLocationAccuracyBest
+
+            when (manager.authorizationStatus) {
+                kCLAuthorizationStatusAuthorizedWhenInUse,
+                kCLAuthorizationStatusAuthorizedAlways -> {
+                    manager.requestLocation()
+                }
+                kCLAuthorizationStatusNotDetermined -> {
+                    manager.requestWhenInUseAuthorization()
+                }
+                else -> {
+                    cont.resumeWithException(Exception("Location permission denied"))
+                }
+            }
+
+            cont.invokeOnCancellation {
+                geoKeepAlive.remove(delegate)
+                manager.stopUpdatingLocation()
+            }
+        }
+    }
 }
+
+actual fun externalServicesAccessDefault(context: RContext): ExternalServicesAccess = IosExternalServices(context)
+
+// --- Private RContext extension helpers ---
 
 private val mostTypes = listOf(
     UTTypeData,
@@ -56,31 +169,20 @@ private val mostTypes = listOf(
     UTTypeSourceCode,
 )
 
-lateinit var rootView: UIView
-actual suspend fun RContext.requestFile(mimeTypes: List<String>): FileReference? = run {
+private suspend fun RContext.requestFileImpl(mimeTypes: List<String>): FileReference? = run {
     val onlyMedia = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
-    val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/" )}
+    val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/") }
     if (onlyMedia) {
         requestSingleImageOrVideo(mimeTypes)
-    } else if(includesMedia) {
+    } else if (includesMedia) {
         actionSheetCancellable(null, null,
-            UIAlertActionSuspending("Open File", UIAlertActionStyleDefault) {
-                requestSingleDocument(mimeTypes)
-            },
-            UIAlertActionSuspending("Open Photo or Video", UIAlertActionStyleDefault) {
-                requestSingleImageOrVideo(mimeTypes)
-            },
+            UIAlertActionSuspending("Open File", UIAlertActionStyleDefault) { requestSingleDocument(mimeTypes) },
+            UIAlertActionSuspending("Open Photo or Video", UIAlertActionStyleDefault) { requestSingleImageOrVideo(mimeTypes) },
             UIAlertActionSuspending("Take Photo", UIAlertActionStyleDefault) {
-                requestCapture(
-                    UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
-                    UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-                )
+                requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto)
             },
-            UIAlertActionSuspending("Take Photo", UIAlertActionStyleDefault) {
-                requestCapture(
-                    UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
-                    UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo,
-                )
+            UIAlertActionSuspending("Take Video", UIAlertActionStyleDefault) {
+                requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo)
             },
         ) ?: null
     } else {
@@ -88,30 +190,20 @@ actual suspend fun RContext.requestFile(mimeTypes: List<String>): FileReference?
     }
 }
 
-actual suspend fun RContext.requestFiles(mimeTypes: List<String>): List<FileReference> = run {
+private suspend fun RContext.requestFilesImpl(mimeTypes: List<String>): List<FileReference> = run {
     val onlyMedia = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
-    val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/" )}
+    val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/") }
     if (onlyMedia) {
         requestMultipleImagesOrVideos(mimeTypes)
-    } else if(includesMedia) {
+    } else if (includesMedia) {
         actionSheetCancellable(null, null,
-            UIAlertActionSuspending("Open File", UIAlertActionStyleDefault) {
-                requestMultipleDocuments(mimeTypes)
-            },
-            UIAlertActionSuspending("Open Photo or Video", UIAlertActionStyleDefault) {
-                requestMultipleImagesOrVideos(mimeTypes)
-            },
+            UIAlertActionSuspending("Open File", UIAlertActionStyleDefault) { requestMultipleDocuments(mimeTypes) },
+            UIAlertActionSuspending("Open Photo or Video", UIAlertActionStyleDefault) { requestMultipleImagesOrVideos(mimeTypes) },
             UIAlertActionSuspending("Take Photo", UIAlertActionStyleDefault) {
-                requestCapture(
-                    UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
-                    UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-                ).let(::listOfNotNull)
+                requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto).let(::listOfNotNull)
             },
             UIAlertActionSuspending("Take Video", UIAlertActionStyleDefault) {
-                requestCapture(
-                    UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
-                    UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo,
-                ).let(::listOfNotNull)
+                requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo).let(::listOfNotNull)
             },
         ) ?: listOf()
     } else {
@@ -119,599 +211,27 @@ actual suspend fun RContext.requestFiles(mimeTypes: List<String>): List<FileRefe
     }
 }
 
-
-data class UIAlertActionSuspending<out T>(
-    val title: String,
-    val style: UIAlertActionStyle = UIAlertActionStyleDefault,
-    val handler: suspend () -> T,
-)
-
-suspend fun <T> RContext.actionSheet(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T {
-    return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
-        UIAlertController.alertControllerWithTitle(
-            title = title,
-            message = message,
-            preferredStyle = UIAlertControllerStyleActionSheet
-        ).apply {
-            for(action in actions) {
-                addAction(UIAlertAction.actionWithTitle(action.title, action.style) {
-                    cont.resume(action)
-                })
-            }
-        }.also { present(it) }
-    }!!.handler()
-}
-suspend fun <T> RContext.actionSheetCancellable(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T? {
-    return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
-        UIAlertController.alertControllerWithTitle(
-            title = title,
-            message = message,
-            preferredStyle = UIAlertControllerStyleActionSheet
-        ).apply {
-            for(action in actions) {
-                addAction(UIAlertAction.actionWithTitle(action.title, action.style) {
-                    cont.resume(action)
-                })
-            }
-            addAction(UIAlertAction.actionWithTitle("Cancel", UIAlertActionStyleCancel, {
-                cont.resume(null)
-            }))
-        }.also { present(it) }
-    }?.handler()
-}
-private suspend fun RContext.requestSingleDocument(
-    mimeTypes: List<String>,
-): FileReference? = suspendCancellableCoroutine { cont ->
-    val controller = UIDocumentPickerViewController(forOpeningContentTypes = mimeTypes.flatMap {
-        if (it == "*/*") mostTypes
-        else UTType.typeWithMIMEType(it)?.let { listOf(it) } ?: listOf()
-    }, asCopy = true)
-    controller.allowsMultipleSelection = false
-    val delegate =
-        object : NSObject(), UIDocumentMenuDelegateProtocol, UIDocumentPickerDelegateProtocol,
-            UINavigationControllerDelegateProtocol {
-            override fun documentMenu(
-                documentMenu: UIDocumentMenuViewController,
-                didPickDocumentPicker: UIDocumentPickerViewController
-            ) {
-                didPickDocumentPicker.delegate = this
-                present(didPickDocumentPicker)
-            }
-
-            override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
-                cont.resume(null)
-                controller.dismissViewControllerAnimated(true, {})
-            }
-
-            override fun documentPicker(
-                controller: UIDocumentPickerViewController,
-                didPickDocumentAtURL: NSURL
-            ) {
-                cont.resume(FileReference(NSItemProvider(contentsOfURL = didPickDocumentAtURL)))
-                controller.dismissViewControllerAnimated(true, {})
-            }
-
-            override fun documentPicker(
-                controller: UIDocumentPickerViewController,
-                didPickDocumentsAtURLs: List<*>
-            ) {
-                cont.resume(
-                    didPickDocumentsAtURLs.filterIsInstance<NSURL>().firstOrNull()
-                        ?.let { FileReference(NSItemProvider(contentsOfURL = it)) })
-                controller.dismissViewControllerAnimated(true, {})
-            }
-//                    override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
-//                        picker.dismissViewControllerAnimated(true) {
-//                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-//                                (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
-//                                    cont.resume(FileReference(result.itemProvider))
-//                                } ?: cont.resume(null)
-//                            })
-//                        }
-//                    }
-        }
-    controller.delegate = delegate
-    controller.extensionStrongRef = delegate
-    present(controller)
-    cont.invokeOnCancellation {
-        try {
-            controller.dismissViewControllerAnimated(true, {})
-        } catch (e: Exception) { /*squish*/
-        }
-    }
-}
-
-private suspend fun RContext.requestSingleImageOrVideo(
-    mimeTypes: List<String>,
-): FileReference? = suspendCancellableCoroutine { cont ->
-    val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
-        filter = PHPickerFilter.anyFilterMatchingSubfilters(
-            listOfNotNull(
-                PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } || mimeTypes.any { it.startsWith("*/") } },
-                PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } || mimeTypes.any { it.startsWith("*/") } },
-            )
-        )
-        preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
-        selectionLimit = 1
-    })
-    val delegate =
-        object : NSObject(), PHPickerViewControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
-            override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
-                picker.dismissViewControllerAnimated(true) {
-                    dispatch_async(queue = dispatch_get_main_queue(), block = {
-                        (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
-                            val suggestedType = result.itemProvider.registeredContentTypes
-                                .filterIsInstance<UTType>()
-                                .firstOrNull { type ->
-                                    mimeTypes.any { mimeType ->
-                                        type.matchesMimeType(mimeType)
-                                    }
-                                }
-                            if(suggestedType == null) {
-                                println("WARNING: Could not find UTType for any of ${mimeTypes.joinToString()} VS ${result.itemProvider.registeredContentTypes
-                                    .filterIsInstance<UTType>().joinToString { it.preferredMIMEType ?: "???" }}")
-                            }
-                            cont.resume(FileReference(result.itemProvider, suggestedType))
-                        } ?: cont.resume(null)
-                    })
-                }
-            }
-        }
-    controller.delegate = delegate
-    controller.extensionStrongRef = delegate
-    present(controller)
-    cont.invokeOnCancellation {
-        try {
-            controller.dismissViewControllerAnimated(true, {})
-        } catch (e: Exception) { /*squish*/
-        }
-    }
-}
-
-private suspend fun RContext.requestMultipleDocuments(
-    mimeTypes: List<String>
-): List<FileReference> = suspendCancellableCoroutine { cont ->
-    val controller = UIDocumentPickerViewController(forOpeningContentTypes = mimeTypes.flatMap {
-        if (it == "*/*") mostTypes
-        else UTType.typeWithMIMEType(it)?.let { listOf(it) } ?: listOf()
-    }, asCopy = true)
-    controller.allowsMultipleSelection = true
-    val delegate =
-        object : NSObject(), UIDocumentMenuDelegateProtocol, UIDocumentPickerDelegateProtocol,
-            UINavigationControllerDelegateProtocol {
-            override fun documentMenu(
-                documentMenu: UIDocumentMenuViewController,
-                didPickDocumentPicker: UIDocumentPickerViewController
-            ) {
-                didPickDocumentPicker.delegate = this
-                present(didPickDocumentPicker)
-            }
-
-            override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
-                cont.resume(listOf())
-                controller.dismissViewControllerAnimated(true, {})
-            }
-
-            override fun documentPicker(
-                controller: UIDocumentPickerViewController,
-                didPickDocumentAtURL: NSURL
-            ) {
-                cont.resume(listOf(FileReference(NSItemProvider(contentsOfURL = didPickDocumentAtURL))))
-                controller.dismissViewControllerAnimated(true, {})
-            }
-
-            override fun documentPicker(
-                controller: UIDocumentPickerViewController,
-                didPickDocumentsAtURLs: List<*>
-            ) {
-                cont.resume(
-                    didPickDocumentsAtURLs.filterIsInstance<NSURL>()
-                        .map { FileReference(NSItemProvider(contentsOfURL = it)) })
-                controller.dismissViewControllerAnimated(true, {})
-            }
-        }
-    controller.delegate = delegate
-    controller.extensionStrongRef = delegate
-    present(controller)
-    cont.invokeOnCancellation {
-        try {
-            controller.dismissViewControllerAnimated(true, {})
-        } catch (e: Exception) { /*squish*/
-        }
-    }
-}
-
-private suspend fun RContext.requestMultipleImagesOrVideos(
-    mimeTypes: List<String>
-): List<FileReference> = suspendCancellableCoroutine { cont ->
-    val controller =
-        PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
-            filter = PHPickerFilter.anyFilterMatchingSubfilters(
-                listOfNotNull(
-                    PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } || mimeTypes.any { it.startsWith("*/") } },
-                    PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } || mimeTypes.any { it.startsWith("*/") } },
-                )
-            )
-            preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
-            selectionLimit = Int.MAX_VALUE.toLong()
-        })
-    val delegate =
-        object : NSObject(), PHPickerViewControllerDelegateProtocol,
-            UINavigationControllerDelegateProtocol {
-            override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
-                picker.dismissViewControllerAnimated(true) {
-                    dispatch_async(queue = dispatch_get_main_queue(), block = {
-                        didFinishPicking.filterIsInstance<PHPickerResult>()
-                            .map { result ->
-                                val suggestedType = result.itemProvider.registeredContentTypes
-                                    .filterIsInstance<UTType>()
-                                    .firstOrNull { type ->
-                                        mimeTypes.any { mimeType ->
-                                            type.matchesMimeType(mimeType)
-                                        }
-                                    }
-                                if(suggestedType == null) {
-                                    println("WARNING: Could not find UTType for any of ${mimeTypes.joinToString()} VS ${result.itemProvider.registeredContentTypes
-                                        .filterIsInstance<UTType>().joinToString { it.preferredMIMEType ?: "???" }}")
-                                }
-                                FileReference(result.itemProvider, suggestedType)
-                            }
-                            .let { cont.resume(it) }
-                    })
-                }
-            }
-        }
-    controller.delegate = delegate
-    controller.extensionStrongRef = delegate
-    present(controller)
-    cont.invokeOnCancellation {
-        try {
-            controller.dismissViewControllerAnimated(true, {})
-        } catch (e: Exception) { /*squish*/
-        }
-    }
-}
-
-private fun UTType.matchesMimeType(mimeType: String): Boolean {
-    val a = mimeType.split("/", limit = 2)
-    val b = preferredMIMEType?.split("/", limit = 2) ?: return false
-    if (a[0] != b[0] && a[0] != "*" && b[0] != "*") return false
-    if (a[1] != b[1] && a[1] != "*" && b[1] != "*") return false
-    return true
-}
-
-actual suspend fun RContext.requestCaptureSelf(mimeTypes: List<String>): FileReference? {
+private suspend fun RContext.requestCaptureSelfImpl(mimeTypes: List<String>): FileReference? {
     return if (mimeTypes.all { it.startsWith("image/") }) {
-        requestCapture(
-            UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
-            UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-        )
+        requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto)
     } else if (mimeTypes.all { it.startsWith("video/") }) {
-        requestCapture(
-            UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
-            UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo,
-        )
+        requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo)
     } else {
-        requestCapture(
-            UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
-            UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-        )
+        requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto)
     }
 }
 
-actual suspend fun RContext.requestCaptureEnvironment(mimeTypes: List<String>): FileReference? {
+private suspend fun RContext.requestCaptureEnvironmentImpl(mimeTypes: List<String>): FileReference? {
     return if (mimeTypes.all { it.startsWith("image/") }) {
-        requestCapture(
-            UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear,
-            UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-        )
+        requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto)
     } else if (mimeTypes.all { it.startsWith("video/") }) {
-        requestCapture(
-            UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear,
-            UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo,
-        )
+        requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo)
     } else {
-        requestCapture(
-            UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear,
-            UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-        )
+        requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto)
     }
 }
 
-
-suspend fun RContext.requestCapture(
-    camera: UIImagePickerControllerCameraDevice,
-    mode: UIImagePickerControllerCameraCaptureMode,
-): FileReference? {
-    val controller = UIImagePickerController()
-    val result = suspendCancellableCoroutine { cont ->
-        controller.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
-        controller.cameraDevice = camera
-//    controller.cameraCaptureMode = mode
-        println("OK, here we go")
-        if (mode == UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo) {
-            println("Setting up movie")
-            controller.mediaTypes = listOf("public.movie")
-        }
-        val delegate =
-            object : NSObject(), UIImagePickerControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
-                override fun imagePickerController(
-                    picker: UIImagePickerController,
-                    didFinishPickingMediaWithInfo: Map<Any?, *>
-                ) {
-                    val url = didFinishPickingMediaWithInfo[UIImagePickerControllerMediaURL] as? NSURL
-                        ?: didFinishPickingMediaWithInfo[UIImagePickerControllerImageURL] as? NSURL
-
-                    url?.let {
-                        dispatch_async(queue = dispatch_get_main_queue(), block = {
-                            cont.resume(FileReference(NSItemProvider(contentsOfURL = it)))
-                        })
-                        return
-                    }
-
-                    val image = didFinishPickingMediaWithInfo[UIImagePickerControllerEditedImage] as? UIImage
-                        ?: didFinishPickingMediaWithInfo[UIImagePickerControllerOriginalImage] as? UIImage
-
-                    val asFile = image?.let {
-                        val p = NSURL(fileURLWithPath = NSTemporaryDirectory())
-                        val u = NSURL(string = "${NSUUID()}.jpg", relativeToURL = p)
-                        NSFileManager.defaultManager.createDirectoryAtPath(
-                            path = p.path!!,
-                            withIntermediateDirectories = true,
-                            attributes = null,
-                            error = null
-                        )
-                        if (UIImageJPEGRepresentation(it, 0.98)!!.writeToURL(url = u, atomically = true)) {
-                            FileReference(NSItemProvider(contentsOfURL = u), UTTypeJPEG)
-                        } else {
-                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                cont.resumeWithException(Exception("Failed to write image file to $u"))
-                            })
-                            return
-                        }
-                    }
-
-                    picker.dismissViewControllerAnimated(true) {
-                        dispatch_async(queue = dispatch_get_main_queue(), block = {
-                            cont.resume(asFile)
-                        })
-                    }
-                }
-
-                override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
-                    picker.dismissViewControllerAnimated(true) {
-                        dispatch_async(queue = dispatch_get_main_queue(), block = {
-                            cont.resume(null)
-                        })
-                    }
-                }
-            }
-        controller.delegate = delegate
-        controller.extensionStrongRef = delegate
-        present(controller)
-        cont.invokeOnCancellation {
-            try {
-                controller.dismissViewControllerAnimated(true, null)
-            } catch (e: Exception) { /*squish*/
-            }
-        }
-    }
-    controller.dismissViewControllerAnimated(true, null)
-    return result
-}
-
-actual fun RContext.setClipboardText(value: String) {
-    UIPasteboard.generalPasteboard.string = value
-}
-
-actual suspend fun RContext.download(
-    name: String,
-    url: String,
-    preferredDestination: DownloadLocation,
-    onDownloadProgress: ((progress: Float) -> Unit)?
-) = downloadMultiple(mapOf(url to name), preferredDestination, onDownloadProgress)
-
-suspend fun RContext.downloadMultiple(
-    urlToNames: Map<String, String>,
-    preferredDestination: DownloadLocation,
-    onDownloadProgress: ((progress: Float) -> Unit)?
-) {
-    coroutineScope {
-        val temporaryFiles = suspendCoroutine {
-            var updateProgressJob: Job? = null
-            val delegate = NSURLDownloadAndCopyDelegate(
-                { temporaryFiles -> it.resume(temporaryFiles) }
-            ) { progress ->
-                onDownloadProgress?.let { updateProgressCallback ->
-                    updateProgressJob?.cancel()
-                    updateProgressJob = launch(Dispatchers.Main) {
-                        updateProgressCallback(progress)
-                    }
-                }
-            }
-
-            val session = NSURLSession.sessionWithConfiguration(
-                NSURLSessionConfiguration.defaultSessionConfiguration,
-                delegate,
-                null
-            )
-            for ((url, name) in urlToNames) {
-                val task = session.downloadTaskWithURL(NSURL(string = url))
-                delegate.setFilenameForDownloadTask(task, name)
-                task.resume()
-            }
-            session.finishTasksAndInvalidate()
-        }
-
-        when (preferredDestination) {
-            DownloadLocation.Downloads -> {
-                afterTimeout(1) {
-                    showShareSheet(items = temporaryFiles)
-                }
-            }
-
-            DownloadLocation.Pictures -> {
-                copyFilesToCameraRoll(temporaryFiles)
-            }
-        }
-    }
-}
-
-private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
-private fun getTemporaryDestinationPath(name: String): NSURL {
-    if (!name.matches(validDownloadName)) throw IllegalArgumentException("Illegal download name $name")
-    return NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent(name)
-        ?: throw IllegalStateException("Unable to find a temporary path for file")
-}
-
-
-private fun Blob.saveToTemporaryFile(name: String): NSURL {
-    val type = UTType.typeWithMIMEType(this.type.substringBefore(';'))
-    val tmpFile =
-        NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent("$name.${type?.preferredFilenameExtension ?: "tmp"}")!!
-    val persistSuccess = data.writeToURL(tmpFile, 0u, null)
-    if (!persistSuccess) throw Exception("Unable to copy in-memory Blob to disk")
-    return tmpFile
-}
-
-private suspend fun copyFilesToCameraRoll(files: List<NSURL>) {
-    val hasPermission =
-        PHPhotoLibrary.authorizationStatusForAccessLevel(PHAccessLevelAddOnly) == PHAuthorizationStatusAuthorized
-    if (!hasPermission) {
-        Log.warn("Lacking Camera Roll add access")
-        val newPermission = withContext(Dispatchers.Main) {
-            suspendCoroutine { continuation ->
-                PHPhotoLibrary.requestAuthorizationForAccessLevel(PHAccessLevelAddOnly) {
-                    continuation.resume(it)
-                }
-            }
-        }
-
-        if (newPermission != PHAuthorizationStatusAuthorized) throw Exception("User rejected Camera Roll add permission")
-    }
-
-    return suspendCoroutine {
-        PHPhotoLibrary.sharedPhotoLibrary().performChanges({
-            files.forEach {
-                PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(it)
-            }
-        }) { success, _ ->
-            dispatch_async(dispatch_get_main_queue()) {
-                if (success) {
-                    it.resume(Unit)
-                } else {
-                    it.resumeWithException(Exception("Unable to make changes to remember photo library"))
-                }
-            }
-        }
-    }
-}
-
-actual suspend fun RContext.download(
-    name: String,
-    blob: Blob,
-    preferredDestination: DownloadLocation
-) {
-    val temporaryFiles = listOf(blob.saveToTemporaryFile(name))
-    when (preferredDestination) {
-        DownloadLocation.Downloads -> {
-            withContext(Dispatchers.Main) {
-                showShareSheet(items = temporaryFiles)
-            }
-        }
-
-        DownloadLocation.Pictures -> {
-            copyFilesToCameraRoll(temporaryFiles)
-        }
-    }
-}
-
-actual suspend fun RContext.share(namesToBlobs: List<Pair<String, Blob>>) =
-    showShareSheet(items = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) })
-
-actual fun RContext.share(title: String, message: String?, url: String?) =
-    showShareSheet(messages = listOf(message), items = listOf(url?.let { NSURL(string = it) }))
-
-
-private fun RContext.showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
-    present(UIActivityViewController(messages + items, null).apply {
-        popoverPresentationController?.sourceView = rootView
-        popoverPresentationController?.sourceRect = CGRectMake(
-            rootView.frame.useContents { origin.x + size.width / 2 },
-            rootView.frame.useContents { origin.y + size.height / 2 },
-            1.0,
-            1.0
-        )
-    })
-}
-
-private class NSURLDownloadAndCopyDelegate(
-    private val onDownloadComplete: (temporaryFiles: List<NSURL>) -> Unit,
-    private val onDownloadProgress: ((progress: Float) -> Unit)?
-) : NSObject(), NSURLSessionDelegateProtocol, NSURLSessionDownloadDelegateProtocol {
-
-    private class DownloadTaskState(val filename: String, var progress: Float)
-
-    private val progressOfTasks = mutableMapOf<NSURLSessionDownloadTask, DownloadTaskState>()
-    private val temporaryFiles = mutableListOf<NSURL>()
-
-    fun setFilenameForDownloadTask(task: NSURLSessionDownloadTask, filename: String) {
-        progressOfTasks[task] = DownloadTaskState(filename, 0f)
-    }
-
-
-    override fun URLSession(
-        session: NSURLSession,
-        downloadTask: NSURLSessionDownloadTask,
-        didFinishDownloadingToURL: NSURL
-    ) {
-        val destination = getTemporaryDestinationPath(progressOfTasks[downloadTask]!!.filename)
-        if (destination.path?.let { NSFileManager.defaultManager.fileExistsAtPath(it) } != false) {
-            NSFileManager.defaultManager.removeItemAtURL(destination, null)
-        }
-        val copySuccess = NSFileManager.defaultManager.copyItemAtURL(didFinishDownloadingToURL, destination, null)
-
-        if (copySuccess) {
-            temporaryFiles.add(destination)
-        }
-    }
-
-    override fun URLSession(
-        session: NSURLSession,
-        didBecomeInvalidWithError: NSError?
-    ) {
-        dispatch_async(dispatch_get_main_queue()) {
-            onDownloadComplete(temporaryFiles)
-        }
-    }
-
-    override fun URLSession(session: NSURLSession, didCreateTask: NSURLSessionTask) {
-    }
-
-    override fun URLSession(
-        session: NSURLSession,
-        downloadTask: NSURLSessionDownloadTask,
-        didWriteData: int64_t,
-        totalBytesWritten: int64_t,
-        totalBytesExpectedToWrite: int64_t
-    ) {
-        val percent = (totalBytesWritten / totalBytesExpectedToWrite).toFloat()
-        progressOfTasks[downloadTask]?.progress = percent
-        dispatch_async(dispatch_get_main_queue()) {
-            onDownloadProgress?.invoke(progressOfTasks.values.map { it.progress }
-                .reduce { acc, progress -> acc + progress } / progressOfTasks.size)
-        }
-    }
-}
-
-actual fun RContext.openEvent(
-    title: String,
-    description: String,
-    location: String,
-    start: LocalDateTime,
-    end: LocalDateTime,
-    zone: TimeZone
-) {
+private fun RContext.openEventImpl(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) {
     val store = EKEventStore()
     store.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { hasPermission, error ->
         if (hasPermission) {
@@ -719,10 +239,7 @@ actual fun RContext.openEvent(
                 val addController = EKEventEditViewController()
                 addController.eventStore = store
                 val dg = object : NSObject(), EKEventEditViewDelegateProtocol {
-                    override fun eventEditViewController(
-                        controller: EKEventEditViewController,
-                        didCompleteWithAction: EKEventEditViewAction
-                    ) {
+                    override fun eventEditViewController(controller: EKEventEditViewController, didCompleteWithAction: EKEventEditViewAction) {
                         controller.dismissViewControllerAnimated(true, null)
                     }
                 }
@@ -741,54 +258,379 @@ actual fun RContext.openEvent(
     }
 }
 
-
-actual fun RContext.openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
-
+private fun RContext.openMapImpl(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
     val options = arrayListOf(
         "Apple Maps" to {
-            val mapItem = MKMapItem(
-                placemark = MKPlacemark(
-                    CLLocationCoordinate2DMake(
-                        latitude, longitude
-                    )
-                )
-            )
+            val mapItem = MKMapItem(placemark = MKPlacemark(CLLocationCoordinate2DMake(latitude, longitude)))
             mapItem.name = label
             mapItem.openInMapsWithLaunchOptions(mapOf<Any?, Any?>())
         }
     )
     if (UIApplication.sharedApplication.canOpenURL(NSURL(string = "comgooglemaps://"))) {
         options += ("Google Maps" to {
-            var url = "string: comgooglemaps://?center=${latitude},${longitude}"
-            zoom?.let { zoom ->
-                url += "&zoom=${zoom}"
-            }
-            label?.let { label ->
-                url += "&q=${label}"
-            }
+            var url = "comgooglemaps://?center=${latitude},${longitude}"
+            zoom?.let { url += "&zoom=${it}" }
+            label?.let { url += "&q=${it}" }
             UIApplication.sharedApplication.openURL(NSURL(string = url))
         })
     }
     if (options.size == 1) {
         options[0].second()
     } else {
-        val optionsView = UIAlertController.alertControllerWithTitle(
-            title = "Open in Maps",
-            message = null,
-            preferredStyle = UIAlertControllerStyleAlert
-        )
+        val optionsView = UIAlertController.alertControllerWithTitle(title = "Open in Maps", message = null, preferredStyle = UIAlertControllerStyleAlert)
         for (option in options) {
-            optionsView.addAction(
-                UIAlertAction.actionWithTitle(
-                title = option.first,
-                style = UIAlertActionStyleDefault,
-                handler = { optionsView.dismissViewControllerAnimated(true, null); option.second() }
-            ))
-//                optionsView.addAction(UIAlertAction(title = option.first, style: .default, handler: { (action) in
-//                        optionsView.dismiss(animated: true, completion: nil)
-//                    option.1()
-//                }))
+            optionsView.addAction(UIAlertAction.actionWithTitle(title = option.first, style = UIAlertActionStyleDefault, handler = {
+                optionsView.dismissViewControllerAnimated(true, null); option.second()
+            }))
         }
         present(optionsView)
+    }
+}
+
+data class UIAlertActionSuspending<out T>(
+    val title: String,
+    val style: UIAlertActionStyle = UIAlertActionStyleDefault,
+    val handler: suspend () -> T,
+)
+
+suspend fun <T> RContext.actionSheet(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T {
+    return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
+        UIAlertController.alertControllerWithTitle(title = title, message = message, preferredStyle = UIAlertControllerStyleActionSheet).apply {
+            for (action in actions) {
+                addAction(UIAlertAction.actionWithTitle(action.title, action.style) { cont.resume(action) })
+            }
+        }.also { present(it) }
+    }!!.handler()
+}
+
+suspend fun <T> RContext.actionSheetCancellable(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T? {
+    return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
+        UIAlertController.alertControllerWithTitle(title = title, message = message, preferredStyle = UIAlertControllerStyleActionSheet).apply {
+            for (action in actions) {
+                addAction(UIAlertAction.actionWithTitle(action.title, action.style) { cont.resume(action) })
+            }
+            addAction(UIAlertAction.actionWithTitle("Cancel", UIAlertActionStyleCancel, { cont.resume(null) }))
+        }.also { present(it) }
+    }?.handler()
+}
+
+private suspend fun RContext.requestSingleDocument(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
+    val controller = UIDocumentPickerViewController(forOpeningContentTypes = mimeTypes.flatMap {
+        if (it == "*/*") mostTypes else UTType.typeWithMIMEType(it)?.let { listOf(it) } ?: listOf()
+    }, asCopy = true)
+    controller.allowsMultipleSelection = false
+    val delegate = object : NSObject(), UIDocumentMenuDelegateProtocol, UIDocumentPickerDelegateProtocol, UINavigationControllerDelegateProtocol {
+        override fun documentMenu(documentMenu: UIDocumentMenuViewController, didPickDocumentPicker: UIDocumentPickerViewController) {
+            didPickDocumentPicker.delegate = this
+            present(didPickDocumentPicker)
+        }
+        override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
+            cont.resume(null)
+            controller.dismissViewControllerAnimated(true, {})
+        }
+        override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentAtURL: NSURL) {
+            cont.resume(FileReference(NSItemProvider(contentsOfURL = didPickDocumentAtURL)))
+            controller.dismissViewControllerAnimated(true, {})
+        }
+        override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
+            cont.resume(didPickDocumentsAtURLs.filterIsInstance<NSURL>().firstOrNull()?.let { FileReference(NSItemProvider(contentsOfURL = it)) })
+            controller.dismissViewControllerAnimated(true, {})
+        }
+    }
+    controller.delegate = delegate
+    controller.extensionStrongRef = delegate
+    present(controller)
+    cont.invokeOnCancellation { try { controller.dismissViewControllerAnimated(true, {}) } catch (e: Exception) { } }
+}
+
+private suspend fun RContext.requestSingleImageOrVideo(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
+    val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
+        filter = PHPickerFilter.anyFilterMatchingSubfilters(listOfNotNull(
+            PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } || mimeTypes.any { it.startsWith("*/") } },
+            PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } || mimeTypes.any { it.startsWith("*/") } },
+        ))
+        preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
+        selectionLimit = 1
+    })
+    val delegate = object : NSObject(), PHPickerViewControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
+        override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
+            picker.dismissViewControllerAnimated(true) {
+                dispatch_async(queue = dispatch_get_main_queue(), block = {
+                    (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
+                        val suggestedType = result.itemProvider.registeredContentTypes.filterIsInstance<UTType>()
+                            .firstOrNull { type -> mimeTypes.any { mimeType -> type.matchesMimeType(mimeType) } }
+                        if (suggestedType == null) println("WARNING: Could not find UTType for any of ${mimeTypes.joinToString()} VS ${result.itemProvider.registeredContentTypes.filterIsInstance<UTType>().joinToString { it.preferredMIMEType ?: "???" }}")
+                        cont.resume(FileReference(result.itemProvider, suggestedType))
+                    } ?: cont.resume(null)
+                })
+            }
+        }
+    }
+    controller.delegate = delegate
+    controller.extensionStrongRef = delegate
+    present(controller)
+    cont.invokeOnCancellation { try { controller.dismissViewControllerAnimated(true, {}) } catch (e: Exception) { } }
+}
+
+private suspend fun RContext.requestMultipleDocuments(mimeTypes: List<String>): List<FileReference> = suspendCancellableCoroutine { cont ->
+    val controller = UIDocumentPickerViewController(forOpeningContentTypes = mimeTypes.flatMap {
+        if (it == "*/*") mostTypes else UTType.typeWithMIMEType(it)?.let { listOf(it) } ?: listOf()
+    }, asCopy = true)
+    controller.allowsMultipleSelection = true
+    val delegate = object : NSObject(), UIDocumentMenuDelegateProtocol, UIDocumentPickerDelegateProtocol, UINavigationControllerDelegateProtocol {
+        override fun documentMenu(documentMenu: UIDocumentMenuViewController, didPickDocumentPicker: UIDocumentPickerViewController) {
+            didPickDocumentPicker.delegate = this
+            present(didPickDocumentPicker)
+        }
+        override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
+            cont.resume(listOf())
+            controller.dismissViewControllerAnimated(true, {})
+        }
+        override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentAtURL: NSURL) {
+            cont.resume(listOf(FileReference(NSItemProvider(contentsOfURL = didPickDocumentAtURL))))
+            controller.dismissViewControllerAnimated(true, {})
+        }
+        override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
+            cont.resume(didPickDocumentsAtURLs.filterIsInstance<NSURL>().map { FileReference(NSItemProvider(contentsOfURL = it)) })
+            controller.dismissViewControllerAnimated(true, {})
+        }
+    }
+    controller.delegate = delegate
+    controller.extensionStrongRef = delegate
+    present(controller)
+    cont.invokeOnCancellation { try { controller.dismissViewControllerAnimated(true, {}) } catch (e: Exception) { } }
+}
+
+private suspend fun RContext.requestMultipleImagesOrVideos(mimeTypes: List<String>): List<FileReference> = suspendCancellableCoroutine { cont ->
+    val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
+        filter = PHPickerFilter.anyFilterMatchingSubfilters(listOfNotNull(
+            PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } || mimeTypes.any { it.startsWith("*/") } },
+            PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } || mimeTypes.any { it.startsWith("*/") } },
+        ))
+        preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
+        selectionLimit = Int.MAX_VALUE.toLong()
+    })
+    val delegate = object : NSObject(), PHPickerViewControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
+        override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
+            picker.dismissViewControllerAnimated(true) {
+                dispatch_async(queue = dispatch_get_main_queue(), block = {
+                    didFinishPicking.filterIsInstance<PHPickerResult>().map { result ->
+                        val suggestedType = result.itemProvider.registeredContentTypes.filterIsInstance<UTType>()
+                            .firstOrNull { type -> mimeTypes.any { mimeType -> type.matchesMimeType(mimeType) } }
+                        if (suggestedType == null) println("WARNING: Could not find UTType for any of ${mimeTypes.joinToString()} VS ${result.itemProvider.registeredContentTypes.filterIsInstance<UTType>().joinToString { it.preferredMIMEType ?: "???" }}")
+                        FileReference(result.itemProvider, suggestedType)
+                    }.let { cont.resume(it) }
+                })
+            }
+        }
+    }
+    controller.delegate = delegate
+    controller.extensionStrongRef = delegate
+    present(controller)
+    cont.invokeOnCancellation { try { controller.dismissViewControllerAnimated(true, {}) } catch (e: Exception) { } }
+}
+
+private fun UTType.matchesMimeType(mimeType: String): Boolean {
+    val a = mimeType.split("/", limit = 2)
+    val b = preferredMIMEType?.split("/", limit = 2) ?: return false
+    if (a[0] != b[0] && a[0] != "*" && b[0] != "*") return false
+    if (a[1] != b[1] && a[1] != "*" && b[1] != "*") return false
+    return true
+}
+
+suspend fun RContext.requestCapture(
+    camera: UIImagePickerControllerCameraDevice,
+    mode: UIImagePickerControllerCameraCaptureMode,
+): FileReference? {
+    val controller = UIImagePickerController()
+    val result = suspendCancellableCoroutine { cont ->
+        controller.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
+        controller.cameraDevice = camera
+        println("OK, here we go")
+        if (mode == UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo) {
+            println("Setting up movie")
+            controller.mediaTypes = listOf("public.movie")
+        }
+        val delegate = object : NSObject(), UIImagePickerControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
+            override fun imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo: Map<Any?, *>) {
+                val url = didFinishPickingMediaWithInfo[UIImagePickerControllerMediaURL] as? NSURL
+                    ?: didFinishPickingMediaWithInfo[UIImagePickerControllerImageURL] as? NSURL
+                url?.let {
+                    dispatch_async(queue = dispatch_get_main_queue(), block = { cont.resume(FileReference(NSItemProvider(contentsOfURL = it))) })
+                    return
+                }
+                val image = didFinishPickingMediaWithInfo[UIImagePickerControllerEditedImage] as? UIImage
+                    ?: didFinishPickingMediaWithInfo[UIImagePickerControllerOriginalImage] as? UIImage
+                val asFile = image?.let {
+                    val p = NSURL(fileURLWithPath = NSTemporaryDirectory())
+                    val u = NSURL(string = "${NSUUID()}.jpg", relativeToURL = p)
+                    NSFileManager.defaultManager.createDirectoryAtPath(path = p.path!!, withIntermediateDirectories = true, attributes = null, error = null)
+                    if (UIImageJPEGRepresentation(it, 0.98)!!.writeToURL(url = u, atomically = true)) {
+                        FileReference(NSItemProvider(contentsOfURL = u), UTTypeJPEG)
+                    } else {
+                        dispatch_async(queue = dispatch_get_main_queue(), block = { cont.resumeWithException(Exception("Failed to write image file to $u")) })
+                        return
+                    }
+                }
+                picker.dismissViewControllerAnimated(true) {
+                    dispatch_async(queue = dispatch_get_main_queue(), block = { cont.resume(asFile) })
+                }
+            }
+            override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
+                picker.dismissViewControllerAnimated(true) {
+                    dispatch_async(queue = dispatch_get_main_queue(), block = { cont.resume(null) })
+                }
+            }
+        }
+        controller.delegate = delegate
+        controller.extensionStrongRef = delegate
+        present(controller)
+        cont.invokeOnCancellation { try { controller.dismissViewControllerAnimated(true, null) } catch (e: Exception) { } }
+    }
+    controller.dismissViewControllerAnimated(true, null)
+    return result
+}
+
+suspend fun RContext.downloadMultiple(
+    urlToNames: Map<String, String>,
+    preferredDestination: DownloadLocation,
+    onDownloadProgress: ((progress: Float) -> Unit)?
+) {
+    coroutineScope {
+        val temporaryFiles = suspendCoroutine {
+            var updateProgressJob: Job? = null
+            val delegate = NSURLDownloadAndCopyDelegate({ temporaryFiles -> it.resume(temporaryFiles) }) { progress ->
+                onDownloadProgress?.let { updateProgressCallback ->
+                    updateProgressJob?.cancel()
+                    updateProgressJob = launch(Dispatchers.Main) { updateProgressCallback(progress) }
+                }
+            }
+            val session = NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration, delegate, null)
+            for ((url, name) in urlToNames) {
+                val task = session.downloadTaskWithURL(NSURL(string = url))
+                delegate.setFilenameForDownloadTask(task, name)
+                task.resume()
+            }
+            session.finishTasksAndInvalidate()
+        }
+        when (preferredDestination) {
+            DownloadLocation.Downloads -> afterTimeout(1) { showShareSheet(items = temporaryFiles) }
+            DownloadLocation.Pictures -> copyFilesToCameraRoll(temporaryFiles)
+        }
+    }
+}
+
+private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
+private fun getTemporaryDestinationPath(name: String): NSURL {
+    if (!name.matches(validDownloadName)) throw IllegalArgumentException("Illegal download name $name")
+    return NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent(name)
+        ?: throw IllegalStateException("Unable to find a temporary path for file")
+}
+
+private fun Blob.saveToTemporaryFile(name: String): NSURL {
+    val type = UTType.typeWithMIMEType(this.type.substringBefore(';'))
+    val tmpFile = NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent("$name.${type?.preferredFilenameExtension ?: "tmp"}")!!
+    val persistSuccess = data.writeToURL(tmpFile, 0u, null)
+    if (!persistSuccess) throw Exception("Unable to copy in-memory Blob to disk")
+    return tmpFile
+}
+
+private suspend fun copyFilesToCameraRoll(files: List<NSURL>) {
+    val fileManager = NSFileManager.defaultManager
+    val mediaEntries = files.mapNotNull { originalUrl ->
+        val path = originalUrl.path ?: return@mapNotNull null
+        val fileHandle = NSFileHandle.fileHandleForReadingAtPath(path)
+        val headerData = fileHandle?.readDataOfLength(20.toULong())
+        fileHandle?.closeFile()
+        if (headerData == null) return@mapNotNull null
+        val (isVideo, targetExt) = identifyMedia(headerData)
+        val tempPath = "${NSTemporaryDirectory()}${NSUUID.UUID().UUIDString}.$targetExt"
+        val destinationUrl = NSURL.fileURLWithPath(tempPath)
+        fileManager.removeItemAtPath(tempPath, error = null)
+        if (fileManager.copyItemAtURL(originalUrl, destinationUrl, error = null)) destinationUrl to isVideo
+        else { println("DEBUG: Failed to copy file to temp directory"); null }
+    }
+    if (mediaEntries.isEmpty()) { println("DEBUG: No valid media entries to process"); return }
+    return suspendCoroutine { continuation ->
+        PHPhotoLibrary.sharedPhotoLibrary().performChanges({
+            mediaEntries.forEach { (url, isVideo) ->
+                if (isVideo) PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(url)
+                else PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(url)
+            }
+        }) { success, error ->
+            dispatch_async(dispatch_get_main_queue()) {
+                if (success) continuation.resume(Unit)
+                else continuation.resumeWithException(Exception("Photo Library Error: ${error?.code} ${error?.localizedDescription}"))
+            }
+        }
+    }
+}
+
+private fun identifyMedia(data: NSData): Pair<Boolean, String> {
+    val bytes = data.bytes()?.reinterpret<platform.posix.uint8_tVar>() ?: return false to "jpg"
+    val length = data.length.toInt()
+    fun checkSignature(offset: Int, signature: String): Boolean {
+        if (offset + signature.length > length) return false
+        for (i in signature.indices) { if (bytes[offset + i].toInt().toChar() != signature[i]) return false }
+        return true
+    }
+    return when {
+        checkSignature(4, "ftypmp42") || checkSignature(4, "ftypisom") || checkSignature(4, "ftypMSNV") -> true to "mp4"
+        checkSignature(4, "ftypqt") -> true to "mov"
+        checkSignature(4, "ftypheic") || checkSignature(4, "ftypmif1") -> false to "heic"
+        bytes[0].toInt() == 0xFF && bytes[1].toInt() == 0xD8 -> false to "jpg"
+        bytes[0].toInt() == 0x89 && bytes[1].toInt() == 0x50 -> false to "png"
+        checkSignature(0, "GIF8") -> false to "gif"
+        else -> { println("DEBUG: Unknown signature, defaulting to jpg"); false to "jpg" }
+    }
+}
+
+fun RContext.showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
+    present(UIActivityViewController(messages + items, null).apply {
+        val uiView = this@showShareSheet.controller.view
+        popoverPresentationController?.sourceView = uiView
+        popoverPresentationController?.sourceRect = CGRectMake(
+            uiView.frame.useContents { origin.x + size.width / 2 },
+            uiView.frame.useContents { origin.y + size.height / 2 },
+            1.0, 1.0
+        )
+    })
+}
+
+private class NSURLDownloadAndCopyDelegate(
+    private val onDownloadComplete: (temporaryFiles: List<NSURL>) -> Unit,
+    private val onDownloadProgress: ((progress: Float) -> Unit)?
+) : NSObject(), NSURLSessionDelegateProtocol, NSURLSessionDownloadDelegateProtocol {
+
+    private class DownloadTaskState(val filename: String, var progress: Float)
+    private val progressOfTasks = mutableMapOf<NSURLSessionDownloadTask, DownloadTaskState>()
+    private val temporaryFiles = mutableListOf<NSURL>()
+
+    fun setFilenameForDownloadTask(task: NSURLSessionDownloadTask, filename: String) {
+        progressOfTasks[task] = DownloadTaskState(filename, 0f)
+    }
+
+    override fun URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didFinishDownloadingToURL: NSURL) {
+        val destination = getTemporaryDestinationPath(progressOfTasks[downloadTask]!!.filename)
+        if (destination.path?.let { NSFileManager.defaultManager.fileExistsAtPath(it) } != false) {
+            NSFileManager.defaultManager.removeItemAtURL(destination, null)
+        }
+        if (NSFileManager.defaultManager.copyItemAtURL(didFinishDownloadingToURL, destination, null)) {
+            temporaryFiles.add(destination)
+        }
+    }
+
+    override fun URLSession(session: NSURLSession, didBecomeInvalidWithError: NSError?) {
+        dispatch_async(dispatch_get_main_queue()) { onDownloadComplete(temporaryFiles) }
+    }
+
+    override fun URLSession(session: NSURLSession, didCreateTask: NSURLSessionTask) {}
+
+    override fun URLSession(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, didWriteData: int64_t, totalBytesWritten: int64_t, totalBytesExpectedToWrite: int64_t) {
+        val percent = (totalBytesWritten / totalBytesExpectedToWrite).toFloat()
+        progressOfTasks[downloadTask]?.progress = percent
+        dispatch_async(dispatch_get_main_queue()) {
+            onDownloadProgress?.invoke(progressOfTasks.values.map { it.progress }.reduce { acc, progress -> acc + progress } / progressOfTasks.size)
+        }
     }
 }

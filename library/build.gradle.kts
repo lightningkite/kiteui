@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.comLightningkiteTestingManual)
+    alias(libs.plugins.roborazzi)
     signing
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
@@ -25,7 +26,6 @@ kotlin {
     applyDefaultHierarchyTemplate()
 //    explicitApi()
 
-    jvm()
     androidTarget {
         publishLibraryVariants("release")
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -50,8 +50,11 @@ kotlin {
 //    explicitApi = ExplicitApiMode.Warning
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
-        freeCompilerArgs.add("-opt-in=kotlinx.cinterop.BetaInteropApi")
-        freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+        freeCompilerArgs.add("-Xcontext-parameters")
+        optIn.add("kotlinx.cinterop.BetaInteropApi")
+        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
     sourceSets {
 
@@ -62,6 +65,7 @@ kotlin {
                 api(libs.kotlinxSerializationProperties)
                 api(libs.kotlinxDatetime)
                 api(libs.kotlinxCoroutinesCore)
+                api(libs.kotlinxSerializationUri)
             }
         }
         val commonTest by getting {
@@ -69,6 +73,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinxCoroutinesTest)
                 implementation(libs.comLightningkiteTestingKotlinTestManualRuntime)
+                implementation(project(":test-utilities"))
             }
         }
         val androidMain by getting {
@@ -96,11 +101,9 @@ kotlin {
             dependencies {
                 implementation(libs.junit)
                 implementation(libs.robolectric)
+                implementation(libs.roborazzi)
+                implementation(project(":test-utilities"))
             }
-        }
-
-        val commonHtmlMain by creating {
-            dependsOn(commonMain)
         }
 
         val iosMain by getting {
@@ -110,8 +113,8 @@ kotlin {
             }
         }
 
-        val jvmMain by getting {
-            dependsOn(commonHtmlMain)
+        val commonJvmMain by creating {
+            dependsOn(commonMain)
             dependencies {
                 api(libs.commonsLang3)
                 api(libs.ktorClientCore)
@@ -119,10 +122,28 @@ kotlin {
                 api(libs.ktorClientWebsockets)
             }
         }
+
+        val commonHtmlMain by creating {
+            dependsOn(commonMain)
+        }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
         }
     }
+
+    jvm("jvmSsr")
+    sourceSets {
+        val jvmSsrMain by getting {
+            dependsOn(get("commonJvmMain"))
+            dependsOn(get("commonHtmlMain"))
+        }
+    }
+//    jvm("jvmSwing")
+//    sourceSets {
+//        val jvmSwingMain by getting {
+//        }
+//    }
+
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().all {
         compilations.getByName("main") {
             val objcAddition by cinterops.creating {

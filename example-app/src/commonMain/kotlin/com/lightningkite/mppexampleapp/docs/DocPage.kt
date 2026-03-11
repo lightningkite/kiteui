@@ -12,30 +12,32 @@ interface DocPage: Page {
     val covers: List<String>
 }
 
-//data object CodeSemantic: Semantic {
+//data object CodeSemantic: Semantic.override {
 //    override val key: String = "code"
 //    override fun default(theme: Theme): ThemeAndBack = theme.copy(
 //        id = key,
 //        font = FontAndStyle(font = systemDefaultFixedWidthFont, size = 0.75.rem)
 //    ).withoutBack
 //}
-//val ViewWriter.code: ViewWrapper get() = CodeSemantic.onNext
+//val ViewWriter.code: ViewWriter get() = CodeSemantic.onNext
 
 fun ViewWriter.example(
     codeText: String,
-    action: ViewWriter.()->ViewModifiable
-): ViewModifiable {
-    return card - rowCollapsingToColumn(40.rem) {
-        expanding - scrollingHorizontally - code { content = codeText }
+    action: ViewWriter.()->Unit
+): Unit {
+    card.rowCollapsingToColumn(40.rem) {
+        expanding.scrollingHorizontally.code { content = codeText }
         separator()
-        expanding - action()
+        expanding.action()
     }
 }
 
 fun ViewWriter.article(
     setup: ContainingView.()->Unit
-): ViewModifiable = scrolling - frame {
-    align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - col {
-        setup()
+): Unit {
+    scrolling.frame {
+        align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col {
+            setup()
+        }
     }
 }

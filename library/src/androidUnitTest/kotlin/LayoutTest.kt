@@ -17,6 +17,7 @@ import kotlin.test.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import kotlin.test.Ignore
 
 @RunWith(RobolectricTestRunner::class)
 class LayoutTest {

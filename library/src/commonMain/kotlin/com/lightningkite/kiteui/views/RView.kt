@@ -31,7 +31,7 @@ import kotlinx.coroutines.CoroutineScope
  * @param context The rendering context that provides platform-specific configuration and capabilities.
  *
  * @see RViewHelper for the common implementation details
- * @see RViewWrapper for views that delegate gap handling to their parent
+ * @see RViewWriter for views that delegate gap handling to their parent
  * @see RViewWithAction for views that need to track action states
  */
 expect abstract class RView constructor(context: RContext) : RViewHelper {
@@ -61,6 +61,12 @@ expect abstract class RView constructor(context: RContext) : RViewHelper {
      * Coordinates are relative to the screen/window origin.
      */
     override fun screenRectangle(): Rect?
+
+    /**
+     * Returns the absolute screen rectangle for this view, or null if the view is not currently visible.
+     * Coordinates are relative to the screen/window origin.
+     */
+    override fun parentRectangle(): Rect?
 
     /**
      * Applies the given theme to this view's visual appearance.
@@ -101,7 +107,7 @@ expect abstract class RView constructor(context: RContext) : RViewHelper {
  * This is useful for wrapper views that should inherit spacing from their container
  * rather than defining their own spacing behavior.
  */
-abstract class RViewWrapper(context: RContext) : RView(context) {
+abstract class RViewWriter(context: RContext) : RView(context) {
     /**
      * Returns the explicitly set gap, or if null, delegates to the parent's gap.
      * This allows wrapper views to transparently inherit spacing from their containers.

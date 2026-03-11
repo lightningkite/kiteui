@@ -1,17 +1,16 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 inline fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
@@ -58,14 +57,14 @@ enum class PhoneNumberFormat {
     abstract fun format(clean: String): String
 }
 
-class PhoneNumberInput(container: ViewWriter): ViewModifiable {
+class PhoneNumberInput(container: ViewWriter): CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = input.coroutineContext
     private val input = container.formattedTextInput {
         keyboardHints = KeyboardHints.phone
         format(PhoneNumberFormat.USA::isRawData, PhoneNumberFormat.USA::format)
     }
-    override val rView: RView get() = input
+    val rView: RView get() = input
     var format: PhoneNumberFormat = PhoneNumberFormat.USA
         set(value) {
             field = value
@@ -74,11 +73,5 @@ class PhoneNumberInput(container: ViewWriter): ViewModifiable {
     var enabled: Boolean by input::enabled
     val content: MutableReactiveValue<String> by input::content
     var hint: String by input::hint
-    var align: Align by input::align
+    var align: Align? by input::align
 }
-
-operator fun ViewWrapper.minus(view: PhoneNumberInput): ViewWrapper { return ViewWrapper }
-operator fun Boolean.minus(view: PhoneNumberInput): Boolean { return true }
-
-operator fun ViewWrapper.contains(view: PhoneNumberInput): Boolean { return true }
-operator fun Boolean.contains(view: PhoneNumberInput): Boolean { return true }

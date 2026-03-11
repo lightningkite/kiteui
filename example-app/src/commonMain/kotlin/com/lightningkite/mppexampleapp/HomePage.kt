@@ -20,7 +20,6 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.requestFile
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.animateIn
 import com.lightningkite.kiteui.views.animateOut
@@ -38,6 +37,7 @@ import com.lightningkite.kiteui.views.direct.media
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.separator
+import com.lightningkite.kiteui.views.direct.shownWhen
 import com.lightningkite.kiteui.views.direct.sizeConstraints
 import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.kiteui.views.direct.text
@@ -64,13 +64,13 @@ import kotlin.time.Duration.Companion.seconds
 @Routable("/")
 class HomePage : Page {
     override val title: Reactive<String> get() = Constant("KiteUI")
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         return article {
-            centered - h1("KiteUI - Beautiful by Default")
+            centered.h1("KiteUI - Beautiful by Default")
             separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")
             space()
-            centered - h2("Goals")
+            centered.h2("Goals")
             separator()
             text("- Web first - the web version should be comparable or better than React in performance, and generate reasonably small binaries.")
             text("- Reactive - the code should be extremely easy to read and have the minimal amount of syntactical cruft.")
@@ -88,15 +88,15 @@ class HomePage : Page {
                 col {
                     text("Here is a basic counter:")
                     row {
-                        expanding - centered - text { ::content { number().toString() } }
+                        expanding.centered.text { ::content { number().toString() } }
                         col {
-                            important - button {
+                            important.button {
                                 text("+")
                                 action = Action("Increment", Icon.add, frequencyCap = 0.milliseconds) {
                                     number.value++
                                 }
                             }
-                            important - button {
+                            important.button {
                                 text("-")
                                 action = Action("Decrement", Icon.remove, frequencyCap = 0.milliseconds) {
                                     number.value--
@@ -111,15 +111,15 @@ class HomePage : Page {
                 col {
                     text("Here is a basic counter:")
                     row {
-                        expanding - centered - text { ::content { number().toString() } }
+                        expanding.centered.text { ::content { number().toString() } }
                         col {
-                            important - button {
+                            important.button {
                                 text("+")
                                 action = Action("Increment", Icon.add, frequencyCap = 0.milliseconds) {
                                     number.value++
                                 }
                             }
-                            important - button {
+                            important.button {
                                 text("-")
                                 action = Action("Decrement", Icon.remove, frequencyCap = 0.milliseconds) {
                                     number.value--

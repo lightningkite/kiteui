@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.locale
 
 import kotlinx.datetime.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 import platform.Foundation.*
 
 actual fun LocalDate.renderToString(
@@ -113,8 +115,8 @@ actual fun DayOfWeek.renderToString(size: RenderSize): String = NSDateFormatter(
     locale = NSLocale.currentLocale
 }.let {
     when(size) {
-        RenderSize.Numerical -> (it.veryShortWeekdaySymbols[this.isoDayNumber] as NSString) as String
-        RenderSize.Abbreviation -> (it.shortWeekdaySymbols[this.isoDayNumber] as NSString) as String
-        RenderSize.Full -> (it.weekdaySymbols[this.isoDayNumber] as NSString) as String
+        RenderSize.Numerical -> (it.veryShortWeekdaySymbols[this.isoDayNumber.plus(7).mod(7)] as NSString) as String
+        RenderSize.Abbreviation -> (it.shortWeekdaySymbols[this.isoDayNumber.plus(7).mod(7)] as NSString) as String
+        RenderSize.Full -> (it.weekdaySymbols[this.isoDayNumber.plus(7).mod(7)] as NSString) as String
     }
 }

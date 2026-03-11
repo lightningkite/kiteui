@@ -1,0 +1,768 @@
+package com.lightningkite.mppexampleapp.docs
+
+import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.*
+import com.lightningkite.mppexampleapp.widgets.code
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import kotlinx.datetime.LocalDate
+
+@Routable("docs/forms-validation")
+object FormsAndValidationPage : DocPage {
+    override val covers: List<String> = listOf(
+        "forms", "validation", "input", "fields", "form validation",
+        "text input", "form handling", "user input"
+    )
+
+    override fun ViewWriter.render(): Unit = run {
+        article {
+            titledSection("Forms and Validation") {
+                text("Learn how to build robust, validated forms in KiteUI.")
+
+                space()
+
+                titledSection("Basic Form Structure") {
+                    text("Forms in KiteUI use reactive state bound to input fields:")
+
+                    space()
+                    example("""
+                        data class UserProfile(
+                            val name: String = "",
+                            val email: String = "",
+                            val age: Int? = null
+                        )
+
+                        val profile = Signal(UserProfile())
+
+                        col {
+                            field("Name") {
+                                textInput {
+                                    content bind profile.lens { copy(name = it) }.name
+                                }
+                            }
+                            field("Email") {
+                                textInput {
+                                    content bind profile.lens { copy(email = it) }.email
+                                    keyboardHints = KeyboardHints.email
+                                }
+                            }
+                            field("Age") {
+                                numberInput {
+                                    content bind profile.lens { copy(age = it) }.age
+                                }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            data class UserProfile(
+                                val name: String = "",
+                                val email: String = "",
+                                val age: Int? = null
+                            )
+
+                            val profile = Signal(UserProfile())
+
+                            field("Name") {
+                                textInput {
+                                    content bind profile.lens { copy(name = it) }.name
+                                }
+                            }
+                            field("Email") {
+                                textInput {
+                                    content bind profile.lens { copy(email = it) }.email
+                                    keyboardHints = KeyboardHints.email
+                                }
+                            }
+                            field("Age") {
+                                numberInput {
+                                    content bind profile.lens { copy(age = it) }.age
+                                }
+                            }
+
+                            subtext {
+                                ::content { "Name: ${profile().name}, Email: ${profile().email}, Age: ${profile().age}" }
+                            }
+                        }
+                    }
+
+                    space()
+                    text("Key concepts:")
+                    card.col {
+                        text("• Use Signal to hold form state")
+                        text("• Use lens() to bind nested properties")
+                        text("• field() wraps inputs with labels")
+                        text("• Set keyboardHints for better mobile UX")
+                    }
+                }
+
+                space()
+
+                titledSection("Simple Validation") {
+                    text("Create computed validations using reactive expressions:")
+
+                    space()
+                    example("""
+                        val email = Signal("")
+                        val emailError = remember {
+                            if (email().isEmpty()) null
+                            else if (!email().contains("@")) "Invalid email"
+                            else null
+                        }
+
+                        col {
+                            field("Email") {
+                                textInput {
+                                    content bind email
+                                    keyboardHints = KeyboardHints.email
+                                }
+                            }
+                            shownWhen { emailError() != null } - danger - text {
+                                ::content { emailError() ?: "" }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            val email = Signal("")
+                            val emailError = remember {
+                                if (email().isEmpty()) null
+                                else if (!email().contains("@")) "Invalid email"
+                                else null
+                            }
+
+                            field("Email") {
+                                textInput {
+                                    content bind email
+                                    keyboardHints = KeyboardHints.email
+                                }
+                            }
+                            shownWhen { emailError() != null }.danger.text {
+                                ::content { emailError() ?: "" }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Validation Helper") {
+                    text("Create a reusable validation function:")
+
+                    space()
+                    code {
+                        content = """
+                            fun validateEmail(email: String): String? {
+                                return when {
+                                    email.isEmpty() -> null
+                                    !email.contains("@") -> "Must contain @"
+                                    !email.contains(".") -> "Must contain domain"
+                                    else -> null
+                                }
+                            }
+
+                            fun validateRequired(value: String, fieldName: String): String? {
+                                return if (value.isBlank()) "${'$'}fieldName is required" else null
+                            }
+
+                            fun validateMinLength(value: String, min: Int): String? {
+                                return if (value.length < min) "Must be at least ${'$'}min characters" else null
+                            }
+                        """.trimIndent()
+                    }
+
+                    space()
+                    example("""
+                        val password = Signal("")
+                        val passwordError = remember {
+                            validateRequired(password(), "Password")
+                                ?: validateMinLength(password(), 8)
+                        }
+
+                        col {
+                            field("Password") {
+                                textInput {
+                                    content bind password
+                                    keyboardHints = KeyboardHints.password
+                                }
+                            }
+                            shownWhen { passwordError() != null } - danger - text {
+                                ::content { passwordError() ?: "" }
+                            }
+                        }
+                    """.trimIndent()) {
+                        fun validateRequired(value: String, fieldName: String): String? {
+                            return if (value.isBlank()) "$fieldName is required" else null
+                        }
+
+                        fun validateMinLength(value: String, min: Int): String? {
+                            return if (value.length < min) "Must be at least $min characters" else null
+                        }
+
+                        card.col {
+                            val password = Signal("")
+                            val passwordError = remember {
+                                validateRequired(password(), "Password")
+                                    ?: validateMinLength(password(), 8)
+                            }
+
+                            field("Password") {
+                                textInput {
+                                    content bind password
+                                    keyboardHints = KeyboardHints.password
+                                }
+                            }
+                            shownWhen { passwordError() != null }.danger.text {
+                                ::content { passwordError() ?: "" }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Form Submission") {
+                    text("Validate all fields before submission:")
+
+                    space()
+                    example("""
+                        val name = Signal("")
+                        val email = Signal("")
+
+                        val nameError = remember {
+                            if (name().isBlank()) "Name is required" else null
+                        }
+                        val emailError = remember {
+                            if (email().isEmpty()) null
+                            else if (!email().contains("@")) "Invalid email"
+                            else null
+                        }
+
+                        val isValid = remember {
+                            nameError() == null &&
+                            emailError() == null &&
+                            name().isNotBlank() &&
+                            email().isNotBlank()
+                        }
+
+                        col {
+                            field("Name") {
+                                textInput { content bind name }
+                            }
+                            shownWhen { nameError() != null } - danger - subtext {
+                                ::content { nameError() ?: "" }
+                            }
+
+                            field("Email") {
+                                textInput {
+                                    content bind email
+                                    keyboardHints = KeyboardHints.email
+                                }
+                            }
+                            shownWhen { emailError() != null } - danger - subtext {
+                                ::content { emailError() ?: "" }
+                            }
+
+                            dynamicTheme {
+                                if (!isValid()) DisabledSemantic else null
+                            } - important - button {
+                                text("Submit")
+                                onClick {
+                                    if (isValid()) {
+                                        toast("Form submitted!")
+                                    }
+                                }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            val name = Signal("")
+                            val email = Signal("")
+
+                            val nameError = remember {
+                                if (name().isBlank()) "Name is required" else null
+                            }
+                            val emailError = remember {
+                                if (email().isEmpty()) null
+                                else if (!email().contains("@")) "Invalid email"
+                                else null
+                            }
+
+                            val isValid = remember {
+                                nameError() == null &&
+                                emailError() == null &&
+                                name().isNotBlank() &&
+                                email().isNotBlank()
+                            }
+
+                            field("Name") {
+                                textInput { content bind name }
+                            }
+                            shownWhen { nameError() != null }.danger.subtext {
+                                ::content { nameError() ?: "" }
+                            }
+
+                            field("Email") {
+                                textInput {
+                                    content bind email
+                                    keyboardHints = KeyboardHints.email
+                                }
+                            }
+                            shownWhen { emailError() != null }.danger.subtext {
+                                ::content { emailError() ?: "" }
+                            }
+
+                            dynamicTheme {
+                                if (!isValid()) DisabledSemantic else null
+                            }.important.button {
+                                text("Submit")
+                                onClick {
+                                    if (isValid()) {
+                                        toast("Form submitted!")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Input Types") {
+                    text("KiteUI provides various input types:")
+
+                    space()
+                    example("""
+                        col {
+                            field("Text") {
+                                textInput { hint = "Enter text" }
+                            }
+                            field("Number") {
+                                numberInput { hint = "Enter number" }
+                            }
+                            field("Date") {
+                                localDateField {}
+                            }
+                            field("Password") {
+                                textInput {
+                                    keyboardHints = KeyboardHints.password
+                                }
+                            }
+                            field("Multi-line") {
+                                textArea { hint = "Enter multiple lines" }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            field("Text") {
+                                textInput { hint = "Enter text" }
+                            }
+                            field("Number") {
+                                numberInput { hint = "Enter number" }
+                            }
+                            field("Date") {
+                                localDateField {}
+                            }
+                            field("Password") {
+                                textInput {
+                                    keyboardHints = KeyboardHints.password
+                                }
+                            }
+                            field("Multi-line") {
+                                sizeConstraints(height = 100.dp).scrolling.textArea {
+                                    hint = "Enter multiple lines"
+                                }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Checkboxes and Radio Buttons") {
+                    text("Handle selection inputs:")
+
+                    space()
+                    example("""
+                        val agreed = Signal(false)
+                        val selected = Signal("option1")
+
+                        col {
+                            row {
+                                centered - checkbox { checked bind agreed }
+                                centered - text("I agree to the terms")
+                            }
+
+                            text("Choose an option:")
+                            for (option in listOf("option1", "option2", "option3")) {
+                                row {
+                                    centered - radioButton {
+                                        checked bind selected.equalTo(option)
+                                    }
+                                    centered - text(option)
+                                }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            val agreed = Signal(false)
+                            val selected = Signal("option1")
+
+                            row {
+                                centered.checkbox { checked bind agreed }
+                                centered.text("I agree to the terms")
+                            }
+
+                            space()
+                            text("Choose an option:")
+                            for (option in listOf("option1", "option2", "option3")) {
+                                row {
+                                    centered.radioButton {
+                                        checked bind selected.equalTo(option)
+                                    }
+                                    centered.text(option)
+                                }
+                            }
+
+                            space()
+                            subtext {
+                                ::content { "Agreed: ${agreed()}, Selected: ${selected()}" }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Dropdown Selection") {
+                    text("Use select for dropdown menus:")
+
+                    space()
+                    example("""
+                        val countries = Constant(listOf("USA", "Canada", "Mexico", "UK"))
+                        val selectedCountry = Signal("USA")
+
+                        col {
+                            field("Country") {
+                                select {
+                                    bind(edits = selectedCountry, data = countries) { it }
+                                }
+                            }
+                            text {
+                                ::content { "Selected: ${'$'}{selectedCountry()}" }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            val countries = Constant(listOf("USA", "Canada", "Mexico", "UK"))
+                            val selectedCountry = Signal("USA")
+
+                            field("Country") {
+                                select {
+                                    bind(edits = selectedCountry, data = countries) { it }
+                                }
+                            }
+                            text {
+                                ::content { "Selected: ${selectedCountry()}" }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Conditional Fields") {
+                    text("Show/hide fields based on other inputs:")
+
+                    space()
+                    example("""
+                        val hasOtherAddress = Signal(false)
+
+                        col {
+                            row {
+                                centered - checkbox { checked bind hasOtherAddress }
+                                centered - text("Ship to different address?")
+                            }
+
+                            shownWhen { hasOtherAddress() } - col {
+                                field("Shipping Address") {
+                                    textInput { hint = "Enter shipping address" }
+                                }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            val hasOtherAddress = Signal(false)
+
+                            row {
+                                centered.checkbox { checked bind hasOtherAddress }
+                                centered.text("Ship to different address?")
+                            }
+
+                            shownWhen { hasOtherAddress() }.col {
+                                field("Shipping Address") {
+                                    textInput { hint = "Enter shipping address" }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Best Practices") {
+                    card.col {
+                        text("✓ Validate on blur or submit, not on every keystroke (for better UX)")
+                        text("✓ Show clear, specific error messages")
+                        text("✓ Disable submit button until form is valid")
+                        text("✓ Use appropriate keyboard hints for mobile")
+                        text("✓ Group related fields together")
+                        text("✓ Provide visual feedback during submission")
+                        text("✓ Use proper field types (email, password, number)")
+                    }
+                }
+
+                space()
+
+                titledSection("Complete Registration Form Example") {
+                    text("A real-world registration form with validation:")
+
+                    space()
+                    example("""
+                        data class RegistrationForm(
+                            val username: String = "",
+                            val email: String = "",
+                            val password: String = "",
+                            val confirmPassword: String = "",
+                            val agreedToTerms: Boolean = false
+                        )
+
+                        val form = Signal(RegistrationForm())
+
+                        val usernameError = remember {
+                            val u = form().username
+                            when {
+                                u.isBlank() -> null
+                                u.length < 3 -> "Username too short"
+                                else -> null
+                            }
+                        }
+
+                        val emailError = remember {
+                            val e = form().email
+                            when {
+                                e.isEmpty() -> null
+                                !e.contains("@") -> "Invalid email"
+                                else -> null
+                            }
+                        }
+
+                        val passwordError = remember {
+                            val p = form().password
+                            when {
+                                p.isEmpty() -> null
+                                p.length < 8 -> "Must be 8+ characters"
+                                else -> null
+                            }
+                        }
+
+                        val confirmError = remember {
+                            val c = form().confirmPassword
+                            when {
+                                c.isEmpty() -> null
+                                c != form().password -> "Passwords don't match"
+                                else -> null
+                            }
+                        }
+
+                        val canSubmit = remember {
+                            form().username.length >= 3 &&
+                            form().email.contains("@") &&
+                            form().password.length >= 8 &&
+                            form().password == form().confirmPassword &&
+                            form().agreedToTerms
+                        }
+
+                        col {
+                            h3("Create Account")
+
+                            field("Username") {
+                                textInput {
+                                    content bind form.lens { copy(username = it) }.username
+                                }
+                            }
+                            shownWhen { usernameError() != null } - danger - subtext {
+                                ::content { usernameError() ?: "" }
+                            }
+
+                            field("Email") {
+                                textInput {
+                                    content bind form.lens { copy(email = it) }.email
+                                    keyboardHints = KeyboardHints.email
+                                }
+                            }
+                            shownWhen { emailError() != null } - danger - subtext {
+                                ::content { emailError() ?: "" }
+                            }
+
+                            field("Password") {
+                                textInput {
+                                    content bind form.lens { copy(password = it) }.password
+                                    keyboardHints = KeyboardHints.password
+                                }
+                            }
+                            shownWhen { passwordError() != null } - danger - subtext {
+                                ::content { passwordError() ?: "" }
+                            }
+
+                            field("Confirm Password") {
+                                textInput {
+                                    content bind form.lens { copy(confirmPassword = it) }.confirmPassword
+                                    keyboardHints = KeyboardHints.password
+                                }
+                            }
+                            shownWhen { confirmError() != null } - danger - subtext {
+                                ::content { confirmError() ?: "" }
+                            }
+
+                            row {
+                                centered - checkbox {
+                                    checked bind form.lens { copy(agreedToTerms = it) }.agreedToTerms
+                                }
+                                centered - text("I agree to the terms")
+                            }
+
+                            dynamicTheme {
+                                if (!canSubmit()) DisabledSemantic else null
+                            } - important - button {
+                                text("Create Account")
+                                onClick {
+                                    if (canSubmit()) {
+                                        toast("Account created!")
+                                    }
+                                }
+                            }
+                        }
+                    """.trimIndent()) {
+                        data class RegistrationForm(
+                            val username: String = "",
+                            val email: String = "",
+                            val password: String = "",
+                            val confirmPassword: String = "",
+                            val agreedToTerms: Boolean = false
+                        )
+
+                        card.col {
+                            val form = Signal(RegistrationForm())
+
+                            val usernameError = remember {
+                                val u = form().username
+                                when {
+                                    u.isBlank() -> null
+                                    u.length < 3 -> "Username too short"
+                                    else -> null
+                                }
+                            }
+
+                            val emailError = remember {
+                                val e = form().email
+                                when {
+                                    e.isEmpty() -> null
+                                    !e.contains("@") -> "Invalid email"
+                                    else -> null
+                                }
+                            }
+
+                            val passwordError = remember {
+                                val p = form().password
+                                when {
+                                    p.isEmpty() -> null
+                                    p.length < 8 -> "Must be 8+ characters"
+                                    else -> null
+                                }
+                            }
+
+                            val confirmError = remember {
+                                val c = form().confirmPassword
+                                when {
+                                    c.isEmpty() -> null
+                                    c != form().password -> "Passwords don't match"
+                                    else -> null
+                                }
+                            }
+
+                            val canSubmit = remember {
+                                form().username.length >= 3 &&
+                                form().email.contains("@") &&
+                                form().password.length >= 8 &&
+                                form().password == form().confirmPassword &&
+                                form().agreedToTerms
+                            }
+
+                            h3("Create Account")
+
+                            field("Username") {
+                                textInput {
+                                    content bind form.lens { copy(username = it) }.username
+                                }
+                            }
+                            shownWhen { usernameError() != null }.danger.subtext {
+                                ::content { usernameError() ?: "" }
+                            }
+
+                            field("Email") {
+                                textInput {
+                                    content bind form.lens { copy(email = it) }.email
+                                    keyboardHints = KeyboardHints.email
+                                }
+                            }
+                            shownWhen { emailError() != null }.danger.subtext {
+                                ::content { emailError() ?: "" }
+                            }
+
+                            field("Password") {
+                                textInput {
+                                    content bind form.lens { copy(password = it) }.password
+                                    keyboardHints = KeyboardHints.password
+                                }
+                            }
+                            shownWhen { passwordError() != null }.danger.subtext {
+                                ::content { passwordError() ?: "" }
+                            }
+
+                            field("Confirm Password") {
+                                textInput {
+                                    content bind form.lens { copy(confirmPassword = it) }.confirmPassword
+                                    keyboardHints = KeyboardHints.password
+                                }
+                            }
+                            shownWhen { confirmError() != null }.danger.subtext {
+                                ::content { confirmError() ?: "" }
+                            }
+
+                            row {
+                                centered.checkbox {
+                                    checked bind form.lens { copy(agreedToTerms = it) }.agreedToTerms
+                                }
+                                centered.text("I agree to the terms")
+                            }
+
+                            dynamicTheme {
+                                if (!canSubmit()) DisabledSemantic else null
+                            }.important.button {
+                                text("Create Account")
+                                onClick {
+                                    if (canSubmit()) {
+                                        toast("Account created!")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

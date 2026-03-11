@@ -17,8 +17,8 @@ fun ViewWriter.navGroupColumn(
     elements: Reactive<List<NavElement>>,
     onNavigate: suspend () -> Unit = {},
     setup: ContainingView.() -> Unit = {}
-): ViewModifiable {
-    return col {
+): Unit {
+    col {
         navGroupColumnInner(elements, onNavigate)
         setup()
     }
@@ -39,8 +39,8 @@ private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNa
     forEach(readable) {
         fun ViewWriter.display(navElement: NavElement) {
             row {
-                centered - navElementIconAndCountHorizontal(navElement)
-                centered - text { ::content { navElement.title(this) } }
+                centered.navElementIconAndCountHorizontal(navElement)
+                centered.text { ::content { navElement.title(this) } }
                 space(1.0)
             }
         }
@@ -69,14 +69,14 @@ private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNa
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
                     gap = 0.px
-                    padded - row {
-                        centered - navElementIconAndCountHorizontal(it)
-                        centered - text { ::content { it.title(this) } }
+                    padded.row {
+                        centered.navElementIconAndCountHorizontal(it)
+                        centered.text { ::content { it.title(this) } }
                     }
                     row {
                         gap = 0.px
                         space()
-                        expanding - col {
+                        expanding.col {
                             gap = 0.px
                             navGroupColumnInner(remember { it.children(this) }, onNavigate)
                         }
@@ -106,8 +106,8 @@ private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNa
     }
 }
 
-fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
-    return row {
+fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): Unit {
+    row {
         navGroupActionsInner(elements)
         setup()
     }
@@ -115,14 +115,14 @@ fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: Cont
 
 private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
     fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
-        padded - frame {
-            centered - icon {
+        padded.frame {
+            centered.icon {
                 ::source { navElement.icon() }
                 ::description { navElement.title() }
             }
         }
         navElement.count?.let { count ->
-            atTopEnd - compact - critical - frame {
+            atTopEnd.compact.critical.frame {
                 shown = false
                 ::shown { count() != null }
                 subtext {
@@ -172,8 +172,8 @@ private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
-    return row {
+fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): Unit {
+    row {
         navGroupTopInner(readable)
         setup()
     }
@@ -227,18 +227,18 @@ private fun RView.navGroupTopInner(readable: Reactive<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
-    return frame {
-        centered - icon {
+fun ViewWriter.navElementIconAndCount(navElement: NavElement): Unit {
+    frame {
+        centered.icon {
             ::source { navElement.icon() }
             ::description { navElement.title() }
         }
         navElement.count?.let { count ->
-            align(Align.End, Align.Start) - compact - critical - frame {
+            align(Align.End, Align.Start).compact.critical.frame {
                 shown = false
                 ::shown { count() != null }
                 space(0.01)
-                centered - subtext {
+                centered.subtext {
                     ::content { count()?.takeIf { it > 0 }?.toString() ?: "" }
                 }
             }
@@ -246,18 +246,18 @@ fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
     }
 }
 
-fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewModifiable {
-    return row {
-        centered - icon {
+fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): Unit {
+    row {
+        centered.icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
             ::description { navElement.title() }
         }
         navElement.count?.let { count ->
-            centered - compact - critical - frame {
+            centered.compact.critical.frame {
                 shown = false
                 ::shown { count() != null }
                 space(0.01)
-                centered - text {
+                centered.text {
                     ::content { count()?.takeIf { it > 0 }?.toString() ?: "" }
                 }
             }
@@ -265,33 +265,33 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewMod
     }
 }
 
-fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
-    return row {
+fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): Unit {
+    row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {
-            compact - col {
-                centered - navElementIconAndCount(navElement)
-                centered - subtext { ::content { navElement.title() } }
+            compact.col {
+                centered.navElementIconAndCount(navElement)
+                centered.subtext { ::content { navElement.title() } }
             }
         }
         themeChoice += ListSemantic
         forEach(readable) {
             when (it) {
-                is NavAction -> expanding - button {
+                is NavAction -> expanding.button {
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
                     display(it)
                     onClick { it.onSelect() }
                 }
 
-                is NavExternal -> expanding - externalLink {
+                is NavExternal -> expanding.externalLink {
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
                     ::to { it.to() }
                     display(it)
                 }
 
-                is NavGroup -> expanding - menuButton {
+                is NavGroup -> expanding.menuButton {
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
                     display(it)
@@ -309,7 +309,7 @@ fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: Contain
                 }
 
                 is NavLink -> {
-                    expanding - link {
+                    expanding.link {
                         selectedIfRouteMatches(it)
                         resetsStack = true
                         shown = false

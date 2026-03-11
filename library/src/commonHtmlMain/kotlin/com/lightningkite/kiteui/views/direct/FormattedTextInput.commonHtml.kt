@@ -75,16 +75,29 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         set(value) {
             native.attributes.placeholder = value
         }
-    actual var align: Align = Align.Start
+
+    private var _align: Align? = null
+
+    actual var align: Align?
+        get() = _align
         set(value) {
-            field = value
-            native.style.textAlign = when (value) {
-                Align.Start -> "start"
-                Align.Center -> "center"
-                Align.End -> "end"
-                Align.Stretch -> "justify"
-            }
+            _align = value
+            applyAlign(value ?: theme.font.align)
         }
+
+    private fun applyAlign(value: Align) {
+        native.style.textAlign = when (value) {
+            Align.Start -> "start"
+            Align.Center -> "center"
+            Align.End -> "end"
+            Align.Stretch -> "justify"
+        }
+    }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        applyAlign(_align ?: theme.theme.font.align)
+    }
 
     actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)

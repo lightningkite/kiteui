@@ -19,32 +19,46 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.get
 
+// by Claude - shared scheduling for show/hide and weight animations
+private val showHideQueue = HashMap<RView, Boolean>()
+private val weightChangeQueue = HashMap<RView, Pair<Float, Float>>()
+private var workerScheduled = false
+
+private fun ensureWorkerScheduled() {
+    if (!workerScheduled) {
+        workerScheduled = true
+        window.setTimeout(combinedAnimationWorker, 32)
+    }
+}
+
 internal actual fun RView.nativeAnimateShow() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateShow")
-    (
-            showHideQueue ?: run {
-                val newMap = HashMap<RView, Boolean>()
-                showHideQueue = newMap
-                window.setTimeout(showHideWorker, 32)
-                newMap
-            }
-            ).put(this, true)
+    showHideQueue[this] = true
+    ensureWorkerScheduled()
 }
 
 internal actual fun RView.nativeAnimateHide() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateHide")
-    (
-            showHideQueue ?: run {
-                val newMap = HashMap<RView, Boolean>()
-                showHideQueue = newMap
-                window.setTimeout(showHideWorker, 32)
-                newMap
-            }
-            ).put(this, false)
+    showHideQueue[this] = false
+    ensureWorkerScheduled()
+}
+
+// by Claude - weight animation queuing
+internal actual fun RView.nativeAnimateWeight(fromWeight: Float, toWeight: Float) {
+    log?.info("${children.singleOrNull()?.debugName}.nativeAnimateWeight: $fromWeight -> $toWeight")
+    val existing = weightChangeQueue[this]
+    if (existing != null) {
+        // Keep original 'from', update 'to'
+        weightChangeQueue[this] = existing.first to toWeight
+    } else {
+        weightChangeQueue[this] = fromWeight to toWeight
+    }
+    ensureWorkerScheduled()
 }
 
 private val showHideAnimating = HashMap<RView, OngoingAnimation>()
-private var showHideQueue: HashMap<RView, Boolean>? = null
+// by Claude - tracking ongoing weight animations
+private val weightAnimating = HashMap<RView, OngoingWeightAnimation>()
 
 private data class OngoingAnimation(
     val on: RView,
@@ -140,37 +154,208 @@ private data class OngoingAnimation(
     }
 }
 
-private val log: Log? = null // Log.tag("showHide")
-private val showHideWorker = label@{
+// by Claude - weight animation class, mirrors OngoingAnimation but for flex-grow/flex-shrink.
+// fromBasis/toBasis are pixel values (e.g. "150px") when weight is 0, or "0" when weight is non-zero.
+// CSS can't interpolate between "0" and "auto", so we resolve "auto" to measured pixels.
+private class OngoingWeightAnimation(
+    val on: RView,
+    val fromWeight: Float,
+    val toWeight: Float,
+    val fromBasis: String,
+    val toBasis: String,
+    val startRatio: Double,
+) {
+    var totalTime: Double = 1000.0
+    val myElement = on.native.element as HTMLElement
+    val child = on.children[0].native.element as HTMLElement
+    var animation: Animation? = null
+    private var widthChildResume: String = ""
+    private var maxWidthChildResume: String = ""
+    private var heightChildResume: String = ""
+    private var maxHeightChildResume: String = ""
+    // by Claude - saved inline styles for pretendEnd/continueNow
+    private var savedFlexGrow: String = ""
+    private var savedFlexShrink: String = ""
+    private var savedFlexBasis: String = ""
+    private var savedProgress: Double = startRatio * 1000.0
+    fun animRatio() = animation!!.currentTime.toFloat() / totalTime
 
-    val showHideQueue = run {
-        val it = showHideQueue
-        showHideQueue = null
-        it
-    } ?: return@label
+    private fun buildKeyframes(): Array<dynamic> = arrayOf(
+        json("flexGrow" to "$fromWeight", "flexShrink" to "$fromWeight", "flexBasis" to fromBasis),
+        json("flexGrow" to "$toWeight", "flexShrink" to "$toWeight", "flexBasis" to toBasis)
+    )
+
+    fun play() {
+        log?.info("Starting weight animation on ${on.children.singleOrNull()?.debugName}: $fromWeight($fromBasis) -> $toWeight($toBasis)")
+        totalTime = on.theme.transitionDuration.inWholeMilliseconds.toDouble()
+        animation = myElement.animate(
+            buildKeyframes(),
+            json("duration" to totalTime, "easing" to "linear")
+        ).also {
+            it.currentTime = (startRatio * totalTime).also { log?.info("Weight anim starting at $it") }
+            it.onfinish = { done() }
+            it.oncancel = { done() }
+            it.onremove = { done() }
+        }
+        myElement.classList.add("animatingShowHide")
+        weightAnimating[on] = this
+    }
+
+    private var closed = false
+
+    val done = label@{
+        if (closed) return@label
+        closed = true
+        weightAnimating.remove(on)
+        myElement.classList.remove("animatingShowHide")
+        // Apply final inline styles
+        myElement.style.flexGrow = "$toWeight"
+        myElement.style.flexShrink = "$toWeight"
+        myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
+        (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+        // Unlock child dimensions
+        child.style.width = "100%"
+        child.style.removeProperty("maxWidth")
+        child.style.height = "100%"
+        child.style.removeProperty("maxHeight")
+    }
+
+    fun cancel() {
+        // Cancel the Web Animation (removes its style override)
+        animation?.cancel()
+        closed = true
+        weightAnimating.remove(on)
+        myElement.classList.remove("animatingShowHide")
+        // Unlock child dimensions
+        child.style.width = "100%"
+        child.style.removeProperty("maxWidth")
+        child.style.height = "100%"
+        child.style.removeProperty("maxHeight")
+    }
+
+    // by Claude - pretendEnd must cancel the animation (not just pause) because Web Animations
+    // override inline styles. Unlike shownWhen which uses the `hidden` DOM attribute (independent
+    // of CSS), weight uses inline flex-grow/flex-shrink which the animation would override.
+    fun pretendEnd() {
+        log?.info("weight pretendEnd")
+        savedProgress = animation?.currentTime ?: (startRatio * totalTime)
+        animation?.cancel()
+        // Set target inline styles so layout can be measured at goal state
+        savedFlexGrow = myElement.style.flexGrow
+        savedFlexShrink = myElement.style.flexShrink
+        savedFlexBasis = myElement.style.flexBasis
+        myElement.style.flexGrow = "$toWeight"
+        myElement.style.flexShrink = "$toWeight"
+        myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
+        // Save and unlock child dimensions for measurement
+        widthChildResume = child.style.width
+        maxWidthChildResume = child.style.maxWidth
+        heightChildResume = child.style.height
+        maxHeightChildResume = child.style.maxHeight
+        child.style.width = "100%"
+        child.style.removeProperty("maxWidth")
+        child.style.height = "100%"
+        child.style.removeProperty("maxHeight")
+    }
+
+    // by Claude - continueNow recreates the animation since we had to cancel it in pretendEnd
+    fun continueNow() {
+        log?.info("weight continueNow")
+        // Restore pre-pretendEnd inline styles
+        myElement.style.flexGrow = savedFlexGrow
+        myElement.style.flexShrink = savedFlexShrink
+        myElement.style.flexBasis = savedFlexBasis
+        // Restore locked child dimensions
+        child.style.width = widthChildResume
+        child.style.maxWidth = maxWidthChildResume
+        child.style.height = heightChildResume
+        child.style.maxHeight = maxHeightChildResume
+        // Recreate the animation from saved progress
+        totalTime = on.theme.transitionDuration.inWholeMilliseconds.toDouble()
+        animation = myElement.animate(
+            buildKeyframes(),
+            json("duration" to totalTime, "easing" to "linear")
+        ).also {
+            it.currentTime = savedProgress
+            it.onfinish = { done() }
+            it.oncancel = { done() }
+            it.onremove = { done() }
+        }
+    }
+}
+
+private val log: Log? = Log.tag("showHide")
+
+// by Claude - combined worker processes both show/hide and weight queues in a single batch
+private val combinedAnimationWorker = label@{
+    // Snapshot and clear both queues
+    val currentShowHideQueue = if (showHideQueue.isNotEmpty()) HashMap(showHideQueue) else null
+    showHideQueue.clear()
+    val currentWeightQueue = if (weightChangeQueue.isNotEmpty()) HashMap(weightChangeQueue) else null
+    weightChangeQueue.clear()
+    workerScheduled = false
+
+    if (currentShowHideQueue == null && currentWeightQueue == null) return@label
 
 //    val delayLevel: Duration? = 150.milliseconds
     val delayLevel: Duration? = null
     AppScope.launch {
 
         log?.info("//////////////////////////////////////////")
-        log?.info("Queued: ${showHideQueue.size}")
-        val pastRatios = showHideAnimating.entries.map { it.key to it.value }.mapNotNull {
-            if (it.first in showHideQueue.keys) {
-                log?.info("Cancelling animation on ${it.first.children.singleOrNull()?.debugName}")
-                val r = it.first to it.second.animRatio()
-                it.second.cancel()
-                r
-            } else null
-        }.associate { it }
-        showHideQueue.keys.removeAll { it.parent == null || it.children.isEmpty() || it.native.children.isEmpty() || it.native.element == null }
-        showHideQueue.forEach { it ->
-            log?.info("  View ${it.key.children.singleOrNull()?.debugName} -> ${it.value}")
+
+        // === Phase 1: Cancel overlapping animations and capture ratios ===
+
+        val pastShowHideRatios = if (currentShowHideQueue != null) {
+            log?.info("Show/Hide Queued: ${currentShowHideQueue.size}")
+            showHideAnimating.entries.map { it.key to it.value }.mapNotNull {
+                if (it.first in currentShowHideQueue.keys) {
+                    log?.info("Cancelling show/hide animation on ${it.first.children.singleOrNull()?.debugName}")
+                    val r = it.first to it.second.animRatio()
+                    it.second.cancel()
+                    r
+                } else null
+            }.associate { it }
+        } else emptyMap()
+
+        val pastWeightRatios = if (currentWeightQueue != null) {
+            log?.info("Weight Queued: ${currentWeightQueue.size}")
+            weightAnimating.entries.map { it.key to it.value }.mapNotNull {
+                if (it.first in currentWeightQueue.keys) {
+                    log?.info("Cancelling weight animation on ${it.first.children.singleOrNull()?.debugName}")
+                    val r = it.first to it.second.animRatio()
+                    it.second.cancel()
+                    r
+                } else null
+            }.associate { it }
+        } else emptyMap()
+
+        // Clean up invalid entries
+        currentShowHideQueue?.keys?.removeAll { it.parent == null || it.children.isEmpty() || it.native.children.isEmpty() || it.native.element == null }
+        currentWeightQueue?.keys?.removeAll { it.parent == null || it.children.isEmpty() || it.native.children.isEmpty() || it.native.element == null }
+
+        currentShowHideQueue?.forEach {
+            log?.info("  ShowHide: ${it.key.children.singleOrNull()?.debugName} -> ${it.value}")
+        }
+        currentWeightQueue?.forEach {
+            log?.info("  Weight: ${it.key.children.singleOrNull()?.debugName} -> ${it.value}")
         }
 
-        // Lock current sizes for views that are disappearing.
-        log?.info("// Lock current sizes for views that are disappearing.")
-        showHideQueue.forEach { (on, goal) ->
+        // by Claude - measure pre-goal sizes for elements currently at weight 0 (transitioning FROM 0).
+        // We need pixel values because CSS can't interpolate between "0px" and "auto".
+        val weightFromBasis = currentWeightQueue?.mapNotNull { (on, weights) ->
+            if (weights.first != 0f) return@mapNotNull null
+            val myElement = on.native.element as HTMLElement
+            val parentEl = on.parent?.native?.element as? HTMLElement ?: return@mapNotNull null
+            val parentStyle = window.getComputedStyle(parentEl)
+            val isColumn = parentStyle.flexDirection.contains("column")
+            val rect = myElement.getBoundingClientRect()
+            on to "${if (isColumn) rect.height else rect.width}px"
+        }?.associate { it } ?: emptyMap()
+
+        // === Phase 2: Lock sizes for disappearing/shrinking views ===
+        log?.info("// Lock current sizes for disappearing/shrinking views.")
+
+        currentShowHideQueue?.forEach { (on, goal) ->
             if (goal) return@forEach
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
@@ -179,26 +364,71 @@ private val showHideWorker = label@{
             child.style.height = myElement.clientHeight.toString() + "px"
             child.style.maxHeight = "unset"
         }
-        val displayValuesPreHide = showHideQueue.asSequence()
-            .filter { !(it.key.native.element as HTMLElement).hidden }
-            .associate { it.key to window.getComputedStyle(it.key.native.element as HTMLElement).display }
+
+        currentWeightQueue?.forEach { (on, weights) ->
+            val (fromWeight, toWeight) = weights
+            if (toWeight >= fromWeight) return@forEach  // Not shrinking
+            val myElement = on.native.element as HTMLElement
+            val child = on.children[0].native.element as HTMLElement
+            child.style.width = myElement.clientWidth.toString() + "px"
+            child.style.maxWidth = "unset"
+            child.style.height = myElement.clientHeight.toString() + "px"
+            child.style.maxHeight = "unset"
+        }
+
+        val displayValuesPreHide = currentShowHideQueue?.asSequence()
+            ?.filter { !(it.key.native.element as HTMLElement).hidden }
+            ?.associate { it.key to window.getComputedStyle(it.key.native.element as HTMLElement).display }
+            ?: emptyMap()
         delayLevel?.let { delay(it) }
 
-        // Get the whole layout into the goal state for measurement.
+        // === Phase 3: Set goal state for measurement ===
         log?.info("// Get the whole layout into the goal state for measurement.")
+
+        // Pretend-end all ongoing animations
         showHideAnimating.forEach { it.value.pretendEnd() }
-        val beforeVisibility = showHideQueue.map {
+        weightAnimating.forEach { it.value.pretendEnd() }
+
+        // Set goal state for show/hide queue
+        val beforeVisibility = currentShowHideQueue?.map {
             val was = (it.key.native.element as HTMLElement).hidden
             (it.key.native.element as HTMLElement).hidden = !it.value
             (it.key.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
             log?.info("View ${it.key.children.singleOrNull()?.debugName} -> ${it.value}")
             it.key to was
         }
+
+        // Set goal state for weight queue
+        val beforeWeightStyles = currentWeightQueue?.map { (on, weights) ->
+            val (_, toWeight) = weights
+            val myElement = on.native.element as HTMLElement
+            val savedGrow = myElement.style.flexGrow
+            val savedShrink = myElement.style.flexShrink
+            val savedBasis = myElement.style.flexBasis
+            myElement.style.flexGrow = "$toWeight"
+            myElement.style.flexShrink = "$toWeight"
+            myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
+            (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            on to Triple(savedGrow, savedShrink, savedBasis)
+        }
+
+        // by Claude - measure goal-state sizes for elements transitioning TO weight 0.
+        val weightToBasis = currentWeightQueue?.mapNotNull { (on, weights) ->
+            if (weights.second != 0f) return@mapNotNull null
+            val myElement = on.native.element as HTMLElement
+            val parentEl = on.parent?.native?.element as? HTMLElement ?: return@mapNotNull null
+            val parentStyle = window.getComputedStyle(parentEl)
+            val isColumn = parentStyle.flexDirection.contains("column")
+            val rect = myElement.getBoundingClientRect()
+            on to "${if (isColumn) rect.height else rect.width}px"
+        }?.associate { it } ?: emptyMap()
+
         delayLevel?.let { delay(it * 4) }
 
-        // Lock current sizes for views that are appearing.
-        log?.info("// Lock current sizes for views that are appearing.")
-        showHideQueue.forEach { (on, goal) ->
+        // === Phase 4: Lock sizes for appearing/expanding views ===
+        log?.info("// Lock current sizes for appearing/expanding views.")
+
+        currentShowHideQueue?.forEach { (on, goal) ->
             if (!goal) return@forEach
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
@@ -208,11 +438,25 @@ private val showHideWorker = label@{
             child.style.maxHeight = "unset"
             log?.info("  View ${on.children.singleOrNull()?.debugName} appearing locked to ${myElement.clientWidth}px x ${myElement.clientHeight}px")
         }
+
+        currentWeightQueue?.forEach { (on, weights) ->
+            val (fromWeight, toWeight) = weights
+            if (toWeight < fromWeight) return@forEach  // Not expanding
+            val myElement = on.native.element as HTMLElement
+            val child = on.children[0].native.element as HTMLElement
+            child.style.width = myElement.clientWidth.toString() + "px"
+            child.style.maxWidth = "unset"
+            child.style.height = myElement.clientHeight.toString() + "px"
+            child.style.maxHeight = "unset"
+            log?.info("  Weight ${on.children.singleOrNull()?.debugName} expanding locked to ${myElement.clientWidth}px x ${myElement.clientHeight}px")
+        }
+
         delayLevel?.let { delay(it) }
 
-        // Queue the animations.
+        // === Phase 5: Build keyframes ===
         log?.info("// Queue the animations.")
-        val queuedAnimations = showHideQueue.map { (on, goal) ->
+
+        val queuedShowHideAnimations = currentShowHideQueue?.map { (on, goal) ->
 
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
@@ -229,8 +473,7 @@ private val showHideWorker = label@{
             val y =
                 parentStyle.display == "grid" ||
                         parentStyle.display == "flex" && parentStyle.flexDirection.contains("column") ||
-                        parentStyle.display != "flex" && (displayValuesPreHide[on]
-                    ?: myStyle.display).let { it.contains("block") && !it.contains("inline") }
+                        parentStyle.display != "flex" && parent.classList.contains("optimized")
             val weighted = myStyle.flexGrow.takeIf { it.isNotBlank() && it != "0" }
             val usingFlexGap = parentStyle.display == "flex"
 
@@ -330,27 +573,54 @@ private val showHideWorker = label@{
                 from = before as Json,
                 to = after as Json,
                 goal = goal,
-                startRatio = 1.0 - pastRatios.getOrElse(on) { 1.0 }
+                startRatio = 1.0 - pastShowHideRatios.getOrElse(on) { 1.0 }
                     .also { log?.info("Past for ${on.children.singleOrNull()?.debugName} is $it") },
             )
         }
+
+        val queuedWeightAnimations = currentWeightQueue?.map { (on, weights) ->
+            val (fromWeight, toWeight) = weights
+            OngoingWeightAnimation(
+                on = on,
+                fromWeight = fromWeight,
+                toWeight = toWeight,
+                fromBasis = if (fromWeight != 0f) "0" else (weightFromBasis[on] ?: "auto"),
+                toBasis = if (toWeight != 0f) "0" else (weightToBasis[on] ?: "auto"),
+                startRatio = 1.0 - pastWeightRatios.getOrElse(on) { 1.0 }
+                    .also { log?.info("Weight past for ${on.children.singleOrNull()?.debugName} is $it") },
+            )
+        }
+
         delayLevel?.let { delay(it) }
 
-        // Revert to what we were.
+        // === Phase 6: Revert to pre-goal state ===
         log?.info("// Revert to what we were.")
+
         showHideAnimating.forEach { it.value.continueNow() }
-        beforeVisibility.forEach {
+        weightAnimating.forEach { it.value.continueNow() }
+
+        beforeVisibility?.forEach {
             (it.first.native.element as HTMLElement).hidden = it.second
             log?.info("View ${it.first.children.singleOrNull()?.debugName} -> ${it.second}")
             (it.first.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         }
+
+        beforeWeightStyles?.forEach { (on, saved) ->
+            val myElement = on.native.element as HTMLElement
+            myElement.style.flexGrow = saved.first
+            myElement.style.flexShrink = saved.second
+            myElement.style.flexBasis = saved.third
+            (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+        }
+
         delayLevel?.let { delay(it) }
 
-        // Begin animating the views in question.
-        log?.info("// Begin animating the views in question.")
-        queuedAnimations.forEach {
-            it.play()
-        }
+        // === Phase 7: Start all animations ===
+        log?.info("// Begin animating.")
+
+        queuedShowHideAnimations?.forEach { it.play() }
+        queuedWeightAnimations?.forEach { it.play() }
+
         delayLevel?.let { delay(it) }
     }
 }

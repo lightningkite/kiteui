@@ -24,8 +24,8 @@ expect suspend fun fetch(
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: RequestBody? = null,
-    onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)? = null,
-    onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)? = null,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
 ): RequestResponse
 
 class ConnectionException(message: String, cause: Exception? = null): Exception(message, cause)
@@ -55,6 +55,8 @@ expect class RequestResponse {
 
 expect class Blob
 expect class FileReference
+
+expect fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference
 
 expect fun String.toBlob(contentType: String = "text/plain"): Blob
 expect fun Blob.mimeType(): String
@@ -94,16 +96,3 @@ interface WebSocket {
     fun onClose(action: (Short)->Unit)
     fun cancel() { close(1000, "Closed normally") }
 }
-
-/*
-
-retry {
-    val ws = websocket(url)
-    ws.send("asdf")
-    val msg = ws.incoming.receive()
-    ws.close()
-    while(true) {
-        ws.receive()
-    }
-}
- */

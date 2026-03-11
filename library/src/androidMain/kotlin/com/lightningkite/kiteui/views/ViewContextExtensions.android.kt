@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.l2.overlayFrame
 actual fun ViewWriter.overlayWriter(
     modal: Boolean,
     transition: ScreenTransitions,
-    body: RView.(remove: () -> Unit) -> Unit
+    body: ViewWriter.(remove: () -> Unit) -> Unit
 ) {
     var willRemove: RView? = null
     with(overlayFrame ?: return) {
@@ -14,8 +14,7 @@ actual fun ViewWriter.overlayWriter(
             beforeNextElementSetup {
                 animateIn(transition.forward)
                 willRemove = this
-            }
-            body {
+            }.body {
                 willRemove?.let {
                     it.animateOut(transition.reverse) {
                         this@with.removeChild(it)

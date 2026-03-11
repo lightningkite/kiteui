@@ -1,14 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton()
@@ -25,15 +20,15 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     themeChoice += ThemeDerivation {
                         it.copy(
                             id = "mnubtndsm",
-                            revert = true,
-                            derivations = mapOf(
-                                DismissSemantic to {
-                                    it.copy(
+                            cascading = false,
+                            semanticOverrides = SemanticOverrides(
+                                DismissSemantic.override {
+                                    it.withBack(
                                         background = Color.transparent,
                                         outlineWidth = 0.dp,
-                                        cornerRadii = CornerRadii.Constant(0.dp),
-                                        revert = true,
-                                    ).withBack
+                                        cornerRadii = CornerRadii.AdaptiveToSpacing(0.dp),
+                                        cascading = false,
+                                    )
                                 }
                             )
                         ).withBack
@@ -42,7 +37,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     onClick {
                         closePopovers()
                     }
-                    PopoverSemantic.onNext - frame {
+                    PopoverSemantic.onNext.frame {
                         createMenu()
                     }
                 }

@@ -12,7 +12,8 @@ import kotlin.js.Promise
 import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
+import kotlin.time.Instant
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.get
@@ -23,6 +24,7 @@ import org.w3c.dom.events.Event
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
 import org.w3c.files.BlobPropertyBag
+import org.w3c.files.FilePropertyBag
 import org.w3c.files.File
 import org.w3c.xhr.BLOB
 import org.w3c.xhr.ProgressEvent
@@ -35,21 +37,21 @@ actual suspend fun fetch(
     method: HttpMethod,
     headers: HttpHeaders,
     body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
 ): RequestResponse {
     return suspendCancellableCoroutine { cont ->
         val request = XMLHttpRequest()
         onUploadProgress?.let { p ->
             request.upload.addEventListener("progress", { event ->
                 event as ProgressEvent
-                p(event.loaded.toInt(), event.total.toInt().let { if(it == 0) -1 else it })
+                p(event.loaded.toLong(), event.total.toLong().let { if(it == 0L) -1 else it })
             })
         }
         onDownloadProgress?.let { p ->
             request.addEventListener("progress", { event ->
                 event as ProgressEvent
-                p(event.loaded.toInt(), event.total.toInt().let { if(it == 0) -1 else it })
+                p(event.loaded.toLong(), event.total.toLong().let { if(it == 0L) -1 else it })
             })
         }
         request.responseType = XMLHttpRequestResponseType.BLOB
@@ -156,9 +158,9 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
             }
     }
     actual val headers: HttpHeaders by lazy {
-        httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.flatMap {
-            val s = it.split(":")
-            s[1].trim().splitToSequence(';').map { s[0].trim() to it }
+        httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.map {
+            val s = it.split(":", limit = 2)
+            s[0].trim() to s[1].trim()
         })
     }
 }
@@ -166,6 +168,11 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
 actual typealias Blob = org.w3c.files.Blob
 actual typealias FileReference = File
 
+actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+    // ByteArray in Kotlin/JS is backed by Int8Array; wrap in a Blob first, then File
+    val blob = Blob(arrayOf(bytes.asDynamic()), BlobPropertyBag(type = mimeType))
+    return File(arrayOf(blob), fileName, FilePropertyBag(type = mimeType))
+}
 
 actual fun Blob.mimeType(): String {
     return this.type
@@ -188,7 +195,6 @@ actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(org.w3c.dom.WebSocket(url))
 }
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
 class WebSocketWrapper(val native: org.w3c.dom.WebSocket, val log: Log? = Log.tag("WS to ${native.url}").infoOrAbove()) : WebSocket {
     private val opened = Clock.System.now()
     private val stopListeningToDebugKill = killAllSockets.addListener {

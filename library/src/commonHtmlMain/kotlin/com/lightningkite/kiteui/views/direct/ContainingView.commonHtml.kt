@@ -20,7 +20,10 @@ actual class Frame actual constructor(context: RContext) : RView(context) {
     }
     companion object {
         fun internalAddChildStack(on: RView, index: Int, view: RView) {
-            if(index >= 1) {
+
+            if (index == 0) {
+                on.native.style.display = "flex"
+            } else if (index >= 1) {
                 if(on.native.style.display != "grid") {
                     on.native.style.display = "grid"
                     on.native.setStyleProperty("grid-template-columns", "100%")
@@ -178,6 +181,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
 
     actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+        // TODO: This won't work
         beforeNextElementSetup {
             // TODO: Make this work when vertical changes
             if(vertical) native.style.marginTop = "calc(${amount.value} - var(--parentSpacing))"

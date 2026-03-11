@@ -1,8 +1,6 @@
 package com.lightningkite.kiteui
 
-import org.w3c.dom.Node
 import java.io.File
-import javax.xml.parsers.DocumentBuilderFactory
 
 
 internal fun resourcesCommon(resourceFolder: File, out: File, ext: KiteUiPluginExtension) {
@@ -223,7 +221,10 @@ internal fun resourcesIos(
                 is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"${it.key}\", \"${r.source.extension}\")"
                 is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(\"${it.key}\", \"${r.source.extension}\")"
                 is Resource.Binary -> {
-                    usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()"
+                    usesBlob = true
+                    val mimeType =
+                        java.net.URLConnection.guessContentTypeFromName(r.source.name) ?: "application/octet-stream"
+                    "actual suspend fun ${r.name}(): Blob = Blob(NSDataAsset(\"${it.key}\")!!.data, \"$mimeType\")"
                 }
 
                 is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
@@ -233,7 +234,12 @@ internal fun resourcesIos(
         }
 
     val imports = mutableListOf("import com.lightningkite.kiteui.models.*")
-        .also { if (usesBlob) it.add("import com.lightningkite.kiteui.Blob") }
+        .also {
+            if (usesBlob) {
+                it.add("import com.lightningkite.kiteui.Blob")
+                it.add("import platform.UIKit.NSDataAsset")
+            }
+        }
         .joinToString("\n")
 
     outKt.writeText(
@@ -319,9 +325,13 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
                 is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(R.raw.${it.key.snakeCase()})"
                 is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
                 is Resource.Binary -> {
-                    usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()"
-                }
+                    usesBlob = true
+                    // Guess mime type from file name (e.g. "image/png"), fallback to octet-stream
+                    val mimeType =
+                        java.net.URLConnection.guessContentTypeFromName(r.source.name) ?: "application/octet-stream"
 
+                    "actual suspend fun ${r.name}(): Blob = Blob(AndroidAppContext.applicationCtx.resources.openRawResource(R.raw.${it.key.snakeCase()}).readBytes(), \"$mimeType\")"
+                }
                 else -> ""
             }
         }
@@ -345,76 +355,6 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
     )
 }
 
+// by Claude - delegates to SvgToImageVector.kt for full SVG parsing
 private val Resource.ImageVector.imageVectorActual: String
-    get() {
-        val documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        val doc = documentBuilder.parse(this.source.inputStream())
-        val svgElement = doc.documentElement
-
-        val width = svgElement.getAttribute("width")
-        val height = svgElement.getAttribute("height")
-        val defaultFill = svgElement.getAttribute("fill")
-        println("defaultFill: ${defaultFill}")
-        val (minX, minY, vbWidth, vbHeight) = svgElement.getAttribute("viewBox").split(" ").map { it.toInt() }
-        val paths = doc.getElementsByTagName("path").let { path ->
-            (0 until path.length).map { path.item(it) }
-        }
-
-        fun Node.getAttributeVal(attr: String): String? {
-            return (0 until this.attributes.length).firstNotNullOfOrNull {
-                this.attributes.item(it).takeIf { it.nodeName == attr }?.nodeValue
-            }
-        }
-
-        fun String.withDimensionExtension(): String {
-            return if (this.isBlank()) "24.dp"
-            else this.replace("px", ".dp").replace("rem", ".rem").let {
-                if (it.contains(".")) it
-                else it.plus(".dp")
-            }
-        }
-
-        return buildString {
-            appendLine("ImageVector(")
-            appendLine("        width = ${width.withDimensionExtension()},")
-            appendLine("        height = ${height.withDimensionExtension()},")
-            appendLine("        viewBoxMinX = $minX,")
-            appendLine("        viewBoxMinY = $minY,")
-            appendLine("        viewBoxWidth = $vbWidth,")
-            appendLine("        viewBoxHeight = $vbHeight,")
-            appendLine("        paths = listOf(")
-            for (p in paths) {
-                appendLine("            ImageVector.Path(")
-                (p.getAttributeVal("fill") ?: defaultFill.takeUnless { it.isBlank() })?.let { fill ->
-                    val fillExpr = when {
-                        fill.equals("none", ignoreCase = true) -> "Color.transparent"
-                        fill.startsWith("#") -> "Color.fromHexString(\"$fill\")"
-                        fill.startsWith("rgb") -> "Color.fromRgbString(\"$fill\")"
-                        fill.startsWith("url(") -> "/* gradient reference: $fill */ Color.transparent"
-                        listOf(
-                            "white",
-                            "gray",
-                            "black",
-                            "red",
-                            "orange",
-                            "yellow",
-                            "green",
-                            "teal",
-                            "blue",
-                            "purple",
-                        ).any { it == fill } -> "Color.${fill}"
-
-                        else -> "Color.black"
-                    }
-                    appendLine("                fillColor = $fillExpr,")
-                }
-                p.getAttributeVal("d")?.let {
-                    appendLine("                path = \"${it}\"")
-                }
-
-                appendLine("            ),")
-            }
-            appendLine("        )")
-            appendLine("    )")
-        }
-    }
+    get() = svgToImageVectorCode(this.source)

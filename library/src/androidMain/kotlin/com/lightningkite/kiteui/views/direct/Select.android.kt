@@ -92,11 +92,11 @@ actual class Select actual constructor(context: RContext): RView(context) {
                 } else {
                     var newView: RView? = null
                     val w = object: ViewWriter(), CalculationContext by this@Select {
+                        override val representsView: RView = this@Select
                         override val context: RContext
                             get() = this@Select.context
 
                         override fun willAddChild(view: RView) {
-                            super.willAddChild(view)
                             view.parent = this@Select
                         }
 
@@ -105,7 +105,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
                         }
                     }
                     with(w) {
-                        padded - text {
+                        padded.text {
                             content = render(list[position])
                         }
                     }

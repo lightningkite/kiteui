@@ -24,6 +24,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
 
     actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+        // TODO: This won't work
         beforeNextElementSetup {
             native.extensionSpacingBeforeOverride = amount
         }
@@ -41,6 +42,16 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         native.gap = (gap ?: theme.theme.gap).value
     }
     override fun internalAddChild(index: Int, view: RView) {
+        // Apply parent's default alignment if child doesn't have explicit alignment set
+        if (view.lastSetHorizontalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildHorizontalAlign != null) {
+            view.lastSetHorizontalAlign = newChildHorizontalAlign!!
+            view.native.extensionHorizontalAlign = newChildHorizontalAlign
+        }
+        if (view.lastSetVerticalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildVerticalAlign != null) {
+            view.lastSetVerticalAlign = newChildVerticalAlign!!
+            view.native.extensionVerticalAlign = newChildVerticalAlign
+        }
+
         if (index == native.arrangedSubviews.size)
             native.addArrangedSubview(view.native)
         else
@@ -95,6 +106,16 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
     }
 
     override fun internalAddChild(index: Int, view: RView) {
+        // Apply parent's default alignment if child doesn't have explicit alignment set
+        if (view.lastSetHorizontalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildHorizontalAlign != null) {
+            view.lastSetHorizontalAlign = newChildHorizontalAlign!!
+            view.native.extensionHorizontalAlign = newChildHorizontalAlign
+        }
+        if (view.lastSetVerticalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildVerticalAlign != null) {
+            view.lastSetVerticalAlign = newChildVerticalAlign!!
+            view.native.extensionVerticalAlign = newChildVerticalAlign
+        }
+
         if (index == native.arrangedSubviews.size)
             native.addArrangedSubview(view.native)
         else

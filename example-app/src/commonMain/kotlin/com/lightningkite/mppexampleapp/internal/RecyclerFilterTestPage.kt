@@ -3,7 +3,6 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.recyclerView
@@ -20,30 +19,32 @@ import com.lightningkite.readable.shared
 object RecyclerFilterTestPage : Page {
     val searchText = Property("")
 
-    override fun ViewWriter.render(): ViewModifiable = col {
+    override fun ViewWriter.render(): Unit {
+        col {
 
-        fieldTheme - row {
-            expanding - textInput {
-                hint = "Search"
-                content bind searchText
+            fieldTheme.row {
+                expanding.textInput {
+                    hint = "Search"
+                    content bind searchText
+                }
             }
-        }
 
-        expanding - col {
-            expanding - ListSemantic.onNext - recyclerView {
-                children(
-                    items = shared {
-                        listOf("asdf", "asdf1", "qwerty").filter {
-                            it.contains(searchText().lowercase())
+            expanding.col {
+                expanding.onNext(ListSemantic).recyclerView {
+                    children(
+                        items = shared {
+                            listOf("asdf", "asdf1", "qwerty").filter {
+                                it.contains(searchText().lowercase())
+                            }
+                        },
+                        id = { it },
+                        render = {
+                            text {
+                                ::content { it() }
+                            }
                         }
-                    },
-                    id = { it },
-                    render = {
-                        text {
-                            ::content { it() }
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
     }

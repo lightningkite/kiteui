@@ -94,31 +94,31 @@ If you want to try another theme, start [here](https://kiteui.cs.lightningkite.c
 ![Screenshot 1](docs/SampleLoginScreen_A.png) ![Screenshot 2](docs/SampleLoginScreen_B.png)
 
 ```kotlin
+
 @Routable("sample/login")
 object SampleLogInPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
-        val email = Property("")
-        val password = Property("")
-        frame {
-            gap = 0.rem
+    override fun ViewWriter.render(): Unit = run {
+        val email = Signal("")
+        val password = Signal("")
+        unpadded.frame {
             image {
-                source = Resources.imagesSolera
+                source = Resources.imagesSnowyBackground
                 scaleType = ImageScaleType.Crop
                 opacity = 0.5
             }
-            padded - scrolling - col {
-                expanding - space()
-                centered - sizeConstraints(maxWidth = 50.rem) - card - col {
+            padded.scrolling.col {
+                expanding.space()
+                centered.sizeConstraints(maxWidth = 50.rem).card.col {
                     h1 { content = "My App" }
-                    sizeConstraints(width = 20.rem) - field("Email") {
-                        fieldTheme - textInput {
+                    sizeConstraints(width = 20.rem).field("Email") {
+                        fieldTheme.textInput {
                             hint = "Email"
                             keyboardHints = KeyboardHints.email
                             content bind email
                         }
                     }
-                    sizeConstraints(width = 20.rem) - field("Password") {
-                        fieldTheme - textInput {
+                    sizeConstraints(width = 20.rem).field("Password") {
+                        fieldTheme.textInput {
                             hint = "Password"
                             keyboardHints = KeyboardHints.password
                             content bind password
@@ -130,7 +130,7 @@ object SampleLogInPage : Page {
                             }
                         }
                     }
-                    centered - sizeConstraints(width = 15.rem) - important - button {
+                    centered.sizeConstraints(width = 15.rem).important.button {
                         h6 { content = "Log In" }
                         onClick {
                             delay(1000)
@@ -138,12 +138,12 @@ object SampleLogInPage : Page {
                         }
                     }
                 }
-                expanding - space()
+                expanding.space()
             }
         }
     }
 
-    private suspend fun ViewWriter.fakeLogin(email: Property<String>) {
+    private suspend fun ViewWriter.fakeLogin(email: Signal<String>) {
         fetch("fake-login/${email()}")
         pageNavigator.navigate(ControlsPage)
     }

@@ -41,4 +41,6 @@ expect class ScrollingBehaviorImpl constructor(
      override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
 
      override fun scrollToKeepAnimations(x: Double, y: Double)
+
+     override fun disableScrollAnchoring()
  }

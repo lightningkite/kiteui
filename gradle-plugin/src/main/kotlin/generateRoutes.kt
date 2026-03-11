@@ -54,6 +54,11 @@ internal fun generateAutoroutes(sources: File, out: File) {
 
                 index = match.index + 1
 
+                // Skip if this @Routable is inside a string literal
+                if (text.isInsideStringLiteral(index)) {
+                    continue
+                }
+
                 val urlParts = when (match.kind) {
                     AnnotationMatch.Kind.Routable -> {
                         val quoteStart = text.indexOf('"', match.index)
@@ -150,6 +155,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
             appendLine("package $topPackage")
             appendLine("")
             appendLine("import com.lightningkite.kiteui.navigation.*")
+            appendLine("import com.lightningkite.kotlinx.serialization.uri.*")
             allRoutables
                 .map { "import ${it.packageName}.${it.name}" }
                 .toSet()
@@ -180,8 +186,8 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 appendLine(routable.name)
                                 appendLine(".apply {")
                                 tab {
-                                    for (qp in routable.queryParams) {
-                                        appendLine("UrlProperties.decodeFromStringMap(\"${qp.value}\", it.parameters, this.${qp.key})")
+                                    for ((key, property) in routable.queryParams) {
+                                        appendLine("if (DefaultUriFormat.mapContainsKey(it.parameters, \"$key\")) $property valueSet DefaultUriFormat.decodeFromStringMap(\"$key\", it.parameters)")
                                     }
                                 }
                                 appendLine("}")
@@ -191,7 +197,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                     for ((index, part) in route.withIndex()) {
                                         when (part) {
                                             is Segment.Variable -> {
-                                                appendLine("${part.name} = UrlProperties.decodeFromString(it.segments[$index]),")
+                                                appendLine("${part.name} = DefaultUriFormat.decodeFromString(it.segments[$index]),")
                                             }
 
                                             else -> {}
@@ -200,8 +206,8 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 }
                                 appendLine(").apply {")
                                 tab {
-                                    for (qp in routable.queryParams) {
-                                        appendLine("UrlProperties.decodeFromStringMap(\"${qp.value}\", it.parameters, this.${qp.key})")
+                                    for ((key, property) in routable.queryParams) {
+                                        appendLine("if (DefaultUriFormat.mapContainsKey(it.parameters, \"$key\")) $property valueSet DefaultUriFormat.decodeFromStringMap(\"$key\", it.parameters)")
                                     }
                                 }
                                 appendLine("}")
@@ -215,26 +221,25 @@ internal fun generateAutoroutes(sources: File, out: File) {
                 tab {
                     for (routable in allRoutables) {
                         val route = routable.url
-                        val rendered = route.joinToString(", ") {
-                            when (it) {
-                                is Segment.Constant -> "\"${it.value}\""
-                                is Segment.Variable -> "UrlProperties.encodeToString(it.${it.name})"
-                                else -> throw Exception()
+                        val rendered = route.joinToString(", ") { seg ->
+                            when (seg) {
+                                is Segment.Constant -> "\"${seg.value}\""
+                                is Segment.Variable -> "DefaultUriFormat.encodeToString(it.${seg.name})"
                             }
                         }
                         appendLine("${routable.name}::class to label@{")
                         tab {
                             appendLine("if (it !is ${routable.name}) return@label null")
-                            appendLine("val p = HashMap<String, String>()")
-                            routable.queryParams.forEach {
-                                appendLine("UrlProperties.encodeToStringMap(it.${it.key}.state.getOrNull(), \"${it.value}\", p)")
+                            appendLine("val params = mutableMapOf<String, String>()")
+                            for ((key, property) in routable.queryParams) {
+                                appendLine("it.$property.state.getOrNull()?.let { DefaultUriFormat.encodeToStringMap(\"$key\", it, params) }")
                             }
                             appendLine("RouteRendered(UrlLikePath(")
                             tab {
                                 appendLine("segments = listOf($rendered),")
-                                appendLine("parameters = p")
+                                appendLine("parameters = params")
                             }
-                            appendLine("), listOf(${routable.queryParams.keys.joinToString { "it.${it}" }}))")
+                            appendLine("), listOf(${routable.queryParams.keys.joinToString { param -> "it.${param}" }}))")
                         }
                         appendLine("},")
                     }

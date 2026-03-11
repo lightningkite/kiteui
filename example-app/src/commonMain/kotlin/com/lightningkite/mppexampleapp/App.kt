@@ -19,10 +19,15 @@ import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-val defaultTheme = Theme.shadCnLike("shadcnlike")
+val defaultTheme = Theme.flat2("flat2default", 0.6.turns).customize(
+    newId = "asdf",
+    transitionDuration = 0.2.seconds,
+    bodyTransitions = ScreenTransitions.HorizontalSlide
+)
+//val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
 val appTheme = Signal<Theme>(defaultTheme)
 
-fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
+fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): Unit {
     RViewHelper.leakDetection = true
     // by Claude - configure telemetry early, before UI setup
     configureTelemetry()

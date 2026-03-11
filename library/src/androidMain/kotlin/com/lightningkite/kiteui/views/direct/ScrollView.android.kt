@@ -20,7 +20,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.RViewWrapper
+import com.lightningkite.kiteui.views.RViewWriter
 import com.lightningkite.kiteui.views.debugPrint
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -34,7 +34,7 @@ class ScrollView constructor(
     context: RContext,
     override val horizontal: Boolean,
     override val vertical: Boolean
-) : RViewWrapper(context), ScrollingBehaviors {
+) : RViewWriter(context), ScrollingBehaviors {
     private val scrollChanged = BasicListenable()
     private var vx = VelocityTracker.obtain()
     private var vy = VelocityTracker.obtain()

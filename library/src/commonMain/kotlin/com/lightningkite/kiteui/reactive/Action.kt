@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.exceptions.ExceptionHandlers
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -42,7 +41,9 @@ fun Action(
 }
 
 class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.milliseconds) : Action by wraps {
-    var lastInvoked = TimeSource.Monotonic.markNow()
+    // initialize in the past so the first invocation is never suppressed
+    private var lastInvoked = TimeSource.Monotonic.markNow() - frequencyCap - 1.milliseconds
+
     override fun startAction(scope: CoroutineScope) {
         if (lastInvoked.elapsedNow() > frequencyCap) {
             lastInvoked = TimeSource.Monotonic.markNow()

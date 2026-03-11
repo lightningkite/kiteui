@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -21,17 +20,17 @@ expect class CoordinatorFrame(context: RContext) : RView {
         startState: BottomSheetState = BottomSheetState.EXPANDED,
         shouldRemoveExpandedCorners: Boolean = false,
         blockBehind: Boolean = false,
-        content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
+        content: ViewWriter.(control: BottomSheetControl) -> Unit
     )
     fun leftSlidingPanel(
         ratio: Float? = null,
         blockBehind: Boolean = false,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     )
     fun rightSlidingPanel(
         ratio: Float? = null,
         blockBehind: Boolean = false,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     )
     fun onLeftSwipe(action: suspend () -> Unit)
     fun onRightSwipe(action: suspend () -> Unit)

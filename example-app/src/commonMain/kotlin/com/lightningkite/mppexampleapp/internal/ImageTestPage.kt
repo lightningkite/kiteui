@@ -1,7 +1,15 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.CornerRadii
+import com.lightningkite.kiteui.models.CornerRadii.Fixed
+import com.lightningkite.kiteui.models.ImageRaw
+import com.lightningkite.kiteui.models.ImageRemote
 import com.lightningkite.kiteui.models.ImageScaleType
+import com.lightningkite.kiteui.models.Semantic
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
@@ -15,28 +23,50 @@ object ImageTestPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
-            scrolling - sizeConstraints(width = 40.rem) - col {
+
+    data object ImageSemantic : Semantic("imageSemantic") {
+        override fun default(theme: Theme): ThemeAndBack = theme.copy(
+            id = "imageSemantic",
+            cornerRadii = Fixed(5.rem),
+        ).withBackNoPadding
+    }
+
+
+
+    override fun ViewWriter.render(): Unit = run {
+            scrolling.sizeConstraints(width = 40.rem).col {
 
                 text("scaleType = ${ImageScaleType.Crop}")
 
-                 centered -  sizeConstraints(
+                ImageSemantic.onNext.centered.sizeConstraints(
                     width = 6.rem,
                     height = 6.rem
-                ) - image {
+                ).image {
                     source = Resources.imagesSnowyBackground
                     scaleType = ImageScaleType.Crop
                 }
 
-                text("scaleType = ${ImageScaleType.Stretch}")
-                centered -  sizeConstraints(
-                    width = 6.rem,
-                    height = 6.rem
-                ) - image {
+                text(" Tests scaleType = ${ImageScaleType.Stretch}")
+                ImageSemantic.onNext.image {
                     source = Resources.imagesSnowyBackground
                     scaleType = ImageScaleType.Stretch
                 }
 
+                text("Resource .GIF from Resource")
+                val gif = rememberSuspending {
+                    ImageRaw(Resources.imagesGifTest())
+                }
+                centered.sizeConstraints(
+                    width = 20.rem,
+                    height = 20.rem
+                ).image {
+                    ::source{ gif() }
+                }
+
+                text("Remote gif ")
+                centered.sizeConstraints(width = 20.rem,height=20.rem).image{
+                    source = ImageRemote("https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif")
+                }
             }
         }
 }

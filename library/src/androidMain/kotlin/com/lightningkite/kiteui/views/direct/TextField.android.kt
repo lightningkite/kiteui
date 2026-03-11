@@ -33,6 +33,7 @@ actual open class TextInput actual constructor(context: RContext) : RViewWithAct
         inputType = EditorInfo.TYPE_CLASS_TEXT
     }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
+        _fontAndStyle = theme.font
         native.setTextColor(theme.foreground.colorInt())
         native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
         native.setTypeface(
@@ -48,6 +49,7 @@ actual open class TextInput actual constructor(context: RContext) : RViewWithAct
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         useAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
+        applyAlign(_align ?: theme.font.align)
     }
 
     actual val content: MutableReactiveValue<String> = native.contentProperty()
@@ -110,30 +112,29 @@ actual open class TextInput actual constructor(context: RContext) : RViewWithAct
         set(value) {
             native.hint = value
         }
-    actual var align: Align
-        get() {
-            return when (native.gravity) {
-                Gravity.START -> Align.Start
-                Gravity.END -> Align.End
-                Gravity.CENTER -> Align.Center
-                Gravity.CENTER_VERTICAL -> Align.Start
-                Gravity.CENTER_HORIZONTAL -> Align.Center
-                else -> Align.Start
-            }
-        }
+    private var _align: Align? = null
+    private var _fontAndStyle: FontAndStyle? = null
+
+    actual var align: Align?
+        get() = _align
         set(value) {
-            when (value) {
-                Align.Start -> native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
-                Align.End -> native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_END
-                Align.Center -> native.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-                Align.Stretch -> {
-                    native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
-                    native.updateLayoutParams<ViewGroup.LayoutParams> {
-                        this.width = ViewGroup.LayoutParams.MATCH_PARENT
-                    }
+            _align = value
+            applyAlign(value ?: _fontAndStyle?.align ?: Align.Start)
+        }
+
+    private fun applyAlign(value: Align) {
+        when (value) {
+            Align.Start -> native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
+            Align.End -> native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_END
+            Align.Center -> native.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+            Align.Stretch -> {
+                native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
+                native.updateLayoutParams<ViewGroup.LayoutParams> {
+                    this.width = ViewGroup.LayoutParams.MATCH_PARENT
                 }
             }
         }
+    }
 
     init {
         keyboardHints = KeyboardHints(KeyboardCase.Sentences)

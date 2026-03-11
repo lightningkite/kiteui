@@ -40,14 +40,14 @@ class ExceptionHandlers {
                             subtext(exception.stackTraceToString())
                         }
                         row {
-                            expanding - space()
+                            expanding.space()
                             for(action in message.actions) {
                                 button {
                                     text(action.title)
                                     onClick { closer(); action.startAction(view) }
                                 }
                             }
-                            buttonTheme - button {
+                            buttonTheme.button {
                                 text("OK")
                                 onClick { closer() }
                             }

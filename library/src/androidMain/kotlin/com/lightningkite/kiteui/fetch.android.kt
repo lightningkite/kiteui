@@ -6,24 +6,20 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.AndroidAppContext
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.http.content.OutgoingContent
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.jvm.javaio.toByteReadChannel
 import io.ktor.websocket.*
 import java.net.UnknownHostException
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +28,7 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 
 val client: HttpClient
@@ -46,8 +43,8 @@ actual suspend fun fetch(
     method: HttpMethod,
     headers: HttpHeaders,
     body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
 ): RequestResponse {
     /**
      * There is currently a bug in android fetch where after a sleep or lock state it will
@@ -63,6 +60,7 @@ actual suspend fun fetch(
     while (true) {
         try {
             attempt++
+            fetchLog.log("-> $method $url")
             val response = client.request(url) {
                 this.method = when (method) {
                     HttpMethod.GET -> io.ktor.http.HttpMethod.Get
@@ -80,8 +78,20 @@ actual suspend fun fetch(
                     }
                     is RequestBodyFile -> {
                         contentType(ContentType.parse(body.content.mimeType()))
-                        with(AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)) {
-                            this?.readBytes()?.let { setBody(it) }
+
+                        val inputStream =
+                            AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)
+                                ?: body.content.uri.path?.let { path ->
+                                    val file = File(path)
+                                    if (file.exists()) file.inputStream() else null
+                                }
+
+                        if (inputStream != null) {
+                            setBody(object : OutgoingContent.ReadChannelContent() {
+                                override val contentType: ContentType = ContentType.parse(body.content.mimeType())
+                                override val contentLength: Long = body.bytes
+                                override fun readFrom(): ByteReadChannel = inputStream.toByteReadChannel()
+                            })
                         }
                     }
                     is RequestBodyText -> {
@@ -92,20 +102,21 @@ actual suspend fun fetch(
                 }
                 onUploadProgress?.let {
                     onUpload { a, b ->
-                        it(a.toInt(), b?.toInt() ?: -1)
+                        it(a, b ?: -1L)
                     }
                 }
                 onDownloadProgress?.let {
                     onDownload { a, b ->
-                        it(a.toInt(), b?.toInt() ?: -1)
+                        it(a, b ?: -1L)
                     }
                 }
             }
+            fetchLog.log("<- $method $url ${response.status}")
             return RequestResponse(response)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            fetchLog.log("Attempt $attempt: <X $method $url ${e::class} ${e.message}")
+            fetchLog.log("<X $method $url ${e::class.simpleName}: ${e.message}")
             if (attempt >= maxRetries || e !is UnknownHostException) {
                 throw ConnectionException("Network request failed", e)
             }
@@ -209,64 +220,92 @@ class WebSocketWrapper(val url: String) : WebSocket {
         @Suppress("OPT_IN_USAGE")
         AppScope.launch(Dispatchers.IO) {
             try {
-                client.webSocket(url) {
-                    withContext(Dispatchers.Main) {
-                        onOpen.forEach { it() }
-                    }
-                    launch {
-                        try {
+                // Retry on UnknownHostException, same Android DNS bug as HTTP fetch
+                // https://github.com/square/okhttp/issues/8200
+                val maxRetries = 5
+                var attempt = 0
+                while (true) {
+                    try {
+                        attempt++
+                        client.webSocket(url) {
+                            attempt = 0 // Reset on successful connection
+                            var onCloseFired = false
+                            withContext(Dispatchers.Main) {
+                                onOpen.forEach { it() }
+                            }
+                            launch {
+                                try {
+                                    while (stayOn) {
+                                        send(sending.receive())
+                                    }
+                                } catch (e: ClosedReceiveChannelException) {
+                                }
+                            }
+                            launch {
+                                try {
+                                    this@WebSocketWrapper.closeReason.receive().let { reason ->
+                                        close(reason)
+                                        withContext(Dispatchers.Main) {
+                                            if (!onCloseFired) {
+                                                onCloseFired = true
+                                                onClose.forEach { it(reason.code) }
+                                            }
+                                        }
+                                    }
+                                } catch (e: ClosedReceiveChannelException) {
+                                }
+                            }
+                            var reason: CloseReason? = null
                             while (stayOn) {
-                                send(sending.receive())
-                            }
-                        } catch (e: ClosedReceiveChannelException) {
-                        }
-                    }
-                    launch {
-                        try {
-                            this@WebSocketWrapper.closeReason.receive().let { reason ->
-                                close(reason)
-                                withContext(Dispatchers.Main) {
-                                    onClose.forEach { it(reason.code) }
-                                }
-                            }
-                        } catch (e: ClosedReceiveChannelException) {
-                        }
-                    }
-                    var reason: CloseReason? = null
-                    while (stayOn) {
-                        try {
-                            when (val x = incoming.receive()) {
-                                is Frame.Binary -> {
-                                    val data = Blob(x.data, "application/octet-stream")
-                                    withContext(Dispatchers.Main) {
-                                        onBinaryMessage.forEach { it(data) }
+                                try {
+                                    when (val x = incoming.receive()) {
+                                        is Frame.Binary -> {
+                                            val data = Blob(x.data, "application/octet-stream")
+                                            withContext(Dispatchers.Main) {
+                                                onBinaryMessage.forEach { it(data) }
+                                            }
+                                        }
+
+                                        is Frame.Text -> {
+                                            val text = x.readText()
+                                            withContext(Dispatchers.Main) {
+                                                onMessage.forEach { it(text) }
+                                            }
+                                        }
+
+                                        is Frame.Close -> {
+                                            reason = x.readReason()
+                                            break
+                                        }
+
+                                        else -> {}
                                     }
+                                } catch (e: ClosedReceiveChannelException) {
+                                    break // by Claude — channel closed, exit loop
                                 }
-
-                                is Frame.Text -> {
-                                    val text = x.readText()
-                                    withContext(Dispatchers.Main) {
-                                        onMessage.forEach { it(text) }
-                                    }
-                                }
-
-                                is Frame.Close -> {
-                                    reason = x.readReason()
-                                    break
-                                }
-
-                                else -> {}
                             }
-                        } catch (e: ClosedReceiveChannelException) {
+                            withContext(Dispatchers.Main) {
+                                if (!onCloseFired) {
+                                    onCloseFired = true
+                                    onClose.forEach { it(reason?.code ?: 0) }
+                                }
+                            }
                         }
-                    }
-                    withContext(Dispatchers.Main) {
-                        onClose.forEach { it(reason?.code ?: 0) }
+                        break // Normal exit from webSocket block, don't retry
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        if (attempt < maxRetries && (e.cause is UnknownHostException || e is UnknownHostException)) {
+                            delay(2.seconds)
+                            continue
+                        }
+                        throw e
                     }
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch(e: Exception) {
+                fetchLog.log("WebSocket connection failed: ${e::class.simpleName}: ${e.message}")
                 withContext(Dispatchers.Main) {
                     onClose.forEach { it(0) }
                 }
@@ -306,10 +345,22 @@ class WebSocketWrapper(val url: String) : WebSocket {
 
 actual class FileReference(val uri: Uri)
 
+// by Claude - create FileReference from raw bytes for testing/mocking
+actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+    // by Claude - use a subdirectory so the original fileName is preserved for fileName()
+    val cacheDir = AndroidAppContext.applicationCtx.cacheDir
+    val dir = java.io.File(cacheDir, "kiteui-mock-${System.nanoTime()}")
+    dir.mkdirs()
+    val tempFile = java.io.File(dir, fileName)
+    tempFile.writeBytes(bytes)
+    return FileReference(Uri.fromFile(tempFile))
+}
 
 actual fun Blob.mimeType() = type
 actual fun FileReference.mimeType() = when (uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
+        ?: MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))         // if it is null with the content resolver check if it is an app scope file
     ContentResolver.SCHEME_FILE ->
         MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))
 
@@ -324,19 +375,14 @@ actual fun FileReference.fileName(): String {
             val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
             cursor.moveToFirst()
             cursor.getString(nameIndex)
-        }
+        } ?: uri.path?.let { path -> // if it is null with the content resolver check if it is an app scope file
+        val file = File(path)
+        if (file.exists()) file.name else "Unknown File Name"
+    }
         ?: return "Unknown File Name"
 }
 
 actual class Blob(val data: ByteArray, val type: String)
-
-val webSocketClient: HttpClient by lazy {
-    HttpClient(CIO) {
-        install(WebSockets) {
-            pingInterval = 20_000.milliseconds
-        }
-    }
-}
 
 actual fun Blob.bytes(): Long = data.size.toLong()
 actual fun FileReference.bytes(): Long {
@@ -347,7 +393,10 @@ actual fun FileReference.bytes(): Long {
             cursor.moveToFirst()
             cursor.getLong(nameIndex)
         }
-        ?: return -1L
+        ?: uri.path?.let { path -> // if it is null with the content resolver check if it is an app scope file
+            val file = File(path)
+            if (file.exists()) file.length() else null
+        } ?: return -1L
 }
 
 //actual suspend fun Blob.byteArray(): ByteArray = data
@@ -360,7 +409,11 @@ actual fun FileReference.bytes(): Long {
 actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
 actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) {
     withContext(Dispatchers.IO) {
-        AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.reader(Charsets.UTF_8).readText()
+        AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)?.reader(Charsets.UTF_8)?.readText()
+            ?: uri.path?.let { path ->
+                // if it is null with the content resolver check if it is an app scope file
+                File(path).readText()
+            }!!
     }
 }
 

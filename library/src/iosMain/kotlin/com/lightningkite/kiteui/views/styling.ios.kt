@@ -90,6 +90,11 @@ class CAGradientLayerResizing : CAGradientLayer {
 
     private var backgroundMask: CALayer? = null
 
+    private var borderShape: CAShapeLayer? = null
+
+    private var actualBorderWidth: CGFloat = 0.0
+    private var actualBorderColor: UIColor? = null
+
     /**
      * In some cases, we need a separate layer to mask views. The actual CAGradientLayerResizing layer cannot be used
      * because it has a superlayer and the CALayer mask property does not work with layers that have superlayers
@@ -106,7 +111,7 @@ class CAGradientLayerResizing : CAGradientLayer {
         return backgroundMask!!
     }
 
-    var desiredCornerRadius: CornerRadii = CornerRadii.ForceConstant(0.px)
+    var desiredCornerRadius: CornerRadii = CornerRadii.Fixed(0.px)
         set(value) {
             if (this == null) return //stupid iOS issue prevention
             field = value
@@ -120,29 +125,62 @@ class CAGradientLayerResizing : CAGradientLayer {
         }
 
     private fun applyPerCornerRadii(radii: CornerRadii.PerCorner, value: Double) {
-        val cornersList: MutableList<UIRectCorner> = mutableListOf()
-        if(radii.topLeft) cornersList.add(UIRectCornerTopLeft)
-        if(radii.topRight) cornersList.add(UIRectCornerTopRight)
-        if(radii.bottomLeft) cornersList.add(UIRectCornerBottomLeft)
-        if(radii.bottomRight) cornersList.add(UIRectCornerBottomRight)
+
+        val cornersList = mutableListOf<UIRectCorner>()
+        if (radii.topLeft) cornersList.add(UIRectCornerTopLeft)
+        if (radii.topRight) cornersList.add(UIRectCornerTopRight)
+        if (radii.bottomLeft) cornersList.add(UIRectCornerBottomLeft)
+        if (radii.bottomRight) cornersList.add(UIRectCornerBottomRight)
 
         val corners = cornersList.reduce { acc, current -> acc or current }
-        val path = UIBezierPath.Companion.bezierPathWithRoundedRect(rect = bounds,
+
+        val path = UIBezierPath.bezierPathWithRoundedRect(
+            rect = bounds,
             byRoundingCorners = corners,
-            cornerRadii = CGSizeMake(value, value))
-        val mask = CAShapeLayer()
-        mask.path = path.CGPath
-        this.mask = mask
-        superlayer?.mask = mask
+            cornerRadii = CGSizeMake(value, value)
+        )
+
+        // ---- Mask ----
+        val maskLayer = CAShapeLayer().apply {
+            this.path = path.CGPath
+        }
+        mask = maskLayer
+
+        // TURN OFF SYSTEM BORDER (But save it first!)
+        // If the system currently has a border, save it.
+        // If it's 0 (because we cleared it previously), rely on our cached 'actual' values.
+        if (borderWidth > 0.0) {
+            actualBorderWidth = borderWidth
+            actualBorderColor = borderColor?.let { UIColor.colorWithCGColor(it) }        }
+
+        // Disable the system border so it doesn't draw a square box
+        borderWidth = 0.0
+        borderColor = null
+
+        // ---- Custom Border ----
+        if (borderShape == null) {
+            borderShape = CAShapeLayer().also { shape ->
+                shape.fillColor = null
+                addSublayer(shape)
+            }
+        }
+
+        borderShape!!.apply {
+            frame = bounds
+            this.path = path.CGPath
+            lineWidth = actualBorderWidth
+            strokeColor = actualBorderColor?.CGColor        }
     }
+
+
 
     fun refreshCorners() {
         if (this == null) return //stupid iOS issue prevention
 
         fun valueOfRadii(d: CornerRadii): Double {
             return when (d) {
-                is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-                is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.AdaptiveToSpacing -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.Fixed -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
                 is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
                 is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
                 is CornerRadii.PerCorner -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
@@ -157,6 +195,9 @@ class CAGradientLayerResizing : CAGradientLayer {
 
             backgroundMask?.cornerRadius = v
             cornerRadius = v
+            borderShape?.removeFromSuperlayer()
+            borderShape = null
+            mask = null
         }
     }
 

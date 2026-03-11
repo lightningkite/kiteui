@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 object VideoElementPage: DocPage {
     override val covers: List<String> = listOf("video", "Video")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("Video")
             text("You can use the video element to render video, streamed from a remote source or locally.")
@@ -36,7 +36,7 @@ object VideoElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 frame {
-                    centered - sizeConstraints(width = 12.rem, height = 12.rem) - video {
+                    centered.sizeConstraints(width = 12.rem, height = 12.rem).video {
                         source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
                         this.time bind time
                         this.playing bind playing
@@ -97,7 +97,7 @@ object VideoElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 frame {
-                    centered - sizeConstraints(width = 12.rem, height = 12.rem) - media {
+                    centered.sizeConstraints(width = 12.rem, height = 12.rem).media {
                         source = Resources.videoBack
                         this.loop = true
                         scaleType = ImageScaleType.Crop
@@ -119,7 +119,7 @@ object VideoElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 frame {
-                    centered - sizeConstraints(width = 12.rem, height = 12.rem) - media {
+                    centered.sizeConstraints(width = 12.rem, height = 12.rem).media {
                         source = Resources.videoBack
                         this.loop = true
                         this.showControls = true

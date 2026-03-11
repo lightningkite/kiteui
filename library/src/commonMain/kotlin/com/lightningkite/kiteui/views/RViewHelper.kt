@@ -62,10 +62,9 @@ import kotlinx.coroutines.SupervisorJob
  * @param context The rendering context providing platform-specific configuration.
  */
 @OptIn(InternalKiteUi::class)
-abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
-    override val rView: RView get() = this as RView
-
+abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     abstract var showOnPrint: Boolean
+    override val representsView: RView get() = this as RView
 
     /**
      * Flag indicating whether this view has been shut down.
@@ -149,6 +148,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     var lastSetHorizontalAlign: Align = Align.Stretch
     /** Cached vertical alignment for layout calculations. */
     var lastSetVerticalAlign: Align = Align.Stretch
+    /** Default horizontal alignment for newly created children when not explicitly set. */
+    open var newChildHorizontalAlign: Align? = null
+    /** Default vertical alignment for newly created children when not explicitly set. */
+    open var newChildVerticalAlign: Align? = null
 
     // drag 'n drop
     /** Data to be provided when this view is dragged. If null, dragging is disabled. */
@@ -210,11 +213,15 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     var themeAndBack: ThemeAndBack = Theme.Companion.placeholder.withBack
         private set(value) {
             if (value != field) {
+                val oldCascading = field.theme.let { it.revert ?: it }
                 field = value
                 applyTheme(value)
                 refreshPadding()
-                for (child in internalChildren) {
-                    child.refreshTheming()
+                val newCascading = value.theme.let { it.revert ?: it }
+                if (oldCascading !== newCascading) {
+                    for (child in internalChildren) {
+                        child.refreshTheming()
+                    }
                 }
             }
         }
@@ -279,12 +286,12 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             if (this == viewDebugTarget) println("refreshTheming abandoned due to not fullyStarted")
             return
         }
-        if (parent?.fullyStarted == false) {
-            if (this == viewDebugTarget) println("refreshTheming abandoned due to parent $parent not being fully started")
+        if (themeParent?.fullyStarted == false) {
+            if (this == viewDebugTarget) println("refreshTheming abandoned due to themeParent $themeParent not being fully started")
             return
         }
-        val themeBorrowed = if(themeTakeNonCascadingFromParent) parent?.theme ?: Theme.placeholder
-        else parent?.theme?.let { it.revert ?: it } ?: Theme.placeholder
+        val themeBorrowed = if(themeTakeNonCascadingFromParent) themeParent?.theme ?: Theme.placeholder
+        else themeParent?.theme?.let { it.revert ?: it } ?: Theme.placeholder
         if (this == viewDebugTarget) println("refreshTheming will set!  Parent theme is ${themeBorrowed.id}")
         val t = applyState(themeChoice(themeBorrowed))
         if (this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
@@ -302,8 +309,16 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         @InternalKiteUi
         set(value) {
             field = value
-            if (parent != null) refreshTheming()
+            if (value != null) refreshTheming()
         }
+    @InternalKiteUi
+    var themeParentOverride: RView? = null
+        set(value) {
+            field = value
+            if (value != null) refreshTheming()
+        }
+    @InternalKiteUi
+    val themeParent get() = themeParentOverride ?: parent
 
     private val internalChildren = ArrayList<RView>()
 
@@ -486,7 +501,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
                 listenForStatus(reactive)
             }
         })
-        add(Dispatchers.Main.immediate)
+        // Use ssrDispatcher if set (for SSR synchronous execution), otherwise use Main dispatcher
+        add(context.ssrDispatcher ?: Dispatchers.Main.immediate)
     }
 
     /**
@@ -636,6 +652,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     }
 
     abstract fun screenRectangle(): Rect?
+    abstract fun parentRectangle(): Rect?
 
 
     // Calculation context
@@ -662,6 +679,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
      * with CSS or JavaScript when rendered to HTML.
      */
     open var htmlElementId: String? = null
+
+    // by Claude - allows setting semantic HTML tag from common code for SEO
+    open var htmlElementTag: String? = null
 
     /**
      * Convenience operator allowing actions to be invoked with this view as the context.

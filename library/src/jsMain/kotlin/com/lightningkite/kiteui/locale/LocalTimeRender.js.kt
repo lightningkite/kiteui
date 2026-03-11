@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.locale
 
 import kotlinx.datetime.*
 import kotlin.js.Date
+import kotlin.time.toJSDate
 
 
 actual fun LocalDate.renderToString(
@@ -77,7 +78,7 @@ actual fun LocalDateTime.renderToString(
 
 actual fun TimeZone.renderToString(size: RenderSize): String = this.id
 actual fun DayOfWeek.renderToString(size: RenderSize): String =
-    LocalDate(2023, 12, 31).plus(DatePeriod(days = this.ordinal)).atTime(12, 0)
+    LocalDate(2024, 1, 1).plus(DatePeriod(days = this.ordinal)).atTime(12, 0)
         .toInstant(TimeZone.currentSystemDefault()).toJSDate().toLocaleDateString(options = dateLocaleOptions {
         this.day = undefined
         this.weekday = when (size) {

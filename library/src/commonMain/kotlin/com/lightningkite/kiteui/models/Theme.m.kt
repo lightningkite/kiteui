@@ -27,71 +27,76 @@ fun Theme.Companion.material(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    derivations = mapOf(
-        OuterSemantic to {
+    semanticOverrides = SemanticOverrides(
+        OuterSemantic.override {
             it.alter(
                 cascading = false,
                 gap = 0.px,
-                cornerRadii = CornerRadii.ForceConstant(0.px),
+                cornerRadii = CornerRadii.Fixed(0.px),
                 outlineWidth = 0.px,
             ).withBackNoPadding
         },
-        HeaderSemantic to {
+        HeaderSemantic.override {
             it.withoutBack(font = title)
         },
-        DialogSemantic to {
+        DialogSemantic.override {
             it.withBack(
                 background = it.background.closestColor().darken(0.1f),
                 outline = it.outline.closestColor().darken(0.1f),
                 elevation = it.elevation * 2f,
             )
         },
-        ImportantSemantic to {
+        ImportantSemantic.override {
             it.withBack(
                 foreground = primaryForeground,
                 background = primary,
                 outline = primary.highlight(0.1f),
-                derivations = mapOf(ImportantSemantic to {
-                    it.withBack(
-                        foreground = secondaryForeground,
-                        background = secondary,
-                        outline = secondary.highlight(0.1f),
-                    )
-                })
+                semanticOverrides = SemanticOverrides(
+                    ImportantSemantic.override {
+                        it.withBack(
+                            foreground = secondaryForeground,
+                            background = secondary,
+                            outline = secondary.highlight(0.1f),
+                        )
+                    }
+                )
             )
         },
-        MainContentSemantic to {
+        MainContentSemantic.override {
             it.withBack(
                 cascading = false,
-                cornerRadii = CornerRadii.ForceConstant(0.px),
+                cornerRadii = CornerRadii.Fixed(0.px),
                 outlineWidth = 0.px,
             )
         },
-        BarSemantic to {
+        BarSemantic.override {
             it.alter(
                 foreground = primaryForeground,
                 background = primary,
                 outline = primary.highlight(0.1f),
-                derivations = mapOf(ImportantSemantic to {
-                    it.withBack(
-                        foreground = secondaryForeground,
-                        background = secondary,
-                        outline = secondary.highlight(0.1f),
-                    )
-                }, ListSemantic to {
-                    it.withoutBack(
-                        cascading = false,
-                        padding = Edges(0.px),
-                        gap = 0.px
-                    )
-                })
+                semanticOverrides = SemanticOverrides(
+                    ImportantSemantic.override {
+                        it.withBack(
+                            foreground = secondaryForeground,
+                            background = secondary,
+                            outline = secondary.highlight(0.1f),
+                        )
+                    },
+                    ListSemantic.override {
+                        it.withoutBack(
+                            cascading = false,
+                            padding = Edges(0.px),
+                            gap = 0.px
+                        )
+                    }
+                )
             ).withBack(
                 cascading = false,
-                cornerRadii = CornerRadii.ForceConstant(0.px),
+                cornerRadii = CornerRadii.Fixed(0.px),
                 outlineWidth = 0.px,
             )
         },
-        CriticalSemantic to {
+        CriticalSemantic.override {
             it.withBack(
                 foreground = secondaryForeground,
                 background = secondary,
@@ -164,8 +169,8 @@ object MaterialLikeTheme {
 
 fun Theme.randomTitleFontSettings() = copy(
     id = "${Random.nextInt()}",
-    derivations = mapOf(
-        HeaderSemantic to {
+    semanticOverrides = SemanticOverrides(
+        HeaderSemantic.override {
             val old = this@randomTitleFontSettings[HeaderSemantic]
             old.theme.copy(
                 id = id,
@@ -187,7 +192,7 @@ fun Theme.randomElevationAndCorners() = when (Random.nextInt(0, 3)) {
     )
 
     1 -> copy(
-        id = "${Random.nextInt()}",
+    id = "${Random.nextInt()}",
         outlineWidth = Random.nextInt(1, 4).dp,
         cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
     )
@@ -195,7 +200,7 @@ fun Theme.randomElevationAndCorners() = when (Random.nextInt(0, 3)) {
     else -> copy(
         id = "${Random.nextInt()}",
         outlineWidth = Random.nextInt(1, 4).dp,
-        elevation = Random.nextInt(2, 4).dp,
-        cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
-    )
+    elevation = Random.nextInt(2, 4).dp,
+    cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+)
 }

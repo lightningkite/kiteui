@@ -15,21 +15,24 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         native.setOnClickListener { view ->
             var willRemove: RView? = null
             popoverWriter(this.overlayFrame!!) {
-                willRemove?.let { overlayFrame!!.removeChild(it) }
+                val r = willRemove
+                willRemove = null
+                r?.let { overlayFrame!!.removeChild(it) }
+
             }.run {
                 willRemove = dismissBackground {
                     themeChoice += ThemeDerivation {
                         it.copy(
                             id = "mnubtndsm",
-                            revert = true,
-                            derivations = mapOf(
-                                DismissSemantic to {
-                                    it.copy(
+                            cascading = false,
+                            semanticOverrides = SemanticOverrides(
+                                DismissSemantic.override {
+                                    it.withBack(
                                         background = Color.transparent,
                                         outlineWidth = 0.dp,
                                         cornerRadii = CornerRadii.Constant(0.dp),
-                                        revert = true,
-                                    ).withBack
+                                        cascading = false,
+                                    )
                                 }
                             )
                         ).withBack
@@ -37,7 +40,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     onClick {
                         closePopovers()
                     }
-                    atTopStart - PopoverSemantic.onNext - frame {
+                    atTopStart.onNext(PopoverSemantic).frame {
                         this@dismissBackground.native.apply {
                             clipChildren = false
                             clipToPadding = false

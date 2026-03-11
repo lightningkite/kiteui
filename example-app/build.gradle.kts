@@ -13,7 +13,8 @@ plugins {
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidApplication)
-    id("dev.opensavvy.vite.kotlin") version "DEV"
+    alias(libs.plugins.roborazzi)
+    id("dev.opensavvy.vite.kotlin") version "0.6.0"
 }
 apply<KiteUiPlugin>()
 configure<KiteUiPluginExtension> {
@@ -34,7 +35,6 @@ version = "1.0-SNAPSHOT"
 kotlin {
     applyDefaultHierarchyTemplate()
 
-    jvm()
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -48,27 +48,77 @@ kotlin {
         binaries.executable()
         browser()
     }
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+        optIn.add("kotlinx.cinterop.BetaInteropApi")
+        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+    }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
                 api(project(":library"))
+                api(project(":library-lottie"))
+                api(project(":library-camera"))
             }
         }
 
         val commonHtmlMain by creating {
             dependsOn(commonMain)
         }
-        val jvmMain by getting {
-            dependsOn(commonHtmlMain)
-        }
+
         val jsMain by getting {
             dependsOn(commonHtmlMain)
             dependencies {
                 implementation(devNpm("webpack-bundle-analyzer", "4.10.2"))
             }
         }
+
+        val androidMain by getting {
+        }
+
+        val iosMain by getting {
+        }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(project(":test-utilities"))
+            }
+        }
+
+        val commonInteractiveTest by creating() {
+            dependsOn(commonTest)
+        }
+        val jsTest by getting {
+            dependsOn(commonInteractiveTest)
+        }
+        val androidUnitTest by getting {
+            dependsOn(commonInteractiveTest)
+        }
+        val iosTest by getting {
+            dependsOn(commonInteractiveTest)
+        }
     }
+
+    jvm("jvmSsr")
+    sourceSets {
+        val jvmSsrMain by getting {
+            dependsOn(get("commonHtmlMain"))
+            dependencies {
+                implementation(libs.ktorServerCore)
+                implementation(libs.ktorServerNetty)
+                implementation(libs.kotlinxCoroutinesSwing) // Provides Dispatchers.Main for JVM
+            }
+        }
+    }
+//    jvm("jvmSwing")
+//    sourceSets {
+//        val jvmSwingMain by getting {
+//        }
+//    }
 
     cocoapods {
         // Required properties
@@ -106,7 +156,7 @@ android {
 
     defaultConfig {
         applicationId = "com.lightningkite.kiteuiexample"
-        minSdk = 23
+        minSdk = 24  // library-skia (Skiko) requires API 24+
         targetSdk = 36
         versionCode = 1
         versionName = project.version.toString()
@@ -118,6 +168,11 @@ android {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
     }
     dependencies {
         coreLibraryDesugaring(libs.desugar.jdk.libs)
@@ -149,3 +204,41 @@ fun env(name: String, profile: String) {
     }
 }
 env("lk", "lk")
+
+// SSR Server run task (runs server mode by default)
+tasks.register<JavaExec>("ssrServerRun") {
+    group = "application"
+    description = "Run the SSR server (default) or prerender with --args=\"prerender <outputDir>\""
+    mainClass.set("com.lightningkite.mppexampleapp.SsrPrerenderKt")
+    val jvmSsrCompilation = kotlin.targets.getByName<org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget>("jvmSsr")
+        .compilations.getByName("main")
+    classpath = files(
+        jvmSsrCompilation.output.allOutputs,
+        jvmSsrCompilation.runtimeDependencyFiles
+    )
+    dependsOn("jvmSsrJar")
+}
+
+// Convenience task for prerendering
+tasks.register<JavaExec>("ssrPrerender") {
+    group = "application"
+    description = "Prerender all SSR pages to ./local/prerendered"
+    mainClass.set("com.lightningkite.mppexampleapp.SsrPrerenderKt")
+    args = listOf("prerender", "${project.rootDir}/local/prerendered")
+    val jvmSsrCompilation = kotlin.targets.getByName<org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget>("jvmSsr")
+        .compilations.getByName("main")
+    classpath = files(
+        jvmSsrCompilation.output.allOutputs,
+        jvmSsrCompilation.runtimeDependencyFiles
+    )
+    dependsOn("jvmSsrJar")
+}
+vite {
+    publicDir.set("public")
+    base.set("/")
+    server {
+        port.set(3000)
+    }
+}
+
+

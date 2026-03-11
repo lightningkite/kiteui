@@ -3,27 +3,37 @@ agp = "8.11.2"
 desugar_jdk_libs = "2.1.5"
 fontbox = "3.0.6"
 kotlin = "2.2.20"
+ksp = "2.2.20-2.0.3"
 appcompat = "1.7.1"
 cardview = "1.0.0"
 commonsLang3 = "3.19.0"
 glide = "5.0.5"
 junit = "4.13.2"
 kotlinxCoroutinesCore = "1.10.2"
-kotlinxDatetime = "0.6.1"
+miglayoutSwing = "11.4.2"
+swingxAll = "1.6.5-1"
+jinput = "2.0.10"
+kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.9.0"
 ktorVersion = "3.3.1"
 ktx = "1.17.0"
+kfc = "16.5.0"
+jsPlainObjects = "2.3.0"
 lkGradleHelpers = "4.0.6"
 material = "1.13.0"
+lottie = "6.4.0"
 media3Exoplayer = "1.8.0"
 photoview = "2.3.0"
 reactive = "5.1.3-24"
 robolectric = "4.16"
+roborazzi = "1.29.0"
+roborazziVersion = "1.51.0"
 swiperefreshlayout = "1.1.0"
 timber = "5.0.1"
 transition = "1.6.0"
 vannitechPublishing = "0.34.0"
 dokka = "2.1.0"
+uriEncoding = "0.0.1-6"
 
 
 [libraries]
@@ -38,24 +48,34 @@ commonsLang3 = { module = "org.apache.commons:commons-lang3", version = { ref = 
 glide = { module = "com.github.bumptech.glide:glide", version = { ref = "glide" } }
 junit = { module = "junit:junit", version = { ref = "junit" } }
 kotlinxCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = { ref = "kotlinxCoroutinesCore" } }
+kotlinxCoroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version = { ref = "kotlinxCoroutinesCore" } }
 kotlinxCoroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = { ref = "kotlinxCoroutinesCore" } }
+miglayout-swing = { module = "com.miglayout:miglayout-swing", version.ref = "miglayoutSwing" }
+swingx-all = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingxAll" }
+jinput = { module = "net.java.jinput:jinput", version.ref = "jinput" }
 kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = { ref = "kotlinxDatetime" } }
 kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = { ref = "kotlinxSerializationJson" } }
 kotlinxSerializationProperties = { module = "org.jetbrains.kotlinx:kotlinx-serialization-properties", version = { ref = "kotlinxSerializationJson" } }
+kotlinxSerializationUri = { module = "com.lightningkite:kotlinx-serialization-uri", version = { ref = "uriEncoding" } }
 ktor-client-okhttp-jvm = { module = "io.ktor:ktor-client-okhttp-jvm", version.ref = "ktorVersion" }
 ktorClientCio = { module = "io.ktor:ktor-client-cio", version = { ref = "ktorVersion" } }
 ktorClientCore = { module = "io.ktor:ktor-client-core", version = { ref = "ktorVersion" } }
 ktorClientDarwin = { module = "io.ktor:ktor-client-darwin", version = { ref = "ktorVersion" } }
 ktorClientOkhttp = { module = "io.ktor:ktor-client-okhttp", version = { ref = "ktorVersion" } }
 ktorClientWebsockets = { module = "io.ktor:ktor-client-websockets", version = { ref = "ktorVersion" } }
+ktorServerCore = { module = "io.ktor:ktor-server-core", version = { ref = "ktorVersion" } }
+ktorServerNetty = { module = "io.ktor:ktor-server-netty", version = { ref = "ktorVersion" } }
+ktorServerHtmlBuilder = { module = "io.ktor:ktor-server-html-builder", version = { ref = "ktorVersion" } }
 ktx = { module = "androidx.core:core", version = { ref = "ktx" } }
 lkGradleHelpers = { module = "com.lightningkite:lk-gradle-helpers", version = { ref = "lkGradleHelpers" } }
+lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
 material = { module = "com.google.android.material:material", version = { ref = "material" } }
 media3Common = { module = "androidx.media3:media3-common", version = { ref = "media3Exoplayer" } }
 media3Exoplayer = { module = "androidx.media3:media3-exoplayer", version = { ref = "media3Exoplayer" } }
 media3Ui = { module = "androidx.media3:media3-ui", version = { ref = "media3Exoplayer" } }
 photoview = { module = "com.github.chrisbanes:PhotoView", version = { ref = "photoview" } }
 robolectric = { module = "org.robolectric:robolectric", version = { ref = "robolectric" } }
+roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazziVersion" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = { ref = "swiperefreshlayout" } }
 timber = { module = "com.jakewharton.timber:timber", version = { ref = "timber" } }
 transition = { module = "androidx.transition:transition", version = { ref = "transition" } }
@@ -68,5 +88,8 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 comLightningkiteTestingManual = { id = "com.lightningkite.testing.manual", version = "0.0.9" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 vannitechPublishing = { id = "com.vanniktech.maven.publish", version = { ref = "vannitechPublishing" } }
 dokka = { id = "org.jetbrains.dokka", version = { ref = "dokka" } }
+kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
+kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }

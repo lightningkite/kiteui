@@ -13,6 +13,9 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.CoroutineScope
 
+// by Claude - all rContextAddon defaults write to the root RContext so they're shared across the tree.
+// Explicit sets (via the setter) write to the local context, shadowing the root for that subtree.
+
 @Suppress("UNCHECKED_CAST")
 fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
     override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
@@ -79,6 +82,7 @@ fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = 
     popoverCloser?.invoke()
     popoverCloser = close
     val writer = object : ViewWriter(), CalculationContext by this {
+        override val representsView: RView? = overlay.representsView
         override val context: RContext = this@popoverWriter.context.split()
         override fun willAddChild(view: RView) = overlay.willAddChild(view)
         override fun addChild(view: RView) = overlay.addChild(view)
@@ -105,5 +109,5 @@ fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = 
 expect fun ViewWriter.overlayWriter(
     modal: Boolean = true,
     transition: ScreenTransitions = ScreenTransitions.Fade,
-    body: RView.(remove: () -> Unit) -> Unit
+    body: ViewWriter.(remove: () -> Unit) -> Unit
 )

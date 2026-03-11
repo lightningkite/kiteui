@@ -17,7 +17,7 @@ object ViewModifiersPage : DocPage {
     override val covers: List<String> =
         listOf("view modifiers", "View modifier", "ViewModifiers", "viewModifiers", "viewmodifiers")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("View Modifiers")
             text("KiteUI has a number of view modifiers that can be used to modify the look, behavior and position of views.")
@@ -27,7 +27,7 @@ object ViewModifiersPage : DocPage {
                 """
                 col {
                     // Prefix style: use a dash to separate words
-                    important - button { text("Hello World") }
+                    important.button { text("Hello World") }
                     // Postfix style: use the 'in' operator
                     button { text("Hello World") } in important
                 }
@@ -35,9 +35,9 @@ object ViewModifiersPage : DocPage {
             ) {
                 col {
                     // Prefix style: use a dash to separate words
-                    important - button { text("Hello World") }
+                    important.button { text("Hello World") }
                     // Postfix style: use the 'in' operator
-                    button { text("Hello World") } in important
+                    important.button { text("Hello World") }
                 }
             }
             text("Both syntaxes are considered valid, but you should choose which one you use depending in on the context.  Prefixes can be more readable as adjectives, but it can also be more helpful to identify what the item is first.")
@@ -49,7 +49,7 @@ object ViewModifiersPage : DocPage {
             text("Using the gravity modifier, you can align items within a column.")
             example(
                 """
-               sizeConstraints(minHeight = 200.px) - frame {
+               sizeConstraints(minHeight = 200.px).frame {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
@@ -59,11 +59,11 @@ object ViewModifiersPage : DocPage {
                 }
             """.trimIndent()
             ) {
-                sizeConstraints(minHeight = 200.px) - frame {
+                sizeConstraints(minHeight = 200.px).frame {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
-                            text { content = "$h $v" } in align(h, v)
+                            align(h, v).text { content = "$h $v" }
                         }
                     }
                 }
@@ -71,13 +71,13 @@ object ViewModifiersPage : DocPage {
             text("There's also a shortcut available for simply centering an item.")
             example(
                 """
-                sizeConstraints(minHeight = 100.px) - frame {
-                    centered - text("Centered")
+                sizeConstraints(minHeight = 100.px).frame {
+                    centered.text("Centered")
                 }
             """.trimIndent()
             ) {
-                sizeConstraints(minHeight = 100.px) - frame {
-                    centered - text("Centered")
+                sizeConstraints(minHeight = 100.px).frame {
+                    centered.text("Centered")
                 }
             }
             h2("Weight")
@@ -93,26 +93,26 @@ object ViewModifiersPage : DocPage {
             """.trimIndent()
             ) {
                 row {
-                    text { content = "Card 1" } in card in weight(0.5f)
-                    text { content = "Card 2" } in card in weight(5f)
-                    text { content = "Card 3" } in card in weight(2f)
+                    weight(0.5f).card.text { content = "Card 1" }
+                    weight(5f).card.text { content = "Card 2" }
+                    weight(2f).card.text { content = "Card 3" }
                 }
             }
 
             h3("Elements with Weight in a Column")
             example(
                 """
-          sizeConstraints(minHeight = 200.px) - col {
+          sizeConstraints(minHeight = 200.px).col {
                 text { content = "Card 1" } in card in weight(0.5f)
                text { content = "Card 2" } in card in weight(5f)
                text { content = "Card 3" } in card in weight(2f)
            }
             """.trimIndent()
             ) {
-                sizeConstraints(minHeight = 200.px) - col {
-                    text { content = "Card 1" } in card in weight(0.5f)
-                    text { content = "Card 2" } in card in weight(5f)
-                    text { content = "Card 3" } in card in weight(2f)
+                sizeConstraints(minHeight = 200.px).col {
+                    weight(0.5f).card.text { content = "Card 1" }
+                    weight(5f).card.text { content = "Card 2" }
+                    weight(2f).card.text { content = "Card 3" }
                 }
             }
 
@@ -123,7 +123,7 @@ object ViewModifiersPage : DocPage {
              text("Text Popover") in textPopover("This is a popover")
             """.trimIndent()
             ) {
-                textPopover("This is a popover") - text("Text Popover")
+                textPopover("This is a popover").text("Text Popover")
             }
 
             h2("Has Popover")
@@ -146,15 +146,15 @@ object ViewModifiersPage : DocPage {
             """.trimIndent()
             ) {
                 hasPopover {
-                    col {
-                        button {
+                    card.col {
+                        card.button {
                             text("Popover")
-                        } in card
-                        button {
+                        }
+                        card.button {
                             text("Second Popover button")
-                        } in card
-                    } in card
-                } - button {
+                        }
+                    }
+                }.button {
                     text("Has Popover")
                 }
             }
@@ -162,7 +162,7 @@ object ViewModifiersPage : DocPage {
             text("The scrolling modifier is used to add a scroll bar to a view.")
             example(
                 """
-                sizeConstraints(maxHeight = 100.px) - scrolling - col {
+                sizeConstraints(maxHeight = 100.px).scrolling.col {
                     text("Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                             "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip " +
                             "ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla " +
@@ -171,7 +171,7 @@ object ViewModifiersPage : DocPage {
                 }
             """.trimIndent()
             ) {
-                sizeConstraints(maxHeight = 100.px) - scrolling - col {
+                sizeConstraints(maxHeight = 100.px).scrolling.col {
                     text(
                         "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                                 "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip " +
@@ -186,7 +186,7 @@ object ViewModifiersPage : DocPage {
             text("The scrollsHorizontally modifier is used to add a horizontal scroll bar to a view.")
             example(
                 """
-                sizeConstraints(minHeight = 10.px) - scrollsHorizontally - row {
+                sizeConstraints(minHeight = 10.px).scrollsHorizontally.row {
                     text(
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                                 "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollsHorizontally"
@@ -194,7 +194,7 @@ object ViewModifiersPage : DocPage {
                 }
               """.trimIndent()
             ) {
-                sizeConstraints(minHeight = 10.px) - scrollsHorizontally - row {
+                sizeConstraints(minHeight = 10.px).scrollsHorizontally.row {
                     text(
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                                 "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollsHorizontally"
@@ -207,17 +207,17 @@ object ViewModifiersPage : DocPage {
             example(
                 """
                 col {
-                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px) - card - text(
+                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px).card.text(
                         "Size Constraints with maxWidth, and maxHeight  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut \" +\n"
                     )
                 }
                 col {
-                    sizeConstraints(width = 100.px, height = 100.px) - card - text(
+                    sizeConstraints(width = 100.px, height = 100.px).card.text(
                         "Size Constraints with width and height"
                     )
                 }
                 col {
-                    sizeConstraints(minWidth = 200.px, minHeight = 200.px) - card - text(
+                    sizeConstraints(minWidth = 200.px, minHeight = 200.px).card.text(
                         "Size Constraints with min width and minHeight"
                     )
                 }
@@ -225,17 +225,17 @@ object ViewModifiersPage : DocPage {
             """.trimIndent()
             ) {
                 col {
-                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px) - card - text(
+                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px).card.text(
                         "Size Constraints with maxWidth, and maxHeight  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut \" +\n"
                     )
                 }
                 col {
-                    sizeConstraints(width = 100.px, height = 100.px) - card - text(
+                    sizeConstraints(width = 100.px, height = 100.px).card.text(
                         "Size Constraints with width and height"
                     )
                 }
                 col {
-                    sizeConstraints(minWidth = 200.px, minHeight = 200.px) - card - text(
+                    sizeConstraints(minWidth = 200.px, minHeight = 200.px).card.text(
                         "Size Constraints with min width and minHeight"
                     )
                 }
@@ -247,20 +247,20 @@ object ViewModifiersPage : DocPage {
             example(
                 """
                 col {
-                    card - row {
-                        padded - text("Padded")
+                    card.row {
+                        padded.text("Padded")
                     }
-                    card - row {
+                    card.row {
                         text("Not Padded")
                     }
                 }
             """.trimIndent()
             ) {
                 col {
-                    card - row {
-                        padded - text("Padded")
+                    card.row {
+                        padded.text("Padded")
                     }
-                    card - row {
+                    card.row {
                         text("Not Padded")
                     }
                 }
@@ -274,20 +274,20 @@ object ViewModifiersPage : DocPage {
             example(
                 """
                 col {
-                    important - toggleButton {
+                    important.toggleButton {
                         text { reactiveScope { content = if(condition.await()) "Hide" else "Show" } }
                         checked bind condition
                     }
-                    onlyWhen(condition = { condition.await() }) - text("Show Text Only When Toggled")
+                    onlyWhen(condition = { condition.await() }).text("Show Text Only When Toggled")
                 }
             """.trimIndent()
             ) {
                 col {
-                    important - toggleButton {
+                    important.toggleButton {
                         text { reactiveScope { content = if (condition()) "Hide" else "Show" } }
                         checked bind condition
                     }
-                    shownWhen(condition = { condition() }) - text("Show Text Only When Toggled")
+                    shownWhen(condition = { condition() }).text("Show Text Only When Toggled")
                 }
             }
         }

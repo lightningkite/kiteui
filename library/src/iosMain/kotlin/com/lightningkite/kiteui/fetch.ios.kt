@@ -28,6 +28,10 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import platform.Foundation.*
 import platform.UniformTypeIdentifiers.*
 import platform.posix.memcpy
+import kotlin.coroutines.resumeWithException
+
+// by Claude
+private val fetchLog = LogRoot.tag("fetch")
 
 val client = HttpClient {
     install(WebSockets)
@@ -56,11 +60,12 @@ actual suspend fun fetch(
     method: HttpMethod,
     headers: HttpHeaders,
     body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
 ): RequestResponse {
     return run {
         try {
+            fetchLog.log("-> $method $url")
             val response = run {
                 client.request(url) {
                     this.method = when (method) {
@@ -79,15 +84,35 @@ actual suspend fun fetch(
                         }
 
                         is RequestBodyFile -> {
-                            val mime = body.content.suggestedType
-                                ?: (body.content.provider.registeredContentTypes.firstOrNull() as? UTType ?: UTTypeData)
-                            // Type is dyn.age8u (null)
-                            contentType(ContentType.parse(mime.preferredMIMEType ?: throw Exception("No mime type found from file")))
-                            val fileData = suspendCoroutine {
-                                body.content.provider.loadDataRepresentationForContentType(mime) { data, error ->
-                                    if (error != null) throw Exception(error.description)
-                                    val rawData = data?.toByteArray() ?: throw Exception("Data is null")
-                                    it.resume(rawData)
+                            // 1. Resolve the UTType just like before
+                            val type = body.content.suggestedType
+                                ?: (body.content.provider.registeredContentTypes.firstOrNull() as? UTType)
+                                ?: UTTypeData
+
+                            // 2. FIX: Fallback to octet-stream instead of throwing an Exception
+                            val mimeString = type.preferredMIMEType ?: "application/octet-stream"
+                            contentType(ContentType.parse(mimeString))
+
+                            val fileData = suspendCoroutine { continuation ->
+                                body.content.provider.loadDataRepresentationForContentType(type) { data, error ->
+                                    if (error != null) {
+                                        // If the specific type fails, sometimes falling back to UTTypeData works
+                                        if (type != UTTypeData) {
+                                            body.content.provider.loadDataRepresentationForContentType(UTTypeData) { data2, error2 ->
+                                                if(error2 != null) {
+                                                    continuation.resumeWithException(Exception(error2.description))
+                                                } else {
+                                                    val rawData = data2?.toByteArray() ?: throw Exception("Data is null")
+                                                    continuation.resume(rawData)
+                                                }
+                                            }
+                                        } else {
+                                            continuation.resumeWithException(Exception(error.description))
+                                        }
+                                    } else {
+                                        val rawData = data?.toByteArray() ?: throw Exception("Data is null")
+                                        continuation.resume(rawData)
+                                    }
                                 }
                             }
                             setBody(fileData)
@@ -103,24 +128,26 @@ actual suspend fun fetch(
                     onUploadProgress?.let {
                         onUpload { a, b ->
                             run {
-                                it(a.toInt(), b?.toInt() ?: -1)
+                                it(a, b ?: -1)
                             }
                         }
                     }
                     onDownloadProgress?.let {
                         onDownload { a, b ->
                             run {
-                                it(a.toInt(), b?.toInt() ?: -1)
+                                it(a, b ?: -1)
                             }
                         }
                     }
                 }
             }
 
+            fetchLog.log("<- $method $url ${response.status}")
             RequestResponse(response)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            fetchLog.log("<X $method $url ${e::class.simpleName}: ${e.message}")
             throw ConnectionException("Network request failed", e)
         }
     }
@@ -157,32 +184,22 @@ actual class RequestResponse(val wraps: HttpResponse) {
     actual val ok: Boolean get() = wraps.status.isSuccess()
     actual suspend fun text(): String {
         try {
-            val result = run {
-                run {
-                    wraps.bodyAsText()
-                }
-            }
-            return result
+            return wraps.bodyAsText()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            throw e
+            throw ConnectionException("Reading body failed", e)
         }
     }
 
     actual suspend fun blob(): Blob {
         try {
-            val result = run {
-                run {
-                    wraps.body<ByteArray>()
-                        .let { Blob(it.toNSData(), wraps.contentType()?.toString() ?: "application/octet-stream") }
-                }
-            }
-            return result
+            return wraps.body<ByteArray>()
+                .let { Blob(it.toNSData(), wraps.contentType()?.toString() ?: "application/octet-stream") }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            throw e
+            throw ConnectionException("Reading body failed", e)
         }
     }
 
@@ -229,6 +246,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
         AppScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
+                    var onCloseFired = false
                     withContext(Dispatchers.Main) {
                         onOpen.forEach { it() }
                     }
@@ -245,7 +263,10 @@ class WebSocketWrapper(val url: String) : WebSocket {
                             this@WebSocketWrapper.closeReason.receive().let { reason ->
                                 close(reason)
                                 withContext(Dispatchers.Main) {
-                                    onClose.forEach { it(reason.code) }
+                                    if (!onCloseFired) {
+                                        onCloseFired = true
+                                        onClose.forEach { it(reason.code) }
+                                    }
                                 }
                             }
                         } catch (e: ClosedReceiveChannelException) {
@@ -277,15 +298,20 @@ class WebSocketWrapper(val url: String) : WebSocket {
                                 else -> {}
                             }
                         } catch (e: ClosedReceiveChannelException) {
+                            break
                         }
                     }
                     withContext(Dispatchers.Main) {
-                        onClose.forEach { it(reason?.code ?: 0) }
+                        if (!onCloseFired) {
+                            onCloseFired = true
+                            onClose.forEach { it(reason?.code ?: 0) }
+                        }
                     }
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch(e: Exception) {
+                fetchLog.log("WebSocket connection failed: ${e::class.simpleName}: ${e.message}")
                 withContext(Dispatchers.Main) {
                     onClose.forEach { it(0) }
                 }
@@ -326,13 +352,48 @@ class WebSocketWrapper(val url: String) : WebSocket {
 actual class Blob(val data: NSData, val type: String = "application/octet-stream")
 actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
 
+@OptIn(ExperimentalForeignApi::class)
+actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+    val nsData = bytes.usePinned { pinned ->
+        NSData.dataWithBytes(pinned.addressOf(0), bytes.size.toULong())
+    }
+    val utType = UTType.typeWithMIMEType(mimeType) ?: UTTypeData
+    val provider = NSItemProvider(item = nsData, typeIdentifier = utType.identifier)
+    provider.suggestedName = fileName
+    return FileReference(provider, utType)
+}
+
 
 actual fun Blob.mimeType(): String = type
-actual fun FileReference.mimeType(): String = suggestedType?.preferredMIMEType ?: "application/octet-stream"
+actual fun FileReference.mimeType(): String {
+    // 1. Try the explicit suggested type
+    // 2. Fallback to the first registered type in the provider
+    // 3. Fallback to generic Data type
+    val type = suggestedType
+        ?: (provider.registeredContentTypes.firstOrNull() as? UTType)
+        ?: UTTypeData
 
+    return type.preferredMIMEType ?: "application/octet-stream"
+}
 actual fun FileReference.fileName(): String {
-    val extension = suggestedType?.preferredFilenameExtension ?: ""
-    return "${provider.suggestedName ?: ""}.$extension"
+    val type = suggestedType
+        ?: (provider.registeredContentTypes.firstOrNull() as? UTType)
+        ?: UTTypeData
+
+    val extension = type.preferredFilenameExtension ?: ""
+
+    // 1. Try the system suggested name
+    // 2. If null, create a unique one using a timestamp
+    val name = provider.suggestedName ?: run {
+        val timestamp = NSDate().timeIntervalSince1970.toLong()
+        "file_$timestamp"
+    }
+
+    return if (extension.isNotBlank()) {
+        "$name.$extension"
+    } else {
+        name
+    }
 }
 
 fun String.nsdata(): NSData? =

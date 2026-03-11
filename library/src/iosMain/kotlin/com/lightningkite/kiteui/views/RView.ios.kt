@@ -6,30 +6,48 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.views.direct.RawImageViewLike
+import com.lightningkite.kiteui.views.direct.ScrollView
 import com.lightningkite.kiteui.views.direct.WrapperView
+import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
+import platform.Foundation.NSItemProvider
 import platform.Foundation.NSNumber
+import platform.Foundation.NSString
 import platform.Foundation.numberWithFloat
 import platform.QuartzCore.CATransaction
+import platform.QuartzCore.CATransform3DIdentity
+import platform.QuartzCore.CATransform3DMakeRotation
+import platform.QuartzCore.CATransform3DMakeScale
+import platform.QuartzCore.CATransform3DMakeTranslation
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.UIBlurEffect
 import platform.UIKit.UIBlurEffectStyle
 import platform.UIKit.UIColor
-import platform.UIKit.UIVibrancyEffect
+import platform.UIKit.UIDragInteraction
+import platform.UIKit.UIDragInteractionDelegateProtocol
+import platform.UIKit.UIDragItem
+import platform.UIKit.UIDragSessionProtocol
+import platform.UIKit.UIDropInteraction
+import platform.UIKit.UIDropInteractionDelegateProtocol
+import platform.UIKit.UIDropProposal
+import platform.UIKit.UIDropSessionProtocol
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
 import platform.UIKit.UIVisualEffectView
+import platform.UIKit.addInteraction
+import platform.UIKit.removeInteraction
+import platform.darwin.NSObject
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.sin
 import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
+
 
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
@@ -128,6 +146,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             )
         }
     }
+    actual override fun parentRectangle(): Rect? {
+        return native.frame.useContents {
+            Rect(
+                left = (origin.x),
+                right = (origin.x + size.width),
+                top = (origin.y),
+                bottom = (origin.y + size.height),
+            )
+        }
+    }
 
     actual override fun scrollIntoView(
         horizontal: Align?,
@@ -151,19 +179,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
 
-    // drag 'n drop
-    override var dragData: DragData?
-        get() = super.dragData
-        set(value) {
-            super.dragData = value
-            // TODO
-        }
-    override var dropTargetDelegate: DropTargetDelegate?
-        get() = super.dropTargetDelegate
-        set(value) {
-            super.dropTargetDelegate = value
-            // TODO
-        }
 
 
     protected var previousLoadAnimationHandle: (() -> Unit)? = null
@@ -309,29 +324,29 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 // Apply transformations to the native view's layer
                 if (transform.translationX != 0.0 || transform.translationY != 0.0 || transform.translationZ != 0.0) {
                     // Apply translation
-                    native.layer.transform = platform.QuartzCore.CATransform3DMakeTranslation(
+                    native.layer.transform = CATransform3DMakeTranslation(
                         transform.translationX,
                         transform.translationY,
                         transform.translationZ
                     )
                 } else if (transform.rotation != 0.0) {
                     // Apply rotation (convert degrees to radians)
-                    val radians = transform.rotation * (kotlin.math.PI / 180.0)
-                    native.layer.transform = platform.QuartzCore.CATransform3DMakeRotation(radians, 0.0, 0.0, 1.0)
+                    val radians = transform.rotation * (PI / 180.0)
+                    native.layer.transform = CATransform3DMakeRotation(radians, 0.0, 0.0, 1.0)
                 } else if (transform.scaleX != 1.0 || transform.scaleY != 1.0) {
                     // Apply scale
-                    native.layer.transform = platform.QuartzCore.CATransform3DMakeScale(
+                    native.layer.transform = CATransform3DMakeScale(
                         transform.scaleX,
                         transform.scaleY,
                         1.0
                     )
                 } else {
                     // Default identity transform
-                    native.layer.transform = platform.QuartzCore.CATransform3DIdentity.readValue()
+                    native.layer.transform = CATransform3DIdentity.readValue()
                 }
             } ?: run {
                 // Reset transform if no transformation is specified
-                native.layer.transform = platform.QuartzCore.CATransform3DIdentity.readValue()
+                native.layer.transform = CATransform3DIdentity.readValue()
             }
         }
     }
@@ -350,6 +365,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     protected open val addChildTarget: UIView get() = native
     actual override fun internalAddChild(index: Int, view: RView) {
+        // Apply parent's default alignment if child doesn't have explicit alignment set
+        if (view.lastSetHorizontalAlign == Align.Stretch && newChildHorizontalAlign != null) {
+            view.lastSetHorizontalAlign = newChildHorizontalAlign!!
+            view.native.extensionHorizontalAlign = newChildHorizontalAlign
+        }
+        if (view.lastSetVerticalAlign == Align.Stretch && newChildVerticalAlign != null) {
+            view.lastSetVerticalAlign = newChildVerticalAlign!!
+            view.native.extensionVerticalAlign = newChildVerticalAlign
+        }
+
         val existingView = children.getOrNull(index)
         val existingIndex = addChildTarget.subviews.indexOfFirst { it == existingView?.native }
         if (existingIndex == -1)
@@ -370,11 +395,204 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             it.native.removeFromSuperview()
         }
     }
+
+    private var dragInteraction: UIDragInteraction? = null
+    private var dragDelegate: DragInteractionDelegate? = null
+
+    override var dragData: DragData?
+        get() = super.dragData
+        set(value) {
+            super.dragData = value
+            if (value != null) {
+                if (dragInteraction == null) {
+
+                    val interaction = UIDragInteraction(DragInteractionDelegate(this).also {
+                        dragDelegate=it
+                    })
+                    interaction.enabled = true
+                    native.addInteraction(interaction)
+                    native.setUserInteractionEnabled(true)
+                    native.userInteractionEnabled = true
+                    this.dragInteraction = interaction
+                }
+            } else {
+                // Remove the interaction
+                dragInteraction?.let { native.removeInteraction(it) }
+                dragInteraction = null
+                dragDelegate = null
+            }
+        }
+
+    private class DragInteractionDelegate(view: RView) : NSObject(), UIDragInteractionDelegateProtocol {
+        @OptIn(ExperimentalNativeApi::class)
+        private val owner = WeakReference(view)
+
+        @ObjCSignatureOverride
+        @OptIn(ExperimentalNativeApi::class)
+        override fun dragInteraction(interaction: UIDragInteraction, itemsForBeginningSession: UIDragSessionProtocol): List<UIDragItem> {
+            val view = owner.get() ?: return listOf<UIDragItem>()
+            val data = view.dragData ?: return listOf<UIDragItem>()
+            view.parent?.let {
+                addChildDropInteractionToParentScrollViews(it)
+            }
+
+            val itemProvider = NSItemProvider(item = data.data as? NSString, typeIdentifier = data.mimeType)
+            val dragItem = UIDragItem(itemProvider)
+            dragItem.localObject = data
+            return listOf(dragItem)
+        }
+
+
+        fun addChildDropInteractionToParentScrollViews(currentView: RView) {
+            currentView.children.forEach { child ->
+                // Check if this child is a ScrollView
+                if (child is ScrollView) {
+                    child.children.forEach {
+                        if (it.dropInteractionDelegate != null && child.scrollViewDropInteraction == null) {
+                            child.dropInteractionDelegate = it.dropInteractionDelegate
+                            val interaction = UIDropInteraction(DropInteractionDelegate(child))
+                            child.scrollViewDropInteraction = interaction
+                            child.native.addInteraction(interaction)
+                        }
+                    }
+                }
+                if (child.children.isNotEmpty()) {
+                    addChildDropInteractionToParentScrollViews(child)
+                }
+            }
+        }
+
+        fun removeChildDropInteractionToParentScrollViews(currentView: RView) {
+            currentView.children.forEach { child ->
+                // Check if this child is a ScrollView
+                if (child is ScrollView) {
+                    child.scrollViewDropInteraction?.let { interaction ->
+                        child.native.removeInteraction(interaction)
+                        child.scrollViewDropInteraction = null
+                    }
+                    child.dropInteractionDelegate = null
+                }
+                if (child.children.isNotEmpty()) {
+                    removeChildDropInteractionToParentScrollViews(child)
+                }
+            }
+        }
+
+        @ObjCSignatureOverride
+        @OptIn(ExperimentalNativeApi::class)
+        override fun dragInteraction(interaction: platform.UIKit.UIDragInteraction, sessionWillBegin: platform.UIKit.UIDragSessionProtocol) {
+            val view = owner.get() ?: return
+            view.parent?.let {
+                addChildDropInteractionToParentScrollViews(it)
+            }
+        }
+
+        @ObjCSignatureOverride
+        @OptIn(ExperimentalNativeApi::class)
+        override fun dragInteraction(interaction: platform.UIKit.UIDragInteraction, session: platform.UIKit.UIDragSessionProtocol, didEndWithOperation: kotlin.ULong /* from: platform.UIKit.UIDropOperation */): kotlin.Unit  {
+            val view = owner.get() ?: return
+            view.parent?.let {
+                removeChildDropInteractionToParentScrollViews(it)
+            }
+        }
+
+
+    }
+
+
+    var dropInteraction: UIDropInteraction? = null
+    var dropInteractionDelegate: DropInteractionDelegate? = null
+    var scrollViewDropInteraction: UIDropInteraction? = null
+
+    override var dropTargetDelegate: DropTargetDelegate?
+        get() = super.dropTargetDelegate
+        set(value) {
+            super.dropTargetDelegate = value
+            if (value != null) {
+                if (dropInteraction == null) {
+                    val interaction = UIDropInteraction(DropInteractionDelegate(this).also {
+                        dropInteractionDelegate = it
+                    })
+                    native.userInteractionEnabled = true
+                    native.addInteraction(interaction)
+                    this.dropInteraction = interaction
+                }
+            } else {
+                dropInteraction?.let { native.removeInteraction(it) }
+                dropInteraction = null
+                dropInteractionDelegate = null
+            }
+        }
+
+
+
+    // A private delegate class to handle drop events
+        class DropInteractionDelegate(view: RView) : NSObject(), UIDropInteractionDelegateProtocol {
+            @OptIn(ExperimentalNativeApi::class)
+            private val owner = WeakReference(view)
+
+            private fun getDragDataPlaceholder(session: UIDropSessionProtocol): DragData? {
+                val local = session.localDragSession?.localContext as? DragData
+                if(local != null) return local
+
+                val provider = (session.items.firstOrNull() as? UIDragItem)?.itemProvider ?: return null
+                val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
+
+                return DragData(mimeType = mimeType, data = "", label = "External Data", dragShadow = null)
+            }
+
+
+            @OptIn(ExperimentalNativeApi::class)
+            @ObjCSignatureOverride
+            override fun dropInteraction(interaction: UIDropInteraction, canHandleSession: UIDropSessionProtocol): Boolean {
+                val view = owner.get() ?: return false
+                return true
+            }
+
+            @OptIn(ExperimentalNativeApi::class)
+            @ObjCSignatureOverride
+            override fun dropInteraction(interaction: UIDropInteraction, sessionDidUpdate: UIDropSessionProtocol): UIDropProposal {
+                val view = owner.get() ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
+                val delegate = view.dropTargetDelegate ?: view.children.firstOrNull { it.dropTargetDelegate != null }?.dropTargetDelegate
+                    ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
+                getDragDataPlaceholder(sessionDidUpdate)?.let { data ->
+                    val targetView = if (view is ScrollView) view.children.firstOrNull { it.dropTargetDelegate != null } ?: view else view
+                    val location = sessionDidUpdate.locationInView(targetView.native)
+                    val event = DragEvent(data, location.useContents { x }, location.useContents { y })
+                    delegate.over(event)
+                }
+
+                return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationMove)
+            }
+
+
+            @ObjCSignatureOverride
+            @OptIn(ExperimentalNativeApi::class)
+            override fun dropInteraction(interaction: UIDropInteraction, performDrop: UIDropSessionProtocol) {
+                val view = owner.get() ?: return
+                val delegate = view.dropTargetDelegate ?: view.children.firstOrNull { it.dropTargetDelegate != null }?.dropTargetDelegate
+                    ?: return
+                val localData = (performDrop.items.firstOrNull() as? UIDragItem)?.localObject as? DragData
+                if (localData != null) {
+                    // Use consistent location calculation - target the view with the delegate
+                    val targetView = if (view is ScrollView) view.children.firstOrNull { it.dropTargetDelegate != null } ?: view else view
+                    val location = performDrop.locationInView(targetView.native)
+                    val event = DragEvent(
+                        data = localData,
+                        xInView = location.useContents { x },
+                        yInView = location.useContents { y },
+                    )
+                    delegate.drop(event)
+                    return
+                }
+            }
+        }
+
 }
 
 var animationsEnabled: Boolean = true
 var isInAnimationBlock: Boolean = false
-actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
+actual val RView.areAnimationsEnabled: Boolean get() = animationsEnabled
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
@@ -453,3 +671,5 @@ inline fun RView.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, cr
         onComplete()
     }
 }
+
+

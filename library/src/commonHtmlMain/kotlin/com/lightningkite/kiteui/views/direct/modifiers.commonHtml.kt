@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ViewWrapper
+
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit
-): ViewWrapper {
+): ViewWriter {
     beforeNextElementSetup {
         val floating = FloatingInfoHolder(this)
         floating.menuGenerator = setup
@@ -31,7 +31,7 @@ actual fun ViewWriter.hintPopover(
             floating.close()
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -39,7 +39,7 @@ actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
-): ViewWrapper {
+): ViewWriter {
     beforeNextElementSetup {
         val floating = FloatingInfoHolder(this)
         floating.menuGenerator = {
@@ -67,18 +67,18 @@ actual fun ViewWriter.hasPopover(
             floating.close()
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopover {
-    card - text {
+actual fun ViewWriter.textPopover(message: String): ViewWriter = hasPopover {
+    card.text {
         content = message
     }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWrapper {
+actual fun ViewWriter.weight(amount: Float): ViewWriter {
     beforeNextElementSetup {
         lastSetWeight = amount
         native.style.flexGrow = "$amount"
@@ -86,49 +86,73 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
         native.style.flexBasis = "0"
         parent?.native?.classes?.add("childHasWeight")
     }
-    return ViewWrapper
+        .let { return it }
 }
 
+// by Claude - wrapper pattern for animation-aware weight changes
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
-    beforeNextElementSetup {
-        reactiveScope {
-            val amount = amount()
-            lastSetWeight = amount
-            if (amount != 0f) {
-                native.style.flexGrow = "$amount"
-                native.style.flexShrink = "$amount"
-                native.style.flexBasis = "0"
-            } else {
-                native.style.flexGrow = "0"
-                native.style.flexShrink = "0"
-                native.style.flexBasis = "auto"
+actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
+    return write(object : RViewWriter(context) {
+        init {
+            native.tag = "div"
+            native.classes.add("noInteraction")
+            native.classes.add("kiteui-stack")
+            var previousAmount: Float? = null
+            reactive {
+                val newAmount = amount()
+                val oldAmount = previousAmount
+                previousAmount = newAmount
+                lastSetWeight = newAmount
+                if (areAnimationsEnabled && fullyStarted && oldAmount != null && oldAmount != newAmount) {
+                    nativeAnimateWeight(oldAmount, newAmount)
+                } else {
+                    // Apply immediately (initial render or animations disabled)
+                    native.style.flexGrow = "$newAmount"
+                    native.style.flexShrink = "$newAmount"
+                    native.style.flexBasis = if (newAmount != 0f) "0" else "auto"
+                }
+                parent?.native?.classes?.add("childHasWeight")
             }
-            parent?.native?.classes?.add("childHasWeight")
         }
-    }
-    return ViewWrapper
+        override fun internalAddChild(index: Int, view: RView) {
+            super.internalAddChild(index, view)
+            view.themeTakeNonCascadingFromParent = true
+            Frame.internalAddChildStack(this, index, view)
+        }
+        override val mySpacingForChildren: Dimension
+            get() = parent?.mySpacingForChildren ?: 0.px
+    }) {}
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
+actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
     beforeNextElementSetup {
         lastSetHorizontalAlign = horizontal
         lastSetVerticalAlign = vertical
-        native.classes.add("h${horizontal}")
-        native.desiredHorizontalGravity = horizontal
-        native.classes.add("v${vertical}")
-        native.desiredVerticalGravity = vertical
+
+        // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+        val effectiveHorizontal = if (horizontal == Align.Stretch) {
+            parent?.newChildHorizontalAlign ?: horizontal
+        } else horizontal
+
+        val effectiveVertical = if (vertical == Align.Stretch) {
+            parent?.newChildVerticalAlign ?: vertical
+        } else vertical
+
+        native.classes.add("h${effectiveHorizontal}")
+        native.desiredHorizontalGravity = effectiveHorizontal
+        native.classes.add("v${effectiveVertical}")
+        native.desiredVerticalGravity = effectiveVertical
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWriter {
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -137,16 +161,16 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWrapper {
+): ViewWriter {
     // For web, we'll just use regular scrolling as pull-to-refresh isn't a common pattern on web
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
+actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
     beforeNextElementSetup {
 
         if (constraints.minHeight == null) native.style.minHeight = null
@@ -173,11 +197,11 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
         if (constraints.height == null) native.style.height = null
         else native.style.height = constraints.height.value.toString()
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWriter {
     beforeNextElementSetup {
 
         reactiveScope {
@@ -207,19 +231,15 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
             else native.style.height = constraints.height.value.toString()
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 // End
 
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
-//    // TODO: include old animation code
-//    beforeNextElementSetup {
-//        ::exists.invoke(condition)
-//    }
+actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
     var v: RView? = null
-    wrapNextIn(object: RViewWrapper(context) {
+    return write(object: RViewWriter(context) {
         init {
             v = this
             native.tag = "div"
@@ -255,11 +275,10 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
 
         override val mySpacingForChildren: Dimension
             get() = parent?.mySpacingForChildren ?: 0.px
-    })
-    return object: ViewWrapper() {
-        override fun view(): RView? = v
-    }
+    }) {}
 }
 
 internal expect fun RView.nativeAnimateShow()
 internal expect fun RView.nativeAnimateHide()
+// by Claude - expect for weight animation
+internal expect fun RView.nativeAnimateWeight(fromWeight: Float, toWeight: Float)

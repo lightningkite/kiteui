@@ -3,14 +3,18 @@ package com.lightningkite.kiteui.views
 import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.res.ColorStateList
+import android.graphics.Path
 import android.graphics.Point
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Looper
+import android.graphics.Outline
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
@@ -125,18 +129,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     private class DragShadowBuilder(val shadow: DragShadow) : View.DragShadowBuilder(shadow.view.native) {
         override fun onProvideShadowMetrics(outShadowSize: Point?, outShadowTouchPoint: Point?) {
             val view = shadow.view.native
-            outShadowSize?.set(view.width, view.height)
+            // Android cant have touch point below zero clamp to 0 or larger
+            outShadowSize?.set(view.width.coerceAtLeast(0), view.height.coerceAtLeast(0))
             outShadowTouchPoint?.set(
-                when (shadow.xAlign) {
+                (when (shadow.xAlign) {
                     Align.Start -> 0
                     Align.Center, Align.Stretch -> view.width / 2
                     Align.End -> view.width
-                } + (shadow.xOffset?.px?.roundToInt() ?: 0),
-                when (shadow.yAlign) {
+                } + (shadow.xOffset?.px?.roundToInt() ?: 0)).coerceAtLeast(0),
+                (when (shadow.yAlign) {
                     Align.Start -> 0
                     Align.Center, Align.Stretch -> view.height / 2
                     Align.End -> view.height
-                } + (view.height / 2) + (shadow.yOffset?.px?.roundToInt() ?: 0)
+                } + (shadow.yOffset?.px?.roundToInt() ?: 0)).coerceAtLeast(0)
             )
         }
     }
@@ -231,6 +236,14 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             bottom = r.bottom.toDouble(),
         )
     }
+    actual override fun parentRectangle(): Rect? {
+        return Rect(
+            left = native.left.toDouble(),
+            top = native.top.toDouble(),
+            right = native.right.toDouble(),
+            bottom = native.bottom.toDouble(),
+        )
+    }
 
     protected var background: Drawable? = null
         set(value) {
@@ -241,9 +254,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     protected fun updateCorners() {
         val cr = when (val it = theme.cornerRadii) {
-            is CornerRadii.ForceConstant -> it.value.value
+            is CornerRadii.AdaptiveToSpacing -> min((parent?.mySpacingForChildren ?: 0.px).value, it.value.value)
+            is CornerRadii.Fixed -> it.value.value
             is CornerRadii.RatioOfSize -> if (it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
-            is CornerRadii.Constant -> min((parent?.mySpacingForChildren ?: 0.px).value, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * (parent?.mySpacingForChildren ?: 0.px).value
             is CornerRadii.PerCorner -> it.value.value
         }
@@ -253,8 +266,32 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val topRight = if (asPerCorner?.topRight != false) cr else 0f
         val bottomRight = if (asPerCorner?.bottomRight != false) cr else 0f
         val bottomLeft = if (asPerCorner?.bottomLeft != false) cr else 0f
-        backgroundBlock?.cornerRadii =
-            floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
+
+        val radii = floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
+
+        // When a view has corner radii and draws a background, clip children to the
+        // rounded outline. This matches web behavior where border-radius + overflow: hidden
+        // clips content (e.g. images inside a rounded frame).
+        // We use Outline.setPath() with the per-corner radii array so PerCorner is respected.
+        // A rounded rect path is always convex, so this works on API 21+.
+        if (cr > 0f && themeAndBack.drawBackground) {
+            val capturedRadii = radii.copyOf()
+            native.outlineProvider = object : ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: Outline) {
+                    val path = Path().apply {
+                        addRoundRect(
+                            RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
+                            capturedRadii,
+                            Path.Direction.CW
+                        )
+                    }
+                    outline.setPath(path)
+                }
+            }
+            native.clipToOutline = true
+        } else if (!native.clipToOutline) {
+            native.outlineProvider = ViewOutlineProvider.BACKGROUND
+        }
     }
 
     override fun refreshPadding() {
@@ -271,6 +308,18 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     // Map to track active animators for each view property
     companion object {
         private val activeAnimators = mutableMapOf<String, ValueAnimator>()
+        // by Claude - cache reflected Method to avoid repeated getMethod() calls on every clickable element
+        private val rippleSetDrawableMethod: java.lang.reflect.Method? by lazy {
+            try {
+                RippleDrawable::class.java.getMethod(
+                    "setDrawable",
+                    Int::class.javaPrimitiveType,
+                    Drawable::class.java
+                )
+            } catch (e: Exception) {
+                null
+            }
+        }
     }
 
     private fun animateProperty(targetValue: Float, existingAnimator: ValueAnimator?, getter: ()->Float, setter: (Float)->Unit): ValueAnimator? {
@@ -298,7 +347,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     private var animatorRotation: ValueAnimator? = null
     private var animatorScaleX: ValueAnimator? = null
     private var animatorScaleY: ValueAnimator? = null
-    
+
     actual override fun applyTheme(theme: ThemeAndBack) {
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
@@ -350,9 +399,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val wasFocusable = native.isFocusable
         val hasInteractiveParent =
             generateSequence(this) { it.parent }.any { (it.native.isClickable || it.native.isFocusable) && it !is CoordinatorFrame }
-//        val previousTrace =
-//            generateSequence(this) { it.parent }.map { "  ${it} - ${it.native}, clickable: ${it.native.isClickable}, focusable: ${it.native.isFocusable}" }
-//                .toList()
         debugPrint {
             buildString {
                 appendLine("--postsetup--")
@@ -371,6 +417,62 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
+        // Apply parent's default alignment if child doesn't have explicit alignment set
+        var needsLayoutParamUpdate = false
+
+        if (view.lastSetHorizontalAlign == Align.Stretch && newChildHorizontalAlign != null) {
+            view.lastSetHorizontalAlign = newChildHorizontalAlign!!
+            needsLayoutParamUpdate = true
+        }
+        if (view.lastSetVerticalAlign == Align.Stretch && newChildVerticalAlign != null) {
+            view.lastSetVerticalAlign = newChildVerticalAlign!!
+            needsLayoutParamUpdate = true
+        }
+
+        // If we applied defaults, update layout params (align() modifier wasn't called)
+        if (needsLayoutParamUpdate) {
+            val params = view.lparams
+
+            // Don't overwrite width/height if weight was set (expanding modifier)
+            val hasWeight = view.lastSetWeight != null && view.lastSetWeight!! > 0f
+            val isHorizontalLayout =
+                (native as? com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout)?.orientation == com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout.HORIZONTAL
+
+            if (newChildHorizontalAlign != null && !(hasWeight && isHorizontalLayout)) {
+                params.width = when (newChildHorizontalAlign) {
+                    Align.Stretch -> LayoutParams.MATCH_PARENT
+                    else -> LayoutParams.WRAP_CONTENT
+                }
+            }
+            if (newChildVerticalAlign != null && !(hasWeight && !isHorizontalLayout)) {
+                params.height = when (newChildVerticalAlign) {
+                    Align.Stretch -> LayoutParams.MATCH_PARENT
+                    else -> LayoutParams.WRAP_CONTENT
+                }
+            }
+
+
+            val horizontalGravity = when (view.lastSetHorizontalAlign) {
+                Align.Start -> android.view.Gravity.START
+                Align.Center -> android.view.Gravity.CENTER_HORIZONTAL
+                Align.End -> android.view.Gravity.END
+                else -> android.view.Gravity.CENTER_HORIZONTAL
+            }
+            val verticalGravity = when (view.lastSetVerticalAlign) {
+                Align.Start -> android.view.Gravity.TOP
+                Align.Center -> android.view.Gravity.CENTER_VERTICAL
+                Align.End -> android.view.Gravity.BOTTOM
+                else -> android.view.Gravity.CENTER_VERTICAL
+            }
+
+            if (params is com.lightningkite.kiteui.views.direct.SimplifiedLinearLayoutLayoutParams)
+                params.gravity = horizontalGravity or verticalGravity
+            else if (params is FrameLayout.LayoutParams)
+                params.gravity = horizontalGravity or verticalGravity
+            else if (params is androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams)
+                params.gravity = horizontalGravity or verticalGravity
+        }
+
         (native as ViewGroup).addView(view.native, index)
         if (fullyStarted) ViewCompat.requestApplyInsets(view.native)
         if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("internalAddChild($index $view) failed on $this: Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
@@ -409,12 +511,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         backgroundBlock = backgroundDrawable
         if (oldRippleDrawable != null) {
             oldRippleDrawable.setColor(rippleColor)
-            // Use reflection to set the drawable to avoid API level issues
-            try {
-                val method = RippleDrawable::class.java.getMethod("setDrawable", Int::class.javaPrimitiveType, Drawable::class.java)
-                method.invoke(oldRippleDrawable, 0, backgroundDrawable)
-            } catch (e: Exception) {
-                // Fallback to creating a new RippleDrawable
+            // by Claude - use cached reflected Method to avoid repeated getMethod() lookup
+            val method = rippleSetDrawableMethod
+            if (method != null) {
+                try {
+                    method.invoke(oldRippleDrawable, 0, backgroundDrawable)
+                } catch (e: Exception) {
+                    return RippleDrawable(rippleColor, backgroundDrawable, null)
+                }
+            } else {
                 return RippleDrawable(rippleColor, backgroundDrawable, null)
             }
             return oldRippleDrawable
@@ -452,7 +557,7 @@ inline fun View.withoutAnimation(action: () -> Unit) {
 }
 
 
-inline fun View.debugPrint(get: ()->String) {
-    if(debugMode && viewDebugTarget?.native == this)
+inline fun View.debugPrint(get: () -> String) {
+    if (debugMode && viewDebugTarget?.native == this)
         Log.tag("viewDebugTarget").info(get())
 }

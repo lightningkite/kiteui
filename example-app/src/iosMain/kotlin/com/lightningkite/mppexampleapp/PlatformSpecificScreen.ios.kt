@@ -23,8 +23,8 @@ import platform.darwin.*
 
 val subnav = PageNavigator { AutoRoutes }
 @OptIn(ExperimentalForeignApi::class)
-actual fun ViewWriter.platformSpecific(): ViewModifiable {
-    return col {
+actual fun ViewWriter.platformSpecific(): Unit {
+    col {
         repeat(10) {
             text("TEST")
             separator()
@@ -45,20 +45,23 @@ actual fun ViewWriter.platformSpecific(): ViewModifiable {
 }
 
 class PlaceholderPage: Page {
-    override fun ViewWriter.render() = text("placeholder")
+    override fun ViewWriter.render() {
+        text("placeholder")
+    }
 }
 
 class MemoryPage: Page {
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render(): Unit {
 //        return write(MemoryView(context)) {}
 
-        return write(WrapperView(context)) {
-            write(MemoryView2(context)) {
-                onRemove { leakDetect() }
-            }
-            text("i will require things to be retained")
-//            space(1.0)
-        }
+        text("ok")
+//        return write(WrapperView(context)) {
+//            write(MemoryView2(context)) {
+//                onRemove { leakDetect() }
+//            }
+//            text("i will require things to be retained")
+////            space(1.0)
+//        }
 
 //        return write(MemoryView(context)) {}
 //        return frame {

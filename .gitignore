@@ -20,3 +20,10 @@ LocalTelemetryConfig.kt
 TelemetryExportTest.kt
 xcuserdata
 library.podspec
+local
+.kbuild
+/.claude/settings.local.json
+worktrees
+sstest*.png
+screenshot-*.png
+.fork/

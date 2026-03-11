@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
@@ -23,7 +22,7 @@ import platform.UIKit.UIViewController
 actual fun ViewWriter.overlayWriter(
     modal: Boolean,
     transition: ScreenTransitions,
-    body: RView.(remove: () -> Unit) -> Unit
+    body: ViewWriter.(remove: () -> Unit) -> Unit
 ) {
     if (!modal) {
         var willRemove: RView? = null
@@ -32,8 +31,7 @@ actual fun ViewWriter.overlayWriter(
                 beforeNextElementSetup {
                     animateIn(transition.forward)
                     willRemove = this
-                }
-                body {
+                }.body {
                     willRemove?.let {
                         it.animateOut(transition.reverse) {
                             this@with.removeChild(it)
@@ -56,8 +54,7 @@ actual fun ViewWriter.overlayWriter(
         viewController.kiteUi(context.split(viewController)) {
             beforeNextElementSetup {
                 themeChoice = ThemeDerivation { theme.withoutBack }
-            }
-            frame {
+            }.frame {
                 coordinatorFrame = null
                 overlayFrame = this
                 body {

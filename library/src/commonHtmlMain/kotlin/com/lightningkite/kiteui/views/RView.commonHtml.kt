@@ -69,6 +69,14 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.id = value
         }
 
+    // by Claude - allows setting semantic HTML tag from common code for SEO
+    override var htmlElementTag: String?
+        get() = super.htmlElementTag
+        set(value) {
+            super.htmlElementTag = value
+            if (value != null) native.tag = value
+        }
+
     // drag 'n drop
     override var dragData: DragData?
         get() = super.dragData
@@ -121,6 +129,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         return native.screenRectangle()
     }
 
+    actual override fun parentRectangle(): Rect? {
+        return native.parentRectangle()
+    }
+
     override fun leakDetect() {
         WeakReference(native).checkLeakAfterDelay(1000)
         native.actualElementForLeakTracking?.let {
@@ -151,6 +163,18 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
+        // Apply parent's default alignment if child doesn't have explicit alignment set
+        if (view.lastSetHorizontalAlign == Align.Stretch && newChildHorizontalAlign != null) {
+            view.lastSetHorizontalAlign = newChildHorizontalAlign!!
+            view.native.desiredHorizontalGravity = newChildHorizontalAlign
+            view.native.classes.add("h${newChildHorizontalAlign}")
+        }
+        if (view.lastSetVerticalAlign == Align.Stretch && newChildVerticalAlign != null) {
+            view.lastSetVerticalAlign = newChildVerticalAlign!!
+            view.native.desiredVerticalGravity = newChildVerticalAlign
+            view.native.classes.add("v${newChildVerticalAlign}")
+        }
+
         native.appendChild(index, view.native)
     }
 
@@ -208,6 +232,7 @@ expect class FutureElement {
     fun focus()
     fun blur()
     fun screenRectangle(): Rect?
+    fun parentRectangle(): Rect?
 }
 
 expect fun RView.nativeScrollIntoView(

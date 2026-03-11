@@ -33,28 +33,28 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
             updateFont()
             native.informParentOfSizeChange()
         }
-    actual inline var align: Align
-        get() = when (label.textAlignment) {
-            NSTextAlignmentLeft -> Align.Start
-            NSTextAlignmentCenter -> Align.Center
-            NSTextAlignmentRight -> Align.End
-            NSTextAlignmentJustified -> Align.Stretch
-            else -> Align.Start
-        }
+    private var _align: Align? = null
+    actual var align: Align?
+        get() = _align
         set(value) {
-            native.contentMode = when (value) {
-                Align.Start -> UIViewContentMode.UIViewContentModeLeft
-                Align.Center -> UIViewContentMode.UIViewContentModeCenter
-                Align.End -> UIViewContentMode.UIViewContentModeRight
-                Align.Stretch -> UIViewContentMode.UIViewContentModeScaleAspectFit
-            }
-            label.textAlignment = when (value) {
-                Align.Start -> NSTextAlignmentLeft
-                Align.Center -> NSTextAlignmentCenter
-                Align.End -> NSTextAlignmentRight
-                Align.Stretch -> NSTextAlignmentJustified
-            }
+            _align = value
+            applyAlign(value ?: fontAndStyle?.align ?: Align.Start)
         }
+
+    private fun applyAlign(value: Align) {
+        native.contentMode = when (value) {
+            Align.Start -> UIViewContentMode.UIViewContentModeLeft
+            Align.Center -> UIViewContentMode.UIViewContentModeCenter
+            Align.End -> UIViewContentMode.UIViewContentModeRight
+            Align.Stretch -> UIViewContentMode.UIViewContentModeScaleAspectFit
+        }
+        label.textAlignment = when (value) {
+            Align.Start -> NSTextAlignmentLeft
+            Align.Center -> NSTextAlignmentCenter
+            Align.End -> NSTextAlignmentRight
+            Align.Stretch -> NSTextAlignmentJustified
+        }
+    }
 
     actual var ellipsis: Boolean
         get() = label.lineBreakMode == NSLineBreakByTruncatingTail
@@ -138,6 +138,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         val theme = theme.theme
         native.foreground = theme.foreground
         fontAndStyle = theme.font
+        applyAlign(_align ?: theme.font.align)
 
         //
 //        sizeConstraints = SizeConstraints(
