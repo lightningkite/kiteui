@@ -21,7 +21,7 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
                 launch {
                     onNavigate.invoke()
                     value?.let {
-                        ExternalServices.openTab(it)
+                        externalServices.openTab(it)
                     }
                 }
             }

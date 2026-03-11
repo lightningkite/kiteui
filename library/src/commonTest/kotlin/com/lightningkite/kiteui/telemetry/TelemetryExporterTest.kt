@@ -90,7 +90,7 @@ class TelemetryExporterTest {
         exporter.incrementCounter("test.count", 3)
         exporter.incrementCounter("test.count", 7)
         val counter = exporter.counters.values.single()
-        val snapshot = counter.snapshotAndReset(IdGenerator.nanosString())
+        val snapshot = counter.snapshot(IdGenerator.nanosString())
         assertNotNull(snapshot)
         assertEquals(10L, snapshot.sum!!.dataPoints.single().asInt)
     }
@@ -114,7 +114,7 @@ class TelemetryExporterTest {
         exporter.incrementCounter("test", attributes = attrs)
         exporter.incrementCounter("test", attributes = attrs)
         assertEquals(1, exporter.counters.size, "Same name+attributes should reuse aggregator")
-        val snapshot = exporter.counters.values.single().snapshotAndReset(IdGenerator.nanosString())
+        val snapshot = exporter.counters.values.single().snapshot(IdGenerator.nanosString())
         assertEquals(2L, snapshot!!.sum!!.dataPoints.single().asInt)
     }
 
@@ -133,7 +133,7 @@ class TelemetryExporterTest {
         exporter.recordHistogram("latency", 10.0)
         exporter.recordHistogram("latency", 20.0)
         val hist = exporter.histograms.values.single()
-        val snapshot = hist.snapshotAndReset(IdGenerator.nanosString())!!
+        val snapshot = hist.snapshot(IdGenerator.nanosString())!!
         val dp = snapshot.histogram!!.dataPoints.single()
         assertEquals(2L, dp.count)
         assertEquals(30.0, dp.sum)

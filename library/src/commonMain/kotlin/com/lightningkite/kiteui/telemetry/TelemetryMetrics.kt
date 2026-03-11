@@ -1,26 +1,27 @@
 // by Claude - client-side metric aggregation: counters and histograms
-// Aggregated locally to minimize export volume; flushed as OTLP delta temporality.
+// Aggregated locally to minimize export volume; flushed as OTLP cumulative temporality
+// (required by Prometheus-compatible backends like Grafana Mimir).
 package com.lightningkite.kiteui.telemetry
 
 /**
  * Aggregates a monotonically increasing counter.
- * Exported as an OTLP Sum with delta temporality — each flush reports the delta since last flush.
+ * Exported as an OTLP Sum with cumulative temporality — each flush reports the running total.
  */
 internal class CounterAggregator(
     val name: String,
     val attributes: List<OtlpKeyValue>,
 ) {
     private var value: Long = 0L
-    private var startNanos: String = IdGenerator.nanosString()
+    private val startNanos: String = IdGenerator.nanosString()
 
     fun add(delta: Long = 1) {
         value += delta
     }
 
-    /** Returns the OTLP metric and resets the counter for the next interval. Null if no data. */
-    fun snapshotAndReset(nowNanos: String): OtlpMetric? {
+    /** Returns the OTLP metric with cumulative total. Null if no data recorded yet. */
+    fun snapshot(nowNanos: String): OtlpMetric? {
         if (value == 0L) return null
-        val snapshot = OtlpMetric(
+        return OtlpMetric(
             name = name,
             sum = OtlpSum(
                 dataPoints = listOf(
@@ -31,20 +32,17 @@ internal class CounterAggregator(
                         attributes = attributes,
                     )
                 ),
-                aggregationTemporality = 1, // DELTA
+                aggregationTemporality = 2, // CUMULATIVE
                 isMonotonic = true,
             )
         )
-        value = 0L
-        startNanos = nowNanos
-        return snapshot
     }
 }
 
 /**
  * Aggregates values into an explicit-bucket histogram.
  * Default bucket boundaries are tuned for HTTP latency in milliseconds.
- * Exported as OTLP Histogram with delta temporality.
+ * Exported as OTLP Histogram with cumulative temporality.
  */
 internal class HistogramAggregator(
     val name: String,
@@ -65,7 +63,7 @@ internal class HistogramAggregator(
     private var min: Double = Double.MAX_VALUE
     private var max: Double = -Double.MAX_VALUE
     private var bucketCounts = LongArray(bounds.size + 1) // +1 for overflow bucket
-    private var startNanos: String = IdGenerator.nanosString()
+    private val startNanos: String = IdGenerator.nanosString()
 
     fun record(value: Double) {
         count++
@@ -76,10 +74,10 @@ internal class HistogramAggregator(
         bucketCounts[idx]++
     }
 
-    /** Returns the OTLP metric and resets for the next interval. Null if no data. */
-    fun snapshotAndReset(nowNanos: String): OtlpMetric? {
+    /** Returns the OTLP metric with cumulative totals. Null if no data recorded yet. */
+    fun snapshot(nowNanos: String): OtlpMetric? {
         if (count == 0L) return null
-        val snapshot = OtlpMetric(
+        return OtlpMetric(
             name = name,
             unit = unit,
             histogram = OtlpHistogram(
@@ -96,15 +94,8 @@ internal class HistogramAggregator(
                         attributes = attributes,
                     )
                 ),
-                aggregationTemporality = 1, // DELTA
+                aggregationTemporality = 2, // CUMULATIVE
             )
         )
-        count = 0L
-        sum = 0.0
-        min = Double.MAX_VALUE
-        max = -Double.MAX_VALUE
-        bucketCounts = LongArray(bounds.size + 1)
-        startNanos = nowNanos
-        return snapshot
     }
 }

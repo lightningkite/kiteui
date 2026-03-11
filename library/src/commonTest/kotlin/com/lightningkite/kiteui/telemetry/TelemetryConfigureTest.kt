@@ -97,7 +97,7 @@ class TelemetryConfigureTest {
         ))
         Telemetry.counter("custom.count", 5)
         assertEquals(1, Telemetry.exporter!!.counters.size)
-        val snapshot = Telemetry.exporter!!.counters.values.single().snapshotAndReset(IdGenerator.nanosString())
+        val snapshot = Telemetry.exporter!!.counters.values.single().snapshot(IdGenerator.nanosString())
         assertEquals(5L, snapshot!!.sum!!.dataPoints.single().asInt)
     }
 

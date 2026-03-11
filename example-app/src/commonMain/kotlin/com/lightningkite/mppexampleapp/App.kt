@@ -24,6 +24,8 @@ val appTheme = Signal<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
     RViewHelper.leakDetection = true
+    // by Claude - configure telemetry early, before UI setup
+    configureTelemetry()
 //    return frame {
 //        this.forcedSafeInsets = Edges(100.dp)
 //        col {

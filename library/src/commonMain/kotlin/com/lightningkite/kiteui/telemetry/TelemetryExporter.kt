@@ -99,10 +99,10 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
         val now = IdGenerator.nanosString()
 
         for ((_, counter) in counters) {
-            counter.snapshotAndReset(now)?.let { metrics.add(it) }
+            counter.snapshot(now)?.let { metrics.add(it) }
         }
         for ((_, histogram) in histograms) {
-            histogram.snapshotAndReset(now)?.let { metrics.add(it) }
+            histogram.snapshot(now)?.let { metrics.add(it) }
         }
 
         if (metrics.isEmpty()) return
@@ -126,7 +126,7 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
         try {
             // by Claude - use suppressConnectivityIssues so telemetry export never triggers
             // the app's ConnectivityGate or retry UI
-            suppressConnectivityIssues {
+            val response = suppressConnectivityIssues {
                 fetch(
                     url = config.endpoint.trimEnd('/') + path,
                     method = HttpMethod.POST,
@@ -135,6 +135,10 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
                     ),
                     body = RequestBodyText(body, "application/json")
                 )
+            }
+            if (!response.ok) {
+                val responseBody = try { response.text() } catch (_: Exception) { "(unreadable)" }
+                LogRoot.tag("Telemetry").warn("Export rejected for $path: ${response.status} — $responseBody")
             }
         } catch (e: Exception) {
             // by Claude - telemetry export failure is silent; never crash the app for observability

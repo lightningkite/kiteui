@@ -23,25 +23,6 @@ interface Action: Reactive<Boolean> {
 
 operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
 
-//data class ExternalLinkAction(
-//    override val name: String,
-//    override val icon: Icon,
-//    val href: String,
-//    val newWindow: Boolean
-//): Action by (Action("Link", Icon.externalLink) {
-//    ExternalServices.openTab(href, newWindow)
-//})
-//
-//data class LinkAction(
-//    override val name: String,
-//    override val icon: Icon,
-//    val to: (() -> Page)? = null,
-//    val newTab: Boolean = false,
-//    val resetsStack: Boolean = false,
-//): Action by (Action("Link", Icon.externalLink) {
-//    TODO()
-//})
-
 fun Action(
     title: String,
     icon: Icon = Icon.send,
