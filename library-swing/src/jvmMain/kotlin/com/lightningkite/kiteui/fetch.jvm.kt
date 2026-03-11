@@ -332,8 +332,7 @@ actual fun FileReference.bytes(): Long = file.length()
 actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
 actual suspend fun FileReference.text(): String = file.readText()
 
-actual fun String.toBlob(contentType: String): Blob {
-    return Blob(toByteArray(Charsets.UTF_8), contentType)
-}
+actual fun String.toBlob(contentType: String): Blob = toByteArray(Charsets.UTF_8).toBlob(contentType)
+actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this, contentType)
 
 actual suspend fun Blob.toByteArray(): ByteArray = data

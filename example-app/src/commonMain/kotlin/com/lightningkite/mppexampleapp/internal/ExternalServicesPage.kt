@@ -152,7 +152,7 @@ object ExternalServicesPage : Page {
                             text { content = "CSV file" }
                             onClick {
                                 context.download(
-                                    "file.csv",
+                                    "kiteui_example.csv",
                                     """
                                 name,phone
                                 Joseph Ivie,8013693729
@@ -160,15 +160,14 @@ object ExternalServicesPage : Page {
                                 Brady Svedin,4632180951
                             """.trimIndent().toBlob("text/csv; charset=utf-8; header=present")
                                 )
-                                toast { text { content = "Check downloads for file example.txt" } }
+                                toast { text { content = "Check downloads for file kiteui_example.csv" } }
                             }
                         }
                         card.button {
                             onClick {
                                 try {
-                                    val blob = "Hello from KiteUI!".encodeToByteArray().toBlob("txt")
-                                    context.download("example.txt", blob)
-                                    toast { text { content = "Check downloads for file example.txt" } }
+                                    context.download("kiteui_example.txt", "Hello from KiteUI!".toBlob())
+                                    toast { text { content = "Check downloads for file kiteui_example.txt" } }
                                 } catch (e: Exception) {
                                     e.printStackTrace2()
                                 }
