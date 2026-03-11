@@ -29,16 +29,6 @@ val appTheme = Signal<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): Unit {
     RViewHelper.leakDetection = true
-    // by Claude - configure telemetry early, before UI setup
-    configureTelemetry()
-//    return frame {
-//        this.forcedSafeInsets = Edges(100.dp)
-//        col {
-//            text("A")
-//            text("B")
-//            text("C")
-//        }
-//    }
     return appNav(navigator, dialog) {
         appName = "KiteUI Sample App"
         ::navItems {
