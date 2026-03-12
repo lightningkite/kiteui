@@ -329,6 +329,17 @@ class DriverTest {
     }
 
     @Test
+    fun urlThrowsWithoutNavigator() = uiTest(
+        content = {
+            col { text { content = "Home" } }
+        }
+    ) {
+        assertFailsWith<DriverActionException>("URL without navigator should throw") {
+            url()
+        }
+    }
+
+    @Test
     fun backThrowsWithoutNavigator() = uiTest(
         content = {
             col { text { content = "Home" } }

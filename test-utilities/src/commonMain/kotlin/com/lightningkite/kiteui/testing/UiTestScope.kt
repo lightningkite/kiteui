@@ -71,6 +71,10 @@ class UiTestScope(val backend: UiTestBackend) {
     suspend fun navigate(route: String): String =
         backend.command(cmd("navigate", route))
 
+    /** Get the current page URL. */
+    suspend fun url(): String =
+        backend.command(cmd("url"))
+
     /** Go back in navigation. */
     suspend fun back(): String =
         backend.command(cmd("back", "back"))

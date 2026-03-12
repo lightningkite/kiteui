@@ -27,9 +27,10 @@ The AI Driver enables LLM-driven UI automation and programmatic testing of KiteU
 
 This installs:
 - `~/.kiteui/ai-driver/kiteui-ai-driver.jar` — the relay server
-- `~/.kiteui/bin/kiteui-drive` — the CLI wrapper script
+- `~/.kiteui/bin/kiteui-drive` — CLI wrapper script (macOS/Linux)
+- `~/.kiteui/bin/kiteui-drive.bat` — CLI wrapper script (Windows)
 
-Add `~/.kiteui/bin` to your `PATH`.
+Add `~/.kiteui/bin` to your `PATH` (or `%USERPROFILE%\.kiteui\bin` on Windows).
 
 ### 2. Connect your app
 
@@ -95,6 +96,7 @@ kiteui-drive <app> <path> scrollIntoView           # Scroll view into viewport
 kiteui-drive <app> root find "query"               # Find views by name/value/type/action
 kiteui-drive <app> <path> snapshot                 # Snapshot a single element subtree
 kiteui-drive <app> navigate /some/route            # Navigate to URL path
+kiteui-drive <app> url                             # Get current page URL
 kiteui-drive <app> back back                       # Go back in navigation
 kiteui-drive <app> logs 50                         # Get recent log entries
 
@@ -354,6 +356,7 @@ Requires: relay server running + app connected. Same `UiTestScope` API — tests
 | `getDragData(target)` | Get base64 drag data from view |
 | `drop(target, data)` | Drop base64 drag data onto view |
 | `navigate(route)` | Navigate to URL path |
+| `url()` | Get current page URL |
 | `back()` | Go back in navigation |
 | `find(query, target)` | Search for views by name/value/type/action |
 | `logs(count)` | Get recent log entries |
