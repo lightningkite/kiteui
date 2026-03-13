@@ -6,6 +6,52 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
+ * Structured result from a `find` or `findClickable` query.
+ * Fields are parsed from the driver's text output format.
+ */
+data class FindResult(
+    /** Driver path usable with click(), setValue(), etc. */
+    val path: String,
+    /** debugName or child index. */
+    val name: String,
+    /** View type name, e.g. "TextInput", "Button". */
+    val type: String,
+    /** driverValue if present, null otherwise. */
+    val value: String?,
+    /** Non-base actions available, e.g. {"click", "setValue"}. */
+    val actions: Set<String>,
+    /** Full unparsed line from the driver. */
+    val rawLine: String,
+)
+
+private val valuePattern = Regex(""" = "(.*)"""")
+private val actionsPattern = Regex("""\[(.+?)]$""")
+
+/**
+ * Parses a single line from `find` / `findClickable` output into a [FindResult].
+ * Format: `path: name: Type = "value" [action1, action2]`
+ */
+fun parseFindLine(line: String): FindResult? {
+    val colonIdx = line.indexOf(": ")
+    if (colonIdx < 0) return null
+    val path = line.substring(0, colonIdx)
+    val display = line.substring(colonIdx + 2)
+
+    val displayColonIdx = display.indexOf(": ")
+    if (displayColonIdx < 0) return null
+    val name = display.substring(0, displayColonIdx)
+    val rest = display.substring(displayColonIdx + 2)
+
+    val spaceIdx = rest.indexOf(' ')
+    val type = if (spaceIdx >= 0) rest.substring(0, spaceIdx) else rest
+
+    val value = valuePattern.find(rest)?.groupValues?.get(1)
+    val actions = actionsPattern.find(rest)?.groupValues?.get(1)?.split(", ")?.toSet() ?: emptySet()
+
+    return FindResult(path, name, type, value, actions, line)
+}
+
+/**
  * Test DSL built on text-based driver commands.
  * Provides typed wrappers for common operations like clicking, setting values, and asserting.
  *
@@ -51,10 +97,6 @@ class UiTestScope(val backend: UiTestBackend) {
     suspend fun submit(target: String): String =
         backend.command(cmd(target, "submit"))
 
-    /** Scroll a view by dx/dy pixels. */
-    suspend fun scroll(target: String, dx: Double = 0.0, dy: Double = 0.0): String =
-        backend.command(cmd(target, "scroll", dx.toString(), dy.toString()))
-
     /** Scroll a view into the visible area. */
     suspend fun scrollIntoView(target: String): String =
         backend.command(cmd(target, "scrollIntoView"))
@@ -82,6 +124,22 @@ class UiTestScope(val backend: UiTestBackend) {
     /** Search the view tree for views matching a query. */
     suspend fun find(query: String, target: String = "root"): String =
         backend.command(cmd(target, "find", query))
+
+    /** Search the view tree and return structured [FindResult]s. */
+    suspend fun findAll(query: String, target: String = "root"): List<FindResult> =
+        find(query, target).lines().filter { it.isNotBlank() }.mapNotNull { parseFindLine(it) }
+
+    /** Find the first view matching [query] that has the given [action]. */
+    suspend fun findWithAction(query: String, action: String, target: String = "root"): FindResult? =
+        findAll(query, target).firstOrNull { action in it.actions }
+
+    /**
+     * Find views matching [query] and walk each up to the nearest clickable ancestor.
+     * Returns deduplicated clickable views. Useful when `find("Login")` matches a Text
+     * inside a Button — this returns the Button's path directly.
+     */
+    suspend fun findClickable(query: String, target: String = "root"): List<FindResult> =
+        backend.command(cmd(target, "findClickable", query)).lines().filter { it.isNotBlank() }.mapNotNull { parseFindLine(it) }
 
     /** Get recent log entries. */
     suspend fun logs(count: Int = 50): String =
@@ -191,6 +249,30 @@ class UiTestScope(val backend: UiTestBackend) {
     suspend fun waitForText(text: String, target: String = "root", timeoutMs: Long = 5000) {
         waitFor(timeoutMs, description = "text '$text' in $target") {
             snapshot(target).contains(text)
+        }
+    }
+
+    /** Wait until a view with the given [id] (debugName) exists and is reachable. */
+    suspend fun waitForId(id: String, timeoutMs: Long = 5000) {
+        waitFor(timeoutMs, description = "view '$id' to exist") {
+            try { snapshot(id); true } catch (_: DriverActionException) { false }
+        }
+    }
+
+    /** Assert that text appears somewhere in the snapshot of [target]. */
+    suspend fun assertTextVisible(text: String, target: String = "root") {
+        val snap = snapshot(target)
+        if (!snap.contains(text)) {
+            throw AssertionError("Expected text '$text' visible in '$target' but snapshot:\n$snap")
+        }
+    }
+
+    /** Assert that a view with the given [id] (debugName) exists. */
+    suspend fun assertIdExists(id: String) {
+        try {
+            snapshot(id)
+        } catch (e: DriverActionException) {
+            throw AssertionError("Expected view '$id' to exist but it was not found", e)
         }
     }
 }

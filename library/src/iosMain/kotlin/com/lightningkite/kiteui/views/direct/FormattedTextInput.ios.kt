@@ -98,8 +98,11 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             get() = (textField.text ?: "").filter(isRawData)
             set(value) {
                 val formatted = formatter(value.filter(isRawData))
-                if (textField.text != formatted)
+                if (textField.text != formatted) {
                     textField.text = formatted
+                    // fire change event so reactive listeners are notified on programmatic updates
+                    textField.sendActionsForControlEvents(UIControlEventEditingChanged)
+                }
             }
 
         override fun addListener(listener: () -> Unit): () -> Unit {

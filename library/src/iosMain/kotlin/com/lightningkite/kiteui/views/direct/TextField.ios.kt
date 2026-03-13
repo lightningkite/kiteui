@@ -137,6 +137,8 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
             set(value) {
                 if (textField.text == value) return
                 textField.text = value
+                // fire change event so reactive listeners are notified on programmatic updates
+                textField.sendActionsForControlEvents(UIControlEventEditingChanged)
             }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()

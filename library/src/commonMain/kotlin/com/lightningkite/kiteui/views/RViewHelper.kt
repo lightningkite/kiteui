@@ -700,6 +700,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         put("snapshot") { args -> (this@RViewHelper as RView).driverSnapshot(parseSnapshotOptions(args.toTypedArray())) }
         put("screenshot") { (this@RViewHelper as RView).driverScreenshot() }
         put("find") { args -> (this@RViewHelper as RView).driverFind(args.firstOrNull() ?: "") }
+        put("findClickable") { args -> (this@RViewHelper as RView).driverFindClickable(args.firstOrNull() ?: "") }
 //        put("scroll") { args ->
 //            // TODO: This looks wrong: in JS, the scrolling behaviors are just attached to an existing view in a way this wouldn't pick up
 //            val dx = args.getOrNull(0)?.toDoubleOrNull() ?: 0.0
@@ -759,7 +760,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         if (name != null) {
             append("$name: ")
         } else {
-            val idx = parent?.driverChildren?.indexOf(this@RViewHelper as RView) ?: 0
+            val idx = parent?.driverChildren?.indexOf(this@RViewHelper as RView)?.takeIf { it >= 0 } ?: 0
             append("$idx: ")
         }
         if (options.includeThemes) {
@@ -770,7 +771,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         htmlElementTag?.let { append(" ($it)") }
         if (!shown) append(" (hidden)")
         else if (!visible) append(" (invisible)")
-        driverActions.keys.filter { it != "snapshot" && it != "screenshot" && it != "find" && it != "scroll" && it != "scrollIntoView" && it != "getAlignment" }.takeUnless { it.isEmpty() }?.let {
+        driverActions.keys.filter { it != "snapshot" && it != "screenshot" && it != "find" && it != "findClickable" && it != "scrollIntoView" && it != "getAlignment" }.takeUnless { it.isEmpty() }?.let {
             append(" [${it.joinToString(", ")}]")
         }
     }

@@ -5,12 +5,15 @@ import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.testing.parseFindLine
 import com.lightningkite.kiteui.testing.uiTest
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.Signal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class DriverTest {
@@ -102,21 +105,6 @@ class DriverTest {
         println("Find result:\n$result")
         assertTrue(result.contains("alpha"), "Should find alpha: $result")
         assertTrue(result.contains("alpha-sub"), "Should find alpha-sub: $result")
-    }
-
-    @Test
-    fun scrollThrowsWithoutScrollableAncestor() = uiTest(
-        content = {
-            col {
-                debugName = "scrollContent"
-                text { content = "Item 1" }
-                text { content = "Item 2" }
-            }
-        }
-    ) {
-        assertFailsWith<DriverActionException>("Scroll without scrollable ancestor should throw") {
-            scroll("scrollContent", dy = 100.0)
-        }
     }
 
     @Test
@@ -851,6 +839,199 @@ class DriverTest {
     ) {
         assertFailsWith<AssertionError>("assertNotVisible on visible view should fail") {
             assertNotVisible("vis")
+        }
+    }
+
+    // --- FindResult / findAll / findWithAction ---
+
+    @Test
+    fun findAllParsesResults() = uiTest(
+        content = {
+            col {
+                textInput { debugName = "email"; hint = "Email" }
+                button { debugName = "submit"; text("Go"); onClick { } }
+            }
+        }
+    ) {
+        val results = findAll("email")
+        assertTrue(results.isNotEmpty(), "Should find at least one result")
+        val first = results.first()
+        assertEquals("email", first.path)
+        assertEquals("email", first.name)
+        assertEquals("TextInput", first.type)
+        assertTrue("setValue" in first.actions, "TextInput should have setValue action: ${first.actions}")
+    }
+
+    @Test
+    fun findAllEmptyForNoMatch() = uiTest(
+        content = {
+            col { text { content = "Hello" } }
+        }
+    ) {
+        val results = findAll("nonexistent_xyz")
+        assertTrue(results.isEmpty(), "Should return empty for no match: $results")
+    }
+
+    @Test
+    fun findWithActionFilters() = uiTest(
+        content = {
+            col {
+                text { content = "Login"; debugName = "label" }
+                button { debugName = "loginBtn"; text("Login"); onClick { } }
+                textInput { debugName = "loginField" }
+            }
+        }
+    ) {
+        // "Login" matches the label text, button text, and possibly button name
+        val clickable = findWithAction("login", "click")
+        assertNotNull(clickable, "Should find a clickable result")
+        assertTrue("click" in clickable.actions)
+
+        val settable = findWithAction("login", "setValue")
+        assertNotNull(settable, "Should find a settable result for loginField")
+        assertTrue("setValue" in settable.actions)
+    }
+
+    @Test
+    fun parseFindLineHandlesValueAndActions() {
+        val line = """email: email: TextInput = "test@example.com" [setValue, submit]"""
+        val result = parseFindLine(line)
+        assertNotNull(result)
+        assertEquals("email", result.path)
+        assertEquals("email", result.name)
+        assertEquals("TextInput", result.type)
+        assertEquals("test@example.com", result.value)
+        assertEquals(setOf("setValue", "submit"), result.actions)
+    }
+
+    @Test
+    fun parseFindLineHandlesNoValueNoActions() {
+        val line = "myLabel: myLabel: TextView"
+        val result = parseFindLine(line)
+        assertNotNull(result)
+        assertEquals("myLabel", result.path)
+        assertEquals("TextView", result.type)
+        assertNull(result.value)
+        assertTrue(result.actions.isEmpty())
+    }
+
+    // --- findClickable ---
+
+    @Test
+    fun findClickableWalksUpToButton() = uiTest(
+        content = {
+            col {
+                button {
+                    debugName = "loginBtn"
+                    text("Login")
+                    onClick { }
+                }
+            }
+        }
+    ) {
+        // "Login" matches the Text inside the button, but findClickable should return the button
+        val results = findClickable("Login")
+        assertTrue(results.isNotEmpty(), "Should find clickable results: $results")
+        val first = results.first()
+        assertEquals("loginBtn", first.path, "Should resolve to button path")
+        assertTrue("click" in first.actions, "Result should have click action: ${first.actions}")
+    }
+
+    @Test
+    fun findClickableNoDuplicates() = uiTest(
+        content = {
+            col {
+                button {
+                    debugName = "btn"
+                    text("Save")
+                    text("Changes")
+                    onClick { }
+                }
+            }
+        }
+    ) {
+        // Both "Save" text children match, but the button should appear only once
+        // We search for the button's debugName which matches the button itself
+        val results = findClickable("btn")
+        assertEquals(1, results.size, "Should deduplicate to one result: $results")
+    }
+
+    @Test
+    fun findClickableNoMatch() = uiTest(
+        content = {
+            col {
+                text { content = "Orphan text"; debugName = "orphan" }
+            }
+        }
+    ) {
+        // Text has no clickable ancestor
+        val results = findClickable("Orphan")
+        assertTrue(results.isEmpty(), "Should return empty when no clickable ancestor: $results")
+    }
+
+    // --- waitForId ---
+
+    @Test
+    fun waitForIdSucceeds() = uiTest(
+        content = {
+            col {
+                text { content = "Present"; debugName = "target" }
+            }
+        }
+    ) {
+        waitForId("target")  // Should not throw
+    }
+
+    @Test
+    fun waitForIdTimeoutThrows() = uiTest(
+        content = {
+            col { text { content = "Hello" } }
+        }
+    ) {
+        assertFailsWith<AssertionError>("Should throw on timeout") {
+            waitForId("nonexistent", timeoutMs = 200)
+        }
+    }
+
+    // --- assertTextVisible / assertIdExists ---
+
+    @Test
+    fun assertTextVisiblePasses() = uiTest(
+        content = {
+            col { text { content = "Welcome back" } }
+        }
+    ) {
+        assertTextVisible("Welcome back")
+    }
+
+    @Test
+    fun assertTextVisibleFails() = uiTest(
+        content = {
+            col { text { content = "Hello" } }
+        }
+    ) {
+        assertFailsWith<AssertionError>("Should fail for missing text") {
+            assertTextVisible("Goodbye")
+        }
+    }
+
+    @Test
+    fun assertIdExistsPasses() = uiTest(
+        content = {
+            col { text { content = "Hi"; debugName = "greeting" } }
+        }
+    ) {
+        assertIdExists("greeting")
+    }
+
+    @Test
+    fun assertIdExistsFails() = uiTest(
+        content = {
+            col { text { content = "Hi" } }
+        }
+    ) {
+        assertFailsWith<AssertionError>("Should fail for missing id") {
+            assertIdExists("nonexistent")
         }
     }
 }

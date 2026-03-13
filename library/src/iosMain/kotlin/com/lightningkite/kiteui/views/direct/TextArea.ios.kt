@@ -99,8 +99,11 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         override var value: String
             get() = textField.text
             set(value) {
-                if(textField.text != value)
+                if(textField.text != value) {
                     textField.text = value
+                    // fire change event so reactive listeners are notified on programmatic updates
+                    delegate.listeners.invokeAllSafe()
+                }
             }
         override fun addListener(listener: () -> Unit): () -> Unit {
             delegate.listeners.add(listener)

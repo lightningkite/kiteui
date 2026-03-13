@@ -56,7 +56,11 @@ object AiDriver {
                     val response = handleCommand(message.trim(), rootView(), navigator())
                     ws.send(response)
                 } catch (e: Exception) {
-                    ws.send("ERROR: ${e::class.simpleName}: ${e.message}")
+                    try {
+                        ws.send("ERROR: ${e::class.simpleName}: ${e.message}")
+                    } catch (_: Exception) {
+                        // WebSocket may already be disconnected; nothing we can do.
+                    }
                 }
             }
         }

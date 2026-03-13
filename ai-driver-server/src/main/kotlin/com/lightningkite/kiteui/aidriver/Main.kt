@@ -50,11 +50,13 @@ class AppConnection(
     val mutex = Mutex()
     suspend fun sendCommand(command: String): String {
         val deferred = CompletableDeferred<String>()
-        mutex.withLock {
+        // Hold the mutex for the entire send+await cycle so concurrent callers
+        // are serialized and cannot overwrite `pending` before we receive our response.
+        return mutex.withLock {
             pending = deferred
             send(WebSocketFrame.Text(command))
+            withTimeout(30_000) { deferred.await() }
         }
-        return withTimeout(30_000) { deferred.await() }
     }
 }
 
@@ -117,7 +119,7 @@ internal suspend fun executeDrive(args: McpDriveParams): McpToolResult {
     driveMutex.withLock {
         for (parts in args.commands) {
             if (parts.firstOrNull() == "delay") {
-                val ms = parts.getOrNull(1)?.toLongOrNull() ?: 0L
+                val ms = (parts.getOrNull(1)?.toLongOrNull() ?: 0L).coerceIn(0, 30_000)
                 delay(ms)
                 continue
             }
@@ -205,13 +207,13 @@ Actions:
   snapshot [--interactive] [--hidden] [--themes]  — tree of view hierarchy
   screenshot                                       — base64 PNG
   find <text>                                      — find view by text content
+  findClickable <text>                             — find clickable ancestors of matching views
   click                                            — click/tap a view
   longClick                                        — long press a view
   setValue <value>                                  — set text input value
   toggle                                           — toggle checkbox/switch
   select <option>                                   — select dropdown option
   submit                                            — submit a form
-  scroll <dx> <dy>                                  — scroll by pixels
   scrollIntoView                                    — scroll view into visible area
   getDragData                                       — get drag data from a view
   drop <base64data>                                 — drop drag data on a view
@@ -334,6 +336,9 @@ internal object AppWebSocketHandler : WebSocketHandler<PathSpec0, Unit>,
         send: suspend (WebSocketFrame) -> Unit,
         close: suspend (WebSocketClose) -> Unit
     ) {
+        // Identity is self-declared via query params. This is safe because the server
+        // binds to 127.0.0.1 only — no remote access. The random 3-letter postfix in
+        // AiDriver.connect() avoids accidental collisions between app instances.
         val params = request.queryParameters
         val appName = params["app"] ?: "unknown"
         val platform = params["platform"] ?: "unknown"
