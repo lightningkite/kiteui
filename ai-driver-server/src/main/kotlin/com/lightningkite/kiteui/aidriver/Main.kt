@@ -358,10 +358,8 @@ internal object AppWebSocketHandler : WebSocketHandler<PathSpec0, Unit>,
         try {
             incoming.consumeEach { frame ->
                 if (frame is WebSocketFrame.Text && frame.content.isNotBlank()) {
-                    conn.mutex.withLock {
-                        conn.pending?.complete(frame.content)
-                        conn.pending = null
-                    }
+                    conn.pending?.complete(frame.content)
+                    conn.pending = null
                 }
             }
         } finally {
