@@ -404,7 +404,7 @@ fun startAdbReverse(port: Int) {
                 val process = ProcessBuilder("adb", "devices")
                     .redirectErrorStream(true)
                     .start()
-                val output = process.inputStream.bufferedReader().readText()
+                val output = process.inputStream.use { it.bufferedReader().readText() }
                 process.waitFor()
                 val serials = output.lines()
                     .drop(1)
