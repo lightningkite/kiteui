@@ -134,4 +134,69 @@ class TelemetryConfigureTest {
         assertNotNull(sessionAttr)
         assertEquals(t.sessionId, sessionAttr.value.stringValue)
     }
+
+    // --- Crash fingerprint and severity ---
+
+    @Test
+    fun recordExceptionDefaultsToErrorSeverity() {
+        val t = Telemetry(testConfig())
+        t.recordException(RuntimeException("err"), "ctx")
+
+        val record = t.exporter.logBuffer.single()
+        assertEquals(OtlpSeverity.ERROR.number, record.severityNumber)
+        assertEquals(OtlpSeverity.ERROR.text, record.severityText)
+    }
+
+    @Test
+    fun recordExceptionAcceptsFatalSeverity() {
+        val t = Telemetry(testConfig())
+        t.recordException(RuntimeException("crash"), "uncaught", OtlpSeverity.FATAL)
+
+        val record = t.exporter.logBuffer.single()
+        assertEquals(OtlpSeverity.FATAL.number, record.severityNumber)
+        assertEquals(OtlpSeverity.FATAL.text, record.severityText)
+    }
+
+    @Test
+    fun recordExceptionIncludesCrashFingerprint() {
+        val t = Telemetry(testConfig())
+        val ex = IllegalStateException("fingerprint test")
+        t.recordException(ex, "ctx")
+
+        val record = t.exporter.logBuffer.single()
+        val fpAttr = record.attributes.find { it.key == "crash.fingerprint" }
+        assertNotNull(fpAttr, "Should have crash.fingerprint attribute")
+
+        val fp = fpAttr.value.stringValue!!
+        assertEquals(16, fp.length, "Fingerprint should be 16 hex chars: $fp")
+        assertTrue(Regex("^[0-9a-f]+$").matches(fp), "Fingerprint should be hex: $fp")
+        assertEquals(CrashFingerprint.generate(ex), fp, "Fingerprint should match CrashFingerprint.generate()")
+    }
+
+    @Test
+    fun recordExceptionIncludesStacktraceAttribute() {
+        val t = Telemetry(testConfig())
+        val ex = RuntimeException("stacktrace test")
+        t.recordException(ex, "ctx")
+
+        val record = t.exporter.logBuffer.single()
+        val stAttr = record.attributes.find { it.key == "exception.stacktrace" }
+        assertNotNull(stAttr, "Should have exception.stacktrace attribute")
+        assertTrue(stAttr.value.stringValue!!.contains("stacktrace test"),
+            "Stacktrace attribute should contain exception message")
+    }
+
+    @Test
+    fun sameExceptionProducesSameFingerprintAcrossCalls() {
+        val t = Telemetry(testConfig())
+        val ex = IllegalArgumentException("consistent")
+        t.recordException(ex, "call1")
+        t.recordException(ex, "call2")
+
+        val records = t.exporter.logBuffer
+        assertEquals(2, records.size)
+        val fp1 = records[0].attributes.find { it.key == "crash.fingerprint" }!!.value.stringValue
+        val fp2 = records[1].attributes.find { it.key == "crash.fingerprint" }!!.value.stringValue
+        assertEquals(fp1, fp2, "Same exception should produce same fingerprint")
+    }
 }

@@ -29,7 +29,8 @@ When configured, KiteUI automatically tracks:
 | **Metrics** | `connectivity.issues` | Counter of connectivity failures by status code. |
 | **Metrics** | `app.foreground_count` | Counter of foreground transitions. |
 | **Logs** | Warn/Error logs | All `Log.warn()` and `Log.error()` calls, with tag and session ID. |
-| **Logs** | Exception reports | Full stack traces from `Throwable.report()`, with exception type and context. |
+| **Logs** | Exception reports | Full stack traces from `Throwable.report()`, with exception type, context, and crash fingerprint. |
+| **Logs** | Uncaught exceptions | FATAL-severity log with crash fingerprint, flushed before process death. |
 | **Headers** | `traceparent` | W3C trace context injected into all HTTP requests for end-to-end correlation with server traces. |
 
 ### Trace Context Propagation
@@ -186,6 +187,56 @@ Telemetry.configure(endpoint = "https://your-backend.com/otlp")
 
 Your backend forwards to Grafana Cloud with the real credentials. Android and iOS apps can send directly.
 
+## Crash Tracking
+
+Uncaught exceptions are automatically captured at `FATAL` severity with a best-effort flush before the process dies. Each crash includes a `crash.fingerprint` attribute for grouping identical crashes in Grafana.
+
+### How Fingerprinting Works
+
+Stack traces are normalized before hashing to produce stable fingerprints across builds:
+
+1. **Line numbers stripped** — `Foo.kt:42` becomes `Foo.kt:?`
+2. **Memory addresses stripped** — `0x1a2b3c` becomes `0x???`
+3. **Identity hashes stripped** — `@deadbeef` becomes `@???`
+4. **Top 10 frames** — limits sensitivity to deep call stack variation
+5. **FNV-1a 64-bit hash** — exception type + normalized stack → 16 hex chars
+
+The same logical crash produces the same fingerprint even when line numbers shift between releases.
+
+### Platform Hooks
+
+| Platform | Hook | Limitation |
+|----------|------|------------|
+| **Android** | `Thread.setDefaultUncaughtExceptionHandler` | Chains to previous handler |
+| **iOS** | `kotlin.native.setUnhandledExceptionHook` | Only catches Kotlin exceptions, not ObjC/Swift crashes |
+| **JS/Web** | `window.error` + `window.unhandledrejection` | Page stays alive; async flush |
+| **JVM** | `Thread.setDefaultUncaughtExceptionHandler` | Chains to previous handler |
+
+### Attributes on Exception Logs
+
+All exception log records (both caught ERROR and uncaught FATAL) include:
+
+| Attribute | Description |
+|-----------|-------------|
+| `exception.type` | Exception class name |
+| `exception.message` | Exception message |
+| `exception.stacktrace` | Full stack trace (OTel semantic convention) |
+| `exception.context` | Reporting context (e.g., "uncaught") |
+| `crash.fingerprint` | 16-char hex fingerprint for grouping |
+| `session.id` | Session identifier |
+
+### Grafana Alert Example
+
+Alert on new crash types using Loki:
+
+```
+sum by (crash_fingerprint, service_name) (
+  count_over_time({severity="FATAL"} | json | crash_fingerprint != "" [5m])
+)
+```
+
+Group alerts by `crash.fingerprint` and route to Grafana IRM for incident management.
+
 ## Architecture
 
 ```
@@ -198,7 +249,12 @@ library/src/commonMain/kotlin/com/lightningkite/kiteui/telemetry/
 ├── TelemetryLog.kt           # Log interceptor (decorator pattern)
 ├── TelemetryNavigation.kt    # Page view tracking
 ├── TelemetryLifecycle.kt     # App lifecycle tracking
-└── TelemetryMetrics.kt       # Counter + histogram aggregators
+├── TelemetryMetrics.kt       # Counter + histogram aggregators
+├── CrashFingerprint.kt       # Stack trace normalization + FNV-1a hashing
+└── TelemetryCrashHook.kt     # expect declarations for platform crash hooks
+
+library/src/{android,ios,js,jvmSsr}Main/.../telemetry/
+└── TelemetryCrashHook.*.kt   # Platform-specific crash hook actuals
 ```
 
 ### Integration Points

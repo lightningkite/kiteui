@@ -19,9 +19,46 @@ import json
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
+from urllib.parse import unquote
 
-UPSTREAM = os.environ.get("OTLP_UPSTREAM", "").rstrip("/")
-AUTH = os.environ.get("OTLP_AUTH", "")
+
+def load_dotenv(path):
+    """Load key=value pairs from a .env file into os.environ."""
+    try:
+        with open(path) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                key, _, value = line.partition("=")
+                os.environ.setdefault(key.strip(), value.strip().strip('"'))
+    except FileNotFoundError:
+        pass
+
+
+def parse_otel_headers(raw):
+    """Parse OTEL_EXPORTER_OTLP_HEADERS format: 'key1=val1,key2=val2' (URL-encoded)."""
+    headers = {}
+    if not raw:
+        return headers
+    for pair in raw.split(","):
+        k, _, v = pair.partition("=")
+        headers[unquote(k.strip())] = unquote(v.strip())
+    return headers
+
+
+# Load .env from project root (one level up from tools/)
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+
+# Support both custom env vars and standard OTEL env vars
+UPSTREAM = (
+    os.environ.get("OTLP_UPSTREAM")
+    or os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT", "")
+).rstrip("/")
+
+# Parse headers: custom OTLP_AUTH or standard OTEL_EXPORTER_OTLP_HEADERS
+_otel_headers = parse_otel_headers(os.environ.get("OTEL_EXPORTER_OTLP_HEADERS", ""))
+AUTH = os.environ.get("OTLP_AUTH") or _otel_headers.get("Authorization", "")
 PORT = int(os.environ.get("OTLP_PROXY_PORT", "8099"))
 
 VALID_SIGNALS = {"/v1/traces", "/v1/metrics", "/v1/logs"}

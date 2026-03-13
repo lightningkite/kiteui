@@ -141,6 +141,12 @@ class Telemetry(val config: TelemetryConfig) {
             }
         }
 
+        // Crash hook — capture uncaught exceptions at FATAL severity and flush before death
+        installCrashHook { throwable ->
+            recordException(throwable, "uncaught", OtlpSeverity.FATAL)
+            blockingFlush(exporter)
+        }
+
         // Start the background flush loop
         exporter.startFlushLoop()
 
@@ -320,16 +326,22 @@ class Telemetry(val config: TelemetryConfig) {
         previousThrowableReport?.let { Throwable_report = it }
     }
 
-    internal fun recordException(throwable: Throwable, context: String) {
+    internal fun recordException(
+        throwable: Throwable,
+        context: String,
+        severity: OtlpSeverity = OtlpSeverity.ERROR,
+    ) {
         exporter.addLog(
             OtlpLogRecord(
                 timeUnixNano = nanosString(),
-                severityNumber = OtlpSeverity.ERROR.number,
-                severityText = OtlpSeverity.ERROR.text,
+                severityNumber = severity.number,
+                severityText = severity.text,
                 body = OtlpAnyValue(stringValue = throwable.stackTraceToString()),
                 attributes = buildList {
                     add(OtlpKeyValue("exception.type", OtlpAnyValue(stringValue = throwable::class.simpleName ?: "Unknown")))
                     add(OtlpKeyValue("exception.message", OtlpAnyValue(stringValue = throwable.message ?: "")))
+                    add(OtlpKeyValue("exception.stacktrace", OtlpAnyValue(stringValue = throwable.stackTraceToString())))
+                    add(OtlpKeyValue("crash.fingerprint", OtlpAnyValue(stringValue = CrashFingerprint.generate(throwable))))
                     if (context.isNotEmpty()) {
                         add(OtlpKeyValue("exception.context", OtlpAnyValue(stringValue = context)))
                     }
