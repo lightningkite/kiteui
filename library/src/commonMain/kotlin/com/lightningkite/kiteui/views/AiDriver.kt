@@ -43,7 +43,7 @@ object AiDriver {
         )
 
         ws.onOpen {
-            log.info("Connected to driver server at $host:$port as $appName-$platform")
+            log.info("Connected to driver server at $host:$port as $appName-$platform-$postfix")
         }
         ws.onClose {
             log.info("Driver server disconnected")
@@ -52,6 +52,7 @@ object AiDriver {
         ws.onMessage { message ->
             AppScope.launch {
                 try {
+                    log.info("Got command $message")
                     val response = handleCommand(message.trim(), rootView(), navigator())
                     ws.send(response)
                 } catch (e: Exception) {

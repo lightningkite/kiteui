@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform).apply(false)
     kotlin("jvm")
+    alias(libs.plugins.kotlinPluginSerialization)
     application
 }
 
@@ -8,13 +9,19 @@ application {
     mainClass.set("com.lightningkite.kiteui.aidriver.MainKt")
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xcontext-parameters")
+        optIn.addAll("kotlin.time.ExperimentalTime")
+    }
+}
+
 dependencies {
-    implementation(libs.ktorServerCore)
+    implementation(libs.lightningServerCore)
+    implementation(libs.lightningServerEngineKtor)
+    implementation(libs.lightningServerTyped)
     implementation(libs.ktorServerNetty)
-    implementation(libs.ktorServerWebsockets)
     testImplementation(kotlin("test"))
-    testImplementation(libs.ktorClientCio)
-    testImplementation(libs.ktorClientWebsockets)
 }
 
 // Fat JAR task using Gradle's built-in Jar
