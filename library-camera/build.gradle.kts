@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidLibrary)
     signing
-    alias(libs.plugins.vannitechPublishing)
+//    alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
 }
 
@@ -95,6 +95,6 @@ android {
     }
 }
 
-lkLibrary("lightningkite", "kiteui-camera") {
-    description.set("KiteUI Camera and Barcode Scanning Support")
-}
+//lkLibrary("lightningkite", "kiteui-camera") {
+//    description.set("KiteUI Camera and Barcode Scanning Support")
+//}

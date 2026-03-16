@@ -50,6 +50,7 @@ kotlin {
 //    explicitApi = ExplicitApiMode.Warning
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
+        freeCompilerArgs.add("-Xcontext-parameters")
         optIn.add("kotlinx.cinterop.BetaInteropApi")
         optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
         optIn.add("kotlin.time.ExperimentalTime")
@@ -94,6 +95,7 @@ kotlin {
                 api(libs.media3Ui)
                 api(libs.media3Common)
                 api(libs.androidxAutofill)
+                api(libs.exifinterface)
             }
         }
         val androidUnitTest by getting {
@@ -127,6 +129,9 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
+            dependencies {
+                implementation(npm("modern-screenshot", "4.4.39"))
+            }
         }
     }
 
