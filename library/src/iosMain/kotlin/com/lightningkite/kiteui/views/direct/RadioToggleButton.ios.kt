@@ -10,6 +10,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = radioToggleDriverValue()
+    override val driverActions get() = super.driverActions + radioToggleDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
     actual inline var enabled: Boolean
         get() = native.enabled

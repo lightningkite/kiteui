@@ -13,6 +13,8 @@ import com.lightningkite.readable.*
 
 
 actual class ToggleButton actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = toggleDriverValue()
+    override val driverActions get() = super.driverActions + toggleDriverActions()
     val input = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"

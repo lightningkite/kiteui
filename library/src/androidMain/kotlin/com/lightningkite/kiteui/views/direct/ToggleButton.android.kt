@@ -11,6 +11,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class ToggleButton actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = toggleDriverValue()
+    override val driverActions get() = super.driverActions + toggleDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener { checkedProp.value = !checkedProp.value }

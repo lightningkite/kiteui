@@ -16,6 +16,8 @@ import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
 
 actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = localTimeDriverValue()
+    override val driverActions get() = super.driverActions + localTimeDriverActions()
     private val spinner = JSpinner()
     override val native = spinner
 

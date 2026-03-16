@@ -17,6 +17,8 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
 actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = autoCompleteDriverValue()
+    override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     override val native = JTextField()
 
     private var updatingFromSignal = false

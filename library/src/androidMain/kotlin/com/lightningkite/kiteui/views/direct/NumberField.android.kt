@@ -28,6 +28,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = numberInputDriverValue()
+    override val driverActions get() = super.driverActions + numberInputDriverActions()
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->

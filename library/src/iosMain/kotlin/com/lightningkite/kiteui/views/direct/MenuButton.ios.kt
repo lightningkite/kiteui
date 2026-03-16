@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.context.*
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
+    override val driverActions get() = super.driverActions + menuDriverActions()
     override val native = FrameLayoutButton()
 
     actual fun opensMenu(createMenu: Frame.() -> Unit) {

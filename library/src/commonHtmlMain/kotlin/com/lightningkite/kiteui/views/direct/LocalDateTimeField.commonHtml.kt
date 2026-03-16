@@ -14,6 +14,8 @@ import com.lightningkite.readable.*
 import kotlinx.datetime.*
 
 actual class LocalDateTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = localDateTimeDriverValue()
+    override val driverActions get() = super.driverActions + localDateTimeDriverActions()
     companion object {
         val charCount = "2024-06-01T08:30".length
     }
@@ -76,6 +78,8 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
 
 
 actual class LocalDateField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = localDateDriverValue()
+    override val driverActions get() = super.driverActions + localDateDriverActions()
     companion object {
         val charCount = "2024-06-01".length
     }
@@ -139,6 +143,8 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
 }
 
 actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = localTimeDriverValue()
+    override val driverActions get() = super.driverActions + localTimeDriverActions()
     companion object {
         val charCount = "08:30".length
     }
