@@ -18,6 +18,8 @@ import javax.swing.SwingUtilities
 import javax.swing.text.JTextComponent
 
 actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = formattedTextInputDriverValue()
+    override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
     private var textField: JTextComponent = JTextField()
     override val native: JTextComponent
         get() = textField

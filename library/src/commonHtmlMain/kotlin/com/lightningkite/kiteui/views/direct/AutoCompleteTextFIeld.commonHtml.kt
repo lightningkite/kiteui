@@ -12,6 +12,8 @@ import com.lightningkite.readable.*
 
 
 actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = autoCompleteDriverValue()
+    override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")

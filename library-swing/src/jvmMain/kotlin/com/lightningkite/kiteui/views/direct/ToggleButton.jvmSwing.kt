@@ -10,6 +10,8 @@ import javax.swing.BorderFactory
 import javax.swing.JToggleButton
 
 actual class ToggleButton actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = toggleDriverValue()
+    override val driverActions get() = super.driverActions + toggleDriverActions()
     override val native = JToggleButton()
 
     actual val checked: MutableReactiveValue<Boolean> = Signal(false).also { signal ->

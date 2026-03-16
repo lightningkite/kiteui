@@ -1,5 +1,8 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.current
+import com.lightningkite.kiteui.isDevelopment
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.*
@@ -29,26 +32,36 @@ val appTheme = Signal<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): Unit {
     RViewHelper.leakDetection = true
-    return appNav(navigator, dialog) {
-        appName = "KiteUI Sample App"
-        ::navItems {
-            listOf(
-                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
-                NavLink(title = { "Test Pages" }, icon = { Icon.home }) { { RootPage } },
+    val rootView = produceOne {
+        appNav(navigator, dialog) {
+            appName = "KiteUI Sample App"
+            ::navItems {
+                listOf(
+                    NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
+                    NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
+                    NavLink(title = { "Test Pages" }, icon = { Icon.home }) { { RootPage } },
+                )
+            }
+
+            ::exists {
+                navigator.currentPage() !is UseFullPage
+            }
+
+            actions = listOf(
+                NavLink(
+                    title = { "Search" },
+                    icon = { Icon.search },
+                    destination = { { DocSearchPage } }
+                ),
             )
         }
+    }
 
-        ::exists {
-            navigator.currentPage() !is UseFullPage
-        }
-
-        actions = listOf(
-            NavLink(
-                title = { "Search" },
-                icon = { Icon.search },
-                destination = { { DocSearchPage } }
-            ),
+    if (Platform.isDevelopment) {
+        AiDriver.connect(
+            appName = "example",
+            rootView = { rootView },
+            navigator = { navigator },
         )
     }
 }

@@ -34,6 +34,7 @@ transition = "1.6.0"
 vannitechPublishing = "0.34.0"
 dokka = "2.1.0"
 uriEncoding = "0.0.1-6"
+lightningServer = "5.0.0-prerelease-350"
 
 
 [libraries]
@@ -67,6 +68,7 @@ ktorClientWebsockets = { module = "io.ktor:ktor-client-websockets", version = { 
 ktorServerCore = { module = "io.ktor:ktor-server-core", version = { ref = "ktorVersion" } }
 ktorServerNetty = { module = "io.ktor:ktor-server-netty", version = { ref = "ktorVersion" } }
 ktorServerHtmlBuilder = { module = "io.ktor:ktor-server-html-builder", version = { ref = "ktorVersion" } }
+ktorServerWebsockets = { module = "io.ktor:ktor-server-websockets", version = { ref = "ktorVersion" } }
 ktx = { module = "androidx.core:core", version = { ref = "ktx" } }
 lkGradleHelpers = { module = "com.lightningkite:lk-gradle-helpers", version = { ref = "lkGradleHelpers" } }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
@@ -81,6 +83,9 @@ swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout"
 timber = { module = "com.jakewharton.timber:timber", version = { ref = "timber" } }
 transition = { module = "androidx.transition:transition", version = { ref = "transition" } }
 kotlinGradlePluginApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
+lightningServerCore = { module = "com.lightningkite.lightningserver:core", version.ref = "lightningServer" }
+lightningServerEngineKtor = { module = "com.lightningkite.lightningserver:engine-ktor", version.ref = "lightningServer" }
+lightningServerTyped = { module = "com.lightningkite.lightningserver:typed", version.ref = "lightningServer" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -93,4 +98,5 @@ roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 vannitechPublishing = { id = "com.vanniktech.maven.publish", version = { ref = "vannitechPublishing" } }
 dokka = { id = "org.jetbrains.dokka", version = { ref = "dokka" } }
 kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
+
 kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }

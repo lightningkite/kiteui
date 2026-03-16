@@ -12,6 +12,7 @@ import com.lightningkite.kiteui.identityHashCode
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.DragData
+import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.LoadingSemantic
 import com.lightningkite.kiteui.models.Rect
@@ -24,6 +25,7 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.telemetry.TelemetryContext
 import com.lightningkite.kiteui.telemetry.ViewPathProvider
+import com.lightningkite.kiteui.views.direct.ScrollingBehaviors
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -709,6 +711,91 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewP
      * Example: `myAction()`
      */
     operator fun Action.invoke() = startAction(this@RViewHelper)
+
+
+    // Driver
+    open val driverChildren: List<RView> get() = children
+    open val driverValue: String? get() = null
+    @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
+    open val driverActions: Map<String, suspend (List<String>) -> String> get() = buildMap {
+        put("snapshot") { args -> (this@RViewHelper as RView).driverSnapshot(parseSnapshotOptions(args.toTypedArray())) }
+        put("screenshot") { (this@RViewHelper as RView).driverScreenshot() }
+        put("find") { args -> (this@RViewHelper as RView).driverFind(args.firstOrNull() ?: "") }
+        put("findClickable") { args -> (this@RViewHelper as RView).driverFindClickable(args.firstOrNull() ?: "") }
+//        put("scroll") { args ->
+//            // TODO: This looks wrong: in JS, the scrolling behaviors are just attached to an existing view in a way this wouldn't pick up
+//            val dx = args.getOrNull(0)?.toDoubleOrNull() ?: 0.0
+//            val dy = args.getOrNull(1)?.toDoubleOrNull() ?: 0.0
+//            val scrollable = generateSequence(this@RViewHelper as RView) { it.parent }
+//                .firstOrNull { it is ScrollingBehaviors }
+//                as? ScrollingBehaviors
+//                ?: throw DriverActionException("no scrollable ancestor found")
+//            val rect = scrollable.viewport.state.getOrNull()
+//            if (rect != null) {
+//                scrollable.scrollTo(rect.left + dx, rect.top + dy, animated = false)
+//            }
+//            "OK"
+//        }
+        put("scrollIntoView") {
+            (this@RViewHelper as RView).scrollIntoView(Align.Center, Align.Center, animate = false)
+            "OK"
+        }
+        put("getAlignment") {
+            "horizontal=${lastSetHorizontalAlign} vertical=${lastSetVerticalAlign}"
+        }
+        if (dragData != null) put("getDragData") {
+            val data = dragData ?: throw DriverActionException("no dragData on this view")
+            val serialized = buildString {
+                append(data.label)
+                for ((mime, value) in data.typeToData) {
+                    append('\u0000'); append(mime); append('\u0000'); append(value)
+                }
+            }
+            kotlin.io.encoding.Base64.encode(serialized.encodeToByteArray())
+        }
+        if (dropTargetDelegate != null) put("drop") { args ->
+            val encoded = args.firstOrNull() ?: throw DriverActionException("drop requires base64 drag data argument")
+            val decoded = kotlin.io.encoding.Base64.decode(encoded).decodeToString()
+            val parts = decoded.split('\u0000')
+            if(parts.size % 2 == 0) throw DriverActionException("invalid drag data format: expected label followed by mime/value pairs")
+            val label = parts[0]
+            val typeToData = (1 until parts.size step 2).associate { parts[it] to parts[it + 1] }
+            val dragData = DragData(label, typeToData)
+            val delegate = generateSequence(this@RViewHelper as RView) { it.parent }
+                .mapNotNull { it.dropTargetDelegate }
+                .firstOrNull() ?: throw DriverActionException("no drop target found on this view or ancestors")
+            val event = DragEvent(dragData, 0.0, 0.0)
+            delegate.enter(event)
+            val result = delegate.drop(event)
+            delegate.end(event)
+            if (result) "OK" else throw DriverActionException("drop was rejected by the target")
+        }
+    }
+    data class DriverSnapshotOptions(
+        val includeHidden: Boolean = false,
+        val interactiveOnly: Boolean = false,
+        val includeThemes: Boolean = false,
+    )
+    open fun driverDisplay(options: DriverSnapshotOptions): String = buildString {
+        val name = debugName
+        if (name != null) {
+            append("$name: ")
+        } else {
+            val idx = parent?.driverChildren?.indexOf(this@RViewHelper as RView)?.takeIf { it >= 0 } ?: 0
+            append("$idx: ")
+        }
+        if (options.includeThemes) {
+            themeChoice.takeUnless { it == ThemeDerivation.None }?.let { append(it); append(' ') }
+        }
+        append(this@RViewHelper::class.simpleName)
+        driverValue?.let { append(" = \"$it\"") }
+        htmlElementTag?.let { append(" ($it)") }
+        if (!shown) append(" (hidden)")
+        else if (!visible) append(" (invisible)")
+        driverActions.keys.filter { it != "snapshot" && it != "screenshot" && it != "find" && it != "findClickable" && it != "scrollIntoView" && it != "getAlignment" }.takeUnless { it.isEmpty() }?.let {
+            append(" [${it.joinToString(", ")}]")
+        }
+    }
 }
 
 /*

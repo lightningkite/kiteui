@@ -17,6 +17,8 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
 actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = textAreaDriverValue()
+    override val driverActions get() = super.driverActions + textAreaDriverActions()
     private var placeholderText: String = ""
     private var placeholderColorValue: AwtColor = AwtColor.GRAY
 
