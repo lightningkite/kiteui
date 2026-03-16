@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.core.view.children
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.NeumorphicDrawable
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.debugPrint
@@ -65,21 +66,37 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         override val paddingRight: Double get() = paddingRightCurrentPx
         override val paddingBottom: Double get() = paddingBottomCurrentPx
 
+        private fun childShadowExtent(child: RView): Double {
+            return (child.native.background as? NeumorphicDrawable)?.shadowExtent?.toDouble() ?: 0.0
+        }
+
         override fun measure(child: RView, sizeConstraint: Size): Size {
+            val shadow = childShadowExtent(child)
+            // Give child extra space for shadow padding when measuring
             child.native.measure(
-                MeasureSpec.makeMeasureSpec(sizeConstraint.width.roundToInt(), MeasureSpec.AT_MOST),
-                MeasureSpec.makeMeasureSpec(sizeConstraint.height.roundToInt(), MeasureSpec.AT_MOST)
+                MeasureSpec.makeMeasureSpec((sizeConstraint.width + shadow * 2).roundToInt(), MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec((sizeConstraint.height + shadow * 2).roundToInt(), MeasureSpec.AT_MOST)
             )
-            return Size(child.native.measuredWidth.toDouble(), child.native.measuredHeight.toDouble())
+            // Report size without shadow extent so placers see background-only dimensions
+            return Size(
+                (child.native.measuredWidth - shadow * 2).coerceAtLeast(0.0),
+                (child.native.measuredHeight - shadow * 2).coerceAtLeast(0.0)
+            )
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
             placed += child.native
+            val shadow = childShadowExtent(child)
+            // Expand placement rect by shadow extent so the view has room for shadows
+            val l = left - shadow
+            val t = top - shadow
+            val r = right + shadow
+            val b = bottom + shadow
             child.native.measure(
-                MeasureSpec.makeMeasureSpec((right - left).roundToInt(), MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec((bottom - top).roundToInt(), MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec((r - l).roundToInt(), MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec((b - t).roundToInt(), MeasureSpec.EXACTLY),
             )
-            child.native.layout(left.roundToInt(), top.roundToInt(), right.roundToInt(), bottom.roundToInt())
+            child.native.layout(l.roundToInt(), t.roundToInt(), r.roundToInt(), b.roundToInt())
         }
 
         override fun existingPosition(child: RView): Rect = Rect(
