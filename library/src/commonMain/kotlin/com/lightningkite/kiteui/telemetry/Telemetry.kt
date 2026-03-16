@@ -70,8 +70,6 @@ class Telemetry(val config: TelemetryConfig) {
      * AppScope/lifecycle hooks.
      */
     fun install(navigator: PageNavigator) {
-        activeTelemetry = this
-
         // Log interceptor
         TelemetryLog(this).install()
 
@@ -169,8 +167,9 @@ class Telemetry(val config: TelemetryConfig) {
         val startNanos = nanosString()
         val fetchSpanId = spanId()
         val ctx = kotlin.coroutines.coroutineContext
-        val fetchTraceId = ctx.traceId()
-        val parentSpanId = ctx.spanId()
+        val fetchTraceId = ctx.traceId().ifEmpty { currentTraceId }
+        val parentSpanId = ctx.spanId().ifEmpty { currentSpanId }
+        val viewPath = ctx.viewPath()
 
         val sampled = if (currentTraceIsSampled) "01" else "00"
         headers.set("traceparent", "00-$fetchTraceId-$fetchSpanId-$sampled")
@@ -192,11 +191,12 @@ class Telemetry(val config: TelemetryConfig) {
                     kind = 3, // SPAN_KIND_CLIENT
                     startTimeUnixNano = startNanos,
                     endTimeUnixNano = endNanos,
-                    attributes = listOf(
-                        OtlpKeyValue("http.request.method", OtlpAnyValue(stringValue = method.name)),
-                        OtlpKeyValue("url.full", OtlpAnyValue(stringValue = url)),
-                        OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)),
-                    ),
+                    attributes = buildList {
+                        add(OtlpKeyValue("http.request.method", OtlpAnyValue(stringValue = method.name)))
+                        add(OtlpKeyValue("url.full", OtlpAnyValue(stringValue = url)))
+                        add(OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)))
+                        if (viewPath.isNotEmpty()) add(OtlpKeyValue("view.path", OtlpAnyValue(stringValue = viewPath)))
+                    },
                 )
             )
         }

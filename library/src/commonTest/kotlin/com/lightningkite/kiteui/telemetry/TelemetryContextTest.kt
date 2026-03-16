@@ -8,13 +8,6 @@ import kotlin.test.*
 
 class TelemetryContextTest {
 
-    private fun testConfig() = TelemetryConfig(endpoint = "http://localhost:0/otlp")
-
-    @AfterTest
-    fun cleanup() {
-        activeTelemetry = null
-    }
-
     @Test
     fun traceIdFromContextElement() = runTest {
         val ctx = TelemetryContext(traceId = "aaaa1111bbbb2222cccc3333dddd4444", spanId = "1234567890abcdef")
@@ -32,39 +25,9 @@ class TelemetryContextTest {
     }
 
     @Test
-    fun fallsBackToActiveTelemetryTraceId() = runTest {
-        val t = Telemetry(testConfig())
-        activeTelemetry = t
-        val result = coroutineContext.traceId()
-        assertEquals(t.currentTraceId, result)
-    }
-
-    @Test
-    fun fallsBackToActiveTelemetrySpanId() = runTest {
-        val t = Telemetry(testConfig())
-        t.currentSpanId = "fallback12345678"
-        activeTelemetry = t
-        val result = coroutineContext.spanId()
-        assertEquals("fallback12345678", result)
-    }
-
-    @Test
-    fun fallsBackToEmptyWhenNoTelemetry() = runTest {
-        activeTelemetry = null
+    fun emptyWhenNoContext() = runTest {
         assertEquals("", coroutineContext.traceId())
         assertEquals("", coroutineContext.spanId())
-    }
-
-    @Test
-    fun contextElementOverridesGlobal() = runTest {
-        val t = Telemetry(testConfig())
-        t.currentSpanId = "global_span_0000"
-        activeTelemetry = t
-        val ctx = TelemetryContext(traceId = "context_trace_override00000000", spanId = "context_span_ovr")
-        withContext(ctx) {
-            assertEquals("context_trace_override00000000", coroutineContext.traceId())
-            assertEquals("context_span_ovr", coroutineContext.spanId())
-        }
     }
 
     @Test
@@ -97,12 +60,10 @@ class TelemetryContextTest {
     }
 
     @Test
-    fun currentFallsBackToActiveTelemetry() = runTest {
-        val t = Telemetry(testConfig())
-        activeTelemetry = t
+    fun currentReturnsEmptyWhenNoContext() = runTest {
         val captured = TelemetryContext.current()
-        assertEquals(t.currentTraceId, captured.traceId)
-        assertEquals(t.currentSpanId, captured.spanId)
+        assertEquals("", captured.traceId)
+        assertEquals("", captured.spanId)
     }
 
     @Test
@@ -115,6 +76,23 @@ class TelemetryContextTest {
                 assertEquals("parent_trace_id_00000000000000", coroutineContext.traceId())
                 assertEquals("parent_span_1234", coroutineContext.spanId())
             }
+        }
+    }
+
+    @Test
+    fun viewPathFromProvider() = runTest {
+        val provider = ViewPathProvider { "AppNav/content[0]/button[2]" }
+        val ctx = TelemetryContext(viewPathProvider = provider)
+        withContext(ctx) {
+            assertEquals("AppNav/content[0]/button[2]", coroutineContext.viewPath())
+        }
+    }
+
+    @Test
+    fun viewPathEmptyWithoutProvider() = runTest {
+        val ctx = TelemetryContext(traceId = "aa", spanId = "bb")
+        withContext(ctx) {
+            assertEquals("", coroutineContext.viewPath())
         }
     }
 }

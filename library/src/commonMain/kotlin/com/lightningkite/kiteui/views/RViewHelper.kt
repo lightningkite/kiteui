@@ -22,6 +22,8 @@ import com.lightningkite.kiteui.models.WorkingSemantic
 import com.lightningkite.kiteui.onMainThread
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.report
+import com.lightningkite.kiteui.telemetry.TelemetryContext
+import com.lightningkite.kiteui.telemetry.ViewPathProvider
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -62,7 +64,7 @@ import kotlinx.coroutines.SupervisorJob
  * @param context The rendering context providing platform-specific configuration.
  */
 @OptIn(InternalKiteUi::class)
-abstract class RViewHelper(override val context: RContext) : ViewWriter() {
+abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewPathProvider {
     abstract var showOnPrint: Boolean
     override val representsView: RView get() = this as RView
 
@@ -649,6 +651,25 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     open fun postSetup() {
         fullyStarted = true
         refreshTheming()
+        (coroutineContext as? MutableCoroutineContext)?.add(
+            TelemetryContext(viewPathProvider = this)
+        )
+    }
+
+    override fun viewPath(): String = computeViewPath()
+
+    private fun computeViewPath(): String {
+        val segments = ArrayList<String>()
+        var v: RViewHelper? = this
+        while (v != null) {
+            val name = v.debugName ?: v::class.simpleName ?: "View"
+            val idx = (v as? RView)?.let { rv -> rv.parent?.children?.indexOf(rv) }
+            val segment = if (idx != null && idx >= 0) "$name[$idx]" else name
+            segments.add(segment)
+            v = (v as? RView)?.parent
+        }
+        segments.reverse()
+        return segments.joinToString("/")
     }
 
     abstract fun screenRectangle(): Rect?

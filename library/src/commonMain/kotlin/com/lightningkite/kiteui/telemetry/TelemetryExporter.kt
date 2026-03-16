@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 internal class TelemetryExporter(private val config: TelemetryConfig) {
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = false }
 
     // Buffers are internal for test access; accessed only from main thread (same threading model as all KiteUI)
     internal val spanBuffer = ArrayDeque<OtlpSpan>()

@@ -254,6 +254,53 @@ sum by (crash_fingerprint, service_name) (
 
 Group alerts by `crash.fingerprint` and route to Grafana IRM for incident management.
 
+## Querying in Grafana
+
+When Grafana Cloud ingests OTLP metrics, it converts them to Prometheus format. Names and attributes are mangled:
+
+### Name Mangling
+
+| OTLP Metric | Prometheus Name | Rule |
+|---|---|---|
+| `http.client.request.duration` (histogram, unit=ms) | `http_client_request_duration_milliseconds` | dots→underscores, unit suffix |
+| `navigation.page_views` (monotonic sum) | `navigation_page_views_total` | dots→underscores, `_total` suffix |
+| `app.foreground_count` (monotonic sum) | `app_foreground_count_total` | dots→underscores, `_total` suffix |
+| `connectivity.issues` (monotonic sum) | `connectivity_issues_total` | dots→underscores, `_total` suffix |
+
+Histogram metrics get `_bucket`, `_sum`, `_count` sub-series automatically.
+
+### Attribute → Label Mangling
+
+OTLP attribute keys also get dots→underscores:
+- `http.request.method` → `http_request_method`
+- `server.address` → `server_address`
+- `page.name` → `page_name`
+
+### Example PromQL Queries
+
+```promql
+# Average HTTP latency over 5 minutes
+rate(http_client_request_duration_milliseconds_sum[5m])
+  / rate(http_client_request_duration_milliseconds_count[5m])
+
+# HTTP latency p99 (requires histogram_quantile)
+histogram_quantile(0.99, rate(http_client_request_duration_milliseconds_bucket[5m]))
+
+# Page views per minute by page
+rate(navigation_page_views_total[1m]) * 60
+
+# Total HTTP requests by method
+sum by (http_request_method) (rate(http_client_request_duration_milliseconds_count[5m]))
+```
+
+### Resource Attributes
+
+`service.name`, `os.type`, and other resource attributes live on a special `target_info` metric. To filter by platform in PromQL, join with `target_info`:
+
+```promql
+navigation_page_views_total * on(job, instance) group_left(os_type) target_info
+```
+
 ## Architecture
 
 ```

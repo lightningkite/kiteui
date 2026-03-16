@@ -2,28 +2,27 @@ package com.lightningkite.kiteui.telemetry
 
 import kotlin.coroutines.CoroutineContext
 
-/** The currently installed [Telemetry] instance, set by [Telemetry.install]. */
-internal var activeTelemetry: Telemetry? = null
+/** Computes a human-readable view path on demand. Implemented by [RView][com.lightningkite.kiteui.views.RView]. */
+fun interface ViewPathProvider {
+    fun viewPath(): String
+}
 
 /**
  * Carries trace context through the coroutine hierarchy.
  *
- * Installed automatically on page coroutine scopes by the navigation instrumentation.
- * Read by `connectivityFetch` to set `traceparent` headers and `parentSpanId` on HTTP spans.
- *
- * Falls back to the active [Telemetry] instance's current trace/span ID when not present
- * in the coroutine context (e.g. code running outside a page's scope).
+ * Installed automatically on every view's coroutine scope (in `postSetup()`).
+ * Also read by `instrumentFetch` to set `traceparent` headers and `parentSpanId`
+ * on HTTP spans.
  */
-data class TelemetryContext(
-    val traceId: String,
-    val spanId: String,
+class TelemetryContext(
+    val traceId: String = "",
+    val spanId: String = "",
+    val viewPathProvider: ViewPathProvider? = null,
 ) : CoroutineContext.Element {
     override val key: CoroutineContext.Key<TelemetryContext> = Key
     companion object Key : CoroutineContext.Key<TelemetryContext> {
         /**
          * Captures the current trace context from the calling coroutine.
-         * Reads from an existing [TelemetryContext] in the coroutine hierarchy first,
-         * falling back to the active [Telemetry] instance's current IDs.
          *
          * Usage:
          * ```kotlin
@@ -34,17 +33,21 @@ data class TelemetryContext(
          */
         suspend fun current(): TelemetryContext {
             val ctx = kotlin.coroutines.coroutineContext
+            val existing = ctx[TelemetryContext] ?: return TelemetryContext()
             return TelemetryContext(
-                traceId = ctx.traceId(),
-                spanId = ctx.spanId(),
+                traceId = existing.traceId,
+                spanId = existing.spanId,
+                viewPathProvider = existing.viewPathProvider,
             )
         }
     }
 }
 
-/** Read trace context from the coroutine context, falling back to the active Telemetry instance. */
 internal fun CoroutineContext.traceId(): String =
-    this[TelemetryContext]?.traceId ?: activeTelemetry?.currentTraceId ?: ""
+    this[TelemetryContext]?.traceId ?: ""
 
 internal fun CoroutineContext.spanId(): String =
-    this[TelemetryContext]?.spanId ?: activeTelemetry?.currentSpanId ?: ""
+    this[TelemetryContext]?.spanId ?: ""
+
+internal fun CoroutineContext.viewPath(): String =
+    this[TelemetryContext]?.viewPathProvider?.viewPath() ?: ""

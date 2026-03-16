@@ -2,6 +2,8 @@
 // Follows the proto3 JSON mapping: https://opentelemetry.io/docs/specs/otlp/
 package com.lightningkite.kiteui.telemetry
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 // ===== Shared =====
@@ -56,7 +58,7 @@ data class OtlpSpan(
     val spanId: String,                 // 16 hex chars
     val parentSpanId: String = "",
     val name: String,
-    val kind: Int = 1,                  // SPAN_KIND_INTERNAL=1, CLIENT=3
+    @OptIn(ExperimentalSerializationApi::class) @EncodeDefault val kind: Int = 1,                  // SPAN_KIND_INTERNAL=1, CLIENT=3
     val startTimeUnixNano: String,      // nanoseconds as string
     val endTimeUnixNano: String,
     val attributes: List<OtlpKeyValue> = emptyList(),
@@ -108,8 +110,8 @@ data class OtlpMetric(
 @Serializable
 data class OtlpSum(
     val dataPoints: List<OtlpNumberDataPoint>,
-    val aggregationTemporality: Int = 1, // DELTA=1, CUMULATIVE=2
-    val isMonotonic: Boolean = true,
+    @OptIn(ExperimentalSerializationApi::class) @EncodeDefault val aggregationTemporality: Int = 1, // DELTA=1, CUMULATIVE=2
+    @OptIn(ExperimentalSerializationApi::class) @EncodeDefault val isMonotonic: Boolean = true,
 )
 
 @Serializable
@@ -124,7 +126,7 @@ data class OtlpNumberDataPoint(
 @Serializable
 data class OtlpHistogram(
     val dataPoints: List<OtlpHistogramDataPoint>,
-    val aggregationTemporality: Int = 1, // DELTA
+    @OptIn(ExperimentalSerializationApi::class) @EncodeDefault val aggregationTemporality: Int = 1, // DELTA
 )
 
 @Serializable

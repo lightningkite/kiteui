@@ -142,6 +142,45 @@ class OtlpModelsTest {
     }
 
     @Test
+    fun spanKindAlwaysSerialized() {
+        // With encodeDefaults=false, @EncodeDefault fields should still appear
+        val span = OtlpSpan(
+            traceId = "abcdef0123456789abcdef0123456789",
+            spanId = "1234567890abcdef",
+            name = "test",
+            kind = 1, // INTERNAL — this is the Kotlin default but not proto3 default
+            startTimeUnixNano = "1000",
+            endTimeUnixNano = "2000",
+        )
+        val encoded = json.encodeToString(OtlpSpan.serializer(), span)
+        assertTrue("\"kind\"" in encoded, "kind should always be serialized even with encodeDefaults=false")
+        assertTrue("\"kind\":1" in encoded, "kind=1 (INTERNAL) should appear in JSON")
+    }
+
+    @Test
+    fun anyValueNullFieldsOmitted() {
+        // With encodeDefaults=false, OtlpAnyValue should only emit the set field
+        val v = OtlpAnyValue(stringValue = "hello")
+        val encoded = json.encodeToString(OtlpAnyValue.serializer(), v)
+        assertTrue("\"stringValue\"" in encoded, "Set field should appear")
+        assertTrue("intValue" !in encoded, "Null intValue should be omitted")
+        assertTrue("doubleValue" !in encoded, "Null doubleValue should be omitted")
+        assertTrue("boolValue" !in encoded, "Null boolValue should be omitted")
+    }
+
+    @Test
+    fun sumIsMonotonicAlwaysSerialized() {
+        val sum = OtlpSum(
+            dataPoints = emptyList(),
+            aggregationTemporality = 2,
+            isMonotonic = true,
+        )
+        val encoded = json.encodeToString(OtlpSum.serializer(), sum)
+        assertTrue("\"isMonotonic\"" in encoded, "isMonotonic should always be serialized")
+        assertTrue("\"aggregationTemporality\"" in encoded, "aggregationTemporality should always be serialized")
+    }
+
+    @Test
     fun anyValueVariants() {
         val stringVal = OtlpAnyValue(stringValue = "hello")
         val intVal = OtlpAnyValue(intValue = 42)
