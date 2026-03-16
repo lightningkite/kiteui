@@ -20,6 +20,21 @@ class FlexboxLayout(context: Context) : ViewGroup(context) {
     var gap: Int = 0
     var lineGap: Int = 0
 
+    init {
+        clipChildren = false
+        clipToPadding = false
+    }
+
+    override fun dispatchDraw(canvas: android.graphics.Canvas) {
+        for (i in 0 until childCount) {
+            val child = getChildAt(i) ?: continue
+            if (child.visibility == GONE) continue
+            val bg = child.background as? com.lightningkite.kiteui.views.NeumorphicDrawable ?: continue
+            bg.drawOuterShadowsFromParent(canvas, child.left, child.top)
+        }
+        super.dispatchDraw(canvas)
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)

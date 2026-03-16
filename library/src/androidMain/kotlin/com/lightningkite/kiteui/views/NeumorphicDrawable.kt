@@ -12,10 +12,11 @@ import kotlin.math.roundToInt
  * A custom Drawable that renders multiple shadows for neumorphism effects.
  *
  * All shadows (both outer and inset) are pre-rendered to cached bitmaps,
- * so no software layer is ever needed. Outer shadows are rendered WITHIN
- * the drawable's bounds by insetting the background shape by [shadowExtent].
- * The owning view adds [shadowExtent] to its padding so content is not
- * obscured. Inset shadows are rendered within the background shape.
+ * so no software layer is ever needed. The background shape fills the full
+ * drawable bounds. Outer shadows are drawn by the PARENT ViewGroup via
+ * [drawOuterShadowsFromParent] so they can extend beyond the view bounds
+ * without affecting layout — matching CSS box-shadow behavior.
+ * Inset shadows are rendered within the background shape by [draw].
  *
  * Shadow bitmaps are rendered at half resolution since blur makes full
  * resolution unnecessary. Bitmaps are shared across drawables with the
@@ -46,7 +47,6 @@ class NeumorphicDrawable(
 
     /**
      * The calculated extent that outer shadows extend beyond the background shape.
-     * This space is reserved within the drawable bounds.
      */
     var shadowExtent = 0f
         private set
@@ -207,6 +207,7 @@ class NeumorphicDrawable(
         shadowExtent = calculateShadowExtent()
         categorizeShadows()
         releaseBitmaps()
+        recreateBitmapsIfNeeded()
         invalidateSelf()
     }
 
@@ -214,13 +215,23 @@ class NeumorphicDrawable(
         this.cornerRadius = radius
         this.cornerRadii = null
         releaseBitmaps()
+        recreateBitmapsIfNeeded()
         invalidateSelf()
     }
 
     fun setCornerRadii(radii: FloatArray) {
         this.cornerRadii = radii
         releaseBitmaps()
+        recreateBitmapsIfNeeded()
         invalidateSelf()
+    }
+
+    private fun recreateBitmapsIfNeeded() {
+        val bgWidth = backgroundRect.width().roundToInt()
+        val bgHeight = backgroundRect.height().roundToInt()
+        if (bgWidth > 0 && bgHeight > 0) {
+            updateBitmaps(bgWidth, bgHeight)
+        }
     }
 
     fun setBackgroundColor(color: Int) {
@@ -232,12 +243,13 @@ class NeumorphicDrawable(
     override fun onBoundsChange(bounds: Rect) {
         super.onBoundsChange(bounds)
 
-        // Background is inset by shadowExtent so outer shadows fit within bounds
+        // Background fills full view bounds — no inset needed since outer shadows
+        // are drawn by the parent ViewGroup, not by this drawable.
         backgroundRect.set(
-            bounds.left.toFloat() + shadowExtent,
-            bounds.top.toFloat() + shadowExtent,
-            bounds.right.toFloat() - shadowExtent,
-            bounds.bottom.toFloat() - shadowExtent
+            bounds.left.toFloat(),
+            bounds.top.toFloat(),
+            bounds.right.toFloat(),
+            bounds.bottom.toFloat()
         )
 
         backgroundPath.reset()
@@ -259,23 +271,29 @@ class NeumorphicDrawable(
         val bounds = bounds
         if (bounds.isEmpty) return
 
-        // Draw outer shadows — bitmap includes shadowExtent margin, positioned at bounds origin
-        outerCacheEntry?.let { entry ->
-            if (!entry.bitmap.isRecycled) {
-                drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
-                drawMatrix.postTranslate(bounds.left.toFloat(), bounds.top.toFloat())
-                canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
-            }
-        }
-
-        // Draw background
+        // Background
         canvas.drawPath(backgroundPath, backgroundPaint)
 
-        // Draw inset shadows
+        // Inset shadows
         insetCacheEntry?.let { entry ->
             if (!entry.bitmap.isRecycled) {
                 drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
                 drawMatrix.postTranslate(backgroundRect.left, backgroundRect.top)
+                canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
+            }
+        }
+    }
+
+    /**
+     * Draw outer shadows onto the parent's canvas at the given child view position.
+     * Called from parent ViewGroup's dispatchDraw so shadows can extend beyond child bounds.
+     * The bitmap is positioned at (viewLeft - shadowExtent, viewTop - shadowExtent).
+     */
+    fun drawOuterShadowsFromParent(canvas: Canvas, viewLeft: Int, viewTop: Int) {
+        outerCacheEntry?.let { entry ->
+            if (!entry.bitmap.isRecycled) {
+                drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
+                drawMatrix.postTranslate(viewLeft.toFloat() - shadowExtent, viewTop.toFloat() - shadowExtent)
                 canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
             }
         }

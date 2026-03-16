@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
+import android.graphics.Canvas
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
@@ -50,6 +51,11 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
     var paddingBottomCurrentPx: Double = 0.0
     private var currentSize: Size = Size.Zero
 
+    init {
+        clipChildren = false
+        clipToPadding = false
+    }
+
     var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
             field = value
@@ -66,37 +72,24 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         override val paddingRight: Double get() = paddingRightCurrentPx
         override val paddingBottom: Double get() = paddingBottomCurrentPx
 
-        private fun childShadowExtent(child: RView): Double {
-            return (child.native.background as? NeumorphicDrawable)?.shadowExtent?.toDouble() ?: 0.0
-        }
-
         override fun measure(child: RView, sizeConstraint: Size): Size {
-            val shadow = childShadowExtent(child)
-            // Give child extra space for shadow padding when measuring
             child.native.measure(
-                MeasureSpec.makeMeasureSpec((sizeConstraint.width + shadow * 2).roundToInt(), MeasureSpec.AT_MOST),
-                MeasureSpec.makeMeasureSpec((sizeConstraint.height + shadow * 2).roundToInt(), MeasureSpec.AT_MOST)
+                MeasureSpec.makeMeasureSpec(sizeConstraint.width.roundToInt(), MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(sizeConstraint.height.roundToInt(), MeasureSpec.AT_MOST)
             )
-            // Report size without shadow extent so placers see background-only dimensions
             return Size(
-                (child.native.measuredWidth - shadow * 2).coerceAtLeast(0.0),
-                (child.native.measuredHeight - shadow * 2).coerceAtLeast(0.0)
+                child.native.measuredWidth.toDouble(),
+                child.native.measuredHeight.toDouble()
             )
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
             placed += child.native
-            val shadow = childShadowExtent(child)
-            // Expand placement rect by shadow extent so the view has room for shadows
-            val l = left - shadow
-            val t = top - shadow
-            val r = right + shadow
-            val b = bottom + shadow
             child.native.measure(
-                MeasureSpec.makeMeasureSpec((r - l).roundToInt(), MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec((b - t).roundToInt(), MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec((right - left).roundToInt(), MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec((bottom - top).roundToInt(), MeasureSpec.EXACTLY),
             )
-            child.native.layout(l.roundToInt(), t.roundToInt(), r.roundToInt(), b.roundToInt())
+            child.native.layout(left.roundToInt(), top.roundToInt(), right.roundToInt(), bottom.roundToInt())
         }
 
         override fun existingPosition(child: RView): Rect = Rect(
@@ -142,6 +135,16 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
             )
             it.layout(it.left, it.top, it.right, it.bottom)
         }
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        for (i in 0 until childCount) {
+            val child = getChildAt(i) ?: continue
+            if (child.visibility == GONE) continue
+            val bg = child.background as? NeumorphicDrawable ?: continue
+            bg.drawOuterShadowsFromParent(canvas, child.left, child.top)
+        }
+        super.dispatchDraw(canvas)
     }
 
     fun silentRequestLayout() {

@@ -267,15 +267,18 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         // When a view has corner radii and draws a background, clip children to the
         // rounded outline. This matches web behavior where border-radius + overflow: hidden
         // clips content (e.g. images inside a rounded frame).
-        if (cr > 0f && themeAndBack.drawBackground) {
+        // Skip clipToOutline for neumorphic views — their outer shadows are drawn by the
+        // parent's dispatchDraw and would be clipped if we enabled clipToOutline here.
+        val isNeumorphic = background is NeumorphicDrawable
+        if (cr > 0f && themeAndBack.drawBackground && !isNeumorphic) {
             native.outlineProvider = object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
                     outline.setRoundRect(0, 0, view.width, view.height, cr)
                 }
             }
             native.clipToOutline = true
-        } else if (!native.clipToOutline) {
-            // Reset if no corner radii
+        } else {
+            native.clipToOutline = false
             native.outlineProvider = ViewOutlineProvider.BACKGROUND
         }
     }
@@ -283,12 +286,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     override fun refreshPadding() {
         super.refreshPadding()
         val value = appliedPadding
-        val shadowExtra = (background as? NeumorphicDrawable)?.shadowExtent?.roundToInt() ?: 0
         native.setPadding(
-            value.left.value.toInt() + shadowExtra,
-            value.top.value.toInt() + shadowExtra,
-            value.right.value.toInt() + shadowExtra,
-            value.bottom.value.toInt() + shadowExtra,
+            value.left.value.toInt(),
+            value.top.value.toInt(),
+            value.right.value.toInt(),
+            value.bottom.value.toInt(),
         )
     }
 
@@ -352,6 +354,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
+
+            // Invalidate parent so it redraws outer shadows via dispatchDraw
+            (native.parent as? View)?.invalidate()
             refreshPadding()
         } else {
             // Standard elevation-based shadow rendering
@@ -362,7 +367,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
 
             // Reset layer type if we were using software rendering
-            if (background is NeumorphicDrawable) {
+            val wasNeumorphic = background is NeumorphicDrawable
+            if (wasNeumorphic) {
                 native.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
             }
 
@@ -378,6 +384,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             } else {
                 backgroundBlock = null
                 background = null
+            }
+
+            // If switching away from neumorphic, invalidate parent to clear old outer shadows
+            if (wasNeumorphic) {
+                (native.parent as? View)?.invalidate()
             }
         }
         updateTransform(theme.theme)
@@ -573,6 +584,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
+
+            // Invalidate parent so it redraws outer shadows via dispatchDraw
+            (native.parent as? View)?.invalidate()
             refreshPadding()
         } else {
             // Standard elevation-based shadow rendering with ripple
@@ -583,12 +597,18 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
 
             // Reset layer type if we were using software rendering
-            if (background is NeumorphicDrawable) {
+            val wasNeumorphic = background is NeumorphicDrawable
+            if (wasNeumorphic) {
                 native.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
             }
 
             background = getBackgroundWithRipple(theme.theme, theme.drawBackground, background as? RippleDrawable)
             updateCorners()
+
+            // If switching away from neumorphic, invalidate parent to clear old outer shadows
+            if (wasNeumorphic) {
+                (native.parent as? View)?.invalidate()
+            }
         }
         updateTransform(theme.theme)
     }

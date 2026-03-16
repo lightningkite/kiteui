@@ -1,7 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
+import android.graphics.Canvas
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.Dimension
@@ -18,10 +20,7 @@ import kotlin.math.roundToInt
 
 
 actual class Frame actual constructor(context: RContext) : RView(context) {
-    override val native = FrameLayout(context.activity).apply {
-        clipChildren = false
-        clipToPadding = false
-    }
+    override val native = KiteUIFrameLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
@@ -106,5 +105,30 @@ open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayo
             return LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
         return null
+    }
+    override fun dispatchDraw(canvas: Canvas) {
+        drawNeumorphicOuterShadows(canvas)
+        super.dispatchDraw(canvas)
+    }
+}
+
+class KiteUIFrameLayout(context: Context) : FrameLayout(context) {
+    init {
+        clipChildren = false
+        clipToPadding = false
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        drawNeumorphicOuterShadows(canvas)
+        super.dispatchDraw(canvas)
+    }
+}
+
+private fun ViewGroup.drawNeumorphicOuterShadows(canvas: Canvas) {
+    for (i in 0 until childCount) {
+        val child = getChildAt(i) ?: continue
+        if (child.visibility == View.GONE) continue
+        val bg = child.background as? NeumorphicDrawable ?: continue
+        bg.drawOuterShadowsFromParent(canvas, child.left, child.top)
     }
 }

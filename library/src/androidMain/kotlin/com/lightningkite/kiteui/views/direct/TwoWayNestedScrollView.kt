@@ -2286,6 +2286,16 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         }
     }
 
+    override fun dispatchDraw(canvas: Canvas) {
+        for (i in 0 until childCount) {
+            val child = getChildAt(i) ?: continue
+            if (child.visibility == GONE) continue
+            val bg = child.background as? com.lightningkite.kiteui.views.NeumorphicDrawable ?: continue
+            bg.drawOuterShadowsFromParent(canvas, child.left, child.top)
+        }
+        super.dispatchDraw(canvas)
+    }
+
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
         if (mEdgeGlowTop != null) {
