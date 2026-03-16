@@ -283,7 +283,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     override fun refreshPadding() {
         super.refreshPadding()
         val value = appliedPadding
-        // Add shadow extent to padding so neumorphic shadows render within view bounds
         val shadowExtra = (background as? NeumorphicDrawable)?.shadowExtent?.roundToInt() ?: 0
         native.setPadding(
             value.left.value.toInt() + shadowExtra,
@@ -353,7 +352,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
-            // Refresh padding to account for shadow extent
             refreshPadding()
         } else {
             // Standard elevation-based shadow rendering
@@ -575,7 +573,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
-            // Refresh padding to account for shadow extent
             refreshPadding()
         } else {
             // Standard elevation-based shadow rendering with ripple

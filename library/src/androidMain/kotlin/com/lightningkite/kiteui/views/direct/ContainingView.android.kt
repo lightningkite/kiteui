@@ -18,7 +18,10 @@ import kotlin.math.roundToInt
 
 
 actual class Frame actual constructor(context: RContext) : RView(context) {
-    override val native = FrameLayout(context.activity)
+    override val native = FrameLayout(context.activity).apply {
+        clipChildren = false
+        clipToPadding = false
+    }
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
@@ -92,6 +95,10 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
 }
 
 open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayout(context) {
+    init {
+        clipChildren = false
+        clipToPadding = false
+    }
     override fun generateDefaultLayoutParams(): LayoutParams? {
         if (orientation == HORIZONTAL) {
             return LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)

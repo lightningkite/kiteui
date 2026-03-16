@@ -12,9 +12,10 @@ import kotlin.math.roundToInt
  * A custom Drawable that renders multiple shadows for neumorphism effects.
  *
  * All shadows (both outer and inset) are pre-rendered to cached bitmaps,
- * so no software layer is ever needed. Shadows are rendered WITHIN the
- * drawable's bounds by insetting the background shape, avoiding clipping
- * issues with ScrollView and other clipping containers.
+ * so no software layer is ever needed. Outer shadows are rendered WITHIN
+ * the drawable's bounds by insetting the background shape by [shadowExtent].
+ * The owning view adds [shadowExtent] to its padding so content is not
+ * obscured. Inset shadows are rendered within the background shape.
  *
  * Shadow bitmaps are rendered at half resolution since blur makes full
  * resolution unnecessary. Bitmaps are shared across drawables with the
@@ -67,16 +68,9 @@ class NeumorphicDrawable(
         var maxExtent = 0f
         for (shadow in shadows) {
             if (shadow.inset) continue
-            // Use 60% of blur radius - the outer portion of the Gaussian blur
-            // is barely visible, so reserving full extent wastes space.
-            val extent = shadow.blurRadius.value * 0.8f + shadow.spreadRadius.value * 0.5f +
-////            val extent = shadow.blurRadius.value + shadow.spreadRadius.value +
-//
+            val extent = shadow.blurRadius.value + shadow.spreadRadius.value +
                     max(abs(shadow.offsetX.value), abs(shadow.offsetY.value))
-//            println("DEBUG extent ${extent}")
-//            println("DEBUG maxExtent ${maxExtent}")
             maxExtent = max(maxExtent, extent)
-
         }
         return maxExtent
     }
@@ -238,11 +232,12 @@ class NeumorphicDrawable(
     override fun onBoundsChange(bounds: Rect) {
         super.onBoundsChange(bounds)
 
+        // Background is inset by shadowExtent so outer shadows fit within bounds
         backgroundRect.set(
-            bounds.left + shadowExtent,
-            bounds.top + shadowExtent,
-            bounds.right - shadowExtent,
-            bounds.bottom - shadowExtent
+            bounds.left.toFloat() + shadowExtent,
+            bounds.top.toFloat() + shadowExtent,
+            bounds.right.toFloat() - shadowExtent,
+            bounds.bottom.toFloat() - shadowExtent
         )
 
         backgroundPath.reset()
@@ -264,7 +259,7 @@ class NeumorphicDrawable(
         val bounds = bounds
         if (bounds.isEmpty) return
 
-        // Draw outer shadows
+        // Draw outer shadows — bitmap includes shadowExtent margin, positioned at bounds origin
         outerCacheEntry?.let { entry ->
             if (!entry.bitmap.isRecycled) {
                 drawMatrix.setScale(entry.inverseScale, entry.inverseScale)

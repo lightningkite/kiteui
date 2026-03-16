@@ -7,6 +7,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewDebug
 import android.view.ViewGroup
+import com.lightningkite.kiteui.views.NeumorphicDrawable
+import kotlin.math.roundToInt
 
 
 typealias SimplifiedLinearLayoutLayoutParams = SimplifiedLinearLayout.LayoutParams
@@ -45,6 +47,17 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             field = value
             requestLayout()
         }
+
+    private fun getChildShadowExtent(child: View): Int {
+        return (child.background as? NeumorphicDrawable)?.shadowExtent?.roundToInt() ?: 0
+    }
+
+    private fun adjustedGap(baseGap: Int, prevChild: View, curChild: View): Int {
+        val prevShadow = getChildShadowExtent(prevChild)
+        val curShadow = getChildShadowExtent(curChild)
+        // Allow negative so shadow padding areas overlap — matches web where box-shadow doesn't affect layout
+        return baseGap - prevShadow - curShadow
+    }
 
 
     override fun getBaseline(): Int {
@@ -182,6 +195,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         var largestChildHeight = Int.MIN_VALUE
         var consumedExcessSpace = 0
         var nonSkippedChildCount = 0
+        var prevVisibleChild: View? = null
 
         // See how tall everyone is. Also remember max width.
         var i = 0
@@ -198,7 +212,10 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 continue
             }
             val lp = child.layoutParams as LayoutParams
-            if (i > 0) mTotalLength += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+            if (prevVisibleChild != null) {
+                val baseGap = ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+                mTotalLength += adjustedGap(baseGap, prevVisibleChild!!, child)
+            }
             nonSkippedChildCount++
             totalWeight += lp.weightUnlessIgnored
             val useExcessSpace = lp.height == 0 && lp.weightUnlessIgnored > 0
@@ -292,6 +309,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     if (matchWidthLocally) margin else measuredWidth
                 ).coerceAtMost(lp.maxWidth)
             }
+            prevVisibleChild = child
             i += getChildrenSkipCount(child, i)
             ++i
         }
@@ -534,6 +552,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         var largestChildWidth = Int.MIN_VALUE
         var usedExcessSpace = 0
         var nonSkippedChildCount = 0
+        var prevVisibleChild: View? = null
 
         // See how wide everyone is. Also remember max height.
         var i = 0
@@ -550,7 +569,10 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 continue
             }
             val lp = child.layoutParams as LayoutParams
-            if (nonSkippedChildCount > 0) mTotalLength += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+            if (prevVisibleChild != null) {
+                val baseGap = ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+                mTotalLength += adjustedGap(baseGap, prevVisibleChild!!, child)
+            }
             nonSkippedChildCount++
             totalWeight += lp.weightUnlessIgnored
             val useExcessSpace = lp.width == 0 && lp.weightUnlessIgnored > 0
@@ -657,6 +679,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     if (matchHeightLocally) margin else childHeight
                 )
             }
+            prevVisibleChild = child
             i += getChildrenSkipCount(child, i)
             ++i
         }
@@ -1053,7 +1076,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             else -> childTop = paddingTop
         }
         var i = 0
-        var gapApplied = false
+        var prevVisibleChild: View? = null
         while (i < count) {
             val child = getChildAt(i)
             if (child == null) {
@@ -1075,16 +1098,16 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     Gravity.LEFT -> childLeft = paddingLeft
                     else -> childLeft = paddingLeft
                 }
-                if(gapApplied) {
-                    childTop += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
-                } else {
-                    gapApplied = true
+                if (prevVisibleChild != null) {
+                    val baseGap = ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+                    childTop += adjustedGap(baseGap, prevVisibleChild!!, child)
                 }
                 setChildFrame(
                     child, childLeft, childTop + getLocationOffset(child),
                     childWidth, childHeight
                 )
                 childTop += childHeight + getNextLocationOffset(child)
+                prevVisibleChild = child
                 i += getChildrenSkipCount(child, i)
             }
             i++
@@ -1149,7 +1172,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             start = count - 1
             dir = -1
         }
-        var gapApplied = false
+        var prevVisibleChild: View? = null
         var i = 0
         while (i < count) {
             val childIndex = start + dir * i
@@ -1199,16 +1222,16 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
 
                     else -> childTop = paddingTop
                 }
-                if(gapApplied) {
-                    childLeft += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
-                } else {
-                    gapApplied = true
+                if (prevVisibleChild != null) {
+                    val baseGap = ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+                    childLeft += adjustedGap(baseGap, prevVisibleChild!!, child)
                 }
                 setChildFrame(
                     child, childLeft + getLocationOffset(child), childTop,
                     childWidth, childHeight
                 )
                 childLeft += (childWidth + getNextLocationOffset(child))
+                prevVisibleChild = child
                 i += getChildrenSkipCount(child, childIndex)
             }
             i++
