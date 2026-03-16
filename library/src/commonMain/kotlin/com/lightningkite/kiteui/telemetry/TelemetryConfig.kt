@@ -32,4 +32,8 @@ data class TelemetryConfig(
     // Logs
     /** Only ship log records at or above this severity. */
     val logMinSeverity: OtlpSeverity = OtlpSeverity.WARN,
+
+    // Exception enrichment
+    /** Called on every exception to provide extra attributes (e.g. user ID, feature flags). */
+    val exceptionAttributes: () -> List<OtlpKeyValue> = { emptyList() },
 )

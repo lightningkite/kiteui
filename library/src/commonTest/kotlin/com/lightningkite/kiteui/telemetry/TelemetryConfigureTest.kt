@@ -187,6 +187,50 @@ class TelemetryConfigureTest {
     }
 
     @Test
+    fun recordExceptionIncludesOsType() {
+        val t = Telemetry(testConfig())
+        t.recordException(RuntimeException("os"), "ctx")
+
+        val record = t.exporter.logBuffer.single()
+        val osAttr = record.attributes.find { it.key == "os.type" }
+        assertNotNull(osAttr, "Should have os.type attribute")
+        assertTrue(osAttr.value.stringValue!!.isNotEmpty(), "os.type should not be empty")
+    }
+
+    @Test
+    fun customExceptionAttributesAreIncluded() {
+        val t = Telemetry(testConfig().copy(
+            exceptionAttributes = {
+                listOf(
+                    OtlpKeyValue("user.id", OtlpAnyValue(stringValue = "user-42")),
+                    OtlpKeyValue("feature.flag", OtlpAnyValue(stringValue = "dark-mode")),
+                )
+            }
+        ))
+        t.recordException(RuntimeException("custom"), "ctx")
+
+        val record = t.exporter.logBuffer.single()
+        val userAttr = record.attributes.find { it.key == "user.id" }
+        assertNotNull(userAttr, "Should have custom user.id attribute")
+        assertEquals("user-42", userAttr.value.stringValue)
+
+        val flagAttr = record.attributes.find { it.key == "feature.flag" }
+        assertNotNull(flagAttr, "Should have custom feature.flag attribute")
+        assertEquals("dark-mode", flagAttr.value.stringValue)
+    }
+
+    @Test
+    fun customExceptionAttributesErrorDoesNotBreakRecording() {
+        val t = Telemetry(testConfig().copy(
+            exceptionAttributes = { error("kaboom") }
+        ))
+        t.recordException(RuntimeException("still works"), "ctx")
+
+        val record = t.exporter.logBuffer.single()
+        assertEquals(OtlpSeverity.ERROR.number, record.severityNumber)
+    }
+
+    @Test
     fun sameExceptionProducesSameFingerprintAcrossCalls() {
         val t = Telemetry(testConfig())
         val ex = IllegalArgumentException("consistent")

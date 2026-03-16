@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 internal class TelemetryExporter(private val config: TelemetryConfig) {
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = false }
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
     // Buffers are internal for test access; accessed only from main thread (same threading model as all KiteUI)
     internal val spanBuffer = ArrayDeque<OtlpSpan>()
@@ -53,12 +53,12 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
     }
 
     fun incrementCounter(name: String, value: Long = 1, attributes: List<OtlpKeyValue> = emptyList()) {
-        val key = "$name|${attributes.hashCode()}"
+        val key = "$name|${attributes.joinToString(",") { "${it.key}=${it.value}" }}"
         counters.getOrPut(key) { CounterAggregator(name, attributes) }.add(value)
     }
 
     fun recordHistogram(name: String, value: Double, unit: String = "ms", attributes: List<OtlpKeyValue> = emptyList()) {
-        val key = "$name|${attributes.hashCode()}"
+        val key = "$name|${attributes.joinToString(",") { "${it.key}=${it.value}" }}"
         histograms.getOrPut(key) { HistogramAggregator(name, unit, attributes) }.record(value)
     }
 

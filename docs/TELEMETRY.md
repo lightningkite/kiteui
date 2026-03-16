@@ -224,6 +224,23 @@ All exception log records (both caught ERROR and uncaught FATAL) include:
 | `exception.context` | Reporting context (e.g., "uncaught") |
 | `crash.fingerprint` | 16-char hex fingerprint for grouping |
 | `session.id` | Session identifier |
+| `page.name` | Page the user was on when the exception occurred |
+| `os.type` | Platform (android, ios, web, jvmssr) |
+| `app.version` | `Build.version` |
+| `app.debug` | Whether the app is a debug build |
+
+Custom attributes can be added via `TelemetryConfig.exceptionAttributes`:
+
+```kotlin
+Telemetry(TelemetryConfig(
+    endpoint = "...",
+    exceptionAttributes = {
+        listOf(
+            OtlpKeyValue("user.id", OtlpAnyValue(stringValue = currentUser?.id ?: "anonymous")),
+        )
+    }
+))
+```
 
 ### Grafana Alert Example
 

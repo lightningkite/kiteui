@@ -39,6 +39,9 @@ class Telemetry(val config: TelemetryConfig) {
 
     internal val exporter: TelemetryExporter = TelemetryExporter(config)
 
+    /** Sampling decision made once per trace (session). All spans in this trace share the same decision. */
+    val currentTraceIsSampled: Boolean = Random.nextDouble() <= config.traceSamplingRate
+
     /** Effective log severity — mutable to support [setVerboseLogging]. */
     var logMinSeverity: OtlpSeverity = config.logMinSeverity
         private set
@@ -169,7 +172,7 @@ class Telemetry(val config: TelemetryConfig) {
         val fetchTraceId = ctx.traceId()
         val parentSpanId = ctx.spanId()
 
-        val sampled = if (config.traceSamplingRate >= 1.0) "01" else "00"
+        val sampled = if (currentTraceIsSampled) "01" else "00"
         headers.set("traceparent", "00-$fetchTraceId-$fetchSpanId-$sampled")
 
         val response = proceed(url, method, headers, body)
@@ -179,7 +182,7 @@ class Telemetry(val config: TelemetryConfig) {
         val host = url.substringAfter("://").substringBefore("/").substringBefore("?")
 
         // Record span (subject to sampling)
-        if (Random.nextDouble() <= config.traceSamplingRate) {
+        if (currentTraceIsSampled) {
             exporter.addSpan(
                 OtlpSpan(
                     traceId = fetchTraceId,
@@ -223,7 +226,7 @@ class Telemetry(val config: TelemetryConfig) {
     private fun onBackground() {
         if (lastForegroundNanos.isEmpty()) return
 
-        if (Random.nextDouble() <= config.traceSamplingRate) {
+        if (currentTraceIsSampled) {
             exporter.addSpan(
                 OtlpSpan(
                     traceId = currentTraceId,
@@ -274,7 +277,7 @@ class Telemetry(val config: TelemetryConfig) {
 
     private fun endCurrentPageSpan() {
         val name = lastPageName ?: return
-        if (Random.nextDouble() > config.traceSamplingRate) return
+        if (!currentTraceIsSampled) return
 
         exporter.addSpan(
             OtlpSpan(
@@ -317,15 +320,6 @@ class Telemetry(val config: TelemetryConfig) {
         exporter.flushAll()
     }
 
-    /** Shut down telemetry, flush remaining data, and remove hooks. */
-    suspend fun shutdown() {
-        exporter.flushAll()
-        exporter.stop()
-        if (activeTelemetry === this) activeTelemetry = null
-        fetchInterceptor = null
-        previousThrowableReport?.let { Throwable_report = it }
-    }
-
     internal fun recordException(
         throwable: Throwable,
         context: String,
@@ -346,6 +340,11 @@ class Telemetry(val config: TelemetryConfig) {
                         add(OtlpKeyValue("exception.context", OtlpAnyValue(stringValue = context)))
                     }
                     add(OtlpKeyValue("session.id", OtlpAnyValue(stringValue = sessionId)))
+                    lastPageName?.let { add(OtlpKeyValue("page.name", OtlpAnyValue(stringValue = it))) }
+                    add(OtlpKeyValue("os.type", OtlpAnyValue(stringValue = Platform.current.name.lowercase())))
+                    add(OtlpKeyValue("app.version", OtlpAnyValue(stringValue = Build.version)))
+                    add(OtlpKeyValue("app.debug", OtlpAnyValue(boolValue = Build.debug)))
+                    try { addAll(config.exceptionAttributes()) } catch (_: Exception) {}
                 },
                 traceId = currentTraceId,
                 spanId = currentSpanId,
