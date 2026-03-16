@@ -204,33 +204,3 @@ fun env(name: String, profile: String) {
     }
 }
 env("lk", "lk")
-
-// SSR Server run task (runs server mode by default)
-tasks.register<JavaExec>("ssrServerRun") {
-    group = "application"
-    description = "Run the SSR server (default) or prerender with --args=\"prerender <outputDir>\""
-    mainClass.set("com.lightningkite.mppexampleapp.SsrPrerenderKt")
-    val jvmSsrCompilation = kotlin.targets.getByName<org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget>("jvmSsr")
-        .compilations.getByName("main")
-    classpath = files(
-        jvmSsrCompilation.output.allOutputs,
-        jvmSsrCompilation.runtimeDependencyFiles
-    )
-    dependsOn("jvmSsrJar")
-}
-
-// Convenience task for prerendering
-tasks.register<JavaExec>("ssrPrerender") {
-    group = "application"
-    description = "Prerender all SSR pages to ./local/prerendered"
-    mainClass.set("com.lightningkite.mppexampleapp.SsrPrerenderKt")
-    args = listOf("prerender", "${project.rootDir}/local/prerendered")
-    val jvmSsrCompilation = kotlin.targets.getByName<org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget>("jvmSsr")
-        .compilations.getByName("main")
-    classpath = files(
-        jvmSsrCompilation.output.allOutputs,
-        jvmSsrCompilation.runtimeDependencyFiles
-    )
-    dependsOn("jvmSsrJar")
-}
-
