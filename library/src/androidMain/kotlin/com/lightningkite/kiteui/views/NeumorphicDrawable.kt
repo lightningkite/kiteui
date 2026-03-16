@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.view.View
 import com.lightningkite.kiteui.models.Shadow
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
@@ -231,6 +232,9 @@ class NeumorphicDrawable(
         val bgHeight = backgroundRect.height().roundToInt()
         if (bgWidth > 0 && bgHeight > 0) {
             updateBitmaps(bgWidth, bgHeight)
+            if (outerCacheEntry != null) {
+                ((callback as? View)?.parent as? View)?.postInvalidate()
+            }
         }
     }
 
@@ -264,6 +268,12 @@ class NeumorphicDrawable(
         val bgHeight = backgroundRect.height().roundToInt()
         if (bgWidth != lastBgWidth || bgHeight != lastBgHeight) {
             updateBitmaps(bgWidth, bgHeight)
+            // Outer shadows are drawn by the parent's dispatchDraw, so we need
+            // to invalidate the parent whenever new shadow bitmaps are created.
+            // Use postInvalidate to ensure it runs after the current layout pass.
+            if (outerCacheEntry != null) {
+                ((callback as? View)?.parent as? View)?.postInvalidate()
+            }
         }
     }
 
