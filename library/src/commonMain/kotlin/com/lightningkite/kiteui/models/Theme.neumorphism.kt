@@ -223,14 +223,43 @@ fun Theme.Companion.neumorphism(
                     )
                 )
             },
-            DialogSemantic.override {
+            DismissSemantic.override {
                 it.withBack(
-                    shadows = Shadow.neumorphicConvex(
-                        distance = shadowDistance * 2f,
-                        blur = shadowBlur * 2f,
-                        lightColor = lightShadowColor,
-                        darkColor = darkShadowColor
-                    ),
+                    cascading = false,
+                    gap = 0.dp,
+                    cornerRadii = CornerRadii.AdaptiveToSpacing(0.dp),
+                    background = Color.white.applyAlpha(0.7f),
+                    shadows = null,
+                )
+            },
+            DialogSemantic.override {
+                val dialogShadows = Shadow.neumorphicConvex(
+                    distance = shadowDistance * 2.5f,
+                    blur = shadowBlur * 3f,
+                    lightColor = lightShadowColor,
+                    darkColor = Color.black.applyAlpha(0.25f)
+                )
+                val dialogCornerRadii = CornerRadii.Fixed(gap)
+                it.withBack(
+                    cornerRadii = dialogCornerRadii,
+                    shadows = dialogShadows,
+                    semanticOverrides = SemanticOverrides(
+                        // The first card inside the dialog gets dialog-level shadows
+                        CardSemantic.override { inner ->
+                            inner.withBack(
+                                cornerRadii = dialogCornerRadii,
+                                shadows = dialogShadows,
+                                semanticOverrides = SemanticOverrides(
+                                    // Nested cards inside the dialog card revert to normal convex shadows
+                                    CardSemantic.override { nested ->
+                                        nested.withBack(
+                                            shadows = convexShadows,
+                                        )
+                                    },
+                                )
+                            )
+                        },
+                    )
                 )
             },
             PopoverSemantic.override {
