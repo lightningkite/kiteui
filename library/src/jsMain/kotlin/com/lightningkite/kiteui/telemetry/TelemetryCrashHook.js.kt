@@ -1,8 +1,7 @@
 package com.lightningkite.kiteui.telemetry
 
-import com.lightningkite.reactive.core.AppScope
+import com.lightningkite.kiteui.toBlob
 import kotlinx.browser.window
-import kotlinx.coroutines.launch
 import org.w3c.dom.events.Event
 
 internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
@@ -21,6 +20,16 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
 }
 
 internal actual fun blockingFlush(exporter: TelemetryExporter) {
-    // Can't block in JS; page stays alive for error events so async flush is fine
-    AppScope.launch { exporter.flushAll() }
+    // Use navigator.sendBeacon for best-effort delivery during page unload/error.
+    // Unlike AppScope.launch, sendBeacon survives page navigation and unload.
+    val navigator = js("navigator")
+    val payloads = exporter.drainToPayloads()
+    for ((url, body) in payloads) {
+        try {
+            val blob = body.toBlob("application/json")
+            navigator.sendBeacon(url, blob)
+        } catch (_: dynamic) {
+            // Best effort — if sendBeacon is unavailable, data is lost
+        }
+    }
 }

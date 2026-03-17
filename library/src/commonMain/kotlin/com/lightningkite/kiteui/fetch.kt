@@ -20,14 +20,17 @@ suspend inline fun fetch(
     body: FileReference
 ) = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
 
-/** Hook for telemetry or other interceptors to wrap all HTTP requests. */
-var fetchInterceptor: (suspend (
+/** Interceptor that wraps HTTP requests. Call [proceed] to continue the chain. */
+typealias FetchInterceptor = suspend (
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
     body: RequestBody?,
     proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse,
-) -> RequestResponse)? = null
+) -> RequestResponse
+
+/** Interceptors applied to all [fetch] calls, in order. Each wraps the next in the chain. */
+val fetchInterceptors: MutableList<FetchInterceptor> = mutableListOf()
 
 suspend fun fetch(
     url: String,
@@ -37,14 +40,15 @@ suspend fun fetch(
     onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
     onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
 ): RequestResponse {
-    val interceptor = fetchInterceptor
-    return if (interceptor != null) {
-        interceptor(url, method, headers, body) { u, m, h, b ->
-            fetchRaw(u, m, h, b, onUploadProgress, onDownloadProgress)
-        }
-    } else {
-        fetchRaw(url, method, headers, body, onUploadProgress, onDownloadProgress)
+    val interceptors = fetchInterceptors.toList()
+    var proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse = { u, m, h, b ->
+        fetchRaw(u, m, h, b, onUploadProgress, onDownloadProgress)
     }
+    for (interceptor in interceptors.asReversed()) {
+        val next = proceed
+        proceed = { u, m, h, b -> interceptor(u, m, h, b, next) }
+    }
+    return proceed(url, method, headers, body)
 }
 
 expect suspend fun fetchRaw(

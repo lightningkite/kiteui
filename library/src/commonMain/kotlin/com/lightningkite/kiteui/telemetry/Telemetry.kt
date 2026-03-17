@@ -39,8 +39,8 @@ class Telemetry(val config: TelemetryConfig) {
 
     internal val exporter: TelemetryExporter = TelemetryExporter(config)
 
-    /** Sampling decision made once per trace (session). All spans in this trace share the same decision. */
-    val currentTraceIsSampled: Boolean = Random.nextDouble() <= config.traceSamplingRate
+    /** Sampling decision made once per session (app launch). All traces in this session share the same decision. */
+    val currentTraceIsSampled: Boolean = Random.nextDouble() < config.traceSamplingRate
 
     /** Effective log severity — mutable to support [setVerboseLogging]. */
     var logMinSeverity: OtlpSeverity = config.logMinSeverity
@@ -57,8 +57,13 @@ class Telemetry(val config: TelemetryConfig) {
     private var lastPageStartNanos: String = ""
     private var lastPageSpanId: String = ""
 
-    // Saved hooks for cleanup in shutdown
+    // Cleanup tracking for shutdown()
     private var previousThrowableReport: ((Throwable, String) -> Unit)? = null
+    private val installedFetchInterceptor: FetchInterceptor = { url, method, headers, body, proceed ->
+        instrumentFetch(url, method, headers, body, proceed)
+    }
+    private val installedLogInterceptor = TelemetryLogInterceptor(this)
+    private val cleanups = mutableListOf<() -> Unit>()
 
     // ===== Installation =====
 
@@ -71,7 +76,7 @@ class Telemetry(val config: TelemetryConfig) {
      */
     fun install(navigator: PageNavigator) {
         // Log interceptor
-        TelemetryLog(this).install()
+        logInterceptors.add(installedLogInterceptor)
 
         // Exception capture — chains into the existing Throwable_report global
         previousThrowableReport = Throwable_report
@@ -82,9 +87,7 @@ class Telemetry(val config: TelemetryConfig) {
         }
 
         // Fetch interceptor
-        fetchInterceptor = { url, method, headers, body, proceed ->
-            instrumentFetch(url, method, headers, body, proceed)
-        }
+        fetchInterceptors.add(installedFetchInterceptor)
 
         // Navigation hook
         bindNavigation(navigator)
@@ -109,7 +112,7 @@ class Telemetry(val config: TelemetryConfig) {
         // Lifecycle tracking — foreground/background sessions
         lastForegroundNanos = nanosString()
         foregroundSpanId = spanId()
-        AppState.inForeground.addListener {
+        cleanups += AppState.inForeground.addListener {
             if (AppState.inForeground.value) {
                 onForeground()
             } else {
@@ -118,7 +121,7 @@ class Telemetry(val config: TelemetryConfig) {
         }
 
         // Lifecycle tracking — connectivity issues
-        Connectivity.lastConnectivityIssueCode.addListener {
+        cleanups += Connectivity.lastConnectivityIssueCode.addListener {
             val code = Connectivity.lastConnectivityIssueCode.value
             if (code != 0.toShort()) {
                 exporter.incrementCounter(
@@ -154,9 +157,24 @@ class Telemetry(val config: TelemetryConfig) {
         log.info("Telemetry configured: endpoint=${config.endpoint}, service=${config.serviceName}")
     }
 
+    /**
+     * Removes all hooks installed by [install] and stops the flush loop.
+     * Buffered data is NOT flushed — call [flush] first if you need to drain.
+     */
+    fun shutdown() {
+        fetchInterceptors.remove(installedFetchInterceptor)
+        logInterceptors.remove(installedLogInterceptor)
+        Throwable_report = previousThrowableReport ?: Throwable_report
+        navCleanup?.invoke()
+        navCleanup = null
+        cleanups.forEach { it() }
+        cleanups.clear()
+        exporter.stop()
+    }
+
     // ===== Fetch instrumentation =====
 
-    private suspend fun instrumentFetch(
+    internal suspend fun instrumentFetch(
         url: String,
         method: HttpMethod,
         headers: HttpHeaders,
@@ -325,16 +343,17 @@ class Telemetry(val config: TelemetryConfig) {
         context: String,
         severity: OtlpSeverity = OtlpSeverity.ERROR,
     ) {
+        val stackTrace = throwable.stackTraceToString()
         exporter.addLog(
             OtlpLogRecord(
                 timeUnixNano = nanosString(),
                 severityNumber = severity.number,
                 severityText = severity.text,
-                body = OtlpAnyValue(stringValue = throwable.stackTraceToString()),
+                body = OtlpAnyValue(stringValue = stackTrace),
                 attributes = buildList {
                     add(OtlpKeyValue("exception.type", OtlpAnyValue(stringValue = throwable::class.simpleName ?: "Unknown")))
                     add(OtlpKeyValue("exception.message", OtlpAnyValue(stringValue = throwable.message ?: "")))
-                    add(OtlpKeyValue("exception.stacktrace", OtlpAnyValue(stringValue = throwable.stackTraceToString())))
+                    add(OtlpKeyValue("exception.stacktrace", OtlpAnyValue(stringValue = stackTrace)))
                     add(OtlpKeyValue("crash.fingerprint", OtlpAnyValue(stringValue = CrashFingerprint.generate(throwable))))
                     if (context.isNotEmpty()) {
                         add(OtlpKeyValue("exception.context", OtlpAnyValue(stringValue = context)))

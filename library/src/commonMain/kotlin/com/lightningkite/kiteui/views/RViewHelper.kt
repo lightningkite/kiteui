@@ -313,6 +313,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewP
         @InternalKiteUi
         set(value) {
             field = value
+            cachedViewPath = null
             if (value != null) refreshTheming()
         }
     @InternalKiteUi
@@ -658,7 +659,16 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewP
         )
     }
 
-    override fun viewPath(): String = computeViewPath()
+    /** Cached result of [computeViewPath]. Invalidated when [parent] changes. Not invalidated when
+     *  an ancestor's [debugName] changes, which is acceptable since names are set once at creation. */
+    private var cachedViewPath: String? = null
+
+    override fun viewPath(): String {
+        cachedViewPath?.let { return it }
+        val computed = computeViewPath()
+        cachedViewPath = computed
+        return computed
+    }
 
     private fun computeViewPath(): String {
         val segments = ArrayList<String>()

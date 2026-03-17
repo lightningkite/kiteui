@@ -6,23 +6,24 @@ KiteUI has built-in OpenTelemetry integration that exports traces, metrics, and 
 
 ```kotlin
 // In your App.kt or equivalent, at startup:
-Telemetry.configure(
+val telemetry = Telemetry(TelemetryConfig(
     endpoint = "https://otlp-gateway-prod-us-central-0.grafana.net/otlp",
     headers = mapOf("Authorization" to "Basic ${Base64.encode("instanceId:apiToken")}")
-)
+))
+telemetry.install(navigator)
 ```
 
 That's it. Everything below is automatic.
 
 ## What's Auto-Instrumented
 
-When configured, KiteUI automatically tracks:
+When installed, KiteUI automatically tracks:
 
 | Signal | What | Details |
 |--------|------|---------|
 | **Traces** | HTTP requests | Client-perceived latency, method, host, URL. Span hierarchy links to current page. |
 | **Traces** | Page views | Time spent on each page, page name from `Page::class.simpleName`. |
-| **Traces** | App cold start | Time from process start to `Telemetry.configure()`. |
+| **Traces** | App cold start | Time from process start to `install()`. |
 | **Traces** | Foreground sessions | Duration of each foreground session (background → foreground → background). |
 | **Metrics** | `http.client.request.duration` | Histogram of HTTP latency in ms, bucketed by method and host. |
 | **Metrics** | `navigation.page_views` | Counter of page views by page name. |
@@ -73,27 +74,22 @@ By default, only `WARN` and `ERROR` level logs are shipped. This keeps volume lo
 To temporarily enable verbose logging for debugging a production issue:
 
 ```kotlin
-// Ship all log levels (DEBUG and above)
-Telemetry.setVerboseLogging(true)
-
-// Restore default (WARN and above)
-Telemetry.setVerboseLogging(false)
+telemetry.setVerboseLogging(true)   // Ship all log levels (DEBUG and above)
+telemetry.setVerboseLogging(false)  // Restore default (WARN and above)
 ```
 
 ### Traces
 
-All traces are exported by default. For high-traffic apps, reduce with:
-
-```kotlin
-Telemetry.configure(
-    TelemetryConfig(
-        endpoint = "...",
-        traceSamplingRate = 0.1,  // Export 10% of traces
-    )
-)
-```
+Trace sampling is decided once per session (app launch), not per individual trace. With `traceSamplingRate = 0.1`, 10% of sessions will export all their traces and 90% will export none. This gives you a representative sample of complete user sessions rather than fragmented partial traces.
 
 Metrics are always exported regardless of sampling — they're aggregated client-side into counters and histograms, so the volume is tiny.
+
+```kotlin
+val telemetry = Telemetry(TelemetryConfig(
+    endpoint = "...",
+    traceSamplingRate = 0.1,  // 10% of sessions export traces
+))
+```
 
 ### Batching
 
@@ -110,47 +106,46 @@ Record your own counters and histograms:
 
 ```kotlin
 // Count events
-Telemetry.counter("checkout.completed")
-Telemetry.counter("search.queries", attributes = listOf(
+telemetry.counter("checkout.completed")
+telemetry.counter("search.queries", attributes = listOf(
     OtlpKeyValue("search.category", OtlpAnyValue(stringValue = "products"))
 ))
 
 // Record values into histograms
-Telemetry.histogram("image.load_time", durationMs, unit = "ms")
+telemetry.histogram("image.load_time", durationMs, unit = "ms")
 ```
 
 ## Full Configuration
 
 ```kotlin
-Telemetry.configure(
-    TelemetryConfig(
-        // Required
-        endpoint = "https://otlp-gateway-prod-us-central-0.grafana.net/otlp",
+val telemetry = Telemetry(TelemetryConfig(
+    // Required
+    endpoint = "https://otlp-gateway-prod-us-central-0.grafana.net/otlp",
 
-        // Authentication
-        headers = mapOf("Authorization" to "Basic ${Base64.encode("instanceId:apiToken")}"),
+    // Authentication
+    headers = mapOf("Authorization" to "Basic ${Base64.encode("instanceId:apiToken")}"),
 
-        // Identity
-        serviceName = "my-app",        // Identifies this app in dashboards
-        serviceVersion = "1.2.3",      // Attached to all exported data
+    // Identity
+    serviceName = "my-app",        // Identifies this app in dashboards
+    serviceVersion = "1.2.3",      // Attached to all exported data
 
-        // Batching
-        flushIntervalMs = 30_000L,     // Flush every 30s (default)
-        maxBatchSize = 100,            // Flush when buffer hits 100 (default)
-        maxQueueSize = 500,            // Drop oldest beyond 500 (default)
+    // Batching
+    flushIntervalMs = 30_000L,     // Flush every 30s (default)
+    maxBatchSize = 100,            // Flush when buffer hits 100 (default)
+    maxQueueSize = 500,            // Drop oldest beyond 500 (default)
 
-        // Sampling
-        traceSamplingRate = 1.0,       // Export all traces (default)
+    // Sampling (per-session head sampling — see Volume Control section)
+    traceSamplingRate = 1.0,       // Export all sessions (default)
 
-        // Logs
-        logMinSeverity = OtlpSeverity.WARN,  // Only WARN+ (default)
-    )
-)
+    // Logs
+    logMinSeverity = OtlpSeverity.WARN,  // Only WARN+ (default)
+))
+telemetry.install(navigator)
 ```
 
 ## Noop Mode
 
-When `Telemetry.configure()` is not called, all instrumentation is gated behind a single `if (Telemetry.isActive)` boolean check. No buffers are allocated, no coroutines are launched, no listeners are registered. Effectively zero overhead.
+When `Telemetry` is not instantiated and `install()` is not called, no hooks are registered, no buffers are allocated, no coroutines are launched. Effectively zero overhead.
 
 ## Grafana Cloud Setup
 
@@ -164,11 +159,12 @@ val instanceId = "123456"
 val apiToken = "glc_..."
 val auth = Base64.encode("$instanceId:$apiToken".encodeToByteArray())
 
-Telemetry.configure(
+val telemetry = Telemetry(TelemetryConfig(
     endpoint = "https://otlp-gateway-prod-us-central-0.grafana.net/otlp",
     headers = mapOf("Authorization" to "Basic $auth"),
-    serviceName = "my-app"
-)
+    serviceName = "my-app",
+))
+telemetry.install(navigator)
 ```
 
 Grafana Cloud automatically routes:
@@ -181,8 +177,10 @@ Grafana Cloud automatically routes:
 Sending directly from the browser to Grafana Cloud exposes the API token in client-side code. For production web apps, proxy telemetry through your backend:
 
 ```kotlin
-// Browser app points at your backend's telemetry proxy
-Telemetry.configure(endpoint = "https://your-backend.com/otlp")
+val telemetry = Telemetry(TelemetryConfig(
+    endpoint = "https://your-backend.com/otlp",
+))
+telemetry.install(navigator)
 ```
 
 Your backend forwards to Grafana Cloud with the real credentials. Android and iOS apps can send directly.
@@ -209,7 +207,7 @@ The same logical crash produces the same fingerprint even when line numbers shif
 |----------|------|------------|
 | **Android** | `Thread.setDefaultUncaughtExceptionHandler` | Chains to previous handler |
 | **iOS** | `kotlin.native.setUnhandledExceptionHook` | Only catches Kotlin exceptions, not ObjC/Swift crashes |
-| **JS/Web** | `window.error` + `window.unhandledrejection` | Page stays alive; async flush |
+| **JS/Web** | `window.error` + `window.unhandledrejection` | Uses `navigator.sendBeacon()` for best-effort flush |
 | **JVM** | `Thread.setDefaultUncaughtExceptionHandler` | Chains to previous handler |
 
 ### Attributes on Exception Logs
@@ -305,15 +303,13 @@ navigation_page_views_total * on(job, instance) group_left(os_type) target_info
 
 ```
 library/src/commonMain/kotlin/com/lightningkite/kiteui/telemetry/
-├── Telemetry.kt              # Public API singleton
+├── Telemetry.kt              # Public API — construct and install()
 ├── TelemetryConfig.kt        # Configuration data class
 ├── OtlpModels.kt             # @Serializable OTLP JSON wire format
-├── IdGenerator.kt            # Trace/span ID generation
 ├── TelemetryExporter.kt      # Batching + HTTP export
 ├── TelemetryLog.kt           # Log interceptor (decorator pattern)
-├── TelemetryNavigation.kt    # Page view tracking
-├── TelemetryLifecycle.kt     # App lifecycle tracking
 ├── TelemetryMetrics.kt       # Counter + histogram aggregators
+├── TelemetryContext.kt       # Coroutine context element for trace propagation
 ├── CrashFingerprint.kt       # Stack trace normalization + FNV-1a hashing
 └── TelemetryCrashHook.kt     # expect declarations for platform crash hooks
 
@@ -323,9 +319,8 @@ library/src/{android,ios,js,jvmSsr}Main/.../telemetry/
 
 ### Integration Points
 
-- **`fetch-connectivity.kt`** — HTTP spans, latency histograms, and `traceparent` injection happen here
+- **`fetch.kt`** — `fetchInterceptor` hook enables HTTP spans, latency histograms, and `traceparent` injection
 - **`debugger.kt`** — `logInterceptor` var enables the log interceptor chain
-- **`AppNavV2.kt`** — Navigation telemetry auto-binds in `appBase()`
 - **`Throwable_report`** — Exception capture hooks into the global error handler
 
 ### Export Path

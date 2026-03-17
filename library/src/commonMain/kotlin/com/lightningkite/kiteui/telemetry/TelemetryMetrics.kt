@@ -48,8 +48,10 @@ internal class HistogramAggregator(
     val bounds: List<Double> = DEFAULT_LATENCY_BOUNDS,
 ) {
     companion object {
+        /** Exclusive upper bounds in milliseconds for HTTP latency buckets.
+         *  A value is placed in the first bucket whose bound is >= the value. */
         val DEFAULT_LATENCY_BOUNDS = listOf(
-            0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0,
+            5.0, 10.0, 25.0, 50.0, 75.0, 100.0,
             250.0, 500.0, 1000.0, 2500.0, 5000.0, 10000.0
         )
     }

@@ -82,48 +82,58 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
         flushLogs()
     }
 
-    private suspend fun flushTraces() {
-        if (spanBuffer.isEmpty()) return
+    private fun drainTraces(): Pair<String, String>? {
+        if (spanBuffer.isEmpty()) return null
         val spans = ArrayList(spanBuffer)
         spanBuffer.clear()
         val payload = OtlpExportTraceRequest(
             listOf(OtlpResourceSpans(resource, listOf(OtlpScopeSpans(scope, spans))))
         )
-        sendOtlp("/v1/traces", json.encodeToString(OtlpExportTraceRequest.serializer(), payload))
+        return "/v1/traces" to json.encodeToString(OtlpExportTraceRequest.serializer(), payload)
     }
 
-    private suspend fun flushMetrics() {
+    private fun drainMetrics(): Pair<String, String>? {
         val metrics = mutableListOf<OtlpMetric>()
         val now = Telemetry.nanosString()
-
-        for ((_, counter) in counters) {
-            counter.snapshot(now)?.let { metrics.add(it) }
-        }
-        for ((_, histogram) in histograms) {
-            histogram.snapshot(now)?.let { metrics.add(it) }
-        }
-
-        if (metrics.isEmpty()) return
+        for ((_, counter) in counters) { counter.snapshot(now)?.let { metrics.add(it) } }
+        for ((_, histogram) in histograms) { histogram.snapshot(now)?.let { metrics.add(it) } }
+        if (metrics.isEmpty()) return null
         val payload = OtlpExportMetricsRequest(
             listOf(OtlpResourceMetrics(resource, listOf(OtlpScopeMetrics(scope, metrics))))
         )
-        sendOtlp("/v1/metrics", json.encodeToString(OtlpExportMetricsRequest.serializer(), payload))
+        return "/v1/metrics" to json.encodeToString(OtlpExportMetricsRequest.serializer(), payload)
     }
 
-    private suspend fun flushLogs() {
-        if (logBuffer.isEmpty()) return
+    private fun drainLogs(): Pair<String, String>? {
+        if (logBuffer.isEmpty()) return null
         val logs = ArrayList(logBuffer)
         logBuffer.clear()
         val payload = OtlpExportLogsRequest(
             listOf(OtlpResourceLogs(resource, listOf(OtlpScopeLogs(scope, logs))))
         )
-        sendOtlp("/v1/logs", json.encodeToString(OtlpExportLogsRequest.serializer(), payload))
+        return "/v1/logs" to json.encodeToString(OtlpExportLogsRequest.serializer(), payload)
+    }
+
+    private suspend fun flushTraces() { drainTraces()?.let { sendOtlp(it.first, it.second) } }
+    private suspend fun flushMetrics() { drainMetrics()?.let { sendOtlp(it.first, it.second) } }
+    private suspend fun flushLogs() { drainLogs()?.let { sendOtlp(it.first, it.second) } }
+
+    /**
+     * Serializes all buffered data into (fullUrl, jsonBody) pairs without sending.
+     * Used by platforms (JS) that need synchronous fire-and-forget export (e.g. sendBeacon).
+     */
+    internal fun drainToPayloads(): List<Pair<String, String>> {
+        val baseUrl = config.endpoint.trimEnd('/')
+        return listOfNotNull(drainTraces(), drainMetrics(), drainLogs())
+            .map { (path, body) -> "$baseUrl$path" to body }
     }
 
     private suspend fun sendOtlp(path: String, body: String) {
         try {
             // Use suppressConnectivityIssues so telemetry export never triggers
             // the app's ConnectivityGate or retry UI
+            // fetchRaw (not fetch) to bypass fetchInterceptors — using fetch here would
+            // cause infinite recursion: export → fetch → telemetry interceptor → export → ...
             val response = suppressConnectivityIssues {
                 fetchRaw(
                     url = config.endpoint.trimEnd('/') + path,
@@ -136,10 +146,13 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
             }
             if (!response.ok) {
                 val responseBody = try { response.text() } catch (_: Exception) { "(unreadable)" }
+                // Use LogRoot directly (not Log) to bypass the telemetry log interceptor.
+                // Using Log here would cause infinite recursion: export fail → log → export → fail → ...
                 LogRoot.tag("Telemetry").warn("Export rejected for $path: ${response.status} — $responseBody")
             }
         } catch (e: Exception) {
-            // Telemetry export failure is silent; never crash the app for observability
+            // Telemetry export failure is silent; never crash the app for observability.
+            // LogRoot bypasses the telemetry log interceptor to prevent infinite recursion.
             LogRoot.tag("Telemetry").warn("Export failed for $path: ${e.message}")
         }
     }

@@ -26,7 +26,9 @@ data class TelemetryConfig(
     val maxQueueSize: Int = 500,
 
     // Sampling
-    /** Fraction of traces to export (0.0 to 1.0). Metrics are always exported. */
+    /** Fraction of sessions that export traces (0.0 to 1.0). Decided once at app launch —
+     *  a sampled session exports all its traces, an unsampled session exports none.
+     *  Metrics are always exported regardless. */
     val traceSamplingRate: Double = 1.0,
 
     // Logs
