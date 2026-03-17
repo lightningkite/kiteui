@@ -14,7 +14,7 @@ actual class ProgressBar actual constructor(context: RContext): RView(context) {
     }
 
     override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+        super.applyTheme(theme[FieldSemantic])
         native.classes.add("transition")
     }
 

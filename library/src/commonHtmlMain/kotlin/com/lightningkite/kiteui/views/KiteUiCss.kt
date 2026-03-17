@@ -123,6 +123,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             progress.kui::-webkit-progress-bar {
                 border-radius: 100px;
+                background: transparent;
             }
 
             progress.kui::-webkit-progress-value {
@@ -133,7 +134,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             progress.kui {
                 background: none;
-                max-height: 0.5rem;
+                height: 1rem;
+                max-height: 1rem;
+                width: 100%;
                 border: medium;
                 border-radius: 1rem;
                 padding: 0px !important;
