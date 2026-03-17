@@ -7,6 +7,21 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 internal class TelemetryExporter(private val config: TelemetryConfig) {
+    // encodeDefaults = false is the correct choice for OTLP JSON serialization.
+    //
+    // Proto3 JSON mapping spec (https://protobuf.dev/programming-guides/json/) states:
+    // "If a field has the default value, it will be omitted in the JSON-encoded data by default."
+    // All OTLP receivers use standard proto3 JSON unmarshalers that treat missing fields as their
+    // proto3 zero value (0, false, "", [], null). This is not optional — it is required behavior.
+    //
+    // All official OpenTelemetry SDKs (Go, Java, Python) omit default-valued fields. Using
+    // encodeDefaults = true would bloat payloads ~30-50% with empty arrays, empty strings, and
+    // zeros, and would break OtlpAnyValue oneof semantics by emitting null fields that should
+    // be absent.
+    //
+    // For the few fields where our Kotlin default differs from the proto3 zero value (e.g.,
+    // OtlpSpan.kind defaults to 1/INTERNAL but proto3 zero is 0/UNSPECIFIED), we use
+    // @EncodeDefault to force serialization. See OtlpModels.kt for the full list.
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = false }
 
     // Buffers are internal for test access; accessed only from main thread (same threading model as all KiteUI)

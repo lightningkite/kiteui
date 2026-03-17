@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.telemetry
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 
 // Only catches Kotlin/Native exceptions, not ObjC/Swift crashes.
 // setUnhandledExceptionHook replaces the default termination behavior,
@@ -22,5 +23,9 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
 }
 
 internal actual fun blockingFlush(exporter: TelemetryExporter) {
-    runBlocking { exporter.flushAll() }
+    try {
+        runBlocking { withTimeout(3_000) { exporter.flushAll() } }
+    } catch (_: Exception) {
+        // Best effort — if network is unreachable or times out, data is lost.
+    }
 }

@@ -108,9 +108,9 @@ class CrashFingerprintTest {
 
     @Test
     fun causeChainNestedExceptions() {
-        val root = java.io.IOException("disk error")
+        val root = RuntimeException("disk error")
         val wrapper = IllegalStateException("failed", root)
-        assertEquals("IllegalStateException > IOException", CrashFingerprint.causeChain(wrapper))
+        assertEquals("IllegalStateException > RuntimeException", CrashFingerprint.causeChain(wrapper))
     }
 
     @Test

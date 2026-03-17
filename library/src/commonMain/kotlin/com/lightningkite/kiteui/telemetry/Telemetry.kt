@@ -190,15 +190,37 @@ class Telemetry(val config: TelemetryConfig) {
         val viewPath = ctx.viewPath()
 
         val sampled = if (currentTraceIsSampled) "01" else "00"
-        headers.set("traceparent", "00-$fetchTraceId-$fetchSpanId-$sampled")
+        val host = url.substringAfter("://").substringBefore("/").substringBefore("?")
 
-        val response = proceed(url, method, headers, body)
+        // Only inject traceparent if the host is in the propagation allowlist
+        if (config.tracePropagationHosts.isEmpty() || config.tracePropagationHosts.any { host.endsWith(it) }) {
+            headers.set("traceparent", "00-$fetchTraceId-$fetchSpanId-$sampled")
+        }
+
+        val response: RequestResponse
+        var errorType: String? = null
+        try {
+            response = proceed(url, method, headers, body)
+        } catch (e: Exception) {
+            errorType = e::class.simpleName ?: "Unknown"
+            val durationMs = clockMillis() - startMs
+            val endNanos = nanosString()
+            recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType)
+            throw e
+        }
 
         val durationMs = clockMillis() - startMs
         val endNanos = nanosString()
-        val host = url.substringAfter("://").substringBefore("/").substringBefore("?")
+        recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType)
 
-        // Record span (subject to sampling)
+        return response
+    }
+
+    private fun recordFetchTelemetry(
+        fetchTraceId: String, fetchSpanId: String, parentSpanId: String,
+        method: HttpMethod, url: String, host: String, viewPath: String,
+        startNanos: String, endNanos: String, durationMs: Double, errorType: String?,
+    ) {
         if (currentTraceIsSampled) {
             exporter.addSpan(
                 OtlpSpan(
@@ -214,23 +236,23 @@ class Telemetry(val config: TelemetryConfig) {
                         add(OtlpKeyValue("url.full", OtlpAnyValue(stringValue = url)))
                         add(OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)))
                         if (viewPath.isNotEmpty()) add(OtlpKeyValue("view.path", OtlpAnyValue(stringValue = viewPath)))
+                        if (errorType != null) add(OtlpKeyValue("error.type", OtlpAnyValue(stringValue = errorType)))
                     },
+                    status = if (errorType != null) OtlpSpanStatus(code = 2, message = errorType) else null,
                 )
             )
         }
 
-        // Always record latency histogram (cheap aggregation, not sampled)
         exporter.recordHistogram(
             name = "http.client.request.duration",
             value = durationMs,
             unit = "ms",
-            attributes = listOf(
-                OtlpKeyValue("http.request.method", OtlpAnyValue(stringValue = method.name)),
-                OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)),
-            )
+            attributes = buildList {
+                add(OtlpKeyValue("http.request.method", OtlpAnyValue(stringValue = method.name)))
+                add(OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)))
+                if (errorType != null) add(OtlpKeyValue("error.type", OtlpAnyValue(stringValue = errorType)))
+            }
         )
-
-        return response
     }
 
     // ===== Lifecycle (foreground/background) =====
@@ -317,10 +339,10 @@ class Telemetry(val config: TelemetryConfig) {
 
     /**
      * Temporarily enable verbose (DEBUG+) log shipping for investigation.
-     * Call with `false` to restore the default (WARN+).
+     * Call with `false` to restore the configured [TelemetryConfig.logMinSeverity].
      */
     fun setVerboseLogging(enabled: Boolean) {
-        logMinSeverity = if (enabled) OtlpSeverity.DEBUG else OtlpSeverity.WARN
+        logMinSeverity = if (enabled) OtlpSeverity.DEBUG else config.logMinSeverity
     }
 
     /** Record a custom counter metric. */

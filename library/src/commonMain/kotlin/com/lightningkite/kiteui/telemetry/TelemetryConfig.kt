@@ -31,6 +31,12 @@ data class TelemetryConfig(
      *  Metrics are always exported regardless. */
     val traceSamplingRate: Double = 1.0,
 
+    // Propagation
+    /** Host suffixes to inject `traceparent` header on. Empty list (default) propagates
+     *  to all hosts. Set to e.g. `listOf("api.example.com", ".internal.net")` to avoid
+     *  leaking trace context to third-party services. Matching is suffix-based. */
+    val tracePropagationHosts: List<String> = emptyList(),
+
     // Logs
     /** Only ship log records at or above this severity. */
     val logMinSeverity: OtlpSeverity = OtlpSeverity.WARN,
