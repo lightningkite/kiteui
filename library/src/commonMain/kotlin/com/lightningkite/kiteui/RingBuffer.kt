@@ -6,7 +6,7 @@ package com.lightningkite.kiteui
  * Synchronization is platform-native: `synchronized` on JVM/Android,
  * `NSLock` on iOS, no-op on JS (single-threaded).
  */
-class RingBuffer<T>(private val maxSize: Int) {
+internal class RingBuffer<T>(private val maxSize: Int) {
     private val buffer = ArrayDeque<T>()
 
     fun add(item: T): Unit = platformSynchronized(buffer) {

@@ -57,8 +57,10 @@ class Telemetry(val config: TelemetryConfig) {
     private var lastPageStartNanos: String = ""
     private var lastPageSpanId: String = ""
 
-    // Cleanup tracking for shutdown()
+    // Cleanup tracking for shutdown() — flags deactivate hooks without un-registering,
+    // which avoids breaking the delegation chain or leaking references.
     private var throwableHookActive = false
+    private var crashHookActive = false
     private val installedFetchInterceptor: FetchInterceptor = { url, method, headers, body, proceed ->
         instrumentFetch(url, method, headers, body, proceed)
     }
@@ -146,10 +148,14 @@ class Telemetry(val config: TelemetryConfig) {
             }
         }
 
-        // Crash hook — capture uncaught exceptions at FATAL severity and flush before death
+        // Crash hook — uses crashHookActive flag so shutdown() can deactivate without
+        // needing to un-register platform hooks (which is fragile/impossible on some platforms).
+        crashHookActive = true
         installCrashHook { throwable ->
-            recordException(throwable, "uncaught", OtlpSeverity.FATAL)
-            blockingFlush(exporter)
+            if (crashHookActive) {
+                recordException(throwable, "uncaught", OtlpSeverity.FATAL)
+                blockingFlush(exporter)
+            }
         }
 
         // Start the background flush loop
@@ -166,6 +172,7 @@ class Telemetry(val config: TelemetryConfig) {
         fetchInterceptors.remove(installedFetchInterceptor)
         logInterceptors.remove(installedLogInterceptor)
         throwableHookActive = false
+        crashHookActive = false
         navCleanup?.invoke()
         navCleanup = null
         cleanups.forEach { it() }
@@ -240,7 +247,8 @@ class Telemetry(val config: TelemetryConfig) {
                     endTimeUnixNano = endNanos,
                     attributes = buildList {
                         add(OtlpKeyValue("http.request.method", OtlpAnyValue(stringValue = method.name)))
-                        add(OtlpKeyValue("url.full", OtlpAnyValue(stringValue = url)))
+                        // Strip query/fragment to avoid leaking tokens, PII, or API keys in URLs
+                        add(OtlpKeyValue("url.path", OtlpAnyValue(stringValue = url.substringBefore("?").substringBefore("#"))))
                         add(OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)))
                         if (statusCode != null) add(OtlpKeyValue("http.response.status_code", OtlpAnyValue(intValue = statusCode.toLong())))
                         if (viewPath.isNotEmpty()) add(OtlpKeyValue("view.path", OtlpAnyValue(stringValue = viewPath)))
