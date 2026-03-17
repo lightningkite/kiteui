@@ -358,10 +358,8 @@ internal object AppWebSocketHandler : WebSocketHandler<PathSpec0, Unit>,
         try {
             incoming.consumeEach { frame ->
                 if (frame is WebSocketFrame.Text && frame.content.isNotBlank()) {
-                    conn.mutex.withLock {
-                        conn.pending?.complete(frame.content)
-                        conn.pending = null
-                    }
+                    conn.pending?.complete(frame.content)
+                    conn.pending = null
                 }
             }
         } finally {
@@ -404,7 +402,7 @@ fun startAdbReverse(port: Int) {
                 val process = ProcessBuilder("adb", "devices")
                     .redirectErrorStream(true)
                     .start()
-                val output = process.inputStream.bufferedReader().readText()
+                val output = process.inputStream.use { it.bufferedReader().readText() }
                 process.waitFor()
                 val serials = output.lines()
                     .drop(1)
