@@ -159,7 +159,14 @@ fun Theme.Companion.neumorphism(
             SelectedSemantic.override {
                 it.withBack(
                     shadows = concaveShadows,
-                    background = it.background.map { c -> c.highlight(-0.02f) },
+                    background = it.background.map { c -> c.highlight(-0.05f) },
+                    outlineWidth = 0.px,
+                )
+            },
+            UnselectedSemantic.override {
+                it.withBack(
+                    shadows = convexShadows,
+                    outlineWidth = 0.px,
                 )
             },
             FocusSemantic.override {

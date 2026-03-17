@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.CardSemantic
+import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.*
@@ -17,6 +19,7 @@ actual class Select actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "select"
         native.classes.add("editable")
+        native.classes.add("clickable")
     }
 
     actual fun <T> bind(
@@ -66,9 +69,11 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         set(value) { native.attributes.disabled = !value }
 
     override fun applyTheme(theme: ThemeAndBack) {
+        val convex = theme[CardSemantic]
         val p = prevThemeClass
-        val newClass = context.kiteUiCss.themeInteractive(theme.theme)
-        super.applyTheme(theme)
+        val newClass = context.kiteUiCss.themeInteractive(convex.theme)
+        super.applyTheme(convex)
+        native.classes.add("transition")
         native.children.forEach { o ->
             p?.let { o.classes.remove(it) }
             o.classes.add(newClass)

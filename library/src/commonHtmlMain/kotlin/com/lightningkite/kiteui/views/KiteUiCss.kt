@@ -133,11 +133,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             progress.kui {
                 background: none;
-                max-height: 0.25rem !important;
+                max-height: 0.5rem;
                 border: medium;
                 border-radius: 1rem;
                 padding: 0px !important;
                 appearance: none;
+                overflow: visible !important;
+                background-color: var(--nearest-background-color, transparent);
             }
             
             
@@ -344,15 +346,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .radio.radio.radio {
                 appearance: none;
-                width: 25px !important;
-                height: 25px !important;
+                width: 1.75rem !important;
+                height: 1.75rem !important;
                 position: relative;
                 border-radius: 999px !important;
                 padding: 0px !important;
-                border-width: 0.1rem;
-                border-style: solid;
-                outline: none;
-                border-color: var(--icon-color, currentcolor);
+                border: none;
+                outline-color: var(--icon-color, currentcolor);
+                outline-offset: -0.1rem;
+                background-color: var(--nearest-background-color, transparent);
+                overflow: visible !important;
             }
 
             :checked.checkbox::after {
@@ -386,15 +389,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .checkbox.checkbox.checkbox {
                 appearance: none;
-                width: 25px !important;
-                height: 25px !important;
+                width: 1.75rem !important;
+                height: 1.75rem !important;
                 position: relative;
                 padding: 0px !important;
-                border-width: 0.1rem;
-                border-style: solid;
-                border-color: var(--icon-color, currentcolor);
+                border: none;
+                outline-color: var(--icon-color, currentcolor);
+                outline-offset: -0.1rem;
                 border-radius: 20%;
-                outline: none;
+                background-color: var(--nearest-background-color, transparent);
+                overflow: visible !important;
                 opacity: 0.75;
             }
 
@@ -415,26 +419,26 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 cursor: pointer;
                 border: 1px solid rgba(100, 116, 139, 0.527);
                 border-radius: 9999px !important;
-                background-color: rgb(255, 255, 255);
+                background-color: var(--nearest-background-color, rgb(255, 255, 255));
                 box-shadow: rgba(100, 116, 139, 0.327) 0px 3px 10px;
                 transition: 0.3s;
             }
 
             .switch:checked {
-                background-color: #20a020 !important;
+                background-color: #20a020;
             }
 
             .switch {
                 position: relative;
-                overflow: visible;
+                overflow: visible !important;
                 padding: 0px !important;
                 height: 1.5rem !important;
                 width: 3rem !important;
                 cursor: pointer;
                 appearance: none;
                 border-radius: 9999px !important;
-                background-color: color-mix(in srgb, currentcolor 20%, transparent) !important;
-                background-image: none !important;
+                background-color: color-mix(in srgb, currentcolor 20%, transparent);
+                background-image: none;
                 transition: 0.3s;
             }
 
@@ -506,6 +510,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 font: unset;
                 color: unset;
                 text-align: start;
+            }
+
+            select.kui {
+                overflow: visible !important;
             }
 
             a.kui:visited {
@@ -869,11 +877,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             sub(null, asSelectors = listOf(""))
             sub(
                 SelectedSemantic,
-                asSelectors = listOf(".checked.checkResponsive"),
+                asSelectors = listOf(".checked.checkResponsive", ":checked.checkResponsive"),
             )
             sub(
                 UnselectedSemantic,
-                asSelectors = listOf(".checkResponsive"),
+                asSelectors = listOf(".checkResponsive:not(:checked):not(.checked)"),
             )
         }.also {
             cssGenTotal += it
