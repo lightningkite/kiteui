@@ -58,7 +58,7 @@ class Telemetry(val config: TelemetryConfig) {
     private var lastPageSpanId: String = ""
 
     // Cleanup tracking for shutdown()
-    private var previousThrowableReport: ((Throwable, String) -> Unit)? = null
+    private var throwableHookActive = false
     private val installedFetchInterceptor: FetchInterceptor = { url, method, headers, body, proceed ->
         instrumentFetch(url, method, headers, body, proceed)
     }
@@ -78,12 +78,13 @@ class Telemetry(val config: TelemetryConfig) {
         // Log interceptor
         logInterceptors.add(installedLogInterceptor)
 
-        // Exception capture — chains into the existing Throwable_report global
-        previousThrowableReport = Throwable_report
+        // Exception capture — uses a flag so shutdown() never breaks the delegation chain.
+        // A save/restore pattern would drop hooks installed by other code between install() and shutdown().
+        throwableHookActive = true
         val previous = Throwable_report
         Throwable_report = { throwable, context ->
             previous(throwable, context)
-            recordException(throwable, context)
+            if (throwableHookActive) recordException(throwable, context)
         }
 
         // Fetch interceptor
@@ -164,7 +165,7 @@ class Telemetry(val config: TelemetryConfig) {
     fun shutdown() {
         fetchInterceptors.remove(installedFetchInterceptor)
         logInterceptors.remove(installedLogInterceptor)
-        Throwable_report = previousThrowableReport ?: Throwable_report
+        throwableHookActive = false
         navCleanup?.invoke()
         navCleanup = null
         cleanups.forEach { it() }
@@ -189,29 +190,34 @@ class Telemetry(val config: TelemetryConfig) {
         val parentSpanId = ctx.spanId().ifEmpty { currentSpanId }
         val viewPath = ctx.viewPath()
 
-        val sampled = if (currentTraceIsSampled) "01" else "00"
         val host = url.substringAfter("://").substringBefore("/").substringBefore("?")
 
-        // Only inject traceparent if the host is in the propagation allowlist
-        if (config.tracePropagationHosts.isEmpty() || config.tracePropagationHosts.any { host.endsWith(it) }) {
-            headers.set("traceparent", "00-$fetchTraceId-$fetchSpanId-$sampled")
+        // Copy headers to avoid mutating the caller's HttpHeaders instance
+        val outHeaders = httpHeaders(headers)
+
+        // Only inject traceparent if the host is in the propagation allowlist (empty = no propagation)
+        if (config.tracePropagationHosts.isNotEmpty() && config.tracePropagationHosts.any { host.endsWith(it) }) {
+            val sampled = if (currentTraceIsSampled) "01" else "00"
+            outHeaders.set("traceparent", "00-$fetchTraceId-$fetchSpanId-$sampled")
         }
 
         val response: RequestResponse
         var errorType: String? = null
         try {
-            response = proceed(url, method, headers, body)
+            response = proceed(url, method, outHeaders, body)
         } catch (e: Exception) {
             errorType = e::class.simpleName ?: "Unknown"
             val durationMs = clockMillis() - startMs
             val endNanos = nanosString()
-            recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType)
+            recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType = errorType)
             throw e
         }
 
         val durationMs = clockMillis() - startMs
         val endNanos = nanosString()
-        recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType)
+        val statusCode = response.status
+        errorType = if (statusCode >= 500) "HTTP $statusCode" else null
+        recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType, statusCode)
 
         return response
     }
@@ -219,7 +225,8 @@ class Telemetry(val config: TelemetryConfig) {
     private fun recordFetchTelemetry(
         fetchTraceId: String, fetchSpanId: String, parentSpanId: String,
         method: HttpMethod, url: String, host: String, viewPath: String,
-        startNanos: String, endNanos: String, durationMs: Double, errorType: String?,
+        startNanos: String, endNanos: String, durationMs: Double,
+        errorType: String?, statusCode: Short? = null,
     ) {
         if (currentTraceIsSampled) {
             exporter.addSpan(
@@ -235,6 +242,7 @@ class Telemetry(val config: TelemetryConfig) {
                         add(OtlpKeyValue("http.request.method", OtlpAnyValue(stringValue = method.name)))
                         add(OtlpKeyValue("url.full", OtlpAnyValue(stringValue = url)))
                         add(OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)))
+                        if (statusCode != null) add(OtlpKeyValue("http.response.status_code", OtlpAnyValue(intValue = statusCode.toLong())))
                         if (viewPath.isNotEmpty()) add(OtlpKeyValue("view.path", OtlpAnyValue(stringValue = viewPath)))
                         if (errorType != null) add(OtlpKeyValue("error.type", OtlpAnyValue(stringValue = errorType)))
                     },
@@ -250,6 +258,7 @@ class Telemetry(val config: TelemetryConfig) {
             attributes = buildList {
                 add(OtlpKeyValue("http.request.method", OtlpAnyValue(stringValue = method.name)))
                 add(OtlpKeyValue("server.address", OtlpAnyValue(stringValue = host)))
+                if (statusCode != null) add(OtlpKeyValue("http.response.status_code", OtlpAnyValue(intValue = statusCode.toLong())))
                 if (errorType != null) add(OtlpKeyValue("error.type", OtlpAnyValue(stringValue = errorType)))
             }
         )

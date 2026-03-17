@@ -32,9 +32,9 @@ data class TelemetryConfig(
     val traceSamplingRate: Double = 1.0,
 
     // Propagation
-    /** Host suffixes to inject `traceparent` header on. Empty list (default) propagates
-     *  to all hosts. Set to e.g. `listOf("api.example.com", ".internal.net")` to avoid
-     *  leaking trace context to third-party services. Matching is suffix-based. */
+    /** Host suffixes to inject `traceparent` header on. Empty list (default) disables
+     *  propagation. Set to e.g. `listOf("api.example.com", ".internal.net")` to enable
+     *  distributed tracing with your backend. Matching is suffix-based. */
     val tracePropagationHosts: List<String> = emptyList(),
 
     // Logs

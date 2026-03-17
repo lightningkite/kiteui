@@ -2,7 +2,8 @@ package com.lightningkite.kiteui.telemetry
 
 /**
  * Aggregates a monotonically increasing counter.
- * Exported as an OTLP Sum with cumulative temporality — each flush reports the running total.
+ * Exported as an OTLP Sum with cumulative temporality (overrides the OtlpSum default of DELTA).
+ * Each flush reports the running total since aggregator creation.
  */
 internal class CounterAggregator(
     val name: String,

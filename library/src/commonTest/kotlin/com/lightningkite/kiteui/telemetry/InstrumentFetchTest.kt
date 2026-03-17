@@ -10,84 +10,96 @@ class InstrumentFetchTest {
 
     private fun testConfig(
         traceSamplingRate: Double = 1.0,
+        tracePropagationHosts: List<String> = listOf("example.com"),
     ) = TelemetryConfig(
         endpoint = "http://localhost:0/otlp",
         traceSamplingRate = traceSamplingRate,
+        tracePropagationHosts = tracePropagationHosts,
     )
 
-    /**
-     * Helper: calls instrumentFetch with a proceed that captures its arguments then throws.
-     * Since traceparent is set BEFORE proceed is called, we can inspect the headers
-     * even though proceed doesn't return a real RequestResponse.
-     */
-    private class CapturedCall(
-        val url: String,
-        val method: HttpMethod,
-        val headers: com.lightningkite.kiteui.HttpHeaders,
-    )
-    private class ProceedCapture : Exception("mock proceed — not a real error")
+    private class ProceedCapture(val headers: com.lightningkite.kiteui.HttpHeaders) : Exception("mock proceed")
+
+    /** Calls instrumentFetch, captures the headers received by proceed, then throws. */
+    private suspend fun captureHeaders(
+        t: Telemetry,
+        url: String = "http://example.com/api",
+        method: HttpMethod = HttpMethod.GET,
+    ): com.lightningkite.kiteui.HttpHeaders {
+        try {
+            t.instrumentFetch(url, method, httpHeaders(), null) { _, _, h, _ ->
+                throw ProceedCapture(h)
+            }
+        } catch (e: ProceedCapture) {
+            return e.headers
+        }
+        error("unreachable")
+    }
 
     // --- Traceparent injection ---
 
     @Test
     fun instrumentFetchInjectsTraceparentHeader() = runTest {
         val t = Telemetry(testConfig(traceSamplingRate = 1.0))
-        val headers = httpHeaders()
+        val captured = captureHeaders(t)
 
-        try {
-            t.instrumentFetch("http://example.com/api", HttpMethod.GET, headers, null) { _, _, _, _ ->
-                throw ProceedCapture()
-            }
-        } catch (_: ProceedCapture) {}
-
-        assertTrue(headers.has("traceparent"), "traceparent header should be set")
-        val tp = headers.get("traceparent")!!
+        assertTrue(captured.has("traceparent"), "traceparent header should be set")
+        val tp = captured.get("traceparent")!!
         assertTrue(tp.startsWith("00-"), "Should start with version 00: $tp")
     }
 
     @Test
-    fun traceparentHasSampledFlagWhenSampled() = runTest {
-        val t = Telemetry(testConfig(traceSamplingRate = 1.0)) // always sampled
-        val headers = httpHeaders()
+    fun traceparentNotInjectedByDefault() = runTest {
+        val t = Telemetry(testConfig(tracePropagationHosts = emptyList()))
+        val captured = captureHeaders(t)
 
+        assertFalse(captured.has("traceparent"), "traceparent should NOT be set when propagation hosts is empty")
+    }
+
+    @Test
+    fun traceparentNotInjectedForUnlistedHost() = runTest {
+        val t = Telemetry(testConfig(tracePropagationHosts = listOf("other.com")))
+        val captured = captureHeaders(t)
+
+        assertFalse(captured.has("traceparent"), "traceparent should NOT be set for unlisted host")
+    }
+
+    @Test
+    fun callerHeadersNotMutated() = runTest {
+        val t = Telemetry(testConfig())
+        val callerHeaders = httpHeaders()
         try {
-            t.instrumentFetch("http://example.com/api", HttpMethod.GET, headers, null) { _, _, _, _ ->
-                throw ProceedCapture()
+            t.instrumentFetch("http://example.com/api", HttpMethod.GET, callerHeaders, null) { _, _, _, _ ->
+                throw ProceedCapture(httpHeaders())
             }
         } catch (_: ProceedCapture) {}
 
-        val tp = headers.get("traceparent")!!
+        assertFalse(callerHeaders.has("traceparent"), "caller's headers should not be mutated")
+    }
+
+    @Test
+    fun traceparentHasSampledFlagWhenSampled() = runTest {
+        val t = Telemetry(testConfig(traceSamplingRate = 1.0))
+        val captured = captureHeaders(t)
+
+        val tp = captured.get("traceparent")!!
         assertTrue(tp.endsWith("-01"), "Sampled session should end with -01: $tp")
     }
 
     @Test
     fun traceparentHasUnsampledFlagWhenNotSampled() = runTest {
-        val t = Telemetry(testConfig(traceSamplingRate = 0.0)) // never sampled
-        val headers = httpHeaders()
+        val t = Telemetry(testConfig(traceSamplingRate = 0.0))
+        val captured = captureHeaders(t)
 
-        try {
-            t.instrumentFetch("http://example.com/api", HttpMethod.GET, headers, null) { _, _, _, _ ->
-                throw ProceedCapture()
-            }
-        } catch (_: ProceedCapture) {}
-
-        val tp = headers.get("traceparent")!!
+        val tp = captured.get("traceparent")!!
         assertTrue(tp.endsWith("-00"), "Unsampled session should end with -00: $tp")
     }
 
     @Test
     fun traceparentUsesW3CFormat() = runTest {
         val t = Telemetry(testConfig())
-        val headers = httpHeaders()
+        val captured = captureHeaders(t)
 
-        try {
-            t.instrumentFetch("http://example.com/api", HttpMethod.GET, headers, null) { _, _, _, _ ->
-                throw ProceedCapture()
-            }
-        } catch (_: ProceedCapture) {}
-
-        val tp = headers.get("traceparent")!!
-        // Format: 00-{32 hex traceId}-{16 hex spanId}-{2 hex flags}
+        val tp = captured.get("traceparent")!!
         val parts = tp.split("-")
         assertEquals(4, parts.size, "traceparent should have 4 parts: $tp")
         assertEquals("00", parts[0], "Version should be 00")
@@ -105,42 +117,30 @@ class InstrumentFetchTest {
         val t = Telemetry(testConfig())
         val contextTraceId = "aaaa1111bbbb2222cccc3333dddd4444"
         val ctx = TelemetryContext(traceId = contextTraceId, spanId = "1234567890abcdef")
-        val headers = httpHeaders()
 
+        val captured: com.lightningkite.kiteui.HttpHeaders
         withContext(ctx) {
-            try {
-                t.instrumentFetch("http://example.com/api", HttpMethod.GET, headers, null) { _, _, _, _ ->
-                    throw ProceedCapture()
-                }
-            } catch (_: ProceedCapture) {}
+            captured = captureHeaders(t)
         }
 
-        val tp = headers.get("traceparent")!!
+        val tp = captured.get("traceparent")!!
         val parts = tp.split("-")
         assertEquals(contextTraceId, parts[1], "Should use trace ID from coroutine context")
     }
 
     @Test
     fun traceparentUsesSpanIdFromCoroutineContextAsParent() = runTest {
-        // The parentSpanId is read from context but used for the span, not the traceparent.
-        // The traceparent spanId is a NEW span ID (the fetch span).
         val t = Telemetry(testConfig())
         val contextSpanId = "1234567890abcdef"
         val ctx = TelemetryContext(traceId = "aaaa1111bbbb2222cccc3333dddd4444", spanId = contextSpanId)
-        val headers = httpHeaders()
 
+        val captured: com.lightningkite.kiteui.HttpHeaders
         withContext(ctx) {
-            try {
-                t.instrumentFetch("http://example.com/api", HttpMethod.GET, headers, null) { _, _, _, _ ->
-                    throw ProceedCapture()
-                }
-            } catch (_: ProceedCapture) {}
+            captured = captureHeaders(t)
         }
 
-        val tp = headers.get("traceparent")!!
+        val tp = captured.get("traceparent")!!
         val fetchSpanId = tp.split("-")[2]
-        // The fetch span ID should be different from the context's span ID
-        // (the context span is the PARENT, the fetch span is a new child)
         assertNotEquals(contextSpanId, fetchSpanId,
             "Fetch span ID should be a new ID, not the parent span ID")
     }
@@ -148,16 +148,9 @@ class InstrumentFetchTest {
     @Test
     fun traceparentFallsBackToTelemetryTraceId() = runTest {
         val t = Telemetry(testConfig())
-        // No TelemetryContext in coroutine — should fall back to t.currentTraceId
-        val headers = httpHeaders()
+        val captured = captureHeaders(t)
 
-        try {
-            t.instrumentFetch("http://example.com/api", HttpMethod.GET, headers, null) { _, _, _, _ ->
-                throw ProceedCapture()
-            }
-        } catch (_: ProceedCapture) {}
-
-        val tp = headers.get("traceparent")!!
+        val tp = captured.get("traceparent")!!
         val traceId = tp.split("-")[1]
         assertEquals(t.currentTraceId, traceId,
             "Should fall back to Telemetry.currentTraceId when no coroutine context")
@@ -169,13 +162,8 @@ class InstrumentFetchTest {
         val spanIds = mutableSetOf<String>()
 
         repeat(5) {
-            val headers = httpHeaders()
-            try {
-                t.instrumentFetch("http://example.com/api", HttpMethod.GET, headers, null) { _, _, _, _ ->
-                    throw ProceedCapture()
-                }
-            } catch (_: ProceedCapture) {}
-            val spanId = headers.get("traceparent")!!.split("-")[2]
+            val captured = captureHeaders(t)
+            val spanId = captured.get("traceparent")!!.split("-")[2]
             spanIds.add(spanId)
         }
 
@@ -192,7 +180,7 @@ class InstrumentFetchTest {
             t.instrumentFetch("http://example.com/api/items", HttpMethod.POST, httpHeaders(), null) { u, m, _, _ ->
                 capturedUrl = u
                 capturedMethod = m
-                throw ProceedCapture()
+                throw ProceedCapture(httpHeaders())
             }
         } catch (_: ProceedCapture) {}
 
