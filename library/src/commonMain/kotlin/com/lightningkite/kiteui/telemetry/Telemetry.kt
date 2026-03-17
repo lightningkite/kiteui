@@ -59,6 +59,7 @@ class Telemetry(val config: TelemetryConfig) {
 
     // Cleanup tracking for shutdown() — flags deactivate hooks without un-registering,
     // which avoids breaking the delegation chain or leaking references.
+    private var installed = false
     private var throwableHookActive = false
     private var crashHookActive = false
     private val installedFetchInterceptor: FetchInterceptor = { url, method, headers, body, proceed ->
@@ -77,6 +78,9 @@ class Telemetry(val config: TelemetryConfig) {
      * AppScope/lifecycle hooks.
      */
     fun install(navigator: PageNavigator) {
+        check(!installed) { "Telemetry.install() called twice. Call shutdown() first." }
+        installed = true
+
         // Log interceptor
         logInterceptors.add(installedLogInterceptor)
 
@@ -169,6 +173,8 @@ class Telemetry(val config: TelemetryConfig) {
      * Buffered data is NOT flushed — call [flush] first if you need to drain.
      */
     fun shutdown() {
+        if (!installed) return
+        installed = false
         fetchInterceptors.remove(installedFetchInterceptor)
         logInterceptors.remove(installedLogInterceptor)
         throwableHookActive = false

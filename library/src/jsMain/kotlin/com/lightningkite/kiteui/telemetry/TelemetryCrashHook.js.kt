@@ -22,6 +22,9 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
 internal actual fun blockingFlush(exporter: TelemetryExporter) {
     // Use navigator.sendBeacon for best-effort delivery during page unload/error.
     // Unlike AppScope.launch, sendBeacon survives page navigation and unload.
+    // Limitation: sendBeacon cannot send custom headers, so crash telemetry will
+    // silently fail for endpoints requiring auth headers (e.g. Grafana Cloud).
+    // No browser API reliably supports both custom headers and unload-survival.
     val navigator = js("navigator")
     val payloads = exporter.drainToPayloads()
     for ((url, body) in payloads) {

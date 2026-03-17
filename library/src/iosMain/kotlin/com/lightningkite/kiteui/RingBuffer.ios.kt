@@ -8,8 +8,8 @@ private val locks = HashMap<Any, NSLock>()
 internal actual fun <T> platformSynchronized(lock: Any, block: () -> T): T {
     mapLock.lock()
     val nsLock = locks.getOrPut(lock) { NSLock() }
-    mapLock.unlock()
     nsLock.lock()
+    mapLock.unlock()
     try {
         return block()
     } finally {
