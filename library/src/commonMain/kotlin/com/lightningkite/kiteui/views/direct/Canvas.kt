@@ -2,16 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.KeyCode
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 
-import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
-import kotlin.jvm.JvmInline
-import kotlin.contracts.*
 
 
-expect class Canvas(context: RContext) : RView {
+expect class Canvas(context: ElementContext) : RView {
     var delegate: CanvasDelegate?
 }
 

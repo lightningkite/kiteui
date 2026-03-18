@@ -147,6 +147,6 @@ fun ViewWriter.withSpacing(multiplier: Double): ViewWriter = ThemeDerivation { i
 fun RView.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
     val existing = themeChoice
     reactiveScope {
-        themeChoice = existing + (calculate() ?: ThemeDerivation.none)
+        themeChoice = existing + (calculate() ?: None)
     }
 }

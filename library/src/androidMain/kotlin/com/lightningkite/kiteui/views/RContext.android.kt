@@ -2,16 +2,9 @@ package com.lightningkite.kiteui.views
 
 import android.content.res.Configuration
 import com.lightningkite.kiteui.KiteUiActivity
-import com.lightningkite.kiteui.models.Edges
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import java.lang.ref.WeakReference
 
-actual class RContext(activity: KiteUiActivity, parent: RContext? = null): RContextHelper(parent) {
+actual class ElementContext(activity: KiteUiActivity, parent: ElementContext? = null): ElementContextCommonCode(parent) {
     private val activityRef = WeakReference(activity)
 
     /**
@@ -38,7 +31,7 @@ actual class RContext(activity: KiteUiActivity, parent: RContext? = null): RCont
         }
 
     // by Claude - use addons.child() for lazy parent lookup instead of copying
-    actual fun split() = activityOrNull?.let { RContext(it, parent = this) }
+    actual fun split() = activityOrNull?.let { ElementContext(it, parent = this) }
         ?: throw IllegalStateException("Cannot split RContext: Activity has been destroyed")
 
     actual var immersiveMode: Boolean = false

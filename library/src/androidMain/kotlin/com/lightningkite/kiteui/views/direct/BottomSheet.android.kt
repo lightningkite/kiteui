@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
@@ -31,7 +31,7 @@ actual fun ViewWriter.openBottomSheet(
     o.withoutAnimation {
         object: ViewWriter() {
             override val representsView: RView? = null
-            override val context: RContext get() = this@openBottomSheet.context
+            override val context: ElementContext get() = this@openBottomSheet.context
             override fun willAddChild(view: RView) {
                 view.parent = o
                 view.themeChoice = ThemeDerivation.Set(o.theme.let { it.revert ?: it }[DialogSemantic].theme)

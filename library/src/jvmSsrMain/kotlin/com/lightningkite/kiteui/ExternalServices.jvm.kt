@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 
@@ -23,4 +23,4 @@ class JvmExternalServices : ExternalServicesAccess {
     override suspend fun getCurrentPosition(): GeolocationResult = throw UnsupportedOperationException("Geolocation is not available in SSR")
 }
 
-actual fun externalServicesAccessDefault(context: RContext): ExternalServicesAccess = JvmExternalServices()
+actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = JvmExternalServices()

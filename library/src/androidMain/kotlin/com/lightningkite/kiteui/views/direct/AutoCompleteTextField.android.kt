@@ -1,25 +1,14 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.text.Editable
-import android.text.TextWatcher
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView as AndroidAutocompleteTextView
-import android.widget.ProgressBar
-import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.models.KeyboardHints
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 
-actual class AutoCompleteTextField actual constructor(context: RContext): RViewWithAction(context) {
+actual class AutoCompleteTextField actual constructor(context: ElementContext): RViewWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
     override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     override val native = AndroidAutocompleteTextView(context.activity)

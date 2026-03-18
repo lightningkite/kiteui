@@ -2,15 +2,15 @@ package com.lightningkite.kiteui.views
 
 import kotlin.random.Random
 
-actual class RContext(
+actual class ElementContext(
     val basePath: String,
     val dynamicCss: DynamicCss = DynamicCss(basePath),
     val kiteUiCss: KiteUiCss = KiteUiCss(dynamicCss),
-    parent: RContext? = null
-) : RContextHelper(parent) {
+    parent: ElementContext? = null
+) : ElementContextCommonCode(parent) {
     val id = Random.nextInt()
 
-    actual fun split(): RContext = RContext(basePath, dynamicCss, kiteUiCss, this)
+    actual fun split(): ElementContext = ElementContext(basePath, dynamicCss, kiteUiCss, this)
 
     actual override val darkMode: Boolean? get() = null
     override fun toString(): String = "RContext@$id"

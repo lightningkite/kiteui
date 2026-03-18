@@ -4,19 +4,13 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
 
 
-actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
+actual class AutoCompleteTextField actual constructor(context: ElementContext) : RViewWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
     override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     override val native = WrapperView()

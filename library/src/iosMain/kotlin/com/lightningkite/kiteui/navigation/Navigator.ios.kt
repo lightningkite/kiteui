@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import platform.Foundation.NSUserActivity
 
 private var postedLandingUrl: UrlLikePath? = null
@@ -12,7 +12,7 @@ actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
     return true
 }
 
-actual fun PageNavigator.bindToPlatform(context: RContext) {
+actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     lastBoundPageNavigator = this
     val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
     stack.value = listOf(landing ?: routes.fallback)

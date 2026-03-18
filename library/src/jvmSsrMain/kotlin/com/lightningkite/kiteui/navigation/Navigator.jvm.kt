@@ -1,9 +1,8 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.ElementContext
 
-actual fun ScreenStack.bindToPlatform(context: RContext) {
+actual fun ScreenStack.bindToPlatform(context: ElementContext) {
 }
 
 actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {

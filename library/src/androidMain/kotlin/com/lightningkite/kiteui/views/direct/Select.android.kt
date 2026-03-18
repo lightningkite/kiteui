@@ -13,17 +13,13 @@ import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
-actual class Select actual constructor(context: RContext): RView(context) {
+actual class Select actual constructor(context: ElementContext): RView(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
@@ -99,7 +95,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
                     var newView: RView? = null
                     val w = object: ViewWriter(), CalculationContext by this@Select {
                         override val representsView: RView = this@Select
-                        override val context: RContext
+                        override val context: ElementContext
                             get() = this@Select.context
 
                         override fun willAddChild(view: RView) {

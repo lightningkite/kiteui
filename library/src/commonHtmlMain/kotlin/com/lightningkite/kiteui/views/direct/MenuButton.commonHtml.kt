@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.*
 
 
-actual class MenuButton actual constructor(context: RContext): RView(context) {
+actual class MenuButton actual constructor(context: ElementContext): RView(context) {
     override val driverActions get() = super.driverActions + menuDriverActions()
     val floating = FloatingInfoHolder(this)
     init {

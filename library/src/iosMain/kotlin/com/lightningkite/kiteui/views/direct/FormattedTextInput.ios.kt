@@ -1,22 +1,15 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.utils.commaString
-import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
-actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class FormattedTextInput actual constructor(context: ElementContext) : RViewWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
     override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
     override val native = WrapperView()

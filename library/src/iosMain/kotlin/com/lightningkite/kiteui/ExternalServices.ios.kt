@@ -1,13 +1,7 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.extensionStrongRef
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -16,7 +10,6 @@ import kotlinx.coroutines.*
 import kotlinx.datetime.*
 import platform.CoreGraphics.CGRectMake
 import platform.CoreLocation.*
-import platform.CoreServices.kUTTypeMovie
 import platform.EventKit.EKEntityType
 import platform.EventKit.EKEvent
 import platform.EventKit.EKEventStore
@@ -26,9 +19,7 @@ import platform.EventKitUI.EKEventEditViewDelegateProtocol
 import platform.Foundation.*
 import platform.MapKit.MKMapItem
 import platform.MapKit.MKPlacemark
-import platform.Photos.PHAccessLevelAddOnly
 import platform.Photos.PHAssetChangeRequest
-import platform.Photos.PHAuthorizationStatusAuthorized
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.*
 import platform.UIKit.*
@@ -43,7 +34,7 @@ import platform.posix.int64_t
 // Strong-reference holder for CLLocationManager delegates (weak property) — by Claude
 private val geoKeepAlive = HashSet<Any>()
 
-class IosExternalServices(private val ctx: RContext) : ExternalServicesAccess {
+class IosExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
 
     override fun openLink(url: String, newTab: Boolean) {
         UIApplication.sharedApplication.openURL(
@@ -155,7 +146,7 @@ class IosExternalServices(private val ctx: RContext) : ExternalServicesAccess {
     }
 }
 
-actual fun externalServicesAccessDefault(context: RContext): ExternalServicesAccess = IosExternalServices(context)
+actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = IosExternalServices(context)
 
 // --- Private RContext extension helpers ---
 
@@ -169,7 +160,7 @@ private val mostTypes = listOf(
     UTTypeSourceCode,
 )
 
-private suspend fun RContext.requestFileImpl(mimeTypes: List<String>): FileReference? = run {
+private suspend fun ElementContext.requestFileImpl(mimeTypes: List<String>): FileReference? = run {
     val onlyMedia = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
     val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/") }
     if (onlyMedia) {
@@ -190,7 +181,7 @@ private suspend fun RContext.requestFileImpl(mimeTypes: List<String>): FileRefer
     }
 }
 
-private suspend fun RContext.requestFilesImpl(mimeTypes: List<String>): List<FileReference> = run {
+private suspend fun ElementContext.requestFilesImpl(mimeTypes: List<String>): List<FileReference> = run {
     val onlyMedia = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
     val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/") }
     if (onlyMedia) {
@@ -211,7 +202,7 @@ private suspend fun RContext.requestFilesImpl(mimeTypes: List<String>): List<Fil
     }
 }
 
-private suspend fun RContext.requestCaptureSelfImpl(mimeTypes: List<String>): FileReference? {
+private suspend fun ElementContext.requestCaptureSelfImpl(mimeTypes: List<String>): FileReference? {
     return if (mimeTypes.all { it.startsWith("image/") }) {
         requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto)
     } else if (mimeTypes.all { it.startsWith("video/") }) {
@@ -221,7 +212,7 @@ private suspend fun RContext.requestCaptureSelfImpl(mimeTypes: List<String>): Fi
     }
 }
 
-private suspend fun RContext.requestCaptureEnvironmentImpl(mimeTypes: List<String>): FileReference? {
+private suspend fun ElementContext.requestCaptureEnvironmentImpl(mimeTypes: List<String>): FileReference? {
     return if (mimeTypes.all { it.startsWith("image/") }) {
         requestCapture(UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear, UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto)
     } else if (mimeTypes.all { it.startsWith("video/") }) {
@@ -231,7 +222,7 @@ private suspend fun RContext.requestCaptureEnvironmentImpl(mimeTypes: List<Strin
     }
 }
 
-private fun RContext.openEventImpl(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) {
+private fun ElementContext.openEventImpl(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) {
     val store = EKEventStore()
     store.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { hasPermission, error ->
         if (hasPermission) {
@@ -258,7 +249,7 @@ private fun RContext.openEventImpl(title: String, description: String, location:
     }
 }
 
-private fun RContext.openMapImpl(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
+private fun ElementContext.openMapImpl(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
     val options = arrayListOf(
         "Apple Maps" to {
             val mapItem = MKMapItem(placemark = MKPlacemark(CLLocationCoordinate2DMake(latitude, longitude)))
@@ -293,7 +284,7 @@ data class UIAlertActionSuspending<out T>(
     val handler: suspend () -> T,
 )
 
-suspend fun <T> RContext.actionSheet(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T {
+suspend fun <T> ElementContext.actionSheet(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T {
     return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
         UIAlertController.alertControllerWithTitle(title = title, message = message, preferredStyle = UIAlertControllerStyleActionSheet).apply {
             for (action in actions) {
@@ -303,7 +294,7 @@ suspend fun <T> RContext.actionSheet(title: String?, message: String? = null, va
     }!!.handler()
 }
 
-suspend fun <T> RContext.actionSheetCancellable(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T? {
+suspend fun <T> ElementContext.actionSheetCancellable(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T? {
     return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
         UIAlertController.alertControllerWithTitle(title = title, message = message, preferredStyle = UIAlertControllerStyleActionSheet).apply {
             for (action in actions) {
@@ -314,7 +305,7 @@ suspend fun <T> RContext.actionSheetCancellable(title: String?, message: String?
     }?.handler()
 }
 
-private suspend fun RContext.requestSingleDocument(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
+private suspend fun ElementContext.requestSingleDocument(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
     val controller = UIDocumentPickerViewController(forOpeningContentTypes = mimeTypes.flatMap {
         if (it == "*/*") mostTypes else UTType.typeWithMIMEType(it)?.let { listOf(it) } ?: listOf()
     }, asCopy = true)
@@ -343,7 +334,7 @@ private suspend fun RContext.requestSingleDocument(mimeTypes: List<String>): Fil
     cont.invokeOnCancellation { try { controller.dismissViewControllerAnimated(true, {}) } catch (e: Exception) { } }
 }
 
-private suspend fun RContext.requestSingleImageOrVideo(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
+private suspend fun ElementContext.requestSingleImageOrVideo(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
     val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
         filter = PHPickerFilter.anyFilterMatchingSubfilters(listOfNotNull(
             PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } || mimeTypes.any { it.startsWith("*/") } },
@@ -372,7 +363,7 @@ private suspend fun RContext.requestSingleImageOrVideo(mimeTypes: List<String>):
     cont.invokeOnCancellation { try { controller.dismissViewControllerAnimated(true, {}) } catch (e: Exception) { } }
 }
 
-private suspend fun RContext.requestMultipleDocuments(mimeTypes: List<String>): List<FileReference> = suspendCancellableCoroutine { cont ->
+private suspend fun ElementContext.requestMultipleDocuments(mimeTypes: List<String>): List<FileReference> = suspendCancellableCoroutine { cont ->
     val controller = UIDocumentPickerViewController(forOpeningContentTypes = mimeTypes.flatMap {
         if (it == "*/*") mostTypes else UTType.typeWithMIMEType(it)?.let { listOf(it) } ?: listOf()
     }, asCopy = true)
@@ -401,7 +392,7 @@ private suspend fun RContext.requestMultipleDocuments(mimeTypes: List<String>): 
     cont.invokeOnCancellation { try { controller.dismissViewControllerAnimated(true, {}) } catch (e: Exception) { } }
 }
 
-private suspend fun RContext.requestMultipleImagesOrVideos(mimeTypes: List<String>): List<FileReference> = suspendCancellableCoroutine { cont ->
+private suspend fun ElementContext.requestMultipleImagesOrVideos(mimeTypes: List<String>): List<FileReference> = suspendCancellableCoroutine { cont ->
     val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
         filter = PHPickerFilter.anyFilterMatchingSubfilters(listOfNotNull(
             PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } || mimeTypes.any { it.startsWith("*/") } },
@@ -438,7 +429,7 @@ private fun UTType.matchesMimeType(mimeType: String): Boolean {
     return true
 }
 
-suspend fun RContext.requestCapture(
+suspend fun ElementContext.requestCapture(
     camera: UIImagePickerControllerCameraDevice,
     mode: UIImagePickerControllerCameraCaptureMode,
 ): FileReference? {
@@ -491,7 +482,7 @@ suspend fun RContext.requestCapture(
     return result
 }
 
-suspend fun RContext.downloadMultiple(
+suspend fun ElementContext.downloadMultiple(
     urlToNames: Map<String, String>,
     preferredDestination: DownloadLocation,
     onDownloadProgress: ((progress: Float) -> Unit)?
@@ -585,7 +576,7 @@ private fun identifyMedia(data: NSData): Pair<Boolean, String> {
     }
 }
 
-fun RContext.showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
+fun ElementContext.showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
     present(UIActivityViewController(messages + items, null).apply {
         val uiView = this@showShareSheet.controller.view
         popoverPresentationController?.sourceView = uiView

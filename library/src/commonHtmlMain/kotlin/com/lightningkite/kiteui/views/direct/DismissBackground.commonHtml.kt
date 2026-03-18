@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class DismissBackground actual constructor(context: RContext) : RView(context) {
+actual class DismissBackground actual constructor(context: ElementContext) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")

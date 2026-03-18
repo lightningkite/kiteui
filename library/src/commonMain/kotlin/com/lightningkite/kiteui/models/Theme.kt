@@ -76,30 +76,9 @@ interface ThemeDerivation {
     //    ThemeDerivation
     companion object {
         /**
-         * Creates a [ThemeDerivation] from a lambda function.
-         *
-         * @param action The transformation function to apply.
-         * @return A new theme derivation.
-         */
-        inline operator fun invoke(crossinline action: (Theme) -> ThemeAndBack): ThemeDerivation {
-            return object : ThemeDerivation {
-                override fun invoke(theme: Theme): ThemeAndBack = action(theme)
-            }
-        }
-
-        /**
-         * Creates a [ThemeDerivation] that sets a specific theme.
-         *
-         * @param theme The theme to set.
-         * @return A Set derivation.
-         */
-        @Suppress("NOTHING_TO_INLINE")
-        inline operator fun invoke(theme: Theme): ThemeDerivation = Set(theme)
-
-        /**
          * A no-op derivation that returns the theme unchanged without background.
          */
-        val none = None
+        @Deprecated("Just use 'None' directly", ReplaceWith("None")) val none = None
     }
 
     /**
@@ -157,6 +136,29 @@ interface ThemeDerivation {
         }
     }
 }
+
+
+/**
+ * Creates a [ThemeDerivation] from a lambda function.
+ *
+ * @param action The transformation function to apply.
+ * @return A new theme derivation.
+ */
+inline fun ThemeDerivation(crossinline action: (Theme) -> ThemeAndBack): ThemeDerivation {
+    return object : ThemeDerivation {
+        override fun invoke(theme: Theme): ThemeAndBack = action(theme)
+    }
+}
+
+/**
+ * Creates a [ThemeDerivation] that sets a specific theme.
+ *
+ * @param theme The theme to set.
+ * @return A Set derivation.
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun ThemeDerivation(theme: Theme): ThemeDerivation = ThemeDerivation.Set(theme)
+
 
 /**
  * Base class for semantic theme modifiers.

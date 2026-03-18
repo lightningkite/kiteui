@@ -1,10 +1,10 @@
 package com.lightningkite.mppexampleapp.widgets
 
 import com.lightningkite.kiteui.views.FutureElement
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 
-actual class Code actual constructor(context: RContext): RView(context) {
+actual class Code actual constructor(context: ElementContext): RView(context) {
     init {
         native.tag = "pre"
     }

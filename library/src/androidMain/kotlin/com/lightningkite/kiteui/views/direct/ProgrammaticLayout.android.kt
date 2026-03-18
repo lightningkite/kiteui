@@ -5,13 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.debugPrint
 import kotlin.math.roundToInt
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+actual class ProgrammaticLayout actual constructor(context: ElementContext) : RView(context) {
     override val native: NProgrammaticLayout = NProgrammaticLayout(context.activity).apply {
         rview = this@ProgrammaticLayout
     }

@@ -2,14 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 expect abstract class RawImageViewLike: RView {
     val source: ImageSource
@@ -19,7 +14,7 @@ expect abstract class RawImageViewLike: RView {
 }
 
 expect class RawImageView(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -28,7 +23,7 @@ expect class RawImageView(
 }
 
 expect class SizelessRawImageView(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -37,7 +32,7 @@ expect class SizelessRawImageView(
 }
 
 expect class RawImageViewZoomable(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,

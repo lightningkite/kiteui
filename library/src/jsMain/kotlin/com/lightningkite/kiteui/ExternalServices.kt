@@ -1,19 +1,16 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
-import org.w3c.dom.DataTransfer
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLScriptElement
 import org.w3c.dom.url.URL
-import org.w3c.fetch.Headers
 import org.w3c.files.File
-import org.w3c.files.FileList
 import org.w3c.files.FilePropertyBag
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -21,7 +18,7 @@ import kotlin.js.json
 
 // by Claude
 
-class JsExternalServices(private val ctx: RContext) : ExternalServicesAccess {
+class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
 
     override fun openLink(url: String, newTab: Boolean) {
         window.open(url, if (newTab) "_blank" else "_self")
@@ -144,7 +141,7 @@ class JsExternalServices(private val ctx: RContext) : ExternalServicesAccess {
     }
 }
 
-actual fun externalServicesAccessDefault(context: RContext): ExternalServicesAccess = JsExternalServices(context)
+actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = JsExternalServices(context)
 
 private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
@@ -154,7 +151,7 @@ private fun removeFileInput() {
     lastFileInput = null
 }
 
-suspend fun RContext.requestFileInput(
+suspend fun ElementContext.requestFileInput(
     mimeTypes: List<String>,
     setup: HTMLInputElement.() -> Unit
 ): List<FileReference> = suspendCancellableCoroutine {

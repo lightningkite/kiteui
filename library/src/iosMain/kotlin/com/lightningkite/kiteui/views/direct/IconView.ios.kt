@@ -19,7 +19,7 @@ import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransform3DMakeScale
 import platform.UIKit.*
 
-actual class IconView actual constructor(context: RContext): RView(context) {
+actual class IconView actual constructor(context: ElementContext): RView(context) {
     override val native = NIconView()
     actual var source: Icon?
         get() = native.icon

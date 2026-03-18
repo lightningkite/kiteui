@@ -4,18 +4,12 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
-import android.graphics.drawable.RotateDrawable
-import android.view.View
 import androidx.annotation.FloatRange
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
-import kotlin.math.roundToInt
 
-actual class CircularProgress actual constructor(context: RContext) : RView(context) {
+actual class CircularProgress actual constructor(context: ElementContext) : RView(context) {
 
     override val native = NCircularProgress(context.activity).apply {
 

@@ -1,8 +1,6 @@
 package com.lightningkite.mppexampleapp.widgets
 
 import android.graphics.Paint
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.text.Html
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
@@ -13,17 +11,14 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.WordBreak
-import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.direct.TextView
 import com.lightningkite.kiteui.views.direct.colorInt
 import com.lightningkite.kiteui.views.direct.typeface
 
-actual class Code actual constructor(context: RContext) :
+actual class Code actual constructor(context: ElementContext) :
     RView(context) {
     val actualNative = android.widget.TextView(context.activity)
     override val native: View = actualNative

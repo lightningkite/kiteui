@@ -34,10 +34,10 @@ import platform.posix.QOS_CLASS_DEFAULT
 
 actual abstract class RawImageViewLike
 constructor(
-        context: RContext,
-        actual val source: ImageSource,
-        actual val description: String,
-        actual val scaleType: ImageScaleType,
+    context: ElementContext,
+    actual val source: ImageSource,
+    actual val description: String,
+    actual val scaleType: ImageScaleType,
 ) : RView(context) {
     actual abstract val state: Reactive<Unit>
 
@@ -164,10 +164,10 @@ suspend fun ImageSource?.load(size: Size?): UIImage? =
 
 actual class RawImageView
 actual constructor(
-        context: RContext,
-        source: ImageSource,
-        description: String,
-        scaleType: ImageScaleType,
+    context: ElementContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
     private val _state = RawReactive<Unit>()
     actual override val state: Reactive<Unit> = _state
@@ -205,10 +205,10 @@ actual constructor(
 
 actual class SizelessRawImageView
 actual constructor(
-        context: RContext,
-        source: ImageSource,
-        description: String,
-        scaleType: ImageScaleType,
+    context: ElementContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
     private val _state = RawReactive<Unit>()
     actual override val state: Reactive<Unit> = _state
@@ -274,10 +274,10 @@ class UIImageViewFixedSizing() : UIImageView(CGRectZero.readValue()) {
 
 actual class RawImageViewZoomable
 actual constructor(
-        context: RContext,
-        source: ImageSource,
-        description: String,
-        scaleType: ImageScaleType,
+    context: ElementContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
 
     val doubleTapTarget: NSObject =

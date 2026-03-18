@@ -79,7 +79,7 @@ fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = 
     popoverCloser = close
     val writer = object : ViewWriter(), CoroutineScope by this {
         override val representsView: RView? = overlay.representsView
-        override val context: RContext = this@popoverWriter.context.split()
+        override val context: ElementContext = this@popoverWriter.context.split()
         override fun willAddChild(view: RView) = overlay.willAddChild(view)
         override fun addChild(view: RView) = overlay.addChild(view)
     }

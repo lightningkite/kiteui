@@ -72,7 +72,7 @@ class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: 
     }
 }
 
-fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> Unit) {
+fun UIViewController.kiteUi(context: ElementContext = ElementContext(this@kiteUi), app: ViewWriter.() -> Unit) {
     definesPresentationContext = true
     val job = SupervisorJob()
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -83,7 +83,7 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     @OptIn(DelicateCoroutinesApi::class)
     val writer = object : ViewWriter(), CalculationContext {
         override val coroutineContext: CoroutineContext = scope
-        override val context: RContext = context
+        override val context: ElementContext = context
         override val representsView: RView? = null
         override fun willAddChild(view: RView) {
         }

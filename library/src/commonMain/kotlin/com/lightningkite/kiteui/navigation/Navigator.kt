@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.rContextAddonInit
 import com.lightningkite.reactive.core.Reactive
@@ -80,7 +80,7 @@ class PageNavigator(private val routesGetter: ()->Routes) {
     val dialog: PageNavigator get() = TODO()
 }
 
-expect fun PageNavigator.bindToPlatform(context: RContext)
+expect fun PageNavigator.bindToPlatform(context: ElementContext)
 
 internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 

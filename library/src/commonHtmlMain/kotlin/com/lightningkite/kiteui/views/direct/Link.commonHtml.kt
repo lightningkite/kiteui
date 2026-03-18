@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class Link actual constructor(context: RContext) : RView(context) {
+actual class Link actual constructor(context: ElementContext) : RView(context) {
     override val driverActions get() = super.driverActions + linkDriverActions()
 
     init {

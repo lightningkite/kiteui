@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 abstract class ViewWriter: CoroutineScopeHelpers {
-    abstract val context: RContext
+    abstract val context: ElementContext
     abstract fun willAddChild(view: RView)
     abstract fun addChild(view: RView)
     abstract val representsView: RView?
@@ -19,7 +19,7 @@ abstract class ViewWriter: CoroutineScopeHelpers {
     fun split(): ViewWriter {
         val r = object : ViewWriter(), CoroutineScope by this {
             override val representsView: RView? = this@ViewWriter.representsView
-            override val context: RContext = this@ViewWriter.context.split()
+            override val context: ElementContext = this@ViewWriter.context.split()
             override fun addChild(view: RView) = this@ViewWriter.addChild(view)
             override fun willAddChild(view: RView) = this@ViewWriter.willAddChild(view)
         }
@@ -41,7 +41,7 @@ abstract class ViewWriter: CoroutineScopeHelpers {
         val action: RView.()->Unit
     ): ViewWriter() {
         override val representsView: RView? = base.representsView
-        override val context: RContext get() = base.context
+        override val context: ElementContext get() = base.context
         override val coroutineContext: CoroutineContext get() = base.coroutineContext
         override fun willAddChild(view: RView) {
             base.willAddChild(view)
@@ -90,7 +90,7 @@ inline fun ViewWriter.produceOne(action: ViewWriter.()->Unit): RView {
     object : ViewWriter() {
         override val representsView: RView? = this@produceOne.representsView
         override val coroutineContext: CoroutineContext get() = this@produceOne.coroutineContext
-        override val context: RContext get() = this@produceOne.context
+        override val context: ElementContext get() = this@produceOne.context
         override fun willAddChild(view: RView) = this@produceOne.willAddChild(view)
         override fun addChild(view: RView) {
             if(output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")
@@ -105,7 +105,7 @@ inline fun ViewWriter.produceOneMaybe(action: ViewWriter.()->Unit): RView? {
     object : ViewWriter() {
         override val representsView: RView? = this@produceOneMaybe.representsView
         override val coroutineContext: CoroutineContext get() = this@produceOneMaybe.coroutineContext
-        override val context: RContext get() = this@produceOneMaybe.context
+        override val context: ElementContext get() = this@produceOneMaybe.context
         override fun willAddChild(view: RView) = this@produceOneMaybe.willAddChild(view)
         override fun addChild(view: RView) {
             if(output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")

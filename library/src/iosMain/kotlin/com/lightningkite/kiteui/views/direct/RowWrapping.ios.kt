@@ -1,10 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Edges
-import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
@@ -230,7 +228,7 @@ class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
     }
 }
 
-actual class RowWrapping actual constructor(context: RContext) : RView(context) {
+actual class RowWrapping actual constructor(context: ElementContext) : RView(context) {
     override val native = FlexLayout()
 
     override var gap: Dimension?

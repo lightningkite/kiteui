@@ -2,7 +2,7 @@
 package com.lightningkite.kiteui.camera
 
 import com.lightningkite.kiteui.models.ImageLocal
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.direct.Frame
 import com.lightningkite.reactive.context.onRemove
@@ -36,7 +36,7 @@ external interface DetectedBarcode {
     val cornerPoints: Array<dynamic>
 }
 
-actual class CameraPreview actual constructor(context: RContext) : RView(context) {
+actual class CameraPreview actual constructor(context: ElementContext) : RView(context) {
     private var videoElement: HTMLVideoElement? = null
     private var canvasElement: HTMLCanvasElement? = null
     private var mediaStream: dynamic = null

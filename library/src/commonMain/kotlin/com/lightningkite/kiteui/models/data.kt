@@ -554,10 +554,7 @@ enum class Align(val touchesStart: Boolean, val touchesEnd: Boolean) {
     Stretch(true, true)
 }
 
-enum class TextOverflow {
-    Wrap,
-    Ellipsis
-}
+data class Alignment(val vertical: Align, val horizontal: Align)
 
 enum class WordBreak { Normal, BreakAll }
 

@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 
 
-actual class IconView actual constructor(context: RContext) : RView(context) {
+actual class IconView actual constructor(context: ElementContext) : RView(context) {
     init {
         native.tag = "div"
         native.setAttribute("role", "img")

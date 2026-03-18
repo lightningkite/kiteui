@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import android.webkit.WebView as AndroidWebView
 
-actual class WebView actual constructor(context: RContext): RView(context) {
+actual class WebView actual constructor(context: ElementContext): RView(context) {
     override val native = AndroidWebView(context.activity).apply {
     }
     actual var url: String

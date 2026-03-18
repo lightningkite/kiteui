@@ -2,18 +2,12 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import platform.UIKit.UIView
 
 
-actual class RowOrCol actual constructor(context: RContext) : RView(context) {
+actual class RowOrCol actual constructor(context: ElementContext) : RView(context) {
     override val native = LinearLayout()
     
 
@@ -74,7 +68,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) :
+actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) :
     RView(context) {
     
     override val native = LinearLayout()
@@ -138,7 +132,7 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
     }
 }
 
-actual class Frame actual constructor(context: RContext) : RView(context) {
+actual class Frame actual constructor(context: ElementContext) : RView(context) {
     
     override val native = FrameLayout()
 }

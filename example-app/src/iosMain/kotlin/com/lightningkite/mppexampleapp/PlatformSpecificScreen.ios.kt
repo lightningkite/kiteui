@@ -1,13 +1,10 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.ObjCountTrackers
-import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.navigatorView
 import com.lightningkite.mppexampleapp.AutoRoutes
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -70,12 +67,12 @@ class MemoryPage: Page {
 //        }
     }
 }
-class WrapperView(context: RContext): RView(context) {
+class WrapperView(context: ElementContext): RView(context) {
     @OptIn(ExperimentalForeignApi::class)
     override val native: UIView = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
 }
 
-class MemoryView(context: RContext): RView(context) {
+class MemoryView(context: ElementContext): RView(context) {
     val disgustingAmountOfMemory = IntArray(9_000_000) { it }
     @OptIn(ExperimentalForeignApi::class)
     override val native: UIView = UILabel(CGRectMake(0.0, 0.0, 0.0, 0.0)).also {
@@ -83,7 +80,7 @@ class MemoryView(context: RContext): RView(context) {
     }
 }
 
-class MemoryView2(context: RContext): RView(context) {
+class MemoryView2(context: ElementContext): RView(context) {
     @OptIn(ExperimentalForeignApi::class)
     override val native: UIView = UILabel(CGRectMake(0.0, 0.0, 0.0, 0.0)).also {
         it.text = "Huge accessibility label"

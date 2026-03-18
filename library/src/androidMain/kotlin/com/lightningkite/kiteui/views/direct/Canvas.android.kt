@@ -6,13 +6,13 @@ import android.util.AttributeSet
 import android.view.*
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import kotlin.math.min
 
 
-actual class Canvas actual constructor(context: RContext): RView(context) {
+actual class Canvas actual constructor(context: ElementContext): RView(context) {
     override val native = NCanvas(context.activity)
 
     actual var delegate: CanvasDelegate?

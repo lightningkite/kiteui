@@ -1,17 +1,15 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.CardSemantic
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
-import platform.QuartzCore.CAGradientLayer
 import platform.QuartzCore.CALayer
 import platform.UIKit.*
 
 
-actual class ProgressBar actual constructor(context: RContext) : RView(context) {
+actual class ProgressBar actual constructor(context: ElementContext) : RView(context) {
     override val native = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
     override fun applyTheme(theme: ThemeAndBack) {
         super.applyTheme(theme);

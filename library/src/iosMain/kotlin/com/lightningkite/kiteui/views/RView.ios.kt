@@ -50,7 +50,7 @@ import kotlin.time.DurationUnit
 
 
 
-actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
+actual abstract class RView actual constructor(context: ElementContext) : RViewHelper(context) {
     abstract val native: UIView
     var tag: Any? = null
 

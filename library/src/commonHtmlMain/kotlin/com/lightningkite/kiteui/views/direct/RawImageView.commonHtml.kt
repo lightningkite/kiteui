@@ -10,8 +10,7 @@ import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.ImageVector
 import com.lightningkite.kiteui.models.vectorToSvgDataUrl
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.alt
 import com.lightningkite.kiteui.views.backgroundImage
@@ -19,21 +18,14 @@ import com.lightningkite.kiteui.views.loading
 import com.lightningkite.kiteui.views.backgroundPosition
 import com.lightningkite.kiteui.views.backgroundRepeat
 import com.lightningkite.kiteui.views.backgroundSize
-import com.lightningkite.kiteui.views.position
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.getValue
 import kotlin.js.JsName
-import kotlin.setValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 actual abstract class RawImageViewLike(
-    context: RContext,
+    context: ElementContext,
     actual val source: ImageSource,
     actual val description: String,
     actual val scaleType: ImageScaleType,
@@ -70,7 +62,7 @@ actual abstract class RawImageViewLike(
 }
 
 actual class RawImageView actual constructor(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -87,7 +79,7 @@ actual class RawImageView actual constructor(
 }
 
 actual class SizelessRawImageView actual constructor(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -117,7 +109,7 @@ actual class SizelessRawImageView actual constructor(
 }
 
 actual class RawImageViewZoomable actual constructor(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,

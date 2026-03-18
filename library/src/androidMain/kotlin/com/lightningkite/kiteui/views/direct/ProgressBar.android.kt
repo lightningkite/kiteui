@@ -7,17 +7,15 @@ import android.graphics.drawable.shapes.RoundRectShape
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.Gravity
-import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.models.CornerRadii
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-actual class ProgressBar actual constructor(context: RContext) : RView(context) {
+actual class ProgressBar actual constructor(context: ElementContext) : RView(context) {
     val shapeDrawable = ShapeDrawable().apply {
         shape = RoundRectShape(floatArrayOf(999f, 999f, 999f, 999f, 999f, 999f, 999f, 999f), null, null)
     }

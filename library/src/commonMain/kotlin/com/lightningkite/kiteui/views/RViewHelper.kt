@@ -23,7 +23,6 @@ import com.lightningkite.kiteui.models.WorkingSemantic
 import com.lightningkite.kiteui.onMainThread
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.report
-import com.lightningkite.kiteui.views.direct.ScrollingBehaviors
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -47,7 +46,7 @@ import kotlinx.coroutines.SupervisorJob
  * - **Resource Cleanup**: Automatic cleanup of listeners and child views on shutdown
  *
  * ## Lifecycle
- * 1. **Construction**: View is created with an [RContext]
+ * 1. **Construction**: View is created with an [ElementContext]
  * 2. **Setup**: Properties are configured, children may be added
  * 3. **postSetup()**: Called when view is fully configured and added to parent
  * 4. **Active**: View is part of the hierarchy and responds to state/theme changes
@@ -64,7 +63,7 @@ import kotlinx.coroutines.SupervisorJob
  * @param context The rendering context providing platform-specific configuration.
  */
 @OptIn(InternalKiteUi::class)
-abstract class RViewHelper(override val context: RContext) : ViewWriter() {
+abstract class RViewHelper(override val context: ElementContext) : ViewWriter() {
     abstract var showOnPrint: Boolean
     override val representsView: RView get() = this as RView
 
@@ -195,10 +194,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
 
     /**
      * The theme derivation function that determines how this view's theme is computed
-     * from its parent's theme. The default is [ThemeDerivation.none] which passes through
+     * from its parent's theme. The default is [ThemeDerivation.None] which passes through
      * the parent theme unchanged.
      */
-    var themeChoice: ThemeDerivation = ThemeDerivation.Companion.none
+    var themeChoice: ThemeDerivation = ThemeDerivation.None
         set(value) {
             field = value
             refreshTheming()
@@ -212,7 +211,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
      * This is computed from the parent theme and [themeChoice], then has state applied
      * via [applyState].
      */
-    var themeAndBack: ThemeAndBack = Theme.Companion.placeholder.withBack
+    var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
         private set(value) {
             if (value != field) {
                 val oldCascading = field.theme.let { it.revert ?: it }
@@ -375,7 +374,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
      * @throws IllegalArgumentException if the index is out of bounds.
      */
     fun removeChild(index: Int) {
-        if(isShutdown) println("WARNING!! $this is shut down, but attempt to call removeChild was made")
+        if (isShutdown) println("WARNING!! $this is shut down, but attempt to call removeChild was made")
         if (index !in children.indices) throw IllegalArgumentException("$index not in range ${children.indices}")
         internalRemoveChild(index)
         internalChildren.removeAt(index).also { it.shutdown() }
@@ -495,12 +494,11 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             }
         })
         add(object : StatusListener {
-            override fun working(reactive: Reactive<*>) {
-                listenForWorking(reactive)
+            override fun watchForegroundProcess(status: Reactive<*>): Release {
+                return listenForWorking(status)
             }
-
-            override fun loading(reactive: Reactive<*>) {
-                listenForStatus(reactive)
+            override fun watchBackgroundProcess(status: Reactive<*>): Release {
+                return listenForStatus(status)
             }
         })
         // Use ssrDispatcher if set (for SSR synchronous execution), otherwise use Main dispatcher
@@ -570,7 +568,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
                     fun handle(view: RViewHelper): (() -> Unit)? {
                         return view.exceptionHandlers?.handle(myView, false, it) ?: view.parent?.let { handle(it) }
                     }
-                    (handle(myView) ?: ExceptionHandlers.Companion.root.handle(myView, false, it))?.let {
+                    (handle(myView) ?: ExceptionHandlers.root.handle(myView, false, it))?.let {
                         excEnder = it
                     }
                 }

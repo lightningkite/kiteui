@@ -1,16 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+actual class ProgrammaticLayout actual constructor(context: ElementContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.position = "relative"

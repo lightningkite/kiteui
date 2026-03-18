@@ -8,16 +8,15 @@ import com.lightningkite.kiteui.lottie.models.LottieRaw
 import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.readable.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 actual class LottieView actual constructor(
-    context: RContext,
+    context: ElementContext,
     actual val source: LottieSource,
     actual val description: String,
 ) : RView(context) {

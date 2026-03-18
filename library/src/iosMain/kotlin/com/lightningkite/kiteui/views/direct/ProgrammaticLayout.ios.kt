@@ -7,8 +7,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.informParentOfSizeChangeDueToChild
 import com.lightningkite.kiteui.views.layoutSubviewsAndLayers
@@ -27,7 +26,7 @@ import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIEvent
 import platform.UIKit.UIView
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+actual class ProgrammaticLayout actual constructor(context: ElementContext) : RView(context) {
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
         rview = WeakReference(this@ProgrammaticLayout)

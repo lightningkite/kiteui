@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 
 
-actual class DismissBackground actual constructor(context: RContext): RView(context) {
+actual class DismissBackground actual constructor(context: ElementContext): RView(context) {
     override val native = FrameLayout(context.activity).apply {
         setOnClickListener {
             dialogPageNavigator.clear()

@@ -6,24 +6,19 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.math.roundToInt
 
 
-actual class Frame actual constructor(context: RContext) : RView(context) {
+actual class Frame actual constructor(context: ElementContext) : RView(context) {
     override val native = FrameLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
 
-actual class RowOrCol actual constructor(context: RContext) : RView(context) {
+actual class RowOrCol actual constructor(context: ElementContext) : RView(context) {
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
@@ -58,7 +53,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
+actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : RView(context) {
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)

@@ -4,12 +4,11 @@ import android.widget.FrameLayout
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
-actual class ExternalLink actual constructor(context: RContext) : RView(context) {
+actual class ExternalLink actual constructor(context: ElementContext) : RView(context) {
     override val driverActions get() = super.driverActions + externalLinkDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true

@@ -13,7 +13,7 @@ import kotlin.math.roundToInt
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+actual class ProgrammaticLayout actual constructor(context: ElementContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.position = "relative"

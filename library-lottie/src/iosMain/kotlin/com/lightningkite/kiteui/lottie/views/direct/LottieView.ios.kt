@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.lottie.models.LottieRaw
 import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
@@ -15,7 +15,6 @@ import com.lightningkite.kiteui.views.canvas.clear
 import com.lightningkite.kiteui.views.canvas.height
 import com.lightningkite.kiteui.views.canvas.width
 import com.lightningkite.reactive.core.*
-import com.lightningkite.readable.*
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -35,7 +34,7 @@ import kotlin.time.TimeSource
  */
 @OptIn(ExperimentalForeignApi::class)
 actual class LottieView actual constructor(
-    context: RContext,
+    context: ElementContext,
     actual val source: LottieSource,
     actual val description: String,
 ) : RView(context) {

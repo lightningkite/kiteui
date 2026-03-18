@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.rContextAddonGenerate
 import kotlinx.datetime.LocalDateTime
@@ -53,7 +53,7 @@ interface ExternalServicesAccess : ExternalLinksAccess, FilePickerAccess, FileDo
 @Deprecated("Use RContext.externalServices or ViewWriter.externalServices instead. This singleton will be removed.", level = DeprecationLevel.WARNING)
 object ExternalServices {
     @Deprecated("Use RContext.externalServices instead", level = DeprecationLevel.WARNING)
-    lateinit var baseContext: RContext
+    lateinit var baseContext: ElementContext
 
     @Suppress("DEPRECATION")
     private val ctx get() = baseContext
@@ -104,23 +104,23 @@ var ViewWriter.externalServices: ExternalServicesAccess by rContextAddonGenerate
 // by Claude - convenience extension on RContext for use outside ViewWriter scope.
 // Uses getOrPut so the default is shared across the context tree and picks up mocks.
 // Key must match ViewWriter.externalServices property name used by rContextAddonGenerate.
-val RContext.externalServices: ExternalServicesAccess
+val ElementContext.externalServices: ExternalServicesAccess
     get() = addons.getOrPut(ViewWriter::externalServices.name) { externalServicesAccessDefault(this) } as ExternalServicesAccess
 
 // Convenience extensions on RContext delegating to externalServices
-fun RContext.openLink(url: String, newTab: Boolean = true) = externalServices.openLink(url, newTab)
-fun RContext.openTab(url: String) = externalServices.openTab(url)
-fun RContext.openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null) = externalServices.openMap(latitude, longitude, label, zoom)
-suspend fun RContext.requestFile(mimeTypes: List<String> = listOf("*/*")): FileReference? = externalServices.requestFile(mimeTypes)
-suspend fun RContext.requestFiles(mimeTypes: List<String> = listOf("*/*")): List<FileReference> = externalServices.requestFiles(mimeTypes)
-suspend fun RContext.requestCaptureSelf(mimeTypes: List<String> = listOf("image/*")): FileReference? = externalServices.requestCaptureSelf(mimeTypes)
-suspend fun RContext.requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*")): FileReference? = externalServices.requestCaptureEnvironment(mimeTypes)
-fun RContext.setClipboardText(value: String) = externalServices.setClipboardText(value)
-suspend fun RContext.download(name: String, blob: Blob, preferredDestination: DownloadLocation = DownloadLocation.Downloads) = externalServices.download(name, blob, preferredDestination)
-suspend fun RContext.download(name: String, url: String, preferredDestination: DownloadLocation = DownloadLocation.Downloads, onDownloadProgress: ((progress: Float) -> Unit)? = null) = externalServices.download(name, url, preferredDestination, onDownloadProgress)
-suspend fun RContext.share(namesToBlobs: List<Pair<String, Blob>>) = externalServices.share(namesToBlobs)
-fun RContext.share(title: String, message: String? = null, url: String? = null) = externalServices.share(title, message, url)
-fun RContext.openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) = externalServices.openEvent(title, description, location, start, end, zone)
-suspend fun RContext.getCurrentPosition(): GeolocationResult = externalServices.getCurrentPosition()
+fun ElementContext.openLink(url: String, newTab: Boolean = true) = externalServices.openLink(url, newTab)
+fun ElementContext.openTab(url: String) = externalServices.openTab(url)
+fun ElementContext.openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null) = externalServices.openMap(latitude, longitude, label, zoom)
+suspend fun ElementContext.requestFile(mimeTypes: List<String> = listOf("*/*")): FileReference? = externalServices.requestFile(mimeTypes)
+suspend fun ElementContext.requestFiles(mimeTypes: List<String> = listOf("*/*")): List<FileReference> = externalServices.requestFiles(mimeTypes)
+suspend fun ElementContext.requestCaptureSelf(mimeTypes: List<String> = listOf("image/*")): FileReference? = externalServices.requestCaptureSelf(mimeTypes)
+suspend fun ElementContext.requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*")): FileReference? = externalServices.requestCaptureEnvironment(mimeTypes)
+fun ElementContext.setClipboardText(value: String) = externalServices.setClipboardText(value)
+suspend fun ElementContext.download(name: String, blob: Blob, preferredDestination: DownloadLocation = DownloadLocation.Downloads) = externalServices.download(name, blob, preferredDestination)
+suspend fun ElementContext.download(name: String, url: String, preferredDestination: DownloadLocation = DownloadLocation.Downloads, onDownloadProgress: ((progress: Float) -> Unit)? = null) = externalServices.download(name, url, preferredDestination, onDownloadProgress)
+suspend fun ElementContext.share(namesToBlobs: List<Pair<String, Blob>>) = externalServices.share(namesToBlobs)
+fun ElementContext.share(title: String, message: String? = null, url: String? = null) = externalServices.share(title, message, url)
+fun ElementContext.openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) = externalServices.openEvent(title, description, location, start, end, zone)
+suspend fun ElementContext.getCurrentPosition(): GeolocationResult = externalServices.getCurrentPosition()
 
-expect fun externalServicesAccessDefault(context: RContext): ExternalServicesAccess
+expect fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess

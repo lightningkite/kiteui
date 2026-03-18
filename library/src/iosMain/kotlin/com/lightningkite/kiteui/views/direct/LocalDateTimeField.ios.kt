@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
@@ -17,7 +16,7 @@ import platform.Foundation.localTimeZone
 import platform.UIKit.*
 
 
-actual class LocalDateField actual constructor(context: RContext) : RViewWithAction(context) {
+actual class LocalDateField actual constructor(context: ElementContext) : RViewWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
     override val driverActions get() = super.driverActions + localDateDriverActions()
     override val native = WrapperView()
@@ -99,7 +98,7 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
     }
 }
 
-actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+actual class LocalTimeField actual constructor(context: ElementContext) : RViewWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
     override val driverActions get() = super.driverActions + localTimeDriverActions()
     override val native = WrapperView()
@@ -184,7 +183,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
     }
 }
 
-actual class LocalDateTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+actual class LocalDateTimeField actual constructor(context: ElementContext) : RViewWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
     override val driverActions get() = super.driverActions + localDateTimeDriverActions()
     override val native = WrapperView()

@@ -9,11 +9,7 @@ import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.ssr.HydrationContext
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +20,7 @@ import org.w3c.dom.Element
 fun root(theme: Theme, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CoroutineScope by AppScope {
-        override val context: RContext = RContext(basePath).also {
+        override val context: ElementContext = ElementContext(basePath).also {
             ExternalServices.baseContext = it
         }
         override val representsView: RView? = null
@@ -42,7 +38,7 @@ fun root(theme: Theme, app: ViewWriter.()->Unit) {
 fun root(theme: Reactive<Theme>, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CoroutineScope by AppScope {
-        override val context: RContext = RContext(basePath).also {
+        override val context: ElementContext = ElementContext(basePath).also {
             ExternalServices.baseContext = it
         }
         override val representsView: RView? = null
@@ -144,7 +140,7 @@ private fun hydrateRootInternal(
 
     // Create RContext with Unconfined dispatcher to encourage synchronous reactive execution
     // by Claude
-    val rContext = RContext(basePath).apply {
+    val elementContext = ElementContext(basePath).apply {
         ssrDispatcher = Dispatchers.Unconfined
         ExternalServices.baseContext = this  // Set consistently for both theme variants
     }
@@ -154,7 +150,7 @@ private fun hydrateRootInternal(
     val pendingHydrations = mutableListOf<Pair<RView, Element>>()
 
     val viewWriter = object : ViewWriter(), CoroutineScope by AppScope {
-        override val context: RContext = rContext
+        override val context: ElementContext = elementContext
         override val representsView: RView? = null
 
         override fun willAddChild(view: RView) {}
@@ -193,21 +189,21 @@ private fun hydrateRootInternal(
                 }
 
                 // Clear ssrDispatcher after hydration
-                rContext.ssrDispatcher = null
+                elementContext.ssrDispatcher = null
 
                 val elapsed = kotlin.js.Date.now() - hydrationStartTime
                 HydrationContext.recordHydrationTime(elapsed)
                 HydrationContext.clear()
             } catch (e: Exception) {
                 console.error("[KiteUI Hydration] Hydration failed, page may be in inconsistent state:", e)
-                rContext.ssrDispatcher = null
+                elementContext.ssrDispatcher = null
                 HydrationContext.clear()
                 // Note: We don't fall back to full CSR here as partial hydration may have occurred
                 // and re-rendering could cause flicker or data loss
             }
         }
     } else {
-        rContext.ssrDispatcher = null
+        elementContext.ssrDispatcher = null
         HydrationContext.clear()
     }
 }

@@ -1,12 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.src
 
 
-actual class WebView actual constructor(context: RContext): RView(context) {
+actual class WebView actual constructor(context: ElementContext): RView(context) {
     init {
         native.tag = "iframe"
 

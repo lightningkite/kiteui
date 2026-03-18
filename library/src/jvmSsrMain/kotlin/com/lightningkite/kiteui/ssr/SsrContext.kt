@@ -3,8 +3,6 @@ package com.lightningkite.kiteui.ssr
 import com.lightningkite.kiteui.SsrUserAgentContext
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
-import com.lightningkite.kiteui.models.WindowStatistics
-import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.Frame
@@ -12,7 +10,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.yield
 
 /**
  * Context for a single SSR request. Each request should create its own SsrContext
@@ -44,7 +41,7 @@ class SsrContext(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /** The underlying RContext for KiteUI rendering */
-    val rContext = RContext(basePath)
+    val elementContext = ElementContext(basePath)
 
     /** The default theme to use for rendering */
     var theme: Theme? = null
@@ -63,9 +60,9 @@ class SsrContext(
 
     init {
         // Register this context as the SSR resource registry
-        rContext.ssrResourceRegistry = this
+        elementContext.ssrResourceRegistry = this
         // Use Unconfined dispatcher for synchronous reactive scope execution in SSR
-        rContext.ssrDispatcher = Dispatchers.Unconfined
+        elementContext.ssrDispatcher = Dispatchers.Unconfined
     }
 
     /**
@@ -129,15 +126,15 @@ class SsrContext(
         // Set user agent context for platform detection during rendering - by Claude
         SsrUserAgentContext.withUserAgent(userAgent) {
             // Flush any pending CSS from previous operations
-            rContext.dynamicCss.flush()
+            elementContext.dynamicCss.flush()
 
-            val frame = Frame(rContext)
+            val frame = Frame(elementContext)
             // Use Unconfined so reactive bindings update synchronously when resources load
             val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
 
             val viewWriter = object : ViewWriter(), CoroutineScope by appScope {
                 override val representsView: RView? = null
-                override val context: RContext = rContext
+                override val context: ElementContext = elementContext
 
                 override fun willAddChild(view: RView) {
                     theme?.let { t ->
@@ -161,7 +158,7 @@ class SsrContext(
             renderedFrame = frame
 
             // Flush CSS rules after rendering
-            rContext.dynamicCss.flush()
+            elementContext.dynamicCss.flush()
         }
     }
 
@@ -181,8 +178,8 @@ class SsrContext(
 
         return SsrResult(
             html = html,
-            css = rContext.dynamicCss.emit(),
-            headElements = rContext.dynamicCss.headElements.toList(),
+            css = elementContext.dynamicCss.emit(),
+            headElements = elementContext.dynamicCss.headElements.toList(),
             title = title,
             description = description,
             canonicalUrl = canonicalUrl,

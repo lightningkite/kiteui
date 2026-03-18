@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExternalServices
-import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.openTab
-import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.debugPrint
 import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.extensionSafeInsetPadding

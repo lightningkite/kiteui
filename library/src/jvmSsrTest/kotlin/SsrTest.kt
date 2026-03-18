@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.models.turns
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
-import com.lightningkite.reactive.core.AppScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.setMain
 import java.io.File
@@ -19,7 +18,7 @@ class SsrTest {
     }
     @Test
     fun test() {
-        val context = RContext("/")
+        val context = ElementContext("/")
         val writer = Frame(context)
         with(writer) {
             Theme.flat2("f2", hue = 0.6.turns).onNext.scrolling.col {

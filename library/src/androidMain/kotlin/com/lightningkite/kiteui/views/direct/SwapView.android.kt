@@ -11,17 +11,12 @@ import androidx.transition.*
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 
-actual class SwapView actual constructor(context: RContext) : RView(context) {
+actual class SwapView actual constructor(context: ElementContext) : RView(context) {
     override val native = FrameLayout(context.activity)
 
     companion object {
@@ -39,7 +34,7 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
         var newViewHolder: RView? = null
         val writer = object : ViewWriter(), CalculationContext by this {
             override val representsView: RView? = this@SwapView
-            override val context: RContext
+            override val context: ElementContext
                 get() = this@SwapView.context
 
             override fun willAddChild(view: RView) {

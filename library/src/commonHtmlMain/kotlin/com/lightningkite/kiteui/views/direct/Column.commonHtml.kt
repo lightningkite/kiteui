@@ -1,12 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 
-actual class RowWrapping actual constructor(context: RContext) : RView(context) {
+actual class RowWrapping actual constructor(context: ElementContext) : RView(context) {
     init {
         native.tag = "div"
         native.setStyleProperty("display", "flex")

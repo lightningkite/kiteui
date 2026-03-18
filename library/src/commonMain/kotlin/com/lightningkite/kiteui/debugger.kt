@@ -80,6 +80,7 @@ fun Throwable.report(context: String = "") = Throwable_report(this, context)
 expect fun Any?.identityHashCode(): Int
 
 var viewDebugTarget: RView? = null
+
 inline fun RViewHelper.debugPrint(get: ()->String) {
     if(debugMode && viewDebugTarget == this)
         Log.tag("viewDebugTarget").info(get())

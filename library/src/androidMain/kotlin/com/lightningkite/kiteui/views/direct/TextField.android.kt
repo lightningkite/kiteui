@@ -6,7 +6,6 @@ import android.os.Build.VERSION_CODES
 import android.text.InputType
 import android.text.method.PasswordTransformationMethod
 import android.util.TypedValue
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -16,19 +15,12 @@ import android.widget.TextView
 import androidx.autofill.HintConstants
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
-import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
-actual open class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual open class TextInput actual constructor(context: ElementContext) : RViewWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
     override val driverActions get() = super.driverActions + textInputDriverActions()
     override val native = EditText(context.activity).focusIsKeyboard().apply {

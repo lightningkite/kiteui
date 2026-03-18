@@ -2,16 +2,12 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.exceptions.ExceptionHandlers
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.context.DependencyChangeListener
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+import kotlinx.coroutines.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
-import kotlinx.coroutines.*
-import kotlin.coroutines.coroutineContext
 
 interface Action: Reactive<Boolean> {
     val title: String
@@ -133,7 +129,7 @@ class DependentAction(
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun startAction(scope: CoroutineScope) {
-        if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
+        if (ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         dependencyBlockStart()
         lastJob?.cancel()
         lastJob = (keepRunningWhile ?: scope).let { calculationContext ->

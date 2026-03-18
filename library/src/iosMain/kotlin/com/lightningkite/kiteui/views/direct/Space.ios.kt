@@ -11,7 +11,7 @@ import platform.UIKit.UIView
 
 
 
-actual class Space actual constructor(context: RContext, private val multiplier: Double): RView(context) {
+actual class Space actual constructor(context: ElementContext, private val multiplier: Double): RView(context) {
     
     override val native = NSpace()
     override fun applyTheme(theme: ThemeAndBack) {

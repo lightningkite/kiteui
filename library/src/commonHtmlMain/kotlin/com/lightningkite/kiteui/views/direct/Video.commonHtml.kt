@@ -6,10 +6,9 @@ import com.lightningkite.reactive.core.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 actual class RawVideoView actual constructor(
-    context: RContext,
+    context: ElementContext,
     actual val source: VideoSource,
     actual val description: String,
     actual val scaleType: ImageScaleType,

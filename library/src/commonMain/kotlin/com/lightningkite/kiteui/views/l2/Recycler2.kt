@@ -232,7 +232,7 @@ class Recycler2(
             log?.log("CELL CREATED: from $data at $index")
             val writer = object: ViewWriter() {
                 override val representsView: RView? = cells
-                override val context: RContext
+                override val context: ElementContext
                     get() = cells.context
 
                 override fun willAddChild(view: RView) {

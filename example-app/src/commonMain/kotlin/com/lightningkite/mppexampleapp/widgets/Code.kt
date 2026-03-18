@@ -2,16 +2,15 @@
 
 package com.lightningkite.mppexampleapp.widgets
 
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.direct.AutoCompleteTextField
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-expect class Code constructor(context: RContext): RView {
+expect class Code constructor(context: ElementContext): RView {
     var content: String
 }
 

@@ -8,7 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-actual class Button actual constructor(context: RContext): RViewWithSecondaryAction(context) {
+actual class Button actual constructor(context: ElementContext): RViewWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + buttonDriverActions()
     init {
         themeChoice += ClickableSemantic

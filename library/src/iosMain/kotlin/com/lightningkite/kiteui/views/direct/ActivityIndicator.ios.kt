@@ -1,13 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.UIActivityIndicatorView
 
-actual class ActivityIndicator actual constructor(context: RContext): RView(context) {
+actual class ActivityIndicator actual constructor(context: ElementContext): RView(context) {
     override val native = UIActivityIndicatorView().apply {
         hidden = false
         startAnimating()

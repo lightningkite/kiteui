@@ -2,15 +2,10 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.dom.Event
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.PersistentProperty
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.math.min
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -45,7 +40,7 @@ var PageNavigatorUseExperimentalBehavior: Boolean
         PageNavigatorBehavior.current = if (value) PageNavigatorBehavior.Link else PageNavigatorBehavior.Deprecated
     }
 
-actual fun PageNavigator.bindToPlatform(context: RContext) {
+actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     val beforeUnload = { event: Event ->
         val canLeave = this.currentPage.state.raw?.let { it as? CanBlockBack }?.onNavigateAwayAttempt() ?: true
         if (!canLeave) {

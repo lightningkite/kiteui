@@ -4,7 +4,7 @@ package com.lightningkite.kiteui.camera
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.models.ImageLocal
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
@@ -57,7 +57,7 @@ data class BarcodeResult(
  */
 @ExperimentalKiteUi
 @Untested
-expect class CameraPreview(context: RContext) : RView {
+expect class CameraPreview(context: ElementContext) : RView {
     /**
      * Captures a photo from the camera.
      * @return The captured image, or null if capture failed or permissions not granted.

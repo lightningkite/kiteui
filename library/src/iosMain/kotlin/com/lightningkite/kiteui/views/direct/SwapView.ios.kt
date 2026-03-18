@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.animateIn
@@ -13,7 +13,7 @@ import com.lightningkite.kiteui.views.produceOneMaybe
 import com.lightningkite.kiteui.views.withoutAnimation
 
 
-actual class SwapView actual constructor(context: RContext): RView(context) {
+actual class SwapView actual constructor(context: ElementContext): RView(context) {
     
     override val native = FrameLayout()
     private var currentView: RView? = null

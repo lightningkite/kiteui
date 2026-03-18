@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.rel
 import kotlinx.coroutines.launch
 
 
-actual class ExternalLink actual constructor(context: RContext) : RView(context) {
+actual class ExternalLink actual constructor(context: ElementContext) : RView(context) {
     override val driverActions get() = super.driverActions + externalLinkDriverActions()
     init {
         themeChoice += ClickableSemantic

@@ -1,37 +1,26 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.annotation.SuppressLint
 import android.hardware.SensorManager
 import android.os.Build
 import android.view.*
 import android.view.ViewTreeObserver.OnPreDrawListener
 import android.widget.FrameLayout
-import android.widget.HorizontalScrollView
-import android.widget.OverScroller
 import androidx.core.view.children
-import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
-import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWriter
 import com.lightningkite.kiteui.views.debugPrint
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import java.lang.reflect.Modifier
 import kotlin.math.*
 
 class ScrollView constructor(
-    context: RContext,
+    context: ElementContext,
     override val horizontal: Boolean,
     override val vertical: Boolean
 ) : RViewWriter(context), ScrollingBehaviors {

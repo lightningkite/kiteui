@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.usesTouchscreen
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
@@ -23,7 +23,6 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
-import kotlinx.coroutines.CoroutineScope
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -122,7 +121,7 @@ inline fun ViewWriter.rawImageZoomable(source: ImageSource, description: String,
 class Label(val label: TextView, val container: RowOrCol): ViewWriter() {
     override val coroutineContext: CoroutineContext get() = container.coroutineContext
     override val representsView: RView? = container
-    override val context: RContext
+    override val context: ElementContext
         get() = container.context
 
     override fun willAddChild(view: RView) {

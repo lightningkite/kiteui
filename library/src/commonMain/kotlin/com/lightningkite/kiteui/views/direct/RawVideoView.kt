@@ -2,14 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoSource
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration
 
 
 expect class RawVideoView(
-    context: RContext,
+    context: ElementContext,
     source: VideoSource,
     description: String,
     scaleType: ImageScaleType,

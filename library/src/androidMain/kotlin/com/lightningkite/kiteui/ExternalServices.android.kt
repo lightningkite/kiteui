@@ -17,7 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.lightningkite.kiteui.views.AndroidAppContext
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import kotlinx.coroutines.*
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -32,7 +32,7 @@ import kotlin.coroutines.resume
 private val logger = LogRoot.tag("ExternalServices")
 private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
-class AndroidExternalServices(private val ctx: RContext) : ExternalServicesAccess {
+class AndroidExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
 
     override fun openLink(url: String, newTab: Boolean) {
         AndroidAppContext.activityCtx?.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
@@ -234,7 +234,7 @@ class AndroidExternalServices(private val ctx: RContext) : ExternalServicesAcces
     }
 }
 
-actual fun externalServicesAccessDefault(context: RContext): ExternalServicesAccess = AndroidExternalServices(context)
+actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = AndroidExternalServices(context)
 
 private suspend fun requestImageCamera(
     front: Boolean = false,

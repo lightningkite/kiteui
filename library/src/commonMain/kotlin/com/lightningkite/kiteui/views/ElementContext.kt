@@ -1,12 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.models.Edges
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineDispatcher
 
 private const val DISPATCHER_KEY = "ssrDispatcher"
@@ -16,22 +9,24 @@ private const val DISPATCHER_KEY = "ssrDispatcher"
  * If set, this dispatcher will be used instead of Dispatchers.Main.immediate.
  * This is primarily useful for SSR where we need synchronous reactive scope execution.
  */
-var RContext.ssrDispatcher: CoroutineDispatcher?
+var ElementContext.ssrDispatcher: CoroutineDispatcher?
     get() = addons[DISPATCHER_KEY] as? CoroutineDispatcher
     set(value) { addons[DISPATCHER_KEY] = value }
 
-expect class RContext: RContextHelper {
-    fun split(): RContext
+expect class ElementContext: ElementContextCommonCode {
+    fun split(): ElementContext
     override val darkMode: Boolean?
     var immersiveMode: Boolean
     companion object
 }
 
-abstract class RContextHelper(parent: RContext?) {
+abstract class ElementContextCommonCode(parent: ElementContext?) {
     val addons: ChainMap<String, Any?> = parent?.addons?.child() ?: ChainMap()
 
     abstract val darkMode: Boolean?
 }
+
+@Deprecated("Renamed to RContextCommonCode", ReplaceWith("RContextCommonCode")) typealias RContextHelper = ElementContextCommonCode
 
 // by Claude - scoped key-value store with parent chain for lazy lookup.
 // Reads check local first, then walk up the parent chain.

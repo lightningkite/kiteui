@@ -2,13 +2,10 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 
@@ -173,7 +170,7 @@ fun <T, ID> RowOrCol.forEachById(
                 var result: RView? = null
                 val indexWriter = object: ViewWriter() {
                     override val representsView: RView? = this@forEachById
-                    override val context: RContext get() = this@forEachById.context
+                    override val context: ElementContext get() = this@forEachById.context
                     override val coroutineContext: CoroutineContext get() = this@forEachById.coroutineContext
                     override fun addChild(view: RView) {
                         addChild(oldPos, view)
@@ -250,7 +247,7 @@ fun <T> RowOrCol.forEachAnimated(
                 var result: RView? = null
                 val indexWriter = object: ViewWriter() {
                     override val representsView: RView? = this@forEachAnimated
-                    override val context: RContext get() = this@forEachAnimated.context
+                    override val context: ElementContext get() = this@forEachAnimated.context
                     override val coroutineContext: CoroutineContext get() = this@forEachAnimated.coroutineContext
                     override fun addChild(view: RView) {
                         addChild(oldPos, view)

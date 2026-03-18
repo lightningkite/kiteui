@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import platform.WebKit.WKWebView
 import platform.WebKit.*
@@ -8,7 +8,7 @@ import platform.Foundation.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGRectZero
 
-actual class WebView actual constructor(context: RContext) : RView(context) {
+actual class WebView actual constructor(context: ElementContext) : RView(context) {
 
     override val native: WKWebView
 

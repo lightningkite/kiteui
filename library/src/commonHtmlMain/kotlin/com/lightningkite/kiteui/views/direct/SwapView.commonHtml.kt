@@ -1,11 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 
 
-actual class SwapView actual constructor(context: RContext) : RView(context) {
+actual class SwapView actual constructor(context: ElementContext) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")

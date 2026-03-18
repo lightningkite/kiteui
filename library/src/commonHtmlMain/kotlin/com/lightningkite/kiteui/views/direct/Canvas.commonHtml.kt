@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 
 
-actual class Canvas actual constructor(context: RContext): RView(context) {
+actual class Canvas actual constructor(context: ElementContext): RView(context) {
     actual var delegate: CanvasDelegate? = null
         set(value) {
             field = value

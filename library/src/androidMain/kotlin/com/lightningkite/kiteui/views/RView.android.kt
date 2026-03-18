@@ -34,7 +34,7 @@ import com.lightningkite.reactive.context.*
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
+actual abstract class RView actual constructor(context: ElementContext) : RViewHelper(context) {
     abstract val native: View
 
     var removeListener: (() -> Unit)? = null

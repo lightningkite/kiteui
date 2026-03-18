@@ -4,11 +4,9 @@ import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 
-actual class Frame actual constructor(context: RContext) : RView(context) {
+actual class Frame actual constructor(context: ElementContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.lineHeight = "0px !important"
@@ -83,7 +81,7 @@ actual class Frame actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual class RowOrCol actual constructor(context: RContext) : RView(context) {
+actual class RowOrCol actual constructor(context: ElementContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.flexDirection = "column"
@@ -202,7 +200,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
+actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoints))

@@ -125,7 +125,7 @@ object ThemeTesterPage : DocPage {
 
                         // Build the theme derivation based on selected semantics
                         dynamicTheme {
-                            var derivation: ThemeDerivation = ThemeDerivation.none
+                            var derivation: ThemeDerivation = None
                             for (semanticName in selectedSemantics()) {
                                 val semantic = availableSemantics.find { it.name == semanticName }?.semantic
                                 if (semantic != null) {
@@ -173,7 +173,7 @@ object ThemeTesterPage : DocPage {
                                 text("Below shows the same semantics nested inside themselves:")
 
                                 dynamicTheme {
-                                    var derivation: ThemeDerivation = ThemeDerivation.none
+                                    var derivation: ThemeDerivation = None
                                     for (semanticName in selectedSemantics()) {
                                         val semantic = availableSemantics.find { it.name == semanticName }?.semantic
                                         if (semantic != null) {
@@ -187,7 +187,7 @@ object ThemeTesterPage : DocPage {
                                     text("Nested Level 1")
 
                                     dynamicTheme {
-                                        var derivation: ThemeDerivation = ThemeDerivation.none
+                                        var derivation: ThemeDerivation = None
                                         for (semanticName in selectedSemantics()) {
                                             val semantic = availableSemantics.find { it.name == semanticName }?.semantic
                                             if (semantic != null) {
@@ -201,7 +201,7 @@ object ThemeTesterPage : DocPage {
                                         text("Nested Level 2")
 
                                         dynamicTheme {
-                                            var derivation: ThemeDerivation = ThemeDerivation.none
+                                            var derivation: ThemeDerivation = None
                                             for (semanticName in selectedSemantics()) {
                                                 val semantic = availableSemantics.find { it.name == semanticName }?.semantic
                                                 if (semantic != null) {

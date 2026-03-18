@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.testing
 
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.Frame
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +16,7 @@ actual fun uiTest(
     Dispatchers.setMain(Dispatchers.Unconfined)
 
     try {
-        val context = RContext("/")
+        val context = ElementContext("/")
         val root = Frame(context)
         content(root)
         root.postSetup()

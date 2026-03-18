@@ -10,18 +10,16 @@ import android.text.Html
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.util.TypedValue
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 
-actual class TextView actual constructor(context: RContext) :
+actual class TextView actual constructor(context: ElementContext) :
     RView(context) {
     override val driverValue: String? get() = content
     override val native: android.widget.TextView = android.widget.TextView(context.activity)

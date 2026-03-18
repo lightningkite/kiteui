@@ -1,20 +1,13 @@
 package com.lightningkite.mppexampleapp.widgets
 
-import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.FontAndStyle
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.times
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.direct.UILabelWithLayerBackground
 import com.lightningkite.kiteui.views.informParentOfSizeChange
 import com.lightningkite.kiteui.views.toUIFontWeight
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSAttributedString
 import platform.Foundation.NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
@@ -41,7 +34,7 @@ import platform.UIKit.UIFontWeightTrait
 import platform.UIKit.UIView
 
 @OptIn(ExperimentalForeignApi::class)
-actual class Code actual constructor(context: RContext) : RView(context) {
+actual class Code actual constructor(context: ElementContext) : RView(context) {
     val actualNative = UILabelWithLayerBackground()
     override val native: UIView = actualNative
     val label get() = actualNative.label

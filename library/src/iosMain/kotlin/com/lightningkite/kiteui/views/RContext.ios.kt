@@ -1,20 +1,13 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.models.Edges
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
-actual class RContext(val controller: UIViewController, val parent: RContext? = null) : RContextHelper(parent) {
+actual class ElementContext(val controller: UIViewController, val parent: ElementContext? = null) : ElementContextCommonCode(parent) {
     // by Claude - use addons.child() for lazy parent lookup instead of copying
-    actual fun split(): RContext = RContext(controller, this)
+    actual fun split(): ElementContext = ElementContext(controller, this)
 
-    fun split(controller: UIViewController): RContext = RContext(controller, this@RContext)
+    fun split(controller: UIViewController): ElementContext = ElementContext(controller, this@ElementContext)
 
     actual override val darkMode: Boolean?
         get() = when (controller.traitCollection.userInterfaceStyle) {

@@ -1,16 +1,8 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.exceptions.ExceptionHandlers
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
 
 /**
  * Base class for all views in the KiteUI framework.
@@ -34,7 +26,7 @@ import kotlinx.coroutines.CoroutineScope
  * @see RViewWriter for views that delegate gap handling to their parent
  * @see RViewWithAction for views that need to track action states
  */
-expect abstract class RView constructor(context: RContext) : RViewHelper {
+expect abstract class RView constructor(context: ElementContext) : RViewHelper {
     /**
      * Whether this view should be visible when printing.
      * Platform implementations may handle this differently (e.g., CSS media queries on web).
@@ -107,7 +99,7 @@ expect abstract class RView constructor(context: RContext) : RViewHelper {
  * This is useful for wrapper views that should inherit spacing from their container
  * rather than defining their own spacing behavior.
  */
-abstract class RViewWriter(context: RContext) : RView(context) {
+abstract class RViewWriter(context: ElementContext) : RView(context) {
     /**
      * Returns the explicitly set gap, or if null, delegates to the parent's gap.
      * This allows wrapper views to transparently inherit spacing from their containers.
@@ -122,7 +114,7 @@ abstract class RViewWriter(context: RContext) : RView(context) {
  * This base class handles the lifecycle of action state listeners, automatically
  * cleaning them up when the view is removed or when a new action is set.
  */
-abstract class RViewWithAction(context: RContext) : RView(context) {
+abstract class RViewWithAction(context: ElementContext) : RView(context) {
     private var actionStatusRemove: (() -> Unit)? = null
     init { onRemove { actionStatusRemove?.invoke(); actionStatusRemove = null } }
 
@@ -153,7 +145,7 @@ abstract class RViewWithAction(context: RContext) : RView(context) {
  *
  * A secondary action is typically a right-click or long-tap.
  */
-abstract class RViewWithSecondaryAction(context: RContext) : RViewWithAction(context) {
+abstract class RViewWithSecondaryAction(context: ElementContext) : RViewWithAction(context) {
     private var secondaryActionStatusRemove: (() -> Unit)? = null
     init { onRemove { secondaryActionStatusRemove?.invoke(); secondaryActionStatusRemove = null } }
 

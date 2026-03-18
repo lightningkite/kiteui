@@ -2,18 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWriter
-import com.lightningkite.kiteui.views.extensionHorizontalAlign
 import com.lightningkite.kiteui.views.extensionIgnoreInteraction
-import com.lightningkite.kiteui.views.extensionVerticalAlign
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.math.abs
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGPoint
@@ -22,7 +18,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 
 class ScrollView(
-    context: RContext,
+    context: ElementContext,
     override val horizontal: Boolean,
     override val vertical: Boolean
 ) : RViewWriter(context), ScrollingBehaviors {

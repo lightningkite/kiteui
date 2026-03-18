@@ -1,20 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
 
 
-actual class Switch actual constructor(context: RContext) : RView(context) {
+actual class Switch actual constructor(context: ElementContext) : RView(context) {
     override val driverValue: String? get() = switchDriverValue()
     override val driverActions get() = super.driverActions + switchDriverActions()
     override val native = UISwitch()

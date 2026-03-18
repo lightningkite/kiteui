@@ -7,7 +7,7 @@ import org.w3c.dom.svg.SVGCircleElement
 import org.w3c.dom.svg.SVGSVGElement
 import kotlin.math.PI
 
-actual class CircularProgress actual constructor(context: RContext) : RView(context) {
+actual class CircularProgress actual constructor(context: ElementContext) : RView(context) {
 
     private val circle: SVGCircleElement
     private val circumference: Double

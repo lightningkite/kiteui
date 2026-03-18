@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import android.graphics.Paint
 import android.text.method.PasswordTransformationMethod
 import android.util.TypedValue
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.ViewGroup
 import android.widget.EditText
@@ -12,18 +11,13 @@ import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RViewWithAction
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
-actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class FormattedTextInput actual constructor(context: ElementContext) : RViewWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
     override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
     override val native = EditText(context.activity).focusIsKeyboard().apply {

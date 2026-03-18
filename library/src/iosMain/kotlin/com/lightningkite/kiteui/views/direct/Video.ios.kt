@@ -40,7 +40,7 @@ import kotlin.time.DurationUnit
 
 
 actual class RawVideoView actual constructor(
-    context: RContext,
+    context: ElementContext,
     actual val source: VideoSource,
     actual val description: String,
     actual val scaleType: ImageScaleType,

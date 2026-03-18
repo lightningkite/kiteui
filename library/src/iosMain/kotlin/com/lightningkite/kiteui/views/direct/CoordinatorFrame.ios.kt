@@ -19,7 +19,7 @@ private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by r
     null
 )
 
-actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
+actual class CoordinatorFrame actual constructor(context: ElementContext) : RView(context) {
 
     override val native = FrameLayout()
 
@@ -217,7 +217,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: RContext) : RView(context) {
+actual class CoordinatorDragHandle actual constructor(context: ElementContext) : RView(context) {
     override val native = FrameLayoutButton()
 
     override fun postSetup() {

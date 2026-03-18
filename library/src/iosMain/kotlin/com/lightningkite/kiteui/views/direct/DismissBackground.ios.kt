@@ -21,7 +21,7 @@ import platform.UIKit.*
 import platform.darwin.sel_registerName
 
 
-actual class DismissBackground actual constructor(context: RContext) : RView(context) {
+actual class DismissBackground actual constructor(context: ElementContext) : RView(context) {
     
     override val native = NDismissBackground()
     actual fun onClick(action: suspend () -> Unit): Unit {

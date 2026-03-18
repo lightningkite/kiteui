@@ -1,18 +1,14 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.drawable.ColorDrawable
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
 
 
-actual class Separator actual constructor(context: RContext): RView(context) {
+actual class Separator actual constructor(context: ElementContext): RView(context) {
     override val native = NSeparator(context.activity).apply {
         minimumWidth = 1
         minimumHeight = 1

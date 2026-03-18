@@ -1,13 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
-import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -133,7 +130,7 @@ class FlexboxLayout(context: Context) : ViewGroup(context) {
     private fun min(a: Int, b: Int): Int = if (a < b) a else b
 }
 
-actual class RowWrapping actual constructor(context: RContext) : RView(context) {
+actual class RowWrapping actual constructor(context: ElementContext) : RView(context) {
     override val native = FlexboxLayout(context.activity)
 
     override var gap: Dimension?

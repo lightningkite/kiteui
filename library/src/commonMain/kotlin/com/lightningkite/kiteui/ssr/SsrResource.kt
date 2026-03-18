@@ -1,8 +1,7 @@
 package com.lightningkite.kiteui.ssr
 
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.reactive.core.Signal
@@ -30,7 +29,7 @@ private const val SSR_REGISTRY_KEY = "ssrResourceRegistry"
  * Get the SSR resource registry from the context, if available.
  * Only non-null when rendering on the server side.
  */
-var RContext.ssrResourceRegistry: SsrResourceRegistry?
+var ElementContext.ssrResourceRegistry: SsrResourceRegistry?
     get() = addons[SSR_REGISTRY_KEY] as? SsrResourceRegistry
     set(value) { addons[SSR_REGISTRY_KEY] = value }
 

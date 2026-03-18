@@ -1,12 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ElementContext
 
 import com.lightningkite.kiteui.views.RView
 
 
-expect class MenuButton(context: RContext) : RView {
+expect class MenuButton(context: ElementContext) : RView {
 
     fun opensMenu(createMenu: Frame.() -> Unit)
     var enabled: Boolean

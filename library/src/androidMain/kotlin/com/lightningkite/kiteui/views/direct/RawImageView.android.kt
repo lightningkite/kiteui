@@ -1,46 +1,30 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.Matrix
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.view.View
-import android.view.View.MeasureSpec
 import android.widget.ImageView
 import android.widget.ImageView as AImageView
 import androidx.appcompat.widget.AppCompatImageView
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SizeReadyCallback
 import com.bumptech.glide.request.target.Target
-import com.bumptech.glide.request.transition.Transition
 import com.github.chrisbanes.photoview.PhotoView
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.Path.PathDrawable
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 actual abstract class RawImageViewLike constructor(
-    context: RContext,
+    context: ElementContext,
     actual val source: ImageSource,
     actual val description: String,
     actual val scaleType: ImageScaleType,
@@ -51,7 +35,7 @@ actual abstract class RawImageViewLike constructor(
 
 
 actual class RawImageView actual constructor(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -193,7 +177,7 @@ actual class RawImageView actual constructor(
 
 
 actual class SizelessRawImageView actual constructor(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -337,7 +321,7 @@ actual class SizelessRawImageView actual constructor(
 
 
 actual class RawImageViewZoomable actual constructor(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,

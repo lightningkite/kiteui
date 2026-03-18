@@ -1,19 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlinx.cinterop.ExperimentalForeignApi
-import platform.UIKit.UIView
 
 
-
-actual class ToggleButton actual constructor(context: RContext) : RView(context) {
+actual class ToggleButton actual constructor(context: ElementContext) : RView(context) {
     override val driverValue: String? get() = toggleDriverValue()
     override val driverActions get() = super.driverActions + toggleDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()

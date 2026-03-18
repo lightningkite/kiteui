@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 
 
 
-actual class TextView actual constructor(context: RContext) : RView(context) {
+actual class TextView actual constructor(context: ElementContext) : RView(context) {
     override val driverValue: String? get() = content
     init {
         native.tag = "p"

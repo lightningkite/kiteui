@@ -859,7 +859,7 @@ class WindowedList<T>(
 
     private fun createItemWriter(insertIndex: Int): ViewWriter {
         return object : ViewWriter() {
-            override val context: RContext get() = contentContainer.context
+            override val context: ElementContext get() = contentContainer.context
             override val representsView: RView? get() = contentContainer
             override val coroutineContext get() = contentContainer.coroutineContext
             override fun willAddChild(view: RView) { view.parent = contentContainer }

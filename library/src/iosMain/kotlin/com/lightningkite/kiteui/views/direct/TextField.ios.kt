@@ -2,14 +2,10 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
@@ -19,7 +15,7 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 
-actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class TextInput actual constructor(context: ElementContext) : RViewWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
     override val driverActions get() = super.driverActions + textInputDriverActions()
     companion object {
