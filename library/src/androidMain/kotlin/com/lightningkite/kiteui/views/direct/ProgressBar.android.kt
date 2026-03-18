@@ -8,10 +8,7 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.Gravity
 import com.lightningkite.kiteui.current
-import com.lightningkite.kiteui.models.CornerRadii
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.min
@@ -29,17 +26,25 @@ actual class ProgressBar actual constructor(context: RContext) : RView(context) 
 
             // The default drawable uses a fixed height; use a custom drawable to support progress bars of any height
             progressDrawable = clipDrawable
-            clipToOutline = true
         }
 
+    init {
+        themeChoice += FieldSemantic
+    }
+
+    // Progress bars should have no padding — the fill should be flush with the track edges.
+    // On web, progress.kui has padding: 0px !important.
+    override fun refreshPadding() {
+        native.setPadding(0, 0, 0, 0)
+    }
+
     override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
-        val theme = theme.theme
-        if (VERSION.SDK_INT >= VERSION_CODES.O) {
-            native.setProgressTintList(ColorStateList.valueOf(theme.foreground.colorInt()))
-        }
+        val fieldTheme = theme[FieldSemantic]
+        super.applyTheme(fieldTheme)
+        val t = fieldTheme.theme
+        shapeDrawable.paint.color = t.foreground.colorInt()
         run {
-            val cr = when (val it = theme.cornerRadii) {
+            val cr = when (val it = t.cornerRadii) {
                 is CornerRadii.RatioOfSize -> if (it.ratio >= 0.5f) 9999f else it.ratio * min(
                     native.width,
                     native.height
@@ -51,7 +56,7 @@ actual class ProgressBar actual constructor(context: RContext) : RView(context) 
                 is CornerRadii.PerCorner -> it.value.value
             }
 
-            val asPerCorner = theme.cornerRadii as? CornerRadii.PerCorner
+            val asPerCorner = t.cornerRadii as? CornerRadii.PerCorner
             val topLeft = if (asPerCorner?.topLeft != false) cr else 0f
             val topRight = if (asPerCorner?.topRight != false) cr else 0f
             val bottomRight = if (asPerCorner?.bottomRight != false) cr else 0f

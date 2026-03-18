@@ -17,65 +17,70 @@ import com.lightningkite.readable.*
 
 actual class Switch actual constructor(context: RContext): RView(context) {
     override val native = android.widget.Switch(context.activity)
-    override fun applyTheme(theme: ThemeAndBack) {
-        val theme = theme.theme
-        native.thumbTintList = ColorStateList(
-            arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
-                theme.background.closestColor().highlight(.3f).colorInt(),
-                theme[ImportantSemantic].theme.background.colorInt()
-            )
-        )
-        native.trackTintList = ColorStateList(
-            arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
-                theme.background.closestColor().highlight(.2f).colorInt(),
-                theme.background.closestColor().highlight(.2f).colorInt(),
-            )
-        )
-//        native.thumbTintList = null
-//        native.trackTintList = null
-//        native.thumbDrawable = drawableWithoutCorners(
-//            fill = theme.foreground,
-//            stroke = Color.interpolate(
-//                theme.background.closestColor(),
-//                theme.foreground.closestColor(),
-//                0.5f,
-//            ),
-//            strokeWidth = theme.outlineWidth,
-//        ).apply {
-//            cornerRadius = 999f
-//            setSize(24.dp.px.toInt(), 24.dp.px.toInt())
-//        }
-//        native.trackDrawable = StateListDrawable().apply {
-//            addState(intArrayOf(-R.attr.state_checked), drawableWithoutCorners(
-//                fill = Color.interpolate(
-//                    theme[CardSemantic].theme.background.closestColor(),
-//                    theme[CardSemantic].theme.foreground.closestColor(),
-//                    0.5f,
-//                ),
-//                stroke = Color.interpolate(
-//                    theme[CardSemantic].theme.background.closestColor(),
-//                    theme[CardSemantic].theme.outline.closestColor(),
-//                    0.5f,
-//                ),
-//                strokeWidth = theme[CardSemantic].theme.outlineWidth,
-//            ).apply {
-//                cornerRadius = 999f
-//                setSize(24.dp.px.toInt(), 24.dp.px.toInt())
-//            })
-//            addState(intArrayOf(R.attr.state_checked), drawableWithoutCorners(
-//                fill = theme[AffirmativeSemantic].theme.background,
-//                stroke = Color.interpolate(
-//                    theme.background.closestColor(),
-//                    theme[AffirmativeSemantic].theme.background.closestColor(),
-//                    0.5f,
-//                ),
-//                strokeWidth = theme.outlineWidth,
-//            ).apply {
-//                cornerRadius = 999f
-//                setSize(24.dp.px.toInt(), 24.dp.px.toInt())
-//            })
-//        }
+
+    init {
+        themeChoice += ClickableSemantic
     }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        val selectedTheme = theme[SelectedSemantic]
+        val unselectedTheme = theme[UnselectedSemantic]
+        val checkedShadows = selectedTheme.theme.shadows ?: emptyList()
+        val uncheckedShadows = unselectedTheme.theme.shadows ?: emptyList()
+
+        if (checkedShadows.isNotEmpty() || uncheckedShadows.isNotEmpty()) {
+            // Neumorphic mode - create custom track drawable
+            val density = native.resources.displayMetrics.density
+            val trackHeight = (24 * density).toInt()
+            val trackWidth = (48 * density).toInt()
+
+            // Track uses a neumorphic control drawable (pill shape, 2:1 ratio like web's 3rem x 1.5rem)
+            val track = (native.trackDrawable as? NeumorphicControlDrawable)
+                ?: NeumorphicControlDrawable(
+                    trackWidth,
+                    trackHeight,
+                    isCircle = false,
+                    drawCheckmark = false,
+                    drawDot = false
+                ).also {
+                    native.trackDrawable = it
+                }
+            track.update(
+                checkedShadows = checkedShadows,
+                uncheckedShadows = uncheckedShadows,
+                checkedBgColor = selectedTheme.theme.background.colorInt(),
+                uncheckedBgColor = unselectedTheme.theme.background.colorInt(),
+                indicatorColor = theme.theme.foreground.colorInt(),
+                cornerRadiusPx = trackHeight / 2f,
+            )
+
+            // Thumb colors - use background highlight for unchecked, accent for checked
+            val t = theme.theme
+            native.thumbTintList = ColorStateList(
+                arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
+                    t.background.closestColor().highlight(.3f).colorInt(),
+                    t[ImportantSemantic].theme.background.colorInt()
+                )
+            )
+            native.trackTintList = null
+        } else {
+            // Standard mode
+            val t = theme.theme
+            native.thumbTintList = ColorStateList(
+                arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
+                    t.background.closestColor().highlight(.3f).colorInt(),
+                    t[ImportantSemantic].theme.background.colorInt()
+                )
+            )
+            native.trackTintList = ColorStateList(
+                arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
+                    t.background.closestColor().highlight(.2f).colorInt(),
+                    t.background.closestColor().highlight(.2f).colorInt(),
+                )
+            )
+        }
+    }
+
     actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
@@ -90,5 +95,4 @@ actual class Switch actual constructor(context: RContext): RView(context) {
     }
 
     actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
-
 }
