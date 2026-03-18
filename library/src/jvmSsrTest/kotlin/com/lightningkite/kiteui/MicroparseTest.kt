@@ -1,5 +1,8 @@
-package com.lightningkite.kiteui.dom
+package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.dom.analyzeTagInside
+import com.lightningkite.kiteui.dom.parseMPNodes
+import com.lightningkite.kiteui.dom.starts
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
