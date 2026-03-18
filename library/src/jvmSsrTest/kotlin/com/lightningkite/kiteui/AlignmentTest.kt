@@ -1,4 +1,4 @@
-package com.lightningkite.kiteui.views
+package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.testing.uiTest

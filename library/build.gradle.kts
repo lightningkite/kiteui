@@ -72,6 +72,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinxCoroutinesTest)
+                implementation(libs.kotlinxCoroutinesCore)
                 implementation(libs.comLightningkiteTestingKotlinTestManualRuntime)
                 implementation(project(":test-utilities"))
             }
