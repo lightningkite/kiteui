@@ -25,6 +25,7 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame

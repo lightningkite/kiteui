@@ -17,10 +17,6 @@ expect abstract class NativeElement(context: ElementContext) : NativeElementComm
 
 }
 
-expect abstract class NativeContainerElement(context: ElementContext) : NativeContainerElementCommonCode {
-
-}
-
 sealed class NativeElementCommonCode(override val context: ElementContext) : Element {
     override val underlyingNativeElement: NativeElement get() = this as NativeElement
 
@@ -54,7 +50,7 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
     var isShutdown = false
         private set
 
-    override fun shutdown() {
+    open fun shutdown() {
         if (isShutdown) return
         job.cancel()
         isShutdown = true
@@ -65,13 +61,13 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
 
     // --- THEMING ---
 
-    protected abstract fun applyTheme(theme: ThemeAndBack)
+    protected abstract fun nativeApplyTheme(theme: ThemeAndBack)
     abstract fun refreshPadding()
 
     override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
         protected set(value) {
             field = value
-            applyTheme(value)
+            nativeApplyTheme(value)
             refreshPadding()
         }
 
@@ -87,6 +83,13 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
             refreshPadding()
         }
 
+    val appliedPadding: Edges get() {
+        if (!fullyStarted) println("WARN: $this attempted to calculate applied padding before fully started.")
+        return (paddingByEdge ?: theme.padding).let { p ->
+            safeAreaPadding?.let { p + it } ?: p
+        }
+    }
+
     // Theme pipeline
 
     fun interface GetBaseTheme {
@@ -98,7 +101,7 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
         }
     }
 
-    fun interface StateTheming {
+    fun interface StateTheming {    // this will work for now... But in the future I think a better approach would have key-theme pairs that code can add/remove from.
         operator fun invoke(element: NativeElement): ThemeDerivation
 
         operator fun plus(other: StateTheming): StateTheming {
@@ -107,13 +110,13 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
 
         companion object {
             val loadingAndProcessing = StateTheming { e ->
-                val foreground = e.foregroundProcesses.state.handle(   // apply working semantics for foreground processes (like button presses)
+                val t = e.foregroundProcesses.state.handle(   // apply working semantics for foreground processes (like button presses)
                     success = { ThemeDerivation.None },
                     notReady = { WorkingSemantic },
                     exception = { WorkingSemantic + ErrorSemantic }
                 )
 
-                if (!e.backgroundProcesses.state.success) foreground + LoadingSemantic else foreground
+                if (!e.backgroundProcesses.state.success) t + LoadingSemantic else t
             }
         }
     }
@@ -175,6 +178,7 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
             }
 
         private fun recalculateState() {
+            if (!currentlyActive()) return
             state = when {
                 exceptionCount > 0 -> {
                     val firstException = processes.firstNotNullOfOrNull { it.state.exception }
@@ -221,11 +225,12 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
                 release()
                 if (processes.remove(status)) when (prevSeverity) { // dependency removed, clear load count
                     SEV_EXCEPTION -> {
-                        exceptionCount--; recalculateState()
+                        exceptionCount--
+                        recalculateState()
                     }
-
                     SEV_NOT_READY -> {
-                        notReadyCount--; recalculateState()
+                        notReadyCount--
+                        recalculateState()
                     }
                 }
             }
@@ -278,80 +283,3 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
 private const val SEV_EXCEPTION = 2
 private const val SEV_NOT_READY = 1
 private const val SEV_OK = 0
-
-
-abstract class NativeContainerElementCommonCode(context: ElementContext) : NativeElementCommonCode(context), ContainerElement {
-    final override var childDefaultAlignment: Alignment? = null
-
-    // --- CHILDREN ---
-
-    private val internalChildren = ArrayList<Element>()
-    override val children: List<Element> get() = internalChildren
-
-    protected abstract fun internalAddChild(index: Int, element: Element)
-    protected abstract fun internalRemoveChild(index: Int)
-    protected abstract fun internalClearChildren()
-
-    final override fun addChild(index: Int, element: Element) {
-        if (!checkActive("addChild")) return
-        if (element.parent !== this) {
-            element.underlyingNativeElement.parent = this as NativeContainerElement
-            if (element is ContainerElement && element.childDefaultAlignment == null) element.childDefaultAlignment = this.childDefaultAlignment
-        }
-        internalChildren.add(index, element)
-        internalAddChild(index, element)
-    }
-    final override fun addChild(element: Element) = addChild(children.size, element)
-    final override fun removeChild(index: Int) {
-        if (!checkActive("removeChild")) return
-        if (index !in children.indices) throw IllegalArgumentException("$index not in range ${children.indices}")
-        internalRemoveChild(index)
-        internalChildren.removeAt(index).shutdown()
-    }
-    final override fun removeChild(element: Element) {
-        if (!checkActive("removeChild")) return
-        val i = children.indexOf(element)
-        if (i != -1) {
-            internalRemoveChild(i)
-            internalChildren.removeAt(i).shutdown()
-        }
-        else throw IllegalStateException("$element is not a child of $this!")
-    }
-    final override fun clearChildren() {
-        if (!checkActive("clearChildren")) return
-        internalClearChildren()
-        for (e in children) e.shutdown()
-        internalChildren.clear()
-    }
-
-
-
-    // --- LIFECYCLE ---
-
-    override fun shutdown() {
-        if (isShutdown) return
-        if (Element.Debugger.removeBeforeShutdown) {
-            for (index in internalChildren.lastIndex downTo 0) {
-                removeChild(index)
-                internalChildren.removeAt(index).shutdown()
-            }
-        } else {
-            internalChildren.forEach { it.shutdown() }
-            internalChildren.clear()
-        }
-        super.shutdown()
-    }
-
-
-    // --- THEMING ---
-
-    override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
-        set(value) {
-            val oldCascading = field.theme.let { it.revert ?: it }
-            super.themeAndBack = value
-            val newCascading = field.theme.let { it.revert ?: it }
-            if (oldCascading != newCascading) {
-                for (child in children) child.underlyingNativeElement.refreshTheming()
-            }
-        }
-}

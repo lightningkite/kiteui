@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.models.div
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.DropTargetDelegate
+import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col

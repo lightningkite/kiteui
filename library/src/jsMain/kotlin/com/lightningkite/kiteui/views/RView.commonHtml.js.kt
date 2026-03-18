@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
+import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.ssr.HydrationContext

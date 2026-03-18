@@ -1,6 +1,4 @@
-package com.lightningkite.kiteui.views
-
-import com.lightningkite.kiteui.models.DragEvent
+package com.lightningkite.kiteui.models
 
 interface DropTargetDelegate {
     fun over(event: DragEvent): Boolean = true

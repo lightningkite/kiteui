@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.testing.parseFindLine
 import com.lightningkite.kiteui.testing.uiTest
 import com.lightningkite.kiteui.views.DriverActionException
-import com.lightningkite.kiteui.views.DropTargetDelegate
+import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.Signal
 import kotlin.test.Test

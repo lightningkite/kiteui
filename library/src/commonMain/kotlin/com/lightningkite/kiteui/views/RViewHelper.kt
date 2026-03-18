@@ -13,6 +13,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
+import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.LoadingSemantic
 import com.lightningkite.kiteui.models.Rect

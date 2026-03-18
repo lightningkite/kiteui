@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.views.direct.RowOrCol
 
 actual abstract class RView actual constructor(context: ElementContext) : RViewHelper(context) {

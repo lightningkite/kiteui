@@ -27,8 +27,6 @@ interface ElementWriter {
     }
 }
 
-fun ElementWriter.split(): ElementWriter = ElementWriter.Split(this)
-
 @OptIn(ExperimentalContracts::class, InternalKiteUi::class)
 inline fun <T : Element> ElementWriter.write(element: T, setup: T.() -> Unit): T {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
@@ -47,26 +45,3 @@ interface CanAddTheme : CanAddScrolling
 interface CanAddShownWhen : CanAddTheme
 interface CanAddWeight : CanAddShownWhen
 interface ViewWriter2 : CanAddWeight
-
-private fun ViewWriter2.align(align: Align): CanAddWeight = this
-private fun CanAddWeight.weight(weight: Float): CanAddShownWhen = this
-private fun CanAddShownWhen.shownWhen(predicate: () -> Boolean): CanAddTheme = this
-private fun CanAddTheme.themed(theme: ThemeDerivation): CanAddTheme = this
-private fun CanAddScrolling.scrolling(): ElementWriter = this
-
-private fun ElementWriter.element(): Unit = TODO()
-
-private fun ElementWriter.applyModifiersUnsafe(modifiers: (ViewWriter2) -> ElementWriter): ElementWriter {
-    return modifiers(object : ViewWriter2, ElementWriter by this {})
-}
-
-private fun ViewWriter2.test() {
-    weight(4f)
-        .shownWhen { true }
-        .themed(None)
-        .scrolling()
-        .applyModifiersUnsafe {
-            it.shownWhen { true }
-        }
-        .element()
-}

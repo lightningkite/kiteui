@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.DragShadow
+import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.models.Semantic
 import com.lightningkite.kiteui.models.Theme

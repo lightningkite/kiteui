@@ -1,33 +1,22 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.InternalKiteUi
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+@Deprecated("Wrong import; this has moved", ReplaceWith("launch", "com.lightningkite.reactive.launch"), DeprecationLevel.ERROR) val launch = Unit
+@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope", "com.lightningkite.reactive.context.reactiveScope"), DeprecationLevel.ERROR) val reactiveScope = Unit
 
-//@Deprecated("")
-//fun RView.themeModifier(calculate: (()->Theme)->Theme): ViewWriter {
-//    beforeNextElementSetup {
-//        themeChoice = ThemeChoice.Derive { calculate { it } }
-//    }
-//    return ViewWriter
-//}
+@Deprecated("Wrong import; this has moved", ReplaceWith("DropTargetDelegate", "com.lightningkite.kiteui.models.DropTargetDelegate")) typealias DropTargetDelegate = com.lightningkite.kiteui.models.DropTargetDelegate
 
+@Deprecated("Renamed", ReplaceWith("RContextCommonCode")) typealias RContextHelper = ElementContextCommonCode
 
-////@Deprecated("Wrong import; this has moved", ReplaceWith("launch", ""))
-//inline fun RView.launch(noinline action: suspend () -> Unit) = otherLaunch(action)
-////@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope(action = action)", "com.lightningkite.readable.reactiveScope"))
-//@OptIn(InternalKiteUi::class)
-//inline fun RView.reactiveScope(noinline action: ReactiveContext.() -> Unit) { DirectReactiveContext(this, action = action, onLoad = null).run() }
-////@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope(onLoad, action)", "com.lightningkite.readable.reactiveScope"))
-//@OptIn(InternalKiteUi::class)
-//inline fun RView.reactiveScope(noinline onLoad: (() -> Unit)?, noinline action: ReactiveContext.() -> Unit) { DirectReactiveContext(this, action = action, onLoad = onLoad).run() }
+@Deprecated("Renamed", ReplaceWith("debugName"))
+var RView.testId: String?
+    get() = debugName
+    set(value) {
+        debugName = value
+    }
 
-
-
-@Deprecated("Wrong import; this has moved", ReplaceWith("launch", "com.lightningkite.kiteui.launch")) val launch = Unit
-@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope", "com.lightningkite.readable.reactiveScope")) val reactiveScope = Unit
+@Deprecated("No longer supported, set debugName directly on the element", level = DeprecationLevel.ERROR)
+operator fun String.minus(writer: ViewWriter): ViewWriter = writer.also {
+    it.beforeNextElementSetup {
+        debugName = this@minus
+    }
+}
