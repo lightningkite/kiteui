@@ -1,11 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.openTab
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
 import kotlinx.coroutines.launch
 
 actual class ExternalLink actual constructor(context: ElementContext) : RView(context) {
@@ -21,7 +22,7 @@ actual class ExternalLink actual constructor(context: ElementContext) : RView(co
                 launch {
                     onNavigate.invoke()
                     value?.let {
-                        ExternalServices.openTab(it)
+                        context.openTab(it)
                     }
                 }
             }

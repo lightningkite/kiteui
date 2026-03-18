@@ -34,12 +34,14 @@ transition = "1.6.0"
 vannitechPublishing = "0.34.0"
 dokka = "2.1.0"
 uriEncoding = "0.0.1-6"
+lightningServer = "5.0.0-prerelease-350"
 
 
 [libraries]
 fontbox = { module = "org.apache.pdfbox:fontbox", version.ref = "fontbox" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 androidxAutofill = { module = "androidx.autofill:autofill", version = "1.3.0" }
+exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.1" }
 appcompat = { module = "androidx.appcompat:appcompat", version = { ref = "appcompat" } }
 cardview = { module = "androidx.cardview:cardview", version = { ref = "cardview" } }
 comLightningkiteReactive = { module = "com.lightningkite:reactive", version = { ref = "reactive" } }
@@ -81,6 +83,9 @@ swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout"
 timber = { module = "com.jakewharton.timber:timber", version = { ref = "timber" } }
 transition = { module = "androidx.transition:transition", version = { ref = "transition" } }
 kotlinGradlePluginApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
+lightningServerCore = { module = "com.lightningkite.lightningserver:core", version.ref = "lightningServer" }
+lightningServerEngineKtor = { module = "com.lightningkite.lightningserver:engine-ktor", version.ref = "lightningServer" }
+lightningServerTyped = { module = "com.lightningkite.lightningserver:typed", version.ref = "lightningServer" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

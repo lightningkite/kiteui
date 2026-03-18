@@ -269,6 +269,8 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
 
         val radii = floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
 
+        backgroundBlock?.cornerRadii = radii
+
         // When a view has corner radii and draws a background, clip children to the
         // rounded outline. This matches web behavior where border-radius + overflow: hidden
         // clips content (e.g. images inside a rounded frame).

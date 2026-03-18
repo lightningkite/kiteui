@@ -27,9 +27,10 @@ The AI Driver enables LLM-driven UI automation and programmatic testing of KiteU
 
 This installs:
 - `~/.kiteui/ai-driver/kiteui-ai-driver.jar` — the relay server
-- `~/.kiteui/bin/kiteui-drive` — the CLI wrapper script
+- `~/.kiteui/bin/kiteui-drive` — CLI wrapper script (macOS/Linux)
+- `~/.kiteui/bin/kiteui-drive.bat` — CLI wrapper script (Windows)
 
-Add `~/.kiteui/bin` to your `PATH`.
+Add `~/.kiteui/bin` to your `PATH` (or `%USERPROFILE%\.kiteui\bin` on Windows).
 
 ### 2. Connect your app
 
@@ -93,10 +94,19 @@ kiteui-drive <app> <path> submit                   # Submit text input action
 kiteui-drive <app> <path> scroll 0 100             # Scroll by dx/dy
 kiteui-drive <app> <path> scrollIntoView           # Scroll view into viewport
 kiteui-drive <app> root find "query"               # Find views by name/value/type/action
+kiteui-drive <app> root findClickable "query"      # Find clickable ancestors of matching views
 kiteui-drive <app> <path> snapshot                 # Snapshot a single element subtree
 kiteui-drive <app> navigate /some/route            # Navigate to URL path
+kiteui-drive <app> url                             # Get current page URL
 kiteui-drive <app> back back                       # Go back in navigation
 kiteui-drive <app> logs 50                         # Get recent log entries
+
+# Mocking external services (file picker, geolocation, etc.)
+kiteui-drive <app> mock file <base64> <mime> <name> # Queue a mock file for next requestFile()
+kiteui-drive <app> mock fileNull                    # Queue a null (user cancelled) file response
+kiteui-drive <app> mock geolocation <lat> <lon> [accuracy]  # Queue a mock geolocation
+kiteui-drive <app> mock calls                       # Show recorded external service calls
+kiteui-drive <app> mock clearCalls                  # Clear the recorded call log
 ```
 
 The `<app>` parameter supports prefix matching: `myapp` matches `myapp-web-ABC`.
@@ -181,6 +191,17 @@ navigatorView/0/14/2: 2: TextInput = "text" [setValue]
 navigatorView/0/14/3: 3: TextInput = "text" [setValue]
 ```
 
+## Find Clickable
+
+The `findClickable` command solves a common problem: `find "Login"` matches the Text view *inside* a Button, not the Button itself. With `findClickable`, each match is walked up the tree to the nearest ancestor with a `click` action, and results are deduplicated.
+
+```bash
+kiteui-drive <app> root findClickable "Login"
+# Returns: loginBtn: loginBtn: Button [click]
+```
+
+This is especially useful for AI agents and E2E tests — instead of finding a text label and manually walking up the tree, `findClickable` gives you the clickable path directly in a single round-trip.
+
 ## Available Actions
 
 | View Type | Actions | Value |
@@ -195,9 +216,89 @@ navigatorView/0/14/3: 3: TextInput = "text" [setValue]
 | Slider | `setValue` (number) | current number |
 | Select | `setValue` | selected display text |
 | Link | `click` | — |
-| Any view | `snapshot`, `screenshot`, `find`, `scroll`, `scrollIntoView` | — |
+| Any view | `snapshot`, `screenshot`, `find`, `findClickable`, `scroll`, `scrollIntoView` | — |
 | View with dragData | `getDragData` | — |
 | View with dropTarget | `drop` (base64 drag data) | — |
+
+## Mocking External Services
+
+The `mock` command family lets you inject mock responses for external services like file pickers and geolocation. This is essential for testing flows that involve `context.requestFile()`, `context.getCurrentPosition()`, etc., since these normally show native OS dialogs that can't be driven programmatically.
+
+Mock commands lazily install a `MockExternalServices` wrapper on the app's root context. Once installed, it intercepts all external service calls, queuing responses you provide and recording every call made.
+
+### mock file
+
+Queues a file for the next `requestFile()`, `requestFiles()`, `requestCaptureSelf()`, or `requestCaptureEnvironment()` call. The file is created from base64-encoded bytes.
+
+```
+mock	file	<base64-bytes>	<mimeType>	<fileName>
+```
+
+Multiple files can be queued — they're consumed FIFO.
+
+### mock fileNull
+
+Queues a `null` response, simulating user cancellation of the file picker.
+
+```
+mock	fileNull
+```
+
+### mock geolocation
+
+Queues a location for the next `getCurrentPosition()` call.
+
+```
+mock	geolocation	<latitude>	<longitude>	[accuracyMeters]
+```
+
+### mock calls / mock clearCalls
+
+View or clear the recorded call log. Useful for asserting that a specific external service was called.
+
+```
+mock	calls
+mock	clearCalls
+```
+
+### Example: Testing a file upload flow
+
+```kotlin
+@Test
+fun uploadTest() = uiTest(
+    content = {
+        col {
+            button {
+                debugName = "upload"
+                onClick {
+                    val file = context.requestFile(listOf("image/*"))
+                    // handle file...
+                }
+            }
+        }
+    }
+) {
+    // Queue a mock file, then trigger the upload
+    mockFile("hello".encodeToByteArray(), "text/plain", "test.txt")
+    click("upload")
+
+    // Verify the call was made
+    val calls = mockCalls()
+    assertTrue(calls.contains("RequestFile"))
+}
+```
+
+You can also pass a pre-configured `MockExternalServices` directly to `uiTest`:
+
+```kotlin
+val mock = MockExternalServices()
+mock.pendingFileResponses.addLast(
+    createFileReferenceFromBytes("data".encodeToByteArray(), "text/plain", "file.txt")
+)
+uiTest(mockExternalServices = mock, content = { /* ... */ }) {
+    // mock is already installed — no need to call mockFile()
+}
+```
 
 ## Error Handling
 
@@ -253,9 +354,16 @@ Requires: relay server running + app connected. Same `UiTestScope` API — tests
 
 | Method | Description |
 |--------|-------------|
+| **Inspection** | |
 | `snapshot(target)` | Get text snapshot of view tree |
 | `interactiveSnapshot(target)` | Snapshot with only interactive elements |
 | `screenshot(target)` | Get base64 PNG screenshot |
+| `find(query, target)` | Search for views — returns raw text |
+| `findAll(query, target)` | Search for views — returns `List<FindResult>` with parsed path, type, value, actions |
+| `findWithAction(query, action, target)` | First `FindResult` matching query that has the given action (e.g. `"click"`) |
+| `findClickable(query, target)` | Find views matching query and walk each up to nearest clickable ancestor (deduplicated) |
+| `logs(count)` | Get recent log entries |
+| **Interaction** | |
 | `click(target)` | Click a button or link |
 | `longClick(target)` | Long-click a view |
 | `setValue(target, value)` | Set input value (spaces preserved) |
@@ -266,16 +374,102 @@ Requires: relay server running + app connected. Same `UiTestScope` API — tests
 | `scrollIntoView(target)` | Scroll view into viewport |
 | `getDragData(target)` | Get base64 drag data from view |
 | `drop(target, data)` | Drop base64 drag data onto view |
+| **Navigation** | |
 | `navigate(route)` | Navigate to URL path |
+| `url()` | Get current page URL |
 | `back()` | Go back in navigation |
-| `find(query, target)` | Search for views by name/value/type/action |
-| `logs(count)` | Get recent log entries |
-| `raw(command)` | Send raw command string |
+| **Mocking** | |
+| `mockFile(bytes, mime, name)` | Queue a mock file for next file picker call |
+| `mockFileCancel()` | Queue a null (cancelled) file picker response |
+| `mockGeolocation(lat, lon, accuracy)` | Queue a mock geolocation response |
+| `mockCalls()` | Get recorded external service call log |
+| `mockClearCalls()` | Clear the recorded call log |
+| **Assertions** | |
 | `assertValue(target, expected)` | Assert view has expected value |
 | `assertVisible(target)` | Assert view exists and is visible |
 | `assertNotVisible(target)` | Assert view is hidden or missing |
-| `waitForText(text, target, timeoutMs)` | Wait for text to appear |
+| `assertTextVisible(text, target)` | Assert text appears anywhere in target's snapshot |
+| `assertIdExists(id)` | Assert a view with the given debugName exists |
+| **Waiting** | |
 | `waitFor(timeoutMs, condition)` | Wait for arbitrary condition |
+| `waitForText(text, target, timeoutMs)` | Wait for text to appear in snapshot |
+| `waitForId(id, timeoutMs)` | Wait for a view with given debugName to exist |
+| **Other** | |
+| `raw(command)` | Send raw command string |
+| `saveScreenshot(filePath, target)` | *(JVM only)* Take screenshot, decode, write to file, return absolute path |
+
+### FindResult — Structured Find Results
+
+The `findAll()`, `findWithAction()`, and `findClickable()` methods return `FindResult` objects instead of raw text, eliminating the need for string parsing:
+
+```kotlin
+data class FindResult(
+    val path: String,         // Directly usable with click(), setValue(), etc.
+    val name: String,         // debugName or child index
+    val type: String,         // "TextInput", "Button", etc.
+    val value: String?,       // Current value or null
+    val actions: Set<String>, // {"click", "setValue", ...}
+    val rawLine: String,      // Full unparsed line
+)
+```
+
+#### Examples
+
+**Find all text inputs and fill them:**
+```kotlin
+val inputs = findAll("TextInput")
+for (input in inputs) {
+    setValue(input.path, "test value")
+}
+```
+
+**Click the first button matching a label:**
+```kotlin
+val btn = findWithAction("Submit", "click")
+    ?: error("No clickable 'Submit' found")
+click(btn.path)
+```
+
+**Click a button by its visible text (even when text is inside the button):**
+```kotlin
+// find("Login") would match the Text view *inside* the Button.
+// findClickable walks up to the Button automatically.
+val loginBtn = findClickable("Login").firstOrNull()
+    ?: error("No clickable 'Login' found")
+click(loginBtn.path)
+```
+
+### Common Testing Patterns
+
+**Wait for a page to load, then interact:**
+```kotlin
+navigate("/dashboard")
+waitForId("welcomeMsg")
+assertTextVisible("Welcome back")
+```
+
+**Assert a view exists without knowing its value:**
+```kotlin
+assertIdExists("userAvatar")
+```
+
+**Save a screenshot to disk (JVM only):**
+```kotlin
+saveScreenshot("build/test-screenshots/after-login.png")
+```
+
+### Migrating from Raw find() to Structured API
+
+If you're currently parsing `find()` output manually, here's how to migrate:
+
+| Before (raw string parsing) | After (structured API) |
+|---|---|
+| `find("email").lines().filter { "TextInput" in it }` | `findAll("email").filter { it.type == "TextInput" }` |
+| `find("Login")` + walk up tree to button | `findClickable("Login")` |
+| `find("Submit").lines().first().substringBefore(":")` | `findAll("Submit").first().path` |
+| `snapshot("root").contains("Hello")` | `assertTextVisible("Hello")` |
+| `try { snapshot("myId") } catch (e) { fail() }` | `assertIdExists("myId")` |
+| Polling loop with `snapshot()` + catch | `waitForId("myId")` |
 
 ## Screenshots
 
@@ -301,6 +495,7 @@ Recommended workflow for an AI agent automating a KiteUI app:
 - Use `--interactive` snapshot to cut noise — only shows elements you can interact with
 - Use `find` with widget types (`TextInput`, `Button`, `Checkbox`) to discover all interactive elements of a kind
 - Use `find` with action names (`click`, `toggle`, `setValue`) to discover what's actionable
+- Use `findClickable` when you know the button's visible text but not its path — it walks up from matching text/label to the clickable ancestor in a single round-trip
 - Snapshot a single element (`<path> snapshot`) to check its value without getting the whole tree
 - Named views (`debugName`) give stable paths; numeric indices shift when siblings change
 - `back` and `navigate` work at the KiteUI PageNavigator level, not browser-level

@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.dokka)
+    signing
+    alias(libs.plugins.vannitechPublishing)
 }
 
 dokka {
@@ -121,8 +123,6 @@ android {
     }
 }
 
-// Note: Publishing configuration disabled as it requires vanniktech publishing plugin
-// Uncomment when publishing is needed:
-// lkLibrary("lightningkite", "kiteui") {
-//     description.set("KiteUI's testing companion.")
-// }
+lkLibrary("lightningkite", "kiteui") {
+    description.set("KiteUI's testing companion.")
+}

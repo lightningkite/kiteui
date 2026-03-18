@@ -7,7 +7,7 @@ fun RView.driverSnapshot(options: RViewHelper.DriverSnapshotOptions = RViewHelpe
     fun walk(view: RView, depth: Int) {
         if (!options.includeHidden && !(view.shown && view.visible)) return
         val line = view.driverDisplay(options)
-        val baseActions = setOf("snapshot", "screenshot", "find", "scroll", "scrollIntoView")
+        val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
         if (options.interactiveOnly && view.driverActions.keys.all { it in baseActions } && view.driverValue == null && view.debugName == null) {
             // Skip structural-only nodes but still walk children
             for (child in view.driverChildren) walk(child, depth)
@@ -26,10 +26,13 @@ fun RView.driverSnapshot(options: RViewHelper.DriverSnapshotOptions = RViewHelpe
  * Returns a compact listing of matches with their display line.
  */
 fun RView.driverFind(query: String): String = buildString {
-    val baseActions = setOf("snapshot", "screenshot", "find", "scroll", "scrollIntoView")
+    val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
     val results = mutableListOf<Pair<String, RView>>()
     fun walk(view: RView, pathPrefix: String) {
-        val segment = view.debugName ?: view.parent?.driverChildren?.indexOf(view)?.toString() ?: "0"
+        val segment = view.debugName ?: view.parent?.driverChildren?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
+        // Named views reset the path prefix — resolveDriverPath deep-searches for the first
+        // named segment, so the full ancestor chain is unnecessary. This keeps paths short
+        // (e.g. "email" instead of "0/1/email"). Requires debugNames to be unique within a subtree.
         val path = if (pathPrefix.isEmpty() || segment.toIntOrNull() == null) segment else "$pathPrefix/$segment"
         val nameMatch = view.debugName?.contains(query, ignoreCase = true) == true
         val valueMatch = view.driverValue?.contains(query, ignoreCase = true) == true
@@ -43,6 +46,56 @@ fun RView.driverFind(query: String): String = buildString {
     walk(this@driverFind, "")
     if (results.isEmpty()) {
         append("No views matching '$query'")
+    } else {
+        for ((path, view) in results) {
+            appendLine("$path: ${view.driverDisplay(RViewHelper.DriverSnapshotOptions())}")
+        }
+    }
+}
+
+/**
+ * Searches this view's subtree for views matching [query], then walks each match up to
+ * the nearest ancestor with a "click" action. Returns deduplicated clickable ancestors
+ * in the same format as [driverFind].
+ */
+fun RView.driverFindClickable(query: String): String = buildString {
+    val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
+    val viewPaths = mutableMapOf<RView, String>()
+    val matches = mutableListOf<RView>()
+
+    fun walk(view: RView, pathPrefix: String) {
+        val segment = view.debugName ?: view.parent?.driverChildren?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
+        val path = if (pathPrefix.isEmpty() || segment.toIntOrNull() == null) segment else "$pathPrefix/$segment"
+        viewPaths[view] = path
+        val nameMatch = view.debugName?.contains(query, ignoreCase = true) == true
+        val valueMatch = view.driverValue?.contains(query, ignoreCase = true) == true
+        val typeMatch = view::class.simpleName?.contains(query, ignoreCase = true) == true
+        val actionMatch = view.driverActions.keys.any { it !in baseActions && it.contains(query, ignoreCase = true) }
+        if (nameMatch || valueMatch || typeMatch || actionMatch) {
+            matches.add(view)
+        }
+        for (child in view.driverChildren) walk(child, path)
+    }
+    walk(this@driverFindClickable, "")
+
+    val seen = mutableSetOf<RView>()
+    val results = mutableListOf<Pair<String, RView>>()
+    for (match in matches) {
+        var current: RView? = match
+        while (current != null && current in viewPaths) {
+            if (current.driverActions.containsKey("click")) {
+                if (seen.add(current)) {
+                    val path = viewPaths[current] ?: break
+                    results.add(path to current)
+                }
+                break
+            }
+            current = current.parent
+        }
+    }
+
+    if (results.isEmpty()) {
+        append("No clickable views matching '$query'")
     } else {
         for ((path, view) in results) {
             appendLine("$path: ${view.driverDisplay(RViewHelper.DriverSnapshotOptions())}")

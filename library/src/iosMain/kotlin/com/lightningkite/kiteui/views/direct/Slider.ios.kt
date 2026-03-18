@@ -60,6 +60,8 @@ actual class Slider actual constructor(context: ElementContext) : RView(context)
 
                         if (native.value.toFloat() != finalValue) {
                             native.value = finalValue
+                            // fire change event so reactive listeners are notified on programmatic updates
+                            native.sendActionsForControlEvents(UIControlEventValueChanged)
                         }
                     }
             }

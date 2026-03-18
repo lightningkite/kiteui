@@ -72,6 +72,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinxCoroutinesTest)
+                implementation(libs.kotlinxCoroutinesCore)
                 implementation(libs.comLightningkiteTestingKotlinTestManualRuntime)
                 implementation(project(":test-utilities"))
             }
@@ -95,6 +96,7 @@ kotlin {
                 api(libs.media3Ui)
                 api(libs.media3Common)
                 api(libs.androidxAutofill)
+                api(libs.exifinterface)
             }
         }
         val androidUnitTest by getting {
