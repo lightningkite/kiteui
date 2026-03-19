@@ -2,6 +2,10 @@ import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+// KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
+// So we work around it on non mac machines with this check
+val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
@@ -28,9 +32,11 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    if (onMac) {
+        iosX64()
+        iosArm64()
+        iosSimulatorArm64()
+    }
     js(IR) {
         browser()
     }
@@ -71,9 +77,11 @@ kotlin {
             }
         }
 
-        val iosMain by getting {
-            dependsOn(commonInteractiveMain)
-            dependencies {
+        if (onMac) {
+            val iosMain by getting {
+                dependsOn(commonInteractiveMain)
+                dependencies {
+                }
             }
         }
 

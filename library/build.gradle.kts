@@ -1,6 +1,10 @@
+import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import com.lightningkite.deployhelpers.*
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+// KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
+// So we work around it on non mac machines with this check
+val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -33,14 +37,16 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    if (onMac) {
+        iosX64()
+        iosArm64()
+        iosSimulatorArm64()
+    }
     js(IR) {
         browser {
             testTask {
                 useKarma {
-                    useChromeHeadless()
+//                    useChromeHeadless()
                     useFirefox()
                 }
             }
@@ -108,10 +114,12 @@ kotlin {
             }
         }
 
-        val iosMain by getting {
-            dependencies {
-                implementation(libs.ktorClientDarwin)
-                implementation(libs.ktorClientWebsockets)
+        if (onMac) {
+            val iosMain by getting {
+                dependencies {
+                    implementation(libs.ktorClientDarwin)
+                    implementation(libs.ktorClientWebsockets)
+                }
             }
         }
 
@@ -149,10 +157,12 @@ kotlin {
 //        }
 //    }
 
-    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().all {
-        compilations.getByName("main") {
-            val objcAddition by cinterops.creating {
-                defFile(project.file("src/iosMain/def/objcAddition.def"))
+    if (onMac) {
+        targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().all {
+            compilations.getByName("main") {
+                val objcAddition by cinterops.creating {
+                    defFile(project.file("src/iosMain/def/objcAddition.def"))
+                }
             }
         }
     }
