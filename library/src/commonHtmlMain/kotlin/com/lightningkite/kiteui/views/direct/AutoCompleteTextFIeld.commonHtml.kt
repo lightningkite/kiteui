@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class AutoCompleteTextField actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
     override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     init {

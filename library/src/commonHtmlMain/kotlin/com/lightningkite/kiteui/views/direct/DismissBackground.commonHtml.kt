@@ -7,27 +7,24 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class DismissBackground actual constructor(context: ElementContext) : RView(context) {
+actual class DismissBackground actual constructor(context: ElementContext) : NativeContainerElement(context) {
     init {
+        themeChoice += DismissSemantic
         native.tag = "div"
         native.classes.add("kiteui-stack")
         native.replaceEventListener("click") { dialogPageNavigator.clear() }
     }
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
-    override fun addChild(view: RView) {
-        super.addChild(view)
-        view.native.addEventListener("click") { ev -> ev.stopImmediatePropagation() }
+    override fun willAddChild(element: Element) {
+        super.willAddChild(element)
+        element.native.addEventListener("click") { ev -> ev.stopImmediatePropagation() }
     }
 
     actual fun onClick(action: suspend () -> Unit): Unit {
         native.replaceEventListener("click") { launch { action() } }
-    }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        return super.applyState(theme[DismissSemantic])
     }
 }

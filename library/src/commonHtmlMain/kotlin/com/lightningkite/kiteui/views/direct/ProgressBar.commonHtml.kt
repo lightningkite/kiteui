@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.valueDouble
 
-actual class ProgressBar actual constructor(context: ElementContext): RView(context) {
+actual class ProgressBar actual constructor(context: ElementContext): NativeElement(context) {
     init {
         native.tag = "progress"
     }

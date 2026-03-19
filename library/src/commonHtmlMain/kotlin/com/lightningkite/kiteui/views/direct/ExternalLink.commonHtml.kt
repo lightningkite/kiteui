@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.rel
 import kotlinx.coroutines.launch
 
 
-actual class ExternalLink actual constructor(context: ElementContext) : RView(context) {
+actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val driverActions get() = super.driverActions + externalLinkDriverActions()
     init {
         themeChoice += ClickableSemantic
@@ -14,9 +14,9 @@ actual class ExternalLink actual constructor(context: ElementContext) : RView(co
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
     }
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
     actual inline var to: String?

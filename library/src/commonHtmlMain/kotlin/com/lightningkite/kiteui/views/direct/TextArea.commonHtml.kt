@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class TextArea actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textAreaDriverValue()
     override val driverActions get() = super.driverActions + textAreaDriverActions()
     init {

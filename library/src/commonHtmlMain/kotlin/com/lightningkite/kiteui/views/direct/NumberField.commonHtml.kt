@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class NumberInput actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
     override val driverActions get() = super.driverActions + numberInputDriverActions()
     init {
@@ -119,8 +119,8 @@ actual class NumberInput actual constructor(context: ElementContext) : RViewWith
         }
     }
 
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         applyAlign(_align ?: theme.theme.font.align)
     }
 

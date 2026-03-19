@@ -9,7 +9,7 @@ import com.lightningkite.reactive.core.*
 import kotlin.time.Duration.Companion.milliseconds
 
 
-actual class Select actual constructor(context: ElementContext) : RView(context) {
+actual class Select actual constructor(context: ElementContext) : NativeElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
@@ -76,10 +76,10 @@ actual class Select actual constructor(context: ElementContext) : RView(context)
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
 
-    override fun applyTheme(theme: ThemeAndBack) {
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
         val p = prevThemeClass
         val newClass = context.kiteUiCss.themeInteractive(theme.theme)
-        super.applyTheme(theme)
+        super.nativeApplyTheme(theme)
         native.children.forEach { o ->
             p?.let { o.classes.remove(it) }
             o.classes.add(newClass)

@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeElement
 
-import com.lightningkite.kiteui.views.RView
 
-
-expect class Space(context: ElementContext, multiplier: Double = 1.0) : RView {
-
-}
+expect class Space(context: ElementContext, multiplier: Double = 1.0) : NativeElement

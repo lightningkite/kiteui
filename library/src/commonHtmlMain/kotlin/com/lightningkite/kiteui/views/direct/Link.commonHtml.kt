@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class Link actual constructor(context: ElementContext) : RView(context) {
+actual class Link actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val driverActions get() = super.driverActions + linkDriverActions()
 
     init {
@@ -32,12 +32,12 @@ actual class Link actual constructor(context: ElementContext) : RView(context) {
         }
     }
 
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
-    actual var onNavigator: PageNavigator = (this as RView).pageNavigator
+    actual var onNavigator: PageNavigator = (this as NativeContainerElement).pageNavigator
     actual var to: (() -> Page)? = null
         set(value) {
             field = value

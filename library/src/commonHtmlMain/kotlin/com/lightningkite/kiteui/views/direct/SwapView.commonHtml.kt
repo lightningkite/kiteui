@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 
 
-actual class SwapView actual constructor(context: ElementContext) : RView(context) {
+actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")
@@ -12,11 +12,11 @@ actual class SwapView actual constructor(context: ElementContext) : RView(contex
         native.style.overflowY = "hidden"
     }
 
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
-    var previousLast: RView? = null
+    var previousLast: Element? = null
     actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit?): Unit {
         nativeSwap(transition, createNewView)
     }

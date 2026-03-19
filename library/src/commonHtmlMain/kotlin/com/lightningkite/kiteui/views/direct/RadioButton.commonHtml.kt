@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class RadioButton actual constructor(context: ElementContext) : RView(context) {
+actual class RadioButton actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = radioDriverValue()
     override val driverActions get() = super.driverActions + radioDriverActions()
     init {

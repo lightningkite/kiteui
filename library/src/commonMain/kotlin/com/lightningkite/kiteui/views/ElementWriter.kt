@@ -1,8 +1,6 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.InternalKiteUi
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.ThemeDerivation
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -44,4 +42,4 @@ interface CanAddScrolling : ElementWriter
 interface CanAddTheme : CanAddScrolling
 interface CanAddShownWhen : CanAddTheme
 interface CanAddWeight : CanAddShownWhen
-interface ViewWriter2 : CanAddWeight
+interface ViewWriter : CanAddWeight // Least restricted

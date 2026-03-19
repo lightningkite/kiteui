@@ -3,11 +3,10 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeContainerElement
 
-import com.lightningkite.kiteui.views.RView
 
-
-expect class Link(context: ElementContext) : RView {
+expect class Link(context: ElementContext) : NativeContainerElement {
     var enabled: Boolean
     var to: (() -> Page)?
     var onNavigator: PageNavigator

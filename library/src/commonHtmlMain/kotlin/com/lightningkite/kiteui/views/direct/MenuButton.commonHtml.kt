@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.*
 
 
-actual class MenuButton actual constructor(context: ElementContext): RView(context) {
+actual class MenuButton actual constructor(context: ElementContext): NativeContainerElement(context) {
     override val driverActions get() = super.driverActions + menuDriverActions()
     val floating = FloatingInfoHolder(this)
     init {
@@ -23,9 +23,9 @@ actual class MenuButton actual constructor(context: ElementContext): RView(conte
             }
         }
     }
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
     actual inline var enabled: Boolean

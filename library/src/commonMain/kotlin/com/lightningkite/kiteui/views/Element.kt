@@ -42,13 +42,18 @@ interface Element : CoroutineScopeHelpers2, StatusListener {
     }
 }
 
-interface ContainerElement : Element, ViewWriter2 {
+interface ContainerElement : Element, ViewWriter {
     override val underlyingNativeElement: NativeContainerElement
 
     val children: List<Element>
 
+    var childDefaultAlignment: Alignment?
+
+    var gap: Dimension?
+
     fun addChild(index: Int, element: Element)
     fun removeChild(index: Int)
+
 
     override fun addChild(element: Element) = addChild(children.size, element)
 
@@ -59,10 +64,6 @@ interface ContainerElement : Element, ViewWriter2 {
     }
 
     fun clearChildren() { for (i in children.indices) removeChild(i) }
-
-    var childDefaultAlignment: Alignment?
-
-    var gap: Dimension?
 
     val mySpacingForChildren: Dimension get() {
         val pad = padding ?: themeAndBack.theme.padding.top

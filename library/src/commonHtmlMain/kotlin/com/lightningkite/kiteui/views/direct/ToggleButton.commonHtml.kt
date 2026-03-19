@@ -8,7 +8,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 
 
-actual class ToggleButton actual constructor(context: ElementContext) : RView(context) {
+actual class ToggleButton actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
     override val driverActions get() = super.driverActions + toggleDriverActions()
     val input = FutureElement().apply {
@@ -42,9 +42,9 @@ actual class ToggleButton actual constructor(context: ElementContext) : RView(co
         })
         native.appendChild(input)
     }
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
     actual val checked: MutableReactiveValue<Boolean> = input.vprop(

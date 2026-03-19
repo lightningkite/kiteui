@@ -4,16 +4,12 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 
 
-actual class IconView actual constructor(context: ElementContext) : RView(context) {
+actual class IconView actual constructor(context: ElementContext) : NativeElement(context) {
     init {
         native.tag = "div"
         native.setAttribute("role", "img")
         native.classes.add("viewDraws")
         native.classes.add("icon")
-    }
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
     }
 
     actual var source: Icon? = null

@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class Checkbox actual constructor(context: ElementContext) : RView(context) {
+actual class Checkbox actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = checkboxDriverValue()
     override val driverActions get() = super.driverActions + checkboxDriverActions()
     init {

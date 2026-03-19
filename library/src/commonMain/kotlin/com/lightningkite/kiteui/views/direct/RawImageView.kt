@@ -3,10 +3,10 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.core.*
 
-expect abstract class RawImageViewLike: RView {
+expect abstract class RawImageViewLike: NativeElement {
     val source: ImageSource
     val description: String
     val scaleType: ImageScaleType

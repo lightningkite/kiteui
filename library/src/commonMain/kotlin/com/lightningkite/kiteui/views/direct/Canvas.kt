@@ -3,12 +3,11 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.KeyCode
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.views.ElementContext
-
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 
 
-expect class Canvas(context: ElementContext) : RView {
+expect class Canvas(context: ElementContext) : NativeElement {
     var delegate: CanvasDelegate?
 }
 
@@ -28,5 +27,5 @@ abstract class CanvasDelegate {
     open fun sizeThatFitsHeight(width: Double, height: Double): Double = height
     var invalidate: () -> Unit = {}
     var theme: Theme = Theme.placeholder
-    open fun RView.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
+    open fun NativeElement.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
 }

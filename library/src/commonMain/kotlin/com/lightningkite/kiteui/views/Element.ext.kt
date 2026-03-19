@@ -6,6 +6,8 @@ import kotlinx.coroutines.CoroutineScope
 
 fun ElementWriter.split(): ElementWriter = ElementWriter.Split(this)
 
+fun ElementWriter.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter = ElementWriter.BeforeSetup(this, setup)
+
 inline fun Element.withoutLoadingAnimations(block: CoroutineScope.() -> Unit) {
     CoroutineScope(coroutineContext.minusKey(StatusListener.Key)).run(block)
 }

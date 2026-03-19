@@ -2,12 +2,12 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeContainerElement
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.core.*
 
 
-expect class CoordinatorFrame(context: ElementContext) : RView {
+expect class CoordinatorFrame(context: ElementContext) : NativeContainerElement {
     fun bottomSheet(
         peekSize: Dimension? = null,
         partialRatio: Float = 0.5f,
@@ -46,5 +46,5 @@ interface SlidingPanelControl {
     fun close()
 }
 
-expect class CoordinatorDragHandle(context: ElementContext): RView
+expect class CoordinatorDragHandle(context: ElementContext): NativeContainerElement
 

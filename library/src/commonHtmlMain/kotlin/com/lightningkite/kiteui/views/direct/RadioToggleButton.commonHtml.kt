@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class RadioToggleButton actual constructor(context: ElementContext) : RView(context) {
+actual class RadioToggleButton actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val driverValue: String? get() = radioToggleDriverValue()
     override val driverActions get() = super.driverActions + radioToggleDriverActions()
     val input = FutureElement().apply {
@@ -40,9 +40,9 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : RVi
         })
         native.appendChild(input)
     }
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
     actual val checked: MutableReactiveValue<Boolean> = input.vprop(

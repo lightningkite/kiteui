@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 
 
 
-actual class TextView actual constructor(context: ElementContext) : RView(context) {
+actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = content
     init {
         native.tag = "p"
@@ -70,8 +70,8 @@ actual class TextView actual constructor(context: ElementContext) : RView(contex
             }
         }
 
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         applyAlign(_align ?: theme.theme.font.align)
     }
 

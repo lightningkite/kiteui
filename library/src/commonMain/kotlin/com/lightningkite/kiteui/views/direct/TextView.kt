@@ -3,11 +3,10 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeElement
 
-import com.lightningkite.kiteui.views.RView
 
-
-expect class TextView(context: ElementContext) : RView {
+expect class TextView(context: ElementContext) : NativeElement {
 
     var content: String
     var align: Align?

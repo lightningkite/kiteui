@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import kotlinx.datetime.*
 
-actual class LocalDateTimeField actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
     override val driverActions get() = super.driverActions + localDateTimeDriverActions()
     companion object {
@@ -70,7 +70,7 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : RV
 }
 
 
-actual class LocalDateField actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
     override val driverActions get() = super.driverActions + localDateDriverActions()
     companion object {
@@ -135,7 +135,7 @@ actual class LocalDateField actual constructor(context: ElementContext) : RViewW
         }
 }
 
-actual class LocalTimeField actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
     override val driverActions get() = super.driverActions + localTimeDriverActions()
     companion object {

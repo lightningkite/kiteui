@@ -8,7 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-actual class Button actual constructor(context: ElementContext): RViewWithSecondaryAction(context) {
+actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + buttonDriverActions()
     init {
         themeChoice += ClickableSemantic
@@ -17,9 +17,9 @@ actual class Button actual constructor(context: ElementContext): RViewWithSecond
         native.classes.add("clickable")
     }
 
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
     private var downPress: Pair<Double, Double> = Pair(0.0, 0.0)

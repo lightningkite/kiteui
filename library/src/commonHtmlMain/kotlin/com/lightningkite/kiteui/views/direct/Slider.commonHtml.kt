@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class Slider actual constructor(context: ElementContext) : RView(context) {
+actual class Slider actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
     override val driverActions get() = super.driverActions + sliderDriverActions()
     init {

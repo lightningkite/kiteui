@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Dimension
@@ -14,16 +15,16 @@ import kotlinx.coroutines.launch
 
 private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(null)
 
-actual class CoordinatorFrame actual constructor(context: ElementContext) : RView(context) {
+actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
 
     init {
         native.tag = "div"
         native.style.lineHeight = "0px !important"
     }
 
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
     actual fun bottomSheet(
@@ -37,7 +38,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
     ) {
 
         val expanded = Signal(startState)
-        var willRemove: RView? = null
+        var willRemove: Element? = null
         val transition = ScreenTransitions.VerticalSlide
         fun closePanel() {
             willRemove?.let {
@@ -70,7 +71,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
         blockBehind: Boolean,
         content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
-        var willRemove: RView? = null
+        var willRemove: Element? = null
         val transition = ScreenTransitions(ScreenTransition.Pop, ScreenTransition.Push, ScreenTransition.Fade)
         fun closePanel() {
             willRemove?.let {
@@ -108,7 +109,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
         blockBehind: Boolean,
         content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
-        var willRemove: RView? = null
+        var willRemove: Element? = null
         val transition = ScreenTransitions.HorizontalSlide
         fun closePanel() {
             willRemove?.let {
@@ -151,7 +152,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : RView(context) {
+actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeContainerElement(context) {
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"
@@ -159,17 +160,18 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
         native.classes.add("clickable")
     }
 
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
     val iconView = icon {
         source = Icon.expand
     }
 
-    override fun postSetup() {
-        super.postSetup()
+    @OptIn(InternalKiteUi::class)
+    override fun startup() {
+        super.startup()
         val e = bottomSheetState ?: return
         native.addEventListener("click") {
             launch {

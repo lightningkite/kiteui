@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.ImageVector
 import com.lightningkite.kiteui.models.vectorToSvgDataUrl
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.alt
 import com.lightningkite.kiteui.views.backgroundImage
 import com.lightningkite.kiteui.views.loading
@@ -29,7 +29,7 @@ actual abstract class RawImageViewLike(
     actual val source: ImageSource,
     actual val description: String,
     actual val scaleType: ImageScaleType,
-) : RView(context) {
+) : NativeElement(context) {
     actual abstract val state: Reactive<Unit>
     val _state = RawReactive<Unit>()
 

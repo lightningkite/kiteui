@@ -2,11 +2,12 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeContainerElement
 
 
-expect class ProgrammaticLayout(context: ElementContext): RView {
+expect class ProgrammaticLayout(context: ElementContext): NativeContainerElement {
     var delegate: ProgrammaticLayoutDelegate
     fun invalidateLayout()
 }
@@ -32,7 +33,7 @@ interface ProgrammingLayoutInProgress {
     val paddingLeft: Double
     val paddingRight: Double
     val paddingBottom: Double
-    fun measure(child: RView, sizeConstraint: Size): Size
-    fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double)
-    fun existingPosition(child: RView): Rect
+    fun measure(child: Element, sizeConstraint: Size): Size
+    fun place(child: Element, left: Double, top: Double, right: Double, bottom: Double)
+    fun existingPosition(child: Element): Rect
 }

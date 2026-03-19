@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 
 
-actual class Canvas actual constructor(context: ElementContext): RView(context) {
+actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
     actual var delegate: CanvasDelegate? = null
         set(value) {
             field = value
@@ -15,8 +15,8 @@ actual class Canvas actual constructor(context: ElementContext): RView(context) 
             delegate?.invalidate?.invoke()
         }
 
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         delegate?.theme = theme.theme
         delegate?.invalidate?.invoke()
     }

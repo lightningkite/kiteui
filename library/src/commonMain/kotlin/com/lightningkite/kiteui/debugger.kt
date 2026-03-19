@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.RViewHelper
 
 var debugMode: Boolean = false
 expect fun debugger(): Unit

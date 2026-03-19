@@ -3,12 +3,11 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ElementContext
-
-import com.lightningkite.kiteui.views.RViewWithSecondaryAction
+import com.lightningkite.kiteui.views.NativeContainerElementWithSecondaryAction
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-expect class Button(context: ElementContext) : RViewWithSecondaryAction {
+expect class Button(context: ElementContext) : NativeContainerElementWithSecondaryAction {
     var enabled: Boolean
 }
 
