@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration
 
@@ -14,7 +14,7 @@ expect class RawVideoView(
     description: String,
     scaleType: ImageScaleType,
     preloadHint: PreloadHint = PreloadHint.METADATA,
-) : RView {
+) : NativeElement {
     val source: VideoSource
     val description: String
     val scaleType: ImageScaleType

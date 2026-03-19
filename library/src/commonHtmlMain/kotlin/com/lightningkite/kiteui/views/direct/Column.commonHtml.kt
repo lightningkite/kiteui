@@ -9,7 +9,6 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElement
-import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.alignSelf
 import com.lightningkite.kiteui.views.display
 import com.lightningkite.kiteui.views.flexDirection

@@ -19,7 +19,7 @@ import org.w3c.dom.*
 
 
 actual class ScrollingBehaviorImpl actual constructor(
-    val on: RView,
+    val on: Element,
     actual override val horizontal: Boolean,
     actual override val vertical: Boolean
 ) : ScrollingBehaviors {
@@ -161,7 +161,7 @@ actual class ScrollingBehaviorImpl actual constructor(
         }
     }
 
-    actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    actual override fun scrollTo(element: Element, horizontal: Align, vertical: Align, animated: Boolean) {
         on.debugPrint { ("ScrollView.scrollTo($element, $horizontal, $vertical, $animated)") }
         disableSnapTemporarily()
         element.native.element?.scrollIntoView(

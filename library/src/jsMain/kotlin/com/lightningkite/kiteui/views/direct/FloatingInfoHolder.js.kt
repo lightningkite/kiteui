@@ -37,7 +37,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
         val o = source.overlayFrame ?: return
         val v = existingView ?: return
         with<Element, Unit>(o) {
-             beforeNextElementSetup { closeView = this }.button {
+            beforeNextElementSetup { closeView = this }.atTopEnd.button {
                 icon(Icon.close, "Close")
                 onClick {
                     close()
@@ -52,7 +52,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
         val v = existingView ?: return
         o.addChild(
             o.children.indexOf(v),
-            object : Element(o.context) {
+            object : NativeElement(o.context) {
                 init {
                     native.tag = "div"
                     native.addEventListener("click") {

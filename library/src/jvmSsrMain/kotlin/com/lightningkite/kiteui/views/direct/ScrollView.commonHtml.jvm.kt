@@ -12,7 +12,7 @@ import com.lightningkite.readable.*
 import kotlin.UnsupportedOperationException
 
 actual class ScrollingBehaviorImpl actual constructor(
-    val on: RView,
+    val on: Element,
     actual override val horizontal: Boolean,
     actual override val vertical: Boolean
 ) : ScrollingBehaviors {
@@ -69,7 +69,7 @@ actual class ScrollingBehaviorImpl actual constructor(
 
     actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
     }
-    actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    actual override fun scrollTo(element: Element, horizontal: Align, vertical: Align, animated: Boolean) {
     }
 
     actual override fun disableScrollAnchoring() {
