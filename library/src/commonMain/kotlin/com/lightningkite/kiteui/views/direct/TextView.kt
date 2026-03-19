@@ -5,9 +5,7 @@ import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 
-
 expect class TextView(context: ElementContext) : NativeElement {
-
     var content: String
     var align: Align?
     var ellipsis: Boolean

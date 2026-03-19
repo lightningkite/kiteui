@@ -2,7 +2,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.rContextAddonGenerate
+import com.lightningkite.kiteui.views.lazyContextAddon
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlin.js.JsName
@@ -99,7 +99,7 @@ object ExternalServices {
 
 // by Claude - rContextAddonGenerate uses property.name as the ChainMap key.
 // The RContext extension below must use the same key to share the same instance.
-var ViewWriter.externalServices: ExternalServicesAccess by rContextAddonGenerate { externalServicesAccessDefault(context) }
+var ViewWriter.externalServices: ExternalServicesAccess by lazyContextAddon { externalServicesAccessDefault(context) }
 
 // by Claude - convenience extension on RContext for use outside ViewWriter scope.
 // Uses getOrPut so the default is shared across the context tree and picks up mocks.

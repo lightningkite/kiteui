@@ -21,12 +21,12 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-actual class FloatingInfoHolder actual constructor(val source: RView) {
+actual class FloatingInfoHolder actual constructor(val source: Element) {
     val theme get() = source.theme
     val maxDist = 32
-    var blockView: RView? = null
-    var closeView: RView? = null
-    var existingView: RView? = null
+    var blockView: Element? = null
+    var closeView: Element? = null
+    var existingView: Element? = null
 
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
     var currentDirection: PopoverPreferredDirection = preferredDirection
@@ -36,8 +36,8 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         if (closeView != null) return
         val o = source.overlayFrame ?: return
         val v = existingView ?: return
-        with<RView, Unit>(o) {
-            beforeNextElementSetup { closeView = this }.atTopEnd.button {
+        with<Element, Unit>(o) {
+             beforeNextElementSetup { closeView = this }.button {
                 icon(Icon.close, "Close")
                 onClick {
                     close()
@@ -52,7 +52,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         val v = existingView ?: return
         o.addChild(
             o.children.indexOf(v),
-            object : RView(o.context) {
+            object : Element(o.context) {
                 init {
                     native.tag = "div"
                     native.addEventListener("click") {

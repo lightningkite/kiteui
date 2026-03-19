@@ -1,15 +1,22 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.usesTouchscreen
+import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewDsl
+import com.lightningkite.kiteui.views.ViewTreeBuilder
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
 import com.lightningkite.kiteui.views.l2.icon
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.kiteui.views.write
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -20,56 +27,39 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
+
 inline fun ElementWriter.activityIndicator(setup: ActivityIndicator.() -> Unit = {}): ActivityIndicator {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ActivityIndicator(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.autoCompleteTextField(setup: AutoCompleteTextField.() -> Unit = {}): AutoCompleteTextField {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(AutoCompleteTextField(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.button(setup: Button.() -> Unit = {}): Button {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Button(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.canvas(setup: Canvas.() -> Unit = {}): Canvas {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Canvas(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.checkbox(setup: Checkbox.() -> Unit = {}): Checkbox {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Checkbox(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.dismissBackground(setup: DismissBackground.() -> Unit = {}): DismissBackground {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(DismissBackground(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.externalLink(setup: ExternalLink.() -> Unit = {}): ExternalLink {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ExternalLink(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.icon(setup: IconView.() -> Unit = {}): IconView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(IconView(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.image(setup: ImageView.() -> Unit = {}): ImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return ImageView(this).apply {
@@ -77,8 +67,6 @@ inline fun ElementWriter.image(setup: ImageView.() -> Unit = {}): ImageView {
         postSetup()
     }
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): ZoomableImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return ZoomableImageView(this).apply {
@@ -86,254 +74,158 @@ inline fun ElementWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {})
         postSetup()
     }
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.rawImage(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageView.() -> Unit = {}): RawImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RawImageView(context, source, description, scaleType) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.rawImageUnsized(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: SizelessRawImageView.() -> Unit = {}): SizelessRawImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(SizelessRawImageView(context, source, description, scaleType) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.rawImageZoomable(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageViewZoomable.() -> Unit = {}): RawImageViewZoomable {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RawImageViewZoomable(context, source, description, scaleType) , setup)
 }
-//@OptIn(ExperimentalContracts::class)
-//@ViewDsl
-//inline fun ElementWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): ZoomableImageView {
-//    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-//    return write(ZoomableImageView(context) , setup)
-//}
-class Label(val label: TextView, val container: RowOrCol): Element by container {
-    var content: String by label::content
-}
 
-@OptIn(ExperimentalContracts::class)
-@Deprecated("use the new label: label(String, RowOrCol.() -> Unit)")
-inline fun ElementWriter.label(setup: Label.() -> Unit = {}): Label {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    val l: Label
-    col {
-        val label = subtext()
-        gap = 0.px
-        l = Label(label, this)
-        setup(l)
-    }
-    return l
-}
-
-@ViewDsl
-@OptIn(ExperimentalContracts::class)
 inline fun ElementWriter.label(label: String, content: RowOrCol.() -> Unit): Unit {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     col {
-        FieldLabelSemantic.text(label)
-        spacingOverrideBeforeNext(0.px)
+        gap = 0.px
+        themed(FieldLabelSemantic).text(label)
         content()
     }
 }
 
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.phoneNumberInput(setup: PhoneNumberInput.() -> Unit = {}): PhoneNumberInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return PhoneNumberInput(this).apply(setup)
+    return write(PhoneNumberInput(context), setup)
 }
-
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.link(setup: Link.() -> Unit = {}): Link {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(Link(context) , setup)
+    return write(Link(context), setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.localDateField(setup: LocalDateField.() -> Unit = {}): LocalDateField {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(LocalDateField(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.localDateTimeField(setup: LocalDateTimeField.() -> Unit = {}): LocalDateTimeField {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(LocalDateTimeField(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.localTimeField(setup: LocalTimeField.() -> Unit = {}): LocalTimeField {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(LocalTimeField(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.menuButton(setup: MenuButton.() -> Unit = {}): MenuButton {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(MenuButton(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.numberInput(setup: NumberInput.() -> Unit = {}): NumberInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(NumberInput(context) , setup)
 }
 @Deprecated("Use numberInput instead", ReplaceWith("this.numberInput(setup)", "com.lightningkite.kiteui.views.direct.numberInput"))
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.numberField(setup: NumberInput.() -> Unit = {}): NumberInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(NumberInput(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.progressBar(setup: ProgressBar.() -> Unit = {}): ProgressBar {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ProgressBar(context) , setup)
 }
 
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.circularProgress(setup: CircularProgress.() -> Unit = {}): CircularProgress {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(CircularProgress(context), setup)
 }
 
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.radioButton(setup: RadioButton.() -> Unit = {}): RadioButton {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RadioButton(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.radioToggleButton(setup: RadioToggleButton.() -> Unit = {}): RadioToggleButton {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RadioToggleButton(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.rowCollapsingToColumn(breakpoint: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowCollapsingToColumn(context, listOf(breakpoint)), setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowCollapsingToColumn(context, listOf(verticalBefore, verticalAfter)), setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, horizontalAgainAfter: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowCollapsingToColumn(context, listOf(verticalBefore, verticalAfter, horizontalAgainAfter)), setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.select(setup: Select.() -> Unit = {}): Select {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Select(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.separator(setup: Separator.() -> Unit = {}): Separator {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Separator(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.space(setup: Space.() -> Unit = {}): Space {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Space(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.space(multiplier: Double, setup: Space.() -> Unit = {}): Space {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Space(context, multiplier), setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.frame(setup: Frame.() -> Unit = {}): Frame {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Frame(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.coordinatorFrame(setup: CoordinatorFrame.() -> Unit = {}): CoordinatorFrame {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(CoordinatorFrame(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.coordinatorDragHandle(setup: CoordinatorDragHandle.() -> Unit = {}): CoordinatorDragHandle {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(CoordinatorDragHandle(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.swapView(setup: SwapView.() -> Unit = {}): SwapView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(SwapView(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.switch(setup: Switch.() -> Unit = {}): Switch {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Switch(context) , setup)
 }
 
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.slider(setup: Slider.() -> Unit = {}): Slider {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Slider(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.textArea(setup: TextArea.() -> Unit = {}): TextArea {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextArea(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.textInput(setup: TextInput.() -> Unit = {}): TextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextInput(context) , setup)
 }
 @Deprecated("Use textInput instead", ReplaceWith("this.textInput(setup)", "com.lightningkite.kiteui.views.direct.textInput"))
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.textField(setup: TextInput.() -> Unit = {}): TextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextInput(context) , setup)
 }
 
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.formattedTextInput(setup: FormattedTextInput.() -> Unit = {}): FormattedTextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(FormattedTextInput(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.text(setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextView(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.toggleButton(setup: ToggleButton.() -> Unit = {}): ToggleButton {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ToggleButton(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.video(setup: VideoView.() -> Unit = {}): VideoView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return VideoView(this).apply {
@@ -341,8 +233,6 @@ inline fun ElementWriter.video(setup: VideoView.() -> Unit = {}): VideoView {
         postSetup()
     }
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.media(setup: MediaView.() -> Unit = {}): MediaView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return MediaView(this).apply {
@@ -350,57 +240,39 @@ inline fun ElementWriter.media(setup: MediaView.() -> Unit = {}): MediaView {
         postSetup()
     }
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.rawVideo(source: VideoSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, preloadHint: PreloadHint = PreloadHint.METADATA, setup: RawVideoView.() -> Unit = {}): RawVideoView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RawVideoView(context, source, description, scaleType, preloadHint) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.webView(setup: WebView.() -> Unit = {}): WebView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(WebView(context) , setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.rowWrapping(setup: RowWrapping.() -> Unit = {}): RowWrapping {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowWrapping(context) ) { setup() }
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.row(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowOrCol(context) ) { vertical = false; setup() }
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.column(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowOrCol(context) ) { vertical = true; setup() }
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.col(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowOrCol(context) , { vertical = true; setup() })
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {}): ProgrammaticLayout {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ProgrammaticLayout(context), setup)
 }
 
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.recyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return Recycler2(this, true).apply(setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return Recycler2(this, false).apply {
@@ -427,8 +299,6 @@ inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 
         }
     }.apply(setup)
 }
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.horizontalRecyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return Recycler2(this, false).apply(setup)

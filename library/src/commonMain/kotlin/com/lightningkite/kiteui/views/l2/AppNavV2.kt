@@ -31,10 +31,10 @@ fun ViewWriter.navSideBar(navElements: ReactiveContext.() -> List<NavElement>) {
 
 }
 
-var ViewWriter.overlayFrame by rContextAddon<RView?>(null)
-var ViewWriter.coordinatorFrame by rContextAddon<CoordinatorFrame?>(null)
+var Element.overlayFrame by contextAddon<ContainerElement?>(null)
+var Element.coordinatorFrame by contextAddon<CoordinatorFrame?>(null)
 
-fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit): Unit {
+fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit) {
     coordinatorFrame {
         mainPageNavigator = main
         dialog?.let {

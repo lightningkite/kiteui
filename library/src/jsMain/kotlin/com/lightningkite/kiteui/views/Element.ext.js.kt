@@ -1,19 +1,19 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.views.direct.suppressMutationObserverForClass
-import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 
-actual inline fun RView.withoutAnimation(action: () -> Unit) {
-    (native.element as? HTMLElement)?.let { it.withoutAnimation(action) } ?: action()
+actual inline fun Element.withoutAnimation(action: () -> Unit) {
+    (native.element as? HTMLElement)?.withoutAnimation(action) ?: action()
 }
 
 var animationsEnabled: Boolean = true
-actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
+actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled
+
 inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
     val animate = animationsEnabled
     try {
-        if(animate) {
+        if (animate) {
             animationsEnabled = false
             suppressMutationObserverForClass {
                 classList.add("notransition")
@@ -21,7 +21,7 @@ inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
         }
         action()
     } finally {
-        if(animate) {
+        if (animate) {
             kotlinx.browser.window.setTimeout({
                 suppressMutationObserverForClass {
                     classList.remove("notransition")

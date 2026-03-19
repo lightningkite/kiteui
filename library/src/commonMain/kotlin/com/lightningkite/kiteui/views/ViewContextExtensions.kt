@@ -12,48 +12,54 @@ import kotlinx.coroutines.CoroutineScope
 // by Claude - all rContextAddon defaults write to the root RContext so they're shared across the tree.
 // Explicit sets (via the setter) write to the local context, shadowing the root for that subtree.
 
-@Suppress("UNCHECKED_CAST")
-fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
-    override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-        thisRef.context.addons.getOrPut(property.name) { init } as T
+private class ContextAddon<T>
 
-    override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
-        thisRef.context.addons[property.name] = value
-    }
-}
+fun <T> contextAddon(init: T): ReadWriteProperty<Element, T> =
+    object : ReadWriteProperty<Element, T> {
+        @Suppress("UNCHECKED_CAST")
+        override fun getValue(thisRef: Element, property: KProperty<*>): T =
+            thisRef.context.addons.getOrPut(property.name) { init } as T
 
-@Suppress("UNCHECKED_CAST")
-fun <T> rContextAddonGenerate(init: ViewWriter.() -> T): ReadWriteProperty<ViewWriter, T> =
-    object : ReadWriteProperty<ViewWriter, T> {
-        override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-            thisRef.context.addons.getOrPut(property.name) { init(thisRef) } as T
-
-        override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
+        override fun setValue(thisRef: Element, property: KProperty<*>, value: T) {
             thisRef.context.addons[property.name] = value
         }
     }
 
-@Suppress("UNCHECKED_CAST")
-fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
-    override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-        thisRef.context.addons.getOrPut(property.name) { throw IllegalStateException("${property.name} has not been initialized. ${thisRef.context}") } as T
+fun <T> lateInitContextAddon(): ReadWriteProperty<Element, T> =
+    object : ReadWriteProperty<Element, T> {
+        @Suppress("UNCHECKED_CAST")
+        override fun getValue(thisRef: Element, property: KProperty<*>): T =
+            thisRef.context.addons.getOrPut(property.name) { throw IllegalStateException("${property.name} has not been initialized. ${thisRef.context}") } as T
 
-    override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
-        thisRef.context.addons[property.name] = value
+        override fun setValue(thisRef: Element, property: KProperty<*>, value: T) {
+            thisRef.context.addons[property.name] = value
+        }
     }
-}
+
+fun <T> lazyContextAddon(init: Element.() -> T): ReadWriteProperty<Element, T> =
+    @Suppress("UNCHECKED_CAST")
+    object : ReadWriteProperty<Element, T> {
+        override fun getValue(thisRef: Element, property: KProperty<*>): T =
+            thisRef.context.addons.getOrPut(property.name) { init(thisRef) } as T
+
+        override fun setValue(thisRef: Element, property: KProperty<*>, value: T) {
+            thisRef.context.addons[property.name] = value
+        }
+    }
+
 
 @Deprecated(
     "Use 'pageNavigator' instead",
-    ReplaceWith("this.pageNavigator", "com.lightningkite.kiteui.navigator.pageNavigator")
+    ReplaceWith("this.pageNavigator", "com.lightningkite.kiteui.navigator.pageNavigator"),
+    DeprecationLevel.ERROR
 )
 val ViewWriter.navigator by ViewWriter::pageNavigator
 
-var ViewWriter.safeInsets by rContextAddonGenerate<Reactive<Edges>> { Constant(Edges.ZERO) }
+var Element.safeInsets by lazyContextAddon<Reactive<Edges>> { Constant(Edges.ZERO) }
 
-var ViewWriter.popoverParent by rContextAddonGenerate<ViewWriter?> { null }
-var ViewWriter.popoverCloser by rContextAddonGenerate<(() -> Unit)?> { null }
-var ViewWriter.popoverKeepOpen by rContextAddonGenerate<Int> { 0 }
+var Element.popoverParent by lazyContextAddon<ViewWriter?> { null }
+var Element.popoverCloser by lazyContextAddon<(() -> Unit)?> { null }
+var Element.popoverKeepOpen by lazyContextAddon { 0 }
 
 fun ViewWriter.closePopovers() {
     popoverCloser?.invoke()
@@ -73,7 +79,6 @@ fun ViewWriter.keepPopoverOpen(lifecycle: CoroutineScope) {
     popoverKeepOpen++
     lifecycle.onRemove { popoverKeepOpen-- }
 }
-
 fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = false, close: () -> Unit): ViewWriter {
     popoverCloser?.invoke()
     popoverCloser = close

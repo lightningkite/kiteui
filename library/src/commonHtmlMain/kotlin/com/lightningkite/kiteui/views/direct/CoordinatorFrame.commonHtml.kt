@@ -13,7 +13,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.launch
 
-private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(null)
+private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon<MutableReactive<BottomSheetState>?>(null)
 
 actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
 

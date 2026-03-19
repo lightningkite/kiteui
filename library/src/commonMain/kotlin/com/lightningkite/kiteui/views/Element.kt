@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.reactive.context.StatusListener
 
+@ViewTreeBuilder
 interface Element : CoroutineScopeHelpers2, StatusListener {
     val context: ElementContext
     val underlyingNativeElement: NativeElement  // in the end all elements defer to some kind of native element, otherwise they don't really exist. This interface is typically either used directly by native elements, or by delegation to a native element (like with a wrapper)

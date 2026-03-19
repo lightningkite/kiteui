@@ -1,152 +1,115 @@
 package com.lightningkite.kiteui.views
 
-
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.views.ElementWriter.CanAddTheme
+import com.lightningkite.reactive.context.ReactiveContext
+import com.lightningkite.reactive.context.reactive
 
-@Deprecated("Just bind to themeChoice directly")
-@ViewModifierDsl3
-fun ViewWriter.themeFromLast(calculate: (Theme) -> Theme): ViewWriter {
-    beforeNextElementSetup {
-        themeChoice += ThemeDerivation { calculate(it).withBack }
-    }.let { return it }
+private class ThemedWriter(
+    val base: CanAddTheme,
+    val theme: ThemeDerivation
+) : ElementWriter.CanAddTheme by base {
+    override fun willAddChild(element: Element) {
+        base.willAddChild(element)
+        element.themeChoice += theme
+    }
 }
 
-@Deprecated("Just bind to themeChoice directly")
-@ViewModifierDsl3
-inline fun ViewWriter.maybeThemeFromLast(crossinline calculate: (Theme) -> Theme?): ViewWriter {
-    beforeNextElementSetup {
-        themeChoice += ThemeDerivation { calculate(it)?.withBack ?: it.withoutBack }
-    }.let { return it }
-}
-
-@Deprecated("Just bind to themeChoice directly")
-@ViewModifierDsl3
-inline fun ViewWriter.tweakTheme(crossinline calculate: (Theme) -> Theme): ViewWriter {
-    beforeNextElementSetup {
-        themeChoice += ThemeDerivation { calculate(it).withoutBack }
-    }.let { return it }
-}
 
 @ViewModifierDsl3
-inline val ViewWriter.group: ViewWriter get() = GroupSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.card: ViewWriter get() = CardSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.fieldTheme: ViewWriter get() = FieldSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.buttonTheme: ViewWriter get() = ButtonSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.bar: ViewWriter get() = BarSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.nav: ViewWriter get() = NavSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.important: ViewWriter get() = ImportantSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.critical: ViewWriter get() = CriticalSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.warning: ViewWriter get() = WarningSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.danger: ViewWriter get() = DangerSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.affirmative: ViewWriter get() = AffirmativeSemantic.onNext
-@ViewModifierDsl3
-inline val ViewWriter.emphasized: ViewWriter get() = EmphasizedSemantic.onNext
+fun CanAddTheme.themed(theme: ThemeDerivation): CanAddTheme = ThemedWriter(this, theme)
 
 @ViewModifierDsl3
-@Deprecated("Renamed to 'emphasized' for consistency of adjective terms.", ReplaceWith("emphasized", "com.lightningkite.kiteui.views.emphasized"))
-inline val ViewWriter.emphasize: ViewWriter get() = EmphasizedSemantic.onNext
+inline val CanAddTheme.group: CanAddTheme get() = themed(GroupSemantic)
 @ViewModifierDsl3
-@Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("DialogSemantic.onNext", "com.lightningkite.kiteui.models.DialogSemantic"))
-inline val ViewWriter.dialog: ViewWriter get() = DialogSemantic.onNext
+inline val CanAddTheme.card: CanAddTheme get() = themed(CardSemantic)
 @ViewModifierDsl3
-@Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("MainContentSemantic.onNext", "com.lightningkite.kiteui.models.MainContentSemantic"))
-inline val ViewWriter.mainContent: ViewWriter get() = MainContentSemantic.onNext
+inline val CanAddTheme.fieldTheme: CanAddTheme get() = themed(FieldSemantic)
 @ViewModifierDsl3
-@Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("HoverSemantic.onNext", "com.lightningkite.kiteui.models.HoverSemantic"))
-inline val ViewWriter.hover: ViewWriter get() = HoverSemantic.onNext
+inline val CanAddTheme.buttonTheme: CanAddTheme get() = themed(ButtonSemantic)
 @ViewModifierDsl3
-@Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("DownSemantic.onNext", "com.lightningkite.kiteui.models.DownSemantic"))
-inline val ViewWriter.down: ViewWriter get() = DownSemantic.onNext
+inline val CanAddTheme.bar: CanAddTheme get() = themed(BarSemantic)
 @ViewModifierDsl3
-@Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("SelectedSemantic.onNext", "com.lightningkite.kiteui.models.SelectedSemantic"))
-inline val ViewWriter.selected: ViewWriter get() = SelectedSemantic.onNext
+inline val CanAddTheme.nav: CanAddTheme get() = themed(NavSemantic)
 @ViewModifierDsl3
-@Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("UnselectedSemantic.onNext", "com.lightningkite.kiteui.models.UnselectedSemantic"))
-inline val ViewWriter.unselected: ViewWriter get() = UnselectedSemantic.onNext
+inline val CanAddTheme.important: CanAddTheme get() = themed(ImportantSemantic)
 @ViewModifierDsl3
-@Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("DisabledSemantic.onNext", "com.lightningkite.kiteui.models.DisabledSemantic"))
-inline val ViewWriter.disabled: ViewWriter get() = DisabledSemantic.onNext
+inline val CanAddTheme.critical: CanAddTheme get() = themed(CriticalSemantic)
+@ViewModifierDsl3
+inline val CanAddTheme.warning: CanAddTheme get() = themed(WarningSemantic)
+@ViewModifierDsl3
+inline val CanAddTheme.danger: CanAddTheme get() = themed(DangerSemantic)
+@ViewModifierDsl3
+inline val CanAddTheme.affirmative: CanAddTheme get() = themed(AffirmativeSemantic)
+@ViewModifierDsl3
+inline val CanAddTheme.emphasized: CanAddTheme get() = themed(EmphasizedSemantic)
+@ViewModifierDsl3
+inline val CanAddTheme.compact: CanAddTheme get() = themed(CompactSemantic)
 
 @ViewModifierDsl3
-val ViewWriter.compact: ViewWriter
-    get() = CompactSemantic.onNext
-
-@ViewModifierDsl3
-val ViewWriter.bold: ViewWriter
-    get() = ThemeDerivation {
+val CanAddTheme.bold: CanAddTheme
+    get() = themed(ThemeDerivation {
         it.copy(
             id = "bold",
             font = it.font.copy(bold = true)
         ).withoutBack
-    }.onNext
+    })
 
 @ViewModifierDsl3
-fun ViewWriter.textSize(size: Dimension): ViewWriter = ThemeDerivation {
+fun CanAddTheme.textSize(size: Dimension): CanAddTheme = themed(ThemeDerivation {
     it.copy(
         id = "textSize${size.value.toString().filter { it.isLetterOrDigit() }}",
         font = it.font.copy(size = size)
     ).withoutBack
-}.onNext
+})
 
 @ViewModifierDsl3
-val ViewWriter.italic: ViewWriter
-    get() = ThemeDerivation {
+val CanAddTheme.italic: CanAddTheme
+    get() = themed(ThemeDerivation {
         it.copy(
             id = "italic",
             font = it.font.copy(italic = true)
         ).withoutBack
-    }.onNext
+    })
 
 @ViewModifierDsl3
-val ViewWriter.allCaps: ViewWriter
-    get() = ThemeDerivation {
+val CanAddTheme.allCaps: CanAddTheme
+    get() = themed(ThemeDerivation {
         it.copy(
             id = "allCaps",
             font = it.font.copy(allCaps = true)
         ).withoutBack
-    }.onNext
+    })
 
 @ViewModifierDsl3
-val ViewWriter.strikethrough: ViewWriter
-    get() = ThemeDerivation {
+val CanAddTheme.strikethrough: CanAddTheme
+    get() = themed(ThemeDerivation {
         it.copy(
             id = "strikethrough",
             font = it.font.copy(strikethrough = true)
         ).withoutBack
-    }.onNext
+    })
 
 @ViewModifierDsl3
-val ViewWriter.underline: ViewWriter
-    get() = ThemeDerivation {
+val CanAddTheme.underline: CanAddTheme
+    get() = themed(ThemeDerivation {
         it.copy(
             id = "underline",
             font = it.font.copy(underline = true)
         ).withoutBack
-    }.onNext
+    })
 
 @ViewModifierDsl3
-fun ViewWriter.withSpacing(multiplier: Double): ViewWriter = ThemeDerivation { it.copy(id = "withgap${multiplier.toString().replace('.', '_')}", gap = it.gap * multiplier).withoutBack }.onNext
+fun CanAddTheme.withSpacing(multiplier: Double): CanAddTheme = themed(ThemeDerivation {
+    it.copy(
+        id = "withgap${multiplier.toString().replace('.', '_')}",
+        gap = it.gap * multiplier
+    ).withoutBack
+})
 
-
-fun RView.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
+fun Element.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
     val existing = themeChoice
-    reactiveScope {
-        themeChoice = existing + (calculate() ?: None)
+    reactive {
+        themeChoice = existing + (calculate() ?: ThemeDerivation.None)
     }
 }

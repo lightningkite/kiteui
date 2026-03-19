@@ -13,10 +13,10 @@ import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
 
 @ViewModifierDsl3
-actual fun ViewWriter.hintPopover(
+actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit
-): ViewWriter {
+): ElementWriter {
     beforeNextElementSetup {
         val floating = FloatingInfoHolder(this)
         floating.menuGenerator = setup

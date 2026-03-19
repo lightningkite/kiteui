@@ -19,6 +19,21 @@ var Element.padding: Dimension?
     set(value) { paddingByEdge = value?.let(::Edges) }
 
 
+/**
+ * Returns whether animations are currently enabled for this element.
+ * This is a platform-specific property that respects system-wide animation settings.
+ */
+expect val Element.areAnimationsEnabled: Boolean
+
+/**
+ * Executes the given action with animations temporarily disabled.
+ *
+ * This is useful when you need to make immediate visual changes without transitions,
+ * such as during initial setup or when responding to rapid state changes.
+ *
+ * @param action The code to execute without animations.
+ */
+expect inline fun Element.withoutAnimation(action: () -> Unit)
 
 
 internal fun Element.defaultDriverActions(): Map<String, suspend (List<String>) -> String> = buildMap {

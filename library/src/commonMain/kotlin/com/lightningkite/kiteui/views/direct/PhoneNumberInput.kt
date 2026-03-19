@@ -2,18 +2,11 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.KeyboardHints
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlinx.coroutines.CoroutineScope
-import kotlin.coroutines.CoroutineContext
+import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.reactive.core.MutableReactiveValue
 
-inline fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
+fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
     if (startIndex !in indices) return null
     if (endIndex > length) return substring(startIndex, length)
 
@@ -57,21 +50,24 @@ enum class PhoneNumberFormat {
     abstract fun format(clean: String): String
 }
 
-class PhoneNumberInput(container: ViewWriter): CoroutineScope {
-    override val coroutineContext: CoroutineContext
-        get() = input.coroutineContext
-    private val input = container.formattedTextInput {
-        keyboardHints = KeyboardHints.phone
-        format(PhoneNumberFormat.USA::isRawData, PhoneNumberFormat.USA::format)
+class PhoneNumberInput(private val input: FormattedTextInput): Element by input {
+    constructor(context: ElementContext) : this(FormattedTextInput(context))
+
+    init {
+        input.keyboardHints = KeyboardHints.phone
+        input.format(PhoneNumberFormat.USA::isRawData, PhoneNumberFormat.USA::format)
     }
-    val rView: RView get() = input
+
     var format: PhoneNumberFormat = PhoneNumberFormat.USA
         set(value) {
             field = value
             input.format(value::isRawData, value::format)
         }
+
     var enabled: Boolean by input::enabled
     val content: MutableReactiveValue<String> by input::content
     var hint: String by input::hint
     var align: Align? by input::align
+
+    @Deprecated("No longer needed", ReplaceWith("this")) inline val rView: Element get() = this
 }

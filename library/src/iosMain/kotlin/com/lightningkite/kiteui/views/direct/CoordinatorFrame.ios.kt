@@ -15,7 +15,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(
+private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon<MutableReactive<BottomSheetState>?>(
     null
 )
 

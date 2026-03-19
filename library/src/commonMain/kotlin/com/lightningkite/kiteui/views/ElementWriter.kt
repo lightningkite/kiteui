@@ -23,6 +23,15 @@ interface ElementWriter {
             element.setup()
         }
     }
+
+    // canonical oops: alignment.weight.shownWhen.theme.scrolling.element
+
+    interface CanAddScrolling : ElementWriter
+    interface CanAddSizing : CanAddScrolling
+    interface CanAddTheme : CanAddSizing
+    interface CanAddShownWhen : CanAddTheme
+    interface CanAddWeight : CanAddShownWhen
+    interface CanAddAlignment : CanAddWeight // Least restricted
 }
 
 @OptIn(ExperimentalContracts::class, InternalKiteUi::class)
@@ -35,11 +44,4 @@ inline fun <T : Element> ElementWriter.write(element: T, setup: T.() -> Unit): T
     return element
 }
 
-
-// canonical oops: positioning.weight.shownWhen.theme.scrolling.element
-
-interface CanAddScrolling : ElementWriter
-interface CanAddTheme : CanAddScrolling
-interface CanAddShownWhen : CanAddTheme
-interface CanAddWeight : CanAddShownWhen
-interface ViewWriter : CanAddWeight // Least restricted
+interface ViewWriter : ElementWriter.CanAddAlignment

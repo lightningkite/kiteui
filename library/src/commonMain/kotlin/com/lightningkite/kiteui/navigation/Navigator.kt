@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.rContextAddonInit
+import com.lightningkite.kiteui.views.lateInitContextAddon
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
@@ -84,9 +84,9 @@ expect fun PageNavigator.bindToPlatform(context: ElementContext)
 
 internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 
-var ViewWriter.pageNavigator by rContextAddonInit<PageNavigator>()
-var ViewWriter.mainPageNavigator by rContextAddonInit<PageNavigator>()
-var ViewWriter.dialogPageNavigator by rContextAddonInit<PageNavigator>()
+var ViewWriter.pageNavigator by lateInitContextAddon<PageNavigator>()
+var ViewWriter.mainPageNavigator by lateInitContextAddon<PageNavigator>()
+var ViewWriter.dialogPageNavigator by lateInitContextAddon<PageNavigator>()
 
 @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
 val PlatformNavigator: PageNavigator get() = TODO()

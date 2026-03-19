@@ -78,7 +78,7 @@ interface ThemeDerivation {
         /**
          * A no-op derivation that returns the theme unchanged without background.
          */
-        @Deprecated("Just use 'None' directly", ReplaceWith("None")) val none = None
+        @Deprecated("Just use 'None' object directly", ReplaceWith("None")) val none get() = None
     }
 
     /**

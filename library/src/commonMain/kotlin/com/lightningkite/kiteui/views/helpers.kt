@@ -43,24 +43,24 @@ fun ViewWriter.icon(source: ReactiveContext.()->Icon, description: String, setup
 
 val Icon.Companion.empty get() = Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf())
 
-fun <T> RView.forEach(
+fun <T> ContainerElement.forEach(
     items: Reactive<List<T>>,
     render: ViewWriter.(T) -> Unit
 ) {
-    reactiveScope {
+    reactive {
         clearChildren()
         items().forEach { render(it) }
     }
 }
 
-fun <T> RView.forEachUpdating(
+fun <T> ContainerElement.forEachUpdating(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     render: ViewWriter.(Reactive<T>) -> Unit
 ) {
     val currentViews = ArrayList<LateInitSignal<T>>()
     val currentView = this
-    reactiveScope(onLoad = {
+    reactive(onLoad = {
         currentView.withoutAnimation {
             if (placeholdersWhileLoading <= 0) return@reactiveScope
             if (currentViews.size < placeholdersWhileLoading) {

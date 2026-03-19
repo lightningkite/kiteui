@@ -11,7 +11,7 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 @ViewDsl
-fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}): IconView {
+fun ElementWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}): IconView {
     return icon {
         source = icon
         this.description = description
@@ -20,11 +20,11 @@ fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = 
 }
 
 @ViewDsl
-fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Unit) {
+fun ElementWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.() -> Unit) {
     col {
         var noViewCreated = true
-        var view: RView? = null
-        reactiveScope {
+        var view: Element? = null
+        reactive {
             val v = visible()
             if (v) {
                 if (noViewCreated) {
@@ -32,7 +32,7 @@ fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Uni
                     withoutAnimation {
                         sub()
                         view = children[0]
-                        view?.shown = false
+                        view.shown = false
                     }
                     view?.shown = true
                 } else {
@@ -46,7 +46,7 @@ fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Uni
 }
 
 @ViewDsl
-fun ViewWriter.errorText(): Unit {
+fun ElementWriter.errorText(): Unit {
     val errors = Signal<Set<Exception>>(setOf())
     shownWhen { errors().isNotEmpty() }.onNext(ErrorSemantic).text {
         this@errorText.representsView!! += object: ExceptionHandler {
@@ -70,7 +70,7 @@ fun ViewWriter.errorText(): Unit {
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.field(label: String, content: ViewWriter.() -> Unit): Unit {
+inline fun ElementWriter.field(label: String, content: ElementWriter.() -> Unit): Unit {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     col {
         gap = 0.px

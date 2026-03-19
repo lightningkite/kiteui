@@ -3,9 +3,9 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.rContextAddon
+import com.lightningkite.kiteui.views.contextAddon
 
-var ViewWriter.titleDepth: Int by rContextAddon(0)
+var ViewWriter.titleDepth: Int by contextAddon(0)
 
 @ViewDsl
 fun ViewWriter.titledSection(
