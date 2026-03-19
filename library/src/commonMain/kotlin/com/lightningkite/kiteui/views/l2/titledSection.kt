@@ -10,13 +10,13 @@ var ViewWriter.titleDepth: Int by rContextAddon(0)
 @ViewDsl
 fun ViewWriter.titledSection(
     title: String,
-    content: RowOrCol.() -> Unit,
+    content: RowOrColOld.() -> Unit,
 ) = titledSection({ this.content = title }, content)
 
 @ViewDsl
 fun ViewWriter.titledSection(
     titleSetup: TextView.() -> Unit = {},
-    content: RowOrCol.() -> Unit,
+    content: RowOrColOld.() -> Unit,
 ) {
     col {
         space(4.0)

@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.locale.RenderSize
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
@@ -24,8 +23,6 @@ import com.lightningkite.mppexampleapp.widgets.code
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.math.PI
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
@@ -63,7 +60,7 @@ object CheatSheet : DocPage {
         description: String,
         code: String,
         references: Set<ExampleEntry> = emptySet(),
-        result: RowOrCol.() -> Unit
+        result: RowOrColOld.() -> Unit
     ): Unit {
         val e = ExampleEntry(name)
         known += e

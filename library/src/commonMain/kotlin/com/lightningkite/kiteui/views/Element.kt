@@ -13,7 +13,6 @@ interface Element : CoroutineScopeHelpers2, StatusListener {
     var opacity: Double
     var shown: Boolean
     var visible: Boolean
-    var gap: Dimension?
 
     var ignoreInteraction: Boolean
 
@@ -44,6 +43,8 @@ interface Element : CoroutineScopeHelpers2, StatusListener {
 }
 
 interface ContainerElement : Element, ViewWriter2 {
+    override val underlyingNativeElement: NativeContainerElement
+
     val children: List<Element>
 
     fun addChild(index: Int, element: Element)
@@ -60,4 +61,12 @@ interface ContainerElement : Element, ViewWriter2 {
     fun clearChildren() { for (i in children.indices) removeChild(i) }
 
     var childDefaultAlignment: Alignment?
+
+    var gap: Dimension?
+
+    val mySpacingForChildren: Dimension get() {
+        val pad = padding ?: themeAndBack.theme.padding.top
+        val gap = gap ?: themeAndBack.theme.gap
+        return minOf(pad, gap)
+    }
 }

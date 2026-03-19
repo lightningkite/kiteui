@@ -18,7 +18,7 @@ actual class Frame actual constructor(context: ElementContext) : RView(context) 
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
 
-actual class RowOrCol actual constructor(context: ElementContext) : RView(context) {
+actual class RowOrColOld actual constructor(context: ElementContext) : RView(context) {
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
@@ -53,7 +53,7 @@ actual class RowOrCol actual constructor(context: ElementContext) : RView(contex
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : RView(context) {
+actual class RowCollapsingToColumnOld actual constructor(context: ElementContext, breakpoints: List<Dimension>) : RView(context) {
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)

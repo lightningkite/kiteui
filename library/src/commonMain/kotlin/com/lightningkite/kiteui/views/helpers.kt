@@ -113,7 +113,7 @@ fun <T> RView.forEachUpdating(
     }
 }
 
-fun <T, ID> RowOrCol.forEachById(
+fun <T, ID> RowOrColOld.forEachById(
     items: Reactive<List<T>>,
     id: (T)->ID,
     preHidingModifiers: ViewWriter.(ID)-> ViewWriter = { this },
@@ -196,7 +196,7 @@ fun <T, ID> RowOrCol.forEachById(
         old.subList(oldPos, old.size).forEach { it.hide() }
     }
 }
-fun <T> RowOrCol.forEachAnimated(
+fun <T> RowOrColOld.forEachAnimated(
     items: Reactive<List<T>>,
     preHidingModifiers: ViewWriter.(T)-> ViewWriter = { this },
     render: ViewWriter.(T) -> Unit

@@ -130,7 +130,7 @@ class FlexboxLayout(context: Context) : ViewGroup(context) {
     private fun min(a: Int, b: Int): Int = if (a < b) a else b
 }
 
-actual class RowWrapping actual constructor(context: ElementContext) : RView(context) {
+actual class RowWrappingOld actual constructor(context: ElementContext) : RView(context) {
     override val native = FlexboxLayout(context.activity)
 
     override var gap: Dimension?

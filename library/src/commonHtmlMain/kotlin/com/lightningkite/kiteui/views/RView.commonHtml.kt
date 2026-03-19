@@ -3,10 +3,9 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
-import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
-import com.lightningkite.kiteui.views.direct.RowOrCol
+import com.lightningkite.kiteui.views.direct.RowOrColOld
 
 actual abstract class RView actual constructor(context: ElementContext) : RViewHelper(context) {
     var native = FutureElement().also { it.classes.add("kui") }
@@ -31,7 +30,7 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
         set(value) {
             super.shown = value
             native.attributes.hidden = !value
-            (parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            (parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
         }
 
     override var visible: Boolean
@@ -201,40 +200,6 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
 }
 
 typealias HtmlElementLike = FutureElement
-
-expect class FutureElementStyle
-expect class FutureElementAttributes
-
-expect class FutureElement {
-    constructor()
-
-    val actualElementForLeakTracking: Any?
-    var xmlns: String?
-    var tag: String
-    val attributes: FutureElementAttributes
-    val style: FutureElementStyle
-    var desiredVerticalGravity: Align?
-    var desiredHorizontalGravity: Align?
-    fun setAttribute(key: String, value: String?)
-    fun setStyleProperty(key: String, value: String?)
-    inline fun addEventListener(name: String, crossinline listener: (Event) -> Unit)
-    inline fun replaceEventListener(name: String, crossinline listener: (Event) -> Unit)
-    var classes: MutableSet<String>
-    inline fun flushClasses()
-    var id: String?
-    var content: String?
-    var innerHtmlUnsafe: String?
-    val children: List<FutureElement>
-    fun appendChild(element: FutureElement)
-    fun appendChild(index: Int, element: FutureElement)
-    fun removeChild(index: Int)
-    fun clearChildren()
-    fun click()
-    fun focus()
-    fun blur()
-    fun screenRectangle(): Rect?
-    fun parentRectangle(): Rect?
-}
 
 expect fun RView.nativeScrollIntoView(
     horizontal: Align?,

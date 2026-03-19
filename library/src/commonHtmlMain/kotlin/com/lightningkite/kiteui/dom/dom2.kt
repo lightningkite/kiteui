@@ -34,7 +34,7 @@ expect abstract class Node: EventTarget {
     fun appendChild(node: Node): Node
     open var nodeValue: String?
 }
-expect abstract class Element: Node {
+expect abstract class DOMElement: Node {
 //    open val tagName: String
 //    open var className: String  // class
 //    open var id: String  // id

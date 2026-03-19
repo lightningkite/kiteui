@@ -13,6 +13,6 @@ actual typealias WheelEvent = org.w3c.dom.events.WheelEvent
 actual typealias PointerEvent = org.w3c.dom.pointerevents.PointerEvent
 actual typealias MouseEvent = org.w3c.dom.events.MouseEvent
 actual typealias Node = org.w3c.dom.Node
-actual typealias Element = org.w3c.dom.Element
+actual typealias DOMElement = org.w3c.dom.Element
 actual typealias DOMRectReadOnly = org.w3c.dom.DOMRectReadOnly
 actual typealias DOMRect = org.w3c.dom.DOMRect

@@ -34,7 +34,7 @@ actual abstract class Node: EventTarget() {
     actual fun appendChild(node: Node): Node = throw NotImplementedError()
     actual open var nodeValue: String? = throw NotImplementedError()
 }
-actual abstract class Element: Node() {
+actual abstract class DOMElement: Node() {
     //    open val tagName: String
 //    open var className: String  // class
 //    open var id: String  // id

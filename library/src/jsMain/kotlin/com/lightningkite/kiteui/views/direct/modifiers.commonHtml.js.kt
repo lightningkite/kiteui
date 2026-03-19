@@ -1,14 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Log
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.collections.find
 import kotlin.js.Json
 import kotlin.js.json
 import kotlin.time.Duration
@@ -120,7 +114,7 @@ private data class OngoingAnimation(
         showHideAnimating.remove(on)
         log?.log("showHideAnimating: ${showHideAnimating.keys.joinToString { it.children.singleOrNull()?.debugName ?: "?" }}")
         myElement.hidden = !goal
-        (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+        (on.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
         myElement.classList.remove("animatingShowHide")
         child.style.width = "100%"
         child.style.removeProperty("maxWidth")
@@ -212,7 +206,7 @@ private class OngoingWeightAnimation(
         myElement.style.flexGrow = "$toWeight"
         myElement.style.flexShrink = "$toWeight"
         myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
-        (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+        (on.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
         // Unlock child dimensions
         child.style.width = "100%"
         child.style.removeProperty("maxWidth")
@@ -393,7 +387,7 @@ private val combinedAnimationWorker = label@{
         val beforeVisibility = currentShowHideQueue?.map {
             val was = (it.key.native.element as HTMLElement).hidden
             (it.key.native.element as HTMLElement).hidden = !it.value
-            (it.key.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            (it.key.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
             log?.info("View ${it.key.children.singleOrNull()?.debugName} -> ${it.value}")
             it.key to was
         }
@@ -408,7 +402,7 @@ private val combinedAnimationWorker = label@{
             myElement.style.flexGrow = "$toWeight"
             myElement.style.flexShrink = "$toWeight"
             myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
-            (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            (on.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
             on to Triple(savedGrow, savedShrink, savedBasis)
         }
 
@@ -602,7 +596,7 @@ private val combinedAnimationWorker = label@{
         beforeVisibility?.forEach {
             (it.first.native.element as HTMLElement).hidden = it.second
             log?.info("View ${it.first.children.singleOrNull()?.debugName} -> ${it.second}")
-            (it.first.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            (it.first.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
         }
 
         beforeWeightStyles?.forEach { (on, saved) ->
@@ -610,7 +604,7 @@ private val combinedAnimationWorker = label@{
             myElement.style.flexGrow = saved.first
             myElement.style.flexShrink = saved.second
             myElement.style.flexBasis = saved.third
-            (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            (on.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
         }
 
         delayLevel?.let { delay(it) }

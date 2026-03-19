@@ -228,7 +228,7 @@ class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
     }
 }
 
-actual class RowWrapping actual constructor(context: ElementContext) : RView(context) {
+actual class RowWrappingOld actual constructor(context: ElementContext) : RView(context) {
     override val native = FlexLayout()
 
     override var gap: Dimension?

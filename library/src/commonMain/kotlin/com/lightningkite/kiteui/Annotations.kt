@@ -13,17 +13,16 @@ annotation class QueryParameter(val name: String = "")
 @Target(AnnotationTarget.PROPERTY)
 annotation class Hash
 
-@Suppress
+@Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
     message = "This may change, use it at your own risk"
 )
-
 annotation class InternalKiteUi
 
-@Suppress
+@Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(
@@ -32,7 +31,7 @@ annotation class InternalKiteUi
 )
 annotation class ExperimentalKiteUi
 
-@Suppress
+@Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(

@@ -118,7 +118,7 @@ inline fun ViewWriter.rawImageZoomable(source: ImageSource, description: String,
 //    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
 //    return write(ZoomableImageView(context) , setup)
 //}
-class Label(val label: TextView, val container: RowOrCol): ViewWriter() {
+class Label(val label: TextView, val container: RowOrColOld): ViewWriter() {
     override val coroutineContext: CoroutineContext get() = container.coroutineContext
     override val representsView: RView? = container
     override val context: ElementContext
@@ -148,7 +148,7 @@ inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.label(label: String, content: RowOrCol.() -> Unit): Unit {
+inline fun ViewWriter.label(label: String, content: RowOrColOld.() -> Unit): Unit {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     col {
         FieldLabelSemantic.onNext.text(label)
@@ -235,21 +235,21 @@ inline fun ViewWriter.radioToggleButton(setup: RadioToggleButton.() -> Unit = {}
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.rowCollapsingToColumn(breakpoint: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
+inline fun ViewWriter.rowCollapsingToColumn(breakpoint: Dimension, setup: RowCollapsingToColumnOld.() -> Unit = {}): RowCollapsingToColumnOld {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowCollapsingToColumn(context, listOf(breakpoint)), setup)
+    return write(RowCollapsingToColumnOld(context, listOf(breakpoint)), setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
+inline fun ViewWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, setup: RowCollapsingToColumnOld.() -> Unit = {}): RowCollapsingToColumnOld {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowCollapsingToColumn(context, listOf(verticalBefore, verticalAfter)), setup)
+    return write(RowCollapsingToColumnOld(context, listOf(verticalBefore, verticalAfter)), setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, horizontalAgainAfter: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
+inline fun ViewWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, horizontalAgainAfter: Dimension, setup: RowCollapsingToColumnOld.() -> Unit = {}): RowCollapsingToColumnOld {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowCollapsingToColumn(context, listOf(verticalBefore, verticalAfter, horizontalAgainAfter)), setup)
+    return write(RowCollapsingToColumnOld(context, listOf(verticalBefore, verticalAfter, horizontalAgainAfter)), setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
@@ -384,27 +384,27 @@ inline fun ViewWriter.webView(setup: WebView.() -> Unit = {}): WebView {
 
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.rowWrapping(setup: RowWrapping.() -> Unit = {}): RowWrapping {
+inline fun ViewWriter.rowWrapping(setup: RowWrappingOld.() -> Unit = {}): RowWrappingOld {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowWrapping(context) ) { setup() }
+    return write(RowWrappingOld(context) ) { setup() }
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.row(setup: RowOrCol.() -> Unit = {}): RowOrCol {
+inline fun ViewWriter.row(setup: RowOrColOld.() -> Unit = {}): RowOrColOld {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowOrCol(context) ) { vertical = false; setup() }
+    return write(RowOrColOld(context) ) { vertical = false; setup() }
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.column(setup: RowOrCol.() -> Unit = {}): RowOrCol {
+inline fun ViewWriter.column(setup: RowOrColOld.() -> Unit = {}): RowOrColOld {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowOrCol(context) ) { vertical = true; setup() }
+    return write(RowOrColOld(context) ) { vertical = true; setup() }
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.col(setup: RowOrCol.() -> Unit = {}): RowOrCol {
+inline fun ViewWriter.col(setup: RowOrColOld.() -> Unit = {}): RowOrColOld {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowOrCol(context) , { vertical = true; setup() })
+    return write(RowOrColOld(context) , { vertical = true; setup() })
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl

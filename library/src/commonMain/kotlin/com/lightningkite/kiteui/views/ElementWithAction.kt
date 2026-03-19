@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.reactive.core.Release
 
@@ -12,7 +11,6 @@ interface ElementWithSecondaryAction : ElementWithAction {
     var secondaryAction: Action?
 }
 
-@SubclassOptInRequired(InternalKiteUi::class)
 abstract class NativeElementWithAction(context: ElementContext) : NativeElement(context), ElementWithAction {
     protected open fun nativeSetAction(action: Action?) {}
 
@@ -27,7 +25,6 @@ abstract class NativeElementWithAction(context: ElementContext) : NativeElement(
         }
 }
 
-@SubclassOptInRequired(InternalKiteUi::class)
 abstract class NativeElementWithSecondaryAction(context: ElementContext) : NativeElementWithAction(context), ElementWithSecondaryAction {
     protected open fun nativeSetSecondaryAction(action: Action?) {}
 
@@ -42,7 +39,6 @@ abstract class NativeElementWithSecondaryAction(context: ElementContext) : Nativ
         }
 }
 
-@SubclassOptInRequired(InternalKiteUi::class)
 abstract class NativeContainerElementWithAction(context: ElementContext) : NativeContainerElement(context), ElementWithAction {
     protected open fun nativeSetAction(action: Action?) {}
 
@@ -57,7 +53,6 @@ abstract class NativeContainerElementWithAction(context: ElementContext) : Nativ
         }
 }
 
-@SubclassOptInRequired(InternalKiteUi::class)
 abstract class NativeContainerElementWithSecondaryAction(context: ElementContext) : NativeContainerElementWithAction(context), ElementWithSecondaryAction {
     protected open fun nativeSetSecondaryAction(action: Action?) {}
 

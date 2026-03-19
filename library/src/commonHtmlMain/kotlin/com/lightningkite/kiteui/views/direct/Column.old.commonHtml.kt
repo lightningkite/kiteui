@@ -81,7 +81,7 @@ actual class Frame actual constructor(context: ElementContext) : RView(context) 
     }
 }
 
-actual class RowOrCol actual constructor(context: ElementContext) : RView(context) {
+actual class RowOrColOld actual constructor(context: ElementContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.flexDirection = "column"
@@ -200,7 +200,64 @@ actual class RowOrCol actual constructor(context: ElementContext) : RView(contex
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : RView(context) {
+actual class RowWrappingOld actual constructor(context: ElementContext) : RView(context) {
+    init {
+        native.tag = "div"
+        native.setStyleProperty("display", "flex")
+        native.setStyleProperty("flex-direction", "row")
+        native.setStyleProperty("flex-wrap", "wrap")
+        native.classes += "kiteui-flex"
+        native.classes += "kiteui-row-wrap"
+    }
+
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+
+        // Handle alignment
+        val horizontalAlign = view.native.desiredHorizontalGravity
+        val verticalAlign = view.native.desiredVerticalGravity
+
+        // Set horizontal alignment
+        when (horizontalAlign) {
+            Align.Start -> {
+                view.native.setStyleProperty("justify-self", "start")
+            }
+
+            Align.Center -> {
+                view.native.setStyleProperty("justify-self", "center")
+            }
+
+            Align.End -> {
+                view.native.setStyleProperty("justify-self", "end")
+            }
+
+            else -> {
+                view.native.setStyleProperty("justify-self", "stretch")
+            }
+        }
+
+        // Set vertical alignment
+        when (verticalAlign) {
+            Align.Start -> {
+                view.native.setStyleProperty("align-self", "start")
+            }
+
+            Align.Center -> {
+                view.native.setStyleProperty("align-self", "center")
+            }
+
+            Align.End -> {
+                view.native.setStyleProperty("align-self", "end")
+            }
+
+            else -> {
+                view.native.setStyleProperty("align-self", "stretch")
+            }
+        }
+    }
+}
+
+actual class RowCollapsingToColumnOld actual constructor(context: ElementContext, breakpoints: List<Dimension>) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoints))

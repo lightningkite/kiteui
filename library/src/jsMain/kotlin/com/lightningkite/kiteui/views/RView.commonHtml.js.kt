@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.debugMode
+import com.lightningkite.kiteui.dom.DOMElement
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
@@ -21,8 +22,8 @@ import kotlin.random.Random
 
 actual class FutureElement actual constructor() {
     actual val actualElementForLeakTracking: Any? get() = element
-    val elementToDo = ArrayList<(Element) -> Unit>()
-    var element: Element? = null
+    val elementToDo = ArrayList<(DOMElement) -> Unit>()
+    var element: DOMElement? = null
         private set(value) {
             field = value
             style.native = (value as? HTMLElement)?.style ?: (value as? SVGElement)?.style
@@ -36,7 +37,7 @@ actual class FutureElement actual constructor() {
      *
      * Updated by Claude to record hydration statistics.
      */
-    fun hydrate(existingElement: Element): Boolean {
+    fun hydrate(existingElement: DOMElement): Boolean {
         // Validate tag match
         if (tag.lowercase() != existingElement.tagName.lowercase()) {
             console.warn("Hydration mismatch: expected <$tag>, found <${existingElement.tagName}>")
@@ -95,7 +96,7 @@ actual class FutureElement actual constructor() {
      *
      * Updated by Claude to record hydration statistics and handle mismatches gracefully.
      */
-    fun hydrateRecursive(existingElement: Element): Boolean {
+    fun hydrateRecursive(existingElement: DOMElement): Boolean {
         if (!hydrate(existingElement)) return false
 
         // Hydrate children by position
@@ -148,11 +149,11 @@ actual class FutureElement actual constructor() {
         return true
     }
 
-    inline fun onElement(crossinline action: (Element) -> Unit) {
+    inline fun onElement(crossinline action: (DOMElement) -> Unit) {
         element?.let(action) ?: elementToDo.add { action(it) }
     }
 
-    fun create(): Element {
+    fun create(): DOMElement {
         element?.let { return it }
         val e = xmlns?.let { document.createElementNS(it, tag) } ?: document.createElement(tag)
         id?.let { e.id = it }

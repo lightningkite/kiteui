@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 
 
-actual class RowOrCol actual constructor(context: ElementContext) : RView(context) {
+actual class RowOrColOld actual constructor(context: ElementContext) : RView(context) {
     override val native = LinearLayout()
     
 
@@ -68,7 +68,7 @@ actual class RowOrCol actual constructor(context: ElementContext) : RView(contex
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) :
+actual class RowCollapsingToColumnOld actual constructor(context: ElementContext, breakpoints: List<Dimension>) :
     RView(context) {
     
     override val native = LinearLayout()

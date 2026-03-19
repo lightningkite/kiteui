@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.reactive.context.StatusListener
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
@@ -14,10 +15,34 @@ import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
 
 expect abstract class NativeElement(context: ElementContext) : NativeElementCommonCode {
+    override var opacity: Double
 
+    override var shown: Boolean
+
+    override var visible: Boolean
+
+    override var ignoreInteraction: Boolean
+
+    override var dragData: DragData?
+
+    override var dropTargetDelegate: DropTargetDelegate?
+
+    override fun nativeApplyTheme(theme: ThemeAndBack)
+
+    override fun refreshPadding()
+
+    override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean)
+
+    override fun requestFocus()
+
+    fun screenRectangle(): Rect?
+
+    fun parentRectangle(): Rect?
 }
 
-sealed class NativeElementCommonCode(override val context: ElementContext) : Element {
+// this code is duplicated in every element throughout the entire view tree, so performance actually kinda matters here.
+@SubclassOptInRequired(InternalKiteUi::class)
+abstract class NativeElementCommonCode(override val context: ElementContext) : Element {
     override val underlyingNativeElement: NativeElement get() = this as NativeElement
 
     override var parent: ContainerElement? = null
@@ -50,6 +75,7 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
     var isShutdown = false
         private set
 
+    @InternalKiteUi
     open fun shutdown() {
         if (isShutdown) return
         job.cancel()
@@ -203,22 +229,24 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
         fun watch(status: Reactive<*>): Release {
             if (!processes.add(status)) return Listenable.Never.NOOP_RELEASE    // we are already listening to this status
 
-            var prevSeverity: Int? = null
+            var prevSeverity: Int = -1  // intentionally using -1 as sentinel value to avoid boxing
 
             val release = status.addAndRunListener {
-                val s = status.state.severity
-                if (prevSeverity != s) {    // severity changed
-                    when (prevSeverity) {
-                        SEV_EXCEPTION -> exceptionCount--
-                        SEV_NOT_READY -> notReadyCount--
-                    }
-                    when (s) {
-                        SEV_EXCEPTION -> exceptionCount++
-                        SEV_NOT_READY -> notReadyCount++
-                    }
-                    prevSeverity = s
-                    recalculateState()
-                } else if (s == SEV_EXCEPTION) recalculateState() // exception changed
+                onMainThread {
+                    val s = status.state.severity
+                    if (prevSeverity != s) {    // severity changed
+                        when (prevSeverity) {
+                            SEV_EXCEPTION -> exceptionCount--
+                            SEV_NOT_READY -> notReadyCount--
+                        }
+                        when (s) {
+                            SEV_EXCEPTION -> exceptionCount++
+                            SEV_NOT_READY -> notReadyCount++
+                        }
+                        prevSeverity = s
+                        recalculateState()
+                    } else if (s == SEV_EXCEPTION) recalculateState() // exception changed
+                }
             }
 
             return {
@@ -259,21 +287,21 @@ sealed class NativeElementCommonCode(override val context: ElementContext) : Ele
         WeakReference(this).checkLeakAfterDelay(1000)
     }
 
-    @PublishedApi
-    internal inline fun debug(text: () -> String) {
-        if (this === Element.Debugger.debugTarget) println("$this DEBUG: ${text()}")
+    @InternalKiteUi
+    inline fun debug(requireTarget: Boolean = true, text: () -> String) {
+        if ((!requireTarget && debugMode) || Element.Debugger.debugTarget === this) println("$this DEBUG: ${text()}")
     }
 
     fun currentlyActive(): Boolean = fullyStarted && !isShutdown
 
     @InternalKiteUi
-    fun checkActive(name: String): Boolean {
+    fun checkActive(name: String, requireTarget: Boolean = true): Boolean {
         if (isShutdown) {
             println("WARNING!! $this is shut down, but attempt to call $name was made")
             return false
         }
         if (!fullyStarted) {
-            debug { "$name abandoned due to not fully started" }
+            debug(requireTarget) { "$name abandoned due to not fully started" }
             return false
         }
         return true
