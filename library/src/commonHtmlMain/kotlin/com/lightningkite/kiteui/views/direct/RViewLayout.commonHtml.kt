@@ -3,14 +3,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 
 /**
- * HTML implementation of sizeConstraints for RView.
+ * HTML implementation of sizeConstraints.
  * Sets CSS properties directly on the element.
  * by Claude
  */
-actual fun RView.setSizeConstraints(
+actual fun Element.setSizeConstraints(
     width: Dimension?,
     height: Dimension?,
     minWidth: Dimension?,
@@ -30,11 +30,11 @@ actual fun RView.setSizeConstraints(
 }
 
 /**
- * HTML implementation of setTranslation for RView.
+ * HTML implementation of setTranslation.
  * Uses CSS transform which doesn't trigger layout or scroll events.
  * by Claude
  */
-actual fun RView.setTranslation(x: Double, y: Double) {
+actual fun Element.setTranslation(x: Double, y: Double) {
     this.native.setStyleProperty("transform", "translate(${x}px, ${y}px)")
 }
 
@@ -44,6 +44,6 @@ actual fun RView.setTranslation(x: Double, y: Double) {
  * that are meant to be instant position corrections.
  * by Claude
  */
-actual fun RView.disableTransformTransition() {
+actual fun Element.disableTransformTransition() {
     this.native.setStyleProperty("transition-property", "none")
 }

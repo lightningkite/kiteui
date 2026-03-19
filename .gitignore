@@ -25,3 +25,4 @@ worktrees
 sstest*.png
 screenshot-*.png
 .fork/
+.env

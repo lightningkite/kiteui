@@ -13,7 +13,7 @@ import kotlin.math.roundToInt
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 
-actual class ProgrammaticLayout actual constructor(context: ElementContext) : RView(context) {
+actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeContainerElement(context) {
     init {
         native.tag = "div"
         native.style.position = "relative"
@@ -34,12 +34,12 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : RV
         })
     }
 
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        view.native.onElement { it.asDynamic().__existingMeasure = null }
-        view.native.style.position = "absolute"
-        view.onRemove(view.native.mutationObserver(true).addListener {
-            view.native.onElement { it.asDynamic().__existingMeasure = null }
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        element.native.onElement { it.asDynamic().__existingMeasure = null }
+        element.native.style.position = "absolute"
+        element.onRemove(element.native.mutationObserver(true).addListener {
+            element.native.onElement { it.asDynamic().__existingMeasure = null }
             if (timeoutSet) return@addListener
             log?.log("child mutation calls invalidateLayout()")
             invalidateLayout()
@@ -48,8 +48,8 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : RV
         invalidateLayout()
     }
 
-    override fun internalRemoveChild(index: Int) {
-        super.internalRemoveChild(index)
+    override fun nativeRemoveChild(index: Int) {
+        super.nativeRemoveChild(index)
         log?.log("child remove calls invalidateLayout()")
         invalidateLayout()
     }
@@ -74,8 +74,8 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : RV
         paddingBottomCurrentPx = value.bottom.viewUnits
     }
 
-    override fun internalClearChildren() {
-        super.internalClearChildren()
+    override fun nativeClearChildren() {
+        super.nativeClearChildren()
         log?.log("children clear calls invalidateLayout()")
         invalidateLayout()
     }
@@ -94,7 +94,7 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : RV
         override val paddingLeft: Double get() = paddingLeftCurrentPx
         override val paddingRight: Double get() = paddingRightCurrentPx
         override val paddingBottom: Double get() = paddingBottomCurrentPx
-        override fun measure(child: RView, sizeConstraint: Size): Size {
+        override fun measure(child: Element, sizeConstraint: Size): Size {
             val e = child.native.element as? HTMLElement ?: return Size(0.0, 0.0)
             val existing = e.asDynamic().__existingMeasure as? Size
             val existingConstraint = e.asDynamic().__existingMeasureConstraint as? Size
@@ -105,7 +105,7 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : RV
             return m
         }
 
-        override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
+        override fun place(child: Element, left: Double, top: Double, right: Double, bottom: Double) {
             if (
                 child.asDynamic().__last_left == left &&
                 child.asDynamic().__last_top == top &&
@@ -128,7 +128,7 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : RV
             child.asDynamic().__last_bottom = bottom
         }
 
-        override fun existingPosition(child: RView): Rect = Rect.fromSize(
+        override fun existingPosition(child: Element): Rect = Rect.fromSize(
             left = child.native.element?.scrollLeft ?: child.native.style.left?.removeSuffix("px")?.toDoubleOrNull()
             ?: 0.0,
             top = child.native.element?.scrollTop ?: child.native.style.top?.removeSuffix("px")?.toDoubleOrNull()

@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Log
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.reactive.core.*
 import kotlin.js.Json
 import kotlin.js.json
@@ -14,8 +14,8 @@ import org.w3c.dom.events.Event
 import org.w3c.dom.get
 
 // by Claude - shared scheduling for show/hide and weight animations
-private val showHideQueue = HashMap<RView, Boolean>()
-private val weightChangeQueue = HashMap<RView, Pair<Float, Float>>()
+private val showHideQueue = HashMap<Element, Boolean>()
+private val weightChangeQueue = HashMap<Element, Pair<Float, Float>>()
 private var workerScheduled = false
 
 private fun ensureWorkerScheduled() {
@@ -25,20 +25,20 @@ private fun ensureWorkerScheduled() {
     }
 }
 
-internal actual fun RView.nativeAnimateShow() {
+internal actual fun Element.nativeAnimateShow() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateShow")
     showHideQueue[this] = true
     ensureWorkerScheduled()
 }
 
-internal actual fun RView.nativeAnimateHide() {
+internal actual fun Element.nativeAnimateHide() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateHide")
     showHideQueue[this] = false
     ensureWorkerScheduled()
 }
 
 // by Claude - weight animation queuing
-internal actual fun RView.nativeAnimateWeight(fromWeight: Float, toWeight: Float) {
+internal actual fun Element.nativeAnimateWeight(fromWeight: Float, toWeight: Float) {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateWeight: $fromWeight -> $toWeight")
     val existing = weightChangeQueue[this]
     if (existing != null) {
@@ -50,12 +50,12 @@ internal actual fun RView.nativeAnimateWeight(fromWeight: Float, toWeight: Float
     ensureWorkerScheduled()
 }
 
-private val showHideAnimating = HashMap<RView, OngoingAnimation>()
+private val showHideAnimating = HashMap<Element, OngoingAnimation>()
 // by Claude - tracking ongoing weight animations
-private val weightAnimating = HashMap<RView, OngoingWeightAnimation>()
+private val weightAnimating = HashMap<Element, OngoingWeightAnimation>()
 
 private data class OngoingAnimation(
-    val on: RView,
+    val on: Element,
     val from: Json,
     val to: Json,
     val goal: Boolean,
@@ -152,7 +152,7 @@ private data class OngoingAnimation(
 // fromBasis/toBasis are pixel values (e.g. "150px") when weight is 0, or "0" when weight is non-zero.
 // CSS can't interpolate between "0" and "auto", so we resolve "auto" to measured pixels.
 private class OngoingWeightAnimation(
-    val on: RView,
+    val on: Element,
     val fromWeight: Float,
     val toWeight: Float,
     val fromBasis: String,

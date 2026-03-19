@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.reactive.core.*
 
 interface ScrollingBehaviors {
@@ -15,7 +15,7 @@ interface ScrollingBehaviors {
     var snapToElements: Pair<Align?, Align?>
     var scrollSnapStop: Boolean
     fun scrollTo(left: Double, top: Double, animated: Boolean)
-    fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
+    fun scrollTo(element: Element, horizontal: Align, vertical: Align, animated: Boolean)
     var ignoreInteraction: Boolean
 
     /**

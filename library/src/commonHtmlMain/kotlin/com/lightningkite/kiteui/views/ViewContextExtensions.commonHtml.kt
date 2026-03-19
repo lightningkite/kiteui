@@ -8,7 +8,7 @@ actual fun ViewWriter.overlayWriter(
     transition: ScreenTransitions,
     body: ViewWriter.(remove: () -> Unit) -> Unit
 ) {
-    var willRemove: RView? = null
+    var willRemove: Element? = null
     with(overlayFrame ?: return) {
         withoutAnimation {
             beforeNextElementSetup {

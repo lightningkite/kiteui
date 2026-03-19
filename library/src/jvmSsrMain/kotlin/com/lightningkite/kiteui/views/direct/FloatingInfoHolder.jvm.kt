@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 
-actual class FloatingInfoHolder actual constructor(source: RView) {
+actual class FloatingInfoHolder actual constructor(source: Element) {
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
     actual var menuGenerator: Frame.() -> Unit = {}
 

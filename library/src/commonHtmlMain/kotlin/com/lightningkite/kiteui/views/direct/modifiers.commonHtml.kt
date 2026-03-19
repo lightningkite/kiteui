@@ -1,6 +1,10 @@
+@file:OptIn(InternalKiteUi::class, ExperimentalKiteUi::class)
+
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -92,7 +96,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWriter {
 // by Claude - wrapper pattern for animation-aware weight changes
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
-    return write(object : RViewWriter(context) {
+    return write(object : NativeContainerElement(context) {
         init {
             native.tag = "div"
             native.classes.add("noInteraction")
@@ -114,13 +118,11 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
                 parent?.native?.classes?.add("childHasWeight")
             }
         }
-        override fun internalAddChild(index: Int, view: RView) {
-            super.internalAddChild(index, view)
-            view.themeTakeNonCascadingFromParent = true
-            Frame.internalAddChildStack(this, index, view)
+        override fun nativeAddChild(index: Int, element: Element) {
+            super.nativeAddChild(index, element)
+            element.underlyingNativeElement.themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+            Frame.internalAddChildStack(this, index, element)
         }
-        override val mySpacingForChildren: Dimension
-            get() = parent?.mySpacingForChildren ?: 0.px
     }) {}
 }
 
@@ -238,8 +240,8 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 
 @ViewModifierDsl3
 actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
-    var v: RView? = null
-    return write(object: RViewWriter(context) {
+    var v: Element? = null
+    return write(object : NativeContainerElement(context) {
         init {
             v = this
             native.tag = "div"
@@ -267,18 +269,15 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
                 }
             }
         }
-        override fun internalAddChild(index: Int, view: RView) {
-            super.internalAddChild(index, view)
-            view.themeTakeNonCascadingFromParent = true
-            Frame.internalAddChildStack(this, index, view)
+        override fun nativeAddChild(index: Int, element: Element) {
+            super.nativeAddChild(index, element)
+            element.underlyingNativeElement.themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+            Frame.internalAddChildStack(this, index, element)
         }
-
-        override val mySpacingForChildren: Dimension
-            get() = parent?.mySpacingForChildren ?: 0.px
     }) {}
 }
 
-internal expect fun RView.nativeAnimateShow()
-internal expect fun RView.nativeAnimateHide()
+internal expect fun Element.nativeAnimateShow()
+internal expect fun Element.nativeAnimateHide()
 // by Claude - expect for weight animation
-internal expect fun RView.nativeAnimateWeight(fromWeight: Float, toWeight: Float)
+internal expect fun Element.nativeAnimateWeight(fromWeight: Float, toWeight: Float)

@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 
-expect class FloatingInfoHolder(source: RView) {
+expect class FloatingInfoHolder(source: Element) {
     var preferredDirection: PopoverPreferredDirection
     var menuGenerator: Frame.() -> Unit
     fun open()

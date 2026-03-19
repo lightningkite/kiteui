@@ -12,7 +12,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 expect class ScrollingBehaviorImpl constructor(
-    on: RView,
+    on: Element,
     horizontal: Boolean,
     vertical: Boolean
 ): ScrollingBehaviors {
@@ -38,7 +38,7 @@ expect class ScrollingBehaviorImpl constructor(
 
      override fun scrollTo(left: Double, top: Double, animated: Boolean)
 
-     override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
+     override fun scrollTo(element: Element, horizontal: Align, vertical: Align, animated: Boolean)
 
      override fun scrollToKeepAnimations(x: Double, y: Double)
 
