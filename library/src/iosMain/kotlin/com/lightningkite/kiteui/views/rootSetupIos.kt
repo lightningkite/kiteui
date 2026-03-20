@@ -92,7 +92,7 @@ fun UIViewController.kiteUi(context: ElementContext = ElementContext(this@kiteUi
         }
     }
     writer.safeInsets = safeInsetProperty
-    val created = writer.produceOne { app() }
+    val created = writer.produceExactlyOne { app() }
 
     val subview = created.native
     subview.translatesAutoresizingMaskIntoConstraints = false

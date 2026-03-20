@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.core.*
@@ -127,9 +128,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): Unit {
             centered.navGroupActions(appNav.actionsProperty)
             ::shown { appNav.existsProperty() }
         }
-        beforeNextElementSetup {
-            applySafeInsets(top = false)
-        }.expanding.navigatorView(pageNavigator)
+        beforeSetup { applySafeInsets(top = false) }.expanding.navigatorView(pageNavigator)
     }
 }
 
@@ -186,8 +185,11 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
             }
         }
         val tabsHandleBottom = remember { appNav.existsProperty() && !AppState.softInputOpen() }
-        beforeNextElementSetup {
-            // Apply bottom safe insets when keyboard is open, since the tab bar
+        // Apply bottom safe insets when keyboard is open, since the tab bar
+            // (which normally handles the bottom inset) is hidden during keyboard input.
+        beforeSetup // Apply bottom safe insets when keyboard is open, since the tab bar
+        // (which normally handles the bottom inset) is hidden during keyboard input.
+        { // Apply bottom safe insets when keyboard is open, since the tab bar
             // (which normally handles the bottom inset) is hidden during keyboard input.
             applySafeInsets { edges ->
                 Edges(
@@ -232,15 +234,11 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
             ::shown { appNav.existsProperty() }
         }
         expanding.onNext(OuterSemantic).row {
-            beforeNextElementSetup {
-                applySafeInsets(right = false)
-            }.nav.scrolling.navGroupColumn(appNav.navItemsProperty) {
+            beforeSetup { applySafeInsets(right = false) }.nav.scrolling.navGroupColumn(appNav.navItemsProperty) {
                 ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
             }
-            beforeNextElementSetup {
-                applySafeInsets(top = false)
-            }.expanding.navigatorView(pageNavigator)
+            beforeSetup { applySafeInsets(top = false) }.expanding.navigatorView(pageNavigator)
         }
     }
 }

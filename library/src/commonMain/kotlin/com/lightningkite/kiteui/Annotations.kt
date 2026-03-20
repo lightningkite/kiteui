@@ -39,3 +39,9 @@ annotation class ExperimentalKiteUi
     message = "This hasn't been tested thoroughly enough to recommend use.  Use at your own risk."
 )
 annotation class Untested
+
+
+@Suppress("ExperimentalAnnotationRetention")
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn("Applying modifiers in the wrong order can lead to subtle bugs.", RequiresOptIn.Level.WARNING)
+annotation class UnsafeModifierOrdering

@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.onRemove
@@ -52,7 +53,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
             }
         }
         viewController.kiteUi(context.split(viewController)) {
-            beforeNextElementSetup {
+            beforeSetup {
                 parent = this@CoordinatorFrame
                 launch {
                     while (true) {
@@ -127,7 +128,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
                     closePanel()
                 }
             }
-            willRemove = split().produceOne {
+            willRemove = split().produceExactlyOne {
                 frame {
                     overlayFrame = this
                     if (ratio == null) {
@@ -168,7 +169,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
                     closePanel()
                 }
             }
-            willRemove = split().produceOne {
+            willRemove = split().produceExactlyOne {
                 frame {
                     overlayFrame = this
                     if (ratio == null) {

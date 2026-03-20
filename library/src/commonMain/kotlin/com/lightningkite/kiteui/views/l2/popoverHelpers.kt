@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
 import kotlinx.coroutines.delay
@@ -48,20 +49,18 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: (
     }
 }
 
-fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> Unit) {
-    var willRemove: RView? = null
+fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) {
+    var willRemove: Element? = null
     overlayWriter {
-        representsView!!.withoutAnimation {
+        withoutAnimation {
             popoverWriter {
                 willRemove?.let {
                     it.animateOut(transition.reverse) {
-                        this@overlayWriter.representsView!!.removeChild(it)
+                        this@overlayWriter.removeChild(it)
                     }
                 }
             }.run {
-                willRemove = beforeNextElementSetup {
-                    animateIn(transition.forward)
-                }.produceOne(content)
+                willRemove = beforeSetup { animateIn(transition.forward) }.produceExactlyOne(content)
             }
         }
     }

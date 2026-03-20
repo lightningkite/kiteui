@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementWriter
 
-expect class FloatingInfoHolder(source: ElementWriter) {
+expect class FloatingInfoHolder(source: Element) {
     var preferredDirection: PopoverPreferredDirection
     var menuGenerator: Frame.() -> Unit
     fun open()

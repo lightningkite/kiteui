@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.views.closePopovers
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.rawPopover
+import com.lightningkite.kiteui.views.themed
 
 actual fun ViewWriter.openBottomSheet(
     halfScreenRatio: Float,
@@ -18,7 +19,7 @@ actual fun ViewWriter.openBottomSheet(
     rawPopover(ScreenTransitions.VerticalSlide) {
         col {
             expanding.space()
-            expanding.onNext(DialogSemantic).col {
+            expanding.themed(DialogSemantic).col {
                 row {
                     expanding.space()
                     button {

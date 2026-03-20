@@ -1,5 +1,9 @@
+@file:OptIn(InternalKiteUi::class)
+
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.DownSemantic
@@ -15,14 +19,20 @@ import com.lightningkite.kiteui.models.UnselectedSemantic
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.direct.NumberInput
 import com.lightningkite.kiteui.views.direct.RowOrCol
+import com.lightningkite.kiteui.views.direct.ScrollingBehaviors
 import com.lightningkite.kiteui.views.direct.TextView
+import com.lightningkite.kiteui.views.direct.__scrollsUncontracted
+import com.lightningkite.kiteui.views.direct.align
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.padded
 import com.lightningkite.kiteui.views.direct.shownWhen
 import com.lightningkite.kiteui.views.direct.subtext
 import com.lightningkite.reactive.context.ReactiveContext
+import com.lightningkite.reactive.context.onRemove
+import kotlinx.coroutines.CoroutineScope
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -47,9 +57,24 @@ var Element.testId: String?
 
 // modifiers
 
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+fun ElementWriter.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter = beforeSetup(setup)
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+fun ElementWriter.CanAddScrolling.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddScrolling = beforeSetup(setup)
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+fun ElementWriter.CanAddSizing.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddSizing = beforeSetup(setup)
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+fun ElementWriter.CanAddTheme.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddTheme = beforeSetup(setup)
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+fun ElementWriter.CanAddShownWhen.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddShownWhen = beforeSetup(setup)
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+fun ElementWriter.CanAddWeight.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddWeight = beforeSetup(setup)
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+fun ElementWriter.CanAddAlignment.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddAlignment = beforeSetup(setup)
+
 @Deprecated("No longer supported, set debugName directly on the element", level = DeprecationLevel.ERROR)
 operator fun String.minus(writer: ViewWriter): ViewWriter = writer.also {
-    it.beforeNextElementSetup {
+    it.beforeSetup {
         debugName = this@minus
     }
 }
@@ -57,25 +82,19 @@ operator fun String.minus(writer: ViewWriter): ViewWriter = writer.also {
 @Deprecated("Just bind to themeChoice directly", level = DeprecationLevel.ERROR)
 @ViewModifierDsl3
 fun ElementWriter.CanAddTheme.themeFromLast(calculate: (Theme) -> Theme): ElementWriter {
-    return beforeNextElementSetup {
-        themeChoice += ThemeDerivation { calculate(it).withBack }
-    }
+    return beforeSetup { themeChoice += ThemeDerivation { calculate(it).withBack } }
 }
 
 @Deprecated("Just bind to themeChoice directly", level = DeprecationLevel.ERROR)
 @ViewModifierDsl3
 inline fun ElementWriter.CanAddTheme.maybeThemeFromLast(crossinline calculate: (Theme) -> Theme?): ElementWriter {
-    return beforeNextElementSetup {
-        themeChoice += ThemeDerivation { calculate(it)?.withBack ?: it.withoutBack }
-    }
+    return beforeSetup { themeChoice += ThemeDerivation { calculate(it)?.withBack ?: it.withoutBack } }
 }
 
 @Deprecated("Just bind to themeChoice directly", level = DeprecationLevel.ERROR)
 @ViewModifierDsl3
 inline fun ElementWriter.CanAddTheme.tweakTheme(crossinline calculate: (Theme) -> Theme): ElementWriter {
-    return beforeNextElementSetup {
-        themeChoice += ThemeDerivation { calculate(it).withoutBack }
-    }
+    return beforeSetup { themeChoice += ThemeDerivation { calculate(it).withoutBack } }
 }
 
 @Deprecated("Use hintPopover or menuButton depending on your situation.", level = DeprecationLevel.ERROR)
@@ -94,6 +113,45 @@ val ViewWriter.marginless: ViewWriter get() = this
 @Deprecated("Renamed to 'shownWhen'", ReplaceWith("shownWhen", "com.lightningkite.kiteui.views.direct.shownWhen"))
 fun ElementWriter.CanAddShownWhen.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme = shownWhen(default, condition)
 
+@ViewModifierDsl3
+@Deprecated("use align instead", ReplaceWith("align"))
+fun ElementWriter.CanAddAlignment.gravity(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight = align(horizontal, vertical)
+
+@ViewModifierDsl3
+@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
+val ElementWriter.CanAddScrolling.scrolls: ElementWriter get() = __scrollsUncontracted(vertical = true, horizontal = false)
+
+@ViewModifierDsl3
+@Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollsHorizontally"))
+val ElementWriter.CanAddScrolling.scrollsHorizontally: ElementWriter get() = __scrollsUncontracted(vertical = false, horizontal = true)
+
+@ViewModifierDsl3
+@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
+inline fun ElementWriter.CanAddScrolling.scrolls(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
+    return __scrollsUncontracted(vertical = true, horizontal = false, setup)
+}
+
+@ViewModifierDsl3
+@Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollingHorizontally"))
+inline fun ElementWriter.CanAddScrolling.scrollsHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
+    return __scrollsUncontracted(vertical = false, horizontal = true, setup)
+}
+
+@ViewModifierDsl3
+@Deprecated("use scrollingBoth instead", ReplaceWith("scrollingBoth"))
+inline fun ElementWriter.CanAddScrolling.scrollsBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
+    return __scrollsUncontracted(vertical = true, horizontal = true, setup)
+}
+
+@ViewModifierDsl3
+@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
+inline fun ElementWriter.CanAddScrolling.scrolls(
+    vertical: Boolean,
+    horizontal: Boolean,
+    crossinline setup: ScrollingBehaviors.() -> Unit = {}
+): ElementWriter {
+    return __scrollsUncontracted(vertical = vertical, horizontal = horizontal, setup)
+}
 
 // themes
 
@@ -172,3 +230,43 @@ val ViewWriter.navigator by ViewWriter::pageNavigator
 
 @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
 val PlatformNavigator: PageNavigator get() = throw NotImplementedError()
+
+@Deprecated("Use directly through context", ReplaceWith("context.safeInsets"))
+var Element.safeInsets
+    get() = context.safeInsets
+    set(value) { context.safeInsets = value }
+@Deprecated("Use directly through context", ReplaceWith("context.popoverParent"))
+var Element.popoverParent
+    get() = context.popoverParent
+    set(value) { context.popoverParent = value }
+@Deprecated("Use directly through context", ReplaceWith("context.popoverCloser"))
+var Element.popoverCloser
+    get() = context.popoverCloser
+    set(value) { context.popoverCloser = value }
+@Deprecated("Use directly through context", ReplaceWith("context.popoverKeepOpen"))
+var Element.popoverKeepOpen
+    get() = context.popoverKeepOpen
+    set(value) { context.popoverKeepOpen = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.closePopovers"))
+fun Element.closePopovers() {
+    popoverCloser?.invoke()
+    popoverCloser = null
+    popoverParent?.closePopovers()
+}
+@Deprecated("Use directly through context", ReplaceWith("context.closeThisPopover"))
+fun Element.closeThisPopover() {
+    popoverCloser?.invoke()
+    popoverCloser = null
+    popoverParent?.closeSiblingPopovers()
+}
+@Deprecated("Use directly through context", ReplaceWith("context.closeSiblingPopovers"))
+fun Element.closeSiblingPopovers() {
+    popoverCloser?.invoke()
+    popoverCloser = null
+}
+@Deprecated("Use directly through context", ReplaceWith("context.keepPopoverOpen"))
+fun Element.keepPopoverOpen(lifecycle: CoroutineScope) {
+    popoverKeepOpen++
+    lifecycle.onRemove { popoverKeepOpen-- }
+}

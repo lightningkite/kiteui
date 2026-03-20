@@ -21,7 +21,7 @@ import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
-import com.lightningkite.kiteui.views.produceOne
+import com.lightningkite.kiteui.views.produceExactlyOne
 import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.delay
@@ -123,7 +123,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
                     Log.log("$this ($it) blocked the touch, because screw you")
                 }
 
-            }.col { sub = produceOne { content(control) } }
+            }.col { sub = produceExactlyOne { content(control) } }
         }
     }
 

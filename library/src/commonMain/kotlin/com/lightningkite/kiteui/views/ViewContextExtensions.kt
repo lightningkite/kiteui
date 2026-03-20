@@ -69,42 +69,38 @@ var ElementContext.popoverParent by lazyContextAddon<ContainerElement?> { null }
 var ElementContext.popoverCloser by lazyContextAddon<(() -> Unit)?> { null }
 var ElementContext.popoverKeepOpen by lazyContextAddon { 0 }
 
-@Deprecated("Use directly through context", ReplaceWith("context.safeInsets"))
-var Element.safeInsets
-    get() = context.safeInsets
-    set(value) { context.safeInsets = value }
-@Deprecated("Use directly through context", ReplaceWith("context.popoverParent"))
-var Element.popoverParent
-    get() = context.popoverParent
-    set(value) { context.popoverParent = value }
-@Deprecated("Use directly through context", ReplaceWith("context.popoverCloser"))
-var Element.popoverCloser
-    get() = context.popoverCloser
-    set(value) { context.popoverCloser = value }
-@Deprecated("Use directly through context", ReplaceWith("context.popoverKeepOpen"))
-var Element.popoverKeepOpen
-    get() = context.popoverKeepOpen
-    set(value) { context.popoverKeepOpen = value }
-
-fun Element.closePopovers() {
+fun ElementContext.closePopovers() {
     popoverCloser?.invoke()
     popoverCloser = null
-    popoverParent?.closePopovers()
+    popoverParent?.context?.closePopovers()
 }
-fun Element.closeThisPopover() {
+fun ElementContext.closeThisPopover() {
     popoverCloser?.invoke()
     popoverCloser = null
-    popoverParent?.closeSiblingPopovers()
+    popoverParent?.context?.closeSiblingPopovers()
 }
-fun Element.closeSiblingPopovers() {
+fun ElementContext.closeSiblingPopovers() {
     popoverCloser?.invoke()
     popoverCloser = null
 }
-fun Element.keepPopoverOpen(lifecycle: CoroutineScope) {
+fun ElementContext.keepPopoverOpen(lifecycle: CoroutineScope) {
     popoverKeepOpen++
     lifecycle.onRemove { popoverKeepOpen-- }
 }
+
 fun ElementWriter.popoverWriter(overlay: ElementWriter = this, popoverRoot: Boolean = false, close: () -> Unit): ViewWriter {
+    context.popoverCloser?.invoke()
+    context.popoverCloser = close
+
+    val writer = object : ViewWriter, ElementWriter by overlay.split() {}
+
+    writer.context.popoverParent = (this@popoverWriter as? ContainerElement)?.takeIf { !popoverRoot }
+    writer.context.popoverCloser = null
+
+    return writer
+}
+
+fun Element.popoverWriter(overlay: ElementWriter, popoverRoot: Boolean = false, close: () -> Unit): ViewWriter {
     context.popoverCloser?.invoke()
     context.popoverCloser = close
 
@@ -130,7 +126,7 @@ fun ElementWriter.popoverWriter(overlay: ElementWriter = this, popoverRoot: Bool
  * `dismissBackground`, for example.) Setting this value to `false` guarantees that the presentation strategy
  * *will not* prevent interaction with views below the overlay.
  */
-expect fun ViewWriter.overlayWriter(
+expect fun ElementWriter.overlayWriter(
     modal: Boolean = true,
     transition: ScreenTransitions = ScreenTransitions.Fade,
     body: ContainerElement.(remove: () -> Unit) -> Unit

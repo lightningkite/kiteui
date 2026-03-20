@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.animateIn
 import com.lightningkite.kiteui.views.animateOut
 import com.lightningkite.kiteui.views.extensionIgnoreInteraction
 import com.lightningkite.kiteui.views.informParentOfSizeChange
-import com.lightningkite.kiteui.views.produceOneMaybe
+import com.lightningkite.kiteui.views.produceAtMostOne
 import com.lightningkite.kiteui.views.withoutAnimation
 
 
@@ -35,7 +35,7 @@ actual class SwapView actual constructor(context: ElementContext): RView(context
 
         var newView: RView? = null
         withoutAnimation {
-            newView = produceOneMaybe { createNewView() }
+            newView = produceAtMostOne { createNewView() }
             println("Swapping to $newView")
             currentView = newView
         }

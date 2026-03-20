@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.launch
@@ -48,9 +49,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }}
         withoutAnimation {
             bottomSheetState = expanded
-            willRemove = beforeNextElementSetup {
-                animateIn(transition.forward)
-            }.col {
+            willRemove = beforeSetup { animateIn(transition.forward) }.col {
                 gap = 0.px
                 ignoreInteraction = true
                 expanding.shownWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED }.frame {
@@ -86,10 +85,8 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                     closePanel()
                 }
             }
-            willRemove = produceOne {
-                beforeNextElementSetup {
-                    animateIn(transition.forward)
-                }
+            willRemove = produceExactlyOne {
+                beforeSetup { animateIn(transition.forward) }
                 if(ratio == null) {
                     align(Align.Start, Align.Stretch).content(control)
                 } else {
@@ -124,10 +121,8 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                     closePanel()
                 }
             }
-            willRemove = produceOne {
-                beforeNextElementSetup {
-                    animateIn(transition.forward)
-                }
+            willRemove = produceExactlyOne {
+                beforeSetup { animateIn(transition.forward) }
                 if(ratio == null) {
                     align(Align.End, Align.Stretch).content(control)
                 } else {

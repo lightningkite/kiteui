@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
 import kotlin.math.roundToInt
 
@@ -33,7 +34,7 @@ actual class RowOrColOld actual constructor(context: ElementContext) : RView(con
         }
     actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
         // TODO: This won't work
-        beforeNextElementSetup {
+        this.beforeSetup {
             try {
                 val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
                 lp.gapBeforeOverride = amount.value.toInt()

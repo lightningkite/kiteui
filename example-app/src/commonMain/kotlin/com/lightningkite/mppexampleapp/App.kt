@@ -32,7 +32,7 @@ val appTheme = Signal<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): Unit {
     RViewHelper.leakDetection = true
-    val rootView = produceOne {
+    val rootView = produceExactlyOne {
         appNav(navigator, dialog) {
             appName = "KiteUI Sample App"
             ::navItems {

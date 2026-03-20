@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.ScreenTransitions
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
 actual fun ViewWriter.overlayWriter(
@@ -11,7 +12,7 @@ actual fun ViewWriter.overlayWriter(
     var willRemove: RView? = null
     with(overlayFrame ?: return) {
         withoutAnimation {
-            beforeNextElementSetup {
+            beforeSetup {
                 animateIn(transition.forward)
                 willRemove = this
             }.body {

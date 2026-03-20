@@ -21,7 +21,7 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-actual class FloatingInfoHolder actual constructor(val source: ElementWriter) {
+actual class FloatingInfoHolder actual constructor(val source: Element) {
     val maxDist = 32
     var blockView: Element? = null
     var closeView: Element? = null
@@ -46,7 +46,7 @@ actual class FloatingInfoHolder actual constructor(val source: ElementWriter) {
 
     actual fun block() {
         if (blockView != null) return
-        val o = source.overlayFrame ?: return
+        val o = source.context.overlayFrame ?: return
         val v = existingView ?: return
         o.addChild(
             o.children.indexOf(v),
@@ -73,12 +73,12 @@ actual class FloatingInfoHolder actual constructor(val source: ElementWriter) {
     actual fun open() {
         if (existingView != null) return
         var removeElementFromOverlay = {}
-        val popoverWriter = source.popoverWriter(source.overlayFrame!!) {
+        val popoverWriter = source.popoverWriter(source.context.overlayFrame!!) {
             removeElementFromOverlay()
         }
         with(popoverWriter) {
             frame {
-                source.keepPopoverOpen(this)
+                source.context.keepPopoverOpen(this)
                 currentDirection = preferredDirection
                 existingView = this
                 themeChoice = PopoverSemantic
@@ -295,7 +295,7 @@ actual class FloatingInfoHolder actual constructor(val source: ElementWriter) {
     }
 
     actual fun close() {
-        source.closeSiblingPopovers()
+        source.context.closeSiblingPopovers()
     }
 }
 

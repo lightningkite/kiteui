@@ -6,86 +6,48 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlinx.coroutines.CoroutineScope
 
 @ViewModifierDsl3
 actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit
-): ElementWriter {
-    beforeNextElementSetup {
-        val floating = FloatingInfoHolder(this)
-        floating.menuGenerator = setup
-        floating.preferredDirection = preferredDirection
-        native.addEventListener("contextmenu") {
-            floating.open()
-        }
-        native.addEventListener("mouseenter") {
-            floating.open()
-        }
-        native.addEventListener("mouseleave") {
-            floating.close()
-        }
+): ElementWriter = beforeSetup {
+    val floating = FloatingInfoHolder(this)
+    floating.menuGenerator = setup
+    floating.preferredDirection = preferredDirection
+    native.addEventListener("contextmenu") {
+        floating.open()
     }
-        .let { return it }
-}
-
-@ViewModifierDsl3
-actual fun ElementWriter.hasPopover(
-    requiresClick: Boolean,
-    preferredDirection: PopoverPreferredDirection,
-    setup: ViewWriter.() -> Unit
-): ElementWriter {
-    return beforeNextElementSetup {
-        val floating = FloatingInfoHolder(this)
-        floating.menuGenerator = setup
-        floating.preferredDirection = preferredDirection
-        if (this is Button || requiresClick)
-            native.addEventListener("click") {
-                floating.open()
-            }
-        native.addEventListener("contextmenu") {
-            floating.open()
-        }
-        native.addEventListener("mouseenter") {
-            floating.open()
-        }
-        native.addEventListener("mouseleave") {
-            floating.close()
-        }
+    native.addEventListener("mouseenter") {
+        floating.open()
+    }
+    native.addEventListener("mouseleave") {
+        floating.close()
     }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWriter = hasPopover {
-    card.text {
-        content = message
-    }
+actual fun ElementWriter.textPopover(message: String): ElementWriter = hintPopover {
+    themed(PopoverSemantic).text(message)
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWriter {
-    beforeNextElementSetup {
-        lastSetWeight = amount
+actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen {
+    return beforeSetup {
         native.style.flexGrow = "$amount"
         native.style.flexShrink = "$amount"
         native.style.flexBasis = "0"
         parent?.native?.classes?.add("childHasWeight")
     }
-        .let { return it }
 }
 
 // by Claude - wrapper pattern for animation-aware weight changes
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
+actual fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
     return write(object : NativeContainerElement(context) {
         init {
             native.tag = "div"
@@ -96,7 +58,6 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
                 val newAmount = amount()
                 val oldAmount = previousAmount
                 previousAmount = newAmount
-                lastSetWeight = newAmount
                 if (areAnimationsEnabled && fullyStarted && oldAmount != null && oldAmount != newAmount) {
                     nativeAnimateWeight(oldAmount, newAmount)
                 } else {
@@ -108,63 +69,41 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
                 parent?.native?.classes?.add("childHasWeight")
             }
         }
+
         override fun nativeAddChild(index: Int, element: Element) {
             super.nativeAddChild(index, element)
-            element.underlyingNativeElement.themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+            element.underlyingNativeElement.themeBase = GetBaseTheme.fromParentNonCascading
             Frame.internalAddChildStack(this, index, element)
         }
     }) {}
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
-    beforeNextElementSetup {
-        lastSetHorizontalAlign = horizontal
-        lastSetVerticalAlign = vertical
-
-        // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
-        val effectiveHorizontal = if (horizontal == Align.Stretch) {
-            parent?.newChildHorizontalAlign ?: horizontal
-        } else horizontal
-
-        val effectiveVertical = if (vertical == Align.Stretch) {
-            parent?.newChildVerticalAlign ?: vertical
-        } else vertical
-
-        native.classes.add("h${effectiveHorizontal}")
-        native.desiredHorizontalGravity = effectiveHorizontal
-        native.classes.add("v${effectiveVertical}")
-        native.desiredVerticalGravity = effectiveVertical
+actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight =
+    beforeSetup { // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+        native.classes.add("h${horizontal}")
+        native.desiredHorizontalGravity = horizontal
+        native.classes.add("v${vertical}")
+        native.desiredVerticalGravity = vertical
     }
-        .let { return it }
-}
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWriter {
-    beforeNextElementSetup {
-        setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
-    }
-        .let { return it }
-}
+actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter =
+    beforeSetup { setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical)) }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWriter {
+): ElementWriter =
     // For web, we'll just use regular scrolling as pull-to-refresh isn't a common pattern on web
-    beforeNextElementSetup {
-        setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
-    }
-        .let { return it }
-}
+    beforeSetup { setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical)) }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
-    beforeNextElementSetup {
-
+actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddScrolling =
+    beforeSetup {
         if (constraints.minHeight == null) native.style.minHeight = null
         else native.style.minHeight = constraints.minHeight.value.toString()
 
@@ -189,14 +128,11 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
         if (constraints.height == null) native.style.height = null
         else native.style.height = constraints.height.value.toString()
     }
-        .let { return it }
-}
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWriter {
-    beforeNextElementSetup {
-
-        reactiveScope {
+actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddScrolling =
+    beforeSetup {
+        reactive {
             val constraints = constraints()
             if (constraints.minHeight == null) native.style.minHeight = null
             else native.style.minHeight = constraints.minHeight.value.toString()
@@ -223,26 +159,22 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
             else native.style.height = constraints.height.value.toString()
         }
     }
-        .let { return it }
-}
 
 // End
 
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
-    var v: Element? = null
+actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme {
     return write(object : NativeContainerElement(context) {
         init {
-            v = this
             native.tag = "div"
             native.classes.add("noInteraction")
             native.classes.add("kiteui-stack")
             native.attributes.hidden = !default
             var currentState = default
             reactive {
-                if(areAnimationsEnabled && fullyStarted) {
+                if (areAnimationsEnabled && fullyStarted) {
                     val c = condition()
-                    if(c != currentState) {
+                    if (c != currentState) {
                         if (condition()) {
                             nativeAnimateShow()
                         } else {
@@ -252,22 +184,24 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
                     currentState = c
                 } else {
                     val c = condition()
-                    if(c != currentState) {
+                    if (c != currentState) {
                         native.attributes.hidden = !condition()
                     }
                     currentState = c
                 }
             }
         }
+
         override fun nativeAddChild(index: Int, element: Element) {
             super.nativeAddChild(index, element)
-            element.underlyingNativeElement.themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+            element.underlyingNativeElement.themeBase = GetBaseTheme.fromParentNonCascading
             Frame.internalAddChildStack(this, index, element)
         }
     }) {}
 }
 
-internal expect fun Element.nativeAnimateShow()
-internal expect fun Element.nativeAnimateHide()
+internal expect fun ContainerElement.nativeAnimateShow()
+internal expect fun ContainerElement.nativeAnimateHide()
+
 // by Claude - expect for weight animation
-internal expect fun Element.nativeAnimateWeight(fromWeight: Float, toWeight: Float)
+internal expect fun ContainerElement.nativeAnimateWeight(fromWeight: Float, toWeight: Float)

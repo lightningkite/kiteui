@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
 import com.lightningkite.kiteui.views.l2.overlayFrame
@@ -28,7 +29,7 @@ actual fun ViewWriter.overlayWriter(
         var willRemove: RView? = null
         with(overlayFrame ?: return) {
             withoutAnimation {
-                beforeNextElementSetup {
+                beforeSetup {
                     animateIn(transition.forward)
                     willRemove = this
                 }.body {
@@ -52,9 +53,7 @@ actual fun ViewWriter.overlayWriter(
         viewController.definesPresentationContext = true
         viewController.modalPresentationStyle = UIModalPresentationOverFullScreen
         viewController.kiteUi(context.split(viewController)) {
-            beforeNextElementSetup {
-                themeChoice = ThemeDerivation { theme.withoutBack }
-            }.frame {
+            beforeSetup { themeChoice = ThemeDerivation { theme.withoutBack } }.frame {
                 coordinatorFrame = null
                 overlayFrame = this
                 body {

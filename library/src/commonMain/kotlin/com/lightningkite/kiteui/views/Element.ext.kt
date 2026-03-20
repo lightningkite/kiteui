@@ -3,14 +3,8 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.reactive.context.StatusListener
 import kotlinx.coroutines.CoroutineScope
+import kotlin.coroutines.CoroutineContext
 
-fun ElementWriter.split(): ElementWriter = ElementWriter.Split(this)
-
-fun ElementWriter.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter = ElementWriter.BeforeSetup(this, setup)
-
-inline fun Element.withoutLoadingAnimations(block: CoroutineScope.() -> Unit) {
-    CoroutineScope(coroutineContext.minusKey(StatusListener.Key)).run(block)
-}
 
 val Element.theme: Theme get() = themeAndBack.theme
 
@@ -35,6 +29,9 @@ expect val Element.areAnimationsEnabled: Boolean
  */
 expect inline fun Element.withoutAnimation(action: () -> Unit)
 
+inline fun Element.withoutLoadingAnimations(block: CoroutineScope.() -> Unit) {
+    CoroutineScope(coroutineContext.minusKey(StatusListener.Key)).run(block)
+}
 
 internal fun Element.defaultDriverActions(): Map<String, suspend (List<String>) -> String> = buildMap {
     put("scrollIntoView") {

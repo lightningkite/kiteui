@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
 import kotlinx.cinterop.*
 import platform.UIKit.UIControlEventValueChanged
@@ -20,14 +21,18 @@ import platform.objc.sel_registerName
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.hintPopover(
+actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
-): ViewWriter {
-    beforeNextElementSetup {
+): ElementWriter {
+    // TODO
+//            toast(inner = setup)
+    beforeSetup // TODO
+    //            toast(inner = setup)
+    {
         fun openDialog() {
             // TODO
-//            toast(inner = setup)
+            //            toast(inner = setup)
         }
 
         val actionHolder = object : NSObject() {
@@ -47,7 +52,7 @@ actual fun ViewWriter.hasPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
 ): ViewWriter {
-    beforeNextElementSetup {
+    beforeSetup {
         val originalNavigator = pageNavigator
         fun openDialog() {
             dialogPageNavigator.navigate(object : Page {
@@ -89,7 +94,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWriter = TODO()
 
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWriter {
-    this.beforeNextElementSetup {
+    beforeSetup {
         lastSetWeight = amount
         native.extensionWeight = amount
     }
@@ -98,7 +103,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWriter {
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
-    this.beforeNextElementSetup {
+    beforeSetup {
         reactiveScope {
             val amount = amount()
             native.extensionWeight = amount
@@ -110,22 +115,23 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 
 @ViewModifierDsl3
 actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
-    beforeNextElementSetup {
-        lastSetHorizontalAlign = horizontal
-        lastSetVerticalAlign = vertical
+    this@align.beforeSetup(// Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+        {
+            lastSetHorizontalAlign = horizontal
+            lastSetVerticalAlign = vertical
 
-        // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
-        val effectiveHorizontal = if (horizontal == Align.Stretch) {
-            parent?.newChildHorizontalAlign ?: horizontal
-        } else horizontal
+            // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+            val effectiveHorizontal = if (horizontal == Align.Stretch) {
+                parent?.newChildHorizontalAlign ?: horizontal
+            } else horizontal
 
-        val effectiveVertical = if (vertical == Align.Stretch) {
-            parent?.newChildVerticalAlign ?: vertical
-        } else vertical
+            val effectiveVertical = if (vertical == Align.Stretch) {
+                parent?.newChildVerticalAlign ?: vertical
+            } else vertical
 
-        native.extensionHorizontalAlign = effectiveHorizontal
-        native.extensionVerticalAlign = effectiveVertical
-    }
+            native.extensionHorizontalAlign = effectiveHorizontal
+            native.extensionVerticalAlign = effectiveVertical
+        })
         .let { return it }
 }
 
@@ -174,15 +180,13 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
 
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
-    beforeNextElementSetup {
-        native.extensionSizeConstraints = constraints
-    }
+    beforeSetup { native.extensionSizeConstraints = constraints }
         .let { return it }
 }
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWriter {
-    beforeNextElementSetup {
+    beforeSetup {
         reactiveScope {
             native.extensionSizeConstraints = constraints()
             native.informParentOfSizeChange()
@@ -194,48 +198,51 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 // End
 @ViewModifierDsl3
 actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
-    beforeNextElementSetup {
-        native.hidden = !default
-        var runNumber = 0
-        var lastCommitted = 0
-        reactiveScope {
-            val value = condition()
-            val myRun = ++runNumber
-//            println("$native Starting run $myRun")
-            if (animationsEnabled) {
-                if (native.hidden) {
-                    native.alpha = 0.0
-                    native.hidden = false
-//                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")
-                    native.extensionCollapsed = true
-                }
-                animateIfAllowed(onComplete = {
-                    if (myRun > lastCommitted) {
-                        native.hidden = !value
-//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
-                        native.extensionCollapsed = false
-                        native.informParentOfSizeChange()
-                        lastCommitted = myRun
+    this@shownWhen.beforeSetup(//                println("$native Committed $lastCommitted")//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
 //                        println("$native Committed $lastCommitted")
-                    } else {
-//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")
+//                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")//            println("$native Starting run $myRun")
+        {
+            native.hidden = !default
+            var runNumber = 0
+            var lastCommitted = 0
+            reactiveScope {
+                val value = condition()
+                val myRun = ++runNumber
+//            println("$native Starting run $myRun")
+                if (animationsEnabled) {
+                    if (native.hidden) {
+                        native.alpha = 0.0
+                        native.hidden = false
+//                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")
+                        native.extensionCollapsed = true
                     }
-                }) {
-                    if (!value) native.alpha = 0.0
-                    else native.alpha = opacity
-                    native.extensionCollapsed = !value
+                    animateIfAllowed(onComplete = {
+                        if (myRun > lastCommitted) {
+                            native.hidden = !value
+//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
+                            native.extensionCollapsed = false
+                            native.informParentOfSizeChange()
+                            lastCommitted = myRun
+//                        println("$native Committed $lastCommitted")
+                        } else {
+//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")
+                        }
+                    }) {
+                        if (!value) native.alpha = 0.0
+                        else native.alpha = opacity
+                        native.extensionCollapsed = !value
+                        native.informParentOfSizeChange()
+                        native.superview?.layoutIfNeeded()
+                    }
+                } else {
+                    native.extensionCollapsed = false
+                    native.alpha = opacity
+                    native.hidden = !value
                     native.informParentOfSizeChange()
-                    native.superview?.layoutIfNeeded()
-                }
-            } else {
-                native.extensionCollapsed = false
-                native.alpha = opacity
-                native.hidden = !value
-                native.informParentOfSizeChange()
-                lastCommitted = myRun
+                    lastCommitted = myRun
 //                println("$native Committed $lastCommitted")
+                }
             }
-        }
-    }
+        })
         .let { return it }
 }

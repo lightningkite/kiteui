@@ -3,10 +3,15 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.UnsafeModifierOrdering
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.ReactiveContext
+
+@UnsafeModifierOrdering
+fun ElementWriter.withUnrestrictedModifiers(): ViewWriter = object : ViewWriter, ElementWriter by this {}
 
 @ViewModifierDsl3
 expect fun ElementWriter.hintPopover(
@@ -25,46 +30,6 @@ expect fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() 
 
 @ViewModifierDsl3
 expect fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight
-
-@ViewModifierDsl3
-@Deprecated("use align instead", ReplaceWith("align"))
-fun ElementWriter.CanAddAlignment.gravity(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight = align(horizontal, vertical)
-
-@ViewModifierDsl3
-@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
-val ElementWriter.CanAddScrolling.scrolls: ElementWriter get() = __scrollsUncontracted(vertical = true, horizontal = false)
-
-@ViewModifierDsl3
-@Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollsHorizontally"))
-val ElementWriter.CanAddScrolling.scrollsHorizontally: ElementWriter get() = __scrollsUncontracted(vertical = false, horizontal = true)
-
-@ViewModifierDsl3
-@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
-inline fun ElementWriter.CanAddScrolling.scrolls(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
-    return __scrollsUncontracted(vertical = true, horizontal = false, setup)
-}
-
-@ViewModifierDsl3
-@Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollingHorizontally"))
-inline fun ElementWriter.CanAddScrolling.scrollsHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
-    return __scrollsUncontracted(vertical = false, horizontal = true, setup)
-}
-
-@ViewModifierDsl3
-@Deprecated("use scrollingBoth instead", ReplaceWith("scrollingBoth"))
-inline fun ElementWriter.CanAddScrolling.scrollsBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
-    return __scrollsUncontracted(vertical = true, horizontal = true, setup)
-}
-
-@ViewModifierDsl3
-@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
-inline fun ElementWriter.CanAddScrolling.scrolls(
-    vertical: Boolean,
-    horizontal: Boolean,
-    crossinline setup: ScrollingBehaviors.() -> Unit = {}
-): ElementWriter {
-    return __scrollsUncontracted(vertical = vertical, horizontal = horizontal, setup)
-}
 
 @ViewModifierDsl3
 val ElementWriter.CanAddScrolling.scrolling: ElementWriter get() = __scrollsUncontracted(vertical = true, horizontal = false)
@@ -197,7 +162,7 @@ expect fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: React
 inline val ElementWriter.CanAddTheme.padded: ElementWriter.CanAddTheme get() = themed(ForcePaddingSemantic)
 
 @ViewModifierDsl3
-val ElementWriter.unpadded: ElementWriter get() = beforeNextElementSetup { padding = 0.px }
+val ElementWriter.unpadded: ElementWriter get() = beforeSetup { padding = 0.px }
 
 @ViewModifierDsl3
 expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme

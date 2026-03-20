@@ -23,6 +23,7 @@ import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -31,7 +32,7 @@ import com.lightningkite.readable.*
 
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWriter {
-    beforeNextElementSetup {
+    beforeSetup {
         try {
             lastSetWeight = amount
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -44,7 +45,6 @@ actual fun ViewWriter.weight(amount: Float): ViewWriter {
         } catch (ex: Throwable) {
             RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
         }
-
     }
         .let { return it }
 }
@@ -52,7 +52,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWriter {
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
-    beforeNextElementSetup {
+    beforeSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
             if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
@@ -80,71 +80,71 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
                 RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
             }
         }
-
     }
         .let { return it }
 }
 
 @ViewModifierDsl3
 actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
-    beforeNextElementSetup {
-        lastSetHorizontalAlign = horizontal
-        lastSetVerticalAlign = vertical
-        val params = lparams
+    this@align.beforeSetup(// In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead// In a horizontal row, MATCH_PARENT width conflicts with weighted siblings - use WRAP_CONTENT instead// Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+        {
+            lastSetHorizontalAlign = horizontal
+            lastSetVerticalAlign = vertical
+            val params = lparams
 
-        // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
-        val effectiveHorizontal = if (horizontal == Align.Stretch) {
-            parent?.newChildHorizontalAlign ?: horizontal
-        } else horizontal
+            // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+            val effectiveHorizontal = if (horizontal == Align.Stretch) {
+                parent?.newChildHorizontalAlign ?: horizontal
+            } else horizontal
 
-        val effectiveVertical = if (vertical == Align.Stretch) {
-            parent?.newChildVerticalAlign ?: vertical
-        } else vertical
+            val effectiveVertical = if (vertical == Align.Stretch) {
+                parent?.newChildVerticalAlign ?: vertical
+            } else vertical
 
-        val horizontalGravity = when (effectiveHorizontal) {
-            Align.Start -> Gravity.START
-            Align.Center -> Gravity.CENTER_HORIZONTAL
-            Align.End -> Gravity.END
-            else -> Gravity.CENTER_HORIZONTAL
-        }
-        val verticalGravity = when (effectiveVertical) {
-            Align.Start -> Gravity.TOP
-            Align.Center -> Gravity.CENTER_VERTICAL
-            Align.End -> Gravity.BOTTOM
-            else -> Gravity.CENTER_VERTICAL
-        }
+            val horizontalGravity = when (effectiveHorizontal) {
+                Align.Start -> Gravity.START
+                Align.Center -> Gravity.CENTER_HORIZONTAL
+                Align.End -> Gravity.END
+                else -> Gravity.CENTER_HORIZONTAL
+            }
+            val verticalGravity = when (effectiveVertical) {
+                Align.Start -> Gravity.TOP
+                Align.Center -> Gravity.CENTER_VERTICAL
+                Align.End -> Gravity.BOTTOM
+                else -> Gravity.CENTER_VERTICAL
+            }
 
 
-        params.width = when (horizontal) {
-            Align.Stretch -> LayoutParams.MATCH_PARENT
-            else -> LayoutParams.WRAP_CONTENT
-        }
-        params.height = when (vertical) {
-            Align.Stretch -> LayoutParams.MATCH_PARENT
-            else -> LayoutParams.WRAP_CONTENT
-        }
+            params.width = when (horizontal) {
+                Align.Stretch -> MATCH_PARENT
+                else -> WRAP_CONTENT
+            }
+            params.height = when (vertical) {
+                Align.Stretch -> MATCH_PARENT
+                else -> WRAP_CONTENT
+            }
 
-        if (params is SimplifiedLinearLayoutLayoutParams)
-            params.gravity = horizontalGravity or verticalGravity
-        else if (params is FrameLayout.LayoutParams)
-            params.gravity = horizontalGravity or verticalGravity
-        else if (params is CoordinatorLayout.LayoutParams)
-            params.gravity = horizontalGravity or verticalGravity
-        else
-            Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
-        if (effectiveHorizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
-            params.width = ViewGroup.LayoutParams.MATCH_PARENT
-        } else if (params.width == ViewGroup.LayoutParams.MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.HORIZONTAL) {
-            // In a horizontal row, MATCH_PARENT width conflicts with weighted siblings - use WRAP_CONTENT instead
-            params.width = ViewGroup.LayoutParams.WRAP_CONTENT
-        }
-        if (effectiveVertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
-            params.height = ViewGroup.LayoutParams.MATCH_PARENT
-        } else if (params.height == ViewGroup.LayoutParams.MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.VERTICAL) {
-            // In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead
-            params.height = ViewGroup.LayoutParams.WRAP_CONTENT
-        }
-    }
+            if (params is SimplifiedLinearLayoutLayoutParams)
+                params.gravity = horizontalGravity or verticalGravity
+            else if (params is FrameLayout.LayoutParams)
+                params.gravity = horizontalGravity or verticalGravity
+            else if (params is CoordinatorLayout.LayoutParams)
+                params.gravity = horizontalGravity or verticalGravity
+            else
+                Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
+            if (effectiveHorizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
+                params.width = MATCH_PARENT
+            } else if (params.width == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                // In a horizontal row, MATCH_PARENT width conflicts with weighted siblings - use WRAP_CONTENT instead
+                params.width = WRAP_CONTENT
+            }
+            if (effectiveVertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
+                params.height = MATCH_PARENT
+            } else if (params.height == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.VERTICAL) {
+                // In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead
+                params.height = WRAP_CONTENT
+            }
+        })
         .let { return it }
 }
 
@@ -252,7 +252,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
         }, {})
             .let { return it }
     } else {
-        beforeNextElementSetup {
+        beforeSetup {
             constraints.width?.let { it: Dimension -> lparams.width = it.value.toInt() }
             constraints.height?.let { it: Dimension -> lparams.height = it.value.toInt() }
             constraints.maxWidth?.let { it: Dimension ->
@@ -414,17 +414,19 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.hintPopover(
+actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
-): ViewWriter {
-    beforeNextElementSetup {
-        native.setOnLongClickListener {
-            // TODO
+): ElementWriter {
+    this@hintPopover.beforeSetup(// TODO
 //            toast(inner = setup)
-            true
-        }
-    }
+        {
+            native.setOnLongClickListener {
+                // TODO
+//            toast(inner = setup)
+                true
+            }
+        })
         .let { return it }
 }
 
@@ -434,7 +436,7 @@ actual fun ViewWriter.hasPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit,
 ): ViewWriter {
-    beforeNextElementSetup {
+    beforeSetup {
         native.setOnClickListener {
             dialogPageNavigator.navigate(object : Page {
                 override fun ViewWriter.render(): Unit = run {
@@ -459,7 +461,7 @@ actual fun ViewWriter.hasPopover(
 
 @ViewModifierDsl3
 actual fun ViewWriter.textPopover(message: String): ViewWriter {
-    beforeNextElementSetup {
+    beforeSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             native.tooltipText = message
         }
@@ -470,8 +472,14 @@ actual fun ViewWriter.textPopover(message: String): ViewWriter {
 
 @ViewModifierDsl3
 actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
-    beforeNextElementSetup {
-//        exists = default
+    this@shownWhen.beforeSetup(//        exists = default
+//        ::exists.invoke(condition)
+//        (parent as? SimplifiedLinearLayout)?.let {
+//            if(it.layoutTransition == null) {
+//                it.layoutTransition = KiteUiLayoutTransition()
+//            }
+//        }
+        { //        exists = default
 //        ::exists.invoke(condition)
 //        (parent as? SimplifiedLinearLayout)?.let {
 //            if(it.layoutTransition == null) {
@@ -479,64 +487,64 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
 //            }
 //        }
 
-        shown = default
-        var existingAnimator: ValueAnimator? = null
-        var goal = default
-        reactiveScope {
-            val value = condition()
-            if (goal == value) return@reactiveScope
-            goal = value
-            if (native.layoutParams == null) {
-                shown = value
-                return@reactiveScope
-            }
-            existingAnimator?.cancel()
-            existingAnimator = null
-            val parent = parent
-            shown = true
-            val p = parent?.native
-            if (animationsEnabled) {
-                existingAnimator = if (value) {
-                    if (p is SimplifiedLinearLayout) {
-                        if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                            native.widthAnimator(WRAP_CONTENT)
-                        } else {
-                            native.heightAnimator(WRAP_CONTENT)
-                        }.also {
-                            it.addUpdateListener {
-                                (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
-                                    it.animatedFraction
+            shown = default
+            var existingAnimator: ValueAnimator? = null
+            var goal = default
+            reactiveScope {
+                val value = condition()
+                if (goal == value) return@reactiveScope
+                goal = value
+                if (native.layoutParams == null) {
+                    shown = value
+                    return@reactiveScope
+                }
+                existingAnimator?.cancel()
+                existingAnimator = null
+                val parent = parent
+                shown = true
+                val p = parent?.native
+                if (animationsEnabled) {
+                    existingAnimator = if (value) {
+                        if (p is SimplifiedLinearLayout) {
+                            if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                                native.widthAnimator(WRAP_CONTENT)
+                            } else {
+                                native.heightAnimator(WRAP_CONTENT)
+                            }.also {
+                                it.addUpdateListener {
+                                    (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
+                                        it.animatedFraction
+                                }
                             }
+                        } else {
+                            TypedValueAnimator.FloatAnimator(0f, 1f).onUpdate { native.alpha = it }
                         }
                     } else {
-                        TypedValueAnimator.FloatAnimator(0f, 1f).onUpdate { native.alpha = it }
+                        if (p is SimplifiedLinearLayout) {
+                            if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                                native.widthAnimator(0)
+                            } else {
+                                native.heightAnimator(0)
+                            }.also {
+                                it.addUpdateListener {
+                                    (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
+                                        1f - it.animatedFraction
+                                }
+                            }
+                        } else {
+                            TypedValueAnimator.FloatAnimator(1f, 0f).onUpdate { native.alpha = it }
+                        }
+                    }.setDuration(theme.transitionDuration.inWholeMilliseconds).also {
+                        it.doOnEnd {
+                            shown = value
+                        }
+                        it.start()
                     }
                 } else {
-                    if (p is SimplifiedLinearLayout) {
-                        if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                            native.widthAnimator(0)
-                        } else {
-                            native.heightAnimator(0)
-                        }.also {
-                            it.addUpdateListener {
-                                (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
-                                    1f - it.animatedFraction
-                            }
-                        }
-                    } else {
-                        TypedValueAnimator.FloatAnimator(1f, 0f).onUpdate { native.alpha = it }
-                    }
-                }.setDuration(theme.transitionDuration.inWholeMilliseconds).also {
-                    it.doOnEnd {
-                        shown = value
-                    }
-                    it.start()
+                    shown = value
                 }
-            } else {
-                shown = value
             }
-        }
-    }
+        })
         .let { return it }
 }
 

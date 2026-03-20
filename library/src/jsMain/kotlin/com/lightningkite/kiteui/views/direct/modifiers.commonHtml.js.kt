@@ -1,7 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Log
+import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.native
+import com.lightningkite.kiteui.views.theme
 import com.lightningkite.reactive.core.*
 import kotlin.js.Json
 import kotlin.js.json
@@ -14,8 +17,8 @@ import org.w3c.dom.events.Event
 import org.w3c.dom.get
 
 // by Claude - shared scheduling for show/hide and weight animations
-private val showHideQueue = HashMap<Element, Boolean>()
-private val weightChangeQueue = HashMap<Element, Pair<Float, Float>>()
+private val showHideQueue = HashMap<ContainerElement, Boolean>()
+private val weightChangeQueue = HashMap<ContainerElement, Pair<Float, Float>>()
 private var workerScheduled = false
 
 private fun ensureWorkerScheduled() {
@@ -25,20 +28,20 @@ private fun ensureWorkerScheduled() {
     }
 }
 
-internal actual fun Element.nativeAnimateShow() {
+internal actual fun ContainerElement.nativeAnimateShow() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateShow")
     showHideQueue[this] = true
     ensureWorkerScheduled()
 }
 
-internal actual fun Element.nativeAnimateHide() {
+internal actual fun ContainerElement.nativeAnimateHide() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateHide")
     showHideQueue[this] = false
     ensureWorkerScheduled()
 }
 
 // by Claude - weight animation queuing
-internal actual fun Element.nativeAnimateWeight(fromWeight: Float, toWeight: Float) {
+internal actual fun ContainerElement.nativeAnimateWeight(fromWeight: Float, toWeight: Float) {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateWeight: $fromWeight -> $toWeight")
     val existing = weightChangeQueue[this]
     if (existing != null) {
@@ -50,12 +53,12 @@ internal actual fun Element.nativeAnimateWeight(fromWeight: Float, toWeight: Flo
     ensureWorkerScheduled()
 }
 
-private val showHideAnimating = HashMap<Element, OngoingAnimation>()
+private val showHideAnimating = HashMap<ContainerElement, OngoingAnimation>()
 // by Claude - tracking ongoing weight animations
-private val weightAnimating = HashMap<Element, OngoingWeightAnimation>()
+private val weightAnimating = HashMap<ContainerElement, OngoingWeightAnimation>()
 
 private data class OngoingAnimation(
-    val on: Element,
+    val on: ContainerElement,
     val from: Json,
     val to: Json,
     val goal: Boolean,
@@ -114,7 +117,7 @@ private data class OngoingAnimation(
         showHideAnimating.remove(on)
         log?.log("showHideAnimating: ${showHideAnimating.keys.joinToString { it.children.singleOrNull()?.debugName ?: "?" }}")
         myElement.hidden = !goal
-        (on.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
+        (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         myElement.classList.remove("animatingShowHide")
         child.style.width = "100%"
         child.style.removeProperty("maxWidth")
@@ -152,7 +155,7 @@ private data class OngoingAnimation(
 // fromBasis/toBasis are pixel values (e.g. "150px") when weight is 0, or "0" when weight is non-zero.
 // CSS can't interpolate between "0" and "auto", so we resolve "auto" to measured pixels.
 private class OngoingWeightAnimation(
-    val on: Element,
+    val on: ContainerElement,
     val fromWeight: Float,
     val toWeight: Float,
     val fromBasis: String,
@@ -206,7 +209,7 @@ private class OngoingWeightAnimation(
         myElement.style.flexGrow = "$toWeight"
         myElement.style.flexShrink = "$toWeight"
         myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
-        (on.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
+        (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         // Unlock child dimensions
         child.style.width = "100%"
         child.style.removeProperty("maxWidth")
@@ -387,7 +390,7 @@ private val combinedAnimationWorker = label@{
         val beforeVisibility = currentShowHideQueue?.map {
             val was = (it.key.native.element as HTMLElement).hidden
             (it.key.native.element as HTMLElement).hidden = !it.value
-            (it.key.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
+            (it.key.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
             log?.info("View ${it.key.children.singleOrNull()?.debugName} -> ${it.value}")
             it.key to was
         }
@@ -402,7 +405,7 @@ private val combinedAnimationWorker = label@{
             myElement.style.flexGrow = "$toWeight"
             myElement.style.flexShrink = "$toWeight"
             myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
-            (on.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
+            (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
             on to Triple(savedGrow, savedShrink, savedBasis)
         }
 
@@ -596,7 +599,7 @@ private val combinedAnimationWorker = label@{
         beforeVisibility?.forEach {
             (it.first.native.element as HTMLElement).hidden = it.second
             log?.info("View ${it.first.children.singleOrNull()?.debugName} -> ${it.second}")
-            (it.first.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
+            (it.first.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         }
 
         beforeWeightStyles?.forEach { (on, saved) ->
@@ -604,7 +607,7 @@ private val combinedAnimationWorker = label@{
             myElement.style.flexGrow = saved.first
             myElement.style.flexShrink = saved.second
             myElement.style.flexBasis = saved.third
-            (on.parent as? RowOrColOld)?.rerunOptimizedBottomMarginCalc()
+            (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         }
 
         delayLevel?.let { delay(it) }
