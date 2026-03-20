@@ -18,6 +18,7 @@ import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.*
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.internal.RootPage
 import com.lightningkite.mppexampleapp.widgets.code
 import com.lightningkite.reactive.context.*
@@ -82,7 +83,7 @@ object CheatSheet : DocPage {
                     label {
                         content = "See Also:"
                         for (reference in references) {
-                            LinkSemantic.onNext.button {
+                            themed(LinkSemantic).button {
                                 subtext("- ${reference.name}")
                                 onClick {
                                     jump.value = reference
@@ -1049,7 +1050,7 @@ object CheatSheet : DocPage {
                                 danger.text("danger")
                                 affirmative.text("affirmative")
                                 emphasized.text("emphasized")
-                                InsetSemantic.onNext.text("InsetSemantic.onNext")
+                                themed(InsetSemantic).text("InsetSemantic.onNext")
                             }
                         )
                     }

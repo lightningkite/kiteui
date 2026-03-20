@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -53,7 +54,7 @@ object LoadAnimationTestPage : Page {
                 }
                 h1 { ::content { loading() } }
                 text { ::content { loading() } }
-                WeirdSem.onNext.col {
+                themed(WeirdSem).col {
                     reactive {
                         loading()
                     }

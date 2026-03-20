@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.appTheme
 import kotlin.random.Random
 
@@ -47,8 +48,8 @@ object ThemesPage : Page {
             group.col {
                 h2 { content = "Theme Picker" }
 
-                ListSemantic.onNext.col {
-                    ListSemantic.onNext.row {
+                themed(ListSemantic).col {
+                    themed(ListSemantic).row {
                         expanding.button {
                             text("M1 Light")
                             onClick {
@@ -76,7 +77,7 @@ object ThemesPage : Page {
                             }
                         }
                     }
-                    ListSemantic.onNext.row {
+                    themed(ListSemantic).row {
                         expanding.button {
                             text("Flat Light")
                             onClick {
@@ -105,7 +106,7 @@ object ThemesPage : Page {
                             }
                         }
                     }
-                    ListSemantic.onNext.row {
+                    themed(ListSemantic).row {
                         expanding.button {
                             text("Flat2 Light")
                             onClick {
@@ -134,7 +135,7 @@ object ThemesPage : Page {
                             }
                         }
                     }
-                    ListSemantic.onNext.row {
+                    themed(ListSemantic).row {
                         expanding.button {
                             text("ShadCN-Like Light")
                             onClick {

@@ -84,9 +84,21 @@ expect fun PageNavigator.bindToPlatform(context: ElementContext)
 
 internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 
-var ViewWriter.pageNavigator by lateInitContextAddon<PageNavigator>()
-var ViewWriter.mainPageNavigator by lateInitContextAddon<PageNavigator>()
-var ViewWriter.dialogPageNavigator by lateInitContextAddon<PageNavigator>()
+var ElementContext.pageNavigator by lateInitContextAddon<PageNavigator>()
+var ElementContext.mainPageNavigator by lateInitContextAddon<PageNavigator>()
+var ElementContext.dialogPageNavigator by lateInitContextAddon<PageNavigator>()
 
-@Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
-val PlatformNavigator: PageNavigator get() = TODO()
+@Deprecated("Use directly through context", ReplaceWith("context.pageNavigator"))
+var ViewWriter.pageNavigator
+    get() = context.pageNavigator
+    set(value) { context.pageNavigator = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.mainPageNavigator"))
+var ViewWriter.mainPageNavigator
+    get() = context.mainPageNavigator
+    set(value) { context.mainPageNavigator = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.dialogPageNavigator"))
+var ViewWriter.dialogPageNavigator
+    get() = context.dialogPageNavigator
+    set(value) { context.dialogPageNavigator = value }

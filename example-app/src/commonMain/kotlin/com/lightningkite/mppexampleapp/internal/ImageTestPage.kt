@@ -1,7 +1,6 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.CornerRadii.Fixed
 import com.lightningkite.kiteui.models.ImageRaw
 import com.lightningkite.kiteui.models.ImageRemote
@@ -9,12 +8,12 @@ import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.Semantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.core.*
 
@@ -38,7 +37,7 @@ object ImageTestPage : Page {
 
                 text("scaleType = ${ImageScaleType.Crop}")
 
-                ImageSemantic.onNext.centered.sizeConstraints(
+                themed(ImageSemantic).centered.sizeConstraints(
                     width = 6.rem,
                     height = 6.rem
                 ).image {
@@ -47,7 +46,7 @@ object ImageTestPage : Page {
                 }
 
                 text(" Tests scaleType = ${ImageScaleType.Stretch}")
-                ImageSemantic.onNext.image {
+                themed(ImageSemantic).image {
                     source = Resources.imagesSnowyBackground
                     scaleType = ImageScaleType.Stretch
                 }

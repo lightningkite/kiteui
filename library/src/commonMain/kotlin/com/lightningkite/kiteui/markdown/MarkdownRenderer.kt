@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.markdown
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.ReactiveContext
 
 /**
@@ -78,7 +79,7 @@ private fun ViewWriter.renderBlock(node: MarkdownNode, config: MarkdownConfig) {
         }
 
         is MarkdownNode.CodeBlock -> {
-            CodeBlockSemantic.onNext.col {
+            themed(CodeBlockSemantic).col {
                 text {
                     content = node.code
                     wraps = true
@@ -87,7 +88,7 @@ private fun ViewWriter.renderBlock(node: MarkdownNode, config: MarkdownConfig) {
         }
 
         is MarkdownNode.Blockquote -> {
-            BlockquoteSemantic.onNext.col {
+            themed(BlockquoteSemantic).col {
                 node.children.forEach { child ->
                     renderBlock(child, config)
                 }
@@ -134,7 +135,7 @@ private fun ViewWriter.renderBlock(node: MarkdownNode, config: MarkdownConfig) {
         }
 
         is MarkdownNode.HorizontalRule -> {
-            HorizontalRuleSemantic.onNext.sizeConstraints(height = 2.px).frame { }
+            themed(HorizontalRuleSemantic).sizeConstraints(height = 2.px).frame { }
         }
 
         is MarkdownNode.Table -> renderTable(node, config)
@@ -197,7 +198,7 @@ private fun ViewWriter.renderListItem(item: MarkdownNode.ListItemNode, bullet: S
         }
         is MarkdownNode.ListItem -> {
             row {
-                ListMarkerSemantic.onNext.text {
+                themed(ListMarkerSemantic).text {
                     content = bullet
                 }
                 expanding.col {
@@ -306,11 +307,11 @@ private fun ViewWriter.renderInlineContentWithSemantic(
     semantic: ThemeDerivation
 ) {
     if (!containsImages(nodes)) {
-        semantic.onNext.text {
+        themed(semantic).text {
             setBasicHtmlContent(inlineNodesToHtml(nodes, config))
         }
     } else {
-        semantic.onNext.row {
+        themed(semantic).row {
             renderInlineSegments(nodes, config)
         }
     }

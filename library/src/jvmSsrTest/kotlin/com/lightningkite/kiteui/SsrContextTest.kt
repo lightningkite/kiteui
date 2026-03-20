@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.ssr.SsrDocument
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
+import com.lightningkite.kiteui.views.themed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.setMain
 import java.io.File
@@ -57,7 +58,7 @@ class SsrContextTest {
         context.title = "Themed Page"
 
         context.render {
-            Theme.flat2("test", hue = 0.6.turns).onNext.scrolling.col {
+            themed(Theme.flat2("test", hue = 0.6.turns)).scrolling.col {
                 sizeConstraints(width = 50.rem).card.col {
                     h1("Welcome to my Website")
                     text("I hope you like it!")

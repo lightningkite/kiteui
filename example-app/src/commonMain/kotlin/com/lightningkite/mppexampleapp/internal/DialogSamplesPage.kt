@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.l2.applySafeInsets
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
 import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.kiteui.views.l2.field
-import com.lightningkite.kiteui.views.l2.overlayFrame
+import com.lightningkite.kiteui.views.themed
 
 @Routable("sample/dialog")
 object DialogSamplesPage : Page {
@@ -65,7 +65,7 @@ object DialogSamplesPage : Page {
                 h6 { content = "Launch Test bottomSheet" }
                 onClick {
                     coordinatorFrame!!.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) {
-                        DialogSemantic.onNext.col {
+                        themed(DialogSemantic).col {
                             applySafeInsets()
                             centered.coordinatorDragHandle()
                             button {
@@ -82,7 +82,7 @@ object DialogSamplesPage : Page {
                 h6 { content = "Launch Test leftSlidingPanel" }
                 onClick {
                     coordinatorFrame!!.leftSlidingPanel {
-                        DialogSemantic.onNext.col {
+                        themed(DialogSemantic).col {
                             button {
                                 text("Close")
                                 onClick { it.close() }
@@ -97,7 +97,7 @@ object DialogSamplesPage : Page {
                 h6 { content = "Launch Test rightSlidingPanel" }
                 onClick {
                     coordinatorFrame!!.rightSlidingPanel {
-                        DialogSemantic.onNext.col {
+                        themed(DialogSemantic).col {
                             button {
                                 text("Close")
                                 onClick { it.close() }

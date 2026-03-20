@@ -17,6 +17,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.titledSection
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.appTheme
 import com.lightningkite.mppexampleapp.defaultTheme
 import com.lightningkite.reactive.context.*
@@ -24,7 +25,6 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
-import kotlin.collections.mapOf
 
 
 @Routable("docs/theming")
@@ -221,4 +221,4 @@ data object InvertedSemantic : Semantic("invert") {
 }
 
 @ViewModifierDsl3
-inline val ViewWriter.inverted: ViewWriter get() = InvertedSemantic.onNext
+inline val ViewWriter.inverted: ViewWriter get() = themed(InvertedSemantic)

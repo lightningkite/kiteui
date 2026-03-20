@@ -97,15 +97,16 @@ object ExternalServices {
     fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null) = ctx.openMap(latitude, longitude, label, zoom)
 }
 
-// by Claude - rContextAddonGenerate uses property.name as the ChainMap key.
-// The RContext extension below must use the same key to share the same instance.
-var ViewWriter.externalServices: ExternalServicesAccess by lazyContextAddon { externalServicesAccessDefault(context) }
 
 // by Claude - convenience extension on RContext for use outside ViewWriter scope.
 // Uses getOrPut so the default is shared across the context tree and picks up mocks.
 // Key must match ViewWriter.externalServices property name used by rContextAddonGenerate.
-val ElementContext.externalServices: ExternalServicesAccess
-    get() = addons.getOrPut(ViewWriter::externalServices.name) { externalServicesAccessDefault(this) } as ExternalServicesAccess
+val ElementContext.externalServices: ExternalServicesAccess by lazyContextAddon { externalServicesAccessDefault(it) }
+
+// by Claude - rContextAddonGenerate uses property.name as the ChainMap key.
+// The RContext extension below must use the same key to share the same instance.
+@Deprecated("Use directly through context", ReplaceWith("context.externalServices"))
+val ViewWriter.externalServices: ExternalServicesAccess get() = context.externalServices
 
 // Convenience extensions on RContext delegating to externalServices
 fun ElementContext.openLink(url: String, newTab: Boolean = true) = externalServices.openLink(url, newTab)

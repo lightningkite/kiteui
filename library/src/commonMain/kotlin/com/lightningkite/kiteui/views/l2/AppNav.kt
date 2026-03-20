@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.core.*
 
 data class UserInfo(
@@ -41,18 +42,22 @@ interface AppNav {
 }
 
 
-val ViewWriter.appNavFactory by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
+val ElementContext.appNavFactory by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
     Signal(
         ViewWriter::appNavBottomTabs
     )
 )
+
+@Deprecated("Use directly through context", ReplaceWith("context.appNavFactory"))
+val ViewWriter.appNavFactory
+    get() = context.appNavFactory
 
 fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit): Unit {
     return appBase(main, dialog) {
         swapView {
             debugName = "swapView for appNavFactory"
             swapping(
-                current = { appNavFactory() },
+                current = { context.appNavFactory() },
                 views = { it(this, setup) }
             )
         }
@@ -62,7 +67,7 @@ fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup:
 fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     val showMenu = Signal(false)
-    OuterSemantic.onNext.col {
+    themed(OuterSemantic).col {
         debugName = "outer nav"
         bar.row {
             applySafeInsets(bottom = false)
@@ -78,7 +83,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): Unit {
                 ::visible { pageNavigator.canGoBack() }
                 onClick { pageNavigator.goBack() }
             }
-            HeaderSemantic.onNext.centered.expanding.text {
+            themed(HeaderSemantic).centered.expanding.text {
                 ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
@@ -101,7 +106,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): Unit {
 fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
-    OuterSemantic.onNext.col {
+    themed(OuterSemantic).col {
         bar.row {
             applySafeInsets(bottom = false)
             showOnPrint = false
@@ -111,7 +116,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): Unit {
                 ::visible { pageNavigator.canGoBack() }
                 onClick { pageNavigator.goBack() }
             }
-            HeaderSemantic.onNext.centered.text {
+            themed(HeaderSemantic).centered.text {
                 ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
@@ -130,7 +135,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): Unit {
 
 fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
-    OuterSemantic.onNext.col {
+    themed(OuterSemantic).col {
         debugName = "outer nav"
 // Nav 3 top and bottom (top)
         if (Platform.probablyAppleUser) {
@@ -145,7 +150,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
                         centered.icon(Icon.chevronLeft, "Go Back")
                         centered.text {
                             ::content {
-                                pageNavigator.stack().let { it.getOrNull(it.size - 2) }?.title?.let { it().let{ if(it.length > 15) it.take(15) + "\u2026" else it } } ?: ""
+                                pageNavigator.stack().let { it.getOrNull(it.size - 2) }?.title?.let { it().let { if (it.length > 15) it.take(15) + "\u2026" else it } } ?: ""
                             }
                         }
                     }
@@ -171,7 +176,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
                     ::visible { pageNavigator.canGoBack() }
                     onClick { pageNavigator.goBack() }
                 }
-                HeaderSemantic.onNext.centered.expanding.text {
+                themed(HeaderSemantic).centered.expanding.text {
                     ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
@@ -187,7 +192,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
             applySafeInsets { edges ->
                 Edges(
                     left = edges.left,
-                    top = if(appNav.existsProperty()) 0.px else edges.top,
+                    top = if (appNav.existsProperty()) 0.px else edges.top,
                     right = edges.right,
                     bottom = if (!tabsHandleBottom()) edges.bottom else 0.px,
                 )
@@ -205,7 +210,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
 
 fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
-    OuterSemantic.onNext.col {
+    themed(OuterSemantic).col {
 // Nav 4 left and top - add dropdown for user info
         bar.row {
             applySafeInsets(bottom = false)
@@ -216,7 +221,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
                 ::visible { pageNavigator.canGoBack() }
                 onClick { pageNavigator.goBack() }
             }
-            HeaderSemantic.onNext.centered.text {
+            themed(HeaderSemantic).centered.text {
                 ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true

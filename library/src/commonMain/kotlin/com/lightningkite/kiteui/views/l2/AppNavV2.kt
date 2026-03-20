@@ -31,19 +31,29 @@ fun ViewWriter.navSideBar(navElements: ReactiveContext.() -> List<NavElement>) {
 
 }
 
-var Element.overlayFrame by contextAddon<ContainerElement?>(null)
-var Element.coordinatorFrame by contextAddon<CoordinatorFrame?>(null)
+var ElementContext.overlayFrame by contextAddon<ContainerElement?>(null)
+var ElementContext.coordinatorFrame by contextAddon<CoordinatorFrame?>(null)
+
+@Deprecated("Use directly through context", ReplaceWith("context.overlayFrame"))
+var Element.overlayFrame
+    get() = context.overlayFrame
+    set(value) { context.overlayFrame = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.coordinatorFrame"))
+var Element.coordinatorFrame
+    get() = context.coordinatorFrame
+    set(value) { context.coordinatorFrame = value }
 
 fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit) {
     coordinatorFrame {
-        mainPageNavigator = main
+        context.mainPageNavigator = main
         dialog?.let {
-            dialogPageNavigator = it
+            context.dialogPageNavigator = it
         }
         main.bindToPlatform(context)
-        pageNavigator = main
-        overlayFrame = this
-        coordinatorFrame = this
+        context.pageNavigator = main
+        context.overlayFrame = this
+        context.coordinatorFrame = this
         mainLayout()
         dialog?.let {
             navigatorViewDialog()

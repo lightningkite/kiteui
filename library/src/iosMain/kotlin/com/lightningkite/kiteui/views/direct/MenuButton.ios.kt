@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.*
 
 actual class MenuButton actual constructor(context: ElementContext): RView(context) {
@@ -38,7 +39,7 @@ actual class MenuButton actual constructor(context: ElementContext): RView(conte
                     onClick {
                         closePopovers()
                     }
-                    PopoverSemantic.onNext.frame {
+                    themed(PopoverSemantic).frame {
                         createMenu()
                     }
                 }

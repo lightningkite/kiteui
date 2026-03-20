@@ -26,8 +26,6 @@ abstract class ElementContextCommonCode(parent: ElementContext?) {
     abstract val darkMode: Boolean?
 }
 
-@Deprecated("Renamed to RContextCommonCode", ReplaceWith("RContextCommonCode")) typealias RContextHelper = ElementContextCommonCode
-
 // by Claude - scoped key-value store with parent chain for lazy lookup.
 // Reads check local first, then walk up the parent chain.
 // Explicit set() writes to local, shadowing the parent for that subtree.

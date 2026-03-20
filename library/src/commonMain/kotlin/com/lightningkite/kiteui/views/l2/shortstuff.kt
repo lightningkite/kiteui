@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlin.contracts.ExperimentalContracts
@@ -74,8 +75,8 @@ inline fun ElementWriter.field(label: String, content: ElementWriter.() -> Unit)
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     col {
         gap = 0.px
-        FieldLabelSemantic.onNext.text(label)
+        themed(FieldLabelSemantic).text(label)
         fieldTheme.content()
-        SubtextSemantic.onNext.errorText()
+        themed(SubtextSemantic).errorText()
     }
 }

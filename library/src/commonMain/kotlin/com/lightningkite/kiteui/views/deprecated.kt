@@ -13,6 +13,7 @@ import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.UnselectedSemantic
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.direct.NumberInput
 import com.lightningkite.kiteui.views.direct.RowOrCol
@@ -28,11 +29,13 @@ import kotlin.contracts.contract
 import kotlin.getValue
 import kotlin.setValue
 
+
 @Deprecated("Wrong import; this has moved", ReplaceWith("launch", "com.lightningkite.reactive.launch"), DeprecationLevel.ERROR) val launch = Unit
 @Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope", "com.lightningkite.reactive.context.reactiveScope"), DeprecationLevel.ERROR) val reactiveScope = Unit
 
 @Deprecated("Wrong import; this has moved", ReplaceWith("DropTargetDelegate", "com.lightningkite.kiteui.models.DropTargetDelegate")) typealias DropTargetDelegate = com.lightningkite.kiteui.models.DropTargetDelegate
 
+@Deprecated("Renamed to ElementContext", ReplaceWith("ElementContext")) typealias RContext = ElementContext
 @Deprecated("Renamed", ReplaceWith("RContextCommonCode")) typealias RContextHelper = ElementContextCommonCode
 
 @Deprecated("Renamed", ReplaceWith("debugName"))
@@ -166,3 +169,6 @@ inline fun ElementWriter.numberField(setup: NumberInput.() -> Unit = {}): Number
     DeprecationLevel.ERROR
 )
 val ViewWriter.navigator by ViewWriter::pageNavigator
+
+@Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
+val PlatformNavigator: PageNavigator get() = throw NotImplementedError()

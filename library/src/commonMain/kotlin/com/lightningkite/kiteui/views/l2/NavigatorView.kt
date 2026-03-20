@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.themed
 
 fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
     val n = navigator
@@ -27,9 +28,9 @@ fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
             current = { n.currentPage<Page?>() },
             views = { screen ->
                 with(split()) {
-                    this.pageNavigator = n
+                    context.pageNavigator = n
                     if (screen != null)
-                        with(screen) { MainContentSemantic.onNext.padded.render() }
+                        with(screen) { themed(MainContentSemantic).padded.render() }
                     else null
                 }
             }
@@ -56,9 +57,9 @@ fun ViewWriter.navigatorViewDialog(): SwapView {
             current = { n.currentPage<Page?>() },
             views = { screen ->
                 with(split()) {
-                    this.pageNavigator = n
+                    context.pageNavigator = n
                     if (screen != null)
-                        with(screen) { DialogSemantic.onNext.render() }
+                        with(screen) { themed(DialogSemantic).render() }
                     else null
                 }
             }
