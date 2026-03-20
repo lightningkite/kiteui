@@ -11,7 +11,7 @@ import kotlin.contracts.contract
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.subtext(crossinline setup: TextView.() -> Unit = {}): TextView {
+inline fun ElementWriter.subtext(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += SubtextSemantic
@@ -21,7 +21,7 @@ inline fun ViewWriter.subtext(crossinline setup: TextView.() -> Unit = {}): Text
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextView {
+inline fun ElementWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H1Semantic
@@ -31,7 +31,7 @@ inline fun ViewWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextView 
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextView {
+inline fun ElementWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H2Semantic
@@ -41,7 +41,7 @@ inline fun ViewWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextView 
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextView {
+inline fun ElementWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H3Semantic
@@ -51,7 +51,7 @@ inline fun ViewWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextView 
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextView {
+inline fun ElementWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H4Semantic
@@ -61,7 +61,7 @@ inline fun ViewWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextView 
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextView {
+inline fun ElementWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H5Semantic
@@ -71,7 +71,7 @@ inline fun ViewWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextView 
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextView {
+inline fun ElementWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H6Semantic
@@ -80,28 +80,28 @@ inline fun ViewWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextView 
 }
 
 @ViewDsl
-fun ViewWriter.h1(text: String) = h1 { content = text }
+fun ElementWriter.h1(text: String) = h1 { content = text }
 
 @ViewDsl
-fun ViewWriter.h2(text: String) = h2 { content = text }
+fun ElementWriter.h2(text: String) = h2 { content = text }
 
 @ViewDsl
-fun ViewWriter.h3(text: String) = h3 { content = text }
+fun ElementWriter.h3(text: String) = h3 { content = text }
 
 @ViewDsl
-fun ViewWriter.h4(text: String) = h4 { content = text }
+fun ElementWriter.h4(text: String) = h4 { content = text }
 
 @ViewDsl
-fun ViewWriter.h5(text: String) = h5 { content = text }
+fun ElementWriter.h5(text: String) = h5 { content = text }
 
 @ViewDsl
-fun ViewWriter.h6(text: String) = h6 { content = text }
+fun ElementWriter.h6(text: String) = h6 { content = text }
 
 @ViewDsl
-fun ViewWriter.text(text: String) = text { content = text }
+fun ElementWriter.text(text: String) = text { content = text }
 
 @ViewDsl
-fun ViewWriter.subtext(text: String) = subtext { content = text }
+fun ElementWriter.subtext(text: String) = subtext { content = text }
 
 // TODO: Button with working indicator
 

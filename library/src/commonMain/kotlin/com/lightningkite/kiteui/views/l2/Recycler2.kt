@@ -19,10 +19,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class Recycler2(
-    viewWriter: ViewWriter,
+    writer: ElementWriter,
     val vertical: Boolean = true,
     var log: Log? = null//ConsoleRoot.tag("Recycler2"),
-): CoroutineScopeHelpers() {
+): CoroutineScopeHelpers {
     override val coroutineContext: CoroutineContext
         get() = outerFrame.coroutineContext
     val outerFrame: Frame
@@ -86,45 +86,45 @@ class Recycler2(
         }
 
     init {
-        with(viewWriter) {
-            frame {
-                padding = 0.px
-                outerFrame = this
-                beforeNextElementSetup {
-                    padding = 0.px
-                    themeTakeNonCascadingFromParent = true
-                }.scrolling(vertical = vertical, horizontal = !vertical) {
+        writer.frame {
+            padding = 0.px
+            outerFrame = this
+
+            themed(ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack })
+                .scrolling(vertical = vertical, horizontal = !vertical) {
                     scroll = this
                     showScrollBars = false
-                }.onNext(ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }).programmatic {
+                }
+                .programmatic {
                     padding = null
-                    themeTakeNonCascadingFromParent = true
-//                    viewDebugTarget = this
+                    @OptIn(ExperimentalKiteUi::class)
+                    themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+    //                    viewDebugTarget = this
                     cells = this
                     unpadded.frame {
                         scrollSentinel = this
                     }
                 }
-                (if (vertical) atEnd.sizeConstraints(width = 1.rem, maxWidth = 1.rem)
-                else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem))
-                    .scrolling(vertical = vertical, horizontal = !vertical) {
+
+            (if (vertical) atEnd.sizeConstraints(width = 1.rem, maxWidth = 1.rem)
+            else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem))
+                .scrolling(vertical = vertical, horizontal = !vertical) {
                     fakeScroll = this
                     ignoreInteraction = Platform.current != Platform.Web
                 }.programmatic {
                     fakeScrollContent = this
                     ignoreInteraction = Platform.current != Platform.Web
-                    ThemeDerivation {
+                    themed(ThemeDerivation {
                         it.copy(
                             id = "scrollindicator",
                             background = it.foreground.applyAlpha(0.5f)
                         ).withBack
-                    }.onNext.unpadded.frame {
+                    }).unpadded.frame {
                         ignoreInteraction = Platform.current != Platform.Web
                         fakeScrollIndicator = this
                         opacity = 0.0
                     }
                 }
-            }
         }
     }
 

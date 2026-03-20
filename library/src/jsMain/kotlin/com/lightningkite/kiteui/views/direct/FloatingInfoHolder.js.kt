@@ -21,8 +21,7 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-actual class FloatingInfoHolder actual constructor(val source: Element) {
-    val theme get() = source.theme
+actual class FloatingInfoHolder actual constructor(val source: ElementWriter) {
     val maxDist = 32
     var blockView: Element? = null
     var closeView: Element? = null
@@ -34,14 +33,13 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
 
     fun closeButton() {
         if (closeView != null) return
-        val o = source.overlayFrame ?: return
+        val o = source.context.overlayFrame ?: return
         val v = existingView ?: return
-        with<Element, Unit>(o) {
-            beforeNextElementSetup { closeView = this }.atTopEnd.button {
-                icon(Icon.close, "Close")
-                onClick {
-                    close()
-                }
+        o.atTopEnd.button {
+            closeView = this
+            icon(Icon.close, "Close")
+            onClick {
+                close()
             }
         }
     }

@@ -21,7 +21,15 @@ import com.lightningkite.kiteui.views.native
 import com.lightningkite.kiteui.views.theme
 import com.lightningkite.kiteui.views.width
 
-actual class RowOrCol actual constructor(context: ElementContext) : NativeContainerElement(context) {
+abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+    override var gap: Dimension? = null
+        set(value) {
+            field = value
+            native.setStyleProperty("--spacing", value?.value?.toString())
+        }
+}
+
+actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
     init {
         native.tag = "div"
         native.style.flexDirection = "column"
@@ -143,7 +151,7 @@ actual class RowOrCol actual constructor(context: ElementContext) : NativeContai
     }
 }
 
-actual class RowWrapping actual constructor(context: ElementContext) : NativeContainerElement(context) {
+actual class RowWrapping actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
     init {
         native.tag = "div"
         native.setStyleProperty("display", "flex")
@@ -200,7 +208,7 @@ actual class RowWrapping actual constructor(context: ElementContext) : NativeCon
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : NativeContainerElement(context) {
+actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : NativeLinearLayoutElement(context) {
     init {
         native.tag = "div"
         native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoints))

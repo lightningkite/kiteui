@@ -9,31 +9,31 @@ import com.lightningkite.reactive.extensions.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 
-@ViewModifierDsl3 val ViewWriter.atStart get() = align(Align.Start, Align.Stretch)
-@ViewModifierDsl3 val ViewWriter.atEnd get() = align(Align.End, Align.Stretch)
-@ViewModifierDsl3 val ViewWriter.atTop get() = align(Align.Stretch, Align.Start)
-@ViewModifierDsl3 val ViewWriter.atBottom get() = align(Align.Stretch, Align.End)
-@ViewModifierDsl3 val ViewWriter.centeredHorizontally get() = align(Align.Center, Align.Stretch)
-@ViewModifierDsl3 val ViewWriter.centeredVertically get() = align(Align.Stretch, Align.Center)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atStart get() = align(Align.Start, Align.Stretch)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atEnd get() = align(Align.End, Align.Stretch)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atTop get() = align(Align.Stretch, Align.Start)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atBottom get() = align(Align.Stretch, Align.End)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.centeredHorizontally get() = align(Align.Center, Align.Stretch)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.centeredVertically get() = align(Align.Stretch, Align.Center)
 
-@ViewModifierDsl3 val ViewWriter.atTopStart get() = align(Align.Start, Align.Start)
-@ViewModifierDsl3 val ViewWriter.atCenterStart get() = align(Align.Start, Align.Center)
-@ViewModifierDsl3 val ViewWriter.atBottomStart get() = align(Align.Start, Align.End)
-@ViewModifierDsl3 val ViewWriter.atTopCenter get() = align(Align.Center, Align.Start)
-@ViewModifierDsl3 val ViewWriter.centered get() = align(Align.Center, Align.Center)
-@ViewModifierDsl3 val ViewWriter.atBottomCenter get() = align(Align.Center, Align.End)
-@ViewModifierDsl3 val ViewWriter.atTopEnd get() = align(Align.End, Align.Start)
-@ViewModifierDsl3 val ViewWriter.atCenterEnd get() = align(Align.End, Align.Center)
-@ViewModifierDsl3 val ViewWriter.atBottomEnd get() = align(Align.End, Align.End)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atTopStart get() = align(Align.Start, Align.Start)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atCenterStart get() = align(Align.Start, Align.Center)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atBottomStart get() = align(Align.Start, Align.End)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atTopCenter get() = align(Align.Center, Align.Start)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.centered get() = align(Align.Center, Align.Center)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atBottomCenter get() = align(Align.Center, Align.End)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atTopEnd get() = align(Align.End, Align.Start)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atCenterEnd get() = align(Align.End, Align.Center)
+@ViewModifierDsl3 val ElementWriter.CanAddAlignment.atBottomEnd get() = align(Align.End, Align.End)
 
 
-@ViewModifierDsl3 val ViewWriter.expanding get() = weight(1f)
+@ViewModifierDsl3 val ElementWriter.CanAddWeight.expanding get() = weight(1f)
 
-@ViewModifierDsl3 fun ViewWriter.maxWidthCentered(width: Dimension) = align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(maxWidth = width))
-@ViewModifierDsl3 fun ViewWriter.maxHeight(height: Dimension) = sizedBox(SizeConstraints(maxHeight = height))
+@ViewModifierDsl3 fun ElementWriter.CanAddAlignment.maxWidthCentered(width: Dimension) = align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(maxWidth = width))
+@ViewModifierDsl3 fun ElementWriter.CanAddSizing.maxHeight(height: Dimension) = sizedBox(SizeConstraints(maxHeight = height))
 
 @ViewDsl
-fun ViewWriter.icon(source: ReactiveContext.()->Icon, description: String, setup: IconView.()->Unit = {}) {
+fun ElementWriter.icon(source: ReactiveContext.()->Icon, description: String, setup: IconView.()->Unit = {}) {
     icon {
         ::source { source() }
         this.description = description
@@ -62,7 +62,7 @@ fun <T> ContainerElement.forEachUpdating(
     val currentView = this
     reactive(onLoad = {
         currentView.withoutAnimation {
-            if (placeholdersWhileLoading <= 0) return@reactiveScope
+            if (placeholdersWhileLoading <= 0) return@reactive
             if (currentViews.size < placeholdersWhileLoading) {
                 repeat(placeholdersWhileLoading - currentViews.size) {
                     val newProp = LateInitSignal<T>()
@@ -113,7 +113,7 @@ fun <T> ContainerElement.forEachUpdating(
     }
 }
 
-fun <T, ID> RowOrColOld.forEachById(
+fun <T, ID> RowOrCol.forEachById(
     items: Reactive<List<T>>,
     id: (T)->ID,
     preHidingModifiers: ViewWriter.(ID)-> ViewWriter = { this },
@@ -124,7 +124,7 @@ fun <T, ID> RowOrColOld.forEachById(
         var oldIndex: Int,
         val oldId: ID,
         val data: Signal<T>,
-        val view: RView,
+        val view: Element,
         val shown: Signal<Boolean>
     ) {
         var livenessIter = 0
@@ -167,17 +167,17 @@ fun <T, ID> RowOrColOld.forEachById(
             } else {
                 val shown = Signal(false)
                 val data = Signal(toRender)
-                var result: RView? = null
+                var result: Element? = null
                 val indexWriter = object: ViewWriter() {
-                    override val representsView: RView? = this@forEachById
+                    override val representsView: Element? = this@forEachById
                     override val context: ElementContext get() = this@forEachById.context
                     override val coroutineContext: CoroutineContext get() = this@forEachById.coroutineContext
-                    override fun addChild(view: RView) {
+                    override fun addChild(view: Element) {
                         addChild(oldPos, view)
                         result = view
                     }
 
-                    override fun willAddChild(view: RView) {
+                    override fun willAddChild(view: Element) {
                         this@forEachById.willAddChild(view)
                     }
                 }
@@ -196,7 +196,7 @@ fun <T, ID> RowOrColOld.forEachById(
         old.subList(oldPos, old.size).forEach { it.hide() }
     }
 }
-fun <T> RowOrColOld.forEachAnimated(
+fun <T> RowOrCol.forEachAnimated(
     items: Reactive<List<T>>,
     preHidingModifiers: ViewWriter.(T)-> ViewWriter = { this },
     render: ViewWriter.(T) -> Unit
@@ -205,7 +205,7 @@ fun <T> RowOrColOld.forEachAnimated(
     data class OldViewInfo(
         var oldIndex: Int,
         val data: T,
-        val view: RView,
+        val view: Element,
         val shown: Signal<Boolean>
     ) {
         var livenessIter = 0
@@ -244,17 +244,17 @@ fun <T> RowOrColOld.forEachAnimated(
                 oldPos = matchIndex + 1
             } else {
                 val shown = Signal(false)
-                var result: RView? = null
+                var result: Element? = null
                 val indexWriter = object: ViewWriter() {
-                    override val representsView: RView? = this@forEachAnimated
+                    override val representsView: Element? = this@forEachAnimated
                     override val context: ElementContext get() = this@forEachAnimated.context
                     override val coroutineContext: CoroutineContext get() = this@forEachAnimated.coroutineContext
-                    override fun addChild(view: RView) {
+                    override fun addChild(view: Element) {
                         addChild(oldPos, view)
                         result = view
                     }
 
-                    override fun willAddChild(view: RView) {
+                    override fun willAddChild(view: Element) {
                         this@forEachAnimated.willAddChild(view)
                     }
                 }

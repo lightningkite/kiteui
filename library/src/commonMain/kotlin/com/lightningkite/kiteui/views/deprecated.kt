@@ -13,11 +13,15 @@ import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.UnselectedSemantic
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.views.direct.NumberInput
 import com.lightningkite.kiteui.views.direct.RowOrCol
 import com.lightningkite.kiteui.views.direct.TextView
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.padded
+import com.lightningkite.kiteui.views.direct.shownWhen
 import com.lightningkite.kiteui.views.direct.subtext
+import com.lightningkite.reactive.context.ReactiveContext
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -71,7 +75,7 @@ inline fun ElementWriter.CanAddTheme.tweakTheme(crossinline calculate: (Theme) -
     }
 }
 
-@Deprecated("Use hintPopover or opensMenu depending on your situation.", level = DeprecationLevel.ERROR)
+@Deprecated("Use hintPopover or menuButton depending on your situation.", level = DeprecationLevel.ERROR)
 @ViewModifierDsl3
 expect fun ElementWriter.hasPopover(
     requiresClick: Boolean = false,
@@ -79,12 +83,23 @@ expect fun ElementWriter.hasPopover(
     setup: ViewWriter.() -> Unit
 ): ElementWriter
 
+@ViewModifierDsl3
+@Deprecated("No longer needed - just tell the parent what its spacing value should be.", ReplaceWith("this"), DeprecationLevel.ERROR)
+val ViewWriter.marginless: ViewWriter get() = this
+
+@ViewModifierDsl3
+@Deprecated("Renamed to 'shownWhen'", ReplaceWith("shownWhen", "com.lightningkite.kiteui.views.direct.shownWhen"))
+fun ElementWriter.CanAddShownWhen.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme = shownWhen(default, condition)
+
 
 // themes
 
 @Deprecated("Use themed() instead", ReplaceWith("themed(this)"))
 context(writer: ElementWriter.CanAddTheme)
 val Semantic.onNext: ElementWriter.CanAddTheme get() = writer.themed(this)
+
+@Deprecated("Use themed() instead", ReplaceWith("themed(theme)"))
+fun ElementWriter.CanAddTheme.onNext(theme: ThemeDerivation): ElementWriter.CanAddTheme = themed(theme)
 
 @ViewModifierDsl3
 @Deprecated("Renamed to 'emphasized' for consistency of adjective terms.", ReplaceWith("emphasized", "com.lightningkite.kiteui.views.emphasized"))
@@ -135,3 +150,19 @@ inline fun ElementWriter.label(setup: Label.() -> Unit = {}): Label {
     }
     return l
 }
+
+@OptIn(ExperimentalContracts::class)
+@Deprecated("Use numberInput instead", ReplaceWith("this.numberInput(setup)", "com.lightningkite.kiteui.views.direct.numberInput"))
+inline fun ElementWriter.numberField(setup: NumberInput.() -> Unit = {}): NumberInput {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(NumberInput(context) , setup)
+}
+
+// addons
+
+@Deprecated(
+    "Use 'pageNavigator' instead",
+    ReplaceWith("this.pageNavigator", "com.lightningkite.kiteui.navigator.pageNavigator"),
+    DeprecationLevel.ERROR
+)
+val ViewWriter.navigator by ViewWriter::pageNavigator

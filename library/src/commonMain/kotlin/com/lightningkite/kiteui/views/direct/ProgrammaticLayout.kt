@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.views.Element
@@ -7,7 +8,8 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElement
 
 
-expect class ProgrammaticLayout(context: ElementContext): NativeContainerElement {
+expect class ProgrammaticLayout(context: ElementContext): NativeContainerElement, LinearLayoutElement {
+    override var gap: Dimension?
     var delegate: ProgrammaticLayoutDelegate
     fun invalidateLayout()
 }

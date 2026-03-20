@@ -1,22 +1,16 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.dom.Event
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.HtmlElementLike
-import com.lightningkite.reactive.context.*
+import com.lightningkite.kiteui.views.FutureElement
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
-fun <V> HtmlElementLike.vprop(
+fun <V> FutureElement.vprop(
     eventName: String,
-    get: HtmlElementLike.() -> V,
-    set: HtmlElementLike.(V) -> Unit
+    get: FutureElement.() -> V,
+    set: FutureElement.(V) -> Unit
 ): MutableReactiveValue<V> {
     return object : MutableReactiveValue<V>, BaseListenable() {
         init {
-            addEventListener(eventName) {
+            this@vprop.addEventListener(eventName) {
                 invokeAllListeners()
             }
         }
@@ -33,9 +27,9 @@ fun <V> HtmlElementLike.vprop(
         }
     }
 }
-fun <V> HtmlElementLike.vread(
+fun <V> FutureElement.vread(
     eventName: String,
-    get: HtmlElementLike.() -> V
+    get: FutureElement.() -> V
 ): Reactive<V> {
     return object : ReactiveValue<V>, BaseListenable() {
         init {
@@ -49,7 +43,7 @@ fun <V> HtmlElementLike.vread(
     }
 }
 
-fun HtmlElementLike.vevent(eventName: String): Listenable {
+fun FutureElement.vevent(eventName: String): Listenable {
     return object: BaseListenable() {
         init {
             addEventListener(eventName) {
@@ -59,5 +53,5 @@ fun HtmlElementLike.vevent(eventName: String): Listenable {
     }
 }
 
-expect fun HtmlElementLike.resizeObserver(): Listenable
-expect fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable
+expect fun FutureElement.resizeObserver(): Listenable
+expect fun FutureElement.mutationObserver(recursive: Boolean): Listenable

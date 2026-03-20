@@ -24,7 +24,8 @@ interface ElementWriter {
         }
     }
 
-    // canonical oops: alignment.weight.shownWhen.theme.scrolling.element
+    // modifier enforcement interfaces to enforce view modifier oops
+    // canonical oops: alignment.weight.shownWhen.theme.sizing.scrolling.element
 
     interface CanAddScrolling : ElementWriter
     interface CanAddSizing : CanAddScrolling

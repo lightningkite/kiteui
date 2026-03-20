@@ -14,7 +14,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
 
-expect abstract class NativeElement(context: ElementContext) : NativeElementCommonCode {
+/**
+ * Platform-specific native element implementation.
+ *
+ * This is the platform-native view wrapper that provides actual rendering on each platform
+ * (Android View, iOS UIView, HTML Element, etc.). Each platform provides its own implementation.
+ */
+expect abstract class NativeElement(context: ElementContext) : Element, NativeElementCommonCode {
     override var opacity: Double
 
     override var shown: Boolean
@@ -35,14 +41,24 @@ expect abstract class NativeElement(context: ElementContext) : NativeElementComm
 
     override fun requestFocus()
 
+    /** Returns the screen-relative rectangle occupied by this element */
     fun screenRectangle(): Rect?
 
+    /** Returns the parent-relative rectangle occupied by this element */
     fun parentRectangle(): Rect?
 }
 
-// this code is duplicated in every element throughout the entire view tree, so performance actually kinda matters here.
-@SubclassOptInRequired(InternalKiteUi::class)
-abstract class NativeElementCommonCode(override val context: ElementContext) : Element {
+/**
+ * Shared platform-independent code for all native elements.
+ *
+ * This class provides common implementation for lifecycle, theming, reactive processes, and debugging
+ * that is shared across all platforms. Platform-specific implementations extend this through [NativeElement].
+ *
+ * You should never extend this directly. If you want to create a custom native component inherit from [NativeElement].
+ */
+abstract class NativeElementCommonCode internal constructor(override val context: ElementContext) : Element {
+    // This code is duplicated in every element throughout the entire view tree, so performance actually kinda matters.
+
     override val underlyingNativeElement: NativeElement get() = this as NativeElement
 
     override var parent: ContainerElement? = null
@@ -109,6 +125,7 @@ abstract class NativeElementCommonCode(override val context: ElementContext) : E
             refreshPadding()
         }
 
+    /** The final computed padding combining theme padding, custom padding, and safe area insets */
     val appliedPadding: Edges get() {
         if (!fullyStarted) println("WARN: $this attempted to calculate applied padding before fully started.")
         return (paddingByEdge ?: theme.padding).let { p ->
@@ -118,6 +135,10 @@ abstract class NativeElementCommonCode(override val context: ElementContext) : E
 
     // Theme pipeline
 
+    /**
+     * Strategy for determining the base theme of an element.
+     * Default strategy inherits cascading theme from parent.
+     */
     fun interface GetBaseTheme {
         fun get(element: NativeElement): Theme
 
@@ -127,7 +148,11 @@ abstract class NativeElementCommonCode(override val context: ElementContext) : E
         }
     }
 
-    fun interface StateTheming {    // this will work for now... But in the future I think a better approach would have key-theme pairs that code can add/remove from.
+    /**
+     * Strategy for applying state-based theme modifications (loading, error, working states).
+     * Can be combined using the plus operator.
+     */
+    fun interface StateTheming {
         operator fun invoke(element: NativeElement): ThemeDerivation
 
         operator fun plus(other: StateTheming): StateTheming {
@@ -135,8 +160,9 @@ abstract class NativeElementCommonCode(override val context: ElementContext) : E
         }
 
         companion object {
+            /** Default state theming that applies loading/working/error semantics */
             val loadingAndProcessing = StateTheming { e ->
-                val t = e.foregroundProcesses.state.handle(   // apply working semantics for foreground processes (like button presses)
+                val t = e.foregroundProcesses.state.handle(
                     success = { ThemeDerivation.None },
                     notReady = { WorkingSemantic },
                     exception = { WorkingSemantic + ErrorSemantic }
@@ -167,6 +193,12 @@ abstract class NativeElementCommonCode(override val context: ElementContext) : E
             refreshTheming()
         }
 
+    /**
+     * Recalculates and applies the element's theme.
+     *
+     * Combines the base theme (from parent), theme choice (semantic modifiers like 'important'),
+     * and state-based theming (loading/error states) to produce the final theme.
+     */
     fun refreshTheming() {
         debug { "refreshTheming" }
         if (!checkActive("refreshTheming")) return
@@ -271,7 +303,10 @@ abstract class NativeElementCommonCode(override val context: ElementContext) : E
     override fun watchBackgroundProcess(status: Reactive<*>): Release = internalBackgroundProcesses.watch(status).also(::onRemove)
     override fun watchForegroundProcess(status: Reactive<*>): Release = internalForegroundProcesses.watch(status).also(::onRemove)
 
+    /** Aggregate state of background processes (data loading, etc.) - affects loading semantics */
     val backgroundProcesses: Reactive<*> get() = internalBackgroundProcesses
+
+    /** Aggregate state of foreground processes (button clicks, etc.) - affects working/error semantics */
     val foregroundProcesses: Reactive<*> get() = internalForegroundProcesses
 
 

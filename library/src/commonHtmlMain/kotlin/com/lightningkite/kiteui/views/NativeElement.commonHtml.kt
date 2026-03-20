@@ -173,6 +173,8 @@ expect class FutureElement {
     fun parentRectangle(): Rect?
 }
 
+typealias HtmlElementLike = FutureElement
+
 expect fun NativeElement.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,

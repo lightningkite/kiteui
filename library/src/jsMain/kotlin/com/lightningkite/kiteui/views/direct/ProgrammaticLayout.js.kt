@@ -1,19 +1,17 @@
+@file:OptIn(InternalKiteUi::class)
+
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.math.roundToInt
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 
-actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeContainerElement(context) {
+actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
     init {
         native.tag = "div"
         native.style.position = "relative"
@@ -25,8 +23,8 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : Na
         }
     var log: Log? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
-    override fun postSetup() {
-        super.postSetup()
+    override fun startup() {
+        super.startup()
         onRemove(parent!!.native.resizeObserver().addListener {
             log?.log("resizeObserver calls invalidateLayout()")
             remeasureConstrainedSize()
@@ -54,15 +52,16 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : Na
         invalidateLayout()
     }
 
-    override var gap: Dimension?
+    actual override var gap: Dimension?
         get() = super.gap
         set(value) {
             super.gap = value
             spacingCurrentPx = gap?.px ?: theme.gap.px
         }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        spacingCurrentPx = gap?.px ?: theme.gap.px
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        spacingCurrentPx = gap?.px ?: theme.theme.gap.px
     }
 
     override fun refreshPadding() {

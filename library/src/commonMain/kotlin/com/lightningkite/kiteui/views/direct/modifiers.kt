@@ -194,10 +194,6 @@ fun ElementWriter.CanAddSizing.sizeConstraints(
 expect fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddScrolling
 
 @ViewModifierDsl3
-@Deprecated("No longer needed - just tell the parent what its spacing value should be.", ReplaceWith("this"), DeprecationLevel.ERROR)
-val ViewWriter.marginless: ViewWriter get() = this
-
-@ViewModifierDsl3
 inline val ElementWriter.CanAddTheme.padded: ElementWriter.CanAddTheme get() = themed(ForcePaddingSemantic)
 
 @ViewModifierDsl3
@@ -205,7 +201,3 @@ val ElementWriter.unpadded: ElementWriter get() = beforeNextElementSetup { paddi
 
 @ViewModifierDsl3
 expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme
-
-@ViewModifierDsl3
-@Deprecated("Renamed to 'shownWhen'", ReplaceWith("shownWhen", "com.lightningkite.kiteui.views.direct.shownWhen"))
-fun ElementWriter.CanAddShownWhen.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme = shownWhen(default, condition)

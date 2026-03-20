@@ -40,6 +40,7 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
         })
         native.appendChild(input)
     }
+
     override fun nativeAddChild(index: Int, element: Element) {
         super.nativeAddChild(index, element)
         Frame.internalAddChildStack(this, index, element)
@@ -48,10 +49,12 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
     actual val checked: MutableReactiveValue<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
-        { value -> attributes.checked = value })
+        { value -> attributes.checked = value }
+    )
+
     init {
         checked.addListener {
-            if(checked.value)
+            if (checked.value)
                 native.classes.add("checked")
             else
                 native.classes.remove("checked")

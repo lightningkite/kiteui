@@ -39,23 +39,14 @@ actual fun ElementWriter.hintPopover(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.hasPopover(
+actual fun ElementWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
-    setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
-): ViewWriter {
-    beforeNextElementSetup {
+    setup: ViewWriter.() -> Unit
+): ElementWriter {
+    return beforeNextElementSetup {
         val floating = FloatingInfoHolder(this)
-        floating.menuGenerator = {
-            setup(this, object : PopoverContext {
-                override val calculationContext: CoroutineScope
-                    get() = this@beforeNextElementSetup
-
-                override fun close() {
-                    closePopovers()
-                }
-            })
-        }
+        floating.menuGenerator = setup
         floating.preferredDirection = preferredDirection
         if (this is Button || requiresClick)
             native.addEventListener("click") {
@@ -71,7 +62,6 @@ actual fun ViewWriter.hasPopover(
             floating.close()
         }
     }
-        .let { return it }
 }
 
 @ViewModifierDsl3

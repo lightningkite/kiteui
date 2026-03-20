@@ -86,7 +86,6 @@ inline fun ElementWriter.rawImageZoomable(source: ImageSource, description: Stri
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RawImageViewZoomable(context, source, description, scaleType) , setup)
 }
-
 inline fun ElementWriter.label(label: String, content: RowOrCol.() -> Unit): Unit {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     col {
@@ -95,7 +94,6 @@ inline fun ElementWriter.label(label: String, content: RowOrCol.() -> Unit): Uni
         content()
     }
 }
-
 inline fun ElementWriter.phoneNumberInput(setup: PhoneNumberInput.() -> Unit = {}): PhoneNumberInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(PhoneNumberInput(context), setup)
@@ -124,21 +122,14 @@ inline fun ElementWriter.numberInput(setup: NumberInput.() -> Unit = {}): Number
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(NumberInput(context) , setup)
 }
-@Deprecated("Use numberInput instead", ReplaceWith("this.numberInput(setup)", "com.lightningkite.kiteui.views.direct.numberInput"))
-inline fun ElementWriter.numberField(setup: NumberInput.() -> Unit = {}): NumberInput {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(NumberInput(context) , setup)
-}
 inline fun ElementWriter.progressBar(setup: ProgressBar.() -> Unit = {}): ProgressBar {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ProgressBar(context) , setup)
 }
-
 inline fun ElementWriter.circularProgress(setup: CircularProgress.() -> Unit = {}): CircularProgress {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(CircularProgress(context), setup)
 }
-
 inline fun ElementWriter.radioButton(setup: RadioButton.() -> Unit = {}): RadioButton {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RadioButton(context) , setup)
@@ -268,7 +259,6 @@ inline fun ElementWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {})
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ProgrammaticLayout(context), setup)
 }
-
 inline fun ElementWriter.recyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return Recycler2(this, true).apply(setup)
@@ -276,7 +266,6 @@ inline fun ElementWriter.recyclerView(setup: Recycler2.() -> Unit = {}): Recycle
 inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return Recycler2(this, false).apply {
-
         placer = RecyclerViewPagingPlacer()
         snapToElements = Align.Center
         scrollSnapStop = true

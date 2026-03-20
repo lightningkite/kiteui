@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.themed
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
@@ -14,11 +15,10 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> Unit) {
+fun ViewWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddScrolling.() -> Unit) {
     overlayWriter(false) {
-        representsView!!.withoutAnimation {
-
-            beforeNextElementSetup {
+        withoutAnimation {
+            atBottomCenter.col {
                 opacity = 0.0
                 launch {
                     val t = theme
@@ -27,11 +27,10 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> U
                     delay(duration.inWholeMilliseconds)
                     opacity = 0.0
                     delay(t.transitionDuration)
-                    this@overlayWriter.representsView!!.removeChild(this@beforeNextElementSetup)
+                    this@overlayWriter.removeChild(this@col)
                 }
-            }.atBottomCenter.col {
                 gap = 2.rem
-                DialogSemantic.onNext.content()
+                themed(DialogSemantic).content()
                 space()
             }
         }
@@ -42,7 +41,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: (
     overlayWriter(modal = true) { close ->
         dismissBackground {
             onClick { if (dismissable) close() }
-            centered.onNext(DialogSemantic).frame {
+            centered.themed(DialogSemantic).frame {
                 content { close() }
             }
         }

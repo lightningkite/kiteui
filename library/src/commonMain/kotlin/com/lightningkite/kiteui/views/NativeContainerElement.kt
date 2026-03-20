@@ -9,16 +9,29 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 
-expect abstract class NativeContainerElement(context: ElementContext) : NativeContainerElementCommonCode {
-    override var gap: Dimension?
-
+/**
+ * Platform-specific native container element implementation.
+ *
+ * This extends [NativeElement] with the ability to contain child elements. Each platform
+ * provides its own implementation for managing child views in the native view hierarchy.
+ */
+expect abstract class NativeContainerElement(context: ElementContext) : ContainerElement, NativeContainerElementCommonCode {
     override fun nativeAddChild(index: Int, element: Element)
     override fun nativeRemoveChild(index: Int)
     override fun nativeClearChildren()
 }
 
-@SubclassOptInRequired(InternalKiteUi::class)
-abstract class NativeContainerElementCommonCode(context: ElementContext) : NativeElement(context), ContainerElement {
+/**
+ * Shared platform-independent code for native container elements.
+ *
+ * This class extends [NativeElement] with child management functionality including:
+ * - Child lifecycle management (startup/shutdown)
+ * - Theme cascading to children
+ * - Child addition/removal with proper native view hierarchy updates
+ *
+ * You should never extend this directly. If you want to create a custom native component inherit from [NativeContainerElement].
+ */
+abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context), ContainerElement {
     override val underlyingNativeElement: NativeContainerElement get() = this as NativeContainerElement
 
     final override var childDefaultAlignment: Alignment? = null
@@ -43,8 +56,8 @@ abstract class NativeContainerElementCommonCode(context: ElementContext) : Nativ
             element.underlyingNativeElement.parent = this
             if (element is ContainerElement && element.childDefaultAlignment == null) element.childDefaultAlignment = this.childDefaultAlignment
         }
-        internalChildren.add(index, element)
         nativeAddChild(index, element)
+        internalChildren.add(index, element)
     }
     final override fun addChild(element: Element) = addChild(children.size, element)
 
