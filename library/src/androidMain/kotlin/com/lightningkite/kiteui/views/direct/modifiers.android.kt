@@ -31,8 +31,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWriter {
-    beforeSetup {
+actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen {
+    return beforeSetup {
         try {
             lastSetWeight = amount
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -46,13 +46,12 @@ actual fun ViewWriter.weight(amount: Float): ViewWriter {
             RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
         }
     }
-        .let { return it }
 }
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
-    beforeSetup {
+actual fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
+    return beforeSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
             if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
@@ -81,13 +80,11 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
             }
         }
     }
-        .let { return it }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
-    this@align.beforeSetup(// In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead// In a horizontal row, MATCH_PARENT width conflicts with weighted siblings - use WRAP_CONTENT instead// Use parent's default alignment if not explicitly set (Align.Stretch means not set)
-        {
+actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
+    return this@align.beforeSetup {
             lastSetHorizontalAlign = horizontal
             lastSetVerticalAlign = vertical
             val params = lparams
@@ -144,22 +141,21 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
                 // In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead
                 params.height = WRAP_CONTENT
             }
-        })
-        .let { return it }
+        }
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWriter {
+actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ElementWriter {
     return write(ScrollView(context, horizontal = horizontal, vertical = vertical), setup)
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWriter {
+): ElementWriter {
     val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 
     val view = if (vertical) {
@@ -243,16 +239,15 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
+actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddScrolling {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
-        write(object : RViewWriter(context) {
+        return write(object : RViewWriter(context) {
             override val native: View = DesiredSizeView(context.activity).apply {
                 this.constraints = constraints
             }
         }, {})
-            .let { return it }
     } else {
-        beforeSetup {
+        return beforeSetup {
             constraints.width?.let { it: Dimension -> lparams.width = it.value.toInt() }
             constraints.height?.let { it: Dimension -> lparams.height = it.value.toInt() }
             constraints.maxWidth?.let { it: Dimension ->
@@ -265,19 +260,17 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
             constraints.minHeight?.let { native.minimumHeight = it.value.toInt() }
         }
     }
-        .let { return it }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWriter {
-    write(object : RViewWriter(context) {
+actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddScrolling {
+    return write(object : RViewWriter(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
             reactiveScope {
                 this@apply.constraints = constraints()
             }
         }
     }, {})
-        .let { return it }
 }
 
 interface MaxSizeLayoutParams {
@@ -418,25 +411,22 @@ actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ElementWriter {
-    this@hintPopover.beforeSetup(// TODO
-//            toast(inner = setup)
-        {
-            native.setOnLongClickListener {
-                // TODO
-//            toast(inner = setup)
-                true
-            }
-        })
-        .let { return it }
+    return this@hintPopover.beforeSetup {
+        native.setOnLongClickListener {
+            // TODO: implement popover
+            // toast(inner = setup)
+            true
+        }
+    }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.hasPopover(
+actual fun ElementWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit,
-): ViewWriter {
-    beforeSetup {
+): ElementWriter {
+    return beforeSetup {
         native.setOnClickListener {
             dialogPageNavigator.navigate(object : Page {
                 override fun ViewWriter.render(): Unit = run {
@@ -456,37 +446,21 @@ actual fun ViewWriter.hasPopover(
             })
         }
     }
-        .let { return it }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWriter {
-    beforeSetup {
+actual fun ElementWriter.textPopover(message: String): ElementWriter {
+    return beforeSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             native.tooltipText = message
         }
     }
-        .let { return it }
 }
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
-    this@shownWhen.beforeSetup(//        exists = default
-//        ::exists.invoke(condition)
-//        (parent as? SimplifiedLinearLayout)?.let {
-//            if(it.layoutTransition == null) {
-//                it.layoutTransition = KiteUiLayoutTransition()
-//            }
-//        }
-        { //        exists = default
-//        ::exists.invoke(condition)
-//        (parent as? SimplifiedLinearLayout)?.let {
-//            if(it.layoutTransition == null) {
-//                it.layoutTransition = KiteUiLayoutTransition()
-//            }
-//        }
-
+actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme {
+    return this@shownWhen.beforeSetup {
             shown = default
             var existingAnimator: ValueAnimator? = null
             var goal = default
@@ -544,8 +518,7 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
                     shown = value
                 }
             }
-        })
-        .let { return it }
+        }
 }
 
 internal val animatingSize = HashSet<View>()

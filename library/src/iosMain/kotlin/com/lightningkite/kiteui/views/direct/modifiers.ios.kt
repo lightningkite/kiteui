@@ -25,14 +25,10 @@ actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ElementWriter {
-    // TODO
-//            toast(inner = setup)
-    beforeSetup // TODO
-    //            toast(inner = setup)
-    {
+    return beforeSetup {
         fun openDialog() {
-            // TODO
-            //            toast(inner = setup)
+            // TODO: implement popover
+            // toast(inner = setup)
         }
 
         val actionHolder = object : NSObject() {
@@ -42,17 +38,16 @@ actual fun ElementWriter.hintPopover(
         val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
         native.addGestureRecognizer(rec)
     }
-        .let { return it }
 }
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.hasPopover(
+actual fun ElementWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
-): ViewWriter {
-    beforeSetup {
+): ElementWriter {
+    return beforeSetup {
         val originalNavigator = pageNavigator
         fun openDialog() {
             dialogPageNavigator.navigate(object : Page {
@@ -86,71 +81,66 @@ actual fun ViewWriter.hasPopover(
             native.addGestureRecognizer(rec)
         }
     }
-        .let { return it }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWriter = TODO()
+actual fun ElementWriter.textPopover(message: String): ElementWriter = TODO()
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWriter {
-    beforeSetup {
+actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen {
+    return beforeSetup {
         lastSetWeight = amount
         native.extensionWeight = amount
     }
-        .let { return it }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
-    beforeSetup {
+actual fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
+    return beforeSetup {
         reactiveScope {
             val amount = amount()
             native.extensionWeight = amount
             lastSetWeight = amount
         }
     }
-        .let { return it }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
-    this@align.beforeSetup(// Use parent's default alignment if not explicitly set (Align.Stretch means not set)
-        {
-            lastSetHorizontalAlign = horizontal
-            lastSetVerticalAlign = vertical
+actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
+    return this@align.beforeSetup {
+        lastSetHorizontalAlign = horizontal
+        lastSetVerticalAlign = vertical
 
-            // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
-            val effectiveHorizontal = if (horizontal == Align.Stretch) {
-                parent?.newChildHorizontalAlign ?: horizontal
-            } else horizontal
+        // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
+        val effectiveHorizontal = if (horizontal == Align.Stretch) {
+            parent?.newChildHorizontalAlign ?: horizontal
+        } else horizontal
 
-            val effectiveVertical = if (vertical == Align.Stretch) {
-                parent?.newChildVerticalAlign ?: vertical
-            } else vertical
+        val effectiveVertical = if (vertical == Align.Stretch) {
+            parent?.newChildVerticalAlign ?: vertical
+        } else vertical
 
-            native.extensionHorizontalAlign = effectiveHorizontal
-            native.extensionVerticalAlign = effectiveVertical
-        })
-        .let { return it }
+        native.extensionHorizontalAlign = effectiveHorizontal
+        native.extensionVerticalAlign = effectiveVertical
+    }
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(
+actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWriter {
+): ElementWriter {
     return write(ScrollView(context, horizontal = horizontal, vertical = vertical),setup)
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWriter {
+): ElementWriter {
     val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 
     if (vertical) {
@@ -179,26 +169,24 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
-    beforeSetup { native.extensionSizeConstraints = constraints }
-        .let { return it }
+actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddScrolling {
+    return beforeSetup { native.extensionSizeConstraints = constraints }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWriter {
-    beforeSetup {
+actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddScrolling {
+    return beforeSetup {
         reactiveScope {
             native.extensionSizeConstraints = constraints()
             native.informParentOfSizeChange()
         }
     }
-        .let { return it }
 }
 
 // End
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
-    this@shownWhen.beforeSetup(//                println("$native Committed $lastCommitted")//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
+actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme {
+    return this@shownWhen.beforeSetup(//                println("$native Committed $lastCommitted")//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
 //                        println("$native Committed $lastCommitted")
 //                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")//            println("$native Starting run $myRun")
         {
@@ -244,5 +232,4 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
                 }
             }
         })
-        .let { return it }
 }
