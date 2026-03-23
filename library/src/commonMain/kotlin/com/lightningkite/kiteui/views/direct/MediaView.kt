@@ -1,21 +1,23 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
-import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.ThemeDerivation
+import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.VisualMediaSource
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.ElementWriter
+import com.lightningkite.kiteui.views.NativeElementCommonCode
 import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered
-import com.lightningkite.kiteui.views.direct.RawVideoView
+import com.lightningkite.kiteui.views.theme
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.flatten
 import com.lightningkite.reactive.lensing.lens
-import com.lightningkite.reactive.lensing.lensListenable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -24,7 +26,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 
-class MediaView(viewWriter: ViewWriter) : CoroutineScope {
+class MediaView(viewWriter: ElementWriter) : CoroutineScope {
     val rView: Frame = with(viewWriter) { frame { } }
     override val coroutineContext: CoroutineContext get() = rView.coroutineContext
 
@@ -34,7 +36,7 @@ class MediaView(viewWriter: ViewWriter) : CoroutineScope {
         val description: String?
     )
 
-    val currentRawMediaView = Signal<RView?>(null)
+    val currentRawMediaView = Signal<Element?>(null)
 
     init {
         val removeListener = currentRawMediaView.addListener {
@@ -92,7 +94,7 @@ class MediaView(viewWriter: ViewWriter) : CoroutineScope {
     }
 
     private var lastRendered: Info? = null
-    private var lastRender: List<RView>? = null
+    private var lastRender: List<Element>? = null
 
     val activityIndicator: ActivityIndicator
 
@@ -110,6 +112,7 @@ class MediaView(viewWriter: ViewWriter) : CoroutineScope {
     val shown by rView::shown
     var cannotBeCovered = false
 
+    @OptIn(ExperimentalKiteUi::class)
     fun refresh() {
         if (!ready) return
         val info = info
@@ -146,9 +149,11 @@ class MediaView(viewWriter: ViewWriter) : CoroutineScope {
                         for (source in it.sources) {
                             when (source) {
                                 is ImageSource -> {
-                                    ThemeDerivation { if (rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext
-                                    add(rawImage(source, it.description ?: "", it.scaleType) {
-                                        themeTakeNonCascadingFromParent = true
+
+                                    add(themed(
+                                        ThemeDerivation { if (rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }
+                                    ).rawImage(source, it.description ?: "", it.scaleType) {
+                                        themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
                                         themeChoice
                                         opacity = 0.0
                                         reactive {
@@ -178,9 +183,10 @@ class MediaView(viewWriter: ViewWriter) : CoroutineScope {
                                 }
 
                                 is VideoSource -> {
-                                    ThemeDerivation { if (rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext
-                                    add(rawVideo(source, it.description ?: "", it.scaleType) {
-                                        themeTakeNonCascadingFromParent = true
+                                    add(themed(
+                                        ThemeDerivation { if (rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }
+                                    ).rawVideo(source, it.description ?: "", it.scaleType) {
+                                        themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
                                         themeChoice
                                         opacity = 0.0
                                         launch { volume set 0f }

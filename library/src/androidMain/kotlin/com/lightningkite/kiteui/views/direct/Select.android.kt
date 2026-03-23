@@ -5,11 +5,13 @@ import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.RippleDrawable
+import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.*
@@ -18,8 +20,9 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import kotlinx.coroutines.CoroutineScope
 
-actual class Select actual constructor(context: ElementContext): RView(context) {
+actual class Select actual constructor(context: ElementContext): NativeElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
@@ -31,6 +34,14 @@ actual class Select actual constructor(context: ElementContext): RView(context) 
         isClickable = true
     }
 
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ClickableSemantic
+            if (!enabled) t += DisabledSemantic
+            t
+        }
+    }
+
     actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
@@ -38,17 +49,13 @@ actual class Select actual constructor(context: ElementContext): RView(context) 
             refreshTheming()
         }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
     override fun refreshPadding() {
         native.setPaddingAll(0)
     }
 
-    override fun applyTheme(theme: ThemeAndBack) {
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         native.setPaddingAll(0)
         native.setPopupBackgroundDrawable(theme.theme.backgroundDrawableWithoutCorners(null).apply {
             cornerRadius = 8.dp.value
@@ -83,30 +90,27 @@ actual class Select actual constructor(context: ElementContext): RView(context) 
     ) {
         var suppressChange = false
         var list: List<T> = listOf()
+
         val adapter = object: BaseAdapter() {
             override fun getCount(): Int = list.size
             override fun getItem(position: Int): Any? = list.get(position)
             override fun getItemId(position: Int): Long = position.toLong()
             override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-                if(convertView != null) {
+                if (convertView != null) {
                     (convertView as TextView).text = render(list[position])
                     return convertView
                 } else {
-                    var newView: RView? = null
-                    val w = object: ViewWriter(), CalculationContext by this@Select {
-                        override val representsView: RView = this@Select
-                        override val context: ElementContext
-                            get() = this@Select.context
-
-                        override fun willAddChild(view: RView) {
-                            view.parent = this@Select
+                    var newView: Element? = null
+                    val writer = object: ViewWriter, CoroutineScope by this@Select {
+                        override val context: ElementContext get() = this@Select.context
+                        override fun willAddChild(element: Element) {
+                            element.underlyingNativeElement.parent = this@Select.parent
                         }
-
-                        override fun addChild(view: RView) {
-                            newView = view
+                        override fun addChild(element: Element) {
+                            newView = element
                         }
                     }
-                    with(w) {
+                    with(writer) {
                         padded.text {
                             content = render(list[position])
                         }

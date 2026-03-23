@@ -16,7 +16,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 
 
-actual class SwapView actual constructor(context: ElementContext) : RView(context) {
+actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val native = FrameLayout(context.activity)
 
     companion object {
@@ -31,19 +31,18 @@ actual class SwapView actual constructor(context: ElementContext) : RView(contex
 
         native.visibility = View.VISIBLE
         val oldView = this.children.firstOrNull()
-        var newViewHolder: RView? = null
-        val writer = object : ViewWriter(), CalculationContext by this {
-            override val representsView: RView? = this@SwapView
+        var newViewHolder: Element? = null
+        val writer = object : ViewWriter, CalculationContext by this {
             override val context: ElementContext
                 get() = this@SwapView.context
 
-            override fun willAddChild(view: RView) {
-                view.parent = this@SwapView
+            override fun willAddChild(element: Element) {
+                element.underlyingNativeElement.parent = this@SwapView
             }
 
-            override fun addChild(view: RView) {
-                println("addChild called with $view")
-                newViewHolder = view
+            override fun addChild(element: Element) {
+                println("addChild called with $element")
+                newViewHolder = element
             }
         }
         animationsEnabled = false
@@ -70,22 +69,23 @@ actual class SwapView actual constructor(context: ElementContext) : RView(contex
                 oldView?.let {
                     exit?.setDuration(theme.transitionDuration.inWholeMilliseconds)?.addTarget(it.native)
                 }
-                if(oldView != null && newView != null) {
-                    val new = newView.walkTopDown().mapNotNull { it.transitionId?.let { id -> id to it } }.associate { it }
-                    val old = oldView.walkTopDown().mapNotNull { it.transitionId?.let { id -> id to it } }.associate { it }
-                    val intersecting = new.keys.intersect(old.keys)
-                    if(intersecting.isNotEmpty()) {
-                        val remember = CustomTransition(native)
-                        remember.setDuration(theme.transitionDuration.inWholeMilliseconds)
-                        intersecting.forEach {
-                            val o = old[it]!!.native
-                            val n = new[it]!!.native
-                            remember.addTarget(o)
-                            remember.addTarget(n)
-                        }
-                        addTransition(remember)
-                    }
-                }
+                // transitionId is being removed for now.
+//                if(oldView != null && newView != null) {
+//                    val new = newView.walkTopDown().mapNotNull { it.transitionId?.let { id -> id to it } }.associate { it }
+//                    val old = oldView.walkTopDown().mapNotNull { it.transitionId?.let { id -> id to it } }.associate { it }
+//                    val intersecting = new.keys.intersect(old.keys)
+//                    if(intersecting.isNotEmpty()) {
+//                        val remember = CustomTransition(native)
+//                        remember.setDuration(theme.transitionDuration.inWholeMilliseconds)
+//                        intersecting.forEach {
+//                            val o = old[it]!!.native
+//                            val n = new[it]!!.native
+//                            remember.addTarget(o)
+//                            remember.addTarget(n)
+//                        }
+//                        addTransition(remember)
+//                    }
+//                }
 //                val start = Scene(native)
                 exit?.let { addTransition(it) }
                 enter?.let { addTransition(it) }
@@ -117,7 +117,7 @@ actual class SwapView actual constructor(context: ElementContext) : RView(contex
     }
 }
 
-private fun RView.walkTopDown(): Sequence<RView> = sequenceOf(this) + children.asSequence().flatMap { it.walkTopDown() }
+private fun Element.walkTopDown(): Sequence<Element> = sequenceOf(this) + (this as? ContainerElement)?.children.orEmpty().asSequence().flatMap { it.walkTopDown() }
 
 private class CustomTransition(val fromRoot: ViewGroup): Transition() {
     override fun captureStartValues(transitionValues: TransitionValues) {

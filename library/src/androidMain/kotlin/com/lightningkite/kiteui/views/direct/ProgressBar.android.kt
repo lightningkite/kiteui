@@ -11,11 +11,12 @@ import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-actual class ProgressBar actual constructor(context: ElementContext) : RView(context) {
+actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
     val shapeDrawable = ShapeDrawable().apply {
         shape = RoundRectShape(floatArrayOf(999f, 999f, 999f, 999f, 999f, 999f, 999f, 999f), null, null)
     }
@@ -30,8 +31,8 @@ actual class ProgressBar actual constructor(context: ElementContext) : RView(con
             clipToOutline = true
         }
 
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         val theme = theme.theme
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
             native.setProgressTintList(ColorStateList.valueOf(theme.foreground.colorInt()))
@@ -43,9 +44,9 @@ actual class ProgressBar actual constructor(context: ElementContext) : RView(con
                     native.height
                 )
 
-                is CornerRadii.AdaptiveToSpacing -> min((parent?.spacingForChildCornerRadii ?: 0.px).value, it.value.value)
+                is CornerRadii.AdaptiveToSpacing -> min((parent?.underlyingNativeElement?.spacingForChildCornerRadii ?: 0.px).value, it.value.value)
                 is CornerRadii.Fixed -> it.value.value
-                is CornerRadii.RatioOfSpacing -> it.value * (parent?.spacingForChildCornerRadii ?: 0.px).value
+                is CornerRadii.RatioOfSpacing -> it.value * (parent?.underlyingNativeElement?.spacingForChildCornerRadii ?: 0.px).value
                 is CornerRadii.PerCorner -> it.value.value
             }
 

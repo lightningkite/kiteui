@@ -3,16 +3,25 @@ package com.lightningkite.kiteui.views.direct
 import android.R
 import android.content.res.ColorStateList
 import androidx.core.widget.CompoundButtonCompat
-import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class RadioButton actual constructor(context: ElementContext): RView(context) {
+actual class RadioButton actual constructor(context: ElementContext): NativeElement(context) {
     override val driverValue: String? get() = radioDriverValue()
     override val driverActions get() = super.driverActions + radioDriverActions()
     override val native = android.widget.RadioButton(context.activity)
-    override fun applyTheme(theme: ThemeAndBack) {
+
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ThemeDerivation.None
+            if (!enabled) t += DisabledSemantic
+            t
+        }
+    }
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         val theme = theme.theme
         CompoundButtonCompat.setButtonTintList(
             native, ColorStateList(
@@ -23,6 +32,7 @@ actual class RadioButton actual constructor(context: ElementContext): RView(cont
             )
         )
     }
+
     actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
@@ -30,12 +40,5 @@ actual class RadioButton actual constructor(context: ElementContext): RView(cont
             refreshTheming()
         }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if(!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
     actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
-
 }

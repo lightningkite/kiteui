@@ -5,11 +5,19 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class Slider actual constructor(context: ElementContext) : RView(context) {
+actual class Slider actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
     override val driverActions get() = super.driverActions + sliderDriverActions()
     private val nativeSeekBar = SeekBar(context.activity)
     override val native = nativeSeekBar
+
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ThemeDerivation.None
+            if (!enabled) t += DisabledSemantic
+            t
+        }
+    }
 
     private val valueProp = Signal(0.5f)
     actual val value: MutableReactiveValue<Float>
@@ -113,14 +121,8 @@ actual class Slider actual constructor(context: ElementContext) : RView(context)
             refreshTheming()
         }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if (!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         val t = theme.theme
 
         // Apply theme colors to the slider

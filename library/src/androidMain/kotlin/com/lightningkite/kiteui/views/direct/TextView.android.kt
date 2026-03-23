@@ -12,17 +12,21 @@ import android.text.method.LinkMovementMethod
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.debugPrint
-import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.FontAndStyle
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 
-actual class TextView actual constructor(context: ElementContext) :
-    RView(context) {
+actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = content
     override val native: android.widget.TextView = android.widget.TextView(context.activity)
+
     actual var content: String
         get() {
             return native.text.toString()
@@ -83,7 +87,8 @@ actual class TextView actual constructor(context: ElementContext) :
                 native.ellipsize = TextUtils.TruncateAt.END
             }
         }
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) { super.nativeApplyTheme(theme); val theme = theme.theme
         debugPrint {
             "native.setTextColor: ${theme.id} ${theme.foreground}"
         }
@@ -97,6 +102,8 @@ actual class TextView actual constructor(context: ElementContext) :
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
         applyAlign(_align ?: theme.font.align)
     }
+
+    @RequiresApi(VERSION_CODES.N)
     actual fun setBasicHtmlContent(html: String) {
         if(html.contains("<a")) {
             native.movementMethod = LinkMovementMethod.getInstance()

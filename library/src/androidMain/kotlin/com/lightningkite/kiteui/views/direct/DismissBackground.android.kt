@@ -9,7 +9,11 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 
 
-actual class DismissBackground actual constructor(context: ElementContext): RView(context) {
+actual class DismissBackground actual constructor(context: ElementContext): NativeContainerElement(context) {
+    init {
+        elementSpecificTheming += ElementSpecificTheming { DismissSemantic }
+    }
+
     override val native = FrameLayout(context.activity).apply {
         setOnClickListener {
             dialogPageNavigator.clear()
@@ -22,12 +26,8 @@ actual class DismissBackground actual constructor(context: ElementContext): RVie
         }
     }
 
-    override fun postSetup() {
-        super.postSetup()
-        children.forEach { it.native.isClickable = true }
-    }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        return super.applyState(theme[DismissSemantic])
+    override fun startup() {
+        super.startup()
+        children.forEach { it.underlyingNativeElement.native.isClickable = true }
     }
 }

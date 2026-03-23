@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class RadioToggleButton actual constructor(context: ElementContext) : RView(context) {
+actual class RadioToggleButton actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val driverValue: String? get() = radioToggleDriverValue()
     override val driverActions get() = super.driverActions + radioToggleDriverActions()
     override val native = FrameLayout(context.activity).apply {
@@ -17,6 +17,14 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : RVi
 
     init {
         checked.addListener { refreshTheming() }
+
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ClickableSemantic
+            if (checkedProp.value) t += SelectedSemantic
+            else t += UnselectedSemantic
+            if (!enabled) t += DisabledSemantic
+            t
+        }
     }
 
     actual var enabled: Boolean
@@ -26,13 +34,5 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : RVi
             refreshTheming()
         }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if (checkedProp.value) t = t[SelectedSemantic]
-        else t = t[UnselectedSemantic]
-        if (!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }

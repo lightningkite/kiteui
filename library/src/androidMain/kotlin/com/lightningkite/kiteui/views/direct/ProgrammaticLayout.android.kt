@@ -5,12 +5,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.debugPrint
+import com.lightningkite.kiteui.views.*
 import kotlin.math.roundToInt
 
-actual class ProgrammaticLayout actual constructor(context: ElementContext) : RView(context) {
+actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
     override val native: NProgrammaticLayout = NProgrammaticLayout(context.activity).apply {
         rview = this@ProgrammaticLayout
     }
@@ -19,12 +17,14 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : RV
         native.silentRequestLayout()
     }
 
-    override var gap: Dimension?
-        get() = super.gap
+    actual override var gap: Dimension? = null
         set(value) {
-            super.gap = value
+            field = value
             native.spacingCurrentPx = gap?.px ?: theme.gap.px
         }
+
+    actual override val spacingForChildCornerRadii: Dimension
+        get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 
     override fun refreshPadding() {
         val value = appliedPadding
@@ -35,7 +35,7 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : RV
         native.silentRequestLayout()
     }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
+    override fun nativeApplyTheme(theme: ThemeAndBack) { super.nativeApplyTheme(theme); val theme = theme.theme
         native.spacingCurrentPx = gap?.px ?: theme.gap.px
     }
 }
@@ -64,28 +64,28 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         override val paddingRight: Double get() = paddingRightCurrentPx
         override val paddingBottom: Double get() = paddingBottomCurrentPx
 
-        override fun measure(child: RView, sizeConstraint: Size): Size {
-            child.native.measure(
+        override fun measure(child: Element, sizeConstraint: Size): Size {
+            child.underlyingNativeElement.native.measure(
                 MeasureSpec.makeMeasureSpec(sizeConstraint.width.roundToInt(), MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(sizeConstraint.height.roundToInt(), MeasureSpec.AT_MOST)
             )
-            return Size(child.native.measuredWidth.toDouble(), child.native.measuredHeight.toDouble())
+            return Size(child.underlyingNativeElement.native.measuredWidth.toDouble(), child.underlyingNativeElement.native.measuredHeight.toDouble())
         }
 
-        override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
-            placed += child.native
-            child.native.measure(
+        override fun place(child: Element, left: Double, top: Double, right: Double, bottom: Double) {
+            placed += child.underlyingNativeElement.native
+            child.underlyingNativeElement.native.measure(
                 MeasureSpec.makeMeasureSpec((right - left).roundToInt(), MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec((bottom - top).roundToInt(), MeasureSpec.EXACTLY),
             )
-            child.native.layout(left.roundToInt(), top.roundToInt(), right.roundToInt(), bottom.roundToInt())
+            child.underlyingNativeElement.native.layout(left.roundToInt(), top.roundToInt(), right.roundToInt(), bottom.roundToInt())
         }
 
-        override fun existingPosition(child: RView): Rect = Rect(
-            child.native.left.toDouble(),
-            child.native.top.toDouble(),
-            child.native.right.toDouble(),
-            child.native.bottom.toDouble()
+        override fun existingPosition(child: Element): Rect = Rect(
+            child.underlyingNativeElement.native.left.toDouble(),
+            child.underlyingNativeElement.native.top.toDouble(),
+            child.underlyingNativeElement.native.right.toDouble(),
+            child.underlyingNativeElement.native.bottom.toDouble()
         )
     }
 

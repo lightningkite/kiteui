@@ -26,7 +26,7 @@ actual class NIconView(context: Context) : ImageView(context) {
     }
 }
 
-actual class IconView actual constructor(context: ElementContext): RView(context) {
+actual class IconView actual constructor(context: ElementContext): NativeElement(context) {
     override val native = NIconView(context.activity)
     actual var source: Icon?
         get() = native.icon
@@ -41,7 +41,8 @@ actual class IconView actual constructor(context: ElementContext): RView(context
             native.contentDescription = value
         }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.iconPaint = theme.icon
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        native.iconPaint = theme.theme.icon
     }
 }

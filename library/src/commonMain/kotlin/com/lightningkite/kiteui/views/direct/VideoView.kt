@@ -1,12 +1,17 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.ThemeDerivation
+import com.lightningkite.kiteui.views.ElementWriter
+import com.lightningkite.kiteui.views.NativeElementCommonCode
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.theme
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.flatten
@@ -17,7 +22,7 @@ import kotlin.coroutines.CoroutineContext
 
 @Deprecated("Use VideoView instead") typealias Video = VideoView
 
-class VideoView(viewWriter: ViewWriter) : CoroutineScope {
+class VideoView(viewWriter: ElementWriter) : CoroutineScope {
     val rView: Frame = with(viewWriter) { frame { } }
     override val coroutineContext: CoroutineContext get() = rView.coroutineContext
 
@@ -97,6 +102,7 @@ class VideoView(viewWriter: ViewWriter) : CoroutineScope {
     val shown by rView::shown
     var cannotBeCovered = false
 
+    @OptIn(ExperimentalKiteUi::class)
     fun refresh() {
         if (!ready) return
         val info = info
@@ -118,9 +124,10 @@ class VideoView(viewWriter: ViewWriter) : CoroutineScope {
                 buildList {
                     with(rView) {
                         for (videoSource in it.sources) {
-                            ThemeDerivation { if(rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext
-                            add(rawVideo(videoSource, it.description ?: "", it.scaleType) {
-                                themeTakeNonCascadingFromParent = true
+                            add(themed(
+                                ThemeDerivation { if(rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }
+                            ).rawVideo(videoSource, it.description ?: "", it.scaleType) {
+                                themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
                                 themeChoice
                                 opacity = 0.0
                                 reactive {

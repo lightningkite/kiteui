@@ -29,6 +29,9 @@ abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContai
         super.nativeApplyTheme(theme)
         native.gap = (gap ?: theme.theme.gap).value.roundToInt()
     }
+
+    override val spacingForChildCornerRadii: Dimension
+        get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 }
 
 actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
@@ -96,6 +99,9 @@ actual class RowWrapping actual constructor(context: ElementContext) : NativeCon
         native.gap = (gap ?: theme.theme.gap).value.roundToInt()
         native.lineGap = (gap ?: theme.theme.gap).value.roundToInt()
     }
+
+    override val spacingForChildCornerRadii: Dimension
+        get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 }
 
 

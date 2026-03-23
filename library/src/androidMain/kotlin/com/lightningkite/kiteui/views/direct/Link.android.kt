@@ -1,9 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.models.ClickableSemantic
-import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.mainPageNavigator
@@ -11,10 +9,18 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class Link actual constructor(context: ElementContext): RView(context) {
+actual class Link actual constructor(context: ElementContext): NativeContainerElement(context) {
     override val driverActions get() = super.driverActions + linkDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
+    }
+
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ClickableSemantic
+            if (!enabled) t += DisabledSemantic
+            t
+        }
     }
 
     actual var to: (() -> Page)? = null
@@ -55,13 +61,7 @@ actual class Link actual constructor(context: ElementContext): RView(context) {
     actual var onNavigator: PageNavigator = mainPageNavigator
     actual var resetsStack: Boolean = false
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }
 
 

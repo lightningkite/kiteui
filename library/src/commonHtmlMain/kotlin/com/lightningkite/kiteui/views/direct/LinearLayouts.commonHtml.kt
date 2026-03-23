@@ -27,6 +27,9 @@ abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContai
             field = value
             native.setStyleProperty("--spacing", value?.value?.toString())
         }
+
+    override val spacingForChildCornerRadii: Dimension
+        get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 }
 
 actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {

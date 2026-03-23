@@ -16,9 +16,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
 import com.lightningkite.kiteui.views.produceExactlyOne
@@ -28,17 +26,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-actual class CoordinatorFrame actual constructor(context: ElementContext) : RView(context) {
+actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val native = CoordinatorLayoutWithGestures(context.activity)
 
-    override fun willAddChild(view: RView) {
-        view.native.layoutParams = defaultLayoutParams()
-        
+    override fun willAddChild(element: Element) {
+        element.underlyingNativeElement.native.layoutParams = defaultLayoutParams()
     }
 
-    override fun internalAddChild(index: Int, view: RView) {
-        view.native.z = index.toFloat() // Coordinator Frame layout uses elevation by default to determine the z axis, so we have to set this ourselves
-        super.internalAddChild(index, view)
+    override fun nativeAddChild(index: Int, element: Element) {
+        element.underlyingNativeElement.native.z = index.toFloat() // Coordinator Frame layout uses elevation by default to determine the z axis, so we have to set this ourselves
+        super.nativeAddChild(index, element)
     }
 
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
@@ -54,8 +51,8 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
         content: ViewWriter.(control: BottomSheetControl) -> Unit
     ) {
         lateinit var b: BottomSheetBehavior<View>
-        var sub: RView? = null
-        var backToRemove: RView? = null
+        var sub: Element? = null
+        var backToRemove: Element? = null
         val state = Signal(startState)
         val control = object : BottomSheetControl {
             override val state: MutableReactive<BottomSheetState> = state
@@ -65,7 +62,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
         }
         withoutAnimation {
             backToRemove = if (blockBehind) dismissBackground { opacity = 0.0; onClick { control.close() } } else null
-            beforeNextElementSetup {
+            beforeSetup {
                 b = BottomSheetBehavior<View>(context.activity, null).apply {
                     this.halfExpandedRatio = partialRatio
                     peekSize?.value?.toInt()?.let { this.peekHeight = it }
@@ -90,11 +87,11 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
                     this.isHideable = true
                     addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                         override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                            sub?.native?.run {
+                            sub?.underlyingNativeElement?.native?.run {
                                 layoutParams.height = (this@CoordinatorFrame.native.height - bottomSheet.top)
                                 requestLayout()
                             }
-                            backToRemove?.native?.alpha = (1f + slideOffset).coerceIn(0f, 1f)
+                            backToRemove?.underlyingNativeElement?.native?.alpha = (1f + slideOffset).coerceIn(0f, 1f)
                         }
 
                         override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -106,7 +103,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
                                 BottomSheetBehavior.STATE_COLLAPSED -> state.value = BottomSheetState.COLLAPSED
                                 BottomSheetBehavior.STATE_DRAGGING -> {}
                                 BottomSheetBehavior.STATE_HIDDEN -> {
-                                    this@CoordinatorFrame.removeChild(this@beforeNextElementSetup)
+                                    this@CoordinatorFrame.removeChild(this@beforeSetup)
                                     backToRemove?.let { this@CoordinatorFrame.removeChild(it) }
                                 }
 
@@ -133,14 +130,14 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
         content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         lateinit var b: SideSheetBehavior<View>
-        var backToRemove: RView? = null
+        var backToRemove: Element? = null
         val control = object : SlidingPanelControl {
             override fun close() {
                 b.state = SideSheetBehavior.STATE_HIDDEN
             }
         }
         backToRemove = if (blockBehind) dismissBackground { opacity = 0.0; onClick { control.close() } } else null
-        beforeNextElementSetup {
+        beforeSetup {
             b = SideSheetBehavior<View>(context.activity, null).apply {
                 this.state = SideSheetBehavior.STATE_HIDDEN
                 launch {
@@ -151,7 +148,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
                     override fun onStateChanged(sheet: View, newState: Int) {
                         when (newState) {
                             SideSheetBehavior.STATE_HIDDEN -> {
-                                this@CoordinatorFrame.removeChild(this@beforeNextElementSetup)
+                                this@CoordinatorFrame.removeChild(this@beforeSetup)
                                 backToRemove?.let { this@CoordinatorFrame.removeChild(it) }
                             }
 
@@ -160,7 +157,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
                     }
 
                     override fun onSlide(sheet: View, slideOffset: Float) {
-                        backToRemove?.native?.alpha = slideOffset
+                        backToRemove?.underlyingNativeElement?.native?.alpha = slideOffset
                     }
                 })
                 //TODO: blocksBehind
@@ -183,14 +180,14 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
         content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         lateinit var b: SideSheetBehavior<View>
-        var backToRemove: RView? = null
+        var backToRemove: Element? = null
         val control = object : SlidingPanelControl {
             override fun close() {
                 b.state = SideSheetBehavior.STATE_HIDDEN
             }
         }
         backToRemove = if (blockBehind) dismissBackground { opacity = 0.0; onClick { control.close() } } else null
-        beforeNextElementSetup {
+        beforeSetup {
             b = SideSheetBehavior<View>(context.activity, null).apply {
                 this.state = SideSheetBehavior.STATE_HIDDEN
                 launch {
@@ -201,7 +198,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
                     override fun onStateChanged(sheet: View, newState: Int) {
                         when (newState) {
                             SideSheetBehavior.STATE_HIDDEN -> {
-                                this@CoordinatorFrame.removeChild(this@beforeNextElementSetup)
+                                this@CoordinatorFrame.removeChild(this@beforeSetup)
                                 backToRemove?.let { this@CoordinatorFrame.removeChild(it) }
                             }
 
@@ -210,7 +207,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
                     }
 
                     override fun onSlide(sheet: View, slideOffset: Float) {
-                        backToRemove?.native?.alpha = slideOffset
+                        backToRemove?.underlyingNativeElement?.native?.alpha = slideOffset
                     }
                 })
                 //TODO: blocksBehind
@@ -236,15 +233,18 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
     }
 }
 
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : RView(context) {
+actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeElement(context) {
+    init {
+        elementSpecificTheming += CardSemantic
+    }
+
     override val native: BottomSheetDragHandleView = BottomSheetDragHandleView(context.activity).apply {
         minimumWidth = 5.rem.value.toInt()
         minimumHeight = 1.rem.value.toInt()
     }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack = theme[CardSemantic]
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         native.setImageDrawable(drawableWithoutCorners(theme.theme.icon, Color.transparent, 0.px).apply {
         })
     }

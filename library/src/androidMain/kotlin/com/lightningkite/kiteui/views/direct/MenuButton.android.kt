@@ -4,17 +4,27 @@ import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.closePopovers
 import com.lightningkite.kiteui.views.l2.overlayFrame
+import com.lightningkite.kiteui.views.themed
 
-actual class MenuButton actual constructor(context: ElementContext): RView(context) {
+actual class MenuButton actual constructor(context: ElementContext): NativeContainerElement(context) {
     override val driverActions get() = super.driverActions + menuDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ClickableSemantic
+            if (!enabled) t += DisabledSemantic
+            t
+        }
+    }
+
     actual fun opensMenu(createMenu: Frame.() -> Unit) {
         native.setOnClickListener { view ->
-            var willRemove: RView? = null
+            var willRemove: Element? = null
             popoverWriter(this.overlayFrame!!) {
                 val r = willRemove
                 willRemove = null
@@ -39,19 +49,19 @@ actual class MenuButton actual constructor(context: ElementContext): RView(conte
                         ).withBack
                     }
                     onClick {
-                        closePopovers()
+                        context.closePopovers()
                     }
-                    atTopStart.onNext(PopoverSemantic).frame {
+                    atTopStart.themed(PopoverSemantic).frame {
                         this@dismissBackground.native.apply {
                             clipChildren = false
                             clipToPadding = false
                         }
-                        this@dismissBackground.native.addOnLayoutChangeListener{ dismissBackground, _, _, _, _, _, _, _, _ ->
+                        this@dismissBackground.native.addOnLayoutChangeListener { dismissBackground, _, _, _, _, _, _, _, _ ->
                             val overlayContainer = this@frame.native
                             val anchor = this@MenuButton.native
 
                             val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
-                            val offset = preferredDirection.calculatePopoverOffset(
+                            val offset = this@MenuButton.preferredDirection.calculatePopoverOffset(
                                 anchor.getBoundariesInWindow(),
                                 overlayBoundsInWindow,
                                 dismissBackground.getBoundariesInWindow()
@@ -77,11 +87,5 @@ actual class MenuButton actual constructor(context: ElementContext): RView(conte
             refreshTheming()
         }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }

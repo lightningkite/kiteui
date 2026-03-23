@@ -16,9 +16,18 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 
-actual class NumberInput actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
     override val driverActions get() = super.driverActions + numberInputDriverActions()
+
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ThemeDerivation.None
+            if (!enabled) t += DisabledSemantic
+            t
+        }
+    }
+
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
@@ -54,13 +63,9 @@ actual class NumberInput actual constructor(context: ElementContext) : RViewWith
             refreshTheming()
         }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if (!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        val theme = theme.theme
         _fontAndStyle = theme.font
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
         native.setTextColor(theme.foreground.colorInt())
@@ -88,12 +93,12 @@ actual class NumberInput actual constructor(context: ElementContext) : RViewWith
             native.keyboardHints = value
         }
 
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
+    override fun nativeSetAction(action: Action?) {
+        super.nativeSetAction(action)
+        native.setImeActionLabel(action?.title, KeyEvent.KEYCODE_ENTER)
         native.setOnEditorActionListener { v, actionId, event ->
-            value?.startAction(this)
-            value != null
+            action?.startAction(this)
+            action != null
         }
     }
 

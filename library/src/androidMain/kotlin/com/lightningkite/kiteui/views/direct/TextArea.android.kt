@@ -16,7 +16,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class TextArea actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textAreaDriverValue()
     override val driverActions get() = super.driverActions + textAreaDriverActions()
     override val native = EditText(context.activity).focusIsKeyboard().apply {
@@ -24,17 +24,27 @@ actual class TextArea actual constructor(context: ElementContext) : RViewWithAct
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
     }
 
-    //TODO Need to change this to something that can make sense for android.
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
-        native.setOnEditorActionListener { v, actionId, event ->
-            value?.startAction(this)
-            value != null
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ThemeDerivation.None
+            if (!enabled) t += DisabledSemantic
+            t
         }
     }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
+    //TODO Need to change this to something that can make sense for android.
+    override fun nativeSetAction(action: Action?) {
+        super.nativeSetAction(action)
+        native.setImeActionLabel(action?.title, KeyEvent.KEYCODE_ENTER)
+        native.setOnEditorActionListener { v, actionId, event ->
+            action?.startAction(this)
+            action != null
+        }
+    }
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        val theme = theme.theme
         native.setTextColor(theme.foreground.colorInt())
         native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
         native.setTypeface(
@@ -66,12 +76,6 @@ actual class TextArea actual constructor(context: ElementContext) : RViewWithAct
         set(value) {
             native.keyboardHints = value
         }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if (!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
 
     actual var hint: String
         get() {

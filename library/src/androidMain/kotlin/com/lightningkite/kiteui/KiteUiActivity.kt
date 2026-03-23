@@ -39,12 +39,11 @@ abstract class KiteUiActivity : AppCompatActivity() {
     abstract val mainNavigator : PageNavigator
 
     lateinit var root: RView
-    private val safeInsetsProperty = Signal<Edges>(Edges.ZERO)
-    val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
-        override val representsView: RView? = null
+    private val safeInsetsProperty = Signal(Edges.ZERO)
+    val viewWriter: ViewWriter = object: ViewWriter, CoroutineScope by this.lifecycleScope {
         override val context: ElementContext = ElementContext(this@KiteUiActivity)
         init {
-            safeInsets = safeInsetsProperty
+            context.safeInsets = safeInsetsProperty
         }
 
         override fun willAddChild(view: RView) {

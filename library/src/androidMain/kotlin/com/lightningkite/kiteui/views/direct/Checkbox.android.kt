@@ -2,19 +2,30 @@ package com.lightningkite.kiteui.views.direct
 
 import android.R
 import android.content.res.ColorStateList
-import android.widget.CheckBox as AndroidCheckBox
 import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.models.ThemeDerivation
+import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.reactive.core.MutableReactiveValue
+import android.widget.CheckBox as AndroidCheckBox
 
 
-actual class Checkbox actual constructor(context: ElementContext): RView(context) {
+actual class Checkbox actual constructor(context: ElementContext): NativeElement(context) {
     override val driverValue: String? get() = checkboxDriverValue()
     override val driverActions get() = super.driverActions + checkboxDriverActions()
     override val native = AndroidCheckBox(context.activity)
-    override fun applyTheme(theme: ThemeAndBack) {
+
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            if (!enabled) DisabledSemantic
+            else ThemeDerivation.None
+        }
+    }
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         val theme = theme.theme
         CompoundButtonCompat.setButtonTintList(
             native, ColorStateList(
@@ -31,12 +42,6 @@ actual class Checkbox actual constructor(context: ElementContext): RView(context
             native.isEnabled = value
             refreshTheming()
         }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if(!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
 
     actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 }

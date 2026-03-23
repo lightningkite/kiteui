@@ -112,6 +112,18 @@ fun Element.popoverWriter(overlay: ElementWriter, popoverRoot: Boolean = false, 
     return writer
 }
 
+fun ContainerElement.popoverWriter(overlay: ElementWriter = this, popoverRoot: Boolean = false, close: () -> Unit): ViewWriter {
+    context.popoverCloser?.invoke()
+    context.popoverCloser = close
+
+    val writer = object : ViewWriter, ElementWriter by overlay.split() {}
+
+    writer.context.popoverParent = this@popoverWriter.takeIf { !popoverRoot }
+    writer.context.popoverCloser = null
+
+    return writer
+}
+
 /**
  * Opens a ViewWriter context that can be used to render overlays. Note that on some platforms, this will spawn a new
  * view tree in the underlying view system. For example, on iOS modal overlays are rendered in a new ViewController,
@@ -129,5 +141,5 @@ fun Element.popoverWriter(overlay: ElementWriter, popoverRoot: Boolean = false, 
 expect fun ElementWriter.overlayWriter(
     modal: Boolean = true,
     transition: ScreenTransitions = ScreenTransitions.Fade,
-    body: ContainerElement.(remove: () -> Unit) -> Unit
+    body: ViewWriter.(remove: () -> Unit) -> Unit
 )

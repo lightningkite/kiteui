@@ -5,9 +5,13 @@ import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.ElementWriter
+import com.lightningkite.kiteui.views.NativeElementCommonCode
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.theme
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -17,7 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 
-class ImageView(viewWriter: ViewWriter) : CoroutineScope {
+class ImageView(viewWriter: ElementWriter) : CoroutineScope {
     val rView: Frame = with(viewWriter) { frame { } }
     override val coroutineContext: CoroutineContext get() = rView.coroutineContext
 
@@ -95,9 +99,10 @@ class ImageView(viewWriter: ViewWriter) : CoroutineScope {
                 buildList {
                     with(rView) {
                         for (imageSource in it.sources) {
-                            ThemeDerivation { if(rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext
-                            add(rawImage(imageSource, it.description ?: "", it.scaleType) {
-                                themeTakeNonCascadingFromParent = true
+                            add(themed(
+                                ThemeDerivation { if (rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }
+                            ).rawImage(imageSource, it.description ?: "", it.scaleType) {
+                                themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
                                 themeChoice
                                 opacity = 0.0
                                 reactive {

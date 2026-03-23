@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElement
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.core.*
 
@@ -46,5 +47,5 @@ interface SlidingPanelControl {
     fun close()
 }
 
-expect class CoordinatorDragHandle(context: ElementContext): NativeContainerElement
+expect class CoordinatorDragHandle(context: ElementContext): NativeElement
 

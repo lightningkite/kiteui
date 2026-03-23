@@ -7,15 +7,15 @@ import android.graphics.RectF
 import androidx.annotation.FloatRange
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.RView
 
-actual class CircularProgress actual constructor(context: ElementContext) : RView(context) {
+actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
 
-    override val native = NCircularProgress(context.activity).apply {
+    override val native = NCircularProgress(context.activity)
 
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) {
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         val theme = theme.theme
         native.setProgressColor(theme.foreground.colorInt())
         native.setProgressBackgroundColor(theme.background.colorInt())

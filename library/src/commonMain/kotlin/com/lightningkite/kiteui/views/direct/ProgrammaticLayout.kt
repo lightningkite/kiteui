@@ -12,6 +12,9 @@ expect class ProgrammaticLayout(context: ElementContext): NativeContainerElement
     override var gap: Dimension?
     var delegate: ProgrammaticLayoutDelegate
     fun invalidateLayout()
+
+    @Deprecated("Will probably be removed in the future.")
+    override val spacingForChildCornerRadii: Dimension
 }
 
 interface ProgrammaticLayoutDelegate {

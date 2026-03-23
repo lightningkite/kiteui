@@ -1,18 +1,23 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.models.ClickableSemantic
-import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.openTab
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
-actual class ExternalLink actual constructor(context: ElementContext) : RView(context) {
+actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val driverActions get() = super.driverActions + externalLinkDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
+    }
+
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ClickableSemantic
+            if (!enabled) t += DisabledSemantic
+            t
+        }
     }
 
     actual var to: String? = null
@@ -40,11 +45,5 @@ actual class ExternalLink actual constructor(context: ElementContext) : RView(co
             refreshTheming()
         }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if (!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }

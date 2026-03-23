@@ -13,13 +13,21 @@ import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
-import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RViewWithAction
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class FormattedTextInput actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
     override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
+
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ThemeDerivation.None
+            if (!enabled) t += DisabledSemantic
+            t
+        }
+    }
+
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
@@ -48,8 +56,8 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : RV
             }
         }
     }
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         val theme = theme.theme
         _fontAndStyle = theme.font
         native.setTextColor(theme.foreground.colorInt())
@@ -87,12 +95,6 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : RV
             refreshTheming()
         }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if (!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
     private var useSensitiveDotMask = false
         set(value) {
             field = value
@@ -123,12 +125,12 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : RV
             useSensitiveDotMask = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
 
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
+    override fun nativeSetAction(action: Action?) {
+        super.nativeSetAction(action)
+        native.setImeActionLabel(action?.title, KeyEvent.KEYCODE_ENTER)
         native.setOnEditorActionListener { v, actionId, event ->
-            value?.startAction(this)
-            value != null
+            action?.startAction(this)
+            action != null
         }
     }
 

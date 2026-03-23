@@ -231,41 +231,41 @@ val ViewWriter.navigator by ViewWriter::pageNavigator
 @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
 val PlatformNavigator: PageNavigator get() = throw NotImplementedError()
 
-@Deprecated("Use directly through context", ReplaceWith("context.safeInsets"))
+@Deprecated("Use directly through context", ReplaceWith("context.safeInsets()"))
 var Element.safeInsets
     get() = context.safeInsets
     set(value) { context.safeInsets = value }
-@Deprecated("Use directly through context", ReplaceWith("context.popoverParent"))
+@Deprecated("Use directly through context", ReplaceWith("context.popoverParent()"))
 var Element.popoverParent
     get() = context.popoverParent
     set(value) { context.popoverParent = value }
-@Deprecated("Use directly through context", ReplaceWith("context.popoverCloser"))
+@Deprecated("Use directly through context", ReplaceWith("context.popoverCloser()"))
 var Element.popoverCloser
     get() = context.popoverCloser
     set(value) { context.popoverCloser = value }
-@Deprecated("Use directly through context", ReplaceWith("context.popoverKeepOpen"))
+@Deprecated("Use directly through context", ReplaceWith("context.popoverKeepOpen()"))
 var Element.popoverKeepOpen
     get() = context.popoverKeepOpen
     set(value) { context.popoverKeepOpen = value }
 
-@Deprecated("Use directly through context", ReplaceWith("context.closePopovers"))
+@Deprecated("Use directly through context", ReplaceWith("context.closePopovers()"))
 fun Element.closePopovers() {
     popoverCloser?.invoke()
     popoverCloser = null
     popoverParent?.closePopovers()
 }
-@Deprecated("Use directly through context", ReplaceWith("context.closeThisPopover"))
+@Deprecated("Use directly through context", ReplaceWith("context.closeThisPopover()"))
 fun Element.closeThisPopover() {
     popoverCloser?.invoke()
     popoverCloser = null
     popoverParent?.closeSiblingPopovers()
 }
-@Deprecated("Use directly through context", ReplaceWith("context.closeSiblingPopovers"))
+@Deprecated("Use directly through context", ReplaceWith("context.closeSiblingPopovers()"))
 fun Element.closeSiblingPopovers() {
     popoverCloser?.invoke()
     popoverCloser = null
 }
-@Deprecated("Use directly through context", ReplaceWith("context.keepPopoverOpen"))
+@Deprecated("Use directly through context", ReplaceWith("context.keepPopoverOpen()"))
 fun Element.keepPopoverOpen(lifecycle: CoroutineScope) {
     popoverKeepOpen++
     lifecycle.onRemove { popoverKeepOpen-- }

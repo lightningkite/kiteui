@@ -8,13 +8,14 @@ import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
 
 
-actual class Separator actual constructor(context: ElementContext): RView(context) {
+actual class Separator actual constructor(context: ElementContext): NativeElement(context) {
     override val native = NSeparator(context.activity).apply {
         minimumWidth = 1
         minimumHeight = 1
     }
 
-    override fun applyTheme(theme: ThemeAndBack) {
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         val theme = theme.theme
         val c = native.parent as? SimplifiedLinearLayout
         val v = native
@@ -22,7 +23,7 @@ actual class Separator actual constructor(context: ElementContext): RView(contex
         val size = theme.outlineWidth.value.coerceAtLeast(1f).toInt()
         v.thickness = size
         (v.parent as? SimplifiedLinearLayout)?.let {
-            lparams.run {
+            native.layoutParams?.run {
                 width = if(it.orientation == SimplifiedLinearLayout.HORIZONTAL) size else ViewGroup.LayoutParams.MATCH_PARENT
                 height = if(it.orientation == SimplifiedLinearLayout.HORIZONTAL) ViewGroup.LayoutParams.MATCH_PARENT else size
             }

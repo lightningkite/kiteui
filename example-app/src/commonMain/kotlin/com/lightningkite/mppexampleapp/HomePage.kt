@@ -33,7 +33,9 @@ class HomePage : Page {
             centered.h1("KiteUI - Beautiful by Default")
             separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")
+
             space()
+
             centered.h2("Goals")
             separator()
             text("- Web first - the web version should be comparable or better than React in performance, and generate reasonably small binaries.")
@@ -44,7 +46,9 @@ class HomePage : Page {
             text("- Kotlin-first - we use Kotlin conventions everywhere possible.")
             text("- Declarative - encode meaning into the system front-to-back, not the 'how'.")
             text("- Semantic theming - style and content should be separated and bridged via meaning, not result.  It's not a 'red' button, it's a button that performs a dangerous action.")
+
             space()
+
             h2("Quick Sample")
             example(
                 """
@@ -75,7 +79,7 @@ class HomePage : Page {
                 col {
                     text("Here is a basic counter:")
                     row {
-                        expanding.centered.text { ::content { number().toString() } }
+                        centered.expanding.text { ::content { number().toString() } }
                         col {
                             important.button {
                                 text("+")

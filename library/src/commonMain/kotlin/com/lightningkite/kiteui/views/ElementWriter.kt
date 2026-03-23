@@ -13,6 +13,7 @@ import kotlin.contracts.contract
  * sub-interfaces enforces the canonical modifier order:
  * `alignment.weight.shownWhen.theme.sizing.scrolling.element`
  */
+@ViewTreeBuilder
 interface ElementWriter : CoroutineScopeHelpers2 {
     val context: ElementContext
     fun willAddChild(element: Element)

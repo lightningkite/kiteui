@@ -9,9 +9,10 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 
-actual class Space actual constructor(context: ElementContext, val multiplier: Double): RView(context) {
+actual class Space actual constructor(context: ElementContext, val multiplier: Double): NativeElement(context) {
     override val native = NSpace(context.activity)
-    override fun applyTheme(theme: ThemeAndBack) {
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         native.mySuggestedMinimumWidth = (theme.theme.gap * multiplier).value.roundToInt()
         native.mySuggestedMinimumHeight = (theme.theme.gap * multiplier).value.roundToInt()
     }

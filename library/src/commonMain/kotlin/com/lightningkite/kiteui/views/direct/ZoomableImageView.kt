@@ -4,8 +4,10 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.theme
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -15,7 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 
-class ZoomableImageView(viewWriter: ViewWriter) : CoroutineScope {
+class ZoomableImageView(viewWriter: ElementWriter) : CoroutineScope {
     val rView: Frame = with(viewWriter) { frame { } }
     override val coroutineContext: CoroutineContext get() = rView.coroutineContext
 

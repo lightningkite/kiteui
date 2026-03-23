@@ -20,13 +20,24 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual open class TextInput actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual open class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
     override val driverActions get() = super.driverActions + textInputDriverActions()
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         inputType = EditorInfo.TYPE_CLASS_TEXT
     }
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
+
+    init {
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ThemeDerivation.None
+            if (!enabled) t += DisabledSemantic
+            t
+        }
+    }
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        val theme = theme.theme
         _fontAndStyle = theme.font
         native.setTextColor(theme.foreground.colorInt())
         native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
@@ -53,12 +64,6 @@ actual open class TextInput actual constructor(context: ElementContext) : RViewW
             native.isEnabled = value
             refreshTheming()
         }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if (!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
 
     private var useSensitiveDotMask = false
         set(value) {
@@ -90,12 +95,12 @@ actual open class TextInput actual constructor(context: ElementContext) : RViewW
             useSensitiveDotMask = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
 
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
+    override fun nativeSetAction(action: Action?) {
+        super.nativeSetAction(action)
+        native.setImeActionLabel(action?.title, KeyEvent.KEYCODE_ENTER)
         native.setOnEditorActionListener { v, actionId, event ->
-            value?.startAction(this)
-            value != null
+            action?.startAction(this)
+            action != null
         }
     }
 

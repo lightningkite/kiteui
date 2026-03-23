@@ -4,12 +4,12 @@ import android.content.res.ColorStateList
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
-import com.lightningkite.kiteui.models.ClickableSemantic
-import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 
-actual class Button actual constructor(context: ElementContext): RViewWithSecondaryAction(context) {
+@OptIn(ExperimentalKiteUi::class)
+actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + buttonDriverActions()
     val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
@@ -20,16 +20,16 @@ actual class Button actual constructor(context: ElementContext): RViewWithSecond
         isClickable = true
     }
 
-    override fun postSetup() {
-        super.postSetup()
-        addChild(object: RView(context) {
-            override val native = progress
+    override fun startup() {
+        super.startup()
+        addChild(object: NativeElement(context) {
+            override val native = this@Button.progress
         })
-        working.addListener { progress.visibility = if(working.value) View.VISIBLE else View.GONE }
+        foregroundProcesses.addListener { progress.visibility = if(!foregroundProcesses.state.success) View.VISIBLE else View.GONE }
     }
 
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        applyThemeWithRipple(theme)
         val theme = theme.theme
         progress.indeterminateTintList = ColorStateList.valueOf(theme.foreground.colorInt())
     }
@@ -48,6 +48,12 @@ actual class Button actual constructor(context: ElementContext): RViewWithSecond
                 false
             }
         }
+
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ClickableSemantic
+            if (!enabled) t += DisabledSemantic
+            t
+        }
     }
 
     actual var enabled: Boolean
@@ -56,10 +62,4 @@ actual class Button actual constructor(context: ElementContext): RViewWithSecond
             native.isEnabled = value
             refreshTheming()
         }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
 }

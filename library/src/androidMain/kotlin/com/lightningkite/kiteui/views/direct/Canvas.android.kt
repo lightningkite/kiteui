@@ -6,13 +6,12 @@ import android.util.AttributeSet
 import android.view.*
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import kotlin.math.min
 
 
-actual class Canvas actual constructor(context: ElementContext): RView(context) {
+actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
     override val native = NCanvas(context.activity)
 
     actual var delegate: CanvasDelegate?
@@ -23,8 +22,8 @@ actual class Canvas actual constructor(context: ElementContext): RView(context) 
             delegate?.invalidate?.invoke()
         }
 
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         delegate?.theme = theme.theme
         delegate?.invalidate?.invoke()
     }

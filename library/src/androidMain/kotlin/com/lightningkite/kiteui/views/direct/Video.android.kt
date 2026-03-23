@@ -25,7 +25,7 @@ actual class RawVideoView actual constructor(
     @get:OptIn(UnstableApi::class)
     actual val scaleType: ImageScaleType,
     actual val preloadHint: PreloadHint,
-) : RView(context) {
+) : NativeElement(context) {
     override val native = PlayerView(context.activity).apply {
         player = ExoPlayer.Builder(context.activity).build()
         contentDescription = description
