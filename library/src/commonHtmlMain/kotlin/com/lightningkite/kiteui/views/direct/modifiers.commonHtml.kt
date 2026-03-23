@@ -171,6 +171,7 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: 
             native.classes.add("kiteui-stack")
             native.attributes.hidden = !default
             var currentState = default
+
             reactive {
                 if (areAnimationsEnabled && fullyStarted) {
                     val c = condition()
@@ -185,7 +186,7 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: 
                 } else {
                     val c = condition()
                     if (c != currentState) {
-                        native.attributes.hidden = !condition()
+                        native.attributes.hidden = !c
                     }
                     currentState = c
                 }
@@ -197,6 +198,11 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: 
             element.underlyingNativeElement.themeBase = GetBaseTheme.fromParentNonCascading
             Frame.internalAddChildStack(this, index, element)
         }
+
+        @Deprecated("Will probably be removed in the future.")
+        @Suppress("DEPRECATION")
+        override val spacingForChildCornerRadii: Dimension
+            get() = parent?.spacingForChildCornerRadii ?: 0.px
     }) {}
 }
 

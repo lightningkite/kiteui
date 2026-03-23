@@ -311,7 +311,7 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
                 }
 
                 zPosition = -99999.0
-                parentSpacing = (parent?.mySpacingForChildren ?: 0.px).value
+                parentSpacing = (parent?.spacingForChildCornerRadii ?: 0.px).value
                 desiredCornerRadius = theme.theme.cornerRadii
 
                 val bounds = this@RView.native.layerSize()

@@ -53,7 +53,7 @@ val ElementContext.appNavFactory by contextAddon<Signal<ViewWriter.(AppNav.() ->
 val ViewWriter.appNavFactory
     get() = context.appNavFactory
 
-fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit): Unit {
+fun ElementWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit) {
     return appBase(main, dialog) {
         swapView {
             debugName = "swapView for appNavFactory"
@@ -65,7 +65,7 @@ fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup:
     }
 }
 
-fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): Unit {
+fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     val showMenu = Signal(false)
     themed(OuterSemantic).col {
@@ -84,7 +84,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): Unit {
                 ::visible { pageNavigator.canGoBack() }
                 onClick { pageNavigator.goBack() }
             }
-            themed(HeaderSemantic).centered.expanding.text {
+            centered.expanding.themed(HeaderSemantic).text {
                 ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
@@ -104,7 +104,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): Unit {
 }
 
 
-fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): Unit {
+fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
     themed(OuterSemantic).col {
@@ -117,13 +117,13 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): Unit {
                 ::visible { pageNavigator.canGoBack() }
                 onClick { pageNavigator.goBack() }
             }
-            themed(HeaderSemantic).centered.text {
+            centered.themed(HeaderSemantic).text {
                 ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             }
             space()
-            expanding.centered.navGroupTop(appNav.navItemsProperty)
+            centered.expanding.navGroupTop(appNav.navItemsProperty)
             space()
             centered.navGroupActions(appNav.actionsProperty)
             ::shown { appNav.existsProperty() }
@@ -132,7 +132,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): Unit {
     }
 }
 
-fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
+fun ElementWriter.CanAddTheme.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     themed(OuterSemantic).col {
         debugName = "outer nav"
@@ -156,7 +156,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
                     ::visible { pageNavigator.canGoBack() }
                     onClick { pageNavigator.goBack() }
                 }
-                centered.onNext(HeaderSemantic).centered.expanding.text {
+                expanding.centered.themed(HeaderSemantic).text {
                     ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
@@ -175,7 +175,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
                     ::visible { pageNavigator.canGoBack() }
                     onClick { pageNavigator.goBack() }
                 }
-                themed(HeaderSemantic).centered.expanding.text {
+                centered.expanding.themed(HeaderSemantic).text {
                     ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
@@ -185,11 +185,8 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
             }
         }
         val tabsHandleBottom = remember { appNav.existsProperty() && !AppState.softInputOpen() }
-        // Apply bottom safe insets when keyboard is open, since the tab bar
-            // (which normally handles the bottom inset) is hidden during keyboard input.
-        beforeSetup // Apply bottom safe insets when keyboard is open, since the tab bar
-        // (which normally handles the bottom inset) is hidden during keyboard input.
-        { // Apply bottom safe insets when keyboard is open, since the tab bar
+        beforeSetup {
+            // Apply bottom safe insets when keyboard is open, since the tab bar
             // (which normally handles the bottom inset) is hidden during keyboard input.
             applySafeInsets { edges ->
                 Edges(
@@ -210,7 +207,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     }
 }
 
-fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
+fun ElementWriter.CanAddTheme.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     themed(OuterSemantic).col {
 // Nav 4 left and top - add dropdown for user info
@@ -223,7 +220,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
                 ::visible { pageNavigator.canGoBack() }
                 onClick { pageNavigator.goBack() }
             }
-            themed(HeaderSemantic).centered.text {
+            centered.themed(HeaderSemantic).text {
                 ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
@@ -233,7 +230,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
 
             ::shown { appNav.existsProperty() }
         }
-        expanding.onNext(OuterSemantic).row {
+        expanding.themed(OuterSemantic).row {
             beforeSetup { applySafeInsets(right = false) }.nav.scrolling.navGroupColumn(appNav.navItemsProperty) {
                 ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false

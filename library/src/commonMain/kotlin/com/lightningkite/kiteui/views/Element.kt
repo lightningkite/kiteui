@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.reactive.context.StatusListener
@@ -66,6 +67,9 @@ interface Element : CoroutineScopeHelpers2, StatusListener {
     /** Debug name for logging and debugging purposes */
     var debugName: String?
 
+    /** Whether this element should show up when printing (Ctrl+P) the page. */
+    var showOnPrint: Boolean
+
     companion object;
 
     object Debugger {
@@ -86,9 +90,6 @@ interface ContainerElement : Element, ViewWriter {
     /** List of child elements in this container */
     val children: List<Element>
 
-    /** Default alignment for children if not specified individually */
-    var childDefaultAlignment: Alignment?
-
     /** Adds a child element at the specified index */
     fun addChild(index: Int, element: Element)
 
@@ -107,4 +108,14 @@ interface ContainerElement : Element, ViewWriter {
 
     /** Removes all child elements */
     fun clearChildren() { for (i in children.indices) removeChild(i) }
+
+
+
+    /** Spacing used for child [CornerRadii.RatioOfSpacing] and [CornerRadii.AdaptiveToSpacing] calculations. */
+    @Deprecated("Will probably be removed in the future.")
+    val spacingForChildCornerRadii: Dimension get() {
+        val pad = padding ?: themeAndBack.theme.padding.top
+        val gap = themeAndBack.theme.gap
+        return minOf(pad, gap)
+    }
 }

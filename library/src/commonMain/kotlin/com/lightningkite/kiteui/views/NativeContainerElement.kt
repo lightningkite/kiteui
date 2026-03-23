@@ -34,8 +34,6 @@ expect abstract class NativeContainerElement(context: ElementContext) : Containe
 abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context), ContainerElement {
     override val underlyingNativeElement: NativeContainerElement get() = this as NativeContainerElement
 
-    final override var childDefaultAlignment: Alignment? = null
-
     // --- CHILDREN ---
 
     private val internalChildren = ArrayList<Element>()
@@ -54,7 +52,6 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
         if (!checkActive("addChild", requireTarget = false)) return
         if (element.parent !== this) {
             element.underlyingNativeElement.parent = this
-            if (element is ContainerElement && element.childDefaultAlignment == null) element.childDefaultAlignment = this.childDefaultAlignment
         }
         nativeAddChild(index, element)
         internalChildren.add(index, element)
@@ -114,5 +111,12 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
             if (oldCascading != newCascading) {
                 for (child in children) child.underlyingNativeElement.refreshTheming()
             }
+        }
+
+    open val spacingForChildCornerRadii: Dimension
+        get()  {
+            val pad = padding ?: themeAndBack.theme.padding.top
+            val gap = gap ?: themeAndBack.theme.gap
+            return minOf(pad, gap)
         }
 }

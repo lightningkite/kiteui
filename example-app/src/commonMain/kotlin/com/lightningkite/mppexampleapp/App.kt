@@ -30,8 +30,8 @@ val defaultTheme = Theme.flat2("flat2default", 0.6.turns).customize(
 //val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
 val appTheme = Signal<Theme>(defaultTheme)
 
-fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): Unit {
-    RViewHelper.leakDetection = true
+fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
+    Element.Debugger.leakDetect = true
     val rootView = produceExactlyOne {
         appNav(navigator, dialog) {
             appName = "KiteUI Sample App"

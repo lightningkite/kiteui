@@ -13,18 +13,18 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
-fun ViewWriter.navGroupColumn(
+fun ElementWriter.navGroupColumn(
     elements: Reactive<List<NavElement>>,
     onNavigate: suspend () -> Unit = {},
-    setup: ContainingView.() -> Unit = {}
-): Unit {
+    setup: LinearLayoutElement.() -> Unit = {}
+) {
     col {
         navGroupColumnInner(elements, onNavigate)
         setup()
     }
 }
 
-private fun RView.selectedIfRouteMatches(it: NavLink) {
+private fun Element.selectedIfRouteMatches(it: NavLink) {
     dynamicTheme {
         val matchingPage = mainPageNavigator.currentPage()
             ?.let { mainPageNavigator.routes.render(it) }?.urlLikePath?.segments == mainPageNavigator.routes.render(
@@ -34,7 +34,7 @@ private fun RView.selectedIfRouteMatches(it: NavLink) {
     }
 }
 
-private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNavigate: suspend () -> Unit = {}) {
+private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNavigate: suspend () -> Unit = {}) {
     themeChoice += ListSemantic
     forEach(readable) {
         fun ViewWriter.display(navElement: NavElement) {
@@ -106,14 +106,14 @@ private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNa
     }
 }
 
-fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): Unit {
+fun ElementWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): Unit {
     row {
         navGroupActionsInner(elements)
         setup()
     }
 }
 
-private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
+private fun ContainerElement.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
     fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
         padded.frame {
             centered.icon {
@@ -172,14 +172,14 @@ private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): Unit {
+fun ElementWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}) {
     row {
         navGroupTopInner(readable)
         setup()
     }
 }
 
-private fun RView.navGroupTopInner(readable: Reactive<List<NavElement>>) {
+private fun ContainerElement.navGroupTopInner(readable: Reactive<List<NavElement>>) {
     themeChoice += ListSemantic
     forEach(readable) {
         when (it) {
@@ -227,7 +227,7 @@ private fun RView.navGroupTopInner(readable: Reactive<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navElementIconAndCount(navElement: NavElement): Unit {
+fun ElementWriter.navElementIconAndCount(navElement: NavElement): Unit {
     frame {
         centered.icon {
             ::source { navElement.icon() }
@@ -246,7 +246,7 @@ fun ViewWriter.navElementIconAndCount(navElement: NavElement): Unit {
     }
 }
 
-fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): Unit {
+fun ElementWriter.navElementIconAndCountHorizontal(navElement: NavElement): Unit {
     row {
         centered.icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
@@ -265,7 +265,7 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): Unit {
     }
 }
 
-fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): Unit {
+fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): Unit {
     row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {

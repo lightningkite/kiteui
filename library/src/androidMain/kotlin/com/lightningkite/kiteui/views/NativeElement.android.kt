@@ -199,7 +199,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     actual override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean) {
         generateSequence(native) {
             it.parent as? View
-        }.firstOrNull() {
+        }.firstOrNull {
             when (it) {
                 is HorizontalScrollView -> {
                     scrollToView(it, native, animate)
@@ -253,12 +253,13 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     protected var backgroundBlock: GradientDrawable? = null
 
-    protected fun updateCorners() {
+    fun updateCorners() {
+        @Suppress("DEPRECATION")
         val cr = when (val it = theme.cornerRadii) {
-            is CornerRadii.AdaptiveToSpacing -> min((parent?.mySpacingForChildren ?: 0.px).value, it.value.value)
+            is CornerRadii.AdaptiveToSpacing -> min((parent?.spacingForChildCornerRadii ?: 0.px).value, it.value.value)
             is CornerRadii.Fixed -> it.value.value
             is CornerRadii.RatioOfSize -> if (it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
-            is CornerRadii.RatioOfSpacing -> it.value * (parent?.mySpacingForChildren ?: 0.px).value
+            is CornerRadii.RatioOfSpacing -> it.value * (parent?.spacingForChildCornerRadii ?: 0.px).value
             is CornerRadii.PerCorner -> it.value.value
         }
 
@@ -459,6 +460,9 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         updateCorners()
         updateTransform(theme.theme)
     }
+
+    // printing only works on web anyway.
+    actual override var showOnPrint: Boolean = true
 }
 
 val Element.native get() = underlyingNativeElement.native

@@ -13,7 +13,7 @@ import kotlin.contracts.contract
  * sub-interfaces enforces the canonical modifier order:
  * `alignment.weight.shownWhen.theme.sizing.scrolling.element`
  */
-interface ElementWriter {
+interface ElementWriter : CoroutineScopeHelpers2 {
     val context: ElementContext
     fun willAddChild(element: Element)
     fun addChild(element: Element)
@@ -59,10 +59,10 @@ interface ElementWriter {
      * Allows theme modifiers to be applied.
      *
      * Available modifiers (in addition to [CanAddSizing] modifiers):
-     * - Theme semantics: `card`, `fieldTheme`, `buttonTheme`, `bar`, `nav`, `group`, `padded`
+     * - Direct theme application: `themed(theme)`
+     * - Grouping: `card`, `fieldTheme`, `buttonTheme`, `bar`, `nav`, `group`, `padded`
      * - Emphasis: `important`, `critical`, `warning`, `danger`, `affirmative`, `emphasized`, `compact`
      * - Text styling: `bold`, `italic`, `allCaps`, `strikethrough`, `underline`, `textSize(size)`, `withSpacing(multiplier)`
-     * - Direct theme application: `themed(theme)`
      */
     interface CanAddTheme : CanAddSizing
 
@@ -126,5 +126,12 @@ inline fun <T : Element> ElementWriter.write(element: T, setup: T.() -> Unit): T
  *
  * All modifiers can be applied in the canonical order:
  * `alignment.weight.shownWhen.theme.sizing.scrolling.element`
+ *
+ * - Alignment Modifiers: [ElementWriter.CanAddAlignment]
+ * - Weight Modifiers: [ElementWriter.CanAddWeight]
+ * - Visibility Modifiers: [ElementWriter.CanAddShownWhen]
+ * - Theme Modifiers: [ElementWriter.CanAddTheme]
+ * - Sizing Modifiers: [ElementWriter.CanAddSizing]
+ * - Scrolling Modifiers: [ElementWriter.CanAddScrolling]
  */
 interface ViewWriter : ElementWriter.CanAddAlignment

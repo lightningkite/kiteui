@@ -4,9 +4,17 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElement
+import com.lightningkite.kiteui.views.padding
 
 interface LinearLayoutElement : ContainerElement {
     var gap: Dimension?
+
+    @Deprecated("Will probably be removed in the future")
+    override val spacingForChildCornerRadii: Dimension get() {
+        val pad = padding ?: themeAndBack.theme.padding.top
+        val gap = gap ?: themeAndBack.theme.gap
+        return minOf(pad, gap)
+    }
 }
 
 expect class RowOrCol(context: ElementContext) : NativeContainerElement, LinearLayoutElement {

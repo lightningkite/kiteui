@@ -46,6 +46,8 @@ expect abstract class NativeElement(context: ElementContext) : Element, NativeEl
 
     /** Returns the parent-relative rectangle occupied by this element */
     fun parentRectangle(): Rect?
+
+    override var showOnPrint: Boolean
 }
 
 /**
@@ -152,16 +154,20 @@ abstract class NativeElementCommonCode internal constructor(override val context
      * Strategy for applying state-based theme modifications (loading, error, working states).
      * Can be combined using the plus operator.
      */
-    fun interface StateTheming {
+    fun interface ElementSpecificTheming {
         operator fun invoke(element: NativeElement): ThemeDerivation
 
-        operator fun plus(other: StateTheming): StateTheming {
-            return StateTheming { e -> this(e) + other(e) }
+        operator fun plus(other: ElementSpecificTheming): ElementSpecificTheming {
+            return ElementSpecificTheming { e -> this(e) + other(e) }
+        }
+
+        operator fun plus(theme: ThemeDerivation): ElementSpecificTheming {
+            return ElementSpecificTheming { e -> this(e) + theme }
         }
 
         companion object {
             /** Default state theming that applies loading/working/error semantics */
-            val loadingAndProcessing = StateTheming { e ->
+            val loadingAndProcessing = ElementSpecificTheming { e ->
                 val t = e.foregroundProcesses.state.handle(
                     success = { ThemeDerivation.None },
                     notReady = { WorkingSemantic },
@@ -187,7 +193,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
         }
 
     @ExperimentalKiteUi
-    var appliedStatefulTheming: StateTheming = StateTheming.loadingAndProcessing
+    var elementSpecificTheming: ElementSpecificTheming = ElementSpecificTheming.loadingAndProcessing
         set(value) {
             field = value
             refreshTheming()
@@ -212,7 +218,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
             }
             "refreshTheming will set! $source Base theme is ${base.id}"
         }
-        val t = themeChoice(base) + appliedStatefulTheming(this)
+        val t = themeChoice(base) + elementSpecificTheming(this)
         debug { "refreshTheming will set to ${t.theme.id}!" }
         themeAndBack = t
     }

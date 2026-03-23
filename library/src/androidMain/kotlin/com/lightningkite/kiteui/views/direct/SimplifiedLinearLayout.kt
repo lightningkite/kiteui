@@ -13,9 +13,7 @@ typealias SimplifiedLinearLayoutLayoutParams = SimplifiedLinearLayout.LayoutPara
 /**
  * A drastically simplified variant of LinearLayout.
  */
-open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) :
-    ViewGroup(context, attrs, defStyleAttr, defStyleRes) {
-
+open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : ViewGroup(context, attrs, defStyleAttr, defStyleRes) {
     var isBaselineAligned = true
     private var mBaselineAlignedChildIndex = -1
     private var mBaselineChildTop = 0

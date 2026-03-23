@@ -23,8 +23,8 @@ interface DocPage: Page {
 
 fun ViewWriter.example(
     codeText: String,
-    action: ViewWriter.()->Unit
-): Unit {
+    action: ElementWriter.CanAddShownWhen.() -> Unit
+) {
     card.rowCollapsingToColumn(40.rem) {
         expanding.scrollingHorizontally.code { content = codeText }
         separator()
@@ -32,10 +32,10 @@ fun ViewWriter.example(
     }
 }
 
-fun ViewWriter.article(
-    setup: ContainingView.()->Unit
-): Unit {
-    scrolling.frame {
+fun ElementWriter.article(
+    setup: LinearLayoutElement.()->Unit
+) {
+    frame {
         align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col {
             setup()
         }

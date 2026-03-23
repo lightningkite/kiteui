@@ -1,13 +1,117 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
+import android.view.Gravity
 import android.view.ViewGroup
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeContainerElement
+import com.lightningkite.kiteui.views.theme
+import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.context.reactive
+import kotlin.invoke
 import kotlin.math.max
 import kotlin.math.roundToInt
+
+abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+    override val native = SlightlyModifiedLinearLayout(context.activity)
+
+    override var gap: Dimension? = null
+        set(value) {
+            field = value
+            for (child in children) child.underlyingNativeElement.updateCorners()
+            native.gap = (value ?: theme.gap).value.roundToInt()
+        }
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        native.gap = (gap ?: theme.theme.gap).value.roundToInt()
+    }
+}
+
+actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
+    override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+        SimplifiedLinearLayout.LayoutParams(
+            if (vertical) ViewGroup.LayoutParams.MATCH_PARENT else ViewGroup.LayoutParams.WRAP_CONTENT,
+            if (vertical) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT,
+        )
+
+    actual var vertical: Boolean
+        get() = native.orientation == SimplifiedLinearLayout.VERTICAL
+        set(value) {
+            native.orientation = if (value) SimplifiedLinearLayout.VERTICAL else SimplifiedLinearLayout.HORIZONTAL
+            native.gravity = if (value) Gravity.CENTER_HORIZONTAL else Gravity.CENTER_VERTICAL
+        }
+
+    actual fun spacingOverrideBeforeNext(amount: Dimension) {}
+}
+
+actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : NativeLinearLayoutElement(context) {
+    override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+        SimplifiedLinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+    init {
+        native.orientation = SimplifiedLinearLayout.VERTICAL
+        native.gravity = Gravity.CENTER_HORIZONTAL
+        reactive {
+            val w = AppState.windowInfo().width
+            val index = breakpoints.indexOfFirst { w > it }
+            if (index == -1 || index % 2 == 1) {
+                native.orientation = SimplifiedLinearLayout.VERTICAL
+                native.gravity = Gravity.CENTER_HORIZONTAL
+                native.ignoreWeights = true
+            } else {
+                native.orientation = SimplifiedLinearLayout.HORIZONTAL
+                native.gravity = Gravity.CENTER_VERTICAL
+                native.ignoreWeights = false
+            }
+        }
+    }
+}
+
+actual class RowWrapping actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+    override val native = FlexboxLayout(context.activity)
+
+    override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+        ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+    actual override var gap: Dimension? = null
+        set(value) {
+            field = value
+            for (child in children) child.underlyingNativeElement.updateCorners()
+            native.gap = (value ?: theme.gap).value.roundToInt()
+            native.lineGap = (value ?: theme.gap).value.roundToInt()
+        }
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        native.gap = (gap ?: theme.theme.gap).value.roundToInt()
+        native.lineGap = (gap ?: theme.theme.gap).value.roundToInt()
+    }
+}
+
+
+
+
+
+open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayout(context) {
+    override fun generateDefaultLayoutParams(): LayoutParams? {
+        if (orientation == HORIZONTAL) {
+            return LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        } else if (orientation == VERTICAL) {
+            return LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        }
+        return null
+    }
+}
 
 /**
  * A custom layout that implements flexbox-like wrapping behavior for Android.
@@ -128,43 +232,4 @@ class FlexboxLayout(context: Context) : ViewGroup(context) {
     }
 
     private fun min(a: Int, b: Int): Int = if (a < b) a else b
-}
-
-actual class RowWrappingOld actual constructor(context: ElementContext) : RView(context) {
-    override val native = FlexboxLayout(context.activity)
-
-    override var gap: Dimension?
-        get() = super.gap
-        set(value) {
-            super.gap = value
-            native.gap = (value ?: theme.gap).value.roundToInt()
-            native.lineGap = (value ?: theme.gap).value.roundToInt()
-        }
-
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
-        native.gap = (gap ?: theme.theme.gap).value.roundToInt()
-        native.lineGap = (gap ?: theme.theme.gap).value.roundToInt()
-    }
-
-    override fun defaultLayoutParams(): ViewGroup.LayoutParams =
-        ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-    // The default implementations in RView should work correctly since our FlexboxLayout is a ViewGroup.
-    // However, we're overriding them here to make it explicit and to match the iOS implementation pattern.
-
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-    }
-
-    override fun internalRemoveChild(index: Int) {
-        super.internalRemoveChild(index)
-    }
-
-    override fun internalClearChildren() {
-        super.internalClearChildren()
-    }
 }

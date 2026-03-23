@@ -44,7 +44,7 @@ var Element.coordinatorFrame
     get() = context.coordinatorFrame
     set(value) { context.coordinatorFrame = value }
 
-fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit) {
+fun ElementWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainerElement.() -> Unit) {
     coordinatorFrame {
         context.mainPageNavigator = main
         dialog?.let {

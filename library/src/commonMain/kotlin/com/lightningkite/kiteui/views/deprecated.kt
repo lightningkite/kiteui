@@ -270,3 +270,8 @@ fun Element.keepPopoverOpen(lifecycle: CoroutineScope) {
     popoverKeepOpen++
     lifecycle.onRemove { popoverKeepOpen-- }
 }
+
+@Deprecated("Set on native element directly")
+var Element.showOnPrint: Boolean
+    get() = underlyingNativeElement.showOnPrint
+    set(value) { underlyingNativeElement.showOnPrint = value }

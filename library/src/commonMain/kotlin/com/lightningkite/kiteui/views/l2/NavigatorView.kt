@@ -10,14 +10,13 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
 
-fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
-    val n = navigator
-    return this.swapView {
+fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
+    return swapView {
         debugName = "navigatorView"
-        var lastStack = n.stack.value
+        var lastStack = navigator.stack.value
         this@swapView.swapping(
             transition = {
-                val newStack = n.stack.value
+                val newStack = navigator.stack.value
                 val transitionSet = theme.bodyTransitions
                 when {
                     newStack.size - lastStack.size > 0 -> transitionSet.forward
@@ -25,10 +24,10 @@ fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
                     else -> transitionSet.neutral
                 }.also { lastStack = newStack }
             },
-            current = { n.currentPage<Page?>() },
+            current = { navigator.currentPage<Page?>() },
             views = { screen ->
                 with(split()) {
-                    context.pageNavigator = n
+                    context.pageNavigator = navigator
                     if (screen != null)
                         with(screen) { themed(MainContentSemantic).padded.render() }
                     else null

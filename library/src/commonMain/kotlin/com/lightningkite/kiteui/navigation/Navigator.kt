@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.navigation
 
+import com.lightningkite.kiteui.views.ContainerElement
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.lateInitContextAddon
 import com.lightningkite.reactive.core.Reactive
@@ -89,16 +92,46 @@ var ElementContext.mainPageNavigator by lateInitContextAddon<PageNavigator>()
 var ElementContext.dialogPageNavigator by lateInitContextAddon<PageNavigator>()
 
 @Deprecated("Use directly through context", ReplaceWith("context.pageNavigator"))
-var ViewWriter.pageNavigator
+var ElementWriter.pageNavigator
     get() = context.pageNavigator
     set(value) { context.pageNavigator = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.mainPageNavigator"))
-var ViewWriter.mainPageNavigator
+var ElementWriter.mainPageNavigator
     get() = context.mainPageNavigator
     set(value) { context.mainPageNavigator = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.dialogPageNavigator"))
-var ViewWriter.dialogPageNavigator
+var ElementWriter.dialogPageNavigator
+    get() = context.dialogPageNavigator
+    set(value) { context.dialogPageNavigator = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.pageNavigator"))
+var Element.pageNavigator
+    get() = context.pageNavigator
+    set(value) { context.pageNavigator = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.mainPageNavigator"))
+var Element.mainPageNavigator
+    get() = context.mainPageNavigator
+    set(value) { context.mainPageNavigator = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.dialogPageNavigator"))
+var Element.dialogPageNavigator
+    get() = context.dialogPageNavigator
+    set(value) { context.dialogPageNavigator = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.pageNavigator"))
+var ContainerElement.pageNavigator
+    get() = context.pageNavigator
+    set(value) { context.pageNavigator = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.mainPageNavigator"))
+var ContainerElement.mainPageNavigator
+    get() = context.mainPageNavigator
+    set(value) { context.mainPageNavigator = value }
+
+@Deprecated("Use directly through context", ReplaceWith("context.dialogPageNavigator"))
+var ContainerElement.dialogPageNavigator
     get() = context.dialogPageNavigator
     set(value) { context.dialogPageNavigator = value }

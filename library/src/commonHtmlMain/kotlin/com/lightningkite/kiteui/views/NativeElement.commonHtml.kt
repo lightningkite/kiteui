@@ -125,7 +125,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         prevThemeClass = newClass
         native.classes.add(newClass)
 
-        native.setStyleProperty("--parentSpacing", parent?.mySpacingForChildren?.value?.toString() ?: "0px")
+        native.setStyleProperty("--parentSpacing", parent?.spacingForChildCornerRadii?.value?.toString() ?: "0px")
         native.flushClasses()
     }
 
@@ -135,6 +135,14 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
             else native.classes.remove("working")
         }
     }
+
+    actual override var showOnPrint: Boolean = true
+        set(value) {
+            if (value)
+                native.classes.remove("do-not-print")
+            else
+                native.classes.add("do-not-print")
+        }
 }
 
 val Element.native: FutureElement get() = underlyingNativeElement.native

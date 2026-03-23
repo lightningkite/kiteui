@@ -33,6 +33,7 @@ inline fun Element.withoutLoadingAnimations(block: CoroutineScope.() -> Unit) {
     CoroutineScope(coroutineContext.minusKey(StatusListener.Key)).run(block)
 }
 
+
 internal fun Element.defaultDriverActions(): Map<String, suspend (List<String>) -> String> = buildMap {
     put("scrollIntoView") {
         scrollIntoView(Align.Center, Align.Center, animate = false)

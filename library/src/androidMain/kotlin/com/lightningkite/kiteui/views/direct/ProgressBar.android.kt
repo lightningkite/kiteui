@@ -43,9 +43,9 @@ actual class ProgressBar actual constructor(context: ElementContext) : RView(con
                     native.height
                 )
 
-                is CornerRadii.AdaptiveToSpacing -> min((parent?.mySpacingForChildren ?: 0.px).value, it.value.value)
+                is CornerRadii.AdaptiveToSpacing -> min((parent?.spacingForChildCornerRadii ?: 0.px).value, it.value.value)
                 is CornerRadii.Fixed -> it.value.value
-                is CornerRadii.RatioOfSpacing -> it.value * (parent?.mySpacingForChildren ?: 0.px).value
+                is CornerRadii.RatioOfSpacing -> it.value * (parent?.spacingForChildCornerRadii ?: 0.px).value
                 is CornerRadii.PerCorner -> it.value.value
             }
 
