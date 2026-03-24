@@ -37,7 +37,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
         }
 
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
+        var t = theme[FieldSemantic]
         if(!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
     }
@@ -47,6 +47,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
     }
 
     override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
         native.setPaddingAll(0)
         native.setPopupBackgroundDrawable(theme.theme.backgroundDrawableWithoutCorners(null).apply {
             cornerRadius = 8.dp.value
@@ -54,24 +55,12 @@ actual class Select actual constructor(context: RContext): RView(context) {
             removeListener = applyGradientRadiusListener(native)
         })
 
-
-        val layerDrawable = background as? LayerDrawable ?: LayerDrawable(arrayOf())
-
-        fun setOrAddDrawable(index: Int, drawable: Drawable) {
-            if(index < layerDrawable.numberOfLayers) layerDrawable.setDrawable(index, drawable)
-            else layerDrawable.addLayer(drawable)
-        }
-        setOrAddDrawable(0, getBackgroundWithRipple(theme.theme, theme.drawBackground, layerDrawable.takeIf { it.numberOfLayers >= 1 }?.getDrawable(0) as? RippleDrawable))
-        ResourcesCompat.getDrawable(native.resources, R.drawable.baseline_arrow_drop_down_24, null)?.apply {
+        // Add dropdown arrow as foreground overlay
+        native.foreground =
+            ResourcesCompat.getDrawable(native.resources, R.drawable.baseline_arrow_drop_down_24, null)?.apply {
             colorFilter = PorterDuffColorFilter(theme.theme.foreground.closestColor().toInt(), PorterDuff.Mode.SRC_IN)
-        }?.let {
-            setOrAddDrawable(1, it)
-            layerDrawable.setLayerGravity(1, Gravity.END or Gravity.CENTER_VERTICAL)
-            layerDrawable.setLayerInsetEnd(1, theme.theme.gap.value.toInt())
         }
-        updateCorners()
-
-        background = layerDrawable
+        native.foregroundGravity = Gravity.END or Gravity.CENTER_VERTICAL
     }
 
     actual fun <T> bind(

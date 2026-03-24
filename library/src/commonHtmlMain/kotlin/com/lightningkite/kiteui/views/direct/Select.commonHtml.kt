@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.CardSemantic
+import com.lightningkite.kiteui.models.FieldSemantic
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -69,10 +69,10 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         set(value) { native.attributes.disabled = !value }
 
     override fun applyTheme(theme: ThemeAndBack) {
-        val convex = theme[CardSemantic]
+        val field = theme[FieldSemantic]
         val p = prevThemeClass
-        val newClass = context.kiteUiCss.themeInteractive(convex.theme)
-        super.applyTheme(convex)
+        val newClass = context.kiteUiCss.themeInteractive(field.theme)
+        super.applyTheme(field)
         native.classes.add("transition")
         native.children.forEach { o ->
             p?.let { o.classes.remove(it) }
