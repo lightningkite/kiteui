@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -10,7 +9,7 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class DismissBackground actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayout(context.activity).apply {
+    override val native = KiteUIFrameLayout(context.activity).apply {
         setOnClickListener {
             dialogPageNavigator.clear()
         }
