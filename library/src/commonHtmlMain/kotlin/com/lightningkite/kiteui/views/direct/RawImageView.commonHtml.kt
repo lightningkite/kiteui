@@ -13,12 +13,15 @@ import com.lightningkite.kiteui.models.vectorToSvgDataUrl
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.alt
 import com.lightningkite.kiteui.views.backgroundImage
+import com.lightningkite.kiteui.views.loading
 import com.lightningkite.kiteui.views.backgroundPosition
 import com.lightningkite.kiteui.views.backgroundRepeat
 import com.lightningkite.kiteui.views.backgroundSize
 import com.lightningkite.kiteui.views.position
 import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
@@ -38,18 +41,31 @@ actual abstract class RawImageViewLike(
     actual abstract val state: Reactive<Unit>
     val _state = RawReactive<Unit>()
 
+    // by Claude - track blob URLs created by createObjectURL so we can revoke them to prevent memory leaks
+    private var currentBlobUrl: String? = null
+
     init {
         native.classes.add("scaleType-$scaleType")
+        // by Claude - revoke blob URL when view is shut down
+        onRemove {
+            currentBlobUrl?.let { revokeObjectURL(it) }
+            currentBlobUrl = null
+        }
     }
 
-    protected fun ImageSource?.toUrl(): String? = when(val value = this) {
-        null -> ""
-        is ImageRemote -> value.url
-        is ImageRaw -> createObjectURL(value.data)
-        is ImageResource -> context.basePath + value.relativeUrl
-        is ImageLocal -> createObjectURL(value.file)
-        is ImageVector -> value.vectorToSvgDataUrl()
-        else -> ""
+    protected fun ImageSource?.toUrl(): String? {
+        // by Claude - revoke previous blob URL before creating a new one
+        currentBlobUrl?.let { revokeObjectURL(it) }
+        currentBlobUrl = null
+        return when(val value = this) {
+            null -> ""
+            is ImageRemote -> value.url
+            is ImageRaw -> createObjectURL(value.data).also { currentBlobUrl = it }
+            is ImageResource -> context.basePath + value.relativeUrl
+            is ImageLocal -> createObjectURL(value.file).also { currentBlobUrl = it }
+            is ImageVector -> value.vectorToSvgDataUrl()
+            else -> ""
+        }
     }
 }
 
@@ -63,6 +79,8 @@ actual class RawImageView actual constructor(
     init {
         native.tag = "img"
         native.classes.add("viewDraws")
+        native.attributes.alt = description  // by Claude - SEO alt attribute
+        native.attributes.loading = "lazy"  // by Claude - lazy loading for performance
     }
     actual override val state: Reactive<Unit> = _state
     init { nativeLoad(source.toUrl()) }
@@ -78,6 +96,7 @@ actual class SizelessRawImageView actual constructor(
     init {
         native.tag = "div"
         native.classes.add("viewDraws")
+        native.attributes.alt = description  // by Claude - accessibility for background-image div
     }
     actual override val state: Reactive<Unit> = _state
     init {
@@ -106,6 +125,8 @@ actual class RawImageViewZoomable actual constructor(
     init {
         native.tag = "img"
         native.classes.add("viewDraws")
+        native.attributes.alt = description  // by Claude - SEO alt attribute
+        native.attributes.loading = "lazy"  // by Claude - lazy loading for performance
     }
     actual override val state: Reactive<Unit> = _state
     init { nativeLoad(source.toUrl()) }
@@ -117,6 +138,9 @@ expect fun createObjectURL(blob: Blob): String
 
 @JsName("createObjectURLFileReference")
 expect fun createObjectURL(fileReference: FileReference): String
+
+// by Claude - revoke blob URLs to prevent memory leaks
+expect fun revokeObjectURL(url: String)
 
 expect fun RawImageViewLike.nativeLoad(url: String?)
 

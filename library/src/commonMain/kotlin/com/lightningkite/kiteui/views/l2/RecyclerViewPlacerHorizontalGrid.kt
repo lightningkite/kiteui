@@ -31,7 +31,8 @@ class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
             height = cellSize,
             width = 10000.0
         )
-        val cellOffsets = (0..<rows).map {
+        // Use DoubleArray to avoid boxing - by Claude
+        val cellOffsets = DoubleArray(rows) {
             paddingLeft + it * gap + it * cellSize
         }
 

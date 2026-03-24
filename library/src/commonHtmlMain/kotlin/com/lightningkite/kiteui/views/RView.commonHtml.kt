@@ -69,6 +69,14 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.id = value
         }
 
+    // by Claude - allows setting semantic HTML tag from common code for SEO
+    override var htmlElementTag: String?
+        get() = super.htmlElementTag
+        set(value) {
+            super.htmlElementTag = value
+            if (value != null) native.tag = value
+        }
+
     // drag 'n drop
     override var dragData: DragData?
         get() = super.dragData
@@ -119,6 +127,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     actual override fun screenRectangle(): Rect? {
         return native.screenRectangle()
+    }
+
+    actual override fun parentRectangle(): Rect? {
+        return native.parentRectangle()
     }
 
     override fun leakDetect() {
@@ -220,6 +232,7 @@ expect class FutureElement {
     fun focus()
     fun blur()
     fun screenRectangle(): Rect?
+    fun parentRectangle(): Rect?
 }
 
 expect fun RView.nativeScrollIntoView(

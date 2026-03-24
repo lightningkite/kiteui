@@ -15,6 +15,8 @@ import platform.UIKit.UISwitch
 
 
 actual class Switch actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = switchDriverValue()
+    override val driverActions get() = super.driverActions + switchDriverActions()
     override val native = UISwitch()
 
     actual inline var enabled: Boolean
@@ -32,8 +34,11 @@ actual class Switch actual constructor(context: RContext) : RView(context) {
                 override var value: Boolean
                     get() = native.on
                     set(value) {
-                        if (native.on != value)
+                        if (native.on != value) {
                             native.on = value
+                            // fire change event so reactive listeners are notified on programmatic updates
+                            native.sendActionsForControlEvents(UIControlEventValueChanged)
+                        }
                     }
             }
         }

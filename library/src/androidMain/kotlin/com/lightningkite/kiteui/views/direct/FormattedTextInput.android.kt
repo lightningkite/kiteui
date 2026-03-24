@@ -24,6 +24,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = formattedTextInputDriverValue()
+    override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->

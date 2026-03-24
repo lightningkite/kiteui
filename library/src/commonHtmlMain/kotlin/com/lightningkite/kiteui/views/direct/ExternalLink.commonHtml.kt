@@ -2,10 +2,12 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.rel
 import kotlinx.coroutines.launch
 
 
 actual class ExternalLink actual constructor(context: RContext) : RView(context) {
+    override val driverActions get() = super.driverActions + externalLinkDriverActions()
     init {
         themeChoice += ClickableSemantic
         native.tag = "a"
@@ -31,6 +33,8 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
         get() = native.attributes.target == "_blank"
         set(value) {
             native.attributes.target = if (value) "_blank" else "_self"
+            // by Claude - set rel for SEO and security on new-tab links
+            native.attributes.rel = if (value) "noopener noreferrer" else null
         }
     actual fun onNavigate(action: suspend () -> Unit): Unit {
         native.addEventListener("click") {

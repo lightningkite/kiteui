@@ -27,6 +27,7 @@ import javax.swing.JProgressBar
 import javax.swing.Timer
 
 actual class Button actual constructor(context: RContext) : RViewWithSecondaryAction(context) {
+    override val driverActions get() = super.driverActions + buttonDriverActions()
     // Content panel where children are placed - mouse transparent so clicks reach JButton
     private val contentPanel = object : JPanel() {
         init {

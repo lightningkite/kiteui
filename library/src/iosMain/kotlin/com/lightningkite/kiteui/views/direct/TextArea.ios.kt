@@ -17,6 +17,8 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = textAreaDriverValue()
+    override val driverActions get() = super.driverActions + textAreaDriverActions()
     override val native = WrapperView()
     private val delegate = TextAreaDelegate()
 
@@ -97,8 +99,11 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         override var value: String
             get() = textField.text
             set(value) {
-                if(textField.text != value)
+                if(textField.text != value) {
                     textField.text = value
+                    // fire change event so reactive listeners are notified on programmatic updates
+                    delegate.listeners.invokeAllSafe()
+                }
             }
         override fun addListener(listener: () -> Unit): () -> Unit {
             delegate.listeners.add(listener)

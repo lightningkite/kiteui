@@ -19,6 +19,8 @@ import javax.swing.text.AttributeSet
 import javax.swing.text.DocumentFilter
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = numberInputDriverValue()
+    override val driverActions get() = super.driverActions + numberInputDriverActions()
     override val native = JTextField()
 
     private var updatingFromSignal = false

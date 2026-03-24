@@ -310,6 +310,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             bottom = (location.y + size.height).toDouble()
         )
     }
+    actual override fun parentRectangle(): Rect? {
+        if (!native.isShowing) return null
+
+        val location = native.location
+        val size = native.size
+
+        return Rect(
+            left = location.x.toDouble(),
+            top = location.y.toDouble(),
+            right = (location.x + size.width).toDouble(),
+            bottom = (location.y + size.height).toDouble()
+        )
+    }
 
     actual override fun applyTheme(theme: ThemeAndBack) {
         // Apply theme to component

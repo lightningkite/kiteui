@@ -17,5 +17,9 @@ actual val Platform.Companion.usesTouchscreen: Boolean
 actual val Platform.Companion.userAgent: String
     get() = "Browser ${window.navigator.userAgent}"
 
+// by Claude - development when running on localhost
+actual val Platform.Companion.isDevelopment: Boolean
+    get() = window.location.hostname.let { it == "localhost" || it == "127.0.0.1" || it == "0.0.0.0" }
+
 actual fun setStatusBarColor(color: Color) {
 }

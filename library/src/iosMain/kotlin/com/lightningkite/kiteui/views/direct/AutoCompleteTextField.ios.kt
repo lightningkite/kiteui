@@ -17,6 +17,8 @@ import platform.darwin.NSObject
 
 
 actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = autoCompleteDriverValue()
+    override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -65,7 +67,12 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
     actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = textField.text ?: ""
-            set(value) { textField.text = value }
+            set(value) {
+                if (textField.text == value) return
+                textField.text = value
+                // fire change event so reactive listeners are notified on programmatic updates
+                textField.sendActionsForControlEvents(UIControlEventEditingChanged)
+            }
         override fun addListener(listener: () -> Unit): () -> Unit {
             return textField.onEvent(this@AutoCompleteTextField, UIControlEventEditingChanged, listener)
         }

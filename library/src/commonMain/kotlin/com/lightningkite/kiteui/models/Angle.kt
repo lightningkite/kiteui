@@ -1,11 +1,13 @@
 @file:Suppress("NOTHING_TO_INLINE")
 package com.lightningkite.kiteui.models
 
+import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 
 @JvmInline
+@Serializable
 value class Angle(val turns: Float) {
     constructor(turns: Double):this(turns.toFloat())
     companion object {

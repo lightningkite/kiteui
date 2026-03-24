@@ -16,6 +16,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class Switch actual constructor(context: RContext): RView(context) {
+    override val driverValue: String? get() = switchDriverValue()
+    override val driverActions get() = super.driverActions + switchDriverActions()
     override val native = android.widget.Switch(context.activity)
 
     init {

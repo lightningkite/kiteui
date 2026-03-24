@@ -18,6 +18,7 @@ import platform.UIKit.UIApplication
 import platform.UIKit.UIControlEventTouchUpInside
 
 actual class ExternalLink actual constructor(context: RContext): RView(context) {
+    override val driverActions get() = super.driverActions + externalLinkDriverActions()
     override val native = FrameLayoutButton()
     init {
         onRemove(native.setOnClick {

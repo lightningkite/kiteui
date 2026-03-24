@@ -12,6 +12,8 @@ import com.lightningkite.readable.*
 
 
 actual class Switch actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = switchDriverValue()
+    override val driverActions get() = super.driverActions + switchDriverActions()
     init {
         native.tag = "input"
         native.attributes.type = "checkbox"

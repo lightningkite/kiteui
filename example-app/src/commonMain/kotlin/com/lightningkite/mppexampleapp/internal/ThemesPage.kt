@@ -34,7 +34,7 @@ object ThemesPage : Page {
                     weight(1f).space {}
                 }
             }
-            group.frame {
+            group.col {
                 h2 { content = "Nested Card Test" }
                 card.frame {
                     card.frame {
@@ -175,6 +175,14 @@ object ThemesPage : Page {
                             appTheme set Theme.clean(null)
                         }
                     }
+                }
+            }
+
+
+            group.col {
+                h2 { content = "Colors" }
+                with(ColorTestPage) {
+                    changeAppBackgroundColor()
                 }
             }
         }

@@ -24,6 +24,12 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class Select actual constructor(context: RContext): RView(context) {
+    private var _driverSelectedDisplay: String? = null
+    private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
+    override val driverValue: String? get() = _driverSelectedDisplay
+    override val driverActions get() = super.driverActions + buildMap {
+        _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
+    }
     override val native = Spinner(context.activity).apply {
         minimumHeight = 0
         isClickable = true
@@ -144,6 +150,15 @@ actual class Select actual constructor(context: RContext): RView(context) {
                 native.setSelection(index)
                 suppressChange = false
             }
+        }
+        // Driver support: track selected display and allow setValue
+        reactiveScope {
+            _driverSelectedDisplay = render(edits())
+        }
+        _driverSelectSetValue = { displayText ->
+            val item = list.firstOrNull { render(it) == displayText }
+                ?: throw com.lightningkite.kiteui.views.DriverActionException("No option matching '$displayText'")
+            edits.set(item)
         }
     }
 }

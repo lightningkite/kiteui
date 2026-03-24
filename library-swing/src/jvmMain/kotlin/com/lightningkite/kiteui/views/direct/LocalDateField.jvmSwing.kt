@@ -26,6 +26,8 @@ import java.util.Date
  * - Action support (triggers when date is selected)
  */
 actual class LocalDateField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = localDateDriverValue()
+    override val driverActions get() = super.driverActions + localDateDriverActions()
     private var updatingFromSignal = false
     private var updatingFromNative = false
 

@@ -20,6 +20,12 @@ import platform.darwin.NSObject
 
 
 actual class Select actual constructor(context: RContext): RView(context) {
+    private var _driverSelectedDisplay: String? = null
+    private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
+    override val driverValue: String? get() = _driverSelectedDisplay
+    override val driverActions get() = super.driverActions + buildMap {
+        _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
+    }
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init {
@@ -69,6 +75,15 @@ actual class Select actual constructor(context: RContext): RView(context) {
             native.extensionStrongRef = null
             picker.setDataSource(null)
             picker.setDelegate(null)
+        }
+        // Driver support: track selected display and allow setValue
+        reactiveScope {
+            _driverSelectedDisplay = render(edits())
+        }
+        _driverSelectSetValue = { displayText ->
+            val item = source.list.firstOrNull { render(it) == displayText }
+                ?: throw com.lightningkite.kiteui.views.DriverActionException("No option matching '$displayText'")
+            edits.set(item)
         }
     }
 

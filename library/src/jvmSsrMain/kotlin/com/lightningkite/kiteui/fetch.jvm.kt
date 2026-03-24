@@ -186,6 +186,8 @@ class WebSocketWrapper(val url: String) : WebSocket {
         AppScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
+                    // by Claude — Bug 1: flag to ensure onClose fires exactly once
+                    var onCloseFired = false
                     withContext(Dispatchers.Main) {
                         onOpen.forEach { it() }
                     }
@@ -202,7 +204,10 @@ class WebSocketWrapper(val url: String) : WebSocket {
                             this@WebSocketWrapper.closeReason.receive().let { reason ->
                                 close(reason)
                                 withContext(Dispatchers.Main) {
-                                    onClose.forEach { it(reason.code) }
+                                    if (!onCloseFired) {
+                                        onCloseFired = true
+                                        onClose.forEach { it(reason.code) }
+                                    }
                                 }
                             }
                         } catch (e: ClosedReceiveChannelException) {
@@ -234,15 +239,20 @@ class WebSocketWrapper(val url: String) : WebSocket {
                                 else -> {}
                             }
                         } catch (e: ClosedReceiveChannelException) {
+                            break // by Claude — channel closed, exit loop
                         }
                     }
                     withContext(Dispatchers.Main) {
-                        onClose.forEach { it(reason?.code ?: 0) }
+                        if (!onCloseFired) {
+                            onCloseFired = true
+                            onClose.forEach { it(reason?.code ?: 0) }
+                        }
                     }
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                fetchLog.log("WebSocket connection failed: ${e::class.simpleName}: ${e.message}")
                 withContext(Dispatchers.Main) {
                     onClose.forEach { it(0) }
                 }
@@ -282,6 +292,17 @@ class WebSocketWrapper(val url: String) : WebSocket {
 
 actual class FileReference(val file: File)
 
+// by Claude - create FileReference from raw bytes for testing/mocking
+actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+    // by Claude - use a subdirectory so the original fileName is preserved for fileName()
+    val dir = File(System.getProperty("java.io.tmpdir"), "kiteui-mock-${System.nanoTime()}")
+    dir.mkdirs()
+    dir.deleteOnExit()
+    val tempFile = File(dir, fileName)
+    tempFile.deleteOnExit()
+    tempFile.writeBytes(bytes)
+    return FileReference(tempFile)
+}
 
 actual fun Blob.mimeType() = type
 actual fun FileReference.mimeType() = Files.probeContentType(file.toPath()) ?: "application/octet-stream"
@@ -314,8 +335,8 @@ actual fun FileReference.bytes(): Long = file.length()
 actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
 actual suspend fun FileReference.text(): String = file.readText()
 
-actual fun String.toBlob(contentType: String): Blob {
-    return Blob(toByteArray(Charsets.UTF_8), contentType)
-}
+actual fun String.toBlob(contentType: String) = toByteArray(Charsets.UTF_8).toBlob(contentType)
+actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this, contentType)
 
 actual suspend fun Blob.toByteArray(): ByteArray = data
+

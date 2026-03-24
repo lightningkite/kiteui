@@ -770,11 +770,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     private fun Dimension.toBoxShadow(): String {
         if (value.roughPx == 0.0)
             return "none"
-        val offsetX = 0.px.value
-        val offsetY = value
-        val blur = (this * 2).value
-        val spread = 0.px.value
-        return "$offsetX $offsetY $blur $spread #00000099"
+
+        return listOf(
+            "0px ${this.times(3.0/2).value} ${this.div(2).value} -${this.value} rgba(0, 0, 0, 0.2)",
+            "0px ${this.value} ${this.value} 0px rgba(0, 0, 0, 0.14)",
+            "0px ${this.div(2).value} ${this.times(5.0/2).value} 0px rgba(0, 0, 0, 0.12)",
+        ).joinToString(", ")
     }
 
     private fun List<Shadow>.toBoxShadow(): String {

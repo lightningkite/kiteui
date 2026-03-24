@@ -10,6 +10,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class Slider actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = sliderDriverValue()
+    override val driverActions get() = super.driverActions + sliderDriverActions()
     init {
         native.tag = "input"
         native.attributes.type = "range"

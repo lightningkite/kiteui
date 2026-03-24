@@ -19,6 +19,8 @@ import kotlin.time.Instant
 
 actual class LocalDateField actual constructor(context: RContext) :
     RViewWithAction(context) {
+    override val driverValue: String? get() = localDateDriverValue()
+    override val driverActions get() = super.driverActions + localDateDriverActions()
     private val property: Signal<LocalDate?> = Signal(null)
     actual val content: MutableReactiveValue<LocalDate?> = property
     actual var range: ClosedRange<LocalDate>? = null
