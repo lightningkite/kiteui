@@ -1,4 +1,4 @@
-package com.lightningkite.kiteui.dom
+package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.flat2
@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.models.turns
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
-import com.lightningkite.reactive.core.AppScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.setMain
 import java.io.File

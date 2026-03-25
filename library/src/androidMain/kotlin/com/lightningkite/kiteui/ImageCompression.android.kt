@@ -1,9 +1,7 @@
 // by Claude
 package com.lightningkite.kiteui
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
+import android.graphics.*
 import androidx.exifinterface.media.ExifInterface
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.models.ImageRaw
@@ -11,11 +9,12 @@ import com.lightningkite.kiteui.views.AndroidAppContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import androidx.core.graphics.scale
 
 actual suspend fun ImageLocal.compressed(
     maxWidth: Int,
     maxHeight: Int,
-    quality: Float
+    quality: Float,
 ): ImageRaw = withContext(Dispatchers.IO) {
     val contentResolver = AndroidAppContext.applicationCtx.contentResolver
 
@@ -50,6 +49,12 @@ actual suspend fun ImageLocal.compressed(
     val rotatedBitmap = applyExifOrientation(originalBitmap, exifOrientation)
     if (rotatedBitmap !== originalBitmap) originalBitmap.recycle()
 
+    // Short circuit, no need to compress because the size and type already match expectations
+    if (maxWidth >= rotatedBitmap.width && maxHeight >= rotatedBitmap.height && this@compressed.file.mimeType() == "image/jpeg") {
+        return@withContext ImageRaw(contentResolver.openInputStream(file.uri)!!.use { it.readBytes() }
+            .toBlob("image/jpeg"))
+    }
+
     // Calculate final target size
     val (targetW, targetH) = calculateScaledSize(
         rotatedBitmap.width, rotatedBitmap.height, maxWidth, maxHeight
@@ -59,7 +64,7 @@ actual suspend fun ImageLocal.compressed(
     val scaledBitmap = if (targetW == rotatedBitmap.width && targetH == rotatedBitmap.height) {
         rotatedBitmap
     } else {
-        val scaled = Bitmap.createScaledBitmap(rotatedBitmap, targetW, targetH, true)
+        val scaled = rotatedBitmap.scale(targetW, targetH)
         rotatedBitmap.recycle()
         scaled
     }
@@ -96,10 +101,12 @@ private fun applyExifOrientation(bitmap: Bitmap, orientation: Int): Bitmap {
             matrix.postRotate(90f)
             matrix.preScale(-1f, 1f)
         }
+
         ExifInterface.ORIENTATION_TRANSVERSE -> {
             matrix.postRotate(270f)
             matrix.preScale(-1f, 1f)
         }
+
         else -> return bitmap
     }
     return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)

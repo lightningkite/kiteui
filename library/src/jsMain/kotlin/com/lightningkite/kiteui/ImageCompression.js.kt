@@ -21,6 +21,10 @@ actual suspend fun ImageLocal.compressed(
     val originalWidth: Int = bitmap.width as Int
     val originalHeight: Int = bitmap.height as Int
 
+    // Short circuit, no need to compress because the size and type already match expectations
+    if(maxWidth >= originalWidth && maxHeight >= originalHeight && this.file.mimeType() == "image/jpeg")
+        return ImageRaw(this.file.toByteArray().toBlob("image/jpeg"))
+
     val (targetW, targetH) = calculateScaledSize(originalWidth, originalHeight, maxWidth, maxHeight)
 
     // Draw onto canvas at target size

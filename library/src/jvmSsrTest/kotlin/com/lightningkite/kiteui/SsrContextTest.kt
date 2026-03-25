@@ -1,4 +1,4 @@
-package com.lightningkite.kiteui.dom
+package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.flat2

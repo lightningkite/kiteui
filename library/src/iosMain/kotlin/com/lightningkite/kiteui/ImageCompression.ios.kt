@@ -3,20 +3,20 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.models.ImageRaw
-import kotlinx.cinterop.*
-import platform.CoreGraphics.*
-import platform.Foundation.*
+import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGRectMake
+import platform.CoreGraphics.CGSizeMake
+import platform.Foundation.NSData
 import platform.UIKit.*
 import platform.UniformTypeIdentifiers.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import kotlin.coroutines.*
 
 actual suspend fun ImageLocal.compressed(
     maxWidth: Int,
     maxHeight: Int,
-    quality: Float
+    quality: Float,
 ): ImageRaw {
+
     // Load raw data from NSItemProvider
     val type = file.suggestedType
         ?: (file.provider.registeredContentTypes.firstOrNull() as? UTType)
@@ -44,10 +44,13 @@ actual suspend fun ImageLocal.compressed(
 
     // UIImage automatically handles EXIF orientation
     val originalImage = UIImage(data = imageData)
-        ?: throw IllegalArgumentException("Could not decode image data")
 
     val originalWidth = originalImage.size.useContents { width }.toInt()
     val originalHeight = originalImage.size.useContents { height }.toInt()
+
+    // Short circuit, no need to compress because the size and type already match expectations
+    if (maxWidth >= originalWidth && maxHeight >= originalHeight && type == UTTypeJPEG)
+        return ImageRaw(imageData.toByteArray().toBlob("image/jpeg"))
 
     val (targetW, targetH) = calculateScaledSize(originalWidth, originalHeight, maxWidth, maxHeight)
 
