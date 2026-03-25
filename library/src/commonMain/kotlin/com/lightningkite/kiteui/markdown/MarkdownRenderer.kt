@@ -219,7 +219,7 @@ private fun ViewWriter.renderTable(table: MarkdownNode.Table, config: MarkdownCo
         row {
             table.headers.forEachIndexed { colIndex, headerCells ->
                 val alignment = table.alignments.getOrNull(colIndex)
-                expanding.bold.frame {
+                (TableCellSemantic + TableHeaderSemantic).onNext.expanding.col {
                     renderTableCell(headerCells, alignment, config)
                 }
             }
@@ -230,7 +230,7 @@ private fun ViewWriter.renderTable(table: MarkdownNode.Table, config: MarkdownCo
             row {
                 rowCells.forEachIndexed { colIndex, cellContent ->
                     val alignment = table.alignments.getOrNull(colIndex)
-                    expanding.frame {
+                    TableCellSemantic.onNext.expanding.col {
                         renderTableCell(cellContent, alignment, config)
                     }
                 }
