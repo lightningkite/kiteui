@@ -5,4 +5,9 @@ actual object Build {
     actual val version: String get() = _version
     private var _debug: Boolean = false
     actual val debug: Boolean get() = _debug
+
+    fun setInfo(version: String, debug: Boolean) {
+        _version = version
+        _debug = debug
+    }
 }

@@ -109,9 +109,13 @@ class UiTestScope(val backend: UiTestBackend) {
     suspend fun drop(target: String, dragDataBase64: String): String =
         backend.command(cmd(target, "drop", dragDataBase64))
 
-    /** Navigate to a route. */
+    /** Navigate to a route (pushes onto the stack). */
     suspend fun navigate(route: String): String =
         backend.command(cmd("navigate", route))
+
+    /** Reset the navigator stack to a single page at the given route. */
+    suspend fun reset(route: String): String =
+        backend.command(cmd("reset", route))
 
     /** Get the current page URL. */
     suspend fun url(): String =
