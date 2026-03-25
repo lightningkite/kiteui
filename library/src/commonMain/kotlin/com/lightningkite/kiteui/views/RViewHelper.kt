@@ -730,8 +730,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewP
     open val driverActions: Map<String, suspend (List<String>) -> String> get() = buildMap {
         put("snapshot") { args -> (this@RViewHelper as RView).driverSnapshot(parseSnapshotOptions(args.toTypedArray())) }
         put("screenshot") { (this@RViewHelper as RView).driverScreenshot() }
-        put("find") { args -> (this@RViewHelper as RView).driverFind(args.firstOrNull() ?: "") }
-        put("findClickable") { args -> (this@RViewHelper as RView).driverFindClickable(args.firstOrNull() ?: "") }
+        put("find") { args -> (this@RViewHelper as RView).driverFind(args.firstOrNull() ?: "", includeHidden = "--hidden" in args) }
+        put("findClickable") { args -> (this@RViewHelper as RView).driverFindClickable(args.firstOrNull() ?: "", includeHidden = "--hidden" in args) }
 //        put("scroll") { args ->
 //            // TODO: This looks wrong: in JS, the scrolling behaviors are just attached to an existing view in a way this wouldn't pick up
 //            val dx = args.getOrNull(0)?.toDoubleOrNull() ?: 0.0
