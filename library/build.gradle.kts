@@ -138,9 +138,6 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
-            dependencies {
-                implementation(npm("modern-screenshot", "4.4.39"))
-            }
         }
     }
 
