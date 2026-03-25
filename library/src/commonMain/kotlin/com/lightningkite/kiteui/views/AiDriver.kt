@@ -98,6 +98,12 @@ suspend fun handleCommand(command: String, root: RView?, navigator: PageNavigato
             navigator.navigateUrlLikePath(route) ?: throw DriverActionException("route '$route' not found")
             "OK"
         }
+        "reset" -> {
+            if (navigator == null) throw DriverActionException("no navigator available")
+            val route = action ?: throw DriverActionException("no route specified")
+            navigator.resetUrlLikePath(route) ?: throw DriverActionException("route '$route' not found")
+            "OK"
+        }
         "url" -> {
             if (navigator == null) throw DriverActionException("no navigator available")
             val currentPage = navigator.stack.value.lastOrNull()

@@ -170,6 +170,7 @@ kotlin {
 
 android {
     namespace = "com.lightningkite.kiteui"
+    testNamespace = "com.lightningkite.kiteui.test"
     compileSdk = 36
 
     defaultConfig {

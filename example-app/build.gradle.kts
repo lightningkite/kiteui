@@ -167,6 +167,7 @@ kotlin {
 
 android {
     namespace = "$group.mppexampleapp"
+    testNamespace = "$group.mppexampleapp.test"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 36
 
