@@ -9,18 +9,10 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class Link actual constructor(context: ElementContext): NativeContainerElement(context) {
+actual class Link actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
     override val driverActions get() = super.driverActions + linkDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
-    }
-
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ClickableSemantic
-            if (!enabled) t += DisabledSemantic
-            t
-        }
     }
 
     actual var to: (() -> Page)? = null
@@ -50,13 +42,6 @@ actual class Link actual constructor(context: ElementContext): NativeContainerEl
     actual fun onClick(action: suspend () -> Unit): Unit {
         onClick = action
     }
-
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 
     actual var onNavigator: PageNavigator = mainPageNavigator
     actual var resetsStack: Boolean = false

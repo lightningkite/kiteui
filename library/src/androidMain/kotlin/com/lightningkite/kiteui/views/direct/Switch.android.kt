@@ -8,18 +8,10 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class Switch actual constructor(context: ElementContext): NativeElement(context) {
+actual class Switch actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
     override val driverActions get() = super.driverActions + switchDriverActions()
     override val native = android.widget.Switch(context.activity)
-
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ThemeDerivation.None
-            if (!enabled) t += DisabledSemantic
-            t
-        }
-    }
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun nativeApplyTheme(theme: ThemeAndBack) {
@@ -82,12 +74,6 @@ actual class Switch actual constructor(context: ElementContext): NativeElement(c
 //            })
 //        }
     }
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 
     actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 }

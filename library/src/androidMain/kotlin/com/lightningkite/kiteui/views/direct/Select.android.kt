@@ -22,7 +22,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.CoroutineScope
 
-actual class Select actual constructor(context: ElementContext): NativeElement(context) {
+actual class Select actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
@@ -33,21 +33,6 @@ actual class Select actual constructor(context: ElementContext): NativeElement(c
         minimumHeight = 0
         isClickable = true
     }
-
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ClickableSemantic
-            if (!enabled) t += DisabledSemantic
-            t
-        }
-    }
-
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 
     override fun refreshPadding() {
         native.setPaddingAll(0)

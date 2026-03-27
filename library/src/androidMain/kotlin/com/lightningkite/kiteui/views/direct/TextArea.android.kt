@@ -24,14 +24,6 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
     }
 
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ThemeDerivation.None
-            if (!enabled) t += DisabledSemantic
-            t
-        }
-    }
-
     //TODO Need to change this to something that can make sense for android.
     override fun nativeSetAction(action: Action?) {
         super.nativeSetAction(action)
@@ -62,12 +54,6 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
 
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
     actual val content: MutableReactiveValue<String> = native.contentProperty()
     actual var keyboardHints: KeyboardHints
         get() {

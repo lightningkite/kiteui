@@ -7,18 +7,10 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class RadioButton actual constructor(context: ElementContext): NativeElement(context) {
+actual class RadioButton actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     override val driverValue: String? get() = radioDriverValue()
     override val driverActions get() = super.driverActions + radioDriverActions()
     override val native = android.widget.RadioButton(context.activity)
-
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ThemeDerivation.None
-            if (!enabled) t += DisabledSemantic
-            t
-        }
-    }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
@@ -32,13 +24,6 @@ actual class RadioButton actual constructor(context: ElementContext): NativeElem
             )
         )
     }
-
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 
     actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 }

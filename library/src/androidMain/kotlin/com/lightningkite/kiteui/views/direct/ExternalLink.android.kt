@@ -6,18 +6,10 @@ import com.lightningkite.kiteui.openTab
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
-actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElement(context) {
+actual class ExternalLink actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverActions get() = super.driverActions + externalLinkDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
-    }
-
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ClickableSemantic
-            if (!enabled) t += DisabledSemantic
-            t
-        }
     }
 
     actual var to: String? = null
@@ -37,13 +29,6 @@ actual class ExternalLink actual constructor(context: ElementContext) : NativeCo
     actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
     }
-
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }

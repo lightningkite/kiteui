@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class Slider actual constructor(context: ElementContext) : NativeElement(context) {
+actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
     override val driverActions get() = super.driverActions + sliderDriverActions()
     init {
@@ -64,10 +64,4 @@ actual class Slider actual constructor(context: ElementContext) : NativeElement(
         // Initialize with the property value
         value.value = valueProp.value
     }
-
-    actual var enabled: Boolean
-        get() = !(native.attributes.disabled ?: false)
-        set(value) {
-            native.attributes.disabled = !value
-        }
 }

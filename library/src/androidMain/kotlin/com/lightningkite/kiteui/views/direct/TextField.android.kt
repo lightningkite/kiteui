@@ -27,14 +27,6 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
         inputType = EditorInfo.TYPE_CLASS_TEXT
     }
 
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ThemeDerivation.None
-            if (!enabled) t += DisabledSemantic
-            t
-        }
-    }
-
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
         val theme = theme.theme
@@ -58,12 +50,6 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
     }
 
     actual val content: MutableReactiveValue<String> = native.contentProperty()
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 
     private var useSensitiveDotMask = false
         set(value) {

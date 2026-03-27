@@ -2,17 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.*
 
 /**
  * A slider component that allows users to select a value from a continuous range.
  */
-expect class Slider(context: ElementContext) : NativeElement {
-    /**
-     * Whether the slider is enabled or disabled.
-     */
-    var enabled: Boolean
-    
+expect class Slider(context: ElementContext) : NativeInteractiveElement {
     /**
      * The current value of the slider, between 0.0 and 1.0.
      */
