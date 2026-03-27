@@ -6,13 +6,11 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.PopoverSemantic
-import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.w3c.dom.DOMRectInit
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
@@ -276,7 +274,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                     window.removeEventListener("scroll", repos, true)
                     window.removeEventListener("mousemove", mouseMove)
                     native.onElement { e ->
-                        this.shutdown()
+                        this.onShutdown()
                         (e as HTMLElement)
                         window.getComputedStyle(e).getPropertyValue("transition-duration")
                             .let { Duration.parseOrNull(it) ?: 0.25.seconds }

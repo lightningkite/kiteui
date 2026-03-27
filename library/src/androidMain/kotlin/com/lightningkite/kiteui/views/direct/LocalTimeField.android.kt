@@ -41,7 +41,7 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
     }
 
     override fun startup() {
-        super.startup()
+        super.onStartup()
         val text = android.widget.TextView(context.activity)
         native.addView(text)
         reactive {

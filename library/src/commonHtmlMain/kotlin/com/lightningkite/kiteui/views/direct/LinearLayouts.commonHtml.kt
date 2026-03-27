@@ -121,8 +121,8 @@ actual class RowOrCol actual constructor(context: ElementContext) : NativeLinear
         rerunOptimizedBottomMarginCalc()
     }
 
-    override fun startup() {
-        super.startup()
+    override fun onStartup() {
+        super.onStartup()
         rerunOptimizedBottomMarginCalc()
     }
 

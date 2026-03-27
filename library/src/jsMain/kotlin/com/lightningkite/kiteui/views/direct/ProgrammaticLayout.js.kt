@@ -23,8 +23,8 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : Na
         }
     var log: Log? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
-    override fun startup() {
-        super.startup()
+    override fun onStartup() {
+        super.onStartup()
         onRemove(parent!!.native.resizeObserver().addListener {
             log?.log("resizeObserver calls invalidateLayout()")
             remeasureConstrainedSize()

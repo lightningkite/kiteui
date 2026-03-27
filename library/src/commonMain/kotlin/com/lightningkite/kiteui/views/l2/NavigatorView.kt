@@ -24,7 +24,7 @@ fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
                     else -> transitionSet.neutral
                 }.also { lastStack = newStack }
             },
-            current = { navigator.currentPage<Page?>() },
+            current = { navigator.currentPage() },
             views = { screen ->
                 with(split()) {
                     context.pageNavigator = navigator

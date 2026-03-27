@@ -83,8 +83,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
     var fullyStarted = false
         private set
 
-    @InternalKiteUi
-    open fun startup() {
+    override fun onStartup() {
         if (fullyStarted) return
         fullyStarted = true
         refreshTheming()
@@ -93,8 +92,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
     var isShutdown = false
         private set
 
-    @InternalKiteUi
-    open fun shutdown() {
+    override fun onShutdown() {
         if (isShutdown) return
         job.cancel()
         isShutdown = true

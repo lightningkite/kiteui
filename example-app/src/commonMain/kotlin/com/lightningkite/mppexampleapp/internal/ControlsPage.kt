@@ -4,28 +4,24 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.numberInput
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.toast
-import com.lightningkite.reactive.context.*
+import com.lightningkite.kiteui.views.scrollsHorizontally
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import kotlin.time.Clock
-import kotlin.time.Instant
 
 @Routable("controls")
 object ControlsPage : Page {
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render() {
         class PerfProperty<T>(startValue: T) : MutableReactiveValue<T> {
             private val listeners = ArrayList<() -> Unit>()
             override var value: T = startValue
@@ -56,8 +52,8 @@ object ControlsPage : Page {
         val booleanContent = PerfProperty(true).also {
             it.addListener { println("booleanContent changed!") }
         }
-        scrolling.col {
 
+        scrolling.col {
             h1 { content = "Controls" }
 
             card.col {
@@ -72,16 +68,29 @@ object ControlsPage : Page {
                         }
                     }
                 }
+
                 text { ::content { ratio().times(100).roundToInt().toString() + "%" } }
-                scrollsHorizontally.row {
-                    expanding.space {}
-                    sizeConstraints(width = 5.rem).progressBar { ::ratio { ratio() } }
-                    card.sizeConstraints(width = 5.rem).progressBar { ::ratio { ratio() } }
-                    important.sizeConstraints(width = 5.rem).progressBar { ::ratio { ratio() } }
-                    critical.sizeConstraints(width = 5.rem).progressBar { ::ratio { ratio() } }
-                    warning.sizeConstraints(width = 5.rem).progressBar { ::ratio { ratio() } }
-                    danger.sizeConstraints(width = 5.rem).progressBar { ::ratio { ratio() } }
-                    expanding.space {}
+
+                val signal = Signal(true)
+
+                card.important.themed {
+                    if (signal()) ImportantSemantic
+                    else null
+                }.row {
+                    
+                }
+
+                scrollingHorizontally.row {
+                    expanding.space()
+                    sizeConstraints(width = 5.rem).run {
+                        progressBar(ratio)
+                        card.progressBar(ratio)
+                        important.progressBar(ratio)
+                        critical.progressBar(ratio)
+                        warning.progressBar(ratio)
+                        danger.progressBar(ratio)
+                    }
+                    expanding.space()
                 }
             }
 
@@ -89,9 +98,9 @@ object ControlsPage : Page {
                 h2 { content = "Buttons" }
                 scrollsHorizontally.row {
                     expanding.space {}
-                    hintPopover {
+                    centered.important.compact.compact.hintPopover {
                         text("Hint")
-                    }.centered.important.compact.compact.button {
+                    }.button {
                         icon {
                             source = Icon.star
                         }
@@ -355,12 +364,12 @@ object ControlsPage : Page {
                 h2 { content = "Activity Indicators" }
                 scrollsHorizontally.row {
                     weight(1f).space {}
-                    padded.frame { activityIndicator { } }
-                    card.frame { activityIndicator { } }
-                    important.frame { activityIndicator { } }
-                    critical.frame { activityIndicator { } }
-                    warning.frame { activityIndicator { } }
-                    danger.frame { activityIndicator { } }
+                    padded.frame { activityIndicator() }
+                    card.frame { activityIndicator() }
+                    important.frame { activityIndicator() }
+                    critical.frame { activityIndicator() }
+                    warning.frame { activityIndicator() }
+                    danger.frame { activityIndicator() }
                     weight(1f).space {}
                 }
             }
@@ -423,7 +432,7 @@ object ControlsPage : Page {
                 val number = Signal<Double?>(1.0)
                 h2 { content = "Number Fields" }
                 text { ::content { "Value: ${number()}" } }
-                fieldTheme.numberField { content bind number }
+                fieldTheme.numberInput { content bind number }
                 card.fieldTheme.numberField { content bind number }
                 important.fieldTheme.numberField { content bind number }
                 critical.fieldTheme.numberField { content bind number }
@@ -465,14 +474,12 @@ object ControlsPage : Page {
                         ).image { source = ImageRemote("https://picsum.photos/seed/1/200/300") }
                     }
                     padded.frame {
-                        gap = 0.px
                         sizedBox(
                             SizeConstraints(
                                 width = 5.rem
                             )
                         ).image { source = ImageRemote("https://picsum.photos/seed/2/200/300") }
                     }
-
                 }
             }
         }

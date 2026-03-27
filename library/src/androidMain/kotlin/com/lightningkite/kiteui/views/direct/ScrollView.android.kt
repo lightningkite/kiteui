@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.annotation.SuppressLint
 import android.hardware.SensorManager
 import android.os.Build
 import android.view.*
@@ -11,22 +12,20 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.RViewWriter
-import com.lightningkite.kiteui.views.debugPrint
-import com.lightningkite.reactive.context.*
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
 import kotlin.math.*
 
-class ScrollView constructor(
+class ScrollView(
     context: ElementContext,
     override val horizontal: Boolean,
     override val vertical: Boolean
-) : RViewWriter(context), ScrollingBehaviors {
+) : NativeContainerElement(context), ScrollingBehaviors {
     private val scrollChanged = BasicListenable()
     private var vx = VelocityTracker.obtain()
     private var vy = VelocityTracker.obtain()
+    @SuppressLint("ClickableViewAccessibility")
     override val native = TwoWayNestedScrollView(context.activity).apply {
         lockX = !horizontal
         lockY = !vertical
@@ -266,7 +265,7 @@ class ScrollView constructor(
         }
     }
 
-    override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    override fun scrollTo(element: Element, horizontal: Align, vertical: Align, animated: Boolean) {
         scrollTo(
             left = when (horizontal) {
                 Align.Start -> element.native.left

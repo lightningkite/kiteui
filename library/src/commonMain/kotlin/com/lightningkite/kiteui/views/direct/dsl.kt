@@ -62,10 +62,7 @@ inline fun ElementWriter.icon(setup: IconView.() -> Unit = {}): IconView {
 }
 inline fun ElementWriter.image(setup: ImageView.() -> Unit = {}): ImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return ImageView(this).apply {
-        setup()
-        postSetup()
-    }
+    return write(ImageView(context), setup)
 }
 inline fun ElementWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): ZoomableImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
@@ -76,15 +73,15 @@ inline fun ElementWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {})
 }
 inline fun ElementWriter.rawImage(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageView.() -> Unit = {}): RawImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RawImageView(context, source, description, scaleType) , setup)
+    return write(RawImageView(context, source, description, scaleType), setup)
 }
 inline fun ElementWriter.rawImageUnsized(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: SizelessRawImageView.() -> Unit = {}): SizelessRawImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(SizelessRawImageView(context, source, description, scaleType) , setup)
+    return write(SizelessRawImageView(context, source, description, scaleType), setup)
 }
 inline fun ElementWriter.rawImageZoomable(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageViewZoomable.() -> Unit = {}): RawImageViewZoomable {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RawImageViewZoomable(context, source, description, scaleType) , setup)
+    return write(RawImageViewZoomable(context, source, description, scaleType), setup)
 }
 inline fun ElementWriter.label(label: String, content: RowOrCol.() -> Unit): Unit {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }

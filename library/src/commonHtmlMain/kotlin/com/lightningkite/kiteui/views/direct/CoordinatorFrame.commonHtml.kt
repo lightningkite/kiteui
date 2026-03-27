@@ -165,8 +165,8 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
     }
 
     @OptIn(InternalKiteUi::class)
-    override fun startup() {
-        super.startup()
+    override fun onStartup() {
+        super.onStartup()
         val e = bottomSheetState ?: return
         native.addEventListener("click") {
             launch {

@@ -85,7 +85,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
                 onClick { pageNavigator.goBack() }
             }
             centered.expanding.themed(HeaderSemantic).text {
-                ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
+                ::content.invoke { context.pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             }

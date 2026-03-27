@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -11,30 +12,60 @@ import kotlin.contracts.contract
  *
  * Provides methods for adding child elements and managing context. The hierarchy of
  * sub-interfaces enforces the canonical modifier order:
+ *
  * `alignment.weight.shownWhen.theme.sizing.scrolling.element`
  */
 @ViewTreeBuilder
-interface ElementWriter : CoroutineScopeHelpers2 {
+interface ElementWriter : KiteUiCoroutineScopeHelpers {
     val context: ElementContext
+
+    /**
+     * Called before [addChild] to add modifiers and to configure the element.
+     *
+     * You should almost never call this method yourself. Use [ElementWriter.write] to add elements
+     * to the view tree.
+     *
+     * The only case where you should call this yourself is if you are creating a wrapper around [ElementWriter], in
+     * this case you __should__ call [willAddChild] on the wrapped writer, typically before your own setup logic
+     * in order to keep the order of operations FIFO.
+     *
+     * ```kotlin
+     * class Wrapper(val wraps: ElementWriter) : ElementWriter by wraps {
+     *    override fun willAddChild(element: Element) {
+     *       // make sure to call the wrapped writer's implementation to complete the chain
+     *       wraps.willAddChild(element)
+     *       // do something else
+     *    }
+     * }
+     * ```
+     */
+    @OverrideOnly
     fun willAddChild(element: Element)
+
+    /**
+     * Directly add an element to the view hierarchy.
+     *
+     * You should almost never call this method yourself. Use [ElementWriter.write] to add elements
+     * to the view tree.
+     *
+     * The only case where you should call this yourself is if you are creating a wrapper around [ElementWriter], in
+     * this case it makes sense to call [addChild] on the wrapped writer to complete the delegation chain.
+     *
+     * ```kotlin
+     * class Wrapper(val wraps: ElementWriter) : ElementWriter by wraps {
+     *    override fun addChild(element: Element) {
+     *       // make sure to call the wrapped writer's implementation to complete the chain
+     *       wraps.addChild(element)
+     *    }
+     * }
+     * ```
+     */
+    @OverrideOnly
     fun addChild(element: Element)
 
-    class Split(parent: ElementWriter): ElementWriter by parent {
-        override val context: ElementContext = parent.context.split()
-    }
-
-    class BeforeSetup(
-        val base: ElementWriter,
-        val setup: Element.() -> Unit
-    ) : ElementWriter by base {
-        override fun willAddChild(element: Element) {
-            base.willAddChild(element)
-            element.setup()
-        }
-    }
 
     // modifier enforcement interfaces to enforce view modifier order
-    // canonical order: alignment.weight.shownWhen.theme.sizing.scrolling.element
+    // canonical order: alignment.weight.shownWhen.sizing.theme.scrolling.element
 
     /**
      * Allows scrolling modifiers to be applied.
@@ -46,26 +77,41 @@ interface ElementWriter : CoroutineScopeHelpers2 {
     interface CanAddScrolling : ElementWriter
 
     /**
-     * Allows sizing modifiers to be applied.
+     * Allows dynamic theme modifiers to be applied.
+     *
+     * Unlike other modifiers, theme modifiers are _repeatable_, meaning that you can apply theming multiple times on a single element.
+     * The end result is the sum of all applied themes. Dynamic themes require all static themes to be defined, which is why this
+     * is a separate modifier interface.
      *
      * Available modifiers (in addition to [CanAddScrolling] modifiers):
-     * - `sizedBox(constraints)` - Apply size constraints
-     * - `sizeConstraints(...)` - Set width/height constraints
-     * - `changingSizeConstraints(...)` - Reactive size constraints
-     * - `maxHeight(height)` - Set maximum height
+     * - Dynamic theme application: `dynamicThemed(...)`
      */
-    interface CanAddSizing : CanAddScrolling
+    interface CanAddDynamicTheme : CanAddScrolling
 
     /**
-     * Allows theme modifiers to be applied.
+     * Allows static theme modifiers to be applied.
      *
-     * Available modifiers (in addition to [CanAddSizing] modifiers):
+     * Unlike other modifiers, theme modifiers are _repeatable_, meaning that you can apply theming multiple times on a single element.
+     * The end result is the sum of all applied themes.
+     *
+     * Available modifiers (in addition to [CanAddDynamicTheme] modifiers):
      * - Direct theme application: `themed(theme)`
      * - Grouping: `card`, `fieldTheme`, `buttonTheme`, `bar`, `nav`, `group`, `padded`
      * - Emphasis: `important`, `critical`, `warning`, `danger`, `affirmative`, `emphasized`, `compact`
      * - Text styling: `bold`, `italic`, `allCaps`, `strikethrough`, `underline`, `textSize(size)`, `withSpacing(multiplier)`
      */
-    interface CanAddTheme : CanAddSizing
+    interface CanAddTheme : CanAddDynamicTheme
+
+    /**
+     * Allows sizing modifiers to be applied.
+     *
+     * Available modifiers (in addition to [CanAddTheme] modifiers):
+     * - `sizedBox(constraints)` - Apply size constraints
+     * - `sizeConstraints(...)` - Apply size constraints
+     * - `changingSizeConstraints(...)` - Reactive size constraints
+     * - `maxHeight(height)` - Set maximum height
+     */
+    interface CanAddSizing : CanAddTheme
 
     /**
      * Allows visibility modifiers to be applied.
@@ -73,7 +119,7 @@ interface ElementWriter : CoroutineScopeHelpers2 {
      * Available modifiers (in addition to [CanAddTheme] modifiers):
      * - `shownWhen(default, condition)` - Conditionally show/hide element
      */
-    interface CanAddShownWhen : CanAddTheme
+    interface CanAddShownWhen : CanAddSizing
 
     /**
      * Allows weight modifiers to be applied.
@@ -99,34 +145,31 @@ interface ElementWriter : CoroutineScopeHelpers2 {
 }
 
 /**
- * Core function for writing an element to the view tree.
+ * Write an element to the view tree, with an optional [setup].
  *
  * This function:
  * 1. Calls [willAddChild] to allow modifiers to be applied
- * 2. Runs the setup block to configure the element
+ * 2. Runs the [setup] block to configure the element
  * 3. Starts the element's lifecycle
- * 4. Adds the element as a child
- *
- * Most DSL functions use this internally to add views to the tree.
+ * 4. Adds the element as a child in the view hierarchy
  */
-@OptIn(ExperimentalContracts::class, InternalKiteUi::class)
-inline fun <T : Element> ElementWriter.write(element: T, setup: T.() -> Unit): T {
+@OptIn(ExperimentalContracts::class, InternalKiteUi::class, OverrideOnly::class)
+inline fun <T : Element> ElementWriter.write(element: T, setup: T.() -> Unit = {}): T {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     willAddChild(element)
     setup(element)
-    element.underlyingNativeElement.startup()
+    element.onStartup()
     addChild(element)
     return element
 }
 
 /**
- * The primary interface for writing views and building UI.
+ * Interface for writing views with any modifiers.
  *
- * This is essentially an [ElementWriter] with unrestricted modifier access, allowing all modifiers to be applied.
- * This is the most permissive interface and is used as the receiver in most DSL functions.
+ * This is essentially an [ElementWriter] with unrestricted modifier access.
+ * This is the most permissive interface allowing all modifiers to be applied in the canonical order:
  *
- * All modifiers can be applied in the canonical order:
- * `alignment.weight.shownWhen.theme.sizing.scrolling.element`
+ * `alignment.weight.shownWhen.sizing.theme.scrolling.element`
  *
  * - Alignment Modifiers: [ElementWriter.CanAddAlignment]
  * - Weight Modifiers: [ElementWriter.CanAddWeight]

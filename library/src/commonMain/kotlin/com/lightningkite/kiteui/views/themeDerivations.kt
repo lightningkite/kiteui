@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.ElementWriter.CanAddTheme
 import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.context.reactive
+import com.lightningkite.reactive.core.ReactiveMutableList
 
 private class ThemedWriter(
     val base: CanAddTheme,
@@ -15,9 +16,30 @@ private class ThemedWriter(
     }
 }
 
+val ElementContext.localDynamicThemeCalculations: ReactiveMutableList<ReactiveContext.() -> ThemeDerivation?> by ContextAddon.Local { ReactiveMutableList() }
+
+fun Element.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
+    val dynamic = context.localDynamicThemeCalculations
+    val first = dynamic.isEmpty()
+    dynamic.add(calculate)
+
+    if (first) {
+        val existing = themeChoice
+        reactive {
+            themeChoice = existing + dynamic().fold(ThemeDerivation.None as ThemeDerivation) { acc, t ->
+                acc + (t() ?: return@fold acc)
+            }
+        }
+    }
+}
 
 @ViewModifierDsl3
 fun CanAddTheme.themed(theme: ThemeDerivation): CanAddTheme = ThemedWriter(this, theme)
+
+@ViewModifierDsl3
+fun ElementWriter.CanAddDynamicTheme.themed(calculate: ReactiveContext.() -> ThemeDerivation?): ElementWriter.CanAddDynamicTheme {
+    return beforeSetup { dynamicTheme(calculate) }
+}
 
 @ViewModifierDsl3
 inline val CanAddTheme.group: CanAddTheme get() = themed(GroupSemantic)
@@ -106,10 +128,3 @@ fun CanAddTheme.withSpacing(multiplier: Double): CanAddTheme = themed(ThemeDeriv
         gap = it.gap * multiplier
     ).withoutBack
 })
-
-fun Element.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
-    val existing = themeChoice
-    reactive {
-        themeChoice = existing + (calculate() ?: ThemeDerivation.None)
-    }
-}

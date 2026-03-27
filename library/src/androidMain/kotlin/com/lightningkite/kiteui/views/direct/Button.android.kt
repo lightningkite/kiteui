@@ -21,7 +21,7 @@ actual class Button actual constructor(context: ElementContext): NativeContainer
     }
 
     override fun startup() {
-        super.startup()
+        super.onStartup()
         addChild(object: NativeElement(context) {
             override val native = this@Button.progress
         })

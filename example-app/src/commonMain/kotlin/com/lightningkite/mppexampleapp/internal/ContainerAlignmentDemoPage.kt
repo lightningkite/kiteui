@@ -1,10 +1,8 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.reactive.WindowInfo
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 

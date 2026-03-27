@@ -13,12 +13,8 @@ import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.CoreGraphics.CGContextFillRect
 import platform.Foundation.NSFileManager
-import platform.Foundation.NSString
-import platform.Foundation.NSUTF8StringEncoding
-import platform.Foundation.stringWithString
 import platform.Foundation.writeToFile
 import platform.UIKit.*
-import platform.Foundation.NSData
 import platform.posix.memcpy
 
 /**
@@ -166,7 +162,7 @@ actual class TestHarness {
     }
 
     actual fun cleanup() {
-        rootView?.shutdown()
+        rootView?.onShutdown()
         window = null
         viewController = null
         rootView = null

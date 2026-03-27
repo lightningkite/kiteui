@@ -102,7 +102,7 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
     beforeSetup { setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical)) }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddScrolling =
+actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme =
     beforeSetup {
         if (constraints.minHeight == null) native.style.minHeight = null
         else native.style.minHeight = constraints.minHeight.value.toString()
@@ -130,7 +130,7 @@ actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): El
     }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddScrolling =
+actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme =
     beforeSetup {
         reactive {
             val constraints = constraints()

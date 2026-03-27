@@ -122,7 +122,7 @@ fun ElementWriter.CanAddAlignment.gravity(horizontal: Align, vertical: Align): E
 val ElementWriter.CanAddScrolling.scrolls: ElementWriter get() = __scrollsUncontracted(vertical = true, horizontal = false)
 
 @ViewModifierDsl3
-@Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollsHorizontally"))
+@Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollingHorizontally"))
 val ElementWriter.CanAddScrolling.scrollsHorizontally: ElementWriter get() = __scrollsUncontracted(vertical = false, horizontal = true)
 
 @ViewModifierDsl3
@@ -211,6 +211,9 @@ inline fun ElementWriter.label(setup: Label.() -> Unit = {}): Label {
     }
     return l
 }
+
+@Deprecated("Use NumberInput instead", ReplaceWith("NumberInput"))
+typealias NumberField = NumberInput
 
 @OptIn(ExperimentalContracts::class)
 @Deprecated("Use numberInput instead", ReplaceWith("this.numberInput(setup)", "com.lightningkite.kiteui.views.direct.numberInput"))

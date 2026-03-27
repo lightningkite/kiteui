@@ -23,6 +23,22 @@ annotation class Hash
 annotation class InternalKiteUi
 
 @Suppress("ExperimentalAnnotationRetention")
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "This method is meant to be overridden but not used directly in client code."
+)
+/**
+ * Methods marked as [OverrideOnly] are intended to be extended and overridden but not used directly in client code.
+ *
+ * For example, element lifecycle methods like `Element.onStartup` and `Element.onShutdown` are useful hooks for
+ * L2 components so they can control and bind resources to their own lifetime, but should _not_ be
+ * called outside internal code as it could cause lifecycle bugs.
+ * */
+annotation class OverrideOnly
+
+@Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(

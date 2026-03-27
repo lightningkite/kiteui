@@ -169,12 +169,12 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddScrolling {
+actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
     return beforeSetup { native.extensionSizeConstraints = constraints }
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddScrolling {
+actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
     return beforeSetup {
         reactiveScope {
             native.extensionSizeConstraints = constraints()

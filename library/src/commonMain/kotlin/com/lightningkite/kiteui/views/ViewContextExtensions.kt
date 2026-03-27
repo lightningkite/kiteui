@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.views.ContextAddon
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlin.properties.ReadWriteProperty
@@ -50,6 +51,19 @@ class ContextAddon<T>(val init: Init<T>) {
 //
 //    operator fun getValue(thisRef: ElementWriter, property: KProperty<*>): T = thisRef.context.get(property)
 //    operator fun setValue(thisRef: ElementWriter, property: KProperty<*>, value: T) { thisRef.context.set(property, value) }
+
+    class Local<T>(val init: Init<T>) {
+        constructor(value: T) : this(Init.Value(value))
+        constructor(init: (ElementContext) -> T) : this(Init.Lazy(init))
+
+        @Suppress("UNCHECKED_CAST")
+        operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T =
+            thisRef.addons.getOrPutLocal(property.name) { init.get(thisRef, property) } as T
+
+        operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) {
+            thisRef.addons[property.name] = value
+        }
+    }
 }
 
 fun <T> contextAddon(init: T) = ContextAddon(init)

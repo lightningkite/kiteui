@@ -15,14 +15,12 @@ import android.graphics.drawable.RippleDrawable
 import android.os.Build
 import android.os.Looper
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
 import androidx.annotation.RequiresApi
-import androidx.core.view.ViewCompat
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
@@ -30,28 +28,21 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.CornerRadii
-import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.DragShadow
 import com.lightningkite.kiteui.models.DropTargetDelegate
-import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.HoverSemantic
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.applyAlpha
-import com.lightningkite.kiteui.models.coerceAtLeast
-import com.lightningkite.kiteui.models.div
-import com.lightningkite.kiteui.models.plus
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
 import com.lightningkite.reactive.context.onRemove
 import kotlin.math.min
 import kotlin.math.roundToInt
-import kotlin.text.toInt
 
 actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
     abstract val native: View
@@ -386,8 +377,8 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
-    override fun startup() {
-        super.startup()
+    override fun onStartup() {
+        super.onStartup()
         // Block touches below
         val wasClickable = native.isClickable
         val wasFocusable = native.isFocusable

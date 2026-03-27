@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
@@ -27,7 +26,7 @@ actual class DismissBackground actual constructor(context: ElementContext): Nati
     }
 
     override fun startup() {
-        super.startup()
+        super.onStartup()
         children.forEach { it.underlyingNativeElement.native.isClickable = true }
     }
 }

@@ -35,11 +35,12 @@ class ChainMap<K, V>(
     private val parent: ChainMap<K, V>? = null
 ) {
     private val local = HashMap<K, V>()
-    private val root: ChainMap<K, V> get() = parent?.root ?: this
+    private val root: ChainMap<K, V> = parent?.root ?: this
 
+    fun containsKey(key: K): Boolean = local.containsKey(key) || (parent?.containsKey(key) == true)
     operator fun get(key: K): V? = if (local.containsKey(key)) local[key] else parent?.get(key)
     operator fun set(key: K, value: V) { local[key] = value }
-    fun containsKey(key: K): Boolean = local.containsKey(key) || (parent?.containsKey(key) == true)
+    fun getLocal(key: K): V? = local[key]
 
     /** Returns existing value if found anywhere in the chain; otherwise writes [defaultValue] to the root and returns it. */
     fun getOrPut(key: K, defaultValue: () -> V): V {
@@ -52,6 +53,8 @@ class ChainMap<K, V>(
         root.local[key] = value
         return value
     }
+
+    fun getOrPutLocal(key: K, defaultValue: () -> V): V = local.getOrPut(key, defaultValue)
 
     fun child(): ChainMap<K, V> = ChainMap(this)
 }

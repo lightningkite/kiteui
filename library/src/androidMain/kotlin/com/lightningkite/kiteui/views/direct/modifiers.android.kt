@@ -7,19 +7,15 @@ import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
-import androidx.core.view.ViewCompat
 import androidx.core.view.children
 import com.lightningkite.kiteui.Log
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
@@ -34,7 +30,6 @@ import com.lightningkite.readable.*
 actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen {
     return beforeSetup {
         try {
-            lastSetWeight = amount
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
             lp.weight = amount
             if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
@@ -64,12 +59,11 @@ actual fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() 
             WRAP_CONTENT
         }
 
-        reactiveScope {
+        reactive {
             try {
                 val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
                 val amount = amount()
                 lp.weight = amount
-                lastSetWeight = amount
                 if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
                     lp.width = if (lp.weight != 0f) 0 else originalSize
                 } else {
@@ -85,67 +79,55 @@ actual fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() 
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
     return this@align.beforeSetup {
-            lastSetHorizontalAlign = horizontal
-            lastSetVerticalAlign = vertical
-            val params = lparams
+        val params = lparams
 
-            // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
-            val effectiveHorizontal = if (horizontal == Align.Stretch) {
-                parent?.newChildHorizontalAlign ?: horizontal
-            } else horizontal
-
-            val effectiveVertical = if (vertical == Align.Stretch) {
-                parent?.newChildVerticalAlign ?: vertical
-            } else vertical
-
-            val horizontalGravity = when (effectiveHorizontal) {
-                Align.Start -> Gravity.START
-                Align.Center -> Gravity.CENTER_HORIZONTAL
-                Align.End -> Gravity.END
-                else -> Gravity.CENTER_HORIZONTAL
-            }
-            val verticalGravity = when (effectiveVertical) {
-                Align.Start -> Gravity.TOP
-                Align.Center -> Gravity.CENTER_VERTICAL
-                Align.End -> Gravity.BOTTOM
-                else -> Gravity.CENTER_VERTICAL
-            }
-
-
-            params.width = when (horizontal) {
-                Align.Stretch -> MATCH_PARENT
-                else -> WRAP_CONTENT
-            }
-            params.height = when (vertical) {
-                Align.Stretch -> MATCH_PARENT
-                else -> WRAP_CONTENT
-            }
-
-            if (params is SimplifiedLinearLayoutLayoutParams)
-                params.gravity = horizontalGravity or verticalGravity
-            else if (params is FrameLayout.LayoutParams)
-                params.gravity = horizontalGravity or verticalGravity
-            else if (params is CoordinatorLayout.LayoutParams)
-                params.gravity = horizontalGravity or verticalGravity
-            else
-                Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
-            if (effectiveHorizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
-                params.width = MATCH_PARENT
-            } else if (params.width == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                // In a horizontal row, MATCH_PARENT width conflicts with weighted siblings - use WRAP_CONTENT instead
-                params.width = WRAP_CONTENT
-            }
-            if (effectiveVertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
-                params.height = MATCH_PARENT
-            } else if (params.height == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.VERTICAL) {
-                // In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead
-                params.height = WRAP_CONTENT
-            }
+        val horizontalGravity = when (horizontal) {
+            Align.Start -> Gravity.START
+            Align.Center -> Gravity.CENTER_HORIZONTAL
+            Align.End -> Gravity.END
+            else -> Gravity.CENTER_HORIZONTAL
         }
+        val verticalGravity = when (vertical) {
+            Align.Start -> Gravity.TOP
+            Align.Center -> Gravity.CENTER_VERTICAL
+            Align.End -> Gravity.BOTTOM
+            else -> Gravity.CENTER_VERTICAL
+        }
+
+        params.width = when (horizontal) {
+            Align.Stretch -> MATCH_PARENT
+            else -> WRAP_CONTENT
+        }
+        params.height = when (vertical) {
+            Align.Stretch -> MATCH_PARENT
+            else -> WRAP_CONTENT
+        }
+
+        if (params is SimplifiedLinearLayoutLayoutParams)
+            params.gravity = horizontalGravity or verticalGravity
+        else if (params is FrameLayout.LayoutParams)
+            params.gravity = horizontalGravity or verticalGravity
+        else if (params is CoordinatorLayout.LayoutParams)
+            params.gravity = horizontalGravity or verticalGravity
+        else
+            Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
+        if (horizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
+            params.width = MATCH_PARENT
+        } else if (params.width == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+            // In a horizontal row, MATCH_PARENT width conflicts with weighted siblings - use WRAP_CONTENT instead
+            params.width = WRAP_CONTENT
+        }
+        if (vertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
+            params.height = MATCH_PARENT
+        } else if (params.height == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.VERTICAL) {
+            // In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead
+            params.height = WRAP_CONTENT
+        }
+    }
 }
 
 @ViewModifierDsl3
-actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ElementWriter {
+actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return write(ScrollView(context, horizontal = horizontal, vertical = vertical), setup)
 }
 
@@ -162,7 +144,7 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
         val refreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(context.activity)
         refreshLayout.setOnRefreshListener {
             refreshAction.startAction(this)
-            reactiveScope {
+            reactive {
                 refreshLayout.isRefreshing = refreshAction.state().handle(
                     success = { false },
                     exception = { false },
@@ -170,60 +152,26 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
                 )
             }
         }
-        object: RViewWriter(context) {
-            override val native: View = refreshLayout
+        object : NativeContainerElement(context) {
+            override val native: ViewGroup = refreshLayout
 
             val myChildren: ArrayList<View> = ArrayList()
-            override fun internalAddChild(index: Int, view: RView) {
-                // Apply parent's default alignment if child doesn't have explicit alignment set
-                var needsLayoutParamUpdate = false
 
-                if (view.lastSetHorizontalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildHorizontalAlign != null) {
-                    view.lastSetHorizontalAlign = newChildHorizontalAlign!!
-                    needsLayoutParamUpdate = true
-                }
-                if (view.lastSetVerticalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildVerticalAlign != null) {
-                    view.lastSetVerticalAlign = newChildVerticalAlign!!
-                    needsLayoutParamUpdate = true
-                }
+            override fun nativeAddChild(index: Int, element: Element) {
 
-                // If we applied defaults, update layout params (align() modifier wasn't called)
-                if (needsLayoutParamUpdate) {
-                    val params = view.lparams
-                    val horizontalGravity = when (view.lastSetHorizontalAlign) {
-                        com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.START
-                        com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_HORIZONTAL
-                        com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.END
-                        else -> android.view.Gravity.CENTER_HORIZONTAL
-                    }
-                    val verticalGravity = when (view.lastSetVerticalAlign) {
-                        com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.TOP
-                        com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_VERTICAL
-                        com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.BOTTOM
-                        else -> android.view.Gravity.CENTER_VERTICAL
-                    }
-
-                    if (params is com.lightningkite.kiteui.views.direct.SimplifiedLinearLayoutLayoutParams)
-                        params.gravity = horizontalGravity or verticalGravity
-                    else if (params is android.widget.FrameLayout.LayoutParams)
-                        params.gravity = horizontalGravity or verticalGravity
-                    else if (params is androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams)
-                        params.gravity = horizontalGravity or verticalGravity
-                }
-
-                myChildren.add(index, view.native)
-                (native as ViewGroup).addView(view.native, index)
+                myChildren.add(index, element.native)
+                native.addView(element.native, index)
             }
 
-            override fun internalRemoveChild(index: Int) {
-                (native as ViewGroup).let {
+            override fun nativeRemoveChild(index: Int) {
+                native.let {
                     it.removeViewAt(it.children.indexOf(myChildren.removeAt(index)))
                 }
             }
 
-            override fun internalClearChildren() {
-                (native as ViewGroup).let {
-                    for(child in myChildren) {
+            override fun nativeClearChildren() {
+                native.let {
+                    for (child in myChildren) {
                         it.removeViewAt(it.children.indexOf(child))
                     }
                     myChildren.clear()
@@ -239,13 +187,13 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddScrolling {
+actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
-        return write(object : RViewWriter(context) {
-            override val native: View = DesiredSizeView(context.activity).apply {
+        return write(object : NativeContainerElement(context) {
+            override val native: ViewGroup = DesiredSizeView(context.activity).apply {
                 this.constraints = constraints
             }
-        }, {})
+        })
     } else {
         return beforeSetup {
             constraints.width?.let { it: Dimension -> lparams.width = it.value.toInt() }
@@ -263,14 +211,14 @@ actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): El
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddScrolling {
-    return write(object : RViewWriter(context) {
-        override val native: View = DesiredSizeView(context.activity).apply {
-            reactiveScope {
+actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
+    return write(object : NativeContainerElement(context) {
+        override val native: ViewGroup = DesiredSizeView(context.activity).apply {
+            reactive {
                 this@apply.constraints = constraints()
             }
         }
-    }, {})
+    })
 }
 
 interface MaxSizeLayoutParams {
@@ -300,7 +248,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        if(childCount == 0) return
+        if (childCount == 0) return
         getChildAt(0).measure(
             MeasureSpec.makeMeasureSpec(r - l - paddingLeft - paddingRight, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(b - t - paddingTop - paddingBottom, MeasureSpec.EXACTLY)
@@ -339,15 +287,16 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
         MeasureSpec.getMode(this)
     )
 
-    val Int.measureSpecString: String get() = when(measureSpecMode) {
-        MeasureSpec.UNSPECIFIED -> "UNSPECIFIED $measureSpecSize"
-        MeasureSpec.EXACTLY -> "EXACTLY $measureSpecSize"
-        MeasureSpec.AT_MOST -> "AT_MOST $measureSpecSize"
-        else -> "??? $measureSpecSize"
-    }
+    val Int.measureSpecString: String
+        get() = when (measureSpecMode) {
+            MeasureSpec.UNSPECIFIED -> "UNSPECIFIED $measureSpecSize"
+            MeasureSpec.EXACTLY -> "EXACTLY $measureSpecSize"
+            MeasureSpec.AT_MOST -> "AT_MOST $measureSpecSize"
+            else -> "??? $measureSpecSize"
+        }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if(childCount == 0) return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        if (childCount == 0) return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val f = getChildAt(0)
         f.minimumWidth = constraints.minWidth?.value?.toInt() ?: 0
         f.minimumHeight = constraints.minHeight?.value?.toInt() ?: 0
@@ -421,34 +370,6 @@ actual fun ElementWriter.hintPopover(
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.hasPopover(
-    requiresClick: Boolean,
-    preferredDirection: PopoverPreferredDirection,
-    setup: ViewWriter.(popoverContext: PopoverContext) -> Unit,
-): ElementWriter {
-    return beforeSetup {
-        native.setOnClickListener {
-            dialogPageNavigator.navigate(object : Page {
-                override fun ViewWriter.render(): Unit = run {
-                    dismissBackground {
-                        centered.frame {
-                            setup(object : PopoverContext {
-                                override val calculationContext: CalculationContext
-                                    get() = this@beforeNextElementSetup
-
-                                override fun close() {
-                                    dialogPageNavigator.dismiss()
-                                }
-                            })
-                        }
-                    }
-                }
-            })
-        }
-    }
-}
-
-@ViewModifierDsl3
 actual fun ElementWriter.textPopover(message: String): ElementWriter {
     return beforeSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -461,64 +382,64 @@ actual fun ElementWriter.textPopover(message: String): ElementWriter {
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme {
     return this@shownWhen.beforeSetup {
-            shown = default
-            var existingAnimator: ValueAnimator? = null
-            var goal = default
-            reactiveScope {
-                val value = condition()
-                if (goal == value) return@reactiveScope
-                goal = value
-                if (native.layoutParams == null) {
-                    shown = value
-                    return@reactiveScope
-                }
-                existingAnimator?.cancel()
-                existingAnimator = null
-                val parent = parent
-                shown = true
-                val p = parent?.native
-                if (animationsEnabled) {
-                    existingAnimator = if (value) {
-                        if (p is SimplifiedLinearLayout) {
-                            if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                                native.widthAnimator(WRAP_CONTENT)
-                            } else {
-                                native.heightAnimator(WRAP_CONTENT)
-                            }.also {
-                                it.addUpdateListener {
-                                    (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
-                                        it.animatedFraction
-                                }
-                            }
+        shown = default
+        var existingAnimator: ValueAnimator? = null
+        var goal = default
+        reactiveScope {
+            val value = condition()
+            if (goal == value) return@reactiveScope
+            goal = value
+            if (native.layoutParams == null) {
+                shown = value
+                return@reactiveScope
+            }
+            existingAnimator?.cancel()
+            existingAnimator = null
+            val parent = parent
+            shown = true
+            val p = parent?.native
+            if (animationsEnabled) {
+                existingAnimator = if (value) {
+                    if (p is SimplifiedLinearLayout) {
+                        if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                            native.widthAnimator(WRAP_CONTENT)
                         } else {
-                            TypedValueAnimator.FloatAnimator(0f, 1f).onUpdate { native.alpha = it }
+                            native.heightAnimator(WRAP_CONTENT)
+                        }.also {
+                            it.addUpdateListener {
+                                (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
+                                    it.animatedFraction
+                            }
                         }
                     } else {
-                        if (p is SimplifiedLinearLayout) {
-                            if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                                native.widthAnimator(0)
-                            } else {
-                                native.heightAnimator(0)
-                            }.also {
-                                it.addUpdateListener {
-                                    (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
-                                        1f - it.animatedFraction
-                                }
-                            }
-                        } else {
-                            TypedValueAnimator.FloatAnimator(1f, 0f).onUpdate { native.alpha = it }
-                        }
-                    }.setDuration(theme.transitionDuration.inWholeMilliseconds).also {
-                        it.doOnEnd {
-                            shown = value
-                        }
-                        it.start()
+                        TypedValueAnimator.FloatAnimator(0f, 1f).onUpdate { native.alpha = it }
                     }
                 } else {
-                    shown = value
+                    if (p is SimplifiedLinearLayout) {
+                        if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                            native.widthAnimator(0)
+                        } else {
+                            native.heightAnimator(0)
+                        }.also {
+                            it.addUpdateListener {
+                                (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
+                                    1f - it.animatedFraction
+                            }
+                        }
+                    } else {
+                        TypedValueAnimator.FloatAnimator(1f, 0f).onUpdate { native.alpha = it }
+                    }
+                }.setDuration(theme.transitionDuration.inWholeMilliseconds).also {
+                    it.doOnEnd {
+                        shown = value
+                    }
+                    it.start()
                 }
+            } else {
+                shown = value
             }
         }
+    }
 }
 
 internal val animatingSize = HashSet<View>()
@@ -559,6 +480,7 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
             override fun onAnimationCancel(animation: Animator) {
                 animatingSize.remove(this@heightAnimator)
             }
+
             override fun onAnimationRepeat(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
                 animatingSize.remove(this@heightAnimator)
@@ -604,6 +526,7 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
             override fun onAnimationCancel(animation: Animator) {
                 animatingSize.remove(this@widthAnimator)
             }
+
             override fun onAnimationRepeat(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
                 layoutParams.width = toWidth

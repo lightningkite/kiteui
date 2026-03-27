@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.reactive.core.Reactive
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -102,6 +103,9 @@ fun ElementWriter.text(text: String) = text { content = text }
 
 @ViewDsl
 fun ElementWriter.subtext(text: String) = subtext { content = text }
+
+@ViewDsl
+fun ElementWriter.progressBar(ratio: Reactive<Float>) = progressBar { ::ratio bind ratio }
 
 // TODO: Button with working indicator
 

@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.reactive.context.StatusListener
@@ -12,62 +12,36 @@ import com.lightningkite.reactive.context.StatusListener
  * Elements can be either standalone views or containers that hold child elements.
  */
 @ViewTreeBuilder
-interface Element : CoroutineScopeHelpers2, StatusListener {
-    /** Context providing platform-specific resources and configuration */
+interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
     val context: ElementContext
-
-    /** The underlying native element that this element ultimately delegates to for rendering */
     val underlyingNativeElement: NativeElement
-
-    /** Parent container element, null if this is a root element */
     val parent: ContainerElement?
 
-    /** Opacity level from 0.0 (transparent) to 1.0 (opaque) */
+    @OverrideOnly
+    fun onStartup()
+
+    @OverrideOnly
+    fun onShutdown()
+
     var opacity: Double
-
-    /** Whether the element is shown (does not take up space when false) */
     var shown: Boolean
-
-    /** Whether the element is visible (takes up space but may be visually hidden) */
     var visible: Boolean
-
-    /** Whether the element should ignore all user interaction */
     var ignoreInteraction: Boolean
-
-    /** Custom padding for each edge, overrides theme padding */
     var paddingByEdge: Edges?
-
-    /** Additional padding for safe areas (notches, system bars, etc.) */
     var safeAreaPadding: Edges?
 
-    /** Data to be provided when this element is dragged */
     var dragData: DragData?
-
-    /** Delegate for handling drop events when items are dropped on this element */
     var dropTargetDelegate: DropTargetDelegate?
 
-    /** Scrolls this element into view within its scrollable parent */
     fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
-
-    /** Requests keyboard focus for this element */
     fun requestFocus()
 
-    /** Theme derivation to apply to this element (semantic theme changes like 'important', 'card', etc.) */
     var themeChoice: ThemeDerivation
-
-    /** Current resolved theme with background information */
     val themeAndBack: ThemeAndBack
 
-    /** Value exposed to UI driver/testing frameworks */
     val driverValue: String? get() = null
-
-    /** Actions exposed to UI driver/testing frameworks */
     val driverActions: Map<String, suspend (List<String>) -> String> get() = defaultDriverActions()
-
-    /** Debug name for logging and debugging purposes */
     var debugName: String?
-
-    /** Whether this element should show up when printing (Ctrl+P) the page. */
     var showOnPrint: Boolean
 
     companion object;

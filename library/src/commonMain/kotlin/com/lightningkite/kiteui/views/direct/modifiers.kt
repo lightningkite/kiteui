@@ -111,7 +111,7 @@ expect inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
 ): ElementWriter
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddScrolling
+expect fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme
 
 @ViewModifierDsl3
 fun ElementWriter.CanAddSizing.sizeConstraints(
@@ -122,7 +122,7 @@ fun ElementWriter.CanAddSizing.sizeConstraints(
     aspectRatio: Pair<Int, Int>,
     width: Dimension? = null,
     height: Dimension? = null,
-): ElementWriter.CanAddScrolling = sizedBox(
+): ElementWriter.CanAddTheme = sizedBox(
     SizeConstraints(
         minWidth = minWidth,
         maxWidth = maxWidth,
@@ -143,7 +143,7 @@ fun ElementWriter.CanAddSizing.sizeConstraints(
     aspectRatio: Double? = null,
     width: Dimension? = null,
     height: Dimension? = null,
-): ElementWriter.CanAddScrolling = sizedBox(
+): ElementWriter.CanAddTheme = sizedBox(
     SizeConstraints(
         minWidth = minWidth,
         maxWidth = maxWidth,
@@ -156,7 +156,7 @@ fun ElementWriter.CanAddSizing.sizeConstraints(
 )
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddScrolling
+expect fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme
 
 @ViewModifierDsl3
 inline val ElementWriter.CanAddTheme.padded: ElementWriter.CanAddTheme get() = themed(ForcePaddingSemantic)

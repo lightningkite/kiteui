@@ -142,7 +142,7 @@ fun UIViewController.kiteUi(context: ElementContext = ElementContext(this@kiteUi
             NSNotificationCenter.defaultCenter.removeObserver(observer)
             remover()
             job.cancel()
-            created.shutdown()
+            created.onShutdown()
             true
         } else false
     }))

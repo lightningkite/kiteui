@@ -1,11 +1,10 @@
-@file:OptIn(InternalKiteUi::class, ExperimentalKiteUi::class)
+@file:OptIn(InternalKiteUi::class, ExperimentalKiteUi::class, OverrideOnly::class)
 
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.InternalKiteUi
-import com.lightningkite.kiteui.models.Alignment
-import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 
@@ -62,7 +61,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
         if (!checkActive("removeChild", requireTarget = false)) return
         if (index !in children.indices) throw IllegalArgumentException("$index not in range ${children.indices}")
         nativeRemoveChild(index)
-        internalChildren.removeAt(index).underlyingNativeElement.shutdown()
+        internalChildren.removeAt(index).onShutdown()
     }
 
     final override fun removeChild(element: Element) {
@@ -70,7 +69,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
         val i = children.indexOf(element)
         if (i != -1) {
             nativeRemoveChild(i)
-            internalChildren.removeAt(i).underlyingNativeElement.shutdown()
+            internalChildren.removeAt(i).onShutdown()
         }
         else throw IllegalStateException("$element is not a child of $this!")
     }
@@ -78,7 +77,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
     final override fun clearChildren() {
         if (!checkActive("clearChildren", requireTarget = false)) return
         nativeClearChildren()
-        for (e in children) e.underlyingNativeElement.shutdown()
+        for (e in children) e.onShutdown()
         internalChildren.clear()
     }
 
@@ -86,18 +85,18 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
 
     // --- LIFECYCLE ---
 
-    override fun shutdown() {
+    override fun onShutdown() {
         if (isShutdown) return
         if (Element.Debugger.removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
                 removeChild(index)
-                internalChildren.removeAt(index).underlyingNativeElement.shutdown()
+                internalChildren.removeAt(index).onShutdown()
             }
         } else {
-            internalChildren.forEach { it.underlyingNativeElement.shutdown() }
+            internalChildren.forEach { it.onShutdown() }
             internalChildren.clear()
         }
-        super.shutdown()
+        super.onShutdown()
     }
 
 
@@ -111,12 +110,5 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
             if (oldCascading != newCascading) {
                 for (child in children) child.underlyingNativeElement.refreshTheming()
             }
-        }
-
-    open val spacingForChildCornerRadii: Dimension
-        get()  {
-            val pad = padding ?: themeAndBack.theme.padding.top
-            val gap = gap ?: themeAndBack.theme.gap
-            return minOf(pad, gap)
         }
 }
