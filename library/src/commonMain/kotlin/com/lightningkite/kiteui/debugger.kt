@@ -1,26 +1,31 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.NativeElement
+
 var debugMode: Boolean = false
 expect fun debugger(): Unit
 data class GCInfo(val usage: Long)
+
 expect fun gc(): GCInfo
 expect fun cleanImageCache()
 expect fun gcReport()
-expect class WeakReference<T: Any>(referred: T) {
+expect class WeakReference<T : Any>(referred: T) {
     fun get(): T?
 }
+
 val leaks = ArrayList<WeakReference<*>>()
 private var lastGc = clockMillis()
 private var lastGcReport = clockMillis()
-private val leakLog = LogRoot.tag("RViewLeaks")
+private val leakLog = LogRoot.tag("ElementLeaks")
 private fun gcIfNotVeryRecent() {
-    if(clockMillis() - lastGc > 100.0) {
+    if (clockMillis() - lastGc > 100.0) {
         gc()
         lastGc = clockMillis()
     }
-    if(clockMillis() - lastGcReport > 1000.0) {
+    if (clockMillis() - lastGcReport > 1000.0) {
         lastGcReport = clockMillis()
-        if(leaks.isNotEmpty()) {
+        if (leaks.isNotEmpty()) {
             leakLog.log("WARNING: ${leaks.size} leaks...")
             leaks.groupingBy { it.get()?.let { it::class } }.eachCount().forEach {
                 leakLog.log("  Leaked ${it.value} of ${it.key}")
@@ -28,6 +33,7 @@ private fun gcIfNotVeryRecent() {
         }
     }
 }
+
 fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
@@ -37,6 +43,7 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
         }
     }
 }
+
 fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
@@ -47,6 +54,7 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
         }
     }
 }
+
 fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
@@ -57,6 +65,7 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
         }
     }
 }
+
 fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
@@ -68,6 +77,7 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
         }
     }
 }
+
 expect fun assertMainThread()
 
 expect fun Throwable.printStackTrace2()
@@ -76,30 +86,28 @@ fun Throwable.report(context: String = "") = Throwable_report(this, context)
 
 expect fun Any?.identityHashCode(): Int
 
-var viewDebugTarget: RView? = null
+var viewDebugTarget: Element? = null
 
-inline fun RViewHelper.debugPrint(get: ()->String) {
-    if(debugMode && viewDebugTarget == this)
-        Log.tag("viewDebugTarget").info(get())
-}
-inline fun RView.debugPrint(get: ()->String) {
-    if(debugMode && viewDebugTarget == this)
+inline fun Element.debugPrint(get: () -> String) {
+    if (debugMode && viewDebugTarget == this)
         Log.tag("viewDebugTarget").info(get())
 }
 
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
 typealias Console = Log
+
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
 typealias ConsoleRoot = Log.Companion
 
 interface Log {
-    companion object: Log {
+    companion object : Log {
         override fun tag(tag: String): Log = (logInterceptor ?: LogRoot).tag(tag)
         override fun log(vararg entries: Any?) = (logInterceptor ?: LogRoot).log(*entries)
         override fun error(vararg entries: Any?) = (logInterceptor ?: LogRoot).error(*entries)
         override fun info(vararg entries: Any?) = (logInterceptor ?: LogRoot).info(*entries)
         override fun warn(vararg entries: Any?) = (logInterceptor ?: LogRoot).warn(*entries)
     }
+
     fun tag(tag: String): Log
     fun log(vararg entries: Any?)
     fun error(vararg entries: Any?)
@@ -115,11 +123,13 @@ var logInterceptor: Log? = null
 fun Log.infoOrAbove(): Log = object : Log by this {
     override fun log(vararg entries: Any?) {}
 }
+
 fun Log.warnOrAbove(): Log = object : Log by this {
     override fun log(vararg entries: Any?) {}
     override fun info(vararg entries: Any?) {}
 }
-expect object LogRoot: Log {
+
+expect object LogRoot : Log {
     override fun tag(tag: String): Log
     override fun log(vararg entries: Any?)
     override fun error(vararg entries: Any?)

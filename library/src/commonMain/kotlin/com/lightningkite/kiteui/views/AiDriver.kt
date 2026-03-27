@@ -1,10 +1,17 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.DragData
+import com.lightningkite.kiteui.models.DragEvent
+import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kotlinx.serialization.uri.encodeURIComponent
 import com.lightningkite.reactive.core.AppScope
 import kotlinx.coroutines.launch
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -25,7 +32,7 @@ object AiDriver {
         },
         host: String = "localhost",
         port: Int = 7474,
-        rootView: () -> RView?,
+        rootView: () -> Element?,
         navigator: () -> PageNavigator?,
     ) {
         tryAutoStartDaemon(port)
@@ -68,22 +75,78 @@ object AiDriver {
         // Activate the WebSocket — retryWebsocket uses lazy connection via beginUse()
         ws.beginUse()
     }
+
+    object Defaults {
+        fun defaultDriverActions(element: Element): Map<String, suspend (List<String>) -> String> = buildMap {
+            put("scrollIntoView") {
+                element.scrollIntoView(Align.Center, Align.Center, animate = false)
+                "OK"
+            }
+            if (element.dragData != null) put("getDragData") {
+                val data = element.dragData ?: throw DriverActionException("no dragData on this view")
+                val serialized = buildString {
+                    append(data.label)
+                    for ((mime, value) in data.typeToData) {
+                        append('\u0000'); append(mime); append('\u0000'); append(value)
+                    }
+                }
+                Base64.encode(serialized.encodeToByteArray())
+            }
+            if (element.dropTargetDelegate != null) put("drop") { args ->
+                val encoded = args.firstOrNull() ?: throw DriverActionException("drop requires base64 drag data argument")
+                val decoded = Base64.decode(encoded).decodeToString()
+                val parts = decoded.split('\u0000')
+                if(parts.size % 2 == 0) throw DriverActionException("invalid drag data format: expected label followed by mime/value pairs")
+                val label = parts[0]
+                val typeToData = (1 until parts.size step 2).associate { parts[it] to parts[it + 1] }
+                val dragData = DragData(label, typeToData)
+                val delegate = element.dropTargetDelegate ?: throw DriverActionException("no drop target found on this view or ancestors")
+                val event = DragEvent(dragData, 0.0, 0.0)
+                delegate.enter(event)
+                val result = delegate.drop(event)
+                delegate.end(event)
+                if (result) "OK" else throw DriverActionException("drop was rejected by the target")
+            }
+        }
+
+        fun defaultDriverDisplay(element: Element, options: Element.DriverSnapshotOptions): String = buildString {
+            val name = element.debugName
+            if (name != null) {
+                append("$name: ")
+            } else {
+                val idx = element.parent?.children?.indexOf(element)?.takeIf { it >= 0 } ?: 0
+                append("$idx: ")
+            }
+            if (options.includeThemes) {
+                element.themeChoice.takeUnless { it == ThemeDerivation.None }?.let { append(it); append(' ') }
+            }
+            append(element::class.simpleName)
+            element.driverValue?.let { append(" = \"$it\"") }
+//            element.htmlElementTag?.let { append(" ($it)") } TODO: htmlElementTag
+            if (!element.shown) append(" (hidden)")
+            else if (!element.visible) append(" (invisible)")
+            element.driverActions.keys
+                .filter { it != "snapshot" && it != "screenshot" && it != "find" && it != "findClickable" && it != "scrollIntoView" && it != "getAlignment" }
+                .takeUnless { it.isEmpty() }
+                ?.let { append(" [${it.joinToString(", ")}]") }
+        }
+    }
 }
 
 /**
  * Lazily installs a [MockExternalServices] on the root view's [RContext], wrapping the existing
  * external services as a delegate. Returns the mock instance. Subsequent calls return the same instance.
  */
-fun ensureMockExternalServices(root: RView): MockExternalServices {
+fun ensureMockExternalServices(root: Element): MockExternalServices {
     val existing = root.context.externalServices
     if (existing is MockExternalServices) return existing
     val mock = MockExternalServices(delegate = existing)
-    root.context.addons[ViewWriter::externalServices.name] = mock
+    root.context.addons[ElementContext::externalServices.name] = mock
     return mock
 }
 
 @OptIn(ExperimentalEncodingApi::class)
-suspend fun handleCommand(command: String, root: RView?, navigator: PageNavigator?): String {
+suspend fun handleCommand(command: String, root: Element?, navigator: PageNavigator?): String {
     if (command.isBlank()) throw DriverActionException("empty command")
 
     val parts = command.split('\t')

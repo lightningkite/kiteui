@@ -30,21 +30,29 @@ interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
     var paddingByEdge: Edges?
     var safeAreaPadding: Edges?
 
+    var themeChoice: ThemeDerivation
+    val themeAndBack: ThemeAndBack
+
     var dragData: DragData?
     var dropTargetDelegate: DropTargetDelegate?
 
     fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
     fun requestFocus()
 
-    var themeChoice: ThemeDerivation
-    val themeAndBack: ThemeAndBack
-
-    val driverValue: String? get() = null
-    val driverActions: Map<String, suspend (List<String>) -> String> get() = defaultDriverActions()
     var debugName: String?
     var showOnPrint: Boolean
 
+    val driverValue: String? get() = null
+    val driverActions: Map<String, suspend (List<String>) -> String> get() = AiDriver.Defaults.defaultDriverActions(this)
+    fun driverDisplay(options: DriverSnapshotOptions): String = AiDriver.Defaults.defaultDriverDisplay(this, options)
+
     companion object;
+
+    data class DriverSnapshotOptions(
+        val includeHidden: Boolean = false,
+        val interactiveOnly: Boolean = false,
+        val includeThemes: Boolean = false,
+    )
 
     object Debugger {
         var removeBeforeShutdown = false

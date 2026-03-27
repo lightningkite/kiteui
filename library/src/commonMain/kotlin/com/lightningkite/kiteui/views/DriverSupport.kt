@@ -1,22 +1,34 @@
 package com.lightningkite.kiteui.views
 
+private fun Element.children(): List<Element> =
+    (this as? ContainerElement)?.children ?: emptyList()
+
+private fun Element.childrenOrNull(): List<Element>? =
+    (this as? ContainerElement)?.children
+
 /**
  * Renders a text snapshot of this view's subtree for AI driver / testing inspection.
  */
-fun RView.driverSnapshot(options: RViewHelper.DriverSnapshotOptions = RViewHelper.DriverSnapshotOptions()): String = buildString {
-    fun walk(view: RView, depth: Int) {
+fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Element.DriverSnapshotOptions()): String = buildString {
+    val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
+
+    fun walk(view: Element, depth: Int) {
         if (!options.includeHidden && !(view.shown && view.visible)) return
-        val line = view.driverDisplay(options)
-        val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
+        val line = view.underlyingNativeElement.driverDisplay(options)
+
         if (options.interactiveOnly && view.driverActions.keys.all { it in baseActions } && view.driverValue == null && view.debugName == null) {
             // Skip structural-only nodes but still walk children
-            for (child in view.driverChildren) walk(child, depth)
+            for (child in view.children()) walk(child, depth)
             return
         }
+
         repeat(depth) { append("  ") }
+
         appendLine(line)
-        for (child in view.driverChildren) walk(child, depth + 1)
+
+        for (child in view.children()) walk(child, depth + 1)
     }
+
     walk(this@driverSnapshot, 0)
 }
 
@@ -25,11 +37,11 @@ fun RView.driverSnapshot(options: RViewHelper.DriverSnapshotOptions = RViewHelpe
  * widget type (class name), or action names.
  * Returns a compact listing of matches with their display line.
  */
-fun RView.driverFind(query: String): String = buildString {
+fun Element.driverFind(query: String): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
-    val results = mutableListOf<Pair<String, RView>>()
-    fun walk(view: RView, pathPrefix: String) {
-        val segment = view.debugName ?: view.parent?.driverChildren?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
+    val results = mutableListOf<Pair<String, Element>>()
+    fun walk(view: Element, pathPrefix: String) {
+        val segment = view.debugName ?: view.parent?.children?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
         // Named views reset the path prefix — resolveDriverPath deep-searches for the first
         // named segment, so the full ancestor chain is unnecessary. This keeps paths short
         // (e.g. "email" instead of "0/1/email"). Requires debugNames to be unique within a subtree.
@@ -41,14 +53,14 @@ fun RView.driverFind(query: String): String = buildString {
         if (nameMatch || valueMatch || typeMatch || actionMatch) {
             results.add(path to view)
         }
-        for (child in view.driverChildren) walk(child, path)
+        for (child in view.children()) walk(child, path)
     }
     walk(this@driverFind, "")
     if (results.isEmpty()) {
         append("No views matching '$query'")
     } else {
         for ((path, view) in results) {
-            appendLine("$path: ${view.driverDisplay(RViewHelper.DriverSnapshotOptions())}")
+            appendLine("$path: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
         }
     }
 }
@@ -58,13 +70,13 @@ fun RView.driverFind(query: String): String = buildString {
  * the nearest ancestor with a "click" action. Returns deduplicated clickable ancestors
  * in the same format as [driverFind].
  */
-fun RView.driverFindClickable(query: String): String = buildString {
+fun Element.driverFindClickable(query: String): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
-    val viewPaths = mutableMapOf<RView, String>()
-    val matches = mutableListOf<RView>()
+    val viewPaths = mutableMapOf<Element, String>()
+    val matches = mutableListOf<Element>()
 
-    fun walk(view: RView, pathPrefix: String) {
-        val segment = view.debugName ?: view.parent?.driverChildren?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
+    fun walk(view: Element, pathPrefix: String) {
+        val segment = view.debugName ?: view.parent?.children?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
         val path = if (pathPrefix.isEmpty() || segment.toIntOrNull() == null) segment else "$pathPrefix/$segment"
         viewPaths[view] = path
         val nameMatch = view.debugName?.contains(query, ignoreCase = true) == true
@@ -74,14 +86,14 @@ fun RView.driverFindClickable(query: String): String = buildString {
         if (nameMatch || valueMatch || typeMatch || actionMatch) {
             matches.add(view)
         }
-        for (child in view.driverChildren) walk(child, path)
+        for (child in view.children()) walk(child, path)
     }
     walk(this@driverFindClickable, "")
 
-    val seen = mutableSetOf<RView>()
-    val results = mutableListOf<Pair<String, RView>>()
+    val seen = mutableSetOf<Element>()
+    val results = mutableListOf<Pair<String, Element>>()
     for (match in matches) {
-        var current: RView? = match
+        var current: Element? = match
         while (current != null && current in viewPaths) {
             if (current.driverActions.containsKey("click")) {
                 if (seen.add(current)) {
@@ -98,7 +110,7 @@ fun RView.driverFindClickable(query: String): String = buildString {
         append("No clickable views matching '$query'")
     } else {
         for ((path, view) in results) {
-            appendLine("$path: ${view.driverDisplay(RViewHelper.DriverSnapshotOptions())}")
+            appendLine("$path: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
         }
     }
 }
@@ -109,11 +121,11 @@ fun RView.driverFindClickable(query: String): String = buildString {
  * The first segment is deep-searched if no direct child matches.
  * Use `..` to navigate to the parent view.
  */
-fun RView.resolveDriverPath(path: String): RView? {
+fun Element.resolveDriverPath(path: String): Element? {
     val segments = path.split("/").filter { it.isNotEmpty() }
     if (segments.isEmpty()) return this
 
-    var current: RView = this
+    var current: Element = this
 
     // First segment: deep-search for named match
     val first = segments[0]
@@ -121,7 +133,7 @@ fun RView.resolveDriverPath(path: String): RView? {
         current = current.parent ?: return null
     } else {
         val firstTarget = first.toIntOrNull()?.let { idx ->
-            current.driverChildren.getOrNull(idx)
+            current.childrenOrNull()?.getOrNull(idx)
         } ?: current.findByName(first)
         current = firstTarget ?: return null
     }
@@ -134,16 +146,16 @@ fun RView.resolveDriverPath(path: String): RView? {
             continue
         }
         val next = seg.toIntOrNull()?.let { idx ->
-            current.driverChildren.getOrNull(idx)
-        } ?: current.driverChildren.firstOrNull { it.debugName == seg }
+            current.childrenOrNull()?.getOrNull(idx)
+        } ?: current.childrenOrNull()?.firstOrNull { it.debugName == seg }
         current = next ?: return null
     }
     return current
 }
 
-private fun RView.findByName(name: String): RView? {
+private fun Element.findByName(name: String): Element? {
     if (debugName == name) return this
-    for (child in driverChildren) {
+    for (child in children()) {
         val found = child.findByName(name)
         if (found != null) return found
     }
@@ -153,8 +165,8 @@ private fun RView.findByName(name: String): RView? {
 /**
  * Parses snapshot option flags from command args.
  */
-fun parseSnapshotOptions(args: Array<out String>): RViewHelper.DriverSnapshotOptions {
-    return RViewHelper.DriverSnapshotOptions(
+fun parseSnapshotOptions(args: Array<out String>): Element.DriverSnapshotOptions {
+    return Element.DriverSnapshotOptions(
         includeHidden = "--hidden" in args,
         interactiveOnly = "--interactive" in args,
         includeThemes = "--themes" in args,

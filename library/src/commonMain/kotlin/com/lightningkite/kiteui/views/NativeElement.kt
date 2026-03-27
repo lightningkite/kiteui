@@ -328,7 +328,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     @InternalKiteUi
     inline fun debug(requireTarget: Boolean = true, text: () -> String) {
-        if ((!requireTarget && debugMode) || Element.Debugger.debugTarget === this) println("$this DEBUG: ${text()}")
+        if ((!requireTarget && debugMode) || Element.Debugger.debugTarget === this) Log.tag("$this DEBUG").info(text())
     }
 
     fun currentlyActive(): Boolean = fullyStarted && !isShutdown
