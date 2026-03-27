@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -280,6 +281,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .kui.scroll-horizontal {
                 overflow: auto hidden;
+                padding-top: var(--shadow-room, 0px);
+                padding-bottom: var(--shadow-room, 0px);
+                margin-top: calc(-1 * var(--shadow-room, 0px));
+                margin-bottom: calc(-1 * var(--shadow-room, 0px));
             }
 
             .kui.scroll-horizontal  * {
@@ -981,9 +986,20 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme.diff(diff) { shadows }?.let { shadows ->
             if (shadows != null && shadows.isNotEmpty()) {
                 addToCss(backSel, "box-shadow", shadows.toBoxShadow())
+                // Allow neumorphic shadows to paint beyond this container's bounds
+                addToCss(backSel, "overflow", "visible")
+                // Set shadow room as CSS variable so scroll containers can add padding
+                val maxExtent = shadows.filter { !it.inset }.maxOfOrNull {
+                    it.blurRadius.value.roughPx + it.spreadRadius.value.roughPx +
+                            maxOf(abs(it.offsetX.value.roughPx), abs(it.offsetY.value.roughPx))
+                } ?: 0.0
+                if (maxExtent > 0.0) {
+                    addToCss(directSel, "--shadow-room", "${maxExtent.roundToInt()}px")
+                }
             } else {
                 // shadows explicitly set to null or empty - check elevation
                 addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
+                addToCss(directSel, "--shadow-room", "0px")
             }
         } ?: theme.diff(diff) { elevation }?.let {
             // shadows unchanged, but elevation changed

@@ -2287,14 +2287,31 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
     }
 
     override fun dispatchDraw(canvas: Canvas) {
-        // Clip only vertically to prevent scroll content from overlapping sibling views.
-        // Leave horizontal unconstrained so neumorphic outer shadows render on left/right.
+        // Clip vertically to prevent scroll content from overlapping sibling views.
+        // Extend the clip by the max shadow extent so neumorphic outer shadows render fully.
+        // Check both direct children and grandchildren (e.g., cards inside a row inside this scroll view).
+        var shadowExtent = 0f
+        for (i in 0 until childCount) {
+            val child = getChildAt(i) ?: continue
+            if (child.visibility == GONE) continue
+            val bg = child.background as? com.lightningkite.kiteui.views.NeumorphicDrawable
+            if (bg != null) {
+                shadowExtent = maxOf(shadowExtent, bg.shadowExtent)
+            } else if (child is ViewGroup) {
+                for (j in 0 until child.childCount) {
+                    val grandchild = child.getChildAt(j) ?: continue
+                    val gcBg = grandchild.background as? com.lightningkite.kiteui.views.NeumorphicDrawable ?: continue
+                    shadowExtent = maxOf(shadowExtent, gcBg.shadowExtent)
+                }
+            }
+        }
+        val shadowExtentInt = shadowExtent.toInt()
         val saveCount = canvas.save()
         canvas.clipRect(
             Int.MIN_VALUE,
-            scrollY + paddingTop,
+            scrollY + paddingTop - shadowExtentInt,
             Int.MAX_VALUE,
-            scrollY + height - paddingBottom
+            scrollY + height - paddingBottom + shadowExtentInt
         )
         for (i in 0 until childCount) {
             val child = getChildAt(i) ?: continue
