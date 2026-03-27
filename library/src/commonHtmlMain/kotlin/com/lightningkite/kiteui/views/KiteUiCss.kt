@@ -145,9 +145,21 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 overflow: visible !important;
                 background-color: var(--nearest-background-color, transparent);
             }
-            
-            
-            
+
+            input.kui[type="range"] {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 100%;
+                height: 1rem;
+                max-height: 1rem;
+                border: none;
+                border-radius: 1rem;
+                padding: 0px !important;
+                overflow: visible !important;
+                outline: none;
+                background-color: var(--nearest-background-color, transparent);
+            }
+
            .kui.progress-ring {
               width: 100%;
               justify-content: space-around;
@@ -729,6 +741,57 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     height: 100%;
                     background-color: currentColor;
                     border-radius: 1rem;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """input.kui[type="range"]::-webkit-slider-runnable-track {
+                    height: 1rem;
+                    border-radius: 1rem;
+                    background: linear-gradient(to right, currentcolor var(--slider-progress, 50%), transparent var(--slider-progress, 50%));
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """input.kui[type="range"]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 1.5rem;
+                    height: 1.5rem;
+                    border-radius: 50%;
+                    background-color: var(--nearest-background-color, #e0e0e0);
+                    box-shadow: -4px -4px 8px rgba(255,255,255,0.7), 4px 4px 8px rgba(0,0,0,0.15);
+                    margin-top: -0.25rem;
+                    cursor: pointer;
+                    border: none;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """input.kui[type="range"]::-moz-range-track {
+                    height: 1rem;
+                    border-radius: 1rem;
+                    background: linear-gradient(to right, currentcolor var(--slider-progress, 50%), transparent var(--slider-progress, 50%));
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """input.kui[type="range"]::-moz-range-thumb {
+                    width: 1.5rem;
+                    height: 1.5rem;
+                    border-radius: 50%;
+                    background-color: var(--nearest-background-color, #e0e0e0);
+                    box-shadow: -4px -4px 8px rgba(255,255,255,0.7), 4px 4px 8px rgba(0,0,0,0.15);
+                    cursor: pointer;
+                    border: none;
                 }"""
             )
         } catch (e: Throwable) { /*squish*/

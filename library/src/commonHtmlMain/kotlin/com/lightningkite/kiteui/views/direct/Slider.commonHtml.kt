@@ -20,13 +20,20 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         native.setAttribute("max", "1")
         native.setAttribute("step", "any")
         native.style.width = "100%"
+        themeChoice += FieldSemantic
+    }
+
+    private fun updateSliderProgress(currentValue: Float) {
+        val range = max - min
+        val percent = if (range > 0) ((currentValue - min) / range * 100).coerceIn(0f, 100f) else 0f
+        native.setStyleProperty("--slider-progress", "${percent}%")
     }
 
     private val valueProp = Signal(0.5f)
     actual val value: MutableReactiveValue<Float> = native.vprop(
         "input",
         { attributes.valueString?.toFloatOrNull() ?: 0.5f },
-        { newValue -> 
+        { newValue ->
             // Ensure value is within min/max range
             val clampedValue = newValue.coerceIn(min, max)
 
@@ -41,6 +48,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
             } ?: clampedValue
 
             attributes.valueString = finalValue.toString()
+            updateSliderProgress(finalValue)
         }
     )
 
@@ -69,6 +77,17 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
     init {
         // Initialize with the property value
         value.value = valueProp.value
+
+        // Update progress fill when user drags
+        native.addEventListener("input") {
+            val v = native.attributes.valueString?.toFloatOrNull() ?: 0.5f
+            updateSliderProgress(v)
+        }
+    }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme[FieldSemantic])
+        native.classes.add("transition")
     }
 
     actual var enabled: Boolean
