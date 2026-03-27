@@ -2287,6 +2287,15 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
     }
 
     override fun dispatchDraw(canvas: Canvas) {
+        // Clip only vertically to prevent scroll content from overlapping sibling views.
+        // Leave horizontal unconstrained so neumorphic outer shadows render on left/right.
+        val saveCount = canvas.save()
+        canvas.clipRect(
+            Int.MIN_VALUE,
+            scrollY + paddingTop,
+            Int.MAX_VALUE,
+            scrollY + height - paddingBottom
+        )
         for (i in 0 until childCount) {
             val child = getChildAt(i) ?: continue
             if (child.visibility == GONE) continue
@@ -2294,6 +2303,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
             bg.drawOuterShadowsFromParent(canvas, child.left, child.top)
         }
         super.dispatchDraw(canvas)
+        canvas.restoreToCount(saveCount)
     }
 
     override fun draw(canvas: Canvas) {
