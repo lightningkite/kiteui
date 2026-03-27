@@ -21,8 +21,7 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext): 
             native.keyboardHints = value
         }
 
-    private class KiteUiStringAdapter(context: Context, resource: Int, objects: List<String>) :
-        ArrayAdapter<String>(context, resource, objects) {
+    private class KiteUiStringAdapter(context: Context, resource: Int, objects: List<String>) : ArrayAdapter<String>(context, resource, objects) {
         val items: List<String> = objects
     }
 

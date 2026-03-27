@@ -16,10 +16,10 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ViewWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddScrolling.() -> Unit) {
+fun ElementWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddScrolling.() -> Unit) {
     overlayWriter(false) {
-        withoutAnimation {
-            atBottomCenter.col {
+        atBottomCenter.col {
+            withoutAnimation {
                 opacity = 0.0
                 launch {
                     val t = theme
@@ -38,7 +38,7 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanA
     }
 }
 
-fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: ()->Unit) -> Unit) {
+fun ElementWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: ()->Unit) -> Unit) {
     overlayWriter(modal = true) { close ->
         dismissBackground {
             onClick { if (dismissable) close() }
@@ -49,10 +49,10 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: (
     }
 }
 
-fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) {
+fun ElementWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) {
     var willRemove: Element? = null
     overlayWriter {
-        withoutAnimation {
+//        withoutAnimation {    TODO: Check if removing this 'withoutAnimation' breaks anything
             popoverWriter {
                 willRemove?.let {
                     it.animateOut(transition.reverse) {
@@ -62,6 +62,6 @@ fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.
             }.run {
                 willRemove = beforeSetup { animateIn(transition.forward) }.produceExactlyOne(content)
             }
-        }
+//        }
     }
 }

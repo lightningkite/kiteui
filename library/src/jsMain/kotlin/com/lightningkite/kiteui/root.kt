@@ -1,5 +1,8 @@
+@file:OptIn(OverrideOnly::class)
+
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.dom.DOMElement
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.models.Theme
@@ -15,48 +18,35 @@ import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import org.w3c.dom.Element
 
-fun root(theme: Theme, app: ViewWriter.()->Unit) {
-    @OptIn(DelicateCoroutinesApi::class)
-    object : ViewWriter(), CoroutineScope by AppScope {
-        override val context: ElementContext = ElementContext(basePath).also {
-            ExternalServices.baseContext = it
-        }
-        override val representsView: RView? = null
+private class Root(val beforeDocumentAppend: Element.() -> Unit) : ViewWriter, CoroutineScope by AppScope {
+    override val context: ElementContext = ElementContext(basePath).also {
+        @Suppress("DEPRECATION")
+        ExternalServices.baseContext = it
+    }
 
-        override fun willAddChild(view: RView) {
-        }
+    override fun willAddChild(element: Element) {}
 
-        override fun addChild(view: RView) {
-            view.themeChoice = ThemeDerivation.SetAsBase(theme)
-            document.body?.append(view.native.create())
-        }
-    }.also(app)
+    override fun addChild(element: Element) {
+        beforeDocumentAppend(element)
+        document.body?.append(element.native.create())
+    }
 }
 
-fun root(theme: Reactive<Theme>, app: ViewWriter.()->Unit) {
-    @OptIn(DelicateCoroutinesApi::class)
-    object : ViewWriter(), CoroutineScope by AppScope {
-        override val context: ElementContext = ElementContext(basePath).also {
-            ExternalServices.baseContext = it
-        }
-        override val representsView: RView? = null
+fun root(theme: Theme, app: ViewWriter.() -> Unit) {
+    Root {
+        themeChoice = ThemeDerivation.SetAsBase(theme)
+    }.app()
+}
 
-        override fun willAddChild(view: RView) {
-        }
+fun root(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
+    Root {
+        ::themeChoice { ThemeDerivation.SetAsBase(theme()) }
+    }.run {
+        if (debugMode) setupDebugSafeInsets()
 
-        override fun addChild(view: RView) {
-            with(view) {
-                ::themeChoice { ThemeDerivation.SetAsBase(theme()) }
-            }
-            document.body?.append(view.native.create())
-        }
-    }.apply {
-        if(debugMode) {
-            setupDebugSafeInsets()
-        }
-    }.also(app)
+        app()
+    }
 }
 
 /**
@@ -123,7 +113,7 @@ fun hydrateRoot(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
  */
 @OptIn(DelicateCoroutinesApi::class)
 private fun hydrateRootInternal(
-    themeApplicator: (RView) -> Unit,
+    themeApplicator: (Element) -> Unit,
     fallback: () -> Unit,
     setupDebugMode: Boolean = false,
     app: ViewWriter.() -> Unit
@@ -147,33 +137,32 @@ private fun hydrateRootInternal(
 
     // Track current child index for matching against SSR DOM
     var childIndex = 0
-    val pendingHydrations = mutableListOf<Pair<RView, Element>>()
+    val pendingHydrations = mutableListOf<Pair<Element, DOMElement>>()
 
-    val viewWriter = object : ViewWriter(), CoroutineScope by AppScope {
+    val root = object : ViewWriter, CoroutineScope by AppScope {
         override val context: ElementContext = elementContext
-        override val representsView: RView? = null
 
-        override fun willAddChild(view: RView) {}
+        override fun willAddChild(element: Element) {}
 
-        override fun addChild(view: RView) {
-            themeApplicator(view)
+        override fun addChild(element: Element) {
+            themeApplicator(element)
 
             val existingChild = body.children.item(childIndex)
             if (existingChild != null && HydrationContext.isHydrating) {
                 // Defer hydration - collect view and target element
-                pendingHydrations.add(view to existingChild)
+                pendingHydrations.add(element to existingChild)
                 childIndex++
             } else {
-                body.append(view.native.create())
+                body.append(element.native.create())
             }
         }
     }
 
     if (setupDebugMode && debugMode) {
-        viewWriter.setupDebugSafeInsets()
+        root.setupDebugSafeInsets()
     }
 
-    viewWriter.app()
+    root.app()
 
     // Perform deferred hydration using queueMicrotask for faster execution
     // Falls back to setTimeout(0) if queueMicrotask is unavailable
@@ -250,9 +239,9 @@ fun smartRoot(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
  * Setup debug safe insets keyboard shortcut (Alt+E to toggle).
  * by Claude
  */
-private fun ViewWriter.setupDebugSafeInsets() {
+private fun ElementWriter.setupDebugSafeInsets() {
     val safe = Signal(Edges.ZERO)
-    safeInsets = safe
+    context.safeInsets = safe
     var times = 0
     AppState.onUniversalKeyboard {
         if (it.alt && it.code == KeyCodes.letter('e')) {

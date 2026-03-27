@@ -139,7 +139,7 @@ fun ContainerElement.popoverWriter(overlay: ElementWriter = this, popoverRoot: B
 }
 
 /**
- * Opens a ViewWriter context that can be used to render overlays. Note that on some platforms, this will spawn a new
+ * Opens a ContainerElement context that can be used to render overlays. Note that on some platforms, this will spawn a new
  * view tree in the underlying view system. For example, on iOS modal overlays are rendered in a new ViewController,
  * which can be useful when overlaying over a bottom sheet. A side effect of this behavior is that non-modal overlays
  * will appear under bottom sheets on iOS.
@@ -155,5 +155,5 @@ fun ContainerElement.popoverWriter(overlay: ElementWriter = this, popoverRoot: B
 expect fun ElementWriter.overlayWriter(
     modal: Boolean = true,
     transition: ScreenTransitions = ScreenTransitions.Fade,
-    body: ViewWriter.(remove: () -> Unit) -> Unit
+    body: ContainerElement.(remove: () -> Unit) -> Unit
 )

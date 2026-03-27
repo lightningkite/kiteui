@@ -95,10 +95,6 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         super.nativeApplyTheme(theme)
         applyAlign(_align ?: theme.theme.font.align)
     }
-
-    actual var enabled: Boolean
-        get() = !(native.attributes.disabled ?: false)
-        set(value) { native.attributes.disabled = !value }
 }
 
 expect val FormattedTextInput.selectionStart: Int?

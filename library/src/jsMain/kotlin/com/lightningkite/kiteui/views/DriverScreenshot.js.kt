@@ -4,7 +4,7 @@ import kotlinx.coroutines.await
 import kotlin.js.Promise
 
 @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
-actual suspend fun RView.driverScreenshot(): String {
+actual suspend fun Element.driverScreenshot(): String {
     val mod = js("import('modern-screenshot')").unsafeCast<Promise<dynamic>>().await()
     val element = this.native.element ?: throw DriverActionException("Element not yet attached to DOM")
     val dataUrl = (mod.domToPng(element) as Promise<String>).await()

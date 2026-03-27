@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewWriter
@@ -11,7 +13,6 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 @ViewDsl
-@OptIn(ExperimentalContracts::class)
 inline fun ElementWriter.subtext(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -21,7 +22,6 @@ inline fun ElementWriter.subtext(crossinline setup: TextView.() -> Unit = {}): T
 }
 
 @ViewDsl
-@OptIn(ExperimentalContracts::class)
 inline fun ElementWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -31,7 +31,6 @@ inline fun ElementWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-@OptIn(ExperimentalContracts::class)
 inline fun ElementWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -41,7 +40,6 @@ inline fun ElementWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-@OptIn(ExperimentalContracts::class)
 inline fun ElementWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -51,7 +49,6 @@ inline fun ElementWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-@OptIn(ExperimentalContracts::class)
 inline fun ElementWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -61,7 +58,6 @@ inline fun ElementWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-@OptIn(ExperimentalContracts::class)
 inline fun ElementWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -71,7 +67,6 @@ inline fun ElementWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-@OptIn(ExperimentalContracts::class)
 inline fun ElementWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -113,6 +108,7 @@ fun ViewWriter.confirmDanger(
     title: String,
     body: String,
     actionName: String = "OK",
+    cancelName: String = "Cancel",
     action: suspend () -> Unit
 ) {
     dialog { closer ->
@@ -121,14 +117,14 @@ fun ViewWriter.confirmDanger(
             text(body)
             row {
                 expanding.buttonTheme.button {
-                    centered.text("Cancel")
+                    centered.text(cancelName)
                     onClick {
                         closer()
                     }
                 }
                 expanding.danger.buttonTheme.button {
                     centered.text(actionName)
-                    onClick {
+                    onClick(actionName) {
                         action()
                         closer()
                     }

@@ -14,7 +14,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.launch
 
-private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon<MutableReactive<BottomSheetState>?>(null)
+private var ElementContext.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon(null)
 
 actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
 
@@ -37,18 +37,18 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         blockBehind: Boolean,
         content: ViewWriter.(control: BottomSheetControl) -> Unit
     ) {
-
         val expanded = Signal(startState)
         var willRemove: Element? = null
         val transition = ScreenTransitions.VerticalSlide
         fun closePanel() {
             willRemove?.let {
-            it.animateOut(transition.reverse) {
-                this@CoordinatorFrame.removeChild(it)
+                it.animateOut(transition.reverse) {
+                    this@CoordinatorFrame.removeChild(it)
+                }
             }
-        }}
+        }
         withoutAnimation {
-            bottomSheetState = expanded
+            context.bottomSheetState = expanded
             willRemove = beforeSetup { animateIn(transition.forward) }.col {
                 gap = 0.px
                 ignoreInteraction = true
@@ -87,7 +87,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
             }
             willRemove = produceExactlyOne {
                 beforeSetup { animateIn(transition.forward) }
-                if(ratio == null) {
+                if (ratio == null) {
                     align(Align.Start, Align.Stretch).content(control)
                 } else {
                     row {
@@ -123,7 +123,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
             }
             willRemove = produceExactlyOne {
                 beforeSetup { animateIn(transition.forward) }
-                if(ratio == null) {
+                if (ratio == null) {
                     align(Align.End, Align.Stretch).content(control)
                 } else {
                     row {
@@ -147,17 +147,12 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeContainerElement(context) {
+actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeElement(context) {
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
-    }
-
-    override fun nativeAddChild(index: Int, element: Element) {
-        super.nativeAddChild(index, element)
-        Frame.internalAddChildStack(this, index, element)
     }
 
     val iconView = icon {
@@ -167,10 +162,10 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
     @OptIn(InternalKiteUi::class)
     override fun onStartup() {
         super.onStartup()
-        val e = bottomSheetState ?: return
+        val e = context.bottomSheetState ?: return
         native.addEventListener("click") {
             launch {
-                e set when(e()) {
+                e set when (e()) {
                     BottomSheetState.EXPANDED -> BottomSheetState.PARTIALLY_EXPANDED
                     BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetState.EXPANDED
                     else -> BottomSheetState.PARTIALLY_EXPANDED
@@ -178,7 +173,7 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
             }
         }
         iconView.reactive {
-            iconView.source = if(e() == BottomSheetState.EXPANDED) Icon.collapse else Icon.expand
+            iconView.source = if (e() == BottomSheetState.EXPANDED) Icon.collapse else Icon.expand
         }
     }
 }

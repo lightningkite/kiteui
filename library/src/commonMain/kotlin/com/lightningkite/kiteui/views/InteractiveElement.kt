@@ -3,7 +3,11 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.reactive.core.Release
 
-interface ElementWithAction : Element {
+interface InteractiveElement : Element {
+    var enabled: Boolean
+}
+
+interface ElementWithAction : InteractiveElement {
     var action: Action?
 }
 
@@ -11,7 +15,21 @@ interface ElementWithSecondaryAction : ElementWithAction {
     var secondaryAction: Action?
 }
 
-abstract class NativeElementWithAction(context: ElementContext) : NativeElement(context), ElementWithAction {
+
+
+// Native helpers
+
+expect abstract class NativeInteractiveElement(context: ElementContext) : NativeElement, InteractiveElement {
+    override var enabled: Boolean
+}
+
+expect abstract class NativeInteractiveContainerElement(context: ElementContext) : NativeContainerElement, InteractiveElement {
+    override var enabled: Boolean
+}
+
+// ElementWithAction
+
+abstract class NativeElementWithAction(context: ElementContext) : ElementWithAction, NativeInteractiveElement(context) {
     protected open fun nativeSetAction(action: Action?) {}
 
     private var stopWatchingAction: Release? = null
@@ -25,7 +43,7 @@ abstract class NativeElementWithAction(context: ElementContext) : NativeElement(
         }
 }
 
-abstract class NativeElementWithSecondaryAction(context: ElementContext) : NativeElementWithAction(context), ElementWithSecondaryAction {
+abstract class NativeElementWithSecondaryAction(context: ElementContext) : ElementWithSecondaryAction, NativeElementWithAction(context) {
     protected open fun nativeSetSecondaryAction(action: Action?) {}
 
     private var stopWatchingSecondaryAction: Release? = null
@@ -39,7 +57,9 @@ abstract class NativeElementWithSecondaryAction(context: ElementContext) : Nativ
         }
 }
 
-abstract class NativeContainerElementWithAction(context: ElementContext) : NativeContainerElement(context), ElementWithAction {
+// ElementWithSecondaryAction
+
+abstract class NativeContainerElementWithAction(context: ElementContext) : ElementWithAction, NativeInteractiveContainerElement(context) {
     protected open fun nativeSetAction(action: Action?) {}
 
     private var stopWatchingAction: Release? = null
@@ -53,7 +73,7 @@ abstract class NativeContainerElementWithAction(context: ElementContext) : Nativ
         }
 }
 
-abstract class NativeContainerElementWithSecondaryAction(context: ElementContext) : NativeContainerElementWithAction(context), ElementWithSecondaryAction {
+abstract class NativeContainerElementWithSecondaryAction(context: ElementContext) : ElementWithSecondaryAction, NativeContainerElementWithAction(context) {
     protected open fun nativeSetSecondaryAction(action: Action?) {}
 
     private var stopWatchingSecondaryAction: Release? = null

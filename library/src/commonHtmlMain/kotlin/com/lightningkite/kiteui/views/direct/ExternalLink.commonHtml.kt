@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.rel
 import kotlinx.coroutines.launch
 
 
-actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElement(context) {
+actual class ExternalLink actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverActions get() = super.driverActions + externalLinkDriverActions()
     init {
         themeChoice += ClickableSemantic
@@ -23,11 +23,6 @@ actual class ExternalLink actual constructor(context: ElementContext) : NativeCo
         get() = native.attributes.href
         set(value) {
             native.attributes.href = value
-        }
-    actual inline var enabled: Boolean
-        get() = native.attributes.disabled != true
-        set(value) {
-            native.attributes.disabled = !value
         }
     actual inline var newTab: Boolean
         get() = native.attributes.target == "_blank"

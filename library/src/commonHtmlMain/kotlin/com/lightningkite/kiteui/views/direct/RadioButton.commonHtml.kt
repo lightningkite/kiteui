@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class RadioButton actual constructor(context: ElementContext) : NativeElement(context) {
+actual class RadioButton actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = radioDriverValue()
     override val driverActions get() = super.driverActions + radioDriverActions()
     init {
@@ -19,11 +19,6 @@ actual class RadioButton actual constructor(context: ElementContext) : NativeEle
     actual val checked: MutableReactiveValue<Boolean> = native.vprop(
         "input",
         { attributes.checked == true },
-        { value -> attributes.checked = value })
-
-    actual inline var enabled: Boolean
-        get() = native.attributes.disabled != true
-        set(value) {
-            native.attributes.disabled = !value
-        }
+        { value -> attributes.checked = value }
+    )
 }

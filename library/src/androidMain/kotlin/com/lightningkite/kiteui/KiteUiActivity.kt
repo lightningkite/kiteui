@@ -9,7 +9,6 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
-import com.lightningkite.kiteui.gamepad.Gamepads
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -20,25 +19,27 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.ViewGroupCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.lightningkite.kiteui.gamepad.Gamepads
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.context.ReactiveContext
+import com.lightningkite.reactive.context.onRemove
+import com.lightningkite.reactive.core.Signal
 import io.ktor.http.*
-import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
+import kotlin.math.max
 
+@OptIn(OverrideOnly::class)
 abstract class KiteUiActivity : AppCompatActivity() {
     open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
     var savedInstanceState: Bundle? = null
 
     abstract val mainNavigator : PageNavigator
 
-    lateinit var root: RView
+    lateinit var root: Element
     private val safeInsetsProperty = Signal(Edges.ZERO)
     val viewWriter: ViewWriter = object: ViewWriter, CoroutineScope by this.lifecycleScope {
         override val context: ElementContext = ElementContext(this@KiteUiActivity)
@@ -46,13 +47,14 @@ abstract class KiteUiActivity : AppCompatActivity() {
             context.safeInsets = safeInsetsProperty
         }
 
-        override fun willAddChild(view: RView) {
-            view::themeChoice { ThemeDerivation.SetAsBase(theme()) }
+        override fun willAddChild(element: Element) {
+            element::themeChoice { ThemeDerivation.SetAsBase(theme()) }
         }
-        override fun addChild(view: RView) {
-            root = view
-            setContentView(view.native)
-            ViewGroupCompat.installCompatInsetsDispatch(view.native)
+
+        override fun addChild(element: Element) {
+            root = element
+            setContentView(element.native)
+            ViewGroupCompat.installCompatInsetsDispatch(element.native)
             val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
                 val insetsSystem = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
                 val insetsInput = insetsGetter.getInsets(WindowInsetsCompat.Type.ime())
@@ -66,8 +68,8 @@ abstract class KiteUiActivity : AppCompatActivity() {
                 safeInsetsProperty.value = safeInsets
                 WindowInsetsCompat.CONSUMED
             }
-            ViewCompat.setOnApplyWindowInsetsListener(view.native, l)
-            view.onRemove { ViewCompat.setOnApplyWindowInsetsListener(view.native, null) }
+            ViewCompat.setOnApplyWindowInsetsListener(element.native, l)
+            element.onRemove { ViewCompat.setOnApplyWindowInsetsListener(element.native, null) }
         }
     }
 
@@ -156,7 +158,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
     private var suppressKeyboardChange = false
     private val keyboardTreeObs: ViewTreeObserver.OnGlobalLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
         val rect = Rect()
-        window.decorView.getWindowVisibleDisplayFrame(rect)
+        window.decoElement.getWindowVisibleDisplayFrame(rect)
         val keyboardHeight = resources.displayMetrics.heightPixels - rect.bottom
         if (keyboardHeight.toFloat() > resources.displayMetrics.heightPixels * 0.15f) {
             suppressKeyboardChange = true

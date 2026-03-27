@@ -1,19 +1,17 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.ScreenTransitions
-import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.l2.overlayFrame
-import com.lightningkite.reactive.extensions.invoke
 
 actual fun ElementWriter.overlayWriter(
     modal: Boolean,
     transition: ScreenTransitions,
-    body: ViewWriter.(remove: () -> Unit) -> Unit
+    body: ContainerElement.(remove: () -> Unit) -> Unit
 ) {
     var willRemove: Element? = null
     with(context.overlayFrame ?: return) {
         withoutAnimation {
-            beforeSetup {
+            beforeSetupContainer {
                 animateIn(transition.forward)
                 willRemove = this
             }.body {

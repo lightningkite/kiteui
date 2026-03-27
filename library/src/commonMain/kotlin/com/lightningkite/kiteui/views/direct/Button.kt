@@ -7,9 +7,8 @@ import com.lightningkite.kiteui.views.NativeContainerElementWithSecondaryAction
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-expect class Button(context: ElementContext) : NativeContainerElementWithSecondaryAction {
-    var enabled: Boolean
-}
+// This is basically just a frame with interactivity
+expect class Button(context: ElementContext) : NativeContainerElementWithSecondaryAction
 
 fun Button.onClick(label: String? = null, icon: Icon? = null, frequencyCap: Duration? = 500.milliseconds, action: suspend ()->Unit) {
     this.action = Action(label ?: "Press", icon ?: Icon.send, frequencyCap = frequencyCap) { action() }

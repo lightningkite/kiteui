@@ -8,7 +8,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 
 
-actual class ToggleButton actual constructor(context: ElementContext) : NativeContainerElement(context) {
+actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
     override val driverActions get() = super.driverActions + toggleDriverActions()
     val input = FutureElement().apply {
@@ -62,7 +62,7 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeCo
         }.also(::onRemove)
     }
 
-    actual inline var enabled: Boolean
+    override var enabled: Boolean
         get() = input.attributes.disabled != true
         set(value) {
             input.attributes.disabled = !value

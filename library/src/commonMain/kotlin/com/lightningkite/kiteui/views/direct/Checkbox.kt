@@ -2,11 +2,10 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.*
 
 
-expect class Checkbox(context: ElementContext) : NativeElement {
-
-    var enabled: Boolean
+expect class Checkbox(context: ElementContext) : NativeInteractiveElement {
     val checked: MutableReactiveValue<Boolean>
 }

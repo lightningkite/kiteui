@@ -77,7 +77,7 @@ object ControlsPage : Page {
                     if (signal()) ImportantSemantic
                     else null
                 }.row {
-                    
+
                 }
 
                 scrollingHorizontally.row {
@@ -122,29 +122,33 @@ object ControlsPage : Page {
                                 if (!it.ok) throw Exception(it.text())
                             }
                             else delay(100)
-                        }; text {
-                        content = "Card"
-                    }; ::enabled { booleanContent() }
+                        };
+                        text { content = "Card" };
+                        ::enabled { booleanContent() }
                     }
                     important.button {
-                        onClick { delay(1000L) }; text {
-                        content = "Important"
-                    }; ::enabled { booleanContent() }
+                        text("Important")
+
+                        onClick { delay(1000L) }
+                        ::enabled { booleanContent() }
                     }
                     critical.button {
-                        onClick { delay(1000L) }; text {
-                        content = "Critical"
-                    }; ::enabled { booleanContent() }
+                        text("Critical")
+
+                        onClick { delay(1000L) };
+                        ::enabled { booleanContent() }
                     }
                     warning.button {
-                        onClick { delay(1000L) }; text {
-                        content = "Warning"
-                    }; ::enabled { booleanContent() }
+                        text("Warning")
+
+                        onClick { delay(1000L) };
+                        ::enabled { booleanContent() }
                     }
                     danger.button {
-                        onClick { delay(1000L) }; text {
-                        content = "Danger"
-                    }; ::enabled { booleanContent() }
+                        text("Danger")
+
+                        onClick { delay(1000L) };
+                        ::enabled { booleanContent() }
                     }
                     expanding.space {}
                 }
@@ -158,32 +162,28 @@ object ControlsPage : Page {
                     toggleButton {
                         checked bind booleanContent; row {
                         icon(
-                            Icon.starFilled,
-                            "star"
+                            Icon.starFilled, "star"
                         ); centered.text { content = "Sample" }
                     }
                     }
                     card.toggleButton {
                         checked bind booleanContent; row {
                         icon(
-                            Icon.starFilled,
-                            "star"
+                            Icon.starFilled, "star"
                         ); centered.text { content = "Card" }
                     }
                     }
                     important.toggleButton {
                         checked bind booleanContent; row {
                         icon(
-                            Icon.starFilled,
-                            "star"
+                            Icon.starFilled, "star"
                         ); centered.text { content = "Important" }
                     }
                     }
                     critical.toggleButton {
                         checked bind booleanContent; row {
                         icon(
-                            Icon.starFilled,
-                            "star"
+                            Icon.starFilled, "star"
                         ); centered.text { content = "Critical" }
                     }
                     }

@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import org.w3c.dom.HTMLElement
 
-actual fun RView.animateIn(
+actual fun Element.animateIn(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {
@@ -13,7 +13,7 @@ actual fun RView.animateIn(
     native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-enter $transitionTime forwards" }
     done?.let { afterTimeout(transitionTime.inWholeMilliseconds, it) }
 }
-actual fun RView.animateOut(
+actual fun Element.animateOut(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {

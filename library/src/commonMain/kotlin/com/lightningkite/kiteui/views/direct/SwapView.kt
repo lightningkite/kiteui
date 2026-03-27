@@ -5,24 +5,27 @@ import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
-
+import com.lightningkite.reactive.context.reactive
 
 expect class SwapView(context: ElementContext) : NativeContainerElement {
-    fun swap(transition: ScreenTransition = ScreenTransition.Fade, createNewView: ViewWriter.() -> Unit?): Unit
+    fun swap(
+        transition: ScreenTransition = ScreenTransition.Fade,
+        createNewView: ViewWriter.() -> Unit
+    )
 }
 
 inline fun <T> SwapView.swapping(
     crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
     crossinline current: ReactiveContext.() -> T,
     crossinline views: ViewWriter.(T) -> Unit
-): Unit {
+) {
     val queue = ArrayList<T>()
     var alreadySwapping = false
-    reactiveScope {
+    reactive {
         val c = current(this)
         queue.add(c)
         if (alreadySwapping) {
-            return@reactiveScope
+            return@reactive
         }
         alreadySwapping = true
         while (queue.isNotEmpty()) {

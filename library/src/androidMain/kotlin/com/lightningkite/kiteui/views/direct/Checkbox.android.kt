@@ -8,21 +8,15 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.MutableReactiveValue
 import android.widget.CheckBox as AndroidCheckBox
 
 
-actual class Checkbox actual constructor(context: ElementContext): NativeElement(context) {
+actual class Checkbox actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     override val driverValue: String? get() = checkboxDriverValue()
     override val driverActions get() = super.driverActions + checkboxDriverActions()
     override val native = AndroidCheckBox(context.activity)
-
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            if (!enabled) DisabledSemantic
-            else ThemeDerivation.None
-        }
-    }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
@@ -36,12 +30,6 @@ actual class Checkbox actual constructor(context: ElementContext): NativeElement
             )
         )
     }
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 
     actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 }

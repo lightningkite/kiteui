@@ -2,13 +2,13 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.ScreenTransition
 
-actual fun RView.animateIn(
+actual fun Element.animateIn(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {
     done?.invoke()
 }
-actual fun RView.animateOut(
+actual fun Element.animateOut(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {

@@ -1,28 +1,22 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.Color
-import com.lightningkite.kiteui.models.CornerRadii
-import com.lightningkite.kiteui.models.DismissSemantic
-import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.models.PopoverSemantic
-import com.lightningkite.kiteui.models.SemanticOverrides
-import com.lightningkite.kiteui.models.ThemeDerivation
-import com.lightningkite.kiteui.models.dp
-import com.lightningkite.kiteui.models.override
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.closePopovers
 import com.lightningkite.kiteui.views.l2.overlayFrame
+import com.lightningkite.kiteui.views.native
 import com.lightningkite.kiteui.views.popoverWriter
+import com.lightningkite.kiteui.views.themed
 
-actual fun RView.openPopover(
+actual fun Element.openPopover(
     preferredDirection: PopoverPreferredDirection,
     createMenu: Frame.() -> Unit
 ) {
-    var willRemove: RView? = null
-    popoverWriter(this.overlayFrame!!) {
-        willRemove?.let { overlayFrame!!.removeChild(it) }
+    var willRemove: Element? = null
+    popoverWriter(context.overlayFrame!!) {
+        willRemove?.let { context.overlayFrame!!.removeChild(it) }
     }.run {
         willRemove = dismissBackground {
             themeChoice += ThemeDerivation {
@@ -42,15 +36,15 @@ actual fun RView.openPopover(
                 ).withBack
             }
             onClick {
-                closePopovers()
+                context.closePopovers()
             }
 
-            atTopStart.onNext(PopoverSemantic).frame {
+            atTopStart.themed(PopoverSemantic).frame {
                 this@dismissBackground.native.apply {
                     clipChildren = false
                     clipToPadding = false
                 }
-                this@dismissBackground.native.addOnLayoutChangeListener{ dismissBackground, _, _, _, _, _, _, _, _ ->
+                this@dismissBackground.native.addOnLayoutChangeListener { dismissBackground, _, _, _, _, _, _, _, _ ->
                     val overlayContainer = this@frame.native
                     val anchor = this@openPopover.native
 

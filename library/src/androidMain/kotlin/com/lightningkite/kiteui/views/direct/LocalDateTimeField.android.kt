@@ -1,17 +1,18 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import kotlinx.datetime.*
 import kotlin.time.Clock
 
-actual class LocalDateTimeField actual constructor(context: ElementContext) :
-    RViewWithAction(context) {
+actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
     override val driverActions get() = super.driverActions + localDateTimeDriverActions()
     private val property: Signal<LocalDateTime?> = Signal(null)
@@ -38,26 +39,18 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) :
             }
         }
     }
-    override fun postSetup() {
-        super.postSetup()
-        text {
-            ::content { property()?.renderToString() ?: "Select" }
-        }
+
+    @OptIn(OverrideOnly::class)
+    override fun onStartup() {
+        super.onStartup()
+        native.addView(
+            android.widget.TextView(context.activity).apply {
+                reactive {
+                    text = property()?.renderToString() ?: "Select"
+                }
+            }
+        )
     }
 
-    var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
-
+    override fun nativeApplyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
 }

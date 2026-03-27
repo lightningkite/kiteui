@@ -71,6 +71,7 @@ interface ContainerElement : Element, ViewWriter {
     fun removeChild(index: Int)
 
     /** Adds a child element at the end */
+    @OptIn(OverrideOnly::class)
     override fun addChild(element: Element) = addChild(children.size, element)
 
     /** Removes the specified child element */

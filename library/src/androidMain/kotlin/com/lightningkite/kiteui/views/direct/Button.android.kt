@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 
@@ -20,7 +21,8 @@ actual class Button actual constructor(context: ElementContext): NativeContainer
         isClickable = true
     }
 
-    override fun startup() {
+    @OptIn(OverrideOnly::class)
+    override fun onStartup() {
         super.onStartup()
         addChild(object: NativeElement(context) {
             override val native = this@Button.progress
@@ -48,18 +50,5 @@ actual class Button actual constructor(context: ElementContext): NativeContainer
                 false
             }
         }
-
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ClickableSemantic
-            if (!enabled) t += DisabledSemantic
-            t
-        }
     }
-
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 }

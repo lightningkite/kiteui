@@ -135,4 +135,6 @@ class ImageView(private val frame: Frame) : Element by frame {
             }
         }
     }
+
+    @Deprecated("No longer needed", ReplaceWith("this")) val rView: Element get() = this
 }

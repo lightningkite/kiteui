@@ -29,12 +29,15 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         }
         native.appendChild(this)
     }
+
     actual val content: MutableReactiveValue<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+
     init {
         content.addListener {
             native.setAttribute("data-replicated-value", content.value)
         }
     }
+
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
@@ -60,12 +63,14 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
                 }
             }
         }
+
     actual var hint: String = ""
         set(value) {
             field = value
             textarea.attributes.placeholder = value
         }
-    actual var enabled: Boolean
+
+    override var enabled: Boolean
         get() = !(textarea.attributes.disabled ?: false)
         set(value) { textarea.attributes.disabled = !value }
 }

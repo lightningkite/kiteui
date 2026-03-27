@@ -5,9 +5,9 @@ import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 
-interface Page {
+fun interface Page {
     val title: Reactive<String>
-        get() = Constant(this::class.simpleName.toString().camelToHuman().removeSuffix(" Screen").removeSuffix(" Page"))
+        get() = Constant((this::class.simpleName ?: "").camelToHuman().removeSuffix(" Screen").removeSuffix(" Page"))
 
     fun ElementWriter.CanAddTheme.render()
 

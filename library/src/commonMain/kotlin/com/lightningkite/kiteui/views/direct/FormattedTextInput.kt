@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.reactive.core.*
 
 expect class FormattedTextInput(context: ElementContext) : NativeElementWithAction {
-    var enabled: Boolean
     val content: MutableReactiveValue<String>
     var hint: String
     var align: Align?

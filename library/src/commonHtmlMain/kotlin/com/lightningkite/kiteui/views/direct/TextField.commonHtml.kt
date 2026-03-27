@@ -51,9 +51,6 @@ actual class TextInput actual constructor(context: ElementContext) : NativeEleme
             Align.Stretch -> "justify"
         }
     }
-    actual var enabled: Boolean
-        get() = !(native.attributes.disabled ?: false)
-        set(value) { native.attributes.disabled = !value }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)

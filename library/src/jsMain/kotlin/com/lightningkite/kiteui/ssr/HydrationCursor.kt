@@ -4,7 +4,7 @@ import org.w3c.dom.Element
 
 /**
  * Tracks position within a DOM subtree during hydration.
- * Provides children one at a time for matching with RView tree.
+ * Provides children one at a time for matching with view tree.
  */
 class HydrationCursor(val element: Element) {
     private var childIndex = 0

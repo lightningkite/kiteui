@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.ElementWithAction
 import com.lightningkite.reactive.core.MutableReactiveValue
 
 fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
@@ -50,7 +51,7 @@ enum class PhoneNumberFormat {
     abstract fun format(clean: String): String
 }
 
-class PhoneNumberInput(private val input: FormattedTextInput): Element by input {
+class PhoneNumberInput(private val input: FormattedTextInput): ElementWithAction by input {
     constructor(context: ElementContext) : this(FormattedTextInput(context))
 
     init {
@@ -64,7 +65,6 @@ class PhoneNumberInput(private val input: FormattedTextInput): Element by input 
             input.format(value::isRawData, value::format)
         }
 
-    var enabled: Boolean by input::enabled
     val content: MutableReactiveValue<String> by input::content
     var hint: String by input::hint
     var align: Align? by input::align

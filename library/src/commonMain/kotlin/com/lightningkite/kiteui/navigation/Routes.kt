@@ -67,5 +67,4 @@ data class UrlLikePath(
 
 }
 
-fun Page.render(writer: ViewWriter): Unit = with(writer) { render() }
 

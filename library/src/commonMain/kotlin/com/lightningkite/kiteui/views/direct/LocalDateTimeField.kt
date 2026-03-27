@@ -7,7 +7,6 @@ import kotlinx.datetime.LocalDateTime
 
 
 expect class LocalDateTimeField(context: ElementContext) : NativeElementWithAction {
-
     val content: MutableReactiveValue<LocalDateTime?>
     var range: ClosedRange<LocalDateTime>?
 }

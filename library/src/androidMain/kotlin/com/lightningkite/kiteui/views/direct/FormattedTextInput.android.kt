@@ -88,12 +88,6 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         get = { it.filter(isRawData) },
         set = { formatter(it.filter(isRawData)) }
     )
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 
     private var useSensitiveDotMask = false
         set(value) {

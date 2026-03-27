@@ -59,7 +59,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
 
     final override fun removeChild(index: Int) {
         if (!checkActive("removeChild", requireTarget = false)) return
-        if (index !in children.indices) throw IllegalArgumentException("$index not in range ${children.indices}")
+        if (index !in children.indices) throw IndexOutOfBoundsException("$index not in range ${children.indices}")
         nativeRemoveChild(index)
         internalChildren.removeAt(index).onShutdown()
     }
@@ -71,7 +71,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
             nativeRemoveChild(i)
             internalChildren.removeAt(i).onShutdown()
         }
-        else throw IllegalStateException("$element is not a child of $this!")
+        else throw IllegalArgumentException("$element is not a child of $this!")
     }
 
     final override fun clearChildren() {

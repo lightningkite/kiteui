@@ -6,10 +6,9 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.reactive.core.*
 
-typealias TextField = TextInput
-expect class TextInput(context: ElementContext) : NativeElementWithAction {
+@Deprecated("Renamed", ReplaceWith("TextInput")) typealias TextField = TextInput
 
-    var enabled: Boolean
+expect class TextInput(context: ElementContext) : NativeElementWithAction {
     val content: MutableReactiveValue<String>
     var keyboardHints: KeyboardHints
     var hint: String

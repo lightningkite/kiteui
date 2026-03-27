@@ -1,12 +1,9 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.afterTimeout
-import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
 import com.lightningkite.kiteui.views.l2.overlayFrame

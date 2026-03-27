@@ -8,7 +8,6 @@ import androidx.annotation.FloatRange
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
-import com.lightningkite.kiteui.views.RView
 
 actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
 

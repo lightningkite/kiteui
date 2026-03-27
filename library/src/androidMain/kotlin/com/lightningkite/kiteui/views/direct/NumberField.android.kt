@@ -20,14 +20,6 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
     override val driverValue: String? get() = numberInputDriverValue()
     override val driverActions get() = super.driverActions + numberInputDriverActions()
 
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ThemeDerivation.None
-            if (!enabled) t += DisabledSemantic
-            t
-        }
-    }
-
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
@@ -55,13 +47,6 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
             }
         }
     }
-
-    actual var enabled: Boolean
-        get() = native.isEnabled
-        set(value) {
-            native.isEnabled = value
-            refreshTheming()
-        }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)

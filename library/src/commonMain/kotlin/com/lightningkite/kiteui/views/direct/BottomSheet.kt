@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.ElementWriter
 
-expect fun ViewWriter.openBottomSheet(
+expect fun ElementWriter.openBottomSheet(
     halfScreenRatio: Float = 0.5f,
     dim: Boolean = true,
-    view: ViewWriter.() -> Unit
+    view: ElementWriter.CanAddTheme.() -> Unit
 )

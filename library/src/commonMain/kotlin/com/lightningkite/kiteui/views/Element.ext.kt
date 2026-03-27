@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.reactive.context.StatusListener
 import kotlinx.coroutines.CoroutineScope
-import kotlin.coroutines.CoroutineContext
 
 
 val Element.theme: Theme get() = themeAndBack.theme
@@ -32,7 +32,6 @@ expect inline fun Element.withoutAnimation(action: () -> Unit)
 inline fun Element.withoutLoadingAnimations(block: CoroutineScope.() -> Unit) {
     CoroutineScope(coroutineContext.minusKey(StatusListener.Key)).run(block)
 }
-
 
 internal fun Element.defaultDriverActions(): Map<String, suspend (List<String>) -> String> = buildMap {
     put("scrollIntoView") {
@@ -65,3 +64,12 @@ internal fun Element.defaultDriverActions(): Map<String, suspend (List<String>) 
         if (result) "OK" else throw DriverActionException("drop was rejected by the target")
     }
 }
+
+internal fun ContainerElement.beforeSetupContainer(action: Element.() -> Unit): ContainerElement =
+    object : ContainerElement by this {
+        @OptIn(OverrideOnly::class)
+        override fun willAddChild(element: Element) {
+            this@beforeSetupContainer.willAddChild(element)
+            action(element)
+        }
+    }

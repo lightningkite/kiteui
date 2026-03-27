@@ -67,11 +67,4 @@ actual class Button actual constructor(context: ElementContext): NativeContainer
         native.addEventListener("touchend", cancelOrClick)
         native.addEventListener("touchcancel", cancel)
     }
-
-    actual inline var enabled: Boolean
-        get() = native.attributes.disabled != true
-        set(value) {
-            native.attributes.disabled = !value
-        }
-
 }

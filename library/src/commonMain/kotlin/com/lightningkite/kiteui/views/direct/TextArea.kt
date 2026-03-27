@@ -7,7 +7,6 @@ import com.lightningkite.reactive.core.*
 
 
 expect class TextArea(context: ElementContext) : NativeElementWithAction {
-    var enabled: Boolean
     val content: MutableReactiveValue<String>
     var keyboardHints: KeyboardHints
     var hint: String

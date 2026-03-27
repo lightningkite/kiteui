@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class Link actual constructor(context: ElementContext) : NativeContainerElement(context) {
+actual class Link actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverActions get() = super.driverActions + linkDriverActions()
 
     init {
@@ -63,10 +63,4 @@ actual class Link actual constructor(context: ElementContext) : NativeContainerE
     actual fun onClick(action: suspend () -> Unit): Unit {
         onClick = action
     }
-
-    actual inline var enabled: Boolean
-        get() = native.attributes.disabled != true
-        set(value) {
-            native.attributes.disabled = !value
-        }
 }

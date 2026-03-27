@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.reactive.core.*
 
 expect class NumberInput(context: ElementContext) : NativeElementWithAction {
-    var enabled: Boolean
     val content: MutableReactiveValue<Double?>
     var keyboardHints: KeyboardHints
     var hint: String

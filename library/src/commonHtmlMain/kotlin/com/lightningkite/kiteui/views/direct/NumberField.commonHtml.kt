@@ -135,10 +135,6 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
                 native.attributes.maxDouble = null
             }
         }
-
-    actual var enabled: Boolean
-        get() = !(native.attributes.disabled ?: false)
-        set(value) { native.attributes.disabled = !value }
 }
 
 expect val NumberInput.selectionStart: Int?

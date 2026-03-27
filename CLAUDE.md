@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚧 Active Migration - View-Split Branch
+
+**IMPORTANT**: The `view-split` branch contains an ongoing architectural refactoring. The codebase is currently **BROKEN** during migration.
+
+**See [MIGRATION.md](MIGRATION.md) for complete details** including:
+- What's changing: RView → Element/NativeElement split
+- Why: Type-enforced modifier ordering and better separation of concerns
+- How to migrate code
+- Current implementation status
+
+**Key changes:**
+- `RView` → `Element` (interface) + `NativeElement` (platform implementation)
+- `RContext` → `ElementContext`
+- `ViewWriter` → `ElementWriter` with compile-time modifier ordering enforcement
+- Modifier order now enforced by type system: `alignment → weight → shownWhen → sizing → theme → scrolling → element`
+
 ## Project Overview
 
 KiteUI is a Kotlin Multiplatform UI framework inspired by Solid.js that uses native view components on each platform (Android, iOS, JVM, JS/Web). It emphasizes small binary sizes, fine-grained reactivity, semantic theming, and URL-based navigation for web compatibility.
@@ -209,11 +225,13 @@ Theme switches should typically be applied to containers (`col`, `row`, `frame`,
 
 ## Key Files to Reference
 
+- **[MIGRATION.md](MIGRATION.md)** - 🚧 View-split branch migration guide (active refactoring)
 - **GoodKiteuiCode.md** - Best practices for creating pages and components
 - **ThemeRules.md** - Rules for semantic theming behavior
 - **example-app/src/commonMain/kotlin/com/lightningkite/mppexampleapp/docs/CheatSheet.kt** - Comprehensive examples of all components and modifiers
 - **library/src/commonMain/kotlin/com/lightningkite/kiteui/navigation/Page.kt** - Page interface
-- **library/src/commonMain/kotlin/com/lightningkite/kiteui/views/ViewWriter.kt** - Core ViewWriter class
+- **library/src/commonMain/kotlin/com/lightningkite/kiteui/views/ElementWriter.kt** - Core ElementWriter interface (view-split) / ViewWriter (version-7)
+- **library/src/commonMain/kotlin/com/lightningkite/kiteui/views/Element.kt** - Core Element interface (view-split only)
 
 ## Platform Targets
 
@@ -224,5 +242,10 @@ Theme switches should typically be applied to containers (`col`, `row`, `frame`,
 
 ## Current Branch Strategy
 
-- `version-6` - Main development branch (use for PRs)
-- `version-6.1` - Current working branch
+- `version-7` - Main development branch
+- `view-split` - **ACTIVE MIGRATION BRANCH** (currently BROKEN) - Major architectural refactoring. See [MIGRATION.md](MIGRATION.md) for details.
+
+When working on this branch, expect:
+- Compilation errors in migrated but incomplete areas
+- Missing implementations for some platforms
+- Commits marked "BROKEN" are normal during migration
