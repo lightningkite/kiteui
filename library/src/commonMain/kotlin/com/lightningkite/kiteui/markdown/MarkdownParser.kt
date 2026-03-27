@@ -266,6 +266,19 @@ class MarkdownParser(
         return line.matches(Regex("^\\d+\\.\\s+.*"))
     }
 
+    private fun isBlockLevelStart(line: String): Boolean {
+        val trimmed = line.trim()
+        return trimmed.startsWith("#") ||
+            trimmed.startsWith("[>") ||
+            trimmed.startsWith(">") ||
+            trimmed.startsWith("```") ||
+            trimmed.startsWith("~~~") ||
+            trimmed.startsWith(":::") ||
+            isHorizontalRule(trimmed) ||
+            isUnorderedListStart(trimmed) ||
+            isOrderedListStart(trimmed)
+    }
+
     private fun parseUnorderedList(lines: List<String>, startIndex: Int): Pair<MarkdownNode.UnorderedList, Int> {
         val items = mutableListOf<MarkdownNode>()
         var i = startIndex
@@ -349,47 +362,50 @@ class MarkdownParser(
         val contentLines = mutableListOf(firstLineContent)
         var i = startIndex + 1
 
-        // Collect continuation lines (indented content)
         while (i < lines.size) {
             val line = lines[i]
             val trimmed = line.trim()
 
-            // Break on new list item or non-indented non-empty line
-            if (isUnorderedListStart(trimmed) || isOrderedListStart(trimmed)) {
-                break
-            }
-            if (trimmed.isEmpty()) {
-                // Check if next line continues the list item
-                if (i + 1 < lines.size) {
-                    val nextLine = lines[i + 1]
+            when {
+                trimmed.isEmpty() -> {
+                    // Look ahead past consecutive blank lines to decide if this item continues
+                    val nextNonEmpty = (i + 1 until lines.size).firstOrNull { lines[it].isNotBlank() }
+                    if (nextNonEmpty == null) break
+                    val nextLine = lines[nextNonEmpty]
                     val nextTrimmed = nextLine.trim()
-                    if (nextTrimmed.isNotEmpty() && !nextLine.startsWith("  ") && !nextLine.startsWith("\t") &&
+                    if (!nextLine.startsWith("  ") && !nextLine.startsWith("\t") &&
                         !isUnorderedListStart(nextTrimmed) && !isOrderedListStart(nextTrimmed)) {
                         break
                     }
+                    contentLines.add("")
+                    i++
                 }
-                contentLines.add("")
-                i++
-            } else if (line.startsWith("  ") || line.startsWith("\t")) {
-                contentLines.add(trimmed)
-                i++
-            } else {
-                break
+                line.startsWith("  ") -> {
+                    // Indented continuation — strip 2 spaces, preserving any deeper indentation for nested blocks
+                    contentLines.add(line.removePrefix("  "))
+                    i++
+                }
+                line.startsWith("\t") -> {
+                    // Tab-indented continuation — strip one tab
+                    contentLines.add(line.removePrefix("\t"))
+                    i++
+                }
+                isUnorderedListStart(trimmed) || isOrderedListStart(trimmed) -> {
+                    // Non-indented list item: sibling of this item, not a child
+                    break
+                }
+                else -> break
             }
         }
 
-        // Parse the collected content as blocks
         val joinedContent = contentLines.joinToString("\n").trim()
 
-        // If it's simple text, just make a paragraph
-        if (!joinedContent.contains("\n") && !joinedContent.startsWith("-") && !joinedContent.startsWith("*") &&
-            !joinedContent.startsWith(">") && !joinedContent.startsWith("```") && !joinedContent.matches(Regex("^\\d+\\.\\s+.*"))) {
+        // Fast path: single-line content that won't produce nested block elements
+        if (!joinedContent.contains("\n") && !isBlockLevelStart(joinedContent)) {
             return listOf(MarkdownNode.Paragraph(parseInline(joinedContent))) to (i - startIndex)
         }
 
-        // Otherwise parse as nested blocks
-        val children = parseBlocksInternal(contentLines)
-        return children to (i - startIndex)
+        return parseBlocksInternal(contentLines) to (i - startIndex)
     }
 
     private fun parseTable(lines: List<String>, startIndex: Int): Pair<MarkdownNode.Table?, Int> {

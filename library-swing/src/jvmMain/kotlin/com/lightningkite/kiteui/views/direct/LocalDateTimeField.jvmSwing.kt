@@ -15,6 +15,8 @@ import javax.swing.border.EmptyBorder
 import javax.swing.event.ChangeListener
 
 actual class LocalDateTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = localDateTimeDriverValue()
+    override val driverActions get() = super.driverActions + localDateTimeDriverActions()
     override val native = JPanel(BorderLayout(5, 0))
 
     private val dateSpinner = JSpinner(SpinnerDateModel())

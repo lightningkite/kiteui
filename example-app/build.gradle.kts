@@ -2,15 +2,21 @@ import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import java.util.*
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+import java.util.*
 
+// KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
+// So we work around it on non mac machines with this check
+val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.kotlinCocoapods)
+    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
+        alias(libs.plugins.kotlinCocoapods)
+    }
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.roborazzi)
@@ -41,9 +47,11 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    if (onMac) {
+        iosX64()
+        iosArm64()
+        iosSimulatorArm64()
+    }
     js(IR) {
         binaries.executable()
         browser()
@@ -79,7 +87,9 @@ kotlin {
         val androidMain by getting {
         }
 
-        val iosMain by getting {
+        if (onMac) {
+            val iosMain by getting {
+            }
         }
 
         val commonTest by getting {
@@ -98,8 +108,10 @@ kotlin {
         val androidUnitTest by getting {
             dependsOn(commonInteractiveTest)
         }
-        val iosTest by getting {
-            dependsOn(commonInteractiveTest)
+        if (onMac) {
+            val iosTest by getting {
+                dependsOn(commonInteractiveTest)
+            }
         }
     }
 
@@ -120,37 +132,42 @@ kotlin {
 //        }
 //    }
 
-    cocoapods {
-        // Required properties
-        // Specify the required Pod version here. Otherwise, the Gradle project version is used.
-        version = "1.0"
-        summary = "Some description for a Kotlin/Native module"
-        homepage = "Link to a Kotlin/Native module homepage"
-        ios.deploymentTarget = "14.0"
+    if (onMac) {
+        // We have to manually call this because the shortcut isn't available when plugin is not applied and gradle will
+        // fail even behind the if check
+        (this as ExtensionAware).extensions.configure<CocoapodsExtension>("cocoapods", {
+            // Required properties
+            // Specify the required Pod version here. Otherwise, the Gradle project version is used.
+            version = "1.0"
+            summary = "Some description for a Kotlin/Native module"
+            homepage = "Link to a Kotlin/Native module homepage"
+            ios.deploymentTarget = "14.0"
 
-        // Optional properties
-        // Configure the Pod name here instead of changing the Gradle project name
-        name = "shared"
+            // Optional properties
+            // Configure the Pod name here instead of changing the Gradle project name
+            name = "shared"
 
-        framework {
-            baseName = "shared"
-            export(project(":library"))
+            framework {
+                baseName = "shared"
+                export(project(":library"))
 //            embedBitcode(BitcodeEmbeddingMode.DISABLE)
 //            podfile = project.file("../example-app-ios/Podfile")
-        }
+            }
 //        pod("Library") {
 //            version = "1.0"
 //            source = path(project.file("../library"))
 //        }
 
-        // Maps custom Xcode configuration to NativeBuildType
-        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
-        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
+            // Maps custom Xcode configuration to NativeBuildType
+            xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
+            xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
+        })
     }
 }
 
 android {
     namespace = "$group.mppexampleapp"
+    testNamespace = "$group.mppexampleapp.test"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 36
 

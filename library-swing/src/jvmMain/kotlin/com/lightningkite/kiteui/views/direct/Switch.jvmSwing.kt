@@ -14,6 +14,8 @@ import java.awt.RenderingHints
 import javax.swing.JToggleButton
 
 actual class Switch actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = switchDriverValue()
+    override val driverActions get() = super.driverActions + switchDriverActions()
     // Store theme colors for use in paintComponent
     private var uncheckedTrackColor: AwtColor = AwtColor.GRAY
     private var uncheckedThumbColor: AwtColor = AwtColor.WHITE

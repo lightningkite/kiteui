@@ -22,6 +22,8 @@ import com.lightningkite.readable.*
 
 
 actual class Checkbox actual constructor(context: RContext): RView(context) {
+    override val driverValue: String? get() = checkboxDriverValue()
+    override val driverActions get() = super.driverActions + checkboxDriverActions()
     override val native = AndroidCheckBox(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         val theme = theme.theme

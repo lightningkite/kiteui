@@ -224,5 +224,5 @@ Theme switches should typically be applied to containers (`col`, `row`, `frame`,
 
 ## Current Branch Strategy
 
-- `version-6` - Main development branch (use for PRs)
-- `version-6.1` - Current working branch
+- `version-7` - Main development branch (use for PRs)
+- `version-6` - Previous major version

@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 
 
 actual class Link actual constructor(context: RContext): RView(context) {
+    override val driverActions get() = super.driverActions + linkDriverActions()
     override val native = FrameLayoutButton()
     init {
         onRemove(native.setOnClick {

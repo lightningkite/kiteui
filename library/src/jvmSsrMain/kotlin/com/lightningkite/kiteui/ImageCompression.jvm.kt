@@ -23,6 +23,11 @@ actual suspend fun ImageLocal.compressed(
     val originalImage = ImageIO.read(file.file)
         ?: throw IllegalArgumentException("Could not decode image: ${file.file}")
 
+    // Short circuit, no need to compress because the size and type already match expectations
+    if(maxWidth >= originalImage.width && maxHeight >= originalImage.height && this@compressed.file.mimeType() == "image/jpeg") {
+        return@withContext ImageRaw(Blob(file.file.readBytes(), "image/jpeg"))
+    }
+
     val (targetW, targetH) = calculateScaledSize(
         originalImage.width, originalImage.height, maxWidth, maxHeight
     )

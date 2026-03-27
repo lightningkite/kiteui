@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
+    override val driverActions get() = super.driverActions + menuDriverActions()
     val floating = FloatingInfoHolder(this)
     init {
         themeChoice += ClickableSemantic

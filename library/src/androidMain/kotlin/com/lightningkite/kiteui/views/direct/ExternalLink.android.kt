@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.externalServices
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -10,6 +11,7 @@ import com.lightningkite.kiteui.views.RView
 import kotlinx.coroutines.launch
 
 actual class ExternalLink actual constructor(context: RContext) : RView(context) {
+    override val driverActions get() = super.driverActions + externalLinkDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
@@ -21,7 +23,7 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
                 launch {
                     onNavigate.invoke()
                     value?.let {
-                        context.openTab(it)
+                        context.externalServices.openTab(it)
                     }
                 }
             }
