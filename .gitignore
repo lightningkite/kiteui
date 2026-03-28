@@ -16,6 +16,8 @@ local.properties
 local.version.txt
 version.js
 LocalTest.kt
+LocalTelemetryConfig.kt
+TelemetryExportTest.kt
 xcuserdata
 library.podspec
 local
@@ -25,3 +27,4 @@ worktrees
 sstest*.png
 screenshot-*.png
 .fork/
+.env

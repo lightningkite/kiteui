@@ -109,9 +109,13 @@ class UiTestScope(val backend: UiTestBackend) {
     suspend fun drop(target: String, dragDataBase64: String): String =
         backend.command(cmd(target, "drop", dragDataBase64))
 
-    /** Navigate to a route. */
+    /** Navigate to a route (pushes onto the stack). */
     suspend fun navigate(route: String): String =
         backend.command(cmd("navigate", route))
+
+    /** Reset the navigator stack to a single page at the given route. */
+    suspend fun reset(route: String): String =
+        backend.command(cmd("reset", route))
 
     /** Get the current page URL. */
     suspend fun url(): String =
@@ -121,25 +125,36 @@ class UiTestScope(val backend: UiTestBackend) {
     suspend fun back(): String =
         backend.command(cmd("back", "back"))
 
-    /** Search the view tree for views matching a query. */
-    suspend fun find(query: String, target: String = "root"): String =
-        backend.command(cmd(target, "find", query))
+    /**
+     * Search the view tree for views matching a query.
+     * By default only visible views are searched; pass [includeHidden] to search the entire tree.
+     */
+    suspend fun find(query: String, target: String = "root", includeHidden: Boolean = false): String {
+        val command = if (includeHidden) cmd(target, "find", query, "--hidden") else cmd(target, "find", query)
+        return backend.command(command)
+    }
 
-    /** Search the view tree and return structured [FindResult]s. */
-    suspend fun findAll(query: String, target: String = "root"): List<FindResult> =
-        find(query, target).lines().filter { it.isNotBlank() }.mapNotNull { parseFindLine(it) }
+    /**
+     * Search the view tree and return structured [FindResult]s.
+     * By default only visible views are searched; pass [includeHidden] to search the entire tree.
+     */
+    suspend fun findAll(query: String, target: String = "root", includeHidden: Boolean = false): List<FindResult> =
+        find(query, target, includeHidden).lines().filter { it.isNotBlank() }.mapNotNull { parseFindLine(it) }
 
     /** Find the first view matching [query] that has the given [action]. */
-    suspend fun findWithAction(query: String, action: String, target: String = "root"): FindResult? =
-        findAll(query, target).firstOrNull { action in it.actions }
+    suspend fun findWithAction(query: String, action: String, target: String = "root", includeHidden: Boolean = false): FindResult? =
+        findAll(query, target, includeHidden).firstOrNull { action in it.actions }
 
     /**
      * Find views matching [query] and walk each up to the nearest clickable ancestor.
      * Returns deduplicated clickable views. Useful when `find("Login")` matches a Text
      * inside a Button — this returns the Button's path directly.
+     * By default only visible views are searched; pass [includeHidden] to search the entire tree.
      */
-    suspend fun findClickable(query: String, target: String = "root"): List<FindResult> =
-        backend.command(cmd(target, "findClickable", query)).lines().filter { it.isNotBlank() }.mapNotNull { parseFindLine(it) }
+    suspend fun findClickable(query: String, target: String = "root", includeHidden: Boolean = false): List<FindResult> {
+        val command = if (includeHidden) cmd(target, "findClickable", query, "--hidden") else cmd(target, "findClickable", query)
+        return backend.command(command).lines().filter { it.isNotBlank() }.mapNotNull { parseFindLine(it) }
+    }
 
     /** Get recent log entries. */
     suspend fun logs(count: Int = 50): String =
