@@ -1,5 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.content.res.ColorStateList
+import android.graphics.drawable.ClipDrawable
+import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
+import android.graphics.drawable.shapes.RoundRectShape
+import android.view.Gravity
 import android.widget.SeekBar
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -9,10 +16,21 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlin.math.roundToInt
 
 actual class Slider actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = sliderDriverValue()
+    override val driverActions get() = super.driverActions + sliderDriverActions()
     private val nativeSeekBar = SeekBar(context.activity)
     override val native = nativeSeekBar
+
+    private val fillShape = ShapeDrawable().apply {
+        shape = RoundRectShape(floatArrayOf(999f, 999f, 999f, 999f, 999f, 999f, 999f, 999f), null, null)
+    }
+
+    init {
+        nativeSeekBar.splitTrack = false
+    }
 
     private val valueProp = Signal(0.5f)
     actual val value: MutableReactiveValue<Float>
@@ -123,12 +141,51 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
     }
 
     override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
-        val t = theme.theme
+        val fieldTheme = theme[FieldSemantic]
+        val isNeumorphic = fieldTheme.theme.shadows?.isNotEmpty() == true
 
-        // Apply theme colors to the slider
-        nativeSeekBar.progressTintList = android.content.res.ColorStateList.valueOf(t.foreground.closestColor().colorInt())
-        nativeSeekBar.progressBackgroundTintList = android.content.res.ColorStateList.valueOf(t.background.closestColor().colorInt())
-        nativeSeekBar.thumbTintList = android.content.res.ColorStateList.valueOf(t.foreground.closestColor().colorInt())
+        if (isNeumorphic) {
+            super.applyTheme(fieldTheme)
+            val t = fieldTheme.theme
+
+            // Build custom progress drawable similar to ProgressBar
+            val trackShape = ShapeDrawable().apply {
+                shape = RoundRectShape(floatArrayOf(999f, 999f, 999f, 999f, 999f, 999f, 999f, 999f), null, null)
+                paint.color = android.graphics.Color.TRANSPARENT
+            }
+            fillShape.paint.color = t.foreground.colorInt()
+            val clipDrawable = ClipDrawable(fillShape, Gravity.START, ClipDrawable.HORIZONTAL)
+            nativeSeekBar.progressDrawable = LayerDrawable(arrayOf(trackShape, clipDrawable)).apply {
+                setId(0, android.R.id.background)
+                setId(1, android.R.id.progress)
+            }
+
+            // Create thumb - force fully opaque so inset shadows don't show through
+            val density = context.activity.resources.displayMetrics.density
+            val thumbSize = (24 * density).roundToInt()
+            val thumbColor = t.background.closestColor().highlight(0.1f).colorInt()
+            val opaqueThumbColor = thumbColor or (0xFF shl 24).toInt()
+            val thumbDrawable = ShapeDrawable(OvalShape()).apply {
+                intrinsicWidth = thumbSize
+                intrinsicHeight = thumbSize
+                paint.color = opaqueThumbColor
+                paint.isAntiAlias = true
+            }
+            nativeSeekBar.thumb = thumbDrawable
+            nativeSeekBar.thumbTintList = null
+            nativeSeekBar.thumbTintMode = null
+            nativeSeekBar.progressTintList = null
+            nativeSeekBar.progressBackgroundTintList = null
+
+            native.setPadding(0, 0, 0, 0)
+        } else {
+            super.applyTheme(theme)
+            val t = theme.theme
+
+            // Standard slider styling
+            nativeSeekBar.progressTintList = ColorStateList.valueOf(t.foreground.closestColor().colorInt())
+            nativeSeekBar.progressBackgroundTintList = ColorStateList.valueOf(t.background.closestColor().colorInt())
+            nativeSeekBar.thumbTintList = ColorStateList.valueOf(t.foreground.closestColor().colorInt())
+        }
     }
 }

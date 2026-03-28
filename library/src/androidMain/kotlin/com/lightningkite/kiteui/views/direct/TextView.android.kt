@@ -23,6 +23,7 @@ import com.lightningkite.kiteui.views.RView
 
 actual class TextView actual constructor(context: RContext) :
     RView(context) {
+    override val driverValue: String? get() = content
     override val native: android.widget.TextView = android.widget.TextView(context.activity)
     actual var content: String
         get() {

@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.ClickableSemantic
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
@@ -10,11 +12,20 @@ import com.lightningkite.readable.*
 
 
 actual class Switch actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = switchDriverValue()
+    override val driverActions get() = super.driverActions + switchDriverActions()
     init {
         native.tag = "input"
         native.attributes.type = "checkbox"
         native.classes.add("switch")
         native.classes.add("checkResponsive")
+        native.classes.add("clickable")
+        themeChoice += ClickableSemantic
+    }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        native.classes.add("transition")
     }
     actual val checked: MutableReactiveValue<Boolean> = native.vprop(
         "input",

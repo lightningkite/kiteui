@@ -29,6 +29,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual open class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = textInputDriverValue()
+    override val driverActions get() = super.driverActions + textInputDriverActions()
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         inputType = EditorInfo.TYPE_CLASS_TEXT
     }

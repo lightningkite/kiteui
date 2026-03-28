@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -123,6 +124,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             progress.kui::-webkit-progress-bar {
                 border-radius: 100px;
+                background: transparent;
             }
 
             progress.kui::-webkit-progress-value {
@@ -133,15 +135,31 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             progress.kui {
                 background: none;
-                max-height: 0.25rem !important;
+                height: 1rem;
+                max-height: 1rem;
+                width: 100%;
                 border: medium;
                 border-radius: 1rem;
                 padding: 0px !important;
                 appearance: none;
+                overflow: visible !important;
+                background-color: var(--nearest-background-color, transparent);
             }
-            
-            
-            
+
+            input.kui[type="range"].neumorphic-slider {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 100%;
+                height: 1rem;
+                max-height: 1rem;
+                border: none;
+                border-radius: 1rem;
+                padding: 0px !important;
+                overflow: visible !important;
+                outline: none;
+                background-color: var(--nearest-background-color, transparent);
+            }
+
            .kui.progress-ring {
               width: 100%;
               justify-content: space-around;
@@ -275,6 +293,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .kui.scroll-horizontal {
                 overflow: auto hidden;
+                padding-top: var(--shadow-room, 0px);
+                padding-bottom: var(--shadow-room, 0px);
+                margin-top: calc(-1 * var(--shadow-room, 0px));
+                margin-bottom: calc(-1 * var(--shadow-room, 0px));
             }
 
             .kui.scroll-horizontal  * {
@@ -344,15 +366,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .radio.radio.radio {
                 appearance: none;
-                width: 25px !important;
-                height: 25px !important;
+                width: 1.75rem !important;
+                height: 1.75rem !important;
                 position: relative;
                 border-radius: 999px !important;
                 padding: 0px !important;
-                border-width: 0.1rem;
-                border-style: solid;
-                outline: none;
-                border-color: var(--icon-color, currentcolor);
+                border: none;
+                outline-color: var(--icon-color, currentcolor);
+                outline-offset: -0.1rem;
+                background-color: var(--nearest-background-color, transparent);
+                overflow: visible !important;
             }
 
             :checked.checkbox::after {
@@ -386,15 +409,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .checkbox.checkbox.checkbox {
                 appearance: none;
-                width: 25px !important;
-                height: 25px !important;
+                width: 1.75rem !important;
+                height: 1.75rem !important;
                 position: relative;
                 padding: 0px !important;
-                border-width: 0.1rem;
-                border-style: solid;
-                border-color: var(--icon-color, currentcolor);
+                border: none;
+                outline-color: var(--icon-color, currentcolor);
+                outline-offset: -0.1rem;
                 border-radius: 20%;
-                outline: none;
+                background-color: var(--nearest-background-color, transparent);
+                overflow: visible !important;
                 opacity: 0.75;
             }
 
@@ -415,26 +439,26 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 cursor: pointer;
                 border: 1px solid rgba(100, 116, 139, 0.527);
                 border-radius: 9999px !important;
-                background-color: rgb(255, 255, 255);
+                background-color: var(--nearest-background-color, rgb(255, 255, 255));
                 box-shadow: rgba(100, 116, 139, 0.327) 0px 3px 10px;
                 transition: 0.3s;
             }
 
             .switch:checked {
-                background-color: #20a020 !important;
+                background-color: #20a020;
             }
 
             .switch {
                 position: relative;
-                overflow: visible;
+                overflow: visible !important;
                 padding: 0px !important;
                 height: 1.5rem !important;
                 width: 3rem !important;
                 cursor: pointer;
                 appearance: none;
                 border-radius: 9999px !important;
-                background-color: color-mix(in srgb, currentcolor 20%, transparent) !important;
-                background-image: none !important;
+                background-color: color-mix(in srgb, currentcolor 20%, transparent);
+                background-image: none;
                 transition: 0.3s;
             }
 
@@ -506,6 +530,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 font: unset;
                 color: unset;
                 text-align: start;
+            }
+
+            select.kui {
+                overflow: visible !important;
             }
 
             a.kui:visited {
@@ -719,6 +747,57 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.rule(
+                """input.kui[type="range"].neumorphic-slider::-webkit-slider-runnable-track {
+                    height: 1rem;
+                    border-radius: 1rem;
+                    background: linear-gradient(to right, currentcolor var(--slider-progress, 50%), transparent var(--slider-progress, 50%));
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """input.kui[type="range"].neumorphic-slider::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 1.5rem;
+                    height: 1.5rem;
+                    border-radius: 50%;
+                    background-color: color-mix(in srgb, var(--nearest-background-color, #e0e0e0) 90%, black);
+                    box-shadow: -4px -4px 8px rgba(255,255,255,0.7), 4px 4px 8px rgba(0,0,0,0.15);
+                    margin-top: -0.25rem;
+                    cursor: pointer;
+                    border: none;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """input.kui[type="range"].neumorphic-slider::-moz-range-track {
+                    height: 1rem;
+                    border-radius: 1rem;
+                    background: linear-gradient(to right, currentcolor var(--slider-progress, 50%), transparent var(--slider-progress, 50%));
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """input.kui[type="range"].neumorphic-slider::-moz-range-thumb {
+                    width: 1.5rem;
+                    height: 1.5rem;
+                    border-radius: 50%;
+                    background-color: color-mix(in srgb, var(--nearest-background-color, #e0e0e0) 90%, black);
+                    box-shadow: -4px -4px 8px rgba(255,255,255,0.7), 4px 4px 8px rgba(0,0,0,0.15);
+                    cursor: pointer;
+                    border: none;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
                 """input.kui::-webkit-outer-spin-button, input.kui::-webkit-inner-spin-button {
                     -webkit-appearance: none;
                 }"""
@@ -870,11 +949,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             sub(null, asSelectors = listOf(""))
             sub(
                 SelectedSemantic,
-                asSelectors = listOf(".checked.checkResponsive"),
+                asSelectors = listOf(".checked.checkResponsive", ":checked.checkResponsive"),
             )
             sub(
                 UnselectedSemantic,
-                asSelectors = listOf(".checkResponsive"),
+                asSelectors = listOf(".checkResponsive:not(:checked):not(.checked)"),
             )
         }.also {
             cssGenTotal += it
@@ -970,9 +1049,20 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme.diff(diff) { shadows }?.let { shadows ->
             if (shadows != null && shadows.isNotEmpty()) {
                 addToCss(backSel, "box-shadow", shadows.toBoxShadow())
+                // Allow neumorphic shadows to paint beyond this container's bounds
+                addToCss(backSel, "overflow", "visible")
+                // Set shadow room as CSS variable so scroll containers can add padding
+                val maxExtent = shadows.filter { !it.inset }.maxOfOrNull {
+                    it.blurRadius.value.roughPx + it.spreadRadius.value.roughPx +
+                            maxOf(abs(it.offsetX.value.roughPx), abs(it.offsetY.value.roughPx))
+                } ?: 0.0
+                if (maxExtent > 0.0) {
+                    addToCss(directSel, "--shadow-room", "${maxExtent.roundToInt()}px")
+                }
             } else {
                 // shadows explicitly set to null or empty - check elevation
                 addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
+                addToCss(directSel, "--shadow-room", "0px")
             }
         } ?: theme.diff(diff) { elevation }?.let {
             // shadows unchanged, but elevation changed

@@ -1,11 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
+import android.graphics.Canvas
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.NeumorphicDrawable
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.debugPrint
@@ -49,6 +51,11 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
     var paddingBottomCurrentPx: Double = 0.0
     private var currentSize: Size = Size.Zero
 
+    init {
+        clipChildren = false
+        clipToPadding = false
+    }
+
     var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
             field = value
@@ -70,7 +77,10 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
                 MeasureSpec.makeMeasureSpec(sizeConstraint.width.roundToInt(), MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(sizeConstraint.height.roundToInt(), MeasureSpec.AT_MOST)
             )
-            return Size(child.native.measuredWidth.toDouble(), child.native.measuredHeight.toDouble())
+            return Size(
+                child.native.measuredWidth.toDouble(),
+                child.native.measuredHeight.toDouble()
+            )
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
@@ -125,6 +135,16 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
             )
             it.layout(it.left, it.top, it.right, it.bottom)
         }
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        for (i in 0 until childCount) {
+            val child = getChildAt(i) ?: continue
+            if (child.visibility == GONE) continue
+            val bg = child.background as? NeumorphicDrawable ?: continue
+            bg.drawOuterShadowsFromParent(canvas, child.left, child.top)
+        }
+        super.dispatchDraw(canvas)
     }
 
     fun silentRequestLayout() {

@@ -24,6 +24,7 @@ import org.w3c.dom.events.Event
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
 import org.w3c.files.BlobPropertyBag
+import org.w3c.files.FilePropertyBag
 import org.w3c.files.File
 import org.w3c.xhr.BLOB
 import org.w3c.xhr.ProgressEvent
@@ -157,9 +158,9 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
             }
     }
     actual val headers: HttpHeaders by lazy {
-        httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.flatMap {
-            val s = it.split(":")
-            s[1].trim().splitToSequence(';').map { s[0].trim() to it }
+        httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.map {
+            val s = it.split(":", limit = 2)
+            s[0].trim() to s[1].trim()
         })
     }
 }
@@ -167,6 +168,11 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
 actual typealias Blob = org.w3c.files.Blob
 actual typealias FileReference = File
 
+actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+    // ByteArray in Kotlin/JS is backed by Int8Array; wrap in a Blob first, then File
+    val blob = Blob(arrayOf(bytes.asDynamic()), BlobPropertyBag(type = mimeType))
+    return File(arrayOf(blob), fileName, FilePropertyBag(type = mimeType))
+}
 
 actual fun Blob.mimeType(): String {
     return this.type
@@ -189,7 +195,6 @@ actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(org.w3c.dom.WebSocket(url))
 }
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
 class WebSocketWrapper(val native: org.w3c.dom.WebSocket, val log: Log? = Log.tag("WS to ${native.url}").infoOrAbove()) : WebSocket {
     private val opened = Clock.System.now()
     private val stopListeningToDebugKill = killAllSockets.addListener {
@@ -233,6 +238,7 @@ fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
 actual suspend fun Blob.text(): String = jsTextBlob(this).await()
 actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
 actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
+actual fun ByteArray.toBlob(contentType: String): Blob = Blob(arrayOf(this), options = BlobPropertyBag(type = contentType))
 actual suspend fun Blob.toByteArray(): ByteArray = Int8Array((asDynamic().arrayBuffer() as Promise<ArrayBuffer>).await()).toByteArray()
 
     /** Returns a new [ByteArray] containing all the elements of this [Int8Array]. */

@@ -13,6 +13,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = textAreaDriverValue()
+    override val driverActions get() = super.driverActions + textAreaDriverActions()
     init {
         native.tag = "div"
         native.classes.add("textarea-container")

@@ -56,7 +56,10 @@ expect class RequestResponse {
 expect class Blob
 expect class FileReference
 
+expect fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference
+
 expect fun String.toBlob(contentType: String = "text/plain"): Blob
+expect fun ByteArray.toBlob(contentType: String = "text/plain"): Blob
 expect fun Blob.mimeType(): String
 expect fun Blob.bytes(): Long
 expect suspend fun Blob.toByteArray(): ByteArray

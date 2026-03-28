@@ -3,7 +3,9 @@ package com.lightningkite.kiteui.views
 import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.res.ColorStateList
+import android.graphics.Path
 import android.graphics.Point
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
@@ -269,21 +271,27 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
         backgroundBlock?.cornerRadii = radii
 
-        // Also update NeumorphicDrawable if present
-        (background as? NeumorphicDrawable)?.setCornerRadii(radii)
-
         // When a view has corner radii and draws a background, clip children to the
         // rounded outline. This matches web behavior where border-radius + overflow: hidden
         // clips content (e.g. images inside a rounded frame).
+        // We use Outline.setPath() with the per-corner radii array so PerCorner is respected.
+        // A rounded rect path is always convex, so this works on API 21+.
         if (cr > 0f && themeAndBack.drawBackground) {
+            val capturedRadii = radii.copyOf()
             native.outlineProvider = object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
-                    outline.setRoundRect(0, 0, view.width, view.height, cr)
+                    val path = Path().apply {
+                        addRoundRect(
+                            RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
+                            capturedRadii,
+                            Path.Direction.CW
+                        )
+                    }
+                    outline.setPath(path)
                 }
             }
             native.clipToOutline = true
         } else if (!native.clipToOutline) {
-            // Reset if no corner radii
             native.outlineProvider = ViewOutlineProvider.BACKGROUND
         }
     }
@@ -291,13 +299,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     override fun refreshPadding() {
         super.refreshPadding()
         val value = appliedPadding
-        // Add shadow extent to padding so neumorphic shadows render within view bounds
-        val shadowExtra = (background as? NeumorphicDrawable)?.shadowExtent?.roundToInt() ?: 0
         native.setPadding(
-            value.left.value.toInt() + shadowExtra,
-            value.top.value.toInt() + shadowExtra,
-            value.right.value.toInt() + shadowExtra,
-            value.bottom.value.toInt() + shadowExtra,
+            value.left.value.toInt(),
+            value.top.value.toInt(),
+            value.right.value.toInt(),
+            value.bottom.value.toInt(),
         )
     }
 
@@ -373,7 +379,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
-            // Refresh padding to account for shadow extent
+
+            // Invalidate parent so it redraws outer shadows via dispatchDraw
+            (native.parent as? View)?.invalidate()
             refreshPadding()
         } else {
             // Standard elevation-based shadow rendering
@@ -384,7 +392,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
 
             // Reset layer type if we were using software rendering
-            if (background is NeumorphicDrawable) {
+            val wasNeumorphic = background is NeumorphicDrawable
+            if (wasNeumorphic) {
                 native.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
             }
 
@@ -400,6 +409,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             } else {
                 backgroundBlock = null
                 background = null
+            }
+
+            // If switching away from neumorphic, invalidate parent to clear old outer shadows
+            if (wasNeumorphic) {
+                (native.parent as? View)?.invalidate()
             }
         }
         updateTransform(theme.theme)
@@ -591,7 +605,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     native.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
-            // Refresh padding to account for shadow extent
+
+            // Invalidate parent so it redraws outer shadows via dispatchDraw
+            (native.parent as? View)?.invalidate()
             refreshPadding()
         } else {
             // Standard elevation-based shadow rendering with ripple
@@ -602,12 +618,18 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
 
             // Reset layer type if we were using software rendering
-            if (background is NeumorphicDrawable) {
+            val wasNeumorphic = background is NeumorphicDrawable
+            if (wasNeumorphic) {
                 native.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
             }
 
             background = getBackgroundWithRipple(theme.theme, theme.drawBackground, background as? RippleDrawable)
             updateCorners()
+
+            // If switching away from neumorphic, invalidate parent to clear old outer shadows
+            if (wasNeumorphic) {
+                (native.parent as? View)?.invalidate()
+            }
         }
         updateTransform(theme.theme)
     }

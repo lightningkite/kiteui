@@ -69,14 +69,14 @@ data class Shadow(
                 offsetX = distance * -1f,
                 offsetY = distance * -1f,
                 blurRadius = blur,
-                color = darkColor,
+                color = lightColor,
                 inset = true
             ),
             Shadow(
                 offsetX = distance,
                 offsetY = distance,
                 blurRadius = blur,
-                color = lightColor,
+                color = darkColor,
                 inset = true
             )
         )

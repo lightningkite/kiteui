@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.FieldSemantic
+import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.*
@@ -14,9 +16,16 @@ import kotlin.time.Duration.Companion.milliseconds
 
 
 actual class Select actual constructor(context: RContext) : RView(context) {
+    private var _driverSelectedDisplay: String? = null
+    private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
+    override val driverValue: String? get() = _driverSelectedDisplay
+    override val driverActions get() = super.driverActions + buildMap {
+        _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
+    }
     init {
         native.tag = "select"
         native.classes.add("editable")
+        native.classes.add("clickable")
     }
 
     actual fun <T> bind(
@@ -59,6 +68,15 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         native.addEventListener("change") {
             setAction.startAction(this)
         }
+        // Driver support: track selected display and allow setValue
+        reactiveScope {
+            _driverSelectedDisplay = render(edits())
+        }
+        _driverSelectSetValue = { displayText ->
+            val item = list.firstOrNull { render(it) == displayText }
+                ?: throw com.lightningkite.kiteui.views.DriverActionException("No option matching '$displayText'")
+            edits.set(item)
+        }
     }
 
     actual var enabled: Boolean
@@ -66,9 +84,11 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         set(value) { native.attributes.disabled = !value }
 
     override fun applyTheme(theme: ThemeAndBack) {
+        val field = theme[FieldSemantic]
         val p = prevThemeClass
-        val newClass = context.kiteUiCss.themeInteractive(theme.theme)
-        super.applyTheme(theme)
+        val newClass = context.kiteUiCss.themeInteractive(field.theme)
+        super.applyTheme(field)
+        native.classes.add("transition")
         native.children.forEach { o ->
             p?.let { o.classes.remove(it) }
             o.classes.add(newClass)

@@ -9,6 +9,8 @@ import com.lightningkite.reactive.core.Signal
 import javax.swing.JRadioButton
 
 actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = radioToggleDriverValue()
+    override val driverActions get() = super.driverActions + radioToggleDriverActions()
     override val native = JRadioButton()
 
     actual val checked: MutableReactiveValue<Boolean> = Signal(false).also { signal ->

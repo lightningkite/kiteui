@@ -20,6 +20,8 @@ import platform.objc.sel_registerName
 
 
 actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+    override val driverValue: String? get() = textInputDriverValue()
+    override val driverActions get() = super.driverActions + textInputDriverActions()
     companion object {
         var alwaysToolbar = false
     }
@@ -135,6 +137,8 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
             set(value) {
                 if (textField.text == value) return
                 textField.text = value
+                // fire change event so reactive listeners are notified on programmatic updates
+                textField.sendActionsForControlEvents(UIControlEventEditingChanged)
             }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()

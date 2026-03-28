@@ -20,6 +20,8 @@ import com.lightningkite.readable.*
 
 
 actual class AutoCompleteTextField actual constructor(context: RContext): RViewWithAction(context) {
+    override val driverValue: String? get() = autoCompleteDriverValue()
+    override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     override val native = AndroidAutocompleteTextView(context.activity)
     actual val content: MutableReactiveValue<String> = native.contentProperty()
     actual var keyboardHints: KeyboardHints

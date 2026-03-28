@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.view.View
 import com.lightningkite.kiteui.models.Shadow
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
@@ -12,9 +13,11 @@ import kotlin.math.roundToInt
  * A custom Drawable that renders multiple shadows for neumorphism effects.
  *
  * All shadows (both outer and inset) are pre-rendered to cached bitmaps,
- * so no software layer is ever needed. Shadows are rendered WITHIN the
- * drawable's bounds by insetting the background shape, avoiding clipping
- * issues with ScrollView and other clipping containers.
+ * so no software layer is ever needed. The background shape fills the full
+ * drawable bounds. Outer shadows are drawn by the PARENT ViewGroup via
+ * [drawOuterShadowsFromParent] so they can extend beyond the view bounds
+ * without affecting layout — matching CSS box-shadow behavior.
+ * Inset shadows are rendered within the background shape by [draw].
  *
  * Shadow bitmaps are rendered at half resolution since blur makes full
  * resolution unnecessary. Bitmaps are shared across drawables with the
@@ -45,7 +48,6 @@ class NeumorphicDrawable(
 
     /**
      * The calculated extent that outer shadows extend beyond the background shape.
-     * This space is reserved within the drawable bounds.
      */
     var shadowExtent = 0f
         private set
@@ -67,16 +69,9 @@ class NeumorphicDrawable(
         var maxExtent = 0f
         for (shadow in shadows) {
             if (shadow.inset) continue
-            // Use 60% of blur radius - the outer portion of the Gaussian blur
-            // is barely visible, so reserving full extent wastes space.
-            val extent = shadow.blurRadius.value * 0.8f + shadow.spreadRadius.value * 0.5f +
-////            val extent = shadow.blurRadius.value + shadow.spreadRadius.value +
-//
+            val extent = shadow.blurRadius.value + shadow.spreadRadius.value +
                     max(abs(shadow.offsetX.value), abs(shadow.offsetY.value))
-//            println("DEBUG extent ${extent}")
-//            println("DEBUG maxExtent ${maxExtent}")
             maxExtent = max(maxExtent, extent)
-
         }
         return maxExtent
     }
@@ -213,6 +208,7 @@ class NeumorphicDrawable(
         shadowExtent = calculateShadowExtent()
         categorizeShadows()
         releaseBitmaps()
+        recreateBitmapsIfNeeded()
         invalidateSelf()
     }
 
@@ -220,13 +216,26 @@ class NeumorphicDrawable(
         this.cornerRadius = radius
         this.cornerRadii = null
         releaseBitmaps()
+        recreateBitmapsIfNeeded()
         invalidateSelf()
     }
 
     fun setCornerRadii(radii: FloatArray) {
         this.cornerRadii = radii
         releaseBitmaps()
+        recreateBitmapsIfNeeded()
         invalidateSelf()
+    }
+
+    private fun recreateBitmapsIfNeeded() {
+        val bgWidth = backgroundRect.width().roundToInt()
+        val bgHeight = backgroundRect.height().roundToInt()
+        if (bgWidth > 0 && bgHeight > 0) {
+            updateBitmaps(bgWidth, bgHeight)
+            if (outerCacheEntry != null) {
+                ((callback as? View)?.parent as? View)?.postInvalidate()
+            }
+        }
     }
 
     fun setBackgroundColor(color: Int) {
@@ -238,11 +247,13 @@ class NeumorphicDrawable(
     override fun onBoundsChange(bounds: Rect) {
         super.onBoundsChange(bounds)
 
+        // Background fills full view bounds — no inset needed since outer shadows
+        // are drawn by the parent ViewGroup, not by this drawable.
         backgroundRect.set(
-            bounds.left + shadowExtent,
-            bounds.top + shadowExtent,
-            bounds.right - shadowExtent,
-            bounds.bottom - shadowExtent
+            bounds.left.toFloat(),
+            bounds.top.toFloat(),
+            bounds.right.toFloat(),
+            bounds.bottom.toFloat()
         )
 
         backgroundPath.reset()
@@ -257,6 +268,12 @@ class NeumorphicDrawable(
         val bgHeight = backgroundRect.height().roundToInt()
         if (bgWidth != lastBgWidth || bgHeight != lastBgHeight) {
             updateBitmaps(bgWidth, bgHeight)
+            // Outer shadows are drawn by the parent's dispatchDraw, so we need
+            // to invalidate the parent whenever new shadow bitmaps are created.
+            // Use postInvalidate to ensure it runs after the current layout pass.
+            if (outerCacheEntry != null) {
+                ((callback as? View)?.parent as? View)?.postInvalidate()
+            }
         }
     }
 
@@ -264,23 +281,29 @@ class NeumorphicDrawable(
         val bounds = bounds
         if (bounds.isEmpty) return
 
-        // Draw outer shadows
-        outerCacheEntry?.let { entry ->
-            if (!entry.bitmap.isRecycled) {
-                drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
-                drawMatrix.postTranslate(bounds.left.toFloat(), bounds.top.toFloat())
-                canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
-            }
-        }
-
-        // Draw background
+        // Background
         canvas.drawPath(backgroundPath, backgroundPaint)
 
-        // Draw inset shadows
+        // Inset shadows
         insetCacheEntry?.let { entry ->
             if (!entry.bitmap.isRecycled) {
                 drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
                 drawMatrix.postTranslate(backgroundRect.left, backgroundRect.top)
+                canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
+            }
+        }
+    }
+
+    /**
+     * Draw outer shadows onto the parent's canvas at the given child view position.
+     * Called from parent ViewGroup's dispatchDraw so shadows can extend beyond child bounds.
+     * The bitmap is positioned at (viewLeft - shadowExtent, viewTop - shadowExtent).
+     */
+    fun drawOuterShadowsFromParent(canvas: Canvas, viewLeft: Int, viewTop: Int) {
+        outerCacheEntry?.let { entry ->
+            if (!entry.bitmap.isRecycled) {
+                drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
+                drawMatrix.postTranslate(viewLeft.toFloat() - shadowExtent, viewTop.toFloat() - shadowExtent)
                 canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
             }
         }

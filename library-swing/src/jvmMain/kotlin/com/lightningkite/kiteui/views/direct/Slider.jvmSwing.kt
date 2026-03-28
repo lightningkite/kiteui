@@ -10,6 +10,8 @@ import javax.swing.JSlider
 import javax.swing.event.ChangeListener
 
 actual class Slider actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = sliderDriverValue()
+    override val driverActions get() = super.driverActions + sliderDriverActions()
     override val native = JSlider(0, 1000, 500)
 
     private var suppressChangeEvents = false

@@ -1,45 +1,47 @@
 [versions]
-agp = "8.11.2"
+agp = "8.12.3"
 desugar_jdk_libs = "2.1.5"
-fontbox = "3.0.6"
-kotlin = "2.2.20"
-ksp = "2.2.20-2.0.3"
+exifInterface = "1.4.2"
+fontbox = "3.0.7"
+kotlin = "2.2.21"
 appcompat = "1.7.1"
 cardview = "1.0.0"
-commonsLang3 = "3.19.0"
+commonsLang3 = "3.20.0"
 glide = "5.0.5"
 junit = "4.13.2"
 kotlinxCoroutinesCore = "1.10.2"
-miglayoutSwing = "11.4.2"
+miglayoutSwing = "11.4.3"
 swingxAll = "1.6.5-1"
 jinput = "2.0.10"
 kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.9.0"
 ktorVersion = "3.3.1"
 ktx = "1.17.0"
-kfc = "16.5.0"
-jsPlainObjects = "2.3.0"
+kfc = "18.1.0"
+jsPlainObjects = "2.3.20"
 lkGradleHelpers = "4.0.6"
 material = "1.13.0"
-lottie = "6.4.0"
+lottie = "6.7.1"
 media3Exoplayer = "1.8.0"
 photoview = "2.3.0"
 reactive = "5.1.3-24"
-robolectric = "4.16"
-roborazzi = "1.29.0"
-roborazziVersion = "1.51.0"
-swiperefreshlayout = "1.1.0"
+robolectric = "4.16.1"
+roborazzi = "1.59.0"
+roborazziVersion = "1.59.0"
+swiperefreshlayout = "1.2.0"
 timber = "5.0.1"
 transition = "1.6.0"
 vannitechPublishing = "0.34.0"
 dokka = "2.1.0"
 uriEncoding = "0.0.1-6"
+lightningServer = "5.0.0-prerelease-394"
 
 
 [libraries]
 fontbox = { module = "org.apache.pdfbox:fontbox", version.ref = "fontbox" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 androidxAutofill = { module = "androidx.autofill:autofill", version = "1.3.0" }
+exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "exifInterface" }
 appcompat = { module = "androidx.appcompat:appcompat", version = { ref = "appcompat" } }
 cardview = { module = "androidx.cardview:cardview", version = { ref = "cardview" } }
 comLightningkiteReactive = { module = "com.lightningkite:reactive", version = { ref = "reactive" } }
@@ -66,6 +68,7 @@ ktorClientWebsockets = { module = "io.ktor:ktor-client-websockets", version = { 
 ktorServerCore = { module = "io.ktor:ktor-server-core", version = { ref = "ktorVersion" } }
 ktorServerNetty = { module = "io.ktor:ktor-server-netty", version = { ref = "ktorVersion" } }
 ktorServerHtmlBuilder = { module = "io.ktor:ktor-server-html-builder", version = { ref = "ktorVersion" } }
+ktorServerWebsockets = { module = "io.ktor:ktor-server-websockets", version = { ref = "ktorVersion" } }
 ktx = { module = "androidx.core:core", version = { ref = "ktx" } }
 lkGradleHelpers = { module = "com.lightningkite:lk-gradle-helpers", version = { ref = "lkGradleHelpers" } }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
@@ -80,6 +83,9 @@ swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout"
 timber = { module = "com.jakewharton.timber:timber", version = { ref = "timber" } }
 transition = { module = "androidx.transition:transition", version = { ref = "transition" } }
 kotlinGradlePluginApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
+lightningServerCore = { module = "com.lightningkite.lightningserver:core", version.ref = "lightningServer" }
+lightningServerEngineKtor = { module = "com.lightningkite.lightningserver:engine-ktor", version.ref = "lightningServer" }
+lightningServerTyped = { module = "com.lightningkite.lightningserver:typed", version.ref = "lightningServer" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -92,4 +98,5 @@ roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 vannitechPublishing = { id = "com.vanniktech.maven.publish", version = { ref = "vannitechPublishing" } }
 dokka = { id = "org.jetbrains.dokka", version = { ref = "dokka" } }
 kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
+
 kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }

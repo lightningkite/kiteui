@@ -7,6 +7,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewDebug
 import android.view.ViewGroup
+import kotlin.math.roundToInt
 
 
 typealias SimplifiedLinearLayoutLayoutParams = SimplifiedLinearLayout.LayoutParams
@@ -45,7 +46,6 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             field = value
             requestLayout()
         }
-
 
     override fun getBaseline(): Int {
         if (mBaselineAlignedChildIndex < 0) {
@@ -198,7 +198,9 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 continue
             }
             val lp = child.layoutParams as LayoutParams
-            if (i > 0) mTotalLength += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+            if (nonSkippedChildCount > 0) {
+                mTotalLength += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+            }
             nonSkippedChildCount++
             totalWeight += lp.weightUnlessIgnored
             val useExcessSpace = lp.height == 0 && lp.weightUnlessIgnored > 0
@@ -550,7 +552,9 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 continue
             }
             val lp = child.layoutParams as LayoutParams
-            if (nonSkippedChildCount > 0) mTotalLength += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+            if (nonSkippedChildCount > 0) {
+                mTotalLength += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+            }
             nonSkippedChildCount++
             totalWeight += lp.weightUnlessIgnored
             val useExcessSpace = lp.width == 0 && lp.weightUnlessIgnored > 0
@@ -1052,8 +1056,8 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             Gravity.TOP -> childTop = paddingTop
             else -> childTop = paddingTop
         }
-        var i = 0
         var gapApplied = false
+        var i = 0
         while (i < count) {
             val child = getChildAt(i)
             if (child == null) {
@@ -1075,11 +1079,10 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     Gravity.LEFT -> childLeft = paddingLeft
                     else -> childLeft = paddingLeft
                 }
-                if(gapApplied) {
+                if (gapApplied) {
                     childTop += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
-                } else {
-                    gapApplied = true
                 }
+                gapApplied = true
                 setChildFrame(
                     child, childLeft, childTop + getLocationOffset(child),
                     childWidth, childHeight
@@ -1199,11 +1202,10 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
 
                     else -> childTop = paddingTop
                 }
-                if(gapApplied) {
+                if (gapApplied) {
                     childLeft += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
-                } else {
-                    gapApplied = true
                 }
+                gapApplied = true
                 setChildFrame(
                     child, childLeft + getLocationOffset(child), childTop,
                     childWidth, childHeight

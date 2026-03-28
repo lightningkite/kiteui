@@ -11,6 +11,7 @@ import javax.swing.JLabel
 import javax.swing.SwingConstants
 
 actual class TextView actual constructor(context: RContext) : RView(context) {
+    override val driverValue: String? get() = content
     // Use ClickThroughLabel so text doesn't block clicks from parent Link/Button
     override val native = ClickThroughLabel()
 

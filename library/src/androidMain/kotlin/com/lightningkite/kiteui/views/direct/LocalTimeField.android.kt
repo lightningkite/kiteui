@@ -20,6 +20,8 @@ import kotlin.time.Instant
 
 actual class LocalTimeField actual constructor(context: RContext) :
     RViewWithAction(context) {
+    override val driverValue: String? get() = localTimeDriverValue()
+    override val driverActions get() = super.driverActions + localTimeDriverActions()
     private val property: Signal<LocalTime?> = Signal(null)
     actual val content: MutableReactiveValue<LocalTime?> = property
     

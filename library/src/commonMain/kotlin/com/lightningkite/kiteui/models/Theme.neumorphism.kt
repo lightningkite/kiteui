@@ -58,22 +58,6 @@ fun Theme.Companion.neumorphism(
         darkColor = darkShadowColor
     )
 
-    // For accent elements, adjust shadow colors based on accent
-    val accentLightShadow = Color.interpolate(accentColor, Color.white, 0.3f).applyAlpha(0.5f)
-    val accentDarkShadow = Color.interpolate(accentColor, Color.black, 0.3f).applyAlpha(0.3f)
-    val accentConvexShadows = Shadow.neumorphicConvex(
-        distance = shadowDistance,
-        blur = shadowBlur,
-        lightColor = accentLightShadow,
-        darkColor = accentDarkShadow
-    )
-    val accentConcaveShadows = Shadow.neumorphicConcave(
-        distance = shadowDistance / 2f,
-        blur = shadowBlur / 2f,
-        lightColor = accentLightShadow,
-        darkColor = accentDarkShadow
-    )
-
     return Theme(
         id = id,
         font = body,
@@ -159,7 +143,14 @@ fun Theme.Companion.neumorphism(
             SelectedSemantic.override {
                 it.withBack(
                     shadows = concaveShadows,
-                    background = it.background.map { c -> c.highlight(-0.02f) },
+                    background = it.background.map { c -> c.highlight(-0.05f) },
+                    outlineWidth = 0.px,
+                )
+            },
+            UnselectedSemantic.override {
+                it.withBack(
+                    shadows = convexShadows,
+                    outlineWidth = 0.px,
                 )
             },
             FocusSemantic.override {
@@ -189,41 +180,188 @@ fun Theme.Companion.neumorphism(
                     background = it.background.applyAlpha(0.7f),
                 )
             },
+            // Subtle tint semantics: mix base color with ~10% semantic color
+            // to maintain the neumorphic material illusion
             ImportantSemantic.override {
+                val tintedBg = Color.interpolate(baseColor, accentColor, 0.10f)
                 it.withBack(
-                    foreground = accentForeground,
-                    background = accentColor,
-                    shadows = accentConvexShadows,
+                    foreground = foreground,
+                    background = tintedBg,
+                    shadows = convexShadows,
                     semanticOverrides = SemanticOverrides(
                         HoverSemantic.override { inner ->
-                            val hoverShadows = Shadow.neumorphicConvex(
-                                distance = shadowDistance * 1.2f,
-                                blur = shadowBlur * 1.2f,
-                                lightColor = accentLightShadow,
-                                darkColor = accentDarkShadow
-                            )
                             inner.withBack(
-                                shadows = hoverShadows,
-                                background = accentColor.highlight(0.1f),
+                                shadows = Shadow.neumorphicConvex(
+                                    distance = shadowDistance * 1.2f,
+                                    blur = shadowBlur * 1.2f,
+                                    lightColor = lightShadowColor,
+                                    darkColor = darkShadowColor
+                                ),
+                                background = tintedBg.highlight(0.02f),
                             )
                         },
                         DownSemantic.override { inner ->
                             inner.withBack(
-                                shadows = accentConcaveShadows,
-                                background = accentColor.highlight(-0.1f),
+                                shadows = concaveShadows,
+                                background = tintedBg.highlight(-0.02f),
                             )
                         },
                     )
                 )
             },
-            DialogSemantic.override {
+            CriticalSemantic.override {
+                val tintedBg = Color.interpolate(baseColor, accentColor, 0.15f)
                 it.withBack(
-                    shadows = Shadow.neumorphicConvex(
-                        distance = shadowDistance * 2f,
-                        blur = shadowBlur * 2f,
-                        lightColor = lightShadowColor,
-                        darkColor = darkShadowColor
+                    foreground = foreground,
+                    background = tintedBg,
+                    shadows = convexShadows,
+                    semanticOverrides = SemanticOverrides(
+                        HoverSemantic.override { inner ->
+                            inner.withBack(
+                                shadows = Shadow.neumorphicConvex(
+                                    distance = shadowDistance * 1.2f,
+                                    blur = shadowBlur * 1.2f,
+                                    lightColor = lightShadowColor,
+                                    darkColor = darkShadowColor
+                                ),
+                                background = tintedBg.highlight(0.02f),
+                            )
+                        },
+                        DownSemantic.override { inner ->
+                            inner.withBack(
+                                shadows = concaveShadows,
+                                background = tintedBg.highlight(-0.02f),
+                            )
+                        },
+                    )
+                )
+            },
+            WarningSemantic.override {
+                val warningColor = Color.fromHex(0xFFe36e24.toInt())
+                val tintedBg = Color.interpolate(baseColor, warningColor, 0.10f)
+                it.withBack(
+                    foreground = foreground,
+                    background = tintedBg,
+                    shadows = convexShadows,
+                    semanticOverrides = SemanticOverrides(
+                        HoverSemantic.override { inner ->
+                            inner.withBack(
+                                shadows = Shadow.neumorphicConvex(
+                                    distance = shadowDistance * 1.2f,
+                                    blur = shadowBlur * 1.2f,
+                                    lightColor = lightShadowColor,
+                                    darkColor = darkShadowColor
+                                ),
+                                background = tintedBg.highlight(0.02f),
+                            )
+                        },
+                        DownSemantic.override { inner ->
+                            inner.withBack(
+                                shadows = concaveShadows,
+                                background = tintedBg.highlight(-0.02f),
+                            )
+                        },
+                    )
+                )
+            },
+            DangerSemantic.override {
+                val dangerColor = Color.fromHex(0xFFB00020.toInt())
+                val tintedBg = Color.interpolate(baseColor, dangerColor, 0.10f)
+                it.withBack(
+                    foreground = foreground,
+                    background = tintedBg,
+                    shadows = convexShadows,
+                    semanticOverrides = SemanticOverrides(
+                        HoverSemantic.override { inner ->
+                            inner.withBack(
+                                shadows = Shadow.neumorphicConvex(
+                                    distance = shadowDistance * 1.2f,
+                                    blur = shadowBlur * 1.2f,
+                                    lightColor = lightShadowColor,
+                                    darkColor = darkShadowColor
+                                ),
+                                background = tintedBg.highlight(0.02f),
+                            )
+                        },
+                        DownSemantic.override { inner ->
+                            inner.withBack(
+                                shadows = concaveShadows,
+                                background = tintedBg.highlight(-0.02f),
+                            )
+                        },
+                    )
+                )
+            },
+            AffirmativeSemantic.override {
+                val affirmativeColor = Color.fromHex(0xFF20a020.toInt())
+                val tintedBg = Color.interpolate(baseColor, affirmativeColor, 0.10f)
+                it.withBack(
+                    foreground = foreground,
+                    background = tintedBg,
+                    shadows = convexShadows,
+                    semanticOverrides = SemanticOverrides(
+                        HoverSemantic.override { inner ->
+                            inner.withBack(
+                                shadows = Shadow.neumorphicConvex(
+                                    distance = shadowDistance * 1.2f,
+                                    blur = shadowBlur * 1.2f,
+                                    lightColor = lightShadowColor,
+                                    darkColor = darkShadowColor
+                                ),
+                                background = tintedBg.highlight(0.02f),
+                            )
+                        },
+                        DownSemantic.override { inner ->
+                            inner.withBack(
+                                shadows = concaveShadows,
+                                background = tintedBg.highlight(-0.02f),
+                            )
+                        },
+                    )
+                )
+            },
+            DismissSemantic.override {
+                val isDark = baseColor.perceivedBrightness < 0.5f
+                it.withBack(
+                    cascading = false,
+                    gap = 0.dp,
+                    cornerRadii = CornerRadii.AdaptiveToSpacing(0.dp),
+                    background = if (isDark) lightShadowColor.invert().applyAlpha(1f) else lightShadowColor.applyAlpha(
+                        1f
                     ),
+                    shadows = null,
+                )
+            },
+            DialogSemantic.override {
+                val isDark = baseColor.perceivedBrightness < 0.5f
+                val dialogShadows = Shadow.neumorphicConvex(
+                    distance = shadowDistance * 2.5f,
+                    blur = shadowBlur * 3f,
+                    lightColor = if (isDark) lightShadowColor.copy(alpha = (lightShadowColor.alpha * 2f).coerceAtMost(1f)) else lightShadowColor,
+                    darkColor = if (isDark) Color.black.applyAlpha(0.5f) else Color.black.applyAlpha(0.25f)
+                )
+                val dialogCornerRadii = CornerRadii.Fixed(gap)
+                it.withBack(
+                    cornerRadii = dialogCornerRadii,
+                    shadows = dialogShadows,
+                    background = if (isDark) baseColor.highlight(0.05f) else null,
+                    semanticOverrides = SemanticOverrides(
+                        // The first card inside the dialog gets dialog-level shadows
+                        CardSemantic.override { inner ->
+                            inner.withBack(
+                                cornerRadii = dialogCornerRadii,
+                                shadows = dialogShadows,
+                                semanticOverrides = SemanticOverrides(
+                                    // Nested cards inside the dialog card revert to normal convex shadows
+                                    CardSemantic.override { nested ->
+                                        nested.withBack(
+                                            shadows = convexShadows,
+                                        )
+                                    },
+                                )
+                            )
+                        },
+                    )
                 )
             },
             PopoverSemantic.override {

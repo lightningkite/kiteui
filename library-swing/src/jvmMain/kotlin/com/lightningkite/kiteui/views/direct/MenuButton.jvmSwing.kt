@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent
 import javax.swing.*
 
 actual class MenuButton actual constructor(context: RContext) : RView(context) {
+    override val driverActions get() = super.driverActions + menuDriverActions()
     private val button = JPanel().apply {
         isOpaque = false
     }
