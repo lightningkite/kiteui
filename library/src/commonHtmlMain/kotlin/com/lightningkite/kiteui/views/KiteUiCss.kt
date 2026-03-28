@@ -146,7 +146,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 background-color: var(--nearest-background-color, transparent);
             }
 
-            input.kui[type="range"] {
+            input.kui[type="range"].neumorphic-slider {
                 -webkit-appearance: none;
                 appearance: none;
                 width: 100%;
@@ -747,7 +747,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.rule(
-                """input.kui[type="range"]::-webkit-slider-runnable-track {
+                """input.kui[type="range"].neumorphic-slider::-webkit-slider-runnable-track {
                     height: 1rem;
                     border-radius: 1rem;
                     background: linear-gradient(to right, currentcolor var(--slider-progress, 50%), transparent var(--slider-progress, 50%));
@@ -757,13 +757,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.rule(
-                """input.kui[type="range"]::-webkit-slider-thumb {
+                """input.kui[type="range"].neumorphic-slider::-webkit-slider-thumb {
                     -webkit-appearance: none;
                     appearance: none;
                     width: 1.5rem;
                     height: 1.5rem;
                     border-radius: 50%;
-                    background-color: var(--nearest-background-color, #e0e0e0);
+                    background-color: color-mix(in srgb, var(--nearest-background-color, #e0e0e0) 90%, black);
                     box-shadow: -4px -4px 8px rgba(255,255,255,0.7), 4px 4px 8px rgba(0,0,0,0.15);
                     margin-top: -0.25rem;
                     cursor: pointer;
@@ -774,7 +774,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.rule(
-                """input.kui[type="range"]::-moz-range-track {
+                """input.kui[type="range"].neumorphic-slider::-moz-range-track {
                     height: 1rem;
                     border-radius: 1rem;
                     background: linear-gradient(to right, currentcolor var(--slider-progress, 50%), transparent var(--slider-progress, 50%));
@@ -784,11 +784,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.rule(
-                """input.kui[type="range"]::-moz-range-thumb {
+                """input.kui[type="range"].neumorphic-slider::-moz-range-thumb {
                     width: 1.5rem;
                     height: 1.5rem;
                     border-radius: 50%;
-                    background-color: var(--nearest-background-color, #e0e0e0);
+                    background-color: color-mix(in srgb, var(--nearest-background-color, #e0e0e0) 90%, black);
                     box-shadow: -4px -4px 8px rgba(255,255,255,0.7), 4px 4px 8px rgba(0,0,0,0.15);
                     cursor: pointer;
                     border: none;

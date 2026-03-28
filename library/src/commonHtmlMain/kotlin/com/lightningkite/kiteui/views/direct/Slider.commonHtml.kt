@@ -20,7 +20,6 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         native.setAttribute("max", "1")
         native.setAttribute("step", "any")
         native.style.width = "100%"
-        themeChoice += FieldSemantic
     }
 
     private fun updateSliderProgress(currentValue: Float) {
@@ -85,9 +84,20 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         }
     }
 
+    private var isNeumorphic = false
+
     override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme[FieldSemantic])
-        native.classes.add("transition")
+        val fieldTheme = theme[FieldSemantic]
+        val neumorphic = fieldTheme.theme.shadows?.isNotEmpty() == true
+        if (neumorphic) {
+            super.applyTheme(fieldTheme)
+            native.classes.add("neumorphic-slider")
+            native.classes.add("transition")
+        } else {
+            native.classes.remove("neumorphic-slider")
+            super.applyTheme(theme)
+        }
+        isNeumorphic = neumorphic
     }
 
     actual var enabled: Boolean

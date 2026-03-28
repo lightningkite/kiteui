@@ -15,10 +15,6 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
     override val driverActions get() = super.driverActions + sliderDriverActions()
     override val native = UISlider()
 
-    init {
-        themeChoice += FieldSemantic
-    }
-
     private val valueProp = Signal(0.5f)
     actual val value: MutableReactiveValue<Float>
         get() {

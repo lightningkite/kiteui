@@ -22,12 +22,14 @@ import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-val defaultTheme = Theme.flat2("flat2default", 0.6.turns).customize(
-    newId = "asdf",
-    transitionDuration = 0.2.seconds,
-    bodyTransitions = ScreenTransitions.HorizontalSlide
-)
+//val defaultTheme = Theme.flat2("flat2default", 0.6.turns).customize(
+//    newId = "asdf",
+//    transitionDuration = 0.2.seconds,
+//    bodyTransitions = ScreenTransitions.HorizontalSlide
+//)
 //val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
+val defaultTheme = Theme.neumorphism("neuimporphism")
+
 val appTheme = Signal<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): Unit {

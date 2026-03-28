@@ -29,7 +29,6 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
     }
 
     init {
-        themeChoice += FieldSemantic
         nativeSeekBar.splitTrack = false
     }
 
@@ -128,10 +127,6 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         value.value = valueProp.value
     }
 
-    override fun refreshPadding() {
-        native.setPadding(0, 0, 0, 0)
-    }
-
     actual var enabled: Boolean
         get() = nativeSeekBar.isEnabled
         set(value) {
@@ -147,31 +142,50 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
 
     override fun applyTheme(theme: ThemeAndBack) {
         val fieldTheme = theme[FieldSemantic]
-        super.applyTheme(fieldTheme)
-        val t = fieldTheme.theme
+        val isNeumorphic = fieldTheme.theme.shadows?.isNotEmpty() == true
 
-        // Build custom progress drawable similar to ProgressBar
-        val trackShape = ShapeDrawable().apply {
-            shape = RoundRectShape(floatArrayOf(999f, 999f, 999f, 999f, 999f, 999f, 999f, 999f), null, null)
-            paint.color = android.graphics.Color.TRANSPARENT
-        }
-        fillShape.paint.color = t.foreground.colorInt()
-        val clipDrawable = ClipDrawable(fillShape, Gravity.START, ClipDrawable.HORIZONTAL)
-        nativeSeekBar.progressDrawable = LayerDrawable(arrayOf(trackShape, clipDrawable)).apply {
-            setId(0, android.R.id.background)
-            setId(1, android.R.id.progress)
-        }
+        if (isNeumorphic) {
+            super.applyTheme(fieldTheme)
+            val t = fieldTheme.theme
 
-        // Create neumorphic thumb
-        val density = context.activity.resources.displayMetrics.density
-        val thumbSize = (24 * density).roundToInt()
-        val thumbDrawable = ShapeDrawable(OvalShape()).apply {
-            intrinsicWidth = thumbSize
-            intrinsicHeight = thumbSize
-            paint.color = t.background.closestColor().colorInt()
-            paint.isAntiAlias = true
-            paint.setShadowLayer(8f * density, 4f * density, 4f * density, android.graphics.Color.argb(40, 0, 0, 0))
+            // Build custom progress drawable similar to ProgressBar
+            val trackShape = ShapeDrawable().apply {
+                shape = RoundRectShape(floatArrayOf(999f, 999f, 999f, 999f, 999f, 999f, 999f, 999f), null, null)
+                paint.color = android.graphics.Color.TRANSPARENT
+            }
+            fillShape.paint.color = t.foreground.colorInt()
+            val clipDrawable = ClipDrawable(fillShape, Gravity.START, ClipDrawable.HORIZONTAL)
+            nativeSeekBar.progressDrawable = LayerDrawable(arrayOf(trackShape, clipDrawable)).apply {
+                setId(0, android.R.id.background)
+                setId(1, android.R.id.progress)
+            }
+
+            // Create thumb - force fully opaque so inset shadows don't show through
+            val density = context.activity.resources.displayMetrics.density
+            val thumbSize = (24 * density).roundToInt()
+            val thumbColor = t.background.closestColor().highlight(0.1f).colorInt()
+            val opaqueThumbColor = thumbColor or (0xFF shl 24).toInt()
+            val thumbDrawable = ShapeDrawable(OvalShape()).apply {
+                intrinsicWidth = thumbSize
+                intrinsicHeight = thumbSize
+                paint.color = opaqueThumbColor
+                paint.isAntiAlias = true
+            }
+            nativeSeekBar.thumb = thumbDrawable
+            nativeSeekBar.thumbTintList = null
+            nativeSeekBar.thumbTintMode = null
+            nativeSeekBar.progressTintList = null
+            nativeSeekBar.progressBackgroundTintList = null
+
+            native.setPadding(0, 0, 0, 0)
+        } else {
+            super.applyTheme(theme)
+            val t = theme.theme
+
+            // Standard slider styling
+            nativeSeekBar.progressTintList = ColorStateList.valueOf(t.foreground.closestColor().colorInt())
+            nativeSeekBar.progressBackgroundTintList = ColorStateList.valueOf(t.background.closestColor().colorInt())
+            nativeSeekBar.thumbTintList = ColorStateList.valueOf(t.foreground.closestColor().colorInt())
         }
-        nativeSeekBar.thumb = thumbDrawable
     }
 }
