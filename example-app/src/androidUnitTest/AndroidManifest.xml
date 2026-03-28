@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lightningkite.mppexampleapp.test">
-    <application android:theme="@style/Theme.AppCompat.Light">
+    xmlns:tools="http://schemas.android.com/tools">
+    <application android:theme="@style/Theme.AppCompat.Light" tools:replace="android:theme">
     </application>
 </manifest>

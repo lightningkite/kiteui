@@ -138,9 +138,6 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
-            dependencies {
-                implementation(npm("modern-screenshot", "4.4.39"))
-            }
         }
     }
 
@@ -170,6 +167,7 @@ kotlin {
 
 android {
     namespace = "com.lightningkite.kiteui"
+    testNamespace = "com.lightningkite.kiteui.test"
     compileSdk = 36
 
     defaultConfig {

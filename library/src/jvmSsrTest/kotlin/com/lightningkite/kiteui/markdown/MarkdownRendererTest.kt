@@ -110,6 +110,25 @@ class MarkdownRendererTest {
     }
 
     @Test
+    fun testNestedList() = runWithTimeout {
+        val context = SsrContext("/")
+        context.render {
+            markdown("""
+                - Item 1
+                  - Sub item
+                - Item 2
+            """.trimIndent())
+        }
+        val result = context.serialize()
+
+        assertTrue(result.html.contains("Item 1"), "HTML should contain Item 1")
+        assertTrue(result.html.contains("Sub item"), "HTML should contain Sub item")
+        assertTrue(result.html.contains("Item 2"), "HTML should contain Item 2")
+        // Both levels should have bullet markers
+        assertTrue(result.html.count { it == '•' } >= 3, "HTML should have bullets for all items including nested")
+    }
+
+    @Test
     fun testOrderedList() = runWithTimeout {
         val context = SsrContext("/")
         context.render {

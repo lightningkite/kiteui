@@ -23,6 +23,8 @@ import com.lightningkite.kiteui.models.WorkingSemantic
 import com.lightningkite.kiteui.onMainThread
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.report
+import com.lightningkite.kiteui.telemetry.TelemetryContext
+import com.lightningkite.kiteui.telemetry.ViewPathProvider
 import com.lightningkite.kiteui.views.direct.ScrollingBehaviors
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.reactive.context.*
@@ -64,7 +66,7 @@ import kotlinx.coroutines.SupervisorJob
  * @param context The rendering context providing platform-specific configuration.
  */
 @OptIn(InternalKiteUi::class)
-abstract class RViewHelper(override val context: RContext) : ViewWriter() {
+abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewPathProvider {
     abstract var showOnPrint: Boolean
     override val representsView: RView get() = this as RView
 
@@ -311,6 +313,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         @InternalKiteUi
         set(value) {
             field = value
+            cachedViewPath = null
             if (value != null) refreshTheming()
         }
     @InternalKiteUi
@@ -651,6 +654,34 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     open fun postSetup() {
         fullyStarted = true
         refreshTheming()
+        (coroutineContext as? MutableCoroutineContext)?.add(
+            TelemetryContext(viewPathProvider = this)
+        )
+    }
+
+    /** Cached result of [computeViewPath]. Invalidated when [parent] changes. Not invalidated when
+     *  an ancestor's [debugName] changes, which is acceptable since names are set once at creation. */
+    private var cachedViewPath: String? = null
+
+    override fun viewPath(): String {
+        cachedViewPath?.let { return it }
+        val computed = computeViewPath()
+        cachedViewPath = computed
+        return computed
+    }
+
+    private fun computeViewPath(): String {
+        val segments = ArrayList<String>()
+        var v: RViewHelper? = this
+        while (v != null) {
+            val name = v.debugName ?: v::class.simpleName ?: "View"
+            val idx = (v as? RView)?.let { rv -> rv.parent?.children?.indexOf(rv) }
+            val segment = if (idx != null && idx >= 0) "$name[$idx]" else name
+            segments.add(segment)
+            v = (v as? RView)?.parent
+        }
+        segments.reverse()
+        return segments.joinToString("/")
     }
 
     abstract fun screenRectangle(): Rect?
@@ -699,8 +730,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     open val driverActions: Map<String, suspend (List<String>) -> String> get() = buildMap {
         put("snapshot") { args -> (this@RViewHelper as RView).driverSnapshot(parseSnapshotOptions(args.toTypedArray())) }
         put("screenshot") { (this@RViewHelper as RView).driverScreenshot() }
-        put("find") { args -> (this@RViewHelper as RView).driverFind(args.firstOrNull() ?: "") }
-        put("findClickable") { args -> (this@RViewHelper as RView).driverFindClickable(args.firstOrNull() ?: "") }
+        put("find") { args -> (this@RViewHelper as RView).driverFind(args.firstOrNull() ?: "", includeHidden = "--hidden" in args) }
+        put("findClickable") { args -> (this@RViewHelper as RView).driverFindClickable(args.firstOrNull() ?: "", includeHidden = "--hidden" in args) }
 //        put("scroll") { args ->
 //            // TODO: This looks wrong: in JS, the scrolling behaviors are just attached to an existing view in a way this wouldn't pick up
 //            val dx = args.getOrNull(0)?.toDoubleOrNull() ?: 0.0

@@ -7,6 +7,6 @@ import kotlinx.serialization.Serializable
 
 
 actual object Build {
-    actual val version: String get() = window.asDynamic().version.toString()
-    actual val debug: Boolean get() = (window.asDynamic().debug as? Boolean) == true
+    actual val version: String get() = window.asDynamic()?.version?.toString() ?: "Unknown"
+    actual val debug: Boolean get() = (window.asDynamic()?.debug as? Boolean) == true
 }

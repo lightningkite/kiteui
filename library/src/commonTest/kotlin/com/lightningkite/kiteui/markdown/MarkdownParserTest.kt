@@ -282,6 +282,69 @@ class MarkdownParserTest {
     }
 
     @Test
+    fun testNestedUnorderedList() {
+        val doc = parser.parse("""
+            - Item 1
+              - Sub item
+            - Item 2
+        """.trimIndent())
+        val list = doc.children.single() as MarkdownNode.UnorderedList
+        assertEquals(2, list.items.size)
+        val firstItem = list.items[0] as MarkdownNode.ListItem
+        assertTrue(firstItem.children.any { it is MarkdownNode.UnorderedList })
+        val nestedList = firstItem.children.filterIsInstance<MarkdownNode.UnorderedList>().single()
+        assertEquals(1, nestedList.items.size)
+        val secondItem = list.items[1] as MarkdownNode.ListItem
+        assertEquals(1, secondItem.children.size)
+    }
+
+    @Test
+    fun testNestedUnorderedListMultipleSubs() {
+        val doc = parser.parse("""
+            - Item 1
+              - Sub 1
+              - Sub 2
+            - Item 2
+        """.trimIndent())
+        val list = doc.children.single() as MarkdownNode.UnorderedList
+        assertEquals(2, list.items.size)
+        val nestedList = (list.items[0] as MarkdownNode.ListItem).children.filterIsInstance<MarkdownNode.UnorderedList>().single()
+        assertEquals(2, nestedList.items.size)
+    }
+
+    @Test
+    fun testNestedOrderedList() {
+        val doc = parser.parse("""
+            1. First
+              1. First sub
+              2. Second sub
+            2. Second
+        """.trimIndent())
+        val list = doc.children.single() as MarkdownNode.OrderedList
+        assertEquals(2, list.items.size)
+        val firstItem = list.items[0]
+        assertTrue(firstItem.children.any { it is MarkdownNode.OrderedList })
+        val nestedList = firstItem.children.filterIsInstance<MarkdownNode.OrderedList>().single()
+        assertEquals(2, nestedList.items.size)
+    }
+
+    @Test
+    fun testListItemBoldStart() {
+        val doc = parser.parse("- **Bold** text item")
+        val list = doc.children.single() as MarkdownNode.UnorderedList
+        val para = (list.items.single() as MarkdownNode.ListItem).children.single() as MarkdownNode.Paragraph
+        assertTrue(para.content.first() is MarkdownNode.Bold)
+    }
+
+    @Test
+    fun testListItemItalicStart() {
+        val doc = parser.parse("- *italic* text item")
+        val list = doc.children.single() as MarkdownNode.UnorderedList
+        val para = (list.items.single() as MarkdownNode.ListItem).children.single() as MarkdownNode.Paragraph
+        assertTrue(para.content.first() is MarkdownNode.Italic)
+    }
+
+    @Test
     fun testTaskList() {
         val doc = parser.parse("""
             - [ ] Unchecked

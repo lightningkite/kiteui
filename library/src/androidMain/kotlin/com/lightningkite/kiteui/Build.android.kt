@@ -6,11 +6,24 @@ import com.lightningkite.kiteui.views.AndroidAppContext
 
 
 actual object Build {
-    actual val version: String get() {
-        val pInfo: PackageInfo = AndroidAppContext.applicationCtx.packageManager.getPackageInfo(AndroidAppContext.applicationCtx.packageName, 0)
-        return pInfo.versionName ?: "?"
-    }
-    actual val debug: Boolean get() {
-        return AndroidAppContext.applicationCtx.applicationInfo.flags.and(ApplicationInfo.FLAG_DEBUGGABLE) != 0
-    }
+    actual val version: String
+        get() {
+            try {
+                val pInfo: PackageInfo = AndroidAppContext.applicationCtx.packageManager.getPackageInfo(
+                    AndroidAppContext.applicationCtx.packageName,
+                    0
+                )
+                return pInfo.versionName ?: "?"
+            } catch (e: Exception) {
+                return "?"
+            }
+        }
+    actual val debug: Boolean
+        get() {
+            try {
+                return AndroidAppContext.applicationCtx.applicationInfo.flags.and(ApplicationInfo.FLAG_DEBUGGABLE) != 0
+            } catch (e: Exception) {
+                return false
+            }
+        }
 }
