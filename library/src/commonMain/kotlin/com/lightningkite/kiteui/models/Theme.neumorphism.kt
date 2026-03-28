@@ -321,25 +321,30 @@ fun Theme.Companion.neumorphism(
                 )
             },
             DismissSemantic.override {
+                val isDark = baseColor.perceivedBrightness < 0.5f
                 it.withBack(
                     cascading = false,
                     gap = 0.dp,
                     cornerRadii = CornerRadii.AdaptiveToSpacing(0.dp),
-                    background = Color.white.applyAlpha(0.7f),
+                    background = if (isDark) lightShadowColor.invert().applyAlpha(1f) else lightShadowColor.applyAlpha(
+                        1f
+                    ),
                     shadows = null,
                 )
             },
             DialogSemantic.override {
+                val isDark = baseColor.perceivedBrightness < 0.5f
                 val dialogShadows = Shadow.neumorphicConvex(
                     distance = shadowDistance * 2.5f,
                     blur = shadowBlur * 3f,
-                    lightColor = lightShadowColor,
-                    darkColor = Color.black.applyAlpha(0.25f)
+                    lightColor = if (isDark) lightShadowColor.copy(alpha = (lightShadowColor.alpha * 2f).coerceAtMost(1f)) else lightShadowColor,
+                    darkColor = if (isDark) Color.black.applyAlpha(0.5f) else Color.black.applyAlpha(0.25f)
                 )
                 val dialogCornerRadii = CornerRadii.Fixed(gap)
                 it.withBack(
                     cornerRadii = dialogCornerRadii,
                     shadows = dialogShadows,
+                    background = if (isDark) baseColor.highlight(0.05f) else null,
                     semanticOverrides = SemanticOverrides(
                         // The first card inside the dialog gets dialog-level shadows
                         CardSemantic.override { inner ->
