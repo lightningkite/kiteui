@@ -15,7 +15,7 @@ import kotlin.contracts.contract
  *
  * `alignment.weight.shownWhen.theme.sizing.scrolling.element`
  */
-@ViewTreeBuilder
+@ViewDsl
 interface ElementWriter : KiteUiCoroutineScopeHelpers {
     val context: ElementContext
 

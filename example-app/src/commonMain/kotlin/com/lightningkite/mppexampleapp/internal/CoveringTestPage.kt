@@ -24,12 +24,12 @@ object CoveringTestPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render() {
         col {
             card.button {
                 text("dialog")
                 onClick {
-                    dialog { close ->
+                    context.dialog { close ->
                         sizeConstraints(width = 20.rem, height = 15.rem).col {
                             expanding.text("Heyo")
                             card.button {
@@ -43,7 +43,7 @@ object CoveringTestPage : Page {
             card.button {
                 text("bottom sheet")
                 onClick {
-                    coordinatorFrame!!.bottomSheet(blockBehind = false) { control ->
+                    context.coordinatorFrame?.bottomSheet(blockBehind = false) { control ->
                         themed(DialogSemantic).col {
                             applySafeInsets()
                             centered.coordinatorDragHandle()

@@ -2,16 +2,10 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.ScreenTransitions
-import com.lightningkite.kiteui.navigation.pageNavigator
-import com.lightningkite.kiteui.views.ContextAddon
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.CoroutineScope
-import kotlin.reflect.KMutableProperty0
-import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty0
 
 // by Claude - all rContextAddon defaults write to the root RContext so they're shared across the tree.
 // Explicit sets (via the setter) write to the local context, shadowing the root for that subtree.
@@ -152,7 +146,7 @@ fun ContainerElement.popoverWriter(overlay: ElementWriter = this, popoverRoot: B
  * `dismissBackground`, for example.) Setting this value to `false` guarantees that the presentation strategy
  * *will not* prevent interaction with views below the overlay.
  */
-expect fun ElementContext.overlayWriter(
+expect fun ElementContext.overlay(
     modal: Boolean = true,
     transition: ScreenTransitions = ScreenTransitions.Fade,
     body: ContainerElement.(remove: () -> Unit) -> Unit

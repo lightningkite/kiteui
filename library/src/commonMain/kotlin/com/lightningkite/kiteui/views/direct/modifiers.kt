@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.ReactiveContext
 
 @UnsafeModifierOrdering
-fun ElementWriter.withUnrestrictedModifiers(): ViewWriter = object : ViewWriter, ElementWriter by this {}
+fun ElementWriter.withUnsafeModifiers(): ViewWriter = object : ViewWriter, ElementWriter by this {}
 
 @ViewModifierDsl3
 expect fun ElementWriter.hintPopover(

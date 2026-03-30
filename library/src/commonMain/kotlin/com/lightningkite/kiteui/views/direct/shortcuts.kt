@@ -108,6 +108,17 @@ fun ElementWriter.radioButton(checked: MutableReactive<Boolean>) = radioButton {
 @ViewDsl
 fun ElementWriter.progressBar(ratio: Reactive<Float>) = progressBar { ::ratio bind ratio }
 
+@ViewDsl
+inline fun ElementWriter.icon(icon: Icon, description: String, setup: IconView.() -> Unit = {}): IconView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return icon {
+        source = icon
+        this.description = description
+        setup(this)
+    }
+}
+
+
 // TODO: Button with working indicator
 
 fun ElementContext.confirmDanger(

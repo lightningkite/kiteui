@@ -169,7 +169,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
                 val t = e.foregroundProcesses.state.handle(
                     success = { ThemeDerivation.None },
                     notReady = { WorkingSemantic },
-                    exception = { WorkingSemantic + ErrorSemantic }
+                    exception = { WorkingSemantic }
                 )
 
                 if (!e.backgroundProcesses.state.success) t + LoadingSemantic else t
@@ -230,10 +230,14 @@ abstract class NativeElementCommonCode internal constructor(override val context
         private var exceptionCount = 0
         private var notReadyCount = 0
 
+        private var releaseExceptionHandler: Release? = null
+
         override var state: ReactiveState<Unit> = ReactiveState(Unit)
             private set(value) {
                 if (field.raw !== value.raw) {
                     field = value
+                    releaseExceptionHandler?.invoke()
+                    releaseExceptionHandler = null
                     invokeAllListeners()
                     refreshTheming()
                 }
@@ -249,10 +253,14 @@ abstract class NativeElementCommonCode internal constructor(override val context
                         return recalculateState()
                     }
 
+                    releaseExceptionHandler?.invoke()
+                    releaseExceptionHandler = context.handleException(firstException)
+
                     ReactiveState.exception(firstException)
                 }
 
                 notReadyCount > 0 -> ReactiveState.notReady
+
                 else -> ReactiveState(Unit)
             }
         }

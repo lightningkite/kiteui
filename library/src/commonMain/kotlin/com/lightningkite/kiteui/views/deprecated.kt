@@ -21,14 +21,15 @@ import com.lightningkite.kiteui.models.UnselectedSemantic
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
-import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.direct.NumberInput
 import com.lightningkite.kiteui.views.direct.RowOrCol
 import com.lightningkite.kiteui.views.direct.ScrollingBehaviors
 import com.lightningkite.kiteui.views.direct.TextView
 import com.lightningkite.kiteui.views.direct.__scrollsUncontracted
+import com.lightningkite.kiteui.views.direct.alert
 import com.lightningkite.kiteui.views.direct.align
 import com.lightningkite.kiteui.views.direct.col
+import com.lightningkite.kiteui.views.direct.confirmDanger
 import com.lightningkite.kiteui.views.direct.padded
 import com.lightningkite.kiteui.views.direct.shownWhen
 import com.lightningkite.kiteui.views.direct.subtext
@@ -295,6 +296,12 @@ var NativeElement.themeTakeNonCascadingFromParent: Boolean
             else NativeElementCommonCode.GetBaseTheme.fromParent
     }
 
+@Deprecated("use directly through context", ReplaceWith("context.overlay(modal, transition, content)"))
+fun ElementWriter.overlayWriter(
+    modal: Boolean,
+    transition: ScreenTransitions,
+    content: ContainerElement.(close: ()->Unit) -> Unit
+) = context.overlay(modal, transition, content)
 
 @Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) fun ElementWriter.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
 @Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) fun ElementWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
@@ -310,3 +317,18 @@ var NativeElement.themeTakeNonCascadingFromParent: Boolean
 @Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) fun ContainerElement.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
 @Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) fun ContainerElement.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
 @Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun ContainerElement.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content)
+
+@Deprecated("use directly through context", ReplaceWith("context.confirmDanger(title, body, actionName, cancelName, action)"))
+fun ElementWriter.confirmDanger(
+    title: String,
+    body: String,
+    actionName: String = "OK",
+    cancelName: String = "Cancel",
+    action: suspend () -> Unit
+) = context.confirmDanger(title, body, actionName, cancelName, action)
+
+@Deprecated("use directly through context", ReplaceWith("context.alert(title, body)"))
+fun ElementWriter.alert(
+    title: String,
+    body: String,
+) = context.alert(title, body)

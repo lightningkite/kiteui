@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
-actual fun ElementContext.overlayWriter(
+actual fun ElementContext.overlay(
     modal: Boolean,
     transition: ScreenTransitions,
     body: ContainerElement.(remove: () -> Unit) -> Unit

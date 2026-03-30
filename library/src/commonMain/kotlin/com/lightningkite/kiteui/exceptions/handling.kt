@@ -5,42 +5,40 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
-import com.lightningkite.kiteui.views.l2.overlayFrame
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
-class ContextExceptionHandlers {
+class ExceptionHandlersTree(private val parent: ExceptionHandlersTree? = null) {
     private val handlers = ArrayList<ExceptionHandler>()
     private val messages = ArrayList<ExceptionToMessage>()
 
     fun add(handler: ExceptionHandler) {
         handlers.add(handler)
-        handlers.sortBy { it.priority }
+        handlers.sortByDescending { it.priority }
     }
     fun add(message: ExceptionToMessage) {
         messages.add(message)
-        messages.sortBy { it.priority }
+        messages.sortByDescending { it.priority }
     }
 
     operator fun plusAssign(handler: ExceptionHandler) = add(handler)
     operator fun plusAssign(message: ExceptionToMessage) = add(message)
 
-    fun handle(exception: Exception, on: Element): Release? = handlers.firstNotNullOfOrNull { it.handle(on, exception) }
-    fun message(exception: Exception): ExceptionMessage? = messages.firstNotNullOfOrNull { it.message(exception) }
+    fun handle(context: ElementContext, exception: Exception): Release? =
+        handlers.firstNotNullOfOrNull { it.handle(context, exception) } ?: parent?.handle(context, exception)
+
+    fun message(context: ElementContext, exception: Exception): ExceptionMessage? =
+        messages.firstNotNullOfOrNull { it.message(context, exception) } ?: parent?.message(context, exception)
 }
 
 interface ExceptionHandler {
     val priority: Float
-    fun handle(element: Element, exception: Exception): Release?
+    fun handle(context: ElementContext, exception: Exception): Release?
 
     companion object {
-        val dialog = ExceptionHandler(0f) { exception ->
-            val message = context.exceptions.message(exception) ?: return@ExceptionHandler null
+        val openDialog = ExceptionHandler(0f) { exception ->
+            val message = exceptionMessage(exception) ?: return@ExceptionHandler null
 
-            context.dialog { close ->
+            dialog { close ->
                 col {
                     h1(message.title)
                     text(message.body)
@@ -64,9 +62,9 @@ interface ExceptionHandler {
         }
 
         val stacktraceDialog = ExceptionHandler(0f) { exception ->
-            val message = context.exceptions.message(exception) ?: return@ExceptionHandler null
+            val message = exceptionMessage(exception) ?: return@ExceptionHandler null
 
-            context.dialog { close ->
+            dialog { close ->
                 col {
                     h1(message.title)
                     text(message.body)
@@ -95,7 +93,7 @@ interface ExceptionHandler {
 
 interface ExceptionToMessage {
     val priority: Float
-    fun message(exception: Exception): ExceptionMessage?
+    fun message(context: ElementContext, exception: Exception): ExceptionMessage?
 
     companion object {
         val unexpectedError = ExceptionToMessage(0f) {
@@ -125,32 +123,32 @@ data class ExceptionMessage(
 
 
 
-fun ExceptionHandler(priority: Float = 0.5f, handler: Element.(Exception) -> Release?): ExceptionHandler =
+fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception) -> Release?): ExceptionHandler =
     object : ExceptionHandler {
         override val priority: Float = priority
-        override fun handle(element: Element, exception: Exception): Release? = element.handler(exception)
+        override fun handle(context: ElementContext, exception: Exception): Release? = context.handler(exception)
     }
 
-inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, crossinline handler: Element.(T) -> Release?): ExceptionHandler =
+inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, crossinline handler: ElementContext.(T) -> Release?): ExceptionHandler =
     object : ExceptionHandler {
         override val priority: Float = priority
-        override fun handle(element: Element, exception: Exception): Release? {
+        override fun handle(context: ElementContext, exception: Exception): Release? {
             if (exception !is T) return null
-            return element.handler(exception)
+            return context.handler(exception)
         }
     }
 
-fun ExceptionToMessage(priority: Float = 0.5f, message: (Exception) -> ExceptionMessage?): ExceptionToMessage =
+fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exception) -> ExceptionMessage?): ExceptionToMessage =
     object : ExceptionToMessage {
         override val priority: Float = priority
-        override fun message(exception: Exception): ExceptionMessage? = message(exception)
+        override fun message(context: ElementContext, exception: Exception): ExceptionMessage? = message(context, exception)
     }
 
-inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, crossinline message: (T) -> ExceptionMessage?): ExceptionToMessage =
+inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, crossinline message: ElementContext.(T) -> ExceptionMessage?): ExceptionToMessage =
     object : ExceptionToMessage {
         override val priority: Float = priority
-        override fun message(exception: Exception): ExceptionMessage? {
+        override fun message(context: ElementContext, exception: Exception): ExceptionMessage? {
             if (exception !is T) return null
-            return message(exception)
+            return message(context, exception)
         }
     }

@@ -12,15 +12,6 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 @ViewDsl
-fun ElementWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}): IconView {
-    return icon {
-        source = icon
-        this.description = description
-        setup(this)
-    }
-}
-
-@ViewDsl
 fun ElementWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.() -> Unit) {
     col {
         var noViewCreated = true
@@ -47,31 +38,24 @@ fun ElementWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.() -
 }
 
 @ViewDsl
-fun ElementWriter.CanAddShownWhen.errorText(): Unit {
-    val errors = Signal<Set<Exception>>(setOf())
+fun ElementWriter.CanAddShownWhen.errorText() {
+    val errors = ReactiveMutableSet<Exception>()
     shownWhen { errors().isNotEmpty() }.themed(SubtextSemantic).themed(ErrorSemantic).text {
-        this@errorText.representsView!! += object: ExceptionHandler {
-            override val priority: Float
-                get() = 1f
-
-            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit) {
-                errors.value += exception
-                return {
-                    errors.value -= exception
-                }
-            }
+        this@errorText.context.exceptionHandlers += ExceptionHandler(1f) {
+            errors.add(it);
+            { errors.remove(it) }
         }
+
         ::content {
             errors().joinToString("\n") {
-                exceptionToMessage(it)?.body ?: it.message ?: it.toString()
+                context.exceptionMessage(it)?.body ?: it.message ?: it.toString()
             }
         }
     }
 }
 
-@ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ElementWriter.field(label: String, content: ElementWriter.() -> Unit): Unit {
+inline fun ElementWriter.field(label: String, content: ElementWriter.() -> Unit) {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     col {
         gap = 0.px

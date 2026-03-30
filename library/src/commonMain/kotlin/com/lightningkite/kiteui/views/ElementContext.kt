@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.exceptions.ContextExceptionHandlers
+import com.lightningkite.kiteui.exceptions.ExceptionHandlersTree
+import com.lightningkite.kiteui.exceptions.ExceptionMessage
+import com.lightningkite.reactive.core.Release
 import kotlinx.coroutines.CoroutineDispatcher
 
 private const val DISPATCHER_KEY = "ssrDispatcher"
@@ -25,8 +27,11 @@ expect class ElementContext: ElementContextCommonCode {
 
 abstract class ElementContextCommonCode(parent: ElementContext?) {
     val addons: ChainMap<String, Any?> = parent?.addons?.child() ?: ChainMap()
-    val exceptions: ContextExceptionHandlers = ContextExceptionHandlers()
+    val exceptionHandlers: ExceptionHandlersTree = ExceptionHandlersTree(parent = parent?.exceptionHandlers)
 }
+
+fun ElementContext.handleException(exception: Exception): Release? = exceptionHandlers.handle(this, exception)
+fun ElementContext.exceptionMessage(exception: Exception): ExceptionMessage? = exceptionHandlers.message(this, exception)
 
 // by Claude - scoped key-value store with parent chain for lazy lookup.
 // Reads check local first, then walk up the parent chain.

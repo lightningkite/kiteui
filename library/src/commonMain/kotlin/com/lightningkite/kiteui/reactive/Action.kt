@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.exceptions.ExceptionHandlers
+import com.lightningkite.kiteui.exceptions.ExceptionHandlersTree
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.reactive.context.DependencyChangeListener
 import com.lightningkite.reactive.core.*
@@ -21,7 +21,7 @@ operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
 fun Action(
     title: String,
     icon: Icon = Icon.send,
-    clearErrorOnDependencyChange: Boolean = ExceptionHandlers.clearErrorOnDependencyChange,
+    clearErrorOnDependencyChange: Boolean = ExceptionHandlersTree.clearErrorOnDependencyChange,
     keepRunningWhile: CoroutineScope? = AppScope,
     frequencyCap: Duration? = 500.milliseconds,
     ignoreRetryWhileRunning: Boolean = true,

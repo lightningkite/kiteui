@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
+import com.lightningkite.kiteui.UnsafeModifierOrdering
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Dimension
@@ -35,7 +37,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         startState: BottomSheetState,
         shouldRemoveExpandedCorners: Boolean,
         blockBehind: Boolean,
-        content: ViewWriter.(control: BottomSheetControl) -> Unit
+        content: ElementWriter.CanAddShownWhen.(control: BottomSheetControl) -> Unit
     ) {
         val expanded = Signal(startState)
         var willRemove: Element? = null
@@ -68,7 +70,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
     actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> Unit
+        content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
     ) {
         var willRemove: Element? = null
         val transition = ScreenTransitions(ScreenTransition.Pop, ScreenTransition.Push, ScreenTransition.Fade)
@@ -85,7 +87,9 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                     closePanel()
                 }
             }
-            willRemove = produceExactlyOne {
+
+            @OptIn(UnsafeModifierOrdering::class)
+            willRemove = produceExactlyOneUnsafe {
                 beforeSetup { animateIn(transition.forward) }
                 if (ratio == null) {
                     align(Align.Start, Align.Stretch).content(control)
@@ -104,7 +108,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
     actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> Unit
+        content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
     ) {
         var willRemove: Element? = null
         val transition = ScreenTransitions.HorizontalSlide
@@ -121,7 +125,9 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                     closePanel()
                 }
             }
-            willRemove = produceExactlyOne {
+
+            @OptIn(UnsafeModifierOrdering::class)
+            willRemove = produceExactlyOneUnsafe {
                 beforeSetup { animateIn(transition.forward) }
                 if (ratio == null) {
                     align(Align.End, Align.Stretch).content(control)
@@ -147,7 +153,9 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeElement(context) {
+actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeContainerElement(context) {
+    actual override val underlyingNativeElement: CoordinatorDragHandle = this
+
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"
@@ -159,7 +167,7 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
         source = Icon.expand
     }
 
-    @OptIn(InternalKiteUi::class)
+    @OptIn(InternalKiteUi::class, OverrideOnly::class)
     override fun onStartup() {
         super.onStartup()
         val e = context.bottomSheetState ?: return

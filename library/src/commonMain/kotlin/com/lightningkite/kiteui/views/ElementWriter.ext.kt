@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.OverrideOnly
+import com.lightningkite.kiteui.UnsafeModifierOrdering
 
 private class BeforeSetup(
     val wraps: ElementWriter,
@@ -38,19 +39,29 @@ fun ElementWriter.CanAddAlignment.split(): ElementWriter.CanAddAlignment = Split
 fun ViewWriter.split(): ViewWriter = Split(this)
 
 
-inline fun ElementWriter.produceAtMostOne(action: ElementWriter.() -> Unit): Element? {
+@UnsafeModifierOrdering
+inline fun ElementWriter.produceAtMostOneUnsafe(action: ViewWriter.() -> Unit): Element? {
     var output: Element? = null
     @OptIn(OverrideOnly::class)
-    val writer = object : ElementWriter by this {
+    val writer = object : ElementWriter by this, ViewWriter {
         override fun addChild(element: Element) {
             if (output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")
-            this@produceAtMostOne.addChild(element)
+            this@produceAtMostOneUnsafe.addChild(element)
             output = element
         }
     }
     action(writer)
     return output
 }
+
+@UnsafeModifierOrdering
+inline fun ElementWriter.produceExactlyOneUnsafe(action: ViewWriter.() -> Unit): Element =
+    produceAtMostOneUnsafe(action) ?: throw IllegalStateException("Produced no views at this layer, but expected one.")
+
+
+inline fun ElementWriter.produceAtMostOne(action: ElementWriter.() -> Unit): Element? =
+    @OptIn(UnsafeModifierOrdering::class)
+    produceAtMostOneUnsafe(action)
 
 inline fun ElementWriter.produceExactlyOne(action: ElementWriter.() -> Unit): Element =
     produceAtMostOne(action) ?: throw IllegalStateException("Produced no views at this layer, but expected one.")

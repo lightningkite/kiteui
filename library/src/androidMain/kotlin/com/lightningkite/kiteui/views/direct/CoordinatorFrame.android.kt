@@ -9,6 +9,7 @@ import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
 import com.lightningkite.kiteui.Log
+import com.lightningkite.kiteui.UnsafeModifierOrdering
 import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
@@ -41,6 +42,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
+    @OptIn(UnsafeModifierOrdering::class)
     actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
@@ -48,7 +50,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         startState: BottomSheetState,
         shouldRemoveExpandedCorners: Boolean,
         blockBehind: Boolean,
-        content: ViewWriter.(control: BottomSheetControl) -> Unit
+        content: ElementWriter.CanAddShownWhen.(control: BottomSheetControl) -> Unit
     ) {
         lateinit var b: BottomSheetBehavior<View>
         var sub: Element? = null
@@ -120,14 +122,14 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                     Log.log("$this ($it) blocked the touch, because screw you")
                 }
 
-            }.col { sub = produceExactlyOne { content(control) } }
+            }.col { sub = produceExactlyOneUnsafe { content(control) } }
         }
     }
 
     actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> Unit
+        content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
     ) {
         lateinit var b: SideSheetBehavior<View>
         var backToRemove: Element? = null
@@ -177,7 +179,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
     actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> Unit
+        content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
     ) {
         lateinit var b: SideSheetBehavior<View>
         var backToRemove: Element? = null
@@ -234,6 +236,8 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
 }
 
 actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeElement(context) {
+    actual override val underlyingNativeElement: CoordinatorDragHandle = this
+
     init {
         elementSpecificTheming += CardSemantic
     }

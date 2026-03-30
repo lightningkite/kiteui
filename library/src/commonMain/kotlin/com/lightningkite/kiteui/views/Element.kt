@@ -11,7 +11,7 @@ import com.lightningkite.reactive.context.StatusListener
  * All elements are backed by platform-native views and support reactivity, theming, and lifecycle management.
  * Elements can be either standalone views or containers that hold child elements.
  */
-@ViewTreeBuilder
+@ViewDsl
 interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
     val context: ElementContext
     val underlyingNativeElement: NativeElement

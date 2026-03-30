@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ElementWriter
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
@@ -17,7 +16,7 @@ import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.direct.separator
 import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.kiteui.views.direct.text
-import com.lightningkite.kiteui.views.direct.withUnrestrictedModifiers
+import com.lightningkite.kiteui.views.direct.withUnsafeModifiers
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.important
 import com.lightningkite.mppexampleapp.docs.article
@@ -29,7 +28,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class HomePage : Page {
     override val title: Reactive<String> get() = Constant("KiteUI")
     override fun ElementWriter.render(): Unit = run {
-        return withUnrestrictedModifiers().scrolling.article {
+        return withUnsafeModifiers().scrolling.article {
             centered.h1("KiteUI - Beautiful by Default")
             separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")

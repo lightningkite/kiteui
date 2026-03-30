@@ -51,12 +51,12 @@ actual class IconView actual constructor(context: ElementContext) : NativeElemen
         set(value) {
             field = value
             native.children.firstOrNull()?.let {
-                it.children.find { it.tag == "title" }?.let { it.content = value }
+                it.children.find { it.tag == "title" }
+                    ?.let { it.content = value }
                     ?: it.appendChild(FutureElement().apply {
                         tag = "title"
                         content = value
                     })
             }
         }
-
 }

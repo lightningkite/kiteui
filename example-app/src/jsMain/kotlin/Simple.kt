@@ -1,6 +1,8 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
+import com.lightningkite.kiteui.exceptions.ExceptionToMessage
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.models.Theme
