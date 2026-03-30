@@ -215,10 +215,11 @@ class Recycler2(
         val indexProp = Signal(-1)
         val data = RawReactive<T>()
         override lateinit var type: RecyclerViewRenderer<*>
-        lateinit var view: RView
+        lateinit var view: Element
         private var constraint: Size = Size.Zero
         private var inProgress: ProgrammingLayoutInProgress? = null
         private var _size: Size? = null
+        
         fun setup(
             type: RecyclerViewRenderer<T>,
             constrain: Size,
@@ -229,28 +230,30 @@ class Recycler2(
             this.type = type
             this.data.state = data
             this.indexProp.value = index
+            
             log?.log("CELL CREATED: from $data at $index")
-            val writer = object: ViewWriter() {
-                override val representsView: RView? = cells
+            
+            @OptIn(OverrideOnly::class)
+            val writer = object: ViewWriter {
                 override val context: ElementContext
                     get() = cells.context
 
-                override fun willAddChild(view: RView) {
-                    return cells.willAddChild(view)
+                override fun willAddChild(element: Element) {
+                    return cells.willAddChild(element)
                 }
 
-                override fun addChild(view: RView) {
+                override fun addChild(element: Element) {
                     // Accessibility: we're going to ensure this is inserted in the correct order.
-                    this@MyCell.view = view
+                    this@MyCell.view = element
                     if(recycling) {
-                        cells.addChild(view)
+                        cells.addChild(element)
                     } else {
                         val index = if(activeCells.isEmpty()) -1
                         else if (index > activeCells.last().index) -1
                         else if (index < activeCells.first().index) 0
                         else activeCells.binarySearchBy(index) { it.index }
-                        if (index == -1) cells.addChild(view)
-                        else cells.addChild(index, view)
+                        if (index == -1) cells.addChild(element)
+                        else cells.addChild(index, element)
                     }
                 }
 

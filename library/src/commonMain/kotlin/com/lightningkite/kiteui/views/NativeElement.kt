@@ -246,9 +246,10 @@ abstract class NativeElementCommonCode internal constructor(override val context
                     val firstException = processes.firstNotNullOfOrNull { it.state.exception }
                     if (firstException == null) {
                         exceptionCount = 0 // recurse with new (accurate) exception count and then return because we already calculated it
-                        recalculateState()
-                        return
-                    } else ReactiveState.exception(firstException)
+                        return recalculateState()
+                    }
+
+                    ReactiveState.exception(firstException)
                 }
 
                 notReadyCount > 0 -> ReactiveState.notReady

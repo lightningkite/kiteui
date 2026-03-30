@@ -3,13 +3,13 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
-actual fun ElementWriter.overlayWriter(
+actual fun ElementContext.overlayWriter(
     modal: Boolean,
     transition: ScreenTransitions,
     body: ContainerElement.(remove: () -> Unit) -> Unit
 ) {
     var willRemove: Element? = null
-    with(context.overlayFrame ?: return) {
+    with(overlayFrame ?: return) {
         withoutAnimation {
             beforeSetupContainer {
                 animateIn(transition.forward)

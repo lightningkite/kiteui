@@ -47,9 +47,9 @@ fun ElementWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.() -
 }
 
 @ViewDsl
-fun ElementWriter.errorText(): Unit {
+fun ElementWriter.CanAddShownWhen.errorText(): Unit {
     val errors = Signal<Set<Exception>>(setOf())
-    shownWhen { errors().isNotEmpty() }.onNext(ErrorSemantic).text {
+    shownWhen { errors().isNotEmpty() }.themed(SubtextSemantic).themed(ErrorSemantic).text {
         this@errorText.representsView!! += object: ExceptionHandler {
             override val priority: Float
                 get() = 1f
@@ -77,6 +77,6 @@ inline fun ElementWriter.field(label: String, content: ElementWriter.() -> Unit)
         gap = 0.px
         themed(FieldLabelSemantic).text(label)
         fieldTheme.content()
-        themed(SubtextSemantic).errorText()
+        errorText()
     }
 }

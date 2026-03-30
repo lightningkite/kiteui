@@ -28,9 +28,9 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+//    iosX64()
+//    iosArm64()
+//    iosSimulatorArm64()
     js(IR) {
         browser()
     }
@@ -71,11 +71,11 @@ kotlin {
             }
         }
 
-        val iosMain by getting {
-            dependsOn(commonInteractiveMain)
-            dependencies {
-            }
-        }
+//        val iosMain by getting {
+//            dependsOn(commonInteractiveMain)
+//            dependencies {
+//            }
+//        }
 
         val commonHtmlMain by creating {
             dependsOn(commonMain)

@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.kotlinCocoapods)
+//    alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.roborazzi)
@@ -41,9 +41,9 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+//    iosX64()
+//    iosArm64()
+//    iosSimulatorArm64()
     js(IR) {
         binaries.executable()
         browser()
@@ -79,8 +79,8 @@ kotlin {
         val androidMain by getting {
         }
 
-        val iosMain by getting {
-        }
+//        val iosMain by getting {
+//        }
 
         val commonTest by getting {
             dependencies {
@@ -98,9 +98,9 @@ kotlin {
         val androidUnitTest by getting {
             dependsOn(commonInteractiveTest)
         }
-        val iosTest by getting {
-            dependsOn(commonInteractiveTest)
-        }
+//        val iosTest by getting {
+//            dependsOn(commonInteractiveTest)
+//        }
     }
 
     jvm("jvmSsr")
@@ -120,33 +120,33 @@ kotlin {
 //        }
 //    }
 
-    cocoapods {
-        // Required properties
-        // Specify the required Pod version here. Otherwise, the Gradle project version is used.
-        version = "1.0"
-        summary = "Some description for a Kotlin/Native module"
-        homepage = "Link to a Kotlin/Native module homepage"
-        ios.deploymentTarget = "14.0"
-
-        // Optional properties
-        // Configure the Pod name here instead of changing the Gradle project name
-        name = "shared"
-
-        framework {
-            baseName = "shared"
-            export(project(":library"))
-//            embedBitcode(BitcodeEmbeddingMode.DISABLE)
-//            podfile = project.file("../example-app-ios/Podfile")
-        }
-//        pod("Library") {
-//            version = "1.0"
-//            source = path(project.file("../library"))
+//    cocoapods {
+//        // Required properties
+//        // Specify the required Pod version here. Otherwise, the Gradle project version is used.
+//        version = "1.0"
+//        summary = "Some description for a Kotlin/Native module"
+//        homepage = "Link to a Kotlin/Native module homepage"
+//        ios.deploymentTarget = "14.0"
+//
+//        // Optional properties
+//        // Configure the Pod name here instead of changing the Gradle project name
+//        name = "shared"
+//
+//        framework {
+//            baseName = "shared"
+//            export(project(":library"))
+////            embedBitcode(BitcodeEmbeddingMode.DISABLE)
+////            podfile = project.file("../example-app-ios/Podfile")
 //        }
-
-        // Maps custom Xcode configuration to NativeBuildType
-        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
-        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
-    }
+////        pod("Library") {
+////            version = "1.0"
+////            source = path(project.file("../library"))
+////        }
+//
+//        // Maps custom Xcode configuration to NativeBuildType
+//        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
+//        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
+//    }
 }
 
 android {

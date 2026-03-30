@@ -3,14 +3,23 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.reactive.core.Release
 
+/**
+ * An element that is meant to be interacted with. Can be enabled or disabled.
+ */
 interface InteractiveElement : Element {
     var enabled: Boolean
 }
 
+/**
+ * An interactive element with a primary action (e.g., button click, form submit).
+ */
 interface ElementWithAction : InteractiveElement {
     var action: Action?
 }
 
+/**
+ * An interactive element with both primary and secondary actions (e.g., swipe actions, context menus).
+ */
 interface ElementWithSecondaryAction : ElementWithAction {
     var secondaryAction: Action?
 }
@@ -19,16 +28,29 @@ interface ElementWithSecondaryAction : ElementWithAction {
 
 // Native helpers
 
+/**
+ * Platform-specific base class for interactive elements without children.
+ * Implements [enabled] by delegating to the native view's enabled state.
+ */
 expect abstract class NativeInteractiveElement(context: ElementContext) : NativeElement, InteractiveElement {
     override var enabled: Boolean
 }
 
+/**
+ * Platform-specific base class for interactive container elements with children.
+ * Implements [enabled] by delegating to the native view's enabled state.
+ */
 expect abstract class NativeInteractiveContainerElement(context: ElementContext) : NativeContainerElement, InteractiveElement {
     override var enabled: Boolean
 }
 
 // ElementWithAction
 
+/**
+ * Base class for non-container elements with a primary action.
+ * Automatically watches action for foreground process state.
+ * Override [nativeSetAction] to handle platform-specific action configuration.
+ */
 abstract class NativeElementWithAction(context: ElementContext) : ElementWithAction, NativeInteractiveElement(context) {
     protected open fun nativeSetAction(action: Action?) {}
 
@@ -43,6 +65,10 @@ abstract class NativeElementWithAction(context: ElementContext) : ElementWithAct
         }
 }
 
+/**
+ * Base class for non-container elements with primary and secondary actions.
+ * Override [nativeSetSecondaryAction] to handle platform-specific secondary action configuration.
+ */
 abstract class NativeElementWithSecondaryAction(context: ElementContext) : ElementWithSecondaryAction, NativeElementWithAction(context) {
     protected open fun nativeSetSecondaryAction(action: Action?) {}
 
@@ -57,8 +83,13 @@ abstract class NativeElementWithSecondaryAction(context: ElementContext) : Eleme
         }
 }
 
-// ElementWithSecondaryAction
+// Container variants
 
+/**
+ * Base class for container elements with a primary action.
+ * Automatically watches action for foreground process state.
+ * Override [nativeSetAction] to handle platform-specific action configuration.
+ */
 abstract class NativeContainerElementWithAction(context: ElementContext) : ElementWithAction, NativeInteractiveContainerElement(context) {
     protected open fun nativeSetAction(action: Action?) {}
 
@@ -73,6 +104,10 @@ abstract class NativeContainerElementWithAction(context: ElementContext) : Eleme
         }
 }
 
+/**
+ * Base class for container elements with primary and secondary actions.
+ * Override [nativeSetSecondaryAction] to handle platform-specific secondary action configuration.
+ */
 abstract class NativeContainerElementWithSecondaryAction(context: ElementContext) : ElementWithSecondaryAction, NativeContainerElementWithAction(context) {
     protected open fun nativeSetSecondaryAction(action: Action?) {}
 

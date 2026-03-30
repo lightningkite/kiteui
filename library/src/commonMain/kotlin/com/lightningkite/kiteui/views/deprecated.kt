@@ -1,7 +1,8 @@
-@file:OptIn(InternalKiteUi::class)
+@file:OptIn(InternalKiteUi::class, ExperimentalKiteUi::class)
 
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DialogSemantic
@@ -11,6 +12,7 @@ import com.lightningkite.kiteui.models.EmphasizedSemantic
 import com.lightningkite.kiteui.models.HoverSemantic
 import com.lightningkite.kiteui.models.MainContentSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
+import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.SelectedSemantic
 import com.lightningkite.kiteui.models.Semantic
 import com.lightningkite.kiteui.models.Theme
@@ -30,6 +32,9 @@ import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.padded
 import com.lightningkite.kiteui.views.direct.shownWhen
 import com.lightningkite.kiteui.views.direct.subtext
+import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.kiteui.views.l2.rawPopover
+import com.lightningkite.kiteui.views.l2.toast
 import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.context.onRemove
 import kotlinx.coroutines.CoroutineScope
@@ -38,6 +43,8 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.getValue
 import kotlin.setValue
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 
 @Deprecated("Wrong import; this has moved", ReplaceWith("launch", "com.lightningkite.reactive.launch"), DeprecationLevel.ERROR) val launch = Unit
@@ -278,3 +285,28 @@ fun Element.keepPopoverOpen(lifecycle: CoroutineScope) {
 var Element.showOnPrint: Boolean
     get() = underlyingNativeElement.showOnPrint
     set(value) { underlyingNativeElement.showOnPrint = value }
+
+@Deprecated("Use `themeBase` directly", ReplaceWith("themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading"))
+var NativeElement.themeTakeNonCascadingFromParent: Boolean
+    get() = themeBase === NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+    set(value) {
+        themeBase =
+            if (value) NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+            else NativeElementCommonCode.GetBaseTheme.fromParent
+    }
+
+
+@Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) fun ElementWriter.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
+@Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) fun ElementWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
+@Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) fun ElementWriter.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
+@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun ElementWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content)
+
+@Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) fun Element.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
+@Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) fun Element.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
+@Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) fun Element.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
+@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun Element.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content)
+
+@Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) fun ContainerElement.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
+@Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) fun ContainerElement.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
+@Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) fun ContainerElement.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
+@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun ContainerElement.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content)

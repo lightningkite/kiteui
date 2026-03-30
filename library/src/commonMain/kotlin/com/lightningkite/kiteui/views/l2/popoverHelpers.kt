@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.DialogSemantic
+import com.lightningkite.kiteui.models.PopoverSemantic
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
@@ -12,11 +13,11 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
+fun ElementContext.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ElementWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddScrolling.() -> Unit) {
+fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) {
     overlayWriter(false) {
         atBottomCenter.col {
             withoutAnimation {
@@ -31,28 +32,26 @@ fun ElementWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.C
                     this@overlayWriter.removeChild(this@col)
                 }
                 gap = 2.rem
-                themed(DialogSemantic).content()
+                themed(PopoverSemantic).content()
                 space()
             }
         }
     }
 }
 
-fun ElementWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: ()->Unit) -> Unit) {
+fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) {
     overlayWriter(modal = true) { close ->
         dismissBackground {
             onClick { if (dismissable) close() }
-            centered.themed(DialogSemantic).frame {
-                content { close() }
-            }
+            centered.themed(DialogSemantic).content(close)
         }
     }
 }
 
-fun ElementWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) {
+fun ElementContext.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) {
     var willRemove: Element? = null
     overlayWriter {
-//        withoutAnimation {    TODO: Check if removing this 'withoutAnimation' breaks anything
+        withoutAnimation {
             popoverWriter {
                 willRemove?.let {
                     it.animateOut(transition.reverse) {
@@ -62,6 +61,6 @@ fun ElementWriter.rawPopover(transition: ScreenTransitions, content: ElementWrit
             }.run {
                 willRemove = beforeSetup { animateIn(transition.forward) }.produceExactlyOne(content)
             }
-//        }
+        }
     }
 }

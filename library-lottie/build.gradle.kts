@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.kotlinCocoapods)
+//    alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidLibrary)
     signing
@@ -22,9 +22,9 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+//    iosX64()
+//    iosArm64()
+//    iosSimulatorArm64()
     js(IR) {
         browser()
     }
@@ -40,12 +40,12 @@ kotlin {
     // Note: CocoaPods integration for lottie-ios is disabled due to cinterop commonizer
     // issues with Metal framework types. The iOS implementation uses a placeholder.
     // For production iOS apps, use native Swift Lottie integration directly.
-    cocoapods {
-        summary = "KiteUI Lottie Animation Support"
-        homepage = "https://github.com/lightningkite/kiteui"
-        version = "1.0"
-        ios.deploymentTarget = "14.0"
-    }
+//    cocoapods {
+//        summary = "KiteUI Lottie Animation Support"
+//        homepage = "https://github.com/lightningkite/kiteui"
+//        version = "1.0"
+//        ios.deploymentTarget = "14.0"
+//    }
 
     sourceSets {
         val commonMain by getting {
@@ -60,7 +60,7 @@ kotlin {
             }
         }
 
-        val iosMain by getting
+//        val iosMain by getting
 
         val commonHtmlMain by creating {
             dependsOn(commonMain)

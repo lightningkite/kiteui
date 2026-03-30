@@ -1,137 +1,156 @@
 package com.lightningkite.kiteui.exceptions
 
-import com.lightningkite.kiteui.Log
-import com.lightningkite.kiteui.debugMode
-import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.closePopovers
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
+class ContextExceptionHandlers {
+    private val handlers = ArrayList<ExceptionHandler>()
+    private val messages = ArrayList<ExceptionToMessage>()
 
-class ExceptionHandlers {
-    companion object {
-        var clearErrorOnDependencyChange: Boolean = true
-        val root = object : ExceptionHandler {
-            override val priority: Float get() = 0f
-            var open = false
-            override fun handle(view: Element, working: Boolean, exception: Exception): (() -> Unit)? {
-                if (open) {
-                    Log.warn("Blocked $exception; already open")
-                    return {}
-                }
-                open = true
-                view.context.closePopovers()
-                val message = view.exceptionToMessage(exception)!!
-                view.closestElementWriter()?.dialog { closer ->
-                    onRemove {
-                        open = false
-                    }
-                    col {
-                        h2(message.title)
-                        text(message.body)
-                        if (debugMode) {
-                            subtext(exception.stackTraceToString())
-                        }
-                        row {
-                            expanding.space()
-                            for (action in message.actions) {
-                                button {
-                                    text(action.title)
-                                    onClick { closer(); action.startAction(view) }
-                                }
-                            }
-                            buttonTheme.button {
-                                text("OK")
-                                onClick { closer() }
-                            }
-                        }
-                    }
-                }
-                return { }
-            }
-        }
+    fun add(handler: ExceptionHandler) {
+        handlers.add(handler)
+        handlers.sortBy { it.priority }
+    }
+    fun add(message: ExceptionToMessage) {
+        messages.add(message)
+        messages.sortBy { it.priority }
     }
 
-    private val handlers: ArrayList<ExceptionHandler> = arrayListOf()
-    fun handle(view: Element, working: Boolean, exception: Exception): (() -> Unit)? = handlers.firstNotNullOfOrNull { it.handle(view, working, exception) }
-    operator fun plusAssign(other: ExceptionHandler) {
-        handlers.add(other)
-        handlers.sortByDescending { it.priority }
-    }
+    operator fun plusAssign(handler: ExceptionHandler) = add(handler)
+    operator fun plusAssign(message: ExceptionToMessage) = add(message)
+
+    fun handle(exception: Exception, on: Element): Release? = handlers.firstNotNullOfOrNull { it.handle(on, exception) }
+    fun message(exception: Exception): ExceptionMessage? = messages.firstNotNullOfOrNull { it.message(exception) }
 }
 
 interface ExceptionHandler {
     val priority: Float
-    fun handle(view: Element, working: Boolean, exception: Exception): (() -> Unit)?
-}
+    fun handle(element: Element, exception: Exception): Release?
 
-class ExceptionToMessages {
     companion object {
-        val root = ExceptionToMessages().apply {
-            this += object : ExceptionToMessage {
-                override val priority: Float
-                    get() = 0f
+        val dialog = ExceptionHandler(0f) { exception ->
+            val message = context.exceptions.message(exception) ?: return@ExceptionHandler null
 
-                override fun handle(view: Element, exception: Exception): ExceptionMessage? {
-                    exception.report()
-                    return ExceptionMessage(
-                        title = "Error",
-                        body = "An unknown error occurred.  If this issue persists, please contact the developers."
-                    )
+            context.dialog { close ->
+                col {
+                    h1(message.title)
+                    text(message.body)
+
+                    space(0.5)
+
+                    row {
+                        for (action in message.actions) centered.important.buttonTheme.button {
+                            text(action.title)
+                            this.action = action
+                        }
+                        centered.card.buttonTheme.button {
+                            text("Close")
+                            onClick { close() }
+                        }
+                    }
                 }
             }
-            this += ExceptionToMessage<PlainTextException> { ExceptionMessage(it.title, it.message!!, it.actions) }
-        }
-    }
 
-    private val handlers: ArrayList<ExceptionToMessage> = arrayListOf()
-    fun handle(view: Element, exception: Exception): ExceptionMessage? = handlers.firstNotNullOfOrNull { it.handle(view, exception) }
-    operator fun plusAssign(other: ExceptionToMessage) {
-        handlers.add(other)
-        handlers.sortByDescending { it.priority }
+            return@ExceptionHandler {}
+        }
+
+        val stacktraceDialog = ExceptionHandler(0f) { exception ->
+            val message = context.exceptions.message(exception) ?: return@ExceptionHandler null
+
+            context.dialog { close ->
+                col {
+                    h1(message.title)
+                    text(message.body)
+
+                    sizeConstraints(maxHeight = 15.rem).scrolling.subtext(exception.stackTraceToString())
+
+                    space(0.5)
+
+                    row {
+                        for (action in message.actions) centered.important.buttonTheme.button {
+                            text(action.title)
+                            this.action = action
+                        }
+                        centered.card.buttonTheme.button {
+                            text("Close")
+                            onClick { close() }
+                        }
+                    }
+                }
+            }
+
+            return@ExceptionHandler {}
+        }
     }
 }
 
 interface ExceptionToMessage {
     val priority: Float
-    fun handle(view: Element, exception: Exception): ExceptionMessage?
+    fun message(exception: Exception): ExceptionMessage?
 
     companion object {
-        inline operator fun <reified E : Exception> invoke(
-            priority: Float = 2f,
-            crossinline additionalCondition: (E) -> Boolean = { true },
-            crossinline handler: Element.(E) -> ExceptionMessage
-        ): ExceptionToMessage {
-            return object : ExceptionToMessage {
-                override val priority: Float = priority
-                override fun handle(view: Element, exception: Exception): ExceptionMessage? {
-                    if (exception !is E) return null
-                    if (!additionalCondition(exception)) return null
-                    return handler(view, exception)
-                }
-            }
+        val unexpectedError = ExceptionToMessage(0f) {
+            ExceptionMessage(
+                "Error",
+                "An unexpected error occurred."
+            )
         }
 
-        inline operator fun <reified E : Exception> invoke(priority: Float = 1f, crossinline handler: Element.(E) -> ExceptionMessage): ExceptionToMessage {
-            return object : ExceptionToMessage {
-                override val priority: Float = priority
-                override fun handle(view: Element, exception: Exception): ExceptionMessage? {
-                    if (exception !is E) return null
-                    return handler(view, exception)
-                }
-            }
+        val debug = ExceptionToMessage(0f) { e ->
+            ExceptionMessage(
+                "Error: $e",
+                listOfNotNull(
+                    e.message,
+                    e.cause?.let { "Caused By: $it" }
+                ).joinToString("\n")
+            )
         }
     }
 }
 
-data class ExceptionMessage(val title: String, val body: String, val actions: List<Action> = listOf())
+data class ExceptionMessage(
+    val title: String,
+    val body: String,
+    val actions: List<Action> = emptyList()
+)
 
-class PlainTextException(message: String, val title: String = "Error", val actions: List<Action> = listOf()) : Exception(message)
+
+
+fun ExceptionHandler(priority: Float = 0.5f, handler: Element.(Exception) -> Release?): ExceptionHandler =
+    object : ExceptionHandler {
+        override val priority: Float = priority
+        override fun handle(element: Element, exception: Exception): Release? = element.handler(exception)
+    }
+
+inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, crossinline handler: Element.(T) -> Release?): ExceptionHandler =
+    object : ExceptionHandler {
+        override val priority: Float = priority
+        override fun handle(element: Element, exception: Exception): Release? {
+            if (exception !is T) return null
+            return element.handler(exception)
+        }
+    }
+
+fun ExceptionToMessage(priority: Float = 0.5f, message: (Exception) -> ExceptionMessage?): ExceptionToMessage =
+    object : ExceptionToMessage {
+        override val priority: Float = priority
+        override fun message(exception: Exception): ExceptionMessage? = message(exception)
+    }
+
+inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, crossinline message: (T) -> ExceptionMessage?): ExceptionToMessage =
+    object : ExceptionToMessage {
+        override val priority: Float = priority
+        override fun message(exception: Exception): ExceptionMessage? {
+            if (exception !is T) return null
+            return message(exception)
+        }
+    }

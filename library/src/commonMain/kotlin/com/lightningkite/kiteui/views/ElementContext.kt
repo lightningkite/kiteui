@@ -1,11 +1,12 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.exceptions.ContextExceptionHandlers
 import kotlinx.coroutines.CoroutineDispatcher
 
 private const val DISPATCHER_KEY = "ssrDispatcher"
 
 /**
- * Custom CoroutineDispatcher to use for RViews created with this context.
+ * Custom CoroutineDispatcher to use for Elements created with this context.
  * If set, this dispatcher will be used instead of Dispatchers.Main.immediate.
  * This is primarily useful for SSR where we need synchronous reactive scope execution.
  */
@@ -15,15 +16,16 @@ var ElementContext.ssrDispatcher: CoroutineDispatcher?
 
 expect class ElementContext: ElementContextCommonCode {
     fun split(): ElementContext
-    override val darkMode: Boolean?
+
+    val darkMode: Boolean?
     var immersiveMode: Boolean
+
     companion object
 }
 
 abstract class ElementContextCommonCode(parent: ElementContext?) {
     val addons: ChainMap<String, Any?> = parent?.addons?.child() ?: ChainMap()
-
-    abstract val darkMode: Boolean?
+    val exceptions: ContextExceptionHandlers = ContextExceptionHandlers()
 }
 
 // by Claude - scoped key-value store with parent chain for lazy lookup.

@@ -61,7 +61,7 @@ object CheatSheet : DocPage {
         description: String,
         code: String,
         references: Set<ExampleEntry> = emptySet(),
-        result: RowOrColOld.() -> Unit
+        result: RowOrCol.() -> Unit
     ): Unit {
         val e = ExampleEntry(name)
         known += e

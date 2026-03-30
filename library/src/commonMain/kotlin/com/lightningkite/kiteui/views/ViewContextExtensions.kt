@@ -152,7 +152,7 @@ fun ContainerElement.popoverWriter(overlay: ElementWriter = this, popoverRoot: B
  * `dismissBackground`, for example.) Setting this value to `false` guarantees that the presentation strategy
  * *will not* prevent interaction with views below the overlay.
  */
-expect fun ElementWriter.overlayWriter(
+expect fun ElementContext.overlayWriter(
     modal: Boolean = true,
     transition: ScreenTransitions = ScreenTransitions.Fade,
     body: ContainerElement.(remove: () -> Unit) -> Unit

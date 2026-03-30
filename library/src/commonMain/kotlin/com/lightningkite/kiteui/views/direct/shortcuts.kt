@@ -2,14 +2,14 @@
 
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Reactive
-import kotlin.contracts.InvocationKind
 import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 @ViewDsl
@@ -100,18 +100,24 @@ fun ElementWriter.text(text: String) = text { content = text }
 fun ElementWriter.subtext(text: String) = subtext { content = text }
 
 @ViewDsl
+fun ElementWriter.checkbox(checked: MutableReactive<Boolean>) = checkbox { this.checked bind checked }
+
+@ViewDsl
+fun ElementWriter.radioButton(checked: MutableReactive<Boolean>) = radioButton { this.checked bind checked }
+
+@ViewDsl
 fun ElementWriter.progressBar(ratio: Reactive<Float>) = progressBar { ::ratio bind ratio }
 
 // TODO: Button with working indicator
 
-fun ViewWriter.confirmDanger(
+fun ElementContext.confirmDanger(
     title: String,
     body: String,
     actionName: String = "OK",
     cancelName: String = "Cancel",
     action: suspend () -> Unit
 ) {
-    dialog { closer ->
+    dialog(true) { closer ->
         col {
             h2(title)
             text(body)
@@ -134,13 +140,12 @@ fun ViewWriter.confirmDanger(
     }
 }
 
-fun ViewWriter.alert(
+fun ElementContext.alert(
     title: String,
     body: String,
 ) {
     dialog { closer ->
         col {
-//                    ignoreInteraction = false
             h2(title)
             text(body)
             row {

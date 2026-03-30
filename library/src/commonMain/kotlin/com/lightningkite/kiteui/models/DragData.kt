@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.models
 
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 
 data class DragData(
     val label: String,
@@ -21,7 +21,7 @@ data class DragData(
 }
 
 data class DragShadow(
-    val view: RView,
+    val view: Element,
     val xAlign: Align = Align.Center,
     val yAlign: Align = Align.Center,
     val xOffset: Dimension? = null,

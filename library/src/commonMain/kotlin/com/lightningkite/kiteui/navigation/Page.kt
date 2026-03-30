@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 
-fun interface Page {
+interface Page {
     val title: Reactive<String>
         get() = Constant((this::class.simpleName ?: "").camelToHuman().removeSuffix(" Screen").removeSuffix(" Page"))
 

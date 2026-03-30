@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.widgets.code
 
-interface DocPage: Page {
+interface DocPage : Page {
     val covers: List<String>
 }
 
@@ -32,7 +32,7 @@ fun ViewWriter.example(
 }
 
 fun ElementWriter.article(
-    setup: LinearLayoutElement.()->Unit
+    setup: LinearLayoutElement.() -> Unit
 ) {
     frame {
         align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col {
