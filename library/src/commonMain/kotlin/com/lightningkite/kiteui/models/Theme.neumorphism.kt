@@ -38,6 +38,7 @@ fun Theme.Companion.neumorphism(
     body: FontAndStyle = FontAndStyle(systemDefaultFont),
     cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
     gap: Dimension = 1.rem,
+    semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
 ): Theme {
     val foreground = if (baseColor.perceivedBrightness > 0.5f)
         Color.black.applyAlpha(0.8f)
@@ -374,7 +375,7 @@ fun Theme.Companion.neumorphism(
                     ),
                 )
             },
-        ),
+        ) + semanticOverrides,
     )
 }
 
@@ -395,6 +396,7 @@ object NeumorphismTheme {
         body: FontAndStyle = FontAndStyle(systemDefaultFont),
         cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
         gap: Dimension = 1.rem,
+        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
     ) = Theme.neumorphism(
         id = id,
         baseColor = baseColor,
@@ -408,6 +410,7 @@ object NeumorphismTheme {
         body = body,
         cornerRadii = cornerRadii,
         gap = gap,
+        semanticOverrides = semanticOverrides,
     )
 
     /**
@@ -416,7 +419,7 @@ object NeumorphismTheme {
     fun light(
         id: String = "neumorphism-light",
         accentColor: Color = Color.fromHex(0xFF6200EE.toInt()),
-
+        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
         ): Theme {
         val shadowDistance = (1..20).random()
         return this(
@@ -428,7 +431,8 @@ object NeumorphismTheme {
 //        shadowDistance = (1..25).random().dp,
             shadowDistance = shadowDistance.dp,
 //            shadowBlur = (15..50).random().dp,
-            shadowBlur = (shadowDistance..30).random().dp
+            shadowBlur = (shadowDistance..30).random().dp,
+            semanticOverrides = semanticOverrides,
         )
     }
 
@@ -438,11 +442,13 @@ object NeumorphismTheme {
     fun dark(
         id: String = "neumorphism-dark",
         accentColor: Color = Color.fromHex(0xFF03DAC6.toInt()),
+        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
     ) = this(
         id = id,
         baseColor = Color.gray(0.25f),
         accentColor = accentColor,
         lightShadowColor = Color.white.applyAlpha(0.08f),
         darkShadowColor = Color.black.applyAlpha(0.4f),
+        semanticOverrides = semanticOverrides,
     )
 }
