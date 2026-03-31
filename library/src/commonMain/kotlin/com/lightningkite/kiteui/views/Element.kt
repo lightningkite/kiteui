@@ -46,6 +46,8 @@ interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
     val driverActions: Map<String, suspend (List<String>) -> String> get() = AiDriver.Defaults.defaultDriverActions(this)
     fun driverDisplay(options: DriverSnapshotOptions): String = AiDriver.Defaults.defaultDriverDisplay(this, options)
 
+    override fun toString(): String
+
     companion object;
 
     data class DriverSnapshotOptions(

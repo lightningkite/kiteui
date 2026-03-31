@@ -44,16 +44,16 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
 
     override fun willAddChild(element: Element) {
         if (!checkActive("willAddChild", requireTarget = false)) return
-        element.underlyingNativeElement.parent = this
+        element.underlyingNativeElement.parent = outermostElement as? ContainerElement ?: this
     }
 
     final override fun addChild(index: Int, element: Element) {
         if (!checkActive("addChild", requireTarget = false)) return
-        if (element.parent !== this) {
-            element.underlyingNativeElement.parent = this
-        }
-        nativeAddChild(index, element)
         internalChildren.add(index, element)
+        nativeAddChild(index, element)
+        if (element.parent?.underlyingNativeElement !== this) {
+            element.underlyingNativeElement.parent = outermostElement as? ContainerElement ?: this
+        }
     }
     final override fun addChild(element: Element) = addChild(children.size, element)
 

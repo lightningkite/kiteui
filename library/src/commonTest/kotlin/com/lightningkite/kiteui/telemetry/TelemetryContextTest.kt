@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.telemetry
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.test.*
 
 class TelemetryContextTest {
@@ -82,7 +81,7 @@ class TelemetryContextTest {
     @Test
     fun viewPathFromProvider() = runTest {
         val provider = ViewPathProvider { "AppNav/content[0]/button[2]" }
-        val ctx = TelemetryContext(viewPathProvider = provider)
+        val ctx = TelemetryContext(element = provider)
         withContext(ctx) {
             assertEquals("AppNav/content[0]/button[2]", coroutineContext.viewPath())
         }

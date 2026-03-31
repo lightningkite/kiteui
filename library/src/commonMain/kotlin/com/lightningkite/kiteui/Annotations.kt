@@ -30,10 +30,11 @@ annotation class InternalKiteUi
     message = "This method is meant to be overridden but not used directly in client code."
 )
 /**
- * Methods marked as [OverrideOnly] are intended to be extended and overridden but not used directly in client code.
+ * Methods marked as [OverrideOnly] are intended to be extended and overridden but not used directly in client code,
+ * they are essentially of `protected` visibility.
  *
  * For example, element lifecycle methods like `Element.onStartup` and `Element.onShutdown` are useful hooks for
- * L2 components so they can control and bind resources to their own lifetime, but should _not_ be
+ * components so they can control and bind resources to their own lifetime, but should _not_ be
  * called outside internal code as it could cause lifecycle bugs.
  * */
 annotation class OverrideOnly

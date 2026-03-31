@@ -178,6 +178,7 @@ interface ExceptionHandler {
             return@ExceptionHandler {}
         }
 
+
         /**
          * Debug exception handler that shows a dialog with the exception message and full stacktrace.
          * Similar to [messageDialog] but includes a scrollable stacktrace view.

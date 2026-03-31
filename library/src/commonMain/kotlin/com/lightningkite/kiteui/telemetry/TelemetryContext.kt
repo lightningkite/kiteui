@@ -1,12 +1,9 @@
 package com.lightningkite.kiteui.telemetry
 
+import com.lightningkite.kiteui.views.Element
 import kotlinx.coroutines.currentCoroutineContext
 import kotlin.coroutines.CoroutineContext
 
-/** Computes a human-readable view path on demand. */
-fun interface ViewPathProvider {
-    fun viewPath(): String
-}
 
 /**
  * Carries trace context through the coroutine hierarchy.
@@ -18,9 +15,10 @@ fun interface ViewPathProvider {
 class TelemetryContext(
     val traceId: String = "",
     val spanId: String = "",
-    val viewPathProvider: ViewPathProvider? = null,
+    val element: (() -> Element)? = null,
 ) : CoroutineContext.Element {
-    override val key: CoroutineContext.Key<TelemetryContext> = Key
+    override val key: CoroutineContext.Key<TelemetryContext> get() = Key
+
     companion object Key : CoroutineContext.Key<TelemetryContext> {
         /**
          * Captures the current trace context from the calling coroutine.
@@ -38,7 +36,7 @@ class TelemetryContext(
             return TelemetryContext(
                 traceId = existing.traceId,
                 spanId = existing.spanId,
-                viewPathProvider = existing.viewPathProvider,
+                element = existing.element,
             )
         }
     }
@@ -51,4 +49,4 @@ internal fun CoroutineContext.spanId(): String =
     this[TelemetryContext]?.spanId ?: ""
 
 internal fun CoroutineContext.viewPath(): String =
-    this[TelemetryContext]?.viewPathProvider?.viewPath() ?: ""
+    this[TelemetryContext]?.element?.viewPath() ?: ""

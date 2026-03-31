@@ -51,6 +51,12 @@ fun coroutineContextOf(vararg elements: CoroutineContext.Element): CoroutineCont
     }
 }
 
+fun mutableCoroutineContextOf(vararg elements: CoroutineContext.Element): MutableCoroutineContext {
+    return MutableCoroutineContext().apply {
+        list.addAll(elements)
+    }
+}
+
 fun coroutineContextOf(vararg elements: CoroutineContext): CoroutineContext {
     return MutableCoroutineContext().apply {
         for (e in elements) add(e)

@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
+import com.lightningkite.kiteui.telemetry.TelemetryContext
 import com.lightningkite.reactive.context.StatusListener
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
@@ -64,9 +65,22 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     override val underlyingNativeElement: NativeElement get() = this as NativeElement
 
+    /**
+     * Elements are designed for delegation, so you can create a wrapper element by doing:
+     *
+     * ```
+     * class Wrapper(inner: NativeElement) : Element by inner { ... }
+     * ```
+     *
+     * However, this delegation can lead to problems, as the internal native logic has no way to
+     * access the wrapper element. This variable is the solution - it provides a reference to the outermost
+     * wrapper element over the native component. This value is set when written to the view tree in
+     * [ElementWriter.write].
+     * */
+    internal var outermostElement: Element = this
+
     override var parent: ContainerElement? = null
         internal set
-
 
     // ---- LIFECYCLE ---
 
@@ -74,17 +88,30 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     override val coroutineContext: CoroutineContext = coroutineContextOf(
         job,
-        CoroutineExceptionHandler { _, thr ->
-            if (thr !is CancellationException) thr.report(this.toString())
+        CoroutineExceptionHandler { ctx, thr ->
+            if (thr is CancellationException) return@CoroutineExceptionHandler
+
+            thr.report(this.toString())
+
+            if (thr is Exception) context.handleException(
+                thr,
+                ExceptionHandler.Metadata(
+                    source = outermostElement,
+                    process = null,
+                    foregroundProcess = null,
+                    context = mapOf("ctx" to ctx.toString())
+                )
+            )
         },
         context.ssrDispatcher ?: Dispatchers.Main.immediate,
         this as StatusListener,
-
+        TelemetryContext(element = ::outermostElement)
     )
 
     var fullyStarted = false
         private set
 
+    @OptIn(OverrideOnly::class)
     override fun onStartup() {
         if (fullyStarted) return
         fullyStarted = true
@@ -94,6 +121,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
     var isShutdown = false
         private set
 
+    @OptIn(OverrideOnly::class)
     override fun onShutdown() {
         if (isShutdown) return
         job.cancel()
@@ -338,7 +366,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
     override var debugName: String? = null
 
     override fun toString(): String =
-        debugName ?: (theme.id + ' ' + this::class.toString().removePrefix("class ") + "@" + this.identityHashCode().toString(16))
+        outermostElement.debugName ?: (theme.id + ' ' + outermostElement::class.toString().removePrefix("class ") + "@" + outermostElement.identityHashCode().toString(16))
 
     @InternalKiteUi
     open fun leakDetect() {
@@ -369,3 +397,8 @@ abstract class NativeElementCommonCode internal constructor(override val context
 private const val SEV_EXCEPTION = 2
 private const val SEV_NOT_READY = 1
 private const val SEV_OK = 0
+
+@InternalKiteUi
+fun Element.ensureOutermostElement() {
+    underlyingNativeElement.outermostElement = this
+}
