@@ -14,12 +14,11 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.direct.colorInt
 import com.lightningkite.kiteui.views.direct.typeface
 
-actual class Code actual constructor(context: ElementContext) :
-    RView(context) {
+actual class Code actual constructor(context: ElementContext) : NativeElement(context) {
     val actualNative = android.widget.TextView(context.activity)
     override val native: View = actualNative
     actual var content: String
@@ -68,7 +67,10 @@ actual class Code actual constructor(context: ElementContext) :
         set(value) {
             field = value
         }
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        val theme = theme.theme
         debugPrint {
             "native.setTextColor: ${theme.id} ${theme.foreground}"
         }

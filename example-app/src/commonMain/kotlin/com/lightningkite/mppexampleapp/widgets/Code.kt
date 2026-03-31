@@ -17,9 +17,10 @@ expect class Code(context: ElementContext): NativeElement {
 }
 
 @OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.code(setup: Code.() -> Unit = {}): Code {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Code(context) , setup)
 }
+
+@ViewDsl
 fun ElementWriter.code(content: String) = code { this.content = content }
