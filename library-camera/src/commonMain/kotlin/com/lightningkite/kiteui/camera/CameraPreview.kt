@@ -5,10 +5,15 @@ import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.ElementWriter
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.write
 import com.lightningkite.reactive.core.MutableReactive
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * Barcode format types supported by the camera scanner.
@@ -57,7 +62,7 @@ data class BarcodeResult(
  */
 @ExperimentalKiteUi
 @Untested
-expect class CameraPreview(context: ElementContext) : RView {
+expect class CameraPreview(context: ElementContext) : NativeElement {
     /**
      * Captures a photo from the camera.
      * @return The captured image, or null if capture failed or permissions not granted.
@@ -81,6 +86,10 @@ expect class CameraPreview(context: ElementContext) : RView {
 /**
  * Creates a camera preview view for scanning barcodes and capturing photos.
  */
-@ViewDsl
-inline fun ViewWriter.cameraPreview(setup: CameraPreview.() -> Unit = {}): CameraPreview =
-    write(CameraPreview(context), setup)
+@OptIn(ExperimentalContracts::class)
+@ExperimentalKiteUi
+@Untested
+inline fun ElementWriter.cameraPreview(setup: CameraPreview.() -> Unit = {}): CameraPreview {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(CameraPreview(context), setup)
+}

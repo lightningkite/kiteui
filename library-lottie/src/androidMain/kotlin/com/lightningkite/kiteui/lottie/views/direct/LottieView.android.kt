@@ -9,8 +9,8 @@ import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.reactive.context.*
+import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -19,7 +19,7 @@ actual class LottieView actual constructor(
     context: ElementContext,
     actual val source: LottieSource,
     actual val description: String,
-) : RView(context) {
+) : NativeElement(context) {
 
     private val lottieView = LottieAnimationView(context.activity).apply {
         contentDescription = description

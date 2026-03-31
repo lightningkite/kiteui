@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.camera
 
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.direct.Frame
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.MutableReactive
@@ -36,7 +36,7 @@ external interface DetectedBarcode {
     val cornerPoints: Array<dynamic>
 }
 
-actual class CameraPreview actual constructor(context: ElementContext) : RView(context) {
+actual class CameraPreview actual constructor(context: ElementContext) : NativeElement(context) {
     private var videoElement: HTMLVideoElement? = null
     private var canvasElement: HTMLCanvasElement? = null
     private var mediaStream: dynamic = null
@@ -46,11 +46,6 @@ actual class CameraPreview actual constructor(context: ElementContext) : RView(c
 
     private val _hasPermissions = Signal(false)
     actual val hasPermissions: MutableReactive<Boolean> get() = _hasPermissions
-
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-        Frame.internalAddChildStack(this, index, view)
-    }
 
     init {
         native.tag = "div"
@@ -83,13 +78,9 @@ actual class CameraPreview actual constructor(context: ElementContext) : RView(c
         }
     }
 
-    override fun postSetup() {
-        super.postSetup()
-
-        // Register cleanup callback for when view is removed
-        onRemove {
-            stopCamera()
-        }
+    override fun onShutdown() {
+        super.onShutdown()
+        stopCamera()
     }
 
     private fun startCamera() {

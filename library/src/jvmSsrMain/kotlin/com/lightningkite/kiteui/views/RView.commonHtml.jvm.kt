@@ -150,14 +150,3 @@ fun Appendable.appendSafe(html: String) {
         }
     }
 }
-
-actual fun RView.nativeScrollIntoView(
-    horizontal: Align?,
-    vertical: Align?,
-    animate: Boolean
-) {
-
-}
-
-actual fun RView.nativeSetDragData(data: DragData?) {}
-actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {}

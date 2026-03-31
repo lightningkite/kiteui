@@ -12,7 +12,8 @@ actual class ElementContext(
 
     actual fun split(): ElementContext = ElementContext(basePath, dynamicCss, kiteUiCss, this)
 
-    actual override val darkMode: Boolean? get() = null
+    actual val darkMode: Boolean? get() = null
+
     override fun toString(): String = "RContext@$id"
     actual var immersiveMode: Boolean = false
     actual companion object {}

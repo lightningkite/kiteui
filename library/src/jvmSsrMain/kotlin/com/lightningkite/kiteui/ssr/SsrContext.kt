@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.ssr
 
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.SsrUserAgentContext
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
@@ -132,21 +133,21 @@ class SsrContext(
             // Use Unconfined so reactive bindings update synchronously when resources load
             val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
 
-            val viewWriter = object : ViewWriter(), CoroutineScope by appScope {
-                override val representsView: RView? = null
+            @OptIn(OverrideOnly::class)
+            val viewWriter = object : ViewWriter, CoroutineScope by appScope {
                 override val context: ElementContext = elementContext
 
-                override fun willAddChild(view: RView) {
+                override fun willAddChild(element: Element) {
                     theme?.let { t ->
                         // Use direct assignment (not reactive binding) to match JS behavior
                         // This ensures the theme is applied immediately before the view is added
                         // SetAsBase creates a theme with background but NO padding (for root elements)
-                        view.themeChoice = ThemeDerivation.SetAsBase(t)
+                        element.themeChoice = ThemeDerivation.SetAsBase(t)
                     }
                 }
 
-                override fun addChild(view: RView) {
-                    frame.addChild(view)
+                override fun addChild(element: Element) {
+                    frame.addChild(element)
                 }
             }
 

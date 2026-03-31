@@ -301,10 +301,9 @@ fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: Cont
                     }
                 }
 
-                is NavCustom -> {
+                is NavCustom -> expanding.frame {
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
-                    expanding
                     it.tall(this)
                 }
 

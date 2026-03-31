@@ -29,7 +29,7 @@ import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-actual class CameraPreview actual constructor(context: ElementContext) : RView(context) {
+actual class CameraPreview actual constructor(context: ElementContext) : NativeElement(context) {
     private val _native = PreviewView(context.activity).apply {
         setBackgroundColor(0xFF000000.toInt())
     }
@@ -87,8 +87,8 @@ actual class CameraPreview actual constructor(context: ElementContext) : RView(c
         }
     }
 
-    override fun postSetup() {
-        super.postSetup()
+    override fun onStartup() {
+        super.onStartup()
         cameraController.apply {
             bindToLifecycle(context.activity)
             cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA

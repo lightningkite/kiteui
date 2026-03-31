@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.lottie.models.LottieRaw
 import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration
 
@@ -12,7 +12,7 @@ actual class LottieView actual constructor(
     context: ElementContext,
     actual val source: LottieSource,
     actual val description: String,
-) : RView(context) {
+) : NativeElement(context) {
 
     internal val _state = RawReactive<Unit>()
     actual val state: Reactive<Unit> = _state

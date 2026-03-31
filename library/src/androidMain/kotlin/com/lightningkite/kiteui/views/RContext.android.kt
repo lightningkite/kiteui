@@ -21,7 +21,7 @@ actual class ElementContext(activity: KiteUiActivity, parent: ElementContext? = 
     val activityOrNull: KiteUiActivity?
         get() = activityRef.get()
 
-    actual override val darkMode: Boolean?
+    actual val darkMode: Boolean?
         get() = activityOrNull?.let {
             when(it.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
                 Configuration.UI_MODE_NIGHT_NO -> false

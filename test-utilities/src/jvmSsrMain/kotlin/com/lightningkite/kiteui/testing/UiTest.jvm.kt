@@ -25,7 +25,7 @@ actual fun uiTest(
             context.addons[ViewWriter::externalServices.name] = mockExternalServices
         }
         content(root)
-        root.postSetup()
+        root.onStartup()
 
         val backend = LocalUiTestBackend(
             root = { root },

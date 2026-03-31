@@ -16,13 +16,14 @@ actual class SwapView actual constructor(context: ElementContext) : NativeContai
         super.nativeAddChild(index, element)
         Frame.internalAddChildStack(this, index, element)
     }
+
     var previousLast: Element? = null
-    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit?): Unit {
+    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit) {
         nativeSwap(transition, createNewView)
     }
 }
 
-expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit?): Unit
+expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit)
 //{
 //    val keyframeName = KiteUiCss.transition(transition)
 //

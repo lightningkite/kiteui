@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 
-actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeContainerElement(context) {
+actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
     init {
         native.tag = "div"
         native.style.position = "relative"

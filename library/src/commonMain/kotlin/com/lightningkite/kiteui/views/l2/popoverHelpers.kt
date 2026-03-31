@@ -64,8 +64,7 @@ fun ElementContext.rawPopover(transition: ScreenTransitions, content: ViewWriter
                     }
                 }
             }.run {
-                @OptIn(UnsafeModifierOrdering::class)   // safe because beforeSetup returns a ViewWriter in this case, so no modifier violations
-                willRemove = beforeSetup { animateIn(transition.forward) }.produceExactlyOneUnsafe(content)
+                willRemove = beforeSetup { animateIn(transition.forward) }.produceAtMostOneView(content)
             }
         }
     }

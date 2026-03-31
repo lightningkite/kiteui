@@ -12,14 +12,11 @@ import kotlin.reflect.KClass
 class Routes(
     val parsers: List<(UrlLikePath) -> Page?>,
     val renderers: Map<KClass<out Page>, (Page) -> RouteRendered?>,
-    val fallback: Page = object: Page {
-        override val title = Constant("Not Found")
-        override fun ViewWriter.render(): Unit = run {
-            frame {
-                centered.col {
-                    h1("Not Found")
-                    text("Sorry, we couldn't find the page you're looking for.")
-                }
+    val fallback: Page = Page.Direct("Not Found") {
+        frame {
+            centered.col {
+                h1("Not Found")
+                text("Sorry, we couldn't find the page you're looking for.")
             }
         }
     }

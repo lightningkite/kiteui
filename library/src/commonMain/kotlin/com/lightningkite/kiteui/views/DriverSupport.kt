@@ -58,7 +58,7 @@ fun Element.driverFind(query: String, includeHidden: Boolean = false): String = 
     }
     // Start from root's children so returned paths align with resolveDriverPath's indexing.
     // resolveDriverPath("0") means root.driverChildren[0], so paths must be relative to root's children.
-    for (child in this@driverFind.driverChildren) walk(child, "")
+    for (child in this@driverFind.children()) walk(child, "")
     if (results.isEmpty()) {
         append("No views matching '$query'")
     } else {
@@ -78,9 +78,9 @@ fun Element.driverFindClickable(query: String, includeHidden: Boolean = false): 
     val viewPaths = mutableMapOf<Element, String>()
     val matches = mutableListOf<Element>()
 
-    fun walk(view: RView, pathPrefix: String) {
+    fun walk(view: Element, pathPrefix: String) {
         if (!includeHidden && !(view.shown && view.visible)) return
-        val segment = view.debugName ?: view.parent?.driverChildren?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
+        val segment = view.debugName ?: view.parent?.children?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
         val path = if (pathPrefix.isEmpty() || segment.toIntOrNull() == null) segment else "$pathPrefix/$segment"
         viewPaths[view] = path
         val nameMatch = view.debugName?.contains(query, ignoreCase = true) == true
@@ -93,7 +93,7 @@ fun Element.driverFindClickable(query: String, includeHidden: Boolean = false): 
         for (child in view.children()) walk(child, path)
     }
     // Start from root's children so returned paths align with resolveDriverPath's indexing.
-    for (child in this@driverFindClickable.driverChildren) walk(child, "")
+    for (child in this@driverFindClickable.children()) walk(child, "")
 
     val seen = mutableSetOf<Element>()
     val results = mutableListOf<Pair<String, Element>>()

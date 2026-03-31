@@ -88,8 +88,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                 }
             }
 
-            @OptIn(UnsafeModifierOrdering::class)
-            willRemove = produceExactlyOneUnsafe {
+            willRemove = produceAtMostOneView {
                 beforeSetup { animateIn(transition.forward) }
                 if (ratio == null) {
                     align(Align.Start, Align.Stretch).content(control)
@@ -126,8 +125,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                 }
             }
 
-            @OptIn(UnsafeModifierOrdering::class)
-            willRemove = produceExactlyOneUnsafe {
+            willRemove = produceAtMostOneView {
                 beforeSetup { animateIn(transition.forward) }
                 if (ratio == null) {
                     align(Align.End, Align.Stretch).content(control)

@@ -14,6 +14,10 @@ interface Action: Reactive<Boolean> {
     val icon: Icon
     fun startAction(scope: CoroutineScope)
     operator fun plus(other: Action): Action
+
+    companion object {
+        var defaultClearErrorOnDependencyChange: Boolean = true
+    }
 }
 
 operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
@@ -21,7 +25,7 @@ operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
 fun Action(
     title: String,
     icon: Icon = Icon.send,
-    clearErrorOnDependencyChange: Boolean = ExceptionHandlersTree.clearErrorOnDependencyChange,
+    clearErrorOnDependencyChange: Boolean = Action.defaultClearErrorOnDependencyChange,
     keepRunningWhile: CoroutineScope? = AppScope,
     frequencyCap: Duration? = 500.milliseconds,
     ignoreRetryWhileRunning: Boolean = true,
@@ -114,7 +118,7 @@ class DependentAction(
     override val icon: Icon,
     val keepRunningWhile: CoroutineScope? = AppScope,
     val ignoreRetryWhileRunning: Boolean = false,
-    private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
+    private val reportTo: RawReactive<Boolean> = RawReactive(ReactiveState(false)),
     val action: suspend CoroutineScope.() -> Unit,
 ) : DependencyChangeListener(), Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null

@@ -1,24 +1,20 @@
 package com.lightningkite.kiteui.testing
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.os.Bundle
 import android.view.View
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.lightningkite.kiteui.KiteUiActivity
-import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.Routes
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.frame
+import com.lightningkite.kiteui.views.native
 import com.lightningkite.reactive.context.*
 import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
-import org.robolectric.annotation.GraphicsMode
-import java.io.ByteArrayOutputStream
 import java.io.File
 
 /**
@@ -31,7 +27,7 @@ actual class TestHarness {
     actual val supported: Boolean = true
     actual val async: AsyncTestSupport = AsyncTestSupport()
     private var controller: org.robolectric.android.controller.ActivityController<TestActivity>? = null
-    private var rootView: RView? = null
+    private var rootView: Element? = null
 
     init {
         // Initialize AndroidAppContext as early as possible
@@ -55,7 +51,7 @@ actual class TestHarness {
 
         var testTheme: Theme = Theme(id = "test")
         var testContent: (ViewWriter.() -> Unit)? = null
-        var rootView: RView? = null
+        var rootView: Element? = null
 
         override val theme: ReactiveContext.() -> Theme = {
             testTheme
@@ -76,7 +72,7 @@ actual class TestHarness {
         }
     }
 
-    actual fun render(theme: Theme, content: ViewWriter.() -> Unit): RView {
+    actual fun render(theme: Theme, content: ViewWriter.() -> Unit): Element {
         val ctrl = Robolectric.buildActivity(TestActivity::class.java)
         controller = ctrl
 
@@ -102,7 +98,7 @@ actual class TestHarness {
         return captureViewScreenshot(root.native, name)
     }
 
-    actual fun screenshotView(view: RView, name: String): ByteArray? {
+    actual fun screenshotView(view: Element, name: String): ByteArray? {
         return captureViewScreenshot(view.native, name)
     }
 

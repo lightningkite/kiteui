@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.PopoverSemantic
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.browser.document
 import kotlinx.browser.window

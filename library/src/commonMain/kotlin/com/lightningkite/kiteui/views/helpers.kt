@@ -26,7 +26,6 @@ import kotlin.math.min
 @ViewModifierDsl3 val ElementWriter.CanAddAlignment.atCenterEnd get() = align(Align.End, Align.Center)
 @ViewModifierDsl3 val ElementWriter.CanAddAlignment.atBottomEnd get() = align(Align.End, Align.End)
 
-
 @ViewModifierDsl3 val ElementWriter.CanAddWeight.expanding get() = weight(1f)
 
 @ViewModifierDsl3 fun ElementWriter.CanAddAlignment.maxWidthCentered(width: Dimension) = align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(maxWidth = width))
@@ -116,8 +115,8 @@ fun <T> ContainerElement.forEachUpdating(
 fun <T, ID> RowOrCol.forEachById(
     items: Reactive<List<T>>,
     id: (T)->ID,
-    preHidingModifiers: ViewWriter.(ID)-> ViewWriter = { this },
-    render: ViewWriter.(Reactive<T>) -> Unit
+    preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddShownWhen = { this },
+    render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
 ) {
     val oldEarly = ArrayList<Any>()
     data class OldViewInfo(
@@ -167,26 +166,14 @@ fun <T, ID> RowOrCol.forEachById(
             } else {
                 val shown = Signal(false)
                 val data = Signal(toRender)
-                var result: Element? = null
-                val indexWriter = object: ViewWriter() {
-                    override val representsView: Element? = this@forEachById
-                    override val context: ElementContext get() = this@forEachById.context
-                    override val coroutineContext: CoroutineContext get() = this@forEachById.coroutineContext
-                    override fun addChild(view: Element) {
-                        addChild(oldPos, view)
-                        result = view
-                    }
-
-                    override fun willAddChild(view: Element) {
-                        this@forEachById.willAddChild(view)
-                    }
+                val result: Element = this@forEachById.produceExactlyOneView {
+                    preHidingModifiers(id(toRender)).shownWhen { shown() }.render(data)
                 }
-                val view = with(indexWriter) { preHidingModifiers(id(toRender)).shownWhen { shown() }.render(data) }
                 old.add(oldPos, OldViewInfo(
                     oldIndex = index,
                     oldId = id(toRender),
                     data = data,
-                    view = result!!,
+                    view = result,
                     shown = shown
                 ))
                 afterTimeout(1) { shown.value = true }
@@ -198,8 +185,8 @@ fun <T, ID> RowOrCol.forEachById(
 }
 fun <T> RowOrCol.forEachAnimated(
     items: Reactive<List<T>>,
-    preHidingModifiers: ViewWriter.(T)-> ViewWriter = { this },
-    render: ViewWriter.(T) -> Unit
+    preHidingModifiers: ViewWriter.(T) -> ElementWriter.CanAddShownWhen = { this },
+    render: ElementWriter.CanAddTheme.(T) -> Unit
 ) {
     val oldEarly = ArrayList<Any>()
     data class OldViewInfo(
@@ -244,25 +231,13 @@ fun <T> RowOrCol.forEachAnimated(
                 oldPos = matchIndex + 1
             } else {
                 val shown = Signal(false)
-                var result: Element? = null
-                val indexWriter = object: ViewWriter() {
-                    override val representsView: Element? = this@forEachAnimated
-                    override val context: ElementContext get() = this@forEachAnimated.context
-                    override val coroutineContext: CoroutineContext get() = this@forEachAnimated.coroutineContext
-                    override fun addChild(view: Element) {
-                        addChild(oldPos, view)
-                        result = view
-                    }
-
-                    override fun willAddChild(view: Element) {
-                        this@forEachAnimated.willAddChild(view)
-                    }
+                val result: Element = this@forEachAnimated.produceExactlyOneView {
+                    preHidingModifiers(toRender).shownWhen { shown() }.render(toRender)
                 }
-                val view = with(indexWriter) { preHidingModifiers(toRender).shownWhen { shown() }.render(toRender) }
                 old.add(oldPos, OldViewInfo(
                     oldIndex = index,
                     data = toRender,
-                    view = result!!,
+                    view = result,
                     shown = shown
                 ))
                 shown.value = true

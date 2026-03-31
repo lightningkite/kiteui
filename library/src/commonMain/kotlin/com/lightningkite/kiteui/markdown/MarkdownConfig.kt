@@ -15,6 +15,7 @@ import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.externalLink
 import com.lightningkite.kiteui.views.direct.link
+import com.lightningkite.kiteui.views.themed
 
 /**
  * Provides access to markdown parsing capabilities for custom block handlers.

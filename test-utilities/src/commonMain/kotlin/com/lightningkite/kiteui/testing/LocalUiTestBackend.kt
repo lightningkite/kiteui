@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.testing
 
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.handleCommand
 
 /**
@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.handleCommand
  * Used by platform-specific [uiTest] implementations.
  */
 class LocalUiTestBackend(
-    val root: () -> RView?,
+    val root: () -> Element?,
     val navigator: () -> PageNavigator?,
 ) : UiTestBackend {
     override suspend fun command(command: String): String =

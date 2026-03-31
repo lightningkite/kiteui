@@ -2,16 +2,13 @@
 
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.coroutines.*
+import com.lightningkite.reactive.context.StatusListener
+import com.lightningkite.reactive.core.RawReactive
+import com.lightningkite.reactive.core.Release
+import com.lightningkite.reactive.core.reactiveState
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.first
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 @OptIn(ExperimentalStdlibApi::class)
 fun CoroutineScope.load(context: CoroutineContext = EmptyCoroutineContext, action: suspend () -> Unit): Job {
@@ -27,6 +24,6 @@ fun CoroutineScope.load(context: CoroutineContext = EmptyCoroutineContext, actio
             ) == false
         ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
     )
-    coroutineContext[StatusListener]?.loading(state)
+    coroutineContext.plus(context)[StatusListener]?.watchBackgroundProcess(state)
     return result
 }

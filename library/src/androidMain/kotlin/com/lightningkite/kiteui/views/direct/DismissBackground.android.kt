@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
@@ -25,7 +26,8 @@ actual class DismissBackground actual constructor(context: ElementContext): Nati
         }
     }
 
-    override fun startup() {
+    @OptIn(OverrideOnly::class)
+    override fun onStartup() {
         super.onStartup()
         children.forEach { it.underlyingNativeElement.native.isClickable = true }
     }

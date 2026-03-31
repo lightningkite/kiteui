@@ -42,7 +42,7 @@ actual class Canvas actual constructor(context: ElementContext): NativeElement(c
         native.addEventListener("pointerdown") { event ->
             val dpr = AppState.windowInfo.value.density
             event as PointerEvent
-            val b = (event.target as Element).getBoundingClientRect()
+            val b = (event.target as DOMElement).getBoundingClientRect()
             if(delegate?.onPointerDown(
                     event.pointerId,
                     (event.pageX - b.x) * dpr,
@@ -54,7 +54,7 @@ actual class Canvas actual constructor(context: ElementContext): NativeElement(c
         native.addEventListener("pointermove") { event ->
             val dpr = AppState.windowInfo.value.density
             event as PointerEvent
-            val b = (event.target as Element).getBoundingClientRect()
+            val b = (event.target as DOMElement).getBoundingClientRect()
             if(delegate?.onPointerMove(
                     event.pointerId,
                     (event.pageX - b.x) * dpr,
@@ -66,7 +66,7 @@ actual class Canvas actual constructor(context: ElementContext): NativeElement(c
         native.addEventListener("pointerup") { event ->
             val dpr = AppState.windowInfo.value.density
             event as PointerEvent
-            val b = (event.target as Element).getBoundingClientRect()
+            val b = (event.target as DOMElement).getBoundingClientRect()
             if(delegate?.onPointerUp(
                     event.pointerId,
                     (event.pageX - b.x) * dpr,
@@ -78,7 +78,7 @@ actual class Canvas actual constructor(context: ElementContext): NativeElement(c
         native.addEventListener("pointercancel") { event ->
             val dpr = AppState.windowInfo.value.density
             event as PointerEvent
-            val b = (event.target as Element).getBoundingClientRect()
+            val b = (event.target as DOMElement).getBoundingClientRect()
             if(delegate?.onPointerCancel(
                     event.pointerId,
                     (event.pageX - b.x) * dpr,
@@ -90,7 +90,7 @@ actual class Canvas actual constructor(context: ElementContext): NativeElement(c
         native.addEventListener("pointerleave") { event ->
             val dpr = AppState.windowInfo.value.density
             event as PointerEvent
-            val b = (event.target as Element).getBoundingClientRect()
+            val b = (event.target as DOMElement).getBoundingClientRect()
             if(delegate?.onPointerCancel(
                     event.pointerId,
                     (event.pageX - b.x) * dpr,

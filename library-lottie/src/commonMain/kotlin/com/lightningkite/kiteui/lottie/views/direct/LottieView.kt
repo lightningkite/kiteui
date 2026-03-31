@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.lottie.models.LottieSource
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration
 
@@ -25,7 +25,7 @@ expect class LottieView(
     context: ElementContext,
     source: LottieSource,
     description: String,
-) : RView {
+) : NativeElement {
     /** The source of the Lottie animation */
     val source: LottieSource
 

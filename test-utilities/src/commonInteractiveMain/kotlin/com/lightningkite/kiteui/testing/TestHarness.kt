@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.testing
 
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -29,7 +29,7 @@ expect class TestHarness() {
      * @param content The ViewWriter lambda that builds the UI
      * @return The root RView that was created
      */
-    fun render(theme: Theme = Theme(id = "test"), content: ViewWriter.() -> Unit): RView
+    fun render(theme: Theme = Theme(id = "test"), content: ViewWriter.() -> Unit): Element
 
     /**
      * Captures a screenshot of the entire rendered UI.
@@ -46,7 +46,7 @@ expect class TestHarness() {
      * @param name Optional name for the screenshot file (without extension)
      * @return ByteArray containing the PNG image data, or null if screenshots not supported
      */
-    fun screenshotView(view: RView, name: String = "screenshot"): ByteArray?
+    fun screenshotView(view: Element, name: String = "screenshot"): ByteArray?
 
     /**
      * Cleans up the test environment.

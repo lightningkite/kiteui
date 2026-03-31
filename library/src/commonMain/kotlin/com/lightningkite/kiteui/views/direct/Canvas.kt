@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.KeyCode
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeContainerElement
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 
@@ -25,7 +26,9 @@ abstract class CanvasDelegate {
     //    open fun onAccelerometer(x: Double, y: Double, z: Double): Boolean = false
     open fun sizeThatFitsWidth(width: Double, height: Double): Double = width
     open fun sizeThatFitsHeight(width: Double, height: Double): Double = height
+
     var invalidate: () -> Unit = {}
     var theme: Theme = Theme.placeholder
-    open fun NativeElement.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
+
+    open fun NativeContainerElement.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
 }

@@ -45,7 +45,7 @@ actual abstract class RawImageViewLike constructor(
     actual val source: ImageSource,
     actual val description: String,
     actual val scaleType: ImageScaleType,
-) : RView(context){
+) : NativeElement(context){
     actual abstract val state: Reactive<Unit>
 }
 

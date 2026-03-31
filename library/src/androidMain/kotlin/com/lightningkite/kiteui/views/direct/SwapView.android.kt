@@ -26,9 +26,8 @@ actual class SwapView actual constructor(context: ElementContext) : NativeContai
 
     actual fun swap(
         transition: ScreenTransition,
-        createNewView: ViewWriter.() -> Unit?,
+        createNewView: ViewWriter.() -> Unit,
     ) {
-
         native.visibility = View.VISIBLE
         val oldView = this.children.firstOrNull()
         var newViewHolder: Element? = null

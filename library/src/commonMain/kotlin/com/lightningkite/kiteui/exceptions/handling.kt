@@ -14,6 +14,7 @@ import com.lightningkite.kiteui.views.l2.toast
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Release
 import kotlinx.datetime.TimeZone
+import kotlin.jvm.JvmName
 import kotlin.time.Clock
 
 /**
@@ -378,6 +379,7 @@ fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception)
         override fun handle(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): Release? = context.handler(exception)
     }
 
+@JvmName("ExceptionHandlerWithMetadata")
 fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception, ExceptionHandler.Metadata?) -> Release?): ExceptionHandler =
     object : ExceptionHandler {
         override val priority: Float = priority
@@ -385,6 +387,7 @@ fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception,
         override fun handle(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): Release? = context.handler(exception, metadata)
     }
 
+@JvmName("SpecificExceptionHandler")
 inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, crossinline handler: ElementContext.(T) -> Release?): ExceptionHandler =
     object : ExceptionHandler {
         override val priority: Float = priority
@@ -395,6 +398,7 @@ inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, cros
         }
     }
 
+@JvmName("SpecificExceptionHandlerWithMetadata")
 inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, crossinline handler: ElementContext.(T, ExceptionHandler.Metadata?) -> Release?): ExceptionHandler =
     object : ExceptionHandler {
         override val priority: Float = priority
@@ -413,6 +417,7 @@ fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exceptio
         override fun message(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): ExceptionMessage? = message(context, exception)
     }
 
+@JvmName("ExceptionToMessageWithMetadata")
 fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exception, ExceptionHandler.Metadata?) -> ExceptionMessage?): ExceptionToMessage =
     object : ExceptionToMessage {
         override val priority: Float = priority
@@ -420,6 +425,7 @@ fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exceptio
         override fun message(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): ExceptionMessage? = message(context, exception, metadata)
     }
 
+@JvmName("SpecificExceptionToMessage")
 inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, crossinline message: ElementContext.(T) -> ExceptionMessage?): ExceptionToMessage =
     object : ExceptionToMessage {
         override val priority: Float = priority
@@ -431,6 +437,7 @@ inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, cr
     }
 
 
+@JvmName("SpecificExceptionToMessageWithMetadata")
 inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, crossinline message: ElementContext.(T, ExceptionHandler.Metadata?) -> ExceptionMessage?): ExceptionToMessage =
     object : ExceptionToMessage {
         override val priority: Float = priority

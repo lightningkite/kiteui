@@ -135,7 +135,7 @@ private fun ViewWriter.renderBlock(node: MarkdownNode, config: MarkdownConfig) {
         }
 
         is MarkdownNode.HorizontalRule -> {
-            themed(HorizontalRuleSemantic).sizeConstraints(height = 2.px).frame { }
+            sizeConstraints(height = 2.px).themed(HorizontalRuleSemantic).frame { }
         }
 
         is MarkdownNode.Table -> renderTable(node, config)
@@ -220,7 +220,7 @@ private fun ViewWriter.renderTable(table: MarkdownNode.Table, config: MarkdownCo
         row {
             table.headers.forEachIndexed { colIndex, headerCells ->
                 val alignment = table.alignments.getOrNull(colIndex)
-                (TableCellSemantic + TableHeaderSemantic).onNext.expanding.col {
+                expanding.themed(TableCellSemantic + TableHeaderSemantic).col {
                     renderTableCell(headerCells, alignment, config)
                 }
             }
@@ -231,7 +231,7 @@ private fun ViewWriter.renderTable(table: MarkdownNode.Table, config: MarkdownCo
             row {
                 rowCells.forEachIndexed { colIndex, cellContent ->
                     val alignment = table.alignments.getOrNull(colIndex)
-                    TableCellSemantic.onNext.expanding.col {
+                    expanding.themed(TableCellSemantic).col {
                         renderTableCell(cellContent, alignment, config)
                     }
                 }

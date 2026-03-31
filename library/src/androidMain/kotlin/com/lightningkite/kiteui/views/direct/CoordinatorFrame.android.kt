@@ -122,7 +122,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                     Log.log("$this ($it) blocked the touch, because screw you")
                 }
 
-            }.col { sub = produceExactlyOneUnsafe { content(control) } }
+            }.col { sub = produceAtMostOneView { content(control) } }
         }
     }
 

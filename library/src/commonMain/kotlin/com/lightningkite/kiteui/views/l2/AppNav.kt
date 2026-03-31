@@ -156,7 +156,7 @@ fun ElementWriter.CanAddTheme.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
                     ::visible { pageNavigator.canGoBack() }
                     onClick { pageNavigator.goBack() }
                 }
-                expanding.centered.themed(HeaderSemantic).text {
+                centered.expanding.themed(HeaderSemantic).text {
                     ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true

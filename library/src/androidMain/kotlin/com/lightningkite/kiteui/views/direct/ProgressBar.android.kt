@@ -12,7 +12,6 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
-import com.lightningkite.kiteui.views.RView
 import kotlin.math.min
 import kotlin.math.roundToInt
 

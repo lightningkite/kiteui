@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 
 actual fun SwapView.nativeSwap(
     transition: ScreenTransition,
-    createNewView: ViewWriter.() -> Unit?
+    createNewView: ViewWriter.() -> Unit
 ) {
     clearChildren()
     createNewView()

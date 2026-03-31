@@ -78,7 +78,8 @@ abstract class NativeElementCommonCode internal constructor(override val context
             if (thr !is CancellationException) thr.report(this.toString())
         },
         context.ssrDispatcher ?: Dispatchers.Main.immediate,
-        this as StatusListener
+        this as StatusListener,
+
     )
 
     var fullyStarted = false

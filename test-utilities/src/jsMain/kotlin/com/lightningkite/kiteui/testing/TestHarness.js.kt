@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.testing
 
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.root
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.frame
+import com.lightningkite.kiteui.views.native
 import org.w3c.dom.HTMLElement
 import kotlin.js.json
 
@@ -26,10 +28,10 @@ external object JSON {
 actual class TestHarness {
     actual val supported: Boolean = true
     actual val async: AsyncTestSupport = AsyncTestSupport()
-    private var rootView: RView? = null
+    private var rootView: Element? = null
 
-    actual fun render(theme: Theme, content: ViewWriter.() -> Unit): RView {
-        lateinit var capturedRoot: RView
+    actual fun render(theme: Theme, content: ViewWriter.() -> Unit): Element {
+        lateinit var capturedRoot: Element
         root(theme) {
             frame {
                 content()
@@ -46,7 +48,7 @@ actual class TestHarness {
         return captureElementSnapshot(element, name)
     }
 
-    actual fun screenshotView(view: RView, name: String): ByteArray? {
+    actual fun screenshotView(view: Element, name: String): ByteArray? {
         // native is a FutureElement - we need to get the actual created Element
         val element = view.native.create() as? HTMLElement ?: return null
         return captureElementSnapshot(element, name)
@@ -116,8 +118,9 @@ actual class TestHarness {
         }
     }
 
+    @OptIn(OverrideOnly::class)
     actual fun cleanup() {
-        rootView?.shutdown()
+        rootView?.onShutdown()
         rootView = null
     }
 

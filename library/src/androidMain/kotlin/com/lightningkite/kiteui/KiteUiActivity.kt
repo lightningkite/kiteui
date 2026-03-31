@@ -158,7 +158,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
     private var suppressKeyboardChange = false
     private val keyboardTreeObs: ViewTreeObserver.OnGlobalLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
         val rect = Rect()
-        window.decoElement.getWindowVisibleDisplayFrame(rect)
+        window.decorView.getWindowVisibleDisplayFrame(rect)
         val keyboardHeight = resources.displayMetrics.heightPixels - rect.bottom
         if (keyboardHeight.toFloat() > resources.displayMetrics.heightPixels * 0.15f) {
             suppressKeyboardChange = true

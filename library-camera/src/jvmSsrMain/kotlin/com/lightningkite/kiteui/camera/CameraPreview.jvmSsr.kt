@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.camera
 
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.core.*
 
 /**
@@ -11,7 +11,7 @@ import com.lightningkite.reactive.core.*
  * Camera functionality is not available during server-side rendering.
  * This renders as an empty placeholder div.
  */
-actual class CameraPreview actual constructor(context: ElementContext) : RView(context) {
+actual class CameraPreview actual constructor(context: ElementContext) : NativeElement(context) {
     init {
         native.tag = "div"
         native.classes.add("camera-preview-ssr-placeholder")

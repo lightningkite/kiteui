@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.ReactiveContext
+import com.lightningkite.reactive.core.Reactive
 
 @UnsafeModifierOrdering
 fun ElementWriter.withUnsafeModifiers(): ViewWriter = object : ViewWriter, ElementWriter by this {}

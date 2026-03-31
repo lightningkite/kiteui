@@ -1,8 +1,9 @@
 package com.lightningkite.kiteui.telemetry
 
+import kotlinx.coroutines.currentCoroutineContext
 import kotlin.coroutines.CoroutineContext
 
-/** Computes a human-readable view path on demand. Implemented by [RView][com.lightningkite.kiteui.views.RView]. */
+/** Computes a human-readable view path on demand. */
 fun interface ViewPathProvider {
     fun viewPath(): String
 }
@@ -32,7 +33,7 @@ class TelemetryContext(
          * ```
          */
         suspend fun current(): TelemetryContext {
-            val ctx = kotlin.coroutines.coroutineContext
+            val ctx = currentCoroutineContext()
             val existing = ctx[TelemetryContext] ?: return TelemetryContext()
             return TelemetryContext(
                 traceId = existing.traceId,

@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.reactive.core.AppScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlinx.coroutines.launch
@@ -198,7 +200,7 @@ class Telemetry(val config: TelemetryConfig) {
         val startMs = clockMillis()
         val startNanos = nanosString()
         val fetchSpanId = spanId()
-        val ctx = kotlin.coroutines.coroutineContext
+        val ctx = currentCoroutineContext()
         val fetchTraceId = ctx.traceId().ifEmpty { currentTraceId }
         val parentSpanId = ctx.spanId().ifEmpty { currentSpanId }
         val viewPath = ctx.viewPath()

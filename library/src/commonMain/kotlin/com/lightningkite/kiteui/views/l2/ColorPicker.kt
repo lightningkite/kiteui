@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.dynamicTheme
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.fieldTheme
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.context.reactiveSuspending

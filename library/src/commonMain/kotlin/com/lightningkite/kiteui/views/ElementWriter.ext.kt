@@ -59,6 +59,14 @@ inline fun ElementWriter.produceExactlyOneUnsafe(action: ViewWriter.() -> Unit):
     produceAtMostOneUnsafe(action) ?: throw IllegalStateException("Produced no views at this layer, but expected one.")
 
 
+inline fun ViewWriter.produceAtMostOneView(action: ViewWriter.() -> Unit): Element? =
+    @OptIn(UnsafeModifierOrdering::class)
+    produceAtMostOneUnsafe(action)
+
+inline fun ViewWriter.produceExactlyOneView(action: ViewWriter.() -> Unit): Element =
+    produceAtMostOneView(action) ?: throw IllegalStateException("Produced no views at this layer, but expected one.")
+
+
 inline fun ElementWriter.produceAtMostOne(action: ElementWriter.() -> Unit): Element? =
     @OptIn(UnsafeModifierOrdering::class)
     produceAtMostOneUnsafe(action)
