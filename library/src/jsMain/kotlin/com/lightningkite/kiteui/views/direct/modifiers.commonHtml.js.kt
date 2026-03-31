@@ -665,12 +665,22 @@ private class PullToRefreshState {
 
     fun resetIndicator() {
         val ind = indicator ?: return
-        ind.style.transition = "height 0.2s ease"
+        ind.style.transition = "height 0.2s ease, opacity 0.2s ease"
         ind.style.height = "0px"
+        ind.style.opacity = "0"
         arrow?.style?.transform = "rotate(0deg)"
         arrow?.style?.display = ""
         spinner?.style?.display = "none"
         isPulling = false
+        isRefreshing = false
+    }
+
+    fun updatePosition(scrollElement: HTMLElement) {
+        val ind = indicator ?: return
+        val rect = scrollElement.getBoundingClientRect()
+        ind.style.top = "${rect.top}px"
+        ind.style.left = "${rect.left}px"
+        ind.style.width = "${rect.width}px"
     }
 }
 
@@ -683,10 +693,14 @@ internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
     native.onElement { scrollElement ->
         scrollElement as HTMLElement
 
-        // Create indicator element
+        // Append indicator to document.body with fixed positioning.
+        // We must NOT insert raw DOM nodes into any RView-managed container
+        // because it breaks FutureElement child index tracking (e.g. Recycler2).
         val indicator = document.createElement("div") as HTMLDivElement
         indicator.className = "ptr-indicator"
-        indicator.style.transition = "height 0.2s ease"
+        indicator.style.position = "fixed"
+        indicator.style.transition = "height 0.2s ease, opacity 0.2s ease"
+        indicator.style.opacity = "0"
 
         val arrow = document.createElement("div") as HTMLDivElement
         arrow.className = "ptr-arrow"
@@ -698,7 +712,7 @@ internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
 
         indicator.appendChild(arrow)
         indicator.appendChild(spinner)
-        scrollElement.insertBefore(indicator, scrollElement.firstChild)
+        document.body!!.appendChild(indicator)
 
         state.indicator = indicator
         state.arrow = arrow
@@ -728,9 +742,11 @@ internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
                 // Apply resistance: sqrt curve for natural feel
                 val pullDistance = min(sqrt(deltaY * MAX_PULL), MAX_PULL)
 
-                // Update indicator
+                // Position indicator at top of scroll element
+                state.updatePosition(scrollElement)
                 indicator.style.transition = "none"
                 indicator.style.height = "${pullDistance}px"
+                indicator.style.opacity = "1"
 
                 // Rotate arrow based on progress toward threshold
                 val rotation = min(pullDistance / PULL_THRESHOLD, 1.0) * 180.0
@@ -751,6 +767,14 @@ internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
                     indicator.style.transition = "height 0.2s ease"
                     indicator.style.height = "${PULL_THRESHOLD}px"
                     refreshAction.startAction(this@nativeSetupPullToRefresh)
+                    // For actions that complete synchronously, the reactive scope
+                    // may not re-fire (state stays in "success" type). Schedule
+                    // a fallback reset to catch this case.
+                    window.setTimeout({
+                        if (state.isRefreshing) {
+                            state.resetIndicator()
+                        }
+                    }, 500)
                 } else {
                     state.resetIndicator()
                 }
@@ -760,7 +784,7 @@ internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
         scrollElement.addEventListener("touchcancel", touchEndHandler)
     }
 
-    // Reactive scope to observe action completion
+    // Reactive scope to observe action completion — reset when not loading
     reactiveScope {
         val loading = refreshAction.state().handle(
             success = { false },
@@ -768,7 +792,6 @@ internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
             notReady = { true }
         )
         if (!loading && state.isRefreshing) {
-            state.isRefreshing = false
             state.resetIndicator()
         }
     }

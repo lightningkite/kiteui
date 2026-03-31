@@ -166,7 +166,6 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
         if (vertical) {
             native.setStyleProperty("overscroll-behavior-y", "none")
-            native.setStyleProperty("position", "relative")
             nativeSetupPullToRefresh(refreshAction)
         }
     }

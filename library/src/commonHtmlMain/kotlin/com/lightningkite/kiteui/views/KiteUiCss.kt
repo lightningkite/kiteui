@@ -249,17 +249,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .ptr-indicator {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
                 height: 0;
                 overflow: hidden;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 pointer-events: none;
-                z-index: 1;
+                z-index: 10000;
                 color: currentcolor;
             }
 
