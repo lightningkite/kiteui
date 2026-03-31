@@ -3,8 +3,8 @@ import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.plugin.serialization)
 }
 apply<KiteUiPlugin>()
 configure<KiteUiPluginExtension> {
@@ -44,7 +44,7 @@ kotlin {
 
             dependencies {
                 // Swing coroutines
-                implementation(libs.kotlinxCoroutinesSwing)
+                implementation(libs.kotlinx.coroutines.swing)
             }
         }
     }

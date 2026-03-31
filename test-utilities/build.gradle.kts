@@ -7,9 +7,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.dokka)
     signing
     alias(libs.plugins.vannitechPublishing)
@@ -113,7 +113,7 @@ kotlin {
             // Note: dependsOn(commonMain) is automatic from hierarchy template
             dependsOn(get("commonHtmlMain"))
             dependencies {
-                implementation(libs.kotlinxCoroutinesTest)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
     }
