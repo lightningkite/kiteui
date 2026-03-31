@@ -32,7 +32,7 @@ val client: HttpClient by lazy { webSocketClient }
 
 private val fetchLog = LogRoot.tag("fetch")
 
-actual suspend fun fetch(
+actual suspend fun fetchRaw(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,

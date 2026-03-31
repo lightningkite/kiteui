@@ -1,0 +1,16 @@
+// Copy this file to LocalTelemetryConfig.kt (which is gitignored) and fill in your credentials.
+// See docs/TELEMETRY.md for Grafana Cloud setup instructions.
+package com.lightningkite.mppexampleapp
+
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.telemetry.Telemetry
+import com.lightningkite.kiteui.telemetry.TelemetryConfig
+
+fun configureTelemetry(navigator: PageNavigator) {
+    val telemetry = Telemetry(TelemetryConfig(
+        endpoint = "https://otlp-gateway-prod-us-west-0.grafana.net/otlp",
+        headers = mapOf("Authorization" to "Basic YOUR_BASE64_ENCODED_CREDENTIALS"),
+        serviceName = "kiteui-example-app",
+    ))
+    telemetry.install(navigator)
+}

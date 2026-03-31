@@ -242,7 +242,8 @@ Theme switches should typically be applied to containers (`col`, `row`, `frame`,
 
 ## Current Branch Strategy
 
-- `version-7` - Main development branch
+- `version-7` - Main development branch (use for PRs)
+- `version-6` - Previous major version
 - `view-split` - **ACTIVE MIGRATION BRANCH** (currently BROKEN) - Major architectural refactoring. See [MIGRATION.md](MIGRATION.md) for details.
 
 When working on this branch, expect:

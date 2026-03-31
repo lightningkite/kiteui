@@ -2,8 +2,8 @@ import com.lightningkite.deployhelpers.*
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.dokka)
     signing
     alias(libs.plugins.vannitechPublishing)

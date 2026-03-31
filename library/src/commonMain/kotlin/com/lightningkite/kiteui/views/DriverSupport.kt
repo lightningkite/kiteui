@@ -37,10 +37,11 @@ fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Element.Driv
  * widget type (class name), or action names.
  * Returns a compact listing of matches with their display line.
  */
-fun Element.driverFind(query: String): String = buildString {
+fun Element.driverFind(query: String, includeHidden: Boolean = false): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
     val results = mutableListOf<Pair<String, Element>>()
     fun walk(view: Element, pathPrefix: String) {
+        if (!includeHidden && !(view.shown && view.visible)) return
         val segment = view.debugName ?: view.parent?.children?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
         // Named views reset the path prefix — resolveDriverPath deep-searches for the first
         // named segment, so the full ancestor chain is unnecessary. This keeps paths short
@@ -55,7 +56,9 @@ fun Element.driverFind(query: String): String = buildString {
         }
         for (child in view.children()) walk(child, path)
     }
-    walk(this@driverFind, "")
+    // Start from root's children so returned paths align with resolveDriverPath's indexing.
+    // resolveDriverPath("0") means root.driverChildren[0], so paths must be relative to root's children.
+    for (child in this@driverFind.driverChildren) walk(child, "")
     if (results.isEmpty()) {
         append("No views matching '$query'")
     } else {
@@ -70,13 +73,14 @@ fun Element.driverFind(query: String): String = buildString {
  * the nearest ancestor with a "click" action. Returns deduplicated clickable ancestors
  * in the same format as [driverFind].
  */
-fun Element.driverFindClickable(query: String): String = buildString {
+fun Element.driverFindClickable(query: String, includeHidden: Boolean = false): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
     val viewPaths = mutableMapOf<Element, String>()
     val matches = mutableListOf<Element>()
 
-    fun walk(view: Element, pathPrefix: String) {
-        val segment = view.debugName ?: view.parent?.children?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
+    fun walk(view: RView, pathPrefix: String) {
+        if (!includeHidden && !(view.shown && view.visible)) return
+        val segment = view.debugName ?: view.parent?.driverChildren?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
         val path = if (pathPrefix.isEmpty() || segment.toIntOrNull() == null) segment else "$pathPrefix/$segment"
         viewPaths[view] = path
         val nameMatch = view.debugName?.contains(query, ignoreCase = true) == true
@@ -88,7 +92,8 @@ fun Element.driverFindClickable(query: String): String = buildString {
         }
         for (child in view.children()) walk(child, path)
     }
-    walk(this@driverFindClickable, "")
+    // Start from root's children so returned paths align with resolveDriverPath's indexing.
+    for (child in this@driverFindClickable.driverChildren) walk(child, "")
 
     val seen = mutableSetOf<Element>()
     val results = mutableListOf<Pair<String, Element>>()

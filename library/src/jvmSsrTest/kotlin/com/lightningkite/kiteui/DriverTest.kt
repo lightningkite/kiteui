@@ -1035,4 +1035,69 @@ class DriverTest {
             assertIdExists("nonexistent")
         }
     }
+
+    // --- find visibility filtering ---
+
+    @Test
+    fun findExcludesHiddenViewsByDefault() = uiTest(
+        content = {
+            col {
+                textInput { debugName = "visible"; hint = "Visible" }
+                textInput { debugName = "hidden"; hint = "Hidden"; shown = false }
+            }
+        }
+    ) {
+        val results = findAll("TextInput")
+        assertTrue(results.any { it.name == "visible" }, "Should find visible input: $results")
+        assertTrue(results.none { it.name == "hidden" }, "Should not find hidden input by default: $results")
+
+        val allResults = findAll("TextInput", includeHidden = true)
+        assertTrue(allResults.any { it.name == "visible" }, "includeHidden should still show visible: $allResults")
+        assertTrue(allResults.any { it.name == "hidden" }, "includeHidden should show hidden input: $allResults")
+    }
+
+    @Test
+    fun findClickableExcludesHiddenByDefault() = uiTest(
+        content = {
+            col {
+                button { debugName = "visBtn"; text("Visible"); onClick { } }
+                button { debugName = "hidBtn"; text("Hidden"); onClick { }; shown = false }
+            }
+        }
+    ) {
+        val results = findClickable("Btn")
+        assertTrue(results.any { it.name == "visBtn" }, "Should find visible button: $results")
+        assertTrue(results.none { it.name == "hidBtn" }, "Should not find hidden button by default: $results")
+    }
+
+    // --- path consistency: findAll paths work directly with click ---
+
+    @Test
+    fun findPathsWorkDirectlyWithClick() = uiTest(
+        content = {
+            // No debugName on any container — tests that numeric paths from findAll are usable
+            col {
+                col {
+                    val counter = Signal(0)
+                    button {
+                        text("Go")
+                        onClick { counter.value++ }
+                    }
+                    text {
+                        debugName = "count"
+                        ::content { "Count: ${counter()}" }
+                    }
+                }
+            }
+        }
+    ) {
+        val results = findAll("Button")
+        assertTrue(results.isNotEmpty(), "Should find the Button: $results")
+        val buttonPath = results.first().path
+
+        // Path returned by findAll must work directly with click() without any fixup
+        click(buttonPath)
+        val snap = snapshot("count")
+        assertTrue(snap.contains("Count: 1"), "Click via findAll path should increment counter: $snap")
+    }
 }

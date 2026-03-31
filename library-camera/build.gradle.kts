@@ -1,12 +1,19 @@
 // by Claude
+import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import com.lightningkite.deployhelpers.*
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
+
+// KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
+// So we work around it on non mac machines with this check
+val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-//    alias(libs.plugins.kotlinCocoapods)
-    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.kotlin.multiplatform)
+    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
+        alias(libs.plugins.kotlin.cocoapods)
+    }
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.androidLibrary)
     signing
     alias(libs.plugins.vannitechPublishing)
@@ -23,9 +30,11 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
-//    iosX64()
-//    iosArm64()
-//    iosSimulatorArm64()
+    if (onMac) {
+        iosX64()
+        iosArm64()
+        iosSimulatorArm64()
+    }
     js(IR) {
         browser()
     }
@@ -39,12 +48,16 @@ kotlin {
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
 
-//    cocoapods {
-//        summary = "KiteUI Camera and Barcode Scanning Support"
-//        homepage = "https://github.com/lightningkite/kiteui"
-//        version = "1.0"
-//        ios.deploymentTarget = "14.0"
-//    }
+    if (onMac) {
+        // We have to manually call this because the shortcut isn't available when plugin is not applied and gradle will
+        // fail even behind the if check
+        (this as ExtensionAware).extensions.configure<CocoapodsExtension>("cocoapods", {
+            summary = "KiteUI Camera and Barcode Scanning Support"
+            homepage = "https://github.com/lightningkite/kiteui"
+            version = "1.0"
+            ios.deploymentTarget = "14.0"
+        })
+    }
 
     sourceSets {
         val commonMain by getting {
@@ -65,7 +78,9 @@ kotlin {
             }
         }
 
-//        val iosMain by getting
+        if (onMac) {
+            val iosMain by getting
+        }
 
         val jsMain by getting {
             dependencies {

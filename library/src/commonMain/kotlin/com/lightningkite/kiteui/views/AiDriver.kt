@@ -37,9 +37,9 @@ object AiDriver {
     ) {
         tryAutoStartDaemon(port)
 
-        // Install log interceptor that forwards to LogRoot AND buffers
-        if (logInterceptor == null) {
-            logInterceptor = BufferingLogInterceptor(logInterceptor ?: LogRoot)
+        // Install log interceptor that buffers for the driver's "logs" command
+        if (logInterceptors.none { it is BufferingLogInterceptor }) {
+            logInterceptors.add(BufferingLogInterceptor())
         }
 
         val gate = ConnectivityGate()
@@ -161,6 +161,12 @@ suspend fun handleCommand(command: String, root: Element?, navigator: PageNaviga
             navigator.navigateUrlLikePath(route) ?: throw DriverActionException("route '$route' not found")
             "OK"
         }
+        "reset" -> {
+            if (navigator == null) throw DriverActionException("no navigator available")
+            val route = action ?: throw DriverActionException("no route specified")
+            navigator.resetUrlLikePath(route) ?: throw DriverActionException("route '$route' not found")
+            "OK"
+        }
         "url" -> {
             if (navigator == null) throw DriverActionException("no navigator available")
             val currentPage = navigator.stack.value.lastOrNull()
@@ -227,25 +233,9 @@ suspend fun handleCommand(command: String, root: Element?, navigator: PageNaviga
     }
 }
 
-/**
- * Log interceptor that forwards all calls to [LogRoot] and also buffers them in [LogBuffer].
- */
-private class BufferingLogInterceptor(val wraps: Log, val tag: String = "") : Log {
-    override fun tag(tag: String): Log = BufferingLogInterceptor(wraps.tag(tag), tag)
-    override fun log(vararg entries: Any?) {
-        wraps.log(*entries)
-        LogBuffer.add("LOG", tag, entries.joinToString(" "))
-    }
-    override fun error(vararg entries: Any?) {
-        wraps.error(*entries)
-        LogBuffer.add("ERROR", tag, entries.joinToString(" "))
-    }
-    override fun info(vararg entries: Any?) {
-        wraps.info(*entries)
-        LogBuffer.add("INFO", tag, entries.joinToString(" "))
-    }
-    override fun warn(vararg entries: Any?) {
-        wraps.warn(*entries)
-        LogBuffer.add("WARN", tag, entries.joinToString(" "))
+/** Log interceptor that buffers log calls for the driver's "logs" command. */
+private class BufferingLogInterceptor : LogInterceptor {
+    override fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>) {
+        LogBuffer.add(level.name, tag, entries.joinToString(" "))
     }
 }

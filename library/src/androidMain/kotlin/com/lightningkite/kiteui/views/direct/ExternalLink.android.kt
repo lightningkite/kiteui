@@ -2,6 +2,10 @@ package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.externalServices
+import com.lightningkite.kiteui.models.ClickableSemantic
+import com.lightningkite.kiteui.models.DisabledSemantic
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.openTab
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
@@ -19,7 +23,7 @@ actual class ExternalLink actual constructor(context: ElementContext) : NativeIn
                 launch {
                     onNavigate.invoke()
                     value?.let {
-                        context.openTab(it)
+                        context.externalServices.openTab(it)
                     }
                 }
             }
