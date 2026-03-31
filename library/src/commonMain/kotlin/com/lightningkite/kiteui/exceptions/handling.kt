@@ -40,6 +40,9 @@ class ExceptionHandlersTree(private val parent: ExceptionHandlersTree? = null) {
         messages.sortWith(messageComparator)
     }
 
+    fun remove(handler: ExceptionHandler): Boolean = handlers.remove(handler) || parent?.remove(handler) == true
+    fun remove(message: ExceptionToMessage): Boolean = messages.remove(message) || parent?.remove(message) == true
+
     operator fun plusAssign(handler: ExceptionHandler) = add(handler)
 
     operator fun plusAssign(message: ExceptionToMessage) = add(message)

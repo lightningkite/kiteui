@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
@@ -38,8 +39,8 @@ object AiDriver {
         tryAutoStartDaemon(port)
 
         // Install log interceptor that buffers for the driver's "logs" command
-        if (logInterceptors.none { it is BufferingLogInterceptor }) {
-            logInterceptors.add(BufferingLogInterceptor())
+        if (Log.interceptors.none { it is BufferingLogInterceptor }) {
+            Log.interceptors.add(BufferingLogInterceptor())
         }
 
         val gate = ConnectivityGate()
@@ -112,10 +113,10 @@ object AiDriver {
         fun defaultDriverDisplay(element: Element, options: Element.DriverSnapshotOptions): String = buildString {
             val name = element.debugName
             if (name != null) {
-                append("$name: ")
+                append("$name:")
             } else {
                 val idx = element.parent?.children?.indexOf(element)?.takeIf { it >= 0 } ?: 0
-                append("$idx: ")
+                append("$idx:")
             }
             if (options.includeThemes) {
                 element.themeChoice.takeUnless { it == ThemeDerivation.None }?.let { append(it); append(' ') }

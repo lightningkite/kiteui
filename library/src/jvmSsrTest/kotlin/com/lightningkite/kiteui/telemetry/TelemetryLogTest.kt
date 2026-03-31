@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.telemetry
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.LogInterceptor
 import com.lightningkite.kiteui.LogLevel
-import com.lightningkite.kiteui.logInterceptors
 import kotlin.test.*
 
 class TelemetryLogTest {
@@ -22,8 +21,8 @@ class TelemetryLogTest {
 
     @BeforeTest
     fun saveState() {
-        savedInterceptors = logInterceptors.toList()
-        logInterceptors.clear()
+        savedInterceptors = Log.interceptors.toList()
+        Log.interceptors.clear()
         telemetry = Telemetry(TelemetryConfig(
             endpoint = "http://localhost:0/otlp",
             logMinSeverity = OtlpSeverity.WARN,
@@ -33,8 +32,8 @@ class TelemetryLogTest {
 
     @AfterTest
     fun restoreState() {
-        logInterceptors.clear()
-        logInterceptors.addAll(savedInterceptors)
+        Log.interceptors.clear()
+        Log.interceptors.addAll(savedInterceptors)
     }
 
     // --- List-based interceptor preservation ---
@@ -42,18 +41,18 @@ class TelemetryLogTest {
     @Test
     fun interceptorAddedToList() {
         val recording = RecordingInterceptor()
-        logInterceptors.add(recording)
+        Log.interceptors.add(recording)
         val logInterceptor = TelemetryLogInterceptor(telemetry)
-        logInterceptors.add(logInterceptor)
-        assertEquals(2, logInterceptors.size)
-        assertIs<TelemetryLogInterceptor>(logInterceptors.last())
+        Log.interceptors.add(logInterceptor)
+        assertEquals(2, Log.interceptors.size)
+        assertIs<TelemetryLogInterceptor>(Log.interceptors.last())
     }
 
     @Test
     fun allInterceptorsReceiveCalls() {
         val recording = RecordingInterceptor()
-        logInterceptors.add(recording)
-        logInterceptors.add(TelemetryLogInterceptor(telemetry))
+        Log.interceptors.add(recording)
+        Log.interceptors.add(TelemetryLogInterceptor(telemetry))
 
         Log.log("debug msg")
         Log.info("info msg")
@@ -72,8 +71,8 @@ class TelemetryLogTest {
     @Test
     fun severityFilteringDropsBelowMinimum() {
         val recording = RecordingInterceptor()
-        logInterceptors.add(recording)
-        logInterceptors.add(TelemetryLogInterceptor(telemetry))
+        Log.interceptors.add(recording)
+        Log.interceptors.add(TelemetryLogInterceptor(telemetry))
         val exporter = telemetry.exporter
 
         // Default min severity is WARN, so log() and info() should NOT be recorded as OTel logs
@@ -94,7 +93,7 @@ class TelemetryLogTest {
 
     @Test
     fun verboseLoggingShipsDEBUG() {
-        logInterceptors.add(TelemetryLogInterceptor(telemetry))
+        Log.interceptors.add(TelemetryLogInterceptor(telemetry))
         val exporter = telemetry.exporter
 
         telemetry.setVerboseLogging(true)
@@ -111,7 +110,7 @@ class TelemetryLogTest {
 
     @Test
     fun logRecordContainsBody() {
-        logInterceptors.add(TelemetryLogInterceptor(telemetry))
+        Log.interceptors.add(TelemetryLogInterceptor(telemetry))
 
         Log.warn("something", "went", "wrong")
 
@@ -121,7 +120,7 @@ class TelemetryLogTest {
 
     @Test
     fun logRecordContainsSessionId() {
-        logInterceptors.add(TelemetryLogInterceptor(telemetry))
+        Log.interceptors.add(TelemetryLogInterceptor(telemetry))
 
         Log.error("test")
 
@@ -133,7 +132,7 @@ class TelemetryLogTest {
 
     @Test
     fun logRecordContainsTraceContext() {
-        logInterceptors.add(TelemetryLogInterceptor(telemetry))
+        Log.interceptors.add(TelemetryLogInterceptor(telemetry))
 
         Log.error("test")
 
@@ -146,8 +145,8 @@ class TelemetryLogTest {
     @Test
     fun taggedLogIncludesTagAttribute() {
         val recording = RecordingInterceptor()
-        logInterceptors.add(recording)
-        logInterceptors.add(TelemetryLogInterceptor(telemetry))
+        Log.interceptors.add(recording)
+        Log.interceptors.add(TelemetryLogInterceptor(telemetry))
 
         Log.tag("MyComponent").warn("tagged warning")
 
@@ -165,7 +164,7 @@ class TelemetryLogTest {
 
     @Test
     fun nestedTagsConcatenate() {
-        logInterceptors.add(TelemetryLogInterceptor(telemetry))
+        Log.interceptors.add(TelemetryLogInterceptor(telemetry))
 
         Log.tag("Parent").tag("Child").warn("nested")
 
@@ -177,7 +176,7 @@ class TelemetryLogTest {
 
     @Test
     fun untaggedLogHasNoTagAttribute() {
-        logInterceptors.add(TelemetryLogInterceptor(telemetry))
+        Log.interceptors.add(TelemetryLogInterceptor(telemetry))
 
         Log.error("no tag")
 

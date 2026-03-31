@@ -1,9 +1,12 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.Element
-import com.lightningkite.kiteui.views.NativeElement
 
 var debugMode: Boolean = false
+
+@Deprecated("Use Element.Debugger.debugTarget", ReplaceWith("Element.Debugger.debugTarget"))
+var viewDebugTarget: Element? by Element.Debugger::debugTarget
+
 expect fun debugger(): Unit
 data class GCInfo(val usage: Long)
 
@@ -86,10 +89,8 @@ fun Throwable.report(context: String = "") = Throwable_report(this, context)
 
 expect fun Any?.identityHashCode(): Int
 
-var viewDebugTarget: Element? = null
-
 inline fun Element.debugPrint(get: () -> String) {
-    if (debugMode && viewDebugTarget == this)
+    if (debugMode && Element.Debugger.debugTarget == this)
         Log.tag("viewDebugTarget").info(get())
 }
 
@@ -106,26 +107,27 @@ fun interface LogInterceptor {
     fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
 }
 
-/** Interceptors that observe all [Log] calls. Each receives every call; [LogRoot] is always called regardless. */
-val logInterceptors: MutableList<LogInterceptor> = mutableListOf()
-
 interface Log {
     companion object: Log {
+        /** Interceptors that observe all [Log] calls. Each receives every call; [LogRoot] is always called regardless. */
+        val interceptors: MutableList<LogInterceptor> = mutableListOf()
+
         override fun tag(tag: String): Log = InterceptedTaggedLog(tag)
+
         override fun log(vararg entries: Any?) {
-            for (i in logInterceptors) i.intercept(LogLevel.LOG, "", entries)
+            for (i in interceptors) i.intercept(LogLevel.LOG, "", entries)
             LogRoot.log(*entries)
         }
         override fun error(vararg entries: Any?) {
-            for (i in logInterceptors) i.intercept(LogLevel.ERROR, "", entries)
+            for (i in interceptors) i.intercept(LogLevel.ERROR, "", entries)
             LogRoot.error(*entries)
         }
         override fun info(vararg entries: Any?) {
-            for (i in logInterceptors) i.intercept(LogLevel.INFO, "", entries)
+            for (i in interceptors) i.intercept(LogLevel.INFO, "", entries)
             LogRoot.info(*entries)
         }
         override fun warn(vararg entries: Any?) {
-            for (i in logInterceptors) i.intercept(LogLevel.WARN, "", entries)
+            for (i in interceptors) i.intercept(LogLevel.WARN, "", entries)
             LogRoot.warn(*entries)
         }
     }
@@ -141,22 +143,23 @@ private class InterceptedTaggedLog(val tag: String) : Log {
     private val rootTagged = LogRoot.tag(tag)
     override fun tag(tag: String): Log = InterceptedTaggedLog("${this.tag}/$tag")
     override fun log(vararg entries: Any?) {
-        for (i in logInterceptors) i.intercept(LogLevel.LOG, tag, entries)
+        for (i in Log.interceptors) i.intercept(LogLevel.LOG, tag, entries)
         rootTagged.log(*entries)
     }
     override fun error(vararg entries: Any?) {
-        for (i in logInterceptors) i.intercept(LogLevel.ERROR, tag, entries)
+        for (i in Log.interceptors) i.intercept(LogLevel.ERROR, tag, entries)
         rootTagged.error(*entries)
     }
     override fun info(vararg entries: Any?) {
-        for (i in logInterceptors) i.intercept(LogLevel.INFO, tag, entries)
+        for (i in Log.interceptors) i.intercept(LogLevel.INFO, tag, entries)
         rootTagged.info(*entries)
     }
     override fun warn(vararg entries: Any?) {
-        for (i in logInterceptors) i.intercept(LogLevel.WARN, tag, entries)
+        for (i in Log.interceptors) i.intercept(LogLevel.WARN, tag, entries)
         rootTagged.warn(*entries)
     }
 }
+
 fun Log.infoOrAbove(): Log = object : Log by this {
     override fun log(vararg entries: Any?) {}
 }

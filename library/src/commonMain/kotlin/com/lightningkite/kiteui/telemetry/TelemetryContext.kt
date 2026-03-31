@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.telemetry
 
-import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.NativeElement
 import kotlinx.coroutines.currentCoroutineContext
 import kotlin.coroutines.CoroutineContext
 
@@ -15,7 +15,7 @@ import kotlin.coroutines.CoroutineContext
 class TelemetryContext(
     val traceId: String = "",
     val spanId: String = "",
-    val element: (() -> Element)? = null,
+    val element: NativeElement? = null,
 ) : CoroutineContext.Element {
     override val key: CoroutineContext.Key<TelemetryContext> get() = Key
 
@@ -49,4 +49,4 @@ internal fun CoroutineContext.spanId(): String =
     this[TelemetryContext]?.spanId ?: ""
 
 internal fun CoroutineContext.viewPath(): String =
-    this[TelemetryContext]?.element?.viewPath() ?: ""
+    this[TelemetryContext]?.element?.outermostElement?.viewPath() ?: ""

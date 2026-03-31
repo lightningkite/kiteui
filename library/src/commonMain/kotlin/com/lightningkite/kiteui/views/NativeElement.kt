@@ -105,7 +105,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
         },
         context.ssrDispatcher ?: Dispatchers.Main.immediate,
         this as StatusListener,
-        TelemetryContext(element = ::outermostElement)
+        TelemetryContext(element = this as NativeElement)
     )
 
     var fullyStarted = false
@@ -366,7 +366,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
     override var debugName: String? = null
 
     override fun toString(): String =
-        outermostElement.debugName ?: (theme.id + ' ' + outermostElement::class.toString().removePrefix("class ") + "@" + outermostElement.identityHashCode().toString(16))
+        outermostElement.debugName ?: (theme.id + ' ' + outermostElement::class.toString().removePrefix("class ") + "&" + outermostElement.identityHashCode().toString(16))
 
     @InternalKiteUi
     open fun leakDetect() {

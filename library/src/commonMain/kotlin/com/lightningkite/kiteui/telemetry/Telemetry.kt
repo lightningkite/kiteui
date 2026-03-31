@@ -1,9 +1,12 @@
 package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.viewPath
 import com.lightningkite.reactive.core.AppScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlin.random.Random
@@ -68,7 +71,25 @@ class Telemetry(val config: TelemetryConfig) {
         instrumentFetch(url, method, headers, body, proceed)
     }
     private val installedLogInterceptor = TelemetryLogInterceptor(this)
+    private val exceptionHandlerInterceptor = ExceptionHandler(10f) { e, meta ->
+        recordException(e,
+            if (meta == null) "" else listOfNotNull(
+                meta.source?.let { "$it @ ${it.viewPath()}" },
+                meta.process?.let {
+                    val s = when (meta.foregroundProcess) {
+                        true -> " (f)"
+                        false -> " (b)"
+                        null -> ""
+                    }
+                    "p$s: $it"
+                }
+            ).joinToString(" ")
+        )
+
+        return@ExceptionHandler null    // intercept, don't capture
+    }
     private val cleanups = mutableListOf<() -> Unit>()
+    private var elementContext: ElementContext? = null
 
     // ===== Installation =====
 
@@ -79,12 +100,16 @@ class Telemetry(val config: TelemetryConfig) {
      * Separated from construction so tests can create instances without triggering
      * AppScope/lifecycle hooks.
      */
-    fun install(navigator: PageNavigator) {
+    fun install(context: ElementContext, navigator: PageNavigator) {
         check(!installed) { "Telemetry.install() called twice. Call shutdown() first." }
         installed = true
 
         // Log interceptor
-        logInterceptors.add(installedLogInterceptor)
+        Log.interceptors.add(installedLogInterceptor)
+
+        // Exception handler
+        elementContext = context
+        context.exceptionHandlers += exceptionHandlerInterceptor
 
         // Exception capture — uses a flag so shutdown() never breaks the delegation chain.
         // A save/restore pattern would drop hooks installed by other code between install() and shutdown().
@@ -178,7 +203,8 @@ class Telemetry(val config: TelemetryConfig) {
         if (!installed) return
         installed = false
         fetchInterceptors.remove(installedFetchInterceptor)
-        logInterceptors.remove(installedLogInterceptor)
+        Log.interceptors.remove(installedLogInterceptor)
+        elementContext?.exceptionHandlers?.remove(exceptionHandlerInterceptor)
         throwableHookActive = false
         crashHookActive = false
         navCleanup?.invoke()

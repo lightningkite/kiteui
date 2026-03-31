@@ -4,6 +4,7 @@ import android.view.View
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.Element
 
 var animationsEnabled: Boolean = true
 actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled
@@ -23,6 +24,6 @@ inline fun View.withoutAnimation(action: () -> Unit) {
 }
 
 inline fun View.debugPrint(get: () -> String) {
-    if (debugMode && viewDebugTarget?.native == this)
+    if (debugMode && Element.Debugger.debugTarget?.native == this)
         Log.tag("viewDebugTarget").info(get())
 }

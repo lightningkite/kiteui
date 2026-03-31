@@ -14,6 +14,16 @@ var Element.padding: Dimension?
 
 fun Element.closestElementWriter(): ElementWriter? = (this as? ElementWriter) ?: this.parent
 
+fun Element.viewPath(): String = generateSequence(this) { it.parent }
+    .map { element ->
+        val id = element.debugName ?: element.parent?.children?.indexOf(element)?.toString() ?: ""
+        val type = element::class.simpleName ?: "anonymous"
+        "$id:$type"
+    }
+    .toList()
+    .reversed()
+    .joinToString("/")
+
 /**
  * Returns whether animations are currently enabled for this element.
  * This is a platform-specific property that respects system-wide animation settings.
