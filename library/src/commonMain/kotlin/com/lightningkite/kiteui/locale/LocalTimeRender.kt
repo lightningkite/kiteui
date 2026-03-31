@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.locale
 
 import kotlinx.datetime.*
+import kotlin.time.Instant
 
 enum class RenderSize { Numerical, Abbreviation, Full }
 expect fun LocalDate.renderToString(size: RenderSize = RenderSize.Full, includeWeekday: Boolean = false, includeYear: Boolean = true, includeEra: Boolean = false): String

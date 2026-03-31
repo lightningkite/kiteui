@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.reactive.context.StatusListener
@@ -224,7 +225,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     // --- PROCESSING ---
 
-    private inner class Processes : BaseListenable(), Reactive<Unit> {
+    private inner class Processes(private val foreground: Boolean) : BaseListenable(), Reactive<Unit> {
         private val processes = HashSet<Reactive<*>>()
 
         private var exceptionCount = 0
@@ -247,16 +248,24 @@ abstract class NativeElementCommonCode internal constructor(override val context
             if (!currentlyActive()) return
             state = when {
                 exceptionCount > 0 -> {
-                    val firstException = processes.firstNotNullOfOrNull { it.state.exception }
-                    if (firstException == null) {
+                    val pair = processes.firstNotNullOfOrNull { p -> p.state.exception?.let { p to it } }
+                    if (pair == null) {
                         exceptionCount = 0 // recurse with new (accurate) exception count and then return because we already calculated it
                         return recalculateState()
                     }
+                    val (process, exception) = pair
 
                     releaseExceptionHandler?.invoke()
-                    releaseExceptionHandler = context.handleException(firstException)
+                    releaseExceptionHandler = context.handleException(
+                        exception,
+                        ExceptionHandler.Metadata(
+                            source = this@NativeElementCommonCode,  // TODO: Get wrapper element somehow
+                            process = process,
+                            foregroundProcess = foreground
+                        )
+                    )
 
-                    ReactiveState.exception(firstException)
+                    ReactiveState.exception(exception)
                 }
 
                 notReadyCount > 0 -> ReactiveState.notReady
@@ -310,8 +319,8 @@ abstract class NativeElementCommonCode internal constructor(override val context
         }
     }
 
-    private val internalBackgroundProcesses = Processes()
-    private val internalForegroundProcesses = Processes()
+    private val internalBackgroundProcesses = Processes(foreground = false)
+    private val internalForegroundProcesses = Processes(foreground = true)
 
     override fun watchBackgroundProcess(status: Reactive<*>): Release = internalBackgroundProcesses.watch(status).also(::onRemove)
     override fun watchForegroundProcess(status: Reactive<*>): Release = internalForegroundProcesses.watch(status).also(::onRemove)

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.exceptions.ExceptionHandlersTree
 import com.lightningkite.kiteui.exceptions.ExceptionMessage
 import com.lightningkite.reactive.core.Release
@@ -30,8 +31,8 @@ abstract class ElementContextCommonCode(parent: ElementContext?) {
     val exceptionHandlers: ExceptionHandlersTree = ExceptionHandlersTree(parent = parent?.exceptionHandlers)
 }
 
-fun ElementContext.handleException(exception: Exception): Release? = exceptionHandlers.handle(this, exception)
-fun ElementContext.exceptionMessage(exception: Exception): ExceptionMessage? = exceptionHandlers.message(this, exception)
+fun ElementContext.handleException(exception: Exception, metadata: ExceptionHandler.Metadata? = null): Release? = exceptionHandlers.handle(this, exception, metadata)
+fun ElementContext.exceptionMessage(exception: Exception, metadata: ExceptionHandler.Metadata? = null): ExceptionMessage? = exceptionHandlers.message(this, exception, metadata)
 
 // by Claude - scoped key-value store with parent chain for lazy lookup.
 // Reads check local first, then walk up the parent chain.

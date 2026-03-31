@@ -116,6 +116,30 @@ fun Element.driverFindClickable(query: String): String = buildString {
 }
 
 /**
+ * Returns the full driver path for this element from the root.
+ *
+ * Builds a path using debugName for named elements and numeric indices for unnamed elements.
+ * The path can be used with [resolveDriverPath] to locate this element.
+ *
+ * Examples:
+ * - Named element at root: "email"
+ * - Unnamed at index 0 of root: "0"
+ * - Named element nested: "form/submitButton"
+ * - Unnamed at index 1 under named "form": "form/1"
+ * - Root element: "" (empty string)
+ */
+fun Element.driverPath(options: Element.DriverSnapshotOptions): String =
+    generateSequence(this) { it.parent }
+        .map { current ->
+            current.debugName
+                ?: current.parent?.children?.indexOf(current)?.takeIf { it >= 0 }?.toString()
+                ?: ""
+        }
+        .toList()
+        .reversed()
+        .joinToString("/")
+
+/**
  * Resolves a `/`-separated driver path to a view in this subtree.
  * Each segment matches by debugName first, then by numeric child index.
  * The first segment is deep-searched if no direct child matches.

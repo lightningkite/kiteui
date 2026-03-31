@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.exceptions.ExceptionToMessage
+import com.lightningkite.kiteui.exceptions.installDebugHandlers
 import com.lightningkite.kiteui.isDevelopment
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
@@ -22,12 +23,21 @@ val defaultTheme = Theme.flat2("flat2default", 0.6.turns).customize(
 //val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
 val appTheme = Signal<Theme>(defaultTheme)
 
-fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
-    context.exceptionHandlers += ExceptionHandler.stacktraceDialog
-    context.exceptionHandlers += ExceptionToMessage.unexpectedError
+class ToastException(override val message: String) : Exception()
 
-    context.exceptionHandlers += ExceptionHandler<IllegalArgumentException> {
-        toast("Oops")
+fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
+    context.exceptionHandlers.installDebugHandlers()
+
+    context.exceptionHandlers += ExceptionHandler<ToastException>(1f) {
+        toast(it.message)
+
+        return@ExceptionHandler {}
+    }
+
+    context.exceptionHandlers += ExceptionHandler(0f) {
+        val t = (it.cause as? ToastException) ?: return@ExceptionHandler null
+
+        toast("Error caused by ${t.message}")
 
         return@ExceptionHandler {}
     }
@@ -36,6 +46,7 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
     val rootView = produceExactlyOne {
         appNav(navigator, dialog) {
             appName = "KiteUI Sample App"
+
             ::navItems {
                 listOf(
                     NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },

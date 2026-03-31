@@ -52,6 +52,7 @@ interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
         val includeHidden: Boolean = false,
         val interactiveOnly: Boolean = false,
         val includeThemes: Boolean = false,
+        val includeActions: Boolean = true,
     )
 
     object Debugger {

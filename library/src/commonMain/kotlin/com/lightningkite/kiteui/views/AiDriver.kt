@@ -125,7 +125,7 @@ object AiDriver {
 //            element.htmlElementTag?.let { append(" ($it)") } TODO: htmlElementTag
             if (!element.shown) append(" (hidden)")
             else if (!element.visible) append(" (invisible)")
-            element.driverActions.keys
+            if (options.includeActions) element.driverActions.keys
                 .filter { it != "snapshot" && it != "screenshot" && it != "find" && it != "findClickable" && it != "scrollIntoView" && it != "getAlignment" }
                 .takeUnless { it.isEmpty() }
                 ?.let { append(" [${it.joinToString(", ")}]") }
