@@ -248,6 +248,37 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 }
             }
 
+            .ptr-indicator {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 0;
+                overflow: hidden;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                pointer-events: none;
+                z-index: 1;
+                color: currentcolor;
+            }
+
+            .ptr-spinner {
+                width: 24px;
+                height: 24px;
+                border: 2px solid currentcolor;
+                border-top-color: transparent;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+                box-sizing: border-box;
+            }
+
+            .ptr-arrow {
+                font-size: 20px;
+                line-height: 1;
+                transition: transform 0.15s ease;
+            }
+
             @keyframes flickerAnimation {
                 0% {
                     opacity: 1;
