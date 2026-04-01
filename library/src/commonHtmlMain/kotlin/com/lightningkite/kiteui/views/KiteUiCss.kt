@@ -248,6 +248,44 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 }
             }
 
+            .ptr-indicator {
+                height: 0;
+                overflow: hidden;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                pointer-events: none;
+                z-index: 10000;
+                color: currentcolor;
+            }
+
+            .ptr-spinner {
+                width: 28px;
+                height: 28px;
+                border: 3px solid currentcolor;
+                border-top-color: transparent;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+                box-sizing: border-box;
+            }
+
+            .ptr-icon-circle {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: var(--nearest-background-color, color-mix(in srgb, currentcolor 12%, transparent));
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: transform 0.15s ease;
+            }
+
+            .ptr-arrow {
+                width: 28px;
+                height: 28px;
+            }
+
             @keyframes flickerAnimation {
                 0% {
                     opacity: 1;

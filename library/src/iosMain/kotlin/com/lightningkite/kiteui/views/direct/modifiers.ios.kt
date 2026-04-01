@@ -150,31 +150,38 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
 ): ViewWriter {
-    val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
+    val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical)
 
     if (vertical) {
         val refreshControl = UIRefreshControl()
+        // Single reactive scope tied to scrollView's lifecycle — not recreated on every pull
+        scrollView.reactiveScope {
+            refreshAction.state().handle(
+                success = { refreshControl.endRefreshing() },
+                exception = { refreshControl.endRefreshing() },
+                // Guard against double-calling: UIKit already adjusts contentOffset when the
+                // user initiates a pull. Calling beginRefreshing() again would double-adjust
+                // contentOffset.y, leaving a permanent gap at the top after endRefreshing().
+                notReady = { if (!refreshControl.refreshing) refreshControl.beginRefreshing() }
+            )
+        }
+        val target = object : NSObject() {
+            @ObjCAction
+            fun handleRefresh() {
+                refreshAction.startAction(this@__scrollsWithRefreshUncontracted)
+            }
+        }
         refreshControl.addTarget(
-            target = object : NSObject() {
-                @ObjCAction
-                fun handleRefresh() {
-                    refreshAction.startAction(this@__scrollsWithRefreshUncontracted)
-                    reactiveScope {
-                        refreshAction.state().handle(
-                            success = { refreshControl.endRefreshing() },
-                            exception = { refreshControl.endRefreshing() },
-                            notReady = { refreshControl.beginRefreshing() }
-                        )
-                    }
-                }
-            },
+            target = target,
             action = sel_registerName("handleRefresh"),
             forControlEvents = UIControlEventValueChanged
         )
         scrollView.scroller.refreshControl = refreshControl
+        // UIControl stores targets as weak references; hold a strong ref to prevent GC
+        scrollView.tag = target
     }
 
-    return write(scrollView,setup)
+    return write(scrollView, setup)
 }
 
 @ViewModifierDsl3
