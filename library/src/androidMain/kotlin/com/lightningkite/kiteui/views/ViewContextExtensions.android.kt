@@ -9,7 +9,10 @@ actual fun ElementContext.overlay(
     body: ContainerElement.(remove: () -> Unit) -> Unit
 ) {
     var willRemove: Element? = null
-    with(overlayFrame ?: return) {
+    with(overlayFrame ?: run {
+        println("WARN!! overlay abandoned because no overlayFrame set")
+        return
+    }) {
         withoutAnimation {
             beforeSetupContainer {
                 animateIn(transition.forward)

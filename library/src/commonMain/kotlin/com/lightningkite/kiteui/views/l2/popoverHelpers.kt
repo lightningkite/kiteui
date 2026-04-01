@@ -42,10 +42,17 @@ fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.
 
 fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddSizing.(close: ()->Unit) -> Unit) {
     overlay(modal = true) { close ->
-        dismissBackground {
+        println("calling dismissBackground")
+        write(DismissBackground(context).also {
+            it.debugName = "dialog-bg"
+            Element.Debugger.debugTarget = it
+        }) {
             onClick { if (dismissable) close() }
 
-            centered.beforeSetup { themeChoice += DialogSemantic }.content(close)
+            centered.beforeSetup {
+                debugName = "dialog"
+                themeChoice += DialogSemantic
+            }.content(close)
         }
     }
 }

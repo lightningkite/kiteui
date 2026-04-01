@@ -19,8 +19,7 @@ actual class DismissBackground actual constructor(context: ElementContext) : Nat
         Frame.internalAddChildStack(this, index, element)
     }
 
-    override fun willAddChild(element: Element) {
-        super.willAddChild(element)
+    override fun nativeWillAddChild(element: Element) {
         element.native.addEventListener("click") { ev -> ev.stopImmediatePropagation() }
     }
 

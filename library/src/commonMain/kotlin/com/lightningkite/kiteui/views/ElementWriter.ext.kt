@@ -3,25 +3,23 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.UnsafeModifier
 
-private class BeforeSetup(
-    val wraps: ElementWriter,
-    val action: Element.() -> Unit
-) : ViewWriter, ElementWriter by wraps {
-    @OptIn(OverrideOnly::class)
-    override fun willAddChild(element: Element) {
-        wraps.willAddChild(element)
-        action(element)
+private inline fun ElementWriter.beforeSetupImpl(crossinline setup: Element.() -> Unit): ViewWriter =
+    object : ViewWriter, ElementWriter by this {
+        @OverrideOnly
+        override fun willAddChild(element: Element) {
+            this@beforeSetupImpl.willAddChild(element)
+            setup(element)
+        }
     }
-}
 
-fun ElementWriter.beforeSetup(setup: Element.() -> Unit): ElementWriter = BeforeSetup(this, setup)
-fun ElementWriter.CanAddScrolling.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddScrolling = BeforeSetup(this, setup)
-fun ElementWriter.CanAddTheme.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddTheme = BeforeSetup(this, setup)
-fun ElementWriter.CanAddSizing.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddSizing = BeforeSetup(this, setup)
-fun ElementWriter.CanAddShownWhen.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddShownWhen = BeforeSetup(this, setup)
-fun ElementWriter.CanAddWeight.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddWeight = BeforeSetup(this, setup)
-fun ElementWriter.CanAddAlignment.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddAlignment = BeforeSetup(this, setup)
-fun ViewWriter.beforeSetup(setup: Element.() -> Unit): ViewWriter = BeforeSetup(this, setup)
+fun ElementWriter.beforeSetup(setup: Element.() -> Unit): ElementWriter = beforeSetupImpl(setup)
+fun ElementWriter.CanAddScrolling.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddScrolling = beforeSetupImpl(setup)
+fun ElementWriter.CanAddTheme.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddTheme = beforeSetupImpl(setup)
+fun ElementWriter.CanAddSizing.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddSizing = beforeSetupImpl(setup)
+fun ElementWriter.CanAddShownWhen.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddShownWhen = beforeSetupImpl(setup)
+fun ElementWriter.CanAddWeight.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddWeight = beforeSetupImpl(setup)
+fun ElementWriter.CanAddAlignment.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddAlignment = beforeSetupImpl(setup)
+fun ViewWriter.beforeSetup(setup: Element.() -> Unit): ViewWriter = beforeSetupImpl(setup)
 
 
 private class Split(parent: ElementWriter) : ViewWriter, ElementWriter by parent {

@@ -77,10 +77,14 @@ abstract class NativeElementCommonCode internal constructor(override val context
      * wrapper element over the native component. This value is set when written to the view tree in
      * [ElementWriter.write].
      * */
-    internal var outermostElement: Element = this
+    internal open var outermostElement: Element = this
 
     override var parent: ContainerElement? = null
-        internal set
+        internal set(value) {
+            debug { "setting parent to $value" }
+            field = value
+            if (value != null) refreshTheming()
+        }
 
     // ---- LIFECYCLE ---
 
@@ -241,7 +245,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
     fun refreshTheming() {
         debug { "refreshTheming" }
         if (!checkIsActive("refreshTheming")) return
-        if (parent?.underlyingNativeElement?.isActive == false) {
+        if (parent?.underlyingNativeElement?.currentlyActive() == false) {
             debug { "abandoning refreshTheming because parent $parent not started" }
             return
         }
@@ -389,7 +393,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     @InternalKiteUi
     inline fun debug(requireTarget: Boolean = true, text: () -> String) {
-        if ((!requireTarget && debugMode) || Element.Debugger.debugTarget === this) Log.tag("$this DEBUG").info(text())
+        if ((!requireTarget && debugMode) || Element.Debugger.debugTarget?.underlyingNativeElement === this) Log.tag("$this DEBUG").info(text())
     }
 
     fun currentlyActive(): Boolean = fullyStarted && !isShutdown
@@ -402,9 +406,6 @@ abstract class NativeElementCommonCode internal constructor(override val context
         }
         return false
     }
-
-    @InternalKiteUi
-    val isActive: Boolean get() = !isShutdown && fullyStarted
 
     @InternalKiteUi
     fun checkIsActive(name: String, requireTarget: Boolean = true): Boolean {

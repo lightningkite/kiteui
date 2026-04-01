@@ -39,12 +39,21 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
     override val children: List<Element> get() = internalChildren
 
     protected abstract fun nativeAddChild(index: Int, element: Element)
+    protected open fun nativeWillAddChild(element: Element) {}
     protected abstract fun nativeRemoveChild(index: Int)
     protected abstract fun nativeClearChildren()
 
-    override fun willAddChild(element: Element) {
+    private var parentElement: ContainerElement = this
+    final override var outermostElement: Element = this
+        set(value) {
+            parentElement = value as? ContainerElement ?: this
+            field = value
+        }
+
+    final override fun willAddChild(element: Element) {
         if (checkIsShutdown("willAddChild")) return
-        element.underlyingNativeElement.parent = outermostElement as? ContainerElement ?: this
+        element.underlyingNativeElement.parent = parentElement
+        nativeWillAddChild(element)
     }
 
     final override fun addChild(index: Int, element: Element) {
@@ -52,7 +61,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
         internalChildren.add(index, element)
         nativeAddChild(index, element)
         if (element.parent?.underlyingNativeElement !== this) {
-            element.underlyingNativeElement.parent = outermostElement as? ContainerElement ?: this
+            element.underlyingNativeElement.parent = parentElement
         }
     }
     final override fun addChild(element: Element) = addChild(children.size, element)

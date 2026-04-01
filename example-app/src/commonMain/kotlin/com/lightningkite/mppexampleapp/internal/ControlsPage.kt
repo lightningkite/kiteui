@@ -76,14 +76,12 @@ object ControlsPage : Page {
 
                 scrollingHorizontally.row {
                     expanding.space()
-                    sizeConstraints(width = 5.rem).run {
-                        progressBar(ratio)
-                        card.progressBar(ratio)
-                        important.progressBar(ratio)
-                        critical.progressBar(ratio)
-                        warning.progressBar(ratio)
-                        danger.progressBar(ratio)
-                    }
+                    sizeConstraints(width = 5.rem).progressBar(ratio)
+                    sizeConstraints(width = 5.rem).card.progressBar(ratio)
+                    sizeConstraints(width = 5.rem).important.progressBar(ratio)
+                    sizeConstraints(width = 5.rem).critical.progressBar(ratio)
+                    sizeConstraints(width = 5.rem).warning.progressBar(ratio)
+                    sizeConstraints(width = 5.rem).danger.progressBar(ratio)
                     expanding.space()
                 }
             }

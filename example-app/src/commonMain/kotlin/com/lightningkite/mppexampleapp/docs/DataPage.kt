@@ -37,7 +37,7 @@ object DataPage : DocPage {
     )
 
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
-        article {
+        scrolling.article {
             val secondsElapsed = reactiveProcess<Int> {
                 // Starts out as 'loading'
                 var n = 0

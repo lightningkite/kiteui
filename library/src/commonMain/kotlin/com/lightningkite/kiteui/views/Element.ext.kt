@@ -44,9 +44,9 @@ inline fun Element.withoutLoadingAnimations(block: CoroutineScope.() -> Unit) {
     CoroutineScope(coroutineContext.minusKey(StatusListener.Key)).run(block)
 }
 
-internal fun ContainerElement.beforeSetupContainer(action: Element.() -> Unit): ContainerElement =
+internal inline fun ContainerElement.beforeSetupContainer(crossinline action: Element.() -> Unit): ContainerElement =
     object : ContainerElement by this {
-        @OptIn(OverrideOnly::class)
+        @OverrideOnly
         override fun willAddChild(element: Element) {
             this@beforeSetupContainer.willAddChild(element)
             action(element)

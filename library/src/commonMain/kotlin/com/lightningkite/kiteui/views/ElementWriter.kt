@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.OverrideOnly
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -173,8 +174,9 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * Unlike other modifiers, theme modifiers are _repeatable_, meaning that you can apply theming multiple times on a single element.
      * The end result is the sum of all applied themes.
      *
-     * Available modifiers (in addition to [CanAddDynamicTheme] modifiers):
+     * Available modifiers (in addition to [CanAddScrolling] modifiers):
      * - Direct theme application: `themed(theme)`
+     * - Dynamic theme application: `dynamicThemed { ... }`
      * - Grouping: `card`, `fieldTheme`, `buttonTheme`, `bar`, `nav`, `group`, `padded`
      * - Emphasis: `important`, `critical`, `warning`, `danger`, `affirmative`, `emphasized`, `compact`
      * - Text styling: `bold`, `italic`, `allCaps`, `strikethrough`, `underline`, `textSize(size)`, `withSpacing(multiplier)`
@@ -187,7 +189,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * Available modifiers (in addition to [CanAddTheme] modifiers):
      * - `sizedBox(constraints)` - Apply size constraints
      * - `sizeConstraints(...)` - Apply size constraints
-     * - `changingSizeConstraints(...)` - Reactive size constraints
+     * - `dynamicSizeConstraints(...)` - Reactive size constraints
      * - `maxHeight(height)` - Set maximum height
      */
     interface CanAddSizing : CanAddTheme
@@ -205,7 +207,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      *
      * Available modifiers (in addition to [CanAddShownWhen] modifiers):
      * - `weight(amount)` - Set flex weight in layout
-     * - `changingWeight(amount)` - Reactive flex weight
+     * - `dynamicWeight(amount)` - Reactive flex weight
      * - `expanding` - Shorthand for `weight(1f)`
      */
     interface CanAddWeight : CanAddShownWhen
