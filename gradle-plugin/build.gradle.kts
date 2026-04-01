@@ -21,7 +21,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation(libs.kotlinGradlePluginApi)
+    implementation(libs.kotlin.gradle.plugin.api)
     implementation(libs.fontbox)
     testImplementation(libs.junit)
 }
