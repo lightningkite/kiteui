@@ -57,7 +57,7 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
     val Edges.secondaryStart get() = if (!horizontal) left.value else top.value
     val Edges.secondaryEnd get() = if (!horizontal) right.value else bottom.value
 
-    val mainSubview get() = subviews.filterIsInstance<UIView>().firstOrNull { !it.hidden }
+    val mainSubview get() = subviews.filterIsInstance<UIView>().firstOrNull { !it.hidden && it !is UIRefreshControl }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val mySizeWithoutPadding = bounds.useContents { size.local }

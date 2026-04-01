@@ -9,16 +9,16 @@ package com.lightningkite.kiteui
 internal class RingBuffer<T>(private val maxSize: Int) {
     private val buffer = ArrayDeque<T>()
 
-    fun add(item: T): Unit = platformSynchronized(buffer) {
+    fun add(item: T): Unit = platformSynchronized(this) {
         if (buffer.size >= maxSize) buffer.removeFirst()
         buffer.addLast(item)
     }
 
-    fun takeLast(count: Int): List<T> = platformSynchronized(buffer) {
+    fun takeLast(count: Int): List<T> = platformSynchronized(this) {
         buffer.takeLast(count)
     }
 
-    fun clear(): Unit = platformSynchronized(buffer) {
+    fun clear(): Unit = platformSynchronized(this) {
         buffer.clear()
     }
 }

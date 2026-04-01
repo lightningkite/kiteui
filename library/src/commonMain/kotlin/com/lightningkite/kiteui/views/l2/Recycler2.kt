@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 class Recycler2(
     viewWriter: ViewWriter,
     val vertical: Boolean = true,
+    val refreshAction: Action? = null,
     var log: Log? = null//ConsoleRoot.tag("Recycler2"),
 ): CoroutineScopeHelpers() {
     override val coroutineContext: CoroutineContext
@@ -93,9 +95,19 @@ class Recycler2(
                 beforeNextElementSetup {
                     padding = 0.px
                     themeTakeNonCascadingFromParent = true
-                }.scrolling(vertical = vertical, horizontal = !vertical) {
-                    scroll = this
-                    showScrollBars = false
+                }.let { writer ->
+                    val ra = refreshAction
+                    if (ra != null) {
+                        writer.scrollingWithRefresh(vertical = vertical, horizontal = !vertical, refreshAction = ra) {
+                            scroll = this
+                            showScrollBars = false
+                        }
+                    } else {
+                        writer.scrolling(vertical = vertical, horizontal = !vertical) {
+                            scroll = this
+                            showScrollBars = false
+                        }
+                    }
                 }.onNext(ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }).programmatic {
                     padding = null
                     themeTakeNonCascadingFromParent = true
