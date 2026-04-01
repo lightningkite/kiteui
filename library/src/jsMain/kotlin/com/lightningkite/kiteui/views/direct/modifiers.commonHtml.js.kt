@@ -660,6 +660,7 @@ private class PullToRefreshState {
     var isPulling = false
     var isRefreshing = false
     var indicator: HTMLElement? = null
+    var circle: HTMLElement? = null
     var arrow: HTMLElement? = null
     var spinner: HTMLElement? = null
 
@@ -668,7 +669,7 @@ private class PullToRefreshState {
         ind.style.transition = "height 0.2s ease, opacity 0.2s ease"
         ind.style.height = "0px"
         ind.style.opacity = "0"
-        arrow?.style?.transform = "rotate(0deg)"
+        circle?.style?.transform = "rotate(0deg)"
         arrow?.style?.display = ""
         spinner?.style?.display = "none"
         isPulling = false
@@ -681,6 +682,13 @@ private class PullToRefreshState {
         ind.style.top = "${rect.top}px"
         ind.style.left = "${rect.left}px"
         ind.style.width = "${rect.width}px"
+        // Inherit theme colors from the scroll element
+        val computed = window.getComputedStyle(scrollElement)
+        ind.style.color = computed.color
+        val bg = computed.getPropertyValue("--nearest-background-color").trim()
+        if (bg.isNotEmpty()) {
+            circle?.style?.background = bg
+        }
     }
 }
 
@@ -702,19 +710,25 @@ internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
         indicator.style.transition = "height 0.2s ease, opacity 0.2s ease"
         indicator.style.opacity = "0"
 
+        val circle = document.createElement("div") as HTMLDivElement
+        circle.className = "ptr-icon-circle"
+
         val arrow = document.createElement("div") as HTMLDivElement
         arrow.className = "ptr-arrow"
-        arrow.textContent = "\u2193"
+        arrow.innerHTML =
+            """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>"""
 
         val spinner = document.createElement("div") as HTMLDivElement
         spinner.className = "ptr-spinner"
         spinner.style.display = "none"
 
-        indicator.appendChild(arrow)
-        indicator.appendChild(spinner)
+        circle.appendChild(arrow)
+        circle.appendChild(spinner)
+        indicator.appendChild(circle)
         document.body!!.appendChild(indicator)
 
         state.indicator = indicator
+        state.circle = circle
         state.arrow = arrow
         state.spinner = spinner
 
@@ -748,9 +762,9 @@ internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
                 indicator.style.height = "${pullDistance}px"
                 indicator.style.opacity = "1"
 
-                // Rotate arrow based on progress toward threshold
+                // Rotate circle based on progress toward threshold
                 val rotation = min(pullDistance / PULL_THRESHOLD, 1.0) * 180.0
-                arrow.style.transform = "rotate(${rotation}deg)"
+                circle.style.transform = "rotate(${rotation}deg)"
             } else if (state.isPulling) {
                 state.resetIndicator()
             }
