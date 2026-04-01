@@ -18,7 +18,7 @@ import com.lightningkite.reactive.core.Signal
 object CameraScannerTestPage : Page {
     override val title: Reactive<String> = Constant("Camera Scanner Test")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val scannedBarcodes = Signal<List<BarcodeResult>>(emptyList())
         val captureCount = Signal(0)
         val hasPermission = Signal(false)

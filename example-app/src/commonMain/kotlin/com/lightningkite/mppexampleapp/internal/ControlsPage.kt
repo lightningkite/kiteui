@@ -13,11 +13,11 @@ import com.lightningkite.kiteui.views.scrollsHorizontally
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import kotlin.math.roundToInt
+import kotlin.time.Clock
 import kotlin.time.measureTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
-import kotlin.time.Clock
 
 @Routable("controls")
 object ControlsPage : Page {

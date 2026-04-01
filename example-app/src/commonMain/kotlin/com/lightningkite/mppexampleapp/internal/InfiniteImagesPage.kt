@@ -54,7 +54,7 @@ object InfiniteImagesPage : Page {
         override fun contains(element: Int): Boolean = true
     }
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         recyclerView {
             placer = RecyclerViewPlacerVerticalGrid(4, 1.0)
             children(Constant(ReturnIndexList), id = { it }) {
@@ -76,7 +76,7 @@ object InfiniteImagesPage : Page {
 class ImageViewPager(val initialIndex: Int) : Page {
     val currentPage = Signal(initialIndex)
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         themeFromLast { it.copy(id="dumb", background = Color.black, foreground = Color.white) }.frame {
             val rv: ViewPager
             viewPager {

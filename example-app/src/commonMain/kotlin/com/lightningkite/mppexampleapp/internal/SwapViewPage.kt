@@ -1,9 +1,10 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.models.ScreenTransition
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 
 @Routable("swapview")
 object SwapViewPage : Page {
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         val clock = reactiveProcess {
             var tick = 0
             while (true) {

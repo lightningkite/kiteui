@@ -18,7 +18,7 @@ object FormsAndValidationPage : DocPage {
         "text input", "form handling", "user input"
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Forms and Validation") {
                 text("Learn how to build robust, validated forms in KiteUI.")

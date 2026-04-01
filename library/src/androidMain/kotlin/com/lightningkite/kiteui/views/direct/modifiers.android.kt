@@ -21,6 +21,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
@@ -380,18 +381,18 @@ actual fun ElementWriter.textPopover(message: String): ElementWriter {
 
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme {
+actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return this@shownWhen.beforeSetup {
         shown = default
         var existingAnimator: ValueAnimator? = null
         var goal = default
-        reactiveScope {
+        reactive {
             val value = condition()
-            if (goal == value) return@reactiveScope
+            if (goal == value) return@reactive
             goal = value
             if (native.layoutParams == null) {
                 shown = value
-                return@reactiveScope
+                return@reactive
             }
             existingAnimator?.cancel()
             existingAnimator = null

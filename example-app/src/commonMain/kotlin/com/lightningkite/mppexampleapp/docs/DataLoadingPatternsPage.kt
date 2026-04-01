@@ -17,7 +17,7 @@ object DataLoadingPatternsPage : DocPage {
         "error handling", "retry", "caching", "rememberSuspending"
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Data Loading Patterns") {
                 text("Learn how to load, cache, and handle asynchronous data in KiteUI.")

@@ -24,7 +24,7 @@ import kotlinx.serialization.Serializable
 object LoadAnimationTestPage : Page {
     @Serializable data class Post(val userId: Int, val id: Int, val title: String, val body: String)
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
             val loading = LateInitSignal<String>()
             val writable = Signal<String>("")

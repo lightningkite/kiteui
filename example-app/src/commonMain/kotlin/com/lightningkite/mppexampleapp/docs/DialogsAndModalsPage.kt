@@ -14,7 +14,7 @@ object DialogsAndModalsPage : DocPage {
         "dialog box", "popup window", "modal window", "confirmation"
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Dialogs and Modals") {
                 text("Learn how to create dialogs, modals, and popups in KiteUI.")

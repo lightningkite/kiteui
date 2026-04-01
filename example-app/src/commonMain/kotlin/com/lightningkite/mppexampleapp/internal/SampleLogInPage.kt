@@ -21,7 +21,7 @@ import kotlinx.coroutines.delay
 
 @Routable("sample/login")
 object SampleLogInPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val email = Signal("")
         val password = Signal("")
         unpadded.frame {

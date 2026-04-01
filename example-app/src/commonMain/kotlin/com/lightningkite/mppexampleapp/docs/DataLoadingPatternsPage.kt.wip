@@ -23,7 +23,7 @@ object DataLoadingPatternsPage : DocPage {
     @Serializable
     data class User(val id: Int, val name: String, val email: String)
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Data Loading Patterns") {
                 text("Learn how to load, cache, and handle asynchronous data in KiteUI.")

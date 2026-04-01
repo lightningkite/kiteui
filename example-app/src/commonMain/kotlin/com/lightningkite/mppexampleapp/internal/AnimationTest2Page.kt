@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("animation-test2")
 object AnimationTest2Page : Page {
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
         scrolling.col {
             val a = Signal(true)
             val s = Signal(true)

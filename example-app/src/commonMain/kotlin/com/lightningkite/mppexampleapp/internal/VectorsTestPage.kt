@@ -1,16 +1,16 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
 
 @Routable("test/vectors")
 object VectorsTestPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.col {
             row {
                 image {

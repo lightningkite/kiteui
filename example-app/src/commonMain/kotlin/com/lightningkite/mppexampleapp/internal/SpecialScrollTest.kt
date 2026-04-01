@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
@@ -21,7 +22,7 @@ import kotlinx.coroutines.delay
 
 @Routable("scroll-test")
 object SpecialScrollTest : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
             h1 { content = "Scroll Layout Test" }
             lateinit var verticalScrollElement: ScrollingBehaviors

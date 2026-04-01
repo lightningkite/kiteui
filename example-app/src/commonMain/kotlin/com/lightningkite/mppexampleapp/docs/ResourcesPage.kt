@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 object ResourcesPage: DocPage {
     override val covers: List<String> = listOf("resources", "Resources", "assets", "Assets", "images", "audio", "video", "fonts")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             h1("Resources")
             text("KiteUI provides a convenient way to access resources (assets) in your multiplatform application. Resources can include images, audio, video, and fonts.")
@@ -76,7 +76,7 @@ object ResourcesPage: DocPage {
                             text("Play Audio")
                             onClick { soundEffectPool.play(Resources.audioTaunt) }
                         }
-                        expanding.button { 
+                        expanding.button {
                             text("Play Directly")
                             onClick { Resources.audioTaunt.load().play() }
                         }
@@ -124,7 +124,7 @@ object ResourcesPage: DocPage {
 
             h2("Resource Organization")
             text("KiteUI does not enforce any specific organizational requirements for the resources folder. You are free to organize your resources in any way that makes sense for your project. The following is just an example of how resources might be organized:")
-            scrollingHorizontally.code { 
+            scrollingHorizontally.code {
                 content = """
                     example-app/
                     └── src/
@@ -147,7 +147,7 @@ object ResourcesPage: DocPage {
             h2("Accessing Resources")
             text("Resources are accessed through the Resources object, which provides properties for each resource file. The Resources object is automatically generated based on the files in your resources directory.")
 
-            scrollingHorizontally.code { 
+            scrollingHorizontally.code {
                 content = """
                     // Import the Resources object
                     import com.lightningkite.mppexampleapp.Resources
@@ -192,7 +192,7 @@ object ResourcesPage: DocPage {
 
             h3("Required Font File Names")
             text("For a font family to be properly recognized, use these preset file names:")
-            scrollingHorizontally.code { 
+            scrollingHorizontally.code {
                 content = """
                     normal.ttf       # Regular/Normal weight (400)
                     bold.ttf         # Bold weight (700)
@@ -204,7 +204,7 @@ object ResourcesPage: DocPage {
             }
 
             text("The plugin also recognizes other weight names in filenames:")
-            scrollingHorizontally.code { 
+            scrollingHorizontally.code {
                 content = """
                     thin.ttf / hairline.ttf           # Weight 100
                     ultralight.ttf / extralight.ttf   # Weight 200

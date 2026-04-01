@@ -5,8 +5,11 @@ import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.compact
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.changingWeight
 import com.lightningkite.kiteui.views.direct.col
@@ -25,14 +28,15 @@ import com.lightningkite.reactive.core.Signal
 class AnimationBugReplicationPage: Page {
 
     interface Subsection {
-        fun ViewWriter.renderHeader()
-        fun ViewWriter.renderBody()
+        fun ElementWriter.renderHeader()
+        fun ElementWriter.renderBody()
     }
+
     class SampleSubsection: Subsection {
-        override fun ViewWriter.renderHeader() {
+        override fun ElementWriter.renderHeader() {
             text("Sample Subsection")
         }
-        override fun ViewWriter.renderBody() {
+        override fun ElementWriter.renderBody() {
             col {
                 text("Some Content")
                 text("Some Content")
@@ -64,7 +68,7 @@ class AnimationBugReplicationPage: Page {
 
     val selectedSubpage = Signal(0)
 
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         themed(ListSemantic).col {
             for((index, subpage) in subpages.withIndex()) {
                 changingWeight { if(index == selectedSubpage()) 1f else 0f }.col {
@@ -80,8 +84,8 @@ class AnimationBugReplicationPage: Page {
                             }
                         }
                     }
-                    with(expanding.shownWhen { index == selectedSubpage() }.beforeNextElementSetup { debugName = "Subpage $index" }.scrolling.padded) {
-                        with(subpage) { renderBody() }
+                    expanding.shownWhen { index == selectedSubpage() }.beforeSetup { debugName = "Subpage $index" }.padded.scrolling.run {
+                        subpage.run { renderBody() }
                     }
                 }
             }

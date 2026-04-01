@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 import com.lightningkite.kiteui.views.canvas.TextAlign
@@ -365,7 +366,7 @@ class GraphDelegate : CanvasDelegate() {
 /**
  * Extension function to create a graph canvas with the given setup.
  */
-fun ViewWriter.graph(setup: GraphDelegate.() -> Unit = {}): Canvas {
+inline fun ElementWriter.graph(setup: GraphDelegate.() -> Unit = {}): Canvas {
     return canvas {
         delegate = GraphDelegate().apply(setup)
     }
@@ -374,7 +375,7 @@ fun ViewWriter.graph(setup: GraphDelegate.() -> Unit = {}): Canvas {
 /**
  * Extension function to create a line graph with the given data.
  */
-fun ViewWriter.lineGraph(
+inline fun ElementWriter.lineGraph(
     data: List<Point>,
     setup: GraphDelegate.() -> Unit = {}
 ): Canvas {
@@ -390,7 +391,7 @@ fun ViewWriter.lineGraph(
  */
 @JvmName("lineGraphFromYValues")
 @JsName("lineGraphFromYValues")
-fun ViewWriter.lineGraph(
+inline fun ElementWriter.lineGraph(
     yValues: List<Double>,
     setup: GraphDelegate.() -> Unit = {}
 ): Canvas {
@@ -403,7 +404,7 @@ fun ViewWriter.lineGraph(
  */
 @JvmName("lineGraphFromPairs")
 @JsName("lineGraphFromPairs")
-fun ViewWriter.lineGraph(
+inline fun ElementWriter.lineGraph(
     points: List<Pair<Double, Double>>,
     setup: GraphDelegate.() -> Unit = {}
 ): Canvas {

@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
@@ -13,7 +14,7 @@ import com.lightningkite.readable.*
 
 @Routable("sample/websockets")
 object WebSocketPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val socket = remember {
             retryWebsocket("wss://socketsbay.com/wss/v2/1/demo/", 30_000L).also { use(it) }
         }

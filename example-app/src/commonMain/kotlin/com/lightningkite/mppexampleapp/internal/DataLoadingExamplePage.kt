@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
@@ -22,7 +23,7 @@ import kotlinx.serialization.json.Json
 object DataLoadingExamplePage : Page {
     @Serializable data class Post(val userId: Int, val id: Int, val title: String, val body: String)
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val data: Reactive<List<Post>> = rememberSuspending {
             delay(5000)
             val response: RequestResponse = fetch("https://jsonplaceholder.typicode.com/posts", onDownloadProgress = { complete, max -> println("$complete/$max") })

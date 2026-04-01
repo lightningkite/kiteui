@@ -163,7 +163,7 @@ actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: React
 // End
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme {
+actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return write(object : NativeContainerElement(context) {
         init {
             native.tag = "div"

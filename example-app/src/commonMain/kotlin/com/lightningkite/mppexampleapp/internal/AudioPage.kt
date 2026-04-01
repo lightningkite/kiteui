@@ -20,7 +20,7 @@ object AudioPage : Page {
 
     val backgroundSoundPlaying = PersistentProperty("backgroundNoisePlaying", false)
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val soundEffectPool = SoundEffectPool()
         col {
             h1("Audio Testing")

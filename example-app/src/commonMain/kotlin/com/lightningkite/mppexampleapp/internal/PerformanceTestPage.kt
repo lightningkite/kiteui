@@ -17,7 +17,7 @@ import kotlinx.coroutines.delay
 
 @Routable("performance")
 object PerformanceTestPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
             h1 { content = "Performance Test" }
             text("This screen is hammering the UI by adding and removing thousands of views and updating content.")

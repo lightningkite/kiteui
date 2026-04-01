@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.views.direct.*
  */
 @Routable("container-alignment-demo")
 object ContainerAlignmentDemoPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.col {
             maxWidthCentered(48.rem).col {
                 h1 { content = "Container Child Alignment Demo" }

@@ -16,7 +16,7 @@ object CustomComponentsPage : DocPage {
         "component design", "ViewWriter", "extensions"
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Custom Components Guide") {
                 text("Learn how to create reusable, composable components in KiteUI.")
@@ -196,22 +196,21 @@ object CustomComponentsPage : DocPage {
                             }
                         )
                     """.trimIndent()) {
-                        fun ViewWriter.confirmDialog(
+
+                        fun ElementWriter.CanAddTheme.confirmDialog(
                             message: String,
                             onConfirm: () -> Unit,
                             onCancel: () -> Unit
-                        ): Unit = run {
-                            card.col {
-                                text(message)
-                                row {
-                                    expanding.button {
-                                        text("Cancel")
-                                        onClick { onCancel() }
-                                    }
-                                    expanding.important.button {
-                                        text("Confirm")
-                                        onClick { onConfirm() }
-                                    }
+                        ) = card.col {
+                            text(message)
+                            row {
+                                expanding.button {
+                                    text("Cancel")
+                                    onClick { onCancel() }
+                                }
+                                expanding.important.button {
+                                    text("Confirm")
+                                    onClick { onConfirm() }
                                 }
                             }
                         }
@@ -262,7 +261,7 @@ object CustomComponentsPage : DocPage {
                             text("Email: john@example.com")
                         }
                     """.trimIndent()) {
-                        fun ViewWriter.section(
+                        fun ElementWriter.CanAddTheme.section(
                             title: String,
                             content: ViewWriter.() -> Unit
                         ): Unit = run {

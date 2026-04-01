@@ -14,7 +14,7 @@ object MultiplatformPage : DocPage {
         "android", "ios", "js", "jvm", "web", "native", "cross-platform"
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Multiplatform Development") {
                 text("Learn how to handle platform differences and write platform-specific code in KiteUI.")

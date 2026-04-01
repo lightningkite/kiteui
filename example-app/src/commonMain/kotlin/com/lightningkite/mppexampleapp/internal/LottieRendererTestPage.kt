@@ -11,8 +11,8 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.*
-import kotlinx.coroutines.*
 import kotlin.time.TimeSource
+import kotlinx.coroutines.*
 
 /**
  * Test page for the pure Kotlin Lottie renderer.
@@ -27,7 +27,7 @@ object LottieRendererTestPage : Page {
 
     override val title: Reactive<String> = Constant("Lottie Renderer Test")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.col {
             h1 { content = "Pure Kotlin Lottie Renderer Test" }
 

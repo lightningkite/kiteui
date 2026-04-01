@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.ElementWriter.CanAddTheme
 import com.lightningkite.reactive.context.ReactiveContext
@@ -10,6 +11,7 @@ private class ThemedWriter(
     val base: CanAddTheme,
     val theme: ThemeDerivation
 ) : ElementWriter.CanAddTheme by base {
+    @OverrideOnly
     override fun willAddChild(element: Element) {
         base.willAddChild(element)
         element.themeChoice += theme

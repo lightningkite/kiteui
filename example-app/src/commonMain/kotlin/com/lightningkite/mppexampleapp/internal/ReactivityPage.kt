@@ -21,7 +21,7 @@ object ReactivityPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val local = Signal("Local")
         val persist = PersistentProperty("persistent-example", "Persistent")
         val indirect = remember { local() + " " + persist() }

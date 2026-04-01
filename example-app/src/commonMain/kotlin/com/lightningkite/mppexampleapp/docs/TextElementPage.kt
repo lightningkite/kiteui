@@ -1,16 +1,16 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("docs/text")
 object TextElementPage : DocPage {
     override val covers: List<String> = listOf("Text", "text", "subtext", "h1", "h2", "h3")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             h1("Text Elements")
             text("KiteUI has a number of text elements to help you display text in a variety of ways.")

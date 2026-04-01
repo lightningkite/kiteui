@@ -18,7 +18,7 @@ import com.lightningkite.readable.*
 object ViewPagerElementPage: DocPage {
     override val covers: List<String> = listOf("viewPager", "ViewPager")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             h1("View Pager")
             text("You can use a view pager to create an element that scrolling horizontally displaying pages.")

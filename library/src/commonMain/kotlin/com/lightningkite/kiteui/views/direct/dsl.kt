@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.kiteui.views.ElementWriter
+import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
 import com.lightningkite.kiteui.views.themed
@@ -306,11 +307,13 @@ inline fun ElementWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {})
     return write(ProgrammaticLayout(context), setup)
 }
 
+@ViewDsl
 inline fun ElementWriter.recyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return Recycler2(this, true).apply(setup)
 }
 
+@ViewDsl
 inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return Recycler2(this, false).apply {
@@ -337,6 +340,7 @@ inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 
     }.apply(setup)
 }
 
+@ViewDsl
 inline fun ElementWriter.horizontalRecyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return Recycler2(this, false).apply(setup)

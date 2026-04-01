@@ -33,7 +33,7 @@ object NavigationPage: DocPage {
         "replace",
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             h1("Navigation")
 
@@ -160,7 +160,7 @@ object NavigationPage: DocPage {
                     text("Open a dialog")
                     onClick {
                         navigator.dialog.navigate(object: KiteUiPage {
-                            override fun ViewWriter.render(): Unit = run {
+                            override fun ElementWriter.CanAddTheme.render(): Unit = run {
                                 frame {
                                     centered.card.col {
                                         h1("Hello!")
@@ -183,7 +183,7 @@ object NavigationPage: DocPage {
                     text("Open a dialog")
                     onClick {
                         dialogPageNavigator.navigate(object: Page {
-                            override fun ViewWriter.render(): Unit = run {
+                            override fun ElementWriter.CanAddTheme.render(): Unit = run {
                                 frame {
                                     centered.card.col {
                                         h1("Hello!")

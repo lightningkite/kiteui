@@ -42,13 +42,13 @@ actual fun ViewWriter.platformSpecific(): Unit {
 }
 
 class PlaceholderPage: Page {
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         text("placeholder")
     }
 }
 
 class MemoryPage: Page {
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
 //        return write(MemoryView(context)) {}
 
         text("ok")

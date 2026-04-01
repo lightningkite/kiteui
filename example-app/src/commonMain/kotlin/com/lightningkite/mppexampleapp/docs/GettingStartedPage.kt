@@ -16,7 +16,7 @@ object GettingStartedPage : DocPage {
         "hello world", "first app", "beginner", "tutorial"
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Getting Started with KiteUI") {
                 text("Welcome to KiteUI! This guide will walk you through creating your first KiteUI application.")
@@ -86,7 +86,7 @@ object GettingStartedPage : DocPage {
                     example("""
                         // Annotation: Routable("hello")
                         object HelloWorldPage : Page {
-                            override fun ViewWriter.render(): Unit = run {
+                            override fun ElementWriter.CanAddTheme.render(): Unit = run {
                                 col {
                                     h1("Hello, KiteUI!")
                                     text("Welcome to your first page")
@@ -297,7 +297,7 @@ object GettingStartedPage : DocPage {
                         content = """
                             // Annotation: Routable("user/{id}")
                             class UserPage(val id: String) : Page {
-                                override fun ViewWriter.render(): Unit = run {
+                                override fun ElementWriter.CanAddTheme.render(): Unit = run {
                                     col {
                                         h1("User: ${'$'}id")
                                         text("Viewing profile for user ${'$'}id")
@@ -342,7 +342,7 @@ object GettingStartedPage : DocPage {
                         content = """
                             // Annotation: Routable("todo")
                             object TodoPage : Page {
-                                override fun ViewWriter.render(): Unit = run {
+                                override fun ElementWriter.CanAddTheme.render(): Unit = run {
                                     val todos = Signal(listOf<String>())
                                     val newTodo = Signal("")
 

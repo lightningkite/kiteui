@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
@@ -22,7 +23,7 @@ object ScrollIntoViewTest : Page {
     enum class Location { Top, Bottom }
     val jumpTo = Signal<Location?>(null)
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.frame {
             sizeConstraints(height = 500.rem).col {
                 centered.important.button {

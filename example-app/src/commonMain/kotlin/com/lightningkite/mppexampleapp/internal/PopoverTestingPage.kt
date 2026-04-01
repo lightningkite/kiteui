@@ -1,15 +1,15 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("popover-testing")
 object PopoverTestingPage : Page {
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
         frame {
             fun ViewWriter.testGrouping() = col {
                 for (horizontal in listOf(false, true)) {

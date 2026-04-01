@@ -41,7 +41,7 @@ object DocSearchPage : Page {
         { CheatSheet }
     ))
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         frame {
             align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col  {
                 h1("Documentation")
@@ -52,7 +52,6 @@ object DocSearchPage : Page {
                         content bind query
                     }
                     centered.button {
-                        gap = 0.1.rem
                         icon { source = Icon.close }
                         onClick {
                             query set ""

@@ -41,7 +41,7 @@ object DragPage : Page {
         )
     }
 
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
         scrolling.col {
             val title = atStart.h2("Drag test")
 

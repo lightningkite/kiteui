@@ -28,7 +28,7 @@ object ReactiveToolsPage : Page, DocPage {
         "MutableRemember"
     )
 
-    fun ViewWriter.bufferedNumberInput(sets: MutableReactive<in Double>): Unit {
+    fun ElementWriter.CanAddTheme.bufferedNumberInput(sets: MutableReactive<in Double>): Unit {
         fieldTheme.row {
             gap = 0.5.rem
             val buffer = Signal<Double?>(null)
@@ -38,7 +38,6 @@ object ReactiveToolsPage : Page, DocPage {
                 content bind buffer
             }
             card.button {
-                gap = 0.5.rem
                 ::enabled { buffer().let { it != null } }
                 centered.text("Set Value")
                 onClick {
@@ -49,7 +48,7 @@ object ReactiveToolsPage : Page, DocPage {
         }
     }
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Classes and functions to help with reactivity") {
                 text("This article will give an overview of all the tools available in KiteUI to handle common reactive use cases. If you haven't already read through the basic reactive documentation, you should do so. ")
@@ -98,12 +97,10 @@ object ReactiveToolsPage : Page, DocPage {
                                     ::content { counter().toString() }
                                 }
                                 card.button {
-                                    gap = 0.5.rem
                                     centered.text("-")
                                     onClick { counter.value-- }
                                 }
                                 card.button {
-                                    gap = 0.5.rem
                                     centered.text("+")
                                     onClick { counter.value++ }
                                 }
@@ -168,7 +165,7 @@ object ReactiveToolsPage : Page, DocPage {
                             val textInput = Signal("")
                             col {
                                 expanding.field("Input") {
-                                    expanding.textArea {
+                                    textArea {
                                         hint = "Type Something..."
                                         content bind textInput
                                     }

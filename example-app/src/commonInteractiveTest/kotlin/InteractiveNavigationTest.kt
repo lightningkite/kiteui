@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.testing.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.docs.*
 import kotlin.test.Test

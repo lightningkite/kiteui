@@ -1,6 +1,8 @@
 package com.lightningkite.mppexampleapp.internal
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.gamepad.Gamepads
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
@@ -10,10 +12,11 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.readable.*
 
+@OptIn(ExperimentalKiteUi::class, Untested::class)
 @Routable("test/gamepad")
 object GamepadTestPage : Page {
 
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         scrolling.col {
             // Start polling when the page is shown
             Gamepads.startPolling()

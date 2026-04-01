@@ -19,7 +19,7 @@ object R2VPPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
             val expanded = Signal(-1)
             var recyclerView: Recycler2? = null

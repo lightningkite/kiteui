@@ -2,11 +2,13 @@
 
 package com.lightningkite.mppexampleapp.widgets
 
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.write
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind

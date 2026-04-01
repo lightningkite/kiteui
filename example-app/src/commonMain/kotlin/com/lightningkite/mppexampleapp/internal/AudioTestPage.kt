@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.audio.AudioCapture
 import com.lightningkite.kiteui.audio.AudioFormat
 import com.lightningkite.kiteui.audio.AudioPlayback
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
@@ -20,7 +21,7 @@ import com.lightningkite.reactive.core.*
 object AudioTestPage : Page {
     override val title: Reactive<String> = Constant("Audio Test")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val format = AudioFormat.VOICE  // 24kHz mono PCM16
         val capture = AudioCapture(format)
         val playback = AudioPlayback(format)

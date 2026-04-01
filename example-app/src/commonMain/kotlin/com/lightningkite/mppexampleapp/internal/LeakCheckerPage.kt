@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 object UltraBasicPage : Page {
     val count = Signal(0)
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
 //        frame {
 //            onRemove { println("stack onRemove") }
         col {
@@ -67,7 +67,7 @@ object CounterPage : Page {
         }
     }
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
             text {
                 ::content { "${count()}" }
@@ -121,7 +121,7 @@ object LeakCheckerPage : Page {
 //        "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val index = Signal(0)
         col {
 //            launch {

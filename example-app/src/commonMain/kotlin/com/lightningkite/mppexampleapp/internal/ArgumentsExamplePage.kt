@@ -5,13 +5,15 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.textInput
 import com.lightningkite.kiteui.views.forEachUpdating
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.core.*
-import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
+import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
@@ -26,7 +28,7 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
     @QueryParameter
     val list = Signal(listOf("sample"))
 
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         col {
             transitionId = id
             h1 { content = "Hello world!" }
@@ -58,7 +60,7 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
                 }
             }
             h2 { content = "Add more" }
-            textField { content bind toAdd }
+            textInput { content bind toAdd }
             button {
                 text { content = "Add" }
                 onClick {
@@ -67,7 +69,7 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
                 }
             }
             sizeConstraints(height = 10.rem).image {
-                source = when (htmlElementId.hashCode() % 2) {
+                source = when (this.hashCode() % 2) {
                     0 -> Resources.imagesSnowyBackground
                     else -> Resources.imagesLightningBackground
                 }

@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.ssr.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.Constant
@@ -81,7 +82,7 @@ class SsrDataExamplePage(val userId: String = "123") : Page, SsrPreloadable {
         })
     }
 
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         col {
             h1("SSR Data Preloading Example")
 

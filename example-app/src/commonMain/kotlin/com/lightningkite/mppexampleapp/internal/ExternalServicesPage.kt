@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
@@ -13,17 +14,17 @@ import com.lightningkite.kiteui.views.l2.toast
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @Routable("external-services")
 object ExternalServicesPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.col {
             padded.col {
                 h1 { content = "This screen demonstrates various some external access." }

@@ -18,7 +18,7 @@ import kotlin.random.Random
 object ImageElementPage: DocPage {
     override val covers: List<String> = listOf("image", "Image")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             h1("Image")
             text("You can use the image element to render many types of images with fairly smooth animations.")
@@ -107,12 +107,12 @@ object ImageElementPage: DocPage {
             text("You can also control the crop modes.  Note that images do NOT get padding when they are given a new theme.")
             row {
                 fun sample(scaleType: ImageScaleType) {
-                    important.sizeConstraints(height = 5.rem).image {
+                    sizeConstraints(height = 5.rem).important.image {
                         this.scaleType = scaleType
                         source = ImageRemote("https://picsum.photos/seed/1/200/200")
                     }
                 }
-                ImageScaleType.values().forEach {
+                ImageScaleType.entries.forEach {
                     expanding.col {
                         sample(it)
                         centered.text(it.name)

@@ -15,7 +15,7 @@ import com.lightningkite.readable.*
 
 @Routable("slider-example")
 object SliderExamplePage : Page {
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
         val sliderValue = Signal(50f)
         val sliderValueText = Signal("50")
 

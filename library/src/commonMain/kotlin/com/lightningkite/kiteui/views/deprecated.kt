@@ -63,21 +63,26 @@ var Element.testId: String?
         debugName = value
     }
 
+@Deprecated("No longer supported")
+var Element.transitionId: String?
+    get() = null
+    set(value) {}
+
 // modifiers
 
-@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup(setup)"))
 fun ElementWriter.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter = beforeSetup(setup)
-@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup(setup)"))
 fun ElementWriter.CanAddScrolling.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddScrolling = beforeSetup(setup)
-@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup(setup)"))
 fun ElementWriter.CanAddSizing.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddSizing = beforeSetup(setup)
-@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup(setup)"))
 fun ElementWriter.CanAddTheme.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddTheme = beforeSetup(setup)
-@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup(setup)"))
 fun ElementWriter.CanAddShownWhen.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddShownWhen = beforeSetup(setup)
-@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup(setup)"))
 fun ElementWriter.CanAddWeight.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddWeight = beforeSetup(setup)
-@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup"))
+@Deprecated("Renamed to reflect new behavior", ReplaceWith("beforeSetup(setup)"))
 fun ElementWriter.CanAddAlignment.beforeNextElementSetup(setup: Element.() -> Unit): ElementWriter.CanAddAlignment = beforeSetup(setup)
 
 @Deprecated("No longer supported, set debugName directly on the element", level = DeprecationLevel.ERROR)

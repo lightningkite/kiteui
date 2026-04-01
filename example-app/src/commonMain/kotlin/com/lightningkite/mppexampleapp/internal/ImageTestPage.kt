@@ -32,7 +32,7 @@ object ImageTestPage : Page {
 
 
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
             scrolling.sizeConstraints(width = 40.rem).col {
 
                 text("scaleType = ${ImageScaleType.Crop}")

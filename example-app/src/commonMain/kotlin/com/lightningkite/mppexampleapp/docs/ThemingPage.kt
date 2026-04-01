@@ -1,7 +1,6 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
-
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.DownSemantic
 import com.lightningkite.kiteui.models.HoverSemantic
@@ -31,7 +30,7 @@ import com.lightningkite.readable.*
 object ThemingPage : DocPage {
     override val covers: List<String> = listOf("theming", "Semantic", "theme", "Theme", "style", "css")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Theming") {
 

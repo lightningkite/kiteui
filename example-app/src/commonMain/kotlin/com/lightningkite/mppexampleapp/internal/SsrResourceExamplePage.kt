@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.ssr.ssrResource
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
@@ -43,7 +44,7 @@ class SsrResourceExamplePage(val userId: String = "demo-user-123") : Page {
 
     override val title: Reactive<String> = Constant("SSR Resource Demo")
 
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         scrolling.col {
             h1("SSR Resource Demo")
             text("This page demonstrates the SsrResource pattern for SSR data loading.")

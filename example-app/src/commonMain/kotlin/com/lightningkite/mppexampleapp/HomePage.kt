@@ -5,8 +5,10 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.h1
@@ -27,7 +29,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Routable("/")
 class HomePage : Page {
     override val title: Reactive<String> get() = Constant("KiteUI")
-    override fun ElementWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         return withUnsafeModifiers().scrolling.article {
             centered.h1("KiteUI - Beautiful by Default")
             separator()

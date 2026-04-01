@@ -21,7 +21,7 @@ import kotlin.math.min
 @Routable("sample/pong")
 object PongSamplePage : Page {
 
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         canvas {
             val dg = PongDelegate()
             delegate = dg

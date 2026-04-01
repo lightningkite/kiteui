@@ -24,7 +24,7 @@ object HorizontalRecyclerViewPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         var expanded = Signal(-1)
         val items = Signal((1..101).toList())
         var recyclerView: RecyclerView? = null
@@ -49,7 +49,7 @@ object HorizontalRecyclerViewPage : Page {
                 repeat(4) {
                     val cols = it + 1
                     expanding.button {
-                        subtext("${cols} columns")
+                        subtext("$cols columns")
                         onClick { recyclerView?.placer = RecyclerViewPlacerHorizontalGrid(cols) }
                     }
                 }
@@ -67,7 +67,7 @@ object HorizontalRecyclerViewPage : Page {
                                 else if (it() % 7 == 0) HoverSemantic
                                 else null
                             }
-                            expanding.centered.text { ::content { "Item ${it()}" } }
+                            centered.expanding.text { ::content { "Item ${it()}" } }
                             centered.button {
                                 text {
                                     ::content { if (expanded() == it()) "Expanded" else "Expand" }

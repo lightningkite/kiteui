@@ -17,10 +17,6 @@ import com.lightningkite.readable.*
 
 @Routable("forms")
 object FormsPage : Page {
-
-
-
-
     val externals = HashMap<String, Signal<String>>()
     fun leafExample(propName: String): FormLeaf {
         val prop = externals.getOrPut(propName) { Signal("Test") }
@@ -98,7 +94,7 @@ object FormsPage : Page {
         }
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.titledSection("Form Testing") {
             renderForm(form)
             renderFormReadOnly(form)
@@ -106,7 +102,7 @@ object FormsPage : Page {
     }
 }
 
-fun ViewWriter.renderForm(section: FormSection) {
+fun ElementWriter.renderForm(section: FormSection) {
     titledSection(
         titleSetup = { content = section.title },
         content = {
@@ -124,7 +120,7 @@ fun ViewWriter.renderForm(section: FormSection) {
     )
 }
 
-fun ViewWriter.renderFormReadOnly(section: FormSection) {
+fun ElementWriter.renderFormReadOnly(section: FormSection) {
     titledSection(
         titleSetup = { content = section.title },
         content = {

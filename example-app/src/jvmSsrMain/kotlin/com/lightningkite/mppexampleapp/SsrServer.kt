@@ -2,6 +2,8 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.ssr.SsrDocument
 import com.lightningkite.kiteui.ssr.SsrRouter
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
 import io.ktor.http.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*

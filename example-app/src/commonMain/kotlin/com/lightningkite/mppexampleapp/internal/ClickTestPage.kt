@@ -28,7 +28,7 @@ object ClickTestPage : Page {
         clickLog.value = log
     }
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.col {
             h1 { content = "Click Test Page" }
 

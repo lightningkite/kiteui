@@ -83,7 +83,7 @@ This is a custom block without a link.
 
 
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val markdownSource = Property(sampleMarkdown)
         val debouncedSource = markdownSource.debounce(300)
 

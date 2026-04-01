@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
@@ -18,7 +19,7 @@ import kotlin.math.absoluteValue
 
 @Routable("programmatic-layout-test")
 object ProgrammaticLayoutTestPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
             h1 { content = "Programmatic Layout Test" }
             val pl: ProgrammaticLayout

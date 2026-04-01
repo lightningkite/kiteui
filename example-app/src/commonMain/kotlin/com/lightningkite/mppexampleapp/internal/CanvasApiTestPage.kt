@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.direct.*
@@ -10,7 +11,7 @@ import kotlin.math.PI
 
 @Routable("canvas-api-test")
 object CanvasApiTestPage : Page {
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         scrolling.col {
             h1 { content = "Canvas API Test" }
             text { content = "Testing all new canvas APIs for cross-platform consistency" }

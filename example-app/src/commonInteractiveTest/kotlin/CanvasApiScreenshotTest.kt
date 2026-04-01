@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.testing.JUnitRunWith
 import com.lightningkite.kiteui.testing.RobolectricConfig
 import com.lightningkite.kiteui.testing.RobolectricTestRunner
 import com.lightningkite.kiteui.testing.withTestHarness
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlin.math.PI

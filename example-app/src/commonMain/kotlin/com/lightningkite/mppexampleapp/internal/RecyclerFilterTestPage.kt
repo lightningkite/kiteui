@@ -3,7 +3,9 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.recyclerView
 import com.lightningkite.kiteui.views.direct.row
@@ -19,7 +21,7 @@ import com.lightningkite.readable.shared
 object RecyclerFilterTestPage : Page {
     val searchText = Property("")
 
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
         col {
 
             fieldTheme.row {

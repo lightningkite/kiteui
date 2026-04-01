@@ -1,7 +1,9 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.localDateField
@@ -11,18 +13,18 @@ import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.lensing.lens
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.minutes
 
 object DatePickerExamplePage : Page {
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
         col {
             h1 { content = "Date Picker"}
             space()

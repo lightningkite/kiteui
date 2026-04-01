@@ -3,9 +3,11 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.atTopEnd
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.h3
@@ -21,7 +23,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 object ViewPagerCenterIndexTestPage : Page {
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         frame {
             val slides = Constant((0..10).toList())
             unpadded.expanding

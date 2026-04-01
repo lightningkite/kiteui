@@ -13,8 +13,10 @@ import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.WordBreak
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.colorInt
 import com.lightningkite.kiteui.views.direct.typeface
 

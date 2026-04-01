@@ -1,10 +1,10 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.appTheme
@@ -12,7 +12,7 @@ import kotlin.random.Random
 
 @Routable("themes")
 object ThemesPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.col {
             h1 { content = "Theme Control" }
             group.col {

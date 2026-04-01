@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.testing.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import kotlin.test.Test

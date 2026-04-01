@@ -29,7 +29,7 @@ object ScrollElementTestPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.col {
             repeat(3) {
                 card.col {

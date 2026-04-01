@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.atStart
 import com.lightningkite.kiteui.views.card
@@ -35,7 +36,7 @@ object DataPage : DocPage {
         "launch"
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             val secondsElapsed = reactiveProcess<Int> {
                 // Starts out as 'loading'

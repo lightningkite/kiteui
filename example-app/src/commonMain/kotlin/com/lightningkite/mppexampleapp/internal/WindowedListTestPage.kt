@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 object WindowedListTestPage : Page {
     override val title: Reactive<String> = Constant("WindowedList Test")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
             // Data source - mutable list of ints, each int is a unique item ID - by Claude
             var nextId = 100

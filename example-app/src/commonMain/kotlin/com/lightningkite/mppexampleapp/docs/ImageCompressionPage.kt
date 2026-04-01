@@ -11,7 +11,7 @@ import com.lightningkite.reactive.core.*
 object ImageCompressionPage : DocPage {
     override val covers: List<String> = listOf("image", "compression", "compress", "resize", "quality", "ImageLocal.compressed")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             h1("Image Compression")
             text("Pick an image, configure compression parameters, and compare original vs compressed results.")

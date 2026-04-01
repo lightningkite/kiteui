@@ -23,7 +23,7 @@ object ViewModelPage: DocPage {
         "ViewModel",
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("ViewModels") {
                 text("One question I've received about KiteUI is how one does ViewModels.")

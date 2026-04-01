@@ -28,7 +28,7 @@ object RowWrappingPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
         scrolling.col {
             rowWrapping {
                 repeat(100) {

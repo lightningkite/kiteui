@@ -1,18 +1,19 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.mppexampleapp.internal.CanvasSamplePage.Point
 
 @Routable("sample/canvas")
 object CanvasSamplePage : Page {
     data class Point(val x: Double, val y: Double)
 
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         frame {
             canvas {
                 delegate = DrawDelegate()

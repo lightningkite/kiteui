@@ -19,7 +19,7 @@ import com.lightningkite.readable.*
 object LayoutPage : DocPage {
     override val covers: List<String> = listOf("layout", "row", "column", "rowCollapsingToColumn", "frame", "sizeConstraints", "size", "gap", "padding")
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Layout") {
                 titledSection("Column and Row") {

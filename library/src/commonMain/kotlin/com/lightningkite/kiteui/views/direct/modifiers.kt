@@ -163,7 +163,7 @@ expect fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: React
 inline val ElementWriter.CanAddTheme.padded: ElementWriter.CanAddTheme get() = themed(ForcePaddingSemantic)
 
 @ViewModifierDsl3
-val ElementWriter.unpadded: ElementWriter get() = beforeSetup { padding = 0.px }
+val ElementWriter.CanAddTheme.unpadded: ElementWriter.CanAddTheme get() = beforeSetup { padding = 0.px }
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme
+expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing

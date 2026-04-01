@@ -16,7 +16,7 @@ object NetworkPage : DocPage {
         "JSON", "serialization", "authentication"
     )
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Network and API Integration") {
                 text("Learn how to make HTTP requests and integrate with REST APIs in KiteUI.")

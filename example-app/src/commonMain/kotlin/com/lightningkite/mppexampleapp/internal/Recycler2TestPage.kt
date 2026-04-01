@@ -22,7 +22,7 @@ object Recycler2TestPage : Page {
     @QueryParameter
     val elementCount = Signal(10000)
 
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
             val expanded = Signal(-1)
             var recyclerView: Recycler2? = null

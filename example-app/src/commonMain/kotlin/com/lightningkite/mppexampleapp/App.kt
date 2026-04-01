@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.docs.DocSearchPage
 import com.lightningkite.mppexampleapp.internal.RootPage

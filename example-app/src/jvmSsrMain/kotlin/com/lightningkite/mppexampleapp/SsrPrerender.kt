@@ -2,10 +2,12 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.ssr.SsrRouter
-import kotlinx.coroutines.runBlocking
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
 import java.io.File
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.isSubclassOf
+import kotlinx.coroutines.runBlocking
 
 /**
  * Static site generator that prerenders all example app pages to HTML files.

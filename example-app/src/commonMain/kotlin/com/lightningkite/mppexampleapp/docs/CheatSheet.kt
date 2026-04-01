@@ -107,7 +107,7 @@ object CheatSheet : DocPage {
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
         frame {
             article {
                 titledSection("Available Views") {
@@ -833,12 +833,12 @@ object CheatSheet : DocPage {
                             }.card.text("Hover over me!")
                         """.trimIndent(),
                             result = {
-                                hintPopover {
+                                card.hintPopover {
                                     row {
                                         icon(Icon.help, "")
                                         text("Some rich information")
                                     }
-                                }.card.text("Hover over me!")
+                                }.text("Hover over me!")
                             }
                         )
                         example(
@@ -848,7 +848,7 @@ object CheatSheet : DocPage {
                             textPopover("Some info!").card.text("Hover over me!")
                         """.trimIndent(),
                             result = {
-                                textPopover("Some info!").card.text("Hover over me!")
+                                card.textPopover("Some info!").text("Hover over me!")
                             }
                         )
                         example(
@@ -900,8 +900,8 @@ object CheatSheet : DocPage {
                         """.trimIndent(),
                             result = {
                                 card.row {
-                                    card.expanding.text("I am not centered")
-                                    centered.card.expanding.text("I am centered")
+                                    expanding.card.text("I am not centered")
+                                    centered.expanding.card.text("I am centered")
                                 }
                                 card.col {
                                     card.text("I am not centered")
@@ -986,7 +986,7 @@ object CheatSheet : DocPage {
                         """.trimIndent(),
                             result = {
                                 text("Naturally no padding")
-                                unpadded.card.text("Forced no padding")
+                                card.unpadded.text("Forced no padding")
                             }
                         )
                         example(
