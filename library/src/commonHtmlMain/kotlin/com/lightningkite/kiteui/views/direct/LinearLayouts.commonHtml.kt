@@ -3,9 +3,11 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElement
@@ -28,6 +30,7 @@ abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContai
             native.setStyleProperty("--spacing", value?.value?.toString())
         }
 
+    @Deprecated("Will probably be removed in the future.")
     override val spacingForChildCornerRadii: Dimension
         get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 }
@@ -121,6 +124,7 @@ actual class RowOrCol actual constructor(context: ElementContext) : NativeLinear
         rerunOptimizedBottomMarginCalc()
     }
 
+    @OverrideOnly
     override fun onStartup() {
         super.onStartup()
         rerunOptimizedBottomMarginCalc()
@@ -131,6 +135,7 @@ actual class RowOrCol actual constructor(context: ElementContext) : NativeLinear
 
         val newLastShownElement = children.lastOrNull { it.native.attributes.hidden != true }
         val amnt = gap ?: theme.gap
+        debug { "gap: $amnt = (${gap?.px} px ?: ${theme.gap.px} px) t=${theme.id}" }
         for (child in children) child.native.style.marginBottom = amnt.value.toString()
         debug { "last shown index: ${children.indexOf(newLastShownElement)}" }
         newLastShownElement?.native?.style?.marginBottom = "0"

@@ -48,7 +48,7 @@ object RootPage : Page {
             }
             space()
             themed(ListSemantic).col {
-
+                debugName = "pagelist"
                 fun ViewWriter.linkPage(screen: () -> Page) = card.link {
                     to = screen
                     row {

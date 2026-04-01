@@ -115,7 +115,9 @@ abstract class NativeElementCommonCode internal constructor(override val context
     override fun onStartup() {
         if (fullyStarted) return
         fullyStarted = true
+        debug { "starting..." }
         refreshTheming()
+        debug { "new theme: ${theme.id}" }
     }
 
     var isShutdown = false
@@ -146,6 +148,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
     final override var paddingByEdge: Edges? = null
         set(value) {
             field = value
+            debug { "Setting padding to $value" }
             refreshPadding()
         }
 
@@ -158,7 +161,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
     /** The final computed padding combining theme padding, custom padding, and safe area insets */
     val appliedPadding: Edges get() {
         if (!fullyStarted) println("WARN: $this attempted to calculate applied padding before fully started.")
-        return (paddingByEdge ?: theme.padding).let { p ->
+        return (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding } ?: Edges.ZERO).let { p ->
             safeAreaPadding?.let { p + it } ?: p
         }
     }
@@ -173,7 +176,9 @@ abstract class NativeElementCommonCode internal constructor(override val context
         fun get(element: NativeElement): Theme
 
         companion object {
-            val fromParent = GetBaseTheme { element -> element.parent?.theme?.let { it.revert ?: it } ?: Theme.placeholder }
+            val fromParent = GetBaseTheme { element ->
+                element.parent?.theme?.let { it.revert ?: it } ?: Theme.placeholder
+            }
             val fromParentNonCascading = GetBaseTheme { element -> element.parent?.theme ?: Theme.placeholder }
         }
     }
@@ -235,8 +240,11 @@ abstract class NativeElementCommonCode internal constructor(override val context
      */
     fun refreshTheming() {
         debug { "refreshTheming" }
-        if (!checkActive("refreshTheming")) return
-        if (parent?.underlyingNativeElement?.checkActive("refreshTheming.parent") == false) return
+        if (!checkIsActive("refreshTheming")) return
+        if (parent?.underlyingNativeElement?.isActive == false) {
+            debug { "abandoning refreshTheming because parent $parent not started" }
+            return
+        }
         val base = themeBase.get(this as NativeElement)
         debug {
             val source = when (themeBase) {
@@ -266,8 +274,6 @@ abstract class NativeElementCommonCode internal constructor(override val context
             private set(value) {
                 if (field.raw !== value.raw) {
                     field = value
-                    releaseExceptionHandler?.invoke()
-                    releaseExceptionHandler = null
                     invokeAllListeners()
                     refreshTheming()
                 }
@@ -297,9 +303,17 @@ abstract class NativeElementCommonCode internal constructor(override val context
                     ReactiveState.exception(exception)
                 }
 
-                notReadyCount > 0 -> ReactiveState.notReady
+                notReadyCount > 0 -> {
+                    releaseExceptionHandler?.invoke()
+                    releaseExceptionHandler = null
+                    ReactiveState.notReady
+                }
 
-                else -> ReactiveState(Unit)
+                else -> {
+                    releaseExceptionHandler?.invoke()
+                    releaseExceptionHandler = null
+                    ReactiveState(Unit)
+                }
             }
         }
 
@@ -381,11 +395,20 @@ abstract class NativeElementCommonCode internal constructor(override val context
     fun currentlyActive(): Boolean = fullyStarted && !isShutdown
 
     @InternalKiteUi
-    fun checkActive(name: String, requireTarget: Boolean = true): Boolean {
+    fun checkIsShutdown(name: String): Boolean {
         if (isShutdown) {
             println("WARNING!! $this is shut down, but attempt to call $name was made")
-            return false
+            return true
         }
+        return false
+    }
+
+    @InternalKiteUi
+    val isActive: Boolean get() = !isShutdown && fullyStarted
+
+    @InternalKiteUi
+    fun checkIsActive(name: String, requireTarget: Boolean = true): Boolean {
+        if (checkIsShutdown(name)) return false
         if (!fullyStarted) {
             debug(requireTarget) { "$name abandoned due to not fully started" }
             return false

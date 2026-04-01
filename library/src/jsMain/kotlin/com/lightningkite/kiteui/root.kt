@@ -28,6 +28,7 @@ private class Root(val beforeDocumentAppend: Element.() -> Unit) : ViewWriter, C
     override fun willAddChild(element: Element) {}
 
     override fun addChild(element: Element) {
+        println("Root adding element: $element")
         beforeDocumentAppend(element)
         document.body?.append(element.native.create())
     }
@@ -41,7 +42,9 @@ fun root(theme: Theme, app: ViewWriter.() -> Unit) {
 
 fun root(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
     Root {
-        ::themeChoice { ThemeDerivation.SetAsBase(theme()) }
+        ::themeChoice {
+            ThemeDerivation.SetAsBase(theme()).also { println("Setting theme base: ${it.theme.id}") }
+        }
     }.run {
         if (debugMode) setupDebugSafeInsets()
 

@@ -287,7 +287,7 @@ interface ExceptionToMessage {
                 appendLine(appName?.let { "# Error Report for $it" } ?: "# Error Report")
                 appendLine()
                 appendLine("## Metadata")
-                appendLine("__Timestamp__: ${Clock.System.now().renderToString(RenderSize.Full)} ${TimeZone.currentSystemDefault().id}")
+                appendLine("- __Timestamp__: ${Clock.System.now().renderToString(RenderSize.Full)} ${TimeZone.currentSystemDefault()}")
                 meta?.source?.let { s ->
                     val options = Element.DriverSnapshotOptions(
                         includeThemes = false,
@@ -300,24 +300,35 @@ interface ExceptionToMessage {
                         .reversed()
                         .joinToString("/")
 
-                    val display = s.driverDisplay(Element.DriverSnapshotOptions(includeThemes = true, includeActions = true))
+                    val display = s.driverDisplay(Element.DriverSnapshotOptions(includeThemes = false, includeActions = false))
 
-                    appendLine("__Source Element__: $s ($display) @ $path")
+                    appendLine("- __Source Element__: $s ($display) @ $path")
                 }
                 meta?.process?.let { p ->
-                    append("__Process__: $p")
+                    val process =
+                        if (p is Action) {
+                            if (p === (meta.source as? ElementWithAction)?.action) "${p.title} [action]"
+                            else if (p === (meta.source as? ElementWithSecondaryAction)?.secondaryAction) "${p.title} [secondaryAction]"
+                            else p.title
+                        }
+                        else "$p (${p::class.simpleName ?: "anonymous"})"
+
+                    append("- __Process__: $process")
                     meta.foregroundProcess?.let { if (it) append(" (Foreground Process)") else append(" (Background Process)") }
                     appendLine()
                 }
                 meta?.context?.takeUnless { it.isEmpty() }?.let { c ->
-                    appendLine("__Context__: $c")
+                    appendLine("- __Context__: $c")
                 }
                 appendLine()
                 appendLine("## Summary")
-                appendLine("__Error__: $e")
-                e.cause?.let { appendLine("__Caused By__: $it") }
+                appendLine("- __Error__: $e")
+                e.cause?.let { appendLine("- __Caused By__: $it") }
+                appendLine()
                 appendLine("__Stacktrace__")
+                appendLine("```")
                 appendLine(e.stackTraceToString())
+                appendLine("```")
             }
 
             ExceptionMessage(

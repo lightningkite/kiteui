@@ -37,6 +37,7 @@ fun ElementWriter.article(
     frame {
         align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col {
             setup()
+            space(2.0)
         }
     }
 }

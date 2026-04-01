@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.exceptions.ExceptionToMessage
 import com.lightningkite.kiteui.exceptions.installDebugHandlers
@@ -19,7 +20,7 @@ import kotlin.time.Duration.Companion.seconds
 val defaultTheme = Theme.flat2("flat2default", 0.6.turns).customize(
     newId = "asdf",
     transitionDuration = 0.2.seconds,
-    bodyTransitions = ScreenTransitions.HorizontalSlide
+    bodyTransitions = ScreenTransitions.HorizontalSlide,
 )
 //val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
 val appTheme = Signal<Theme>(defaultTheme)
@@ -27,6 +28,8 @@ val appTheme = Signal<Theme>(defaultTheme)
 class ToastException(override val message: String) : Exception()
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
+    debugMode = true
+
     context.exceptionHandlers.installDebugHandlers()
 
     context.exceptionHandlers += ExceptionHandler<ToastException>(1f) {
@@ -70,13 +73,13 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
         }
     }
 
-    if (Platform.isDevelopment) {
-        AiDriver.connect(
-            appName = "example",
-            rootView = { rootView },
-            navigator = { navigator },
-        )
-    }
+//    if (Platform.isDevelopment) {
+//        AiDriver.connect(
+//            appName = "example",
+//            rootView = { rootView },
+//            navigator = { navigator },
+//        )
+//    }
 }
 
 interface UseFullPage

@@ -52,6 +52,8 @@ class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.mil
     }
 
     override fun plus(other: Action): Action = FrequencyCapAction(wraps.plus(if (other is FrequencyCapAction) other.wraps else other), frequencyCap)
+
+    override fun toString(): String = "FrequencyCapAction($wraps)"
 }
 
 class RetryableAction(
@@ -111,6 +113,8 @@ class RetryableAction(
         this@RetryableAction.startAction(this)
         other.startAction(this)
     }
+
+    override fun toString(): String = "RetryableAction($title)"
 }
 
 class DependentAction(
@@ -181,4 +185,6 @@ class DependentAction(
         this@DependentAction.startAction(this)
         other.startAction(this)
     }
+
+    override fun toString(): String = "DependentAction($title)"
 }

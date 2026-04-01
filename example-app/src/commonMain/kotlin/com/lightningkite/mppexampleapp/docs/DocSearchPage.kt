@@ -65,7 +65,7 @@ object DocSearchPage : Page {
                         right = 0.rem,
                         bottom = 10.rem
                     )
-                    placer = RecyclerViewPlacerVerticalGrid(1).apply { log = LogRoot.tag("placer") }
+                    placer = RecyclerViewPlacerVerticalGrid(1)
                     children(remember {
                         docsPages().mapNotNull {
                             val q = query()

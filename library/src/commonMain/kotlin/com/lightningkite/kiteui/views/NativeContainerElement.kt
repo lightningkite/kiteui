@@ -43,12 +43,12 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
     protected abstract fun nativeClearChildren()
 
     override fun willAddChild(element: Element) {
-        if (!checkActive("willAddChild", requireTarget = false)) return
+        if (checkIsShutdown("willAddChild")) return
         element.underlyingNativeElement.parent = outermostElement as? ContainerElement ?: this
     }
 
     final override fun addChild(index: Int, element: Element) {
-        if (!checkActive("addChild", requireTarget = false)) return
+        if (checkIsShutdown("addChild")) return
         internalChildren.add(index, element)
         nativeAddChild(index, element)
         if (element.parent?.underlyingNativeElement !== this) {
@@ -58,14 +58,14 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
     final override fun addChild(element: Element) = addChild(children.size, element)
 
     final override fun removeChild(index: Int) {
-        if (!checkActive("removeChild", requireTarget = false)) return
+        if (checkIsShutdown("removeChild")) return
         if (index !in children.indices) throw IndexOutOfBoundsException("$index not in range ${children.indices}")
         nativeRemoveChild(index)
         internalChildren.removeAt(index).onShutdown()
     }
 
     final override fun removeChild(element: Element) {
-        if (!checkActive("removeChild", requireTarget = false)) return
+        if (checkIsShutdown("removeChild")) return
         val i = children.indexOf(element)
         if (i != -1) {
             nativeRemoveChild(i)
@@ -75,7 +75,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
     }
 
     final override fun clearChildren() {
-        if (!checkActive("clearChildren", requireTarget = false)) return
+        if (checkIsShutdown("clearChildren")) return
         nativeClearChildren()
         for (e in children) e.onShutdown()
         internalChildren.clear()
@@ -105,8 +105,10 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
     final override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
         set(value) {
             val oldCascading = field.theme.let { it.revert ?: it }
-            super.themeAndBack = value
-            val newCascading = field.theme.let { it.revert ?: it }
+            field = value       // Do not call super.themeAndBack = value, it breaks everything for some reason
+            nativeApplyTheme(value)
+            refreshPadding()
+            val newCascading = value.theme.let { it.revert ?: it }
             if (oldCascading != newCascading) {
                 for (child in children) child.underlyingNativeElement.refreshTheming()
             }

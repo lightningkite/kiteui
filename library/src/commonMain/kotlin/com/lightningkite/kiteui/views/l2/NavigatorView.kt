@@ -9,12 +9,14 @@ import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.reactive.context.reactive
 
 fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
     return swapView {
         debugName = "navigatorView"
+        Element.Debugger.debugTarget = this
         var lastStack = navigator.stack.value
-        this@swapView.swapping(
+        swapping(
             transition = {
                 val newStack = navigator.stack.value
                 val transitionSet = theme.bodyTransitions

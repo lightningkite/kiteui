@@ -22,7 +22,7 @@ object ResourcesPage: DocPage {
     override val covers: List<String> = listOf("resources", "Resources", "assets", "Assets", "images", "audio", "video", "fonts")
 
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
-        article {
+        scrolling.article {
             h1("Resources")
             text("KiteUI provides a convenient way to access resources (assets) in your multiplatform application. Resources can include images, audio, video, and fonts.")
 

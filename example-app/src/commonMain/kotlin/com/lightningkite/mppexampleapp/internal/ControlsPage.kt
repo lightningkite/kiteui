@@ -54,17 +54,20 @@ object ControlsPage : Page {
         }
 
         scrolling.col {
+            debugName = "Controls"
+
             h1 { content = "Controls" }
 
             card.col {
                 h2 { content = "Progress Bars" }
                 val ratio = Signal(0.5f)
+                var inc = 0.01f
                 launch {
                     while (true) {
                         delay(100L)
-                        ratio.value += 0.01f
-                        if (ratio.value > 1f) {
-                            ratio.value = 0f
+                        ratio.value += inc
+                        if (ratio.value <= 0f || ratio.value >= 1f) {
+                            inc = -inc
                         }
                     }
                 }

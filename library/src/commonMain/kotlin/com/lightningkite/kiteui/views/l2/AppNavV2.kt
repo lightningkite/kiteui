@@ -46,6 +46,7 @@ var Element.coordinatorFrame
 
 fun ElementWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainerElement.() -> Unit) {
     coordinatorFrame {
+        debugName = "appBase"
         context.mainPageNavigator = main
         dialog?.let {
             context.dialogPageNavigator = it

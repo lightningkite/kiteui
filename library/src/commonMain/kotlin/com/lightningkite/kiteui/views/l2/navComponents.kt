@@ -115,7 +115,7 @@ fun ElementWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: C
 
 private fun ContainerElement.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
     fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
-        padded.frame {
+        frame {
             centered.icon {
                 ::source { navElement.icon() }
                 ::description { navElement.title() }

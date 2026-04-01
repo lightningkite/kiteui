@@ -112,7 +112,7 @@ fun Theme.Companion.shadCnLike(
                     cascading = false,
                     outlineWidth = 1.px,
                     cornerRadii = CornerRadii.AdaptiveToSpacing(0.px),
-                    padding = Edges(0.px)
+                    padding = Edges(0.px).copy(left = it.padding.left)
                 )
             },
             NavSemantic.override {
