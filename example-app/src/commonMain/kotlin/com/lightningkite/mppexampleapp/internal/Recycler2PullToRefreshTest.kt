@@ -12,6 +12,8 @@ import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.delay
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock.System.now
 import kotlin.time.Duration.Companion.seconds
 
@@ -19,14 +21,17 @@ import kotlin.time.Duration.Companion.seconds
 object Recycler2PullToRefreshTest : Page {
 
     @QueryParameter
-    val elementCount = Signal(10_000)
+    val elementCount = Signal(500)
 
     val refresh = BasicListenable()
 
     val loadedData = rememberSuspending {
         rerunOn(refresh)
         delay(1.seconds)
-        List(elementCount()) { "${it}-${now().renderTimeToString(RenderSize.Full)}" }
+        val timeStr = now().toLocalDateTime(TimeZone.currentSystemDefault()).time.let {
+            "${it.hour}:${it.minute}:${it.second}"
+        }
+        List(elementCount()) { "${it}-${timeStr}" }
     }
 
 
