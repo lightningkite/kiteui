@@ -13,11 +13,11 @@ import java.util.*
 val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlin.multiplatform)
     if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
-        alias(libs.plugins.kotlinCocoapods)
+        alias(libs.plugins.kotlin.cocoapods)
     }
-    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.roborazzi)
     id("dev.opensavvy.vite.kotlin") version "0.6.0"
@@ -120,9 +120,9 @@ kotlin {
         val jvmSsrMain by getting {
             dependsOn(get("commonHtmlMain"))
             dependencies {
-                implementation(libs.ktorServerCore)
-                implementation(libs.ktorServerNetty)
-                implementation(libs.kotlinxCoroutinesSwing) // Provides Dispatchers.Main for JVM
+                implementation(libs.ktor.server.core)
+                implementation(libs.ktor.server.netty)
+                implementation(libs.kotlinx.coroutines.swing) // Provides Dispatchers.Main for JVM
             }
         }
     }

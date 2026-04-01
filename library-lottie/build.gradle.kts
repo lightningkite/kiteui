@@ -8,11 +8,11 @@ import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlin.multiplatform)
     if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
-        alias(libs.plugins.kotlinCocoapods)
+        alias(libs.plugins.kotlin.cocoapods)
     }
-    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.androidLibrary)
     signing
     alias(libs.plugins.vannitechPublishing)
