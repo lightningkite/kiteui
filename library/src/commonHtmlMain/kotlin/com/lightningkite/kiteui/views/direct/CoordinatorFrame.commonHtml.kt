@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
-import com.lightningkite.kiteui.UnsafeModifierOrdering
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Dimension

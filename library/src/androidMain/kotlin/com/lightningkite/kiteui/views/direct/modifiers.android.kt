@@ -46,7 +46,7 @@ actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAd
 
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
+actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
     return beforeSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -212,7 +212,7 @@ actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): El
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
+actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
     return write(object : NativeContainerElement(context) {
         override val native: ViewGroup = DesiredSizeView(context.activity).apply {
             reactive {

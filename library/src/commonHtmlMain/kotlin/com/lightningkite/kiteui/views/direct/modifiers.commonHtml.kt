@@ -47,7 +47,7 @@ actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAd
 
 // by Claude - wrapper pattern for animation-aware weight changes
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
+actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
     return write(object : NativeContainerElement(context) {
         init {
             native.tag = "div"
@@ -130,7 +130,7 @@ actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): El
     }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme =
+actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme =
     beforeSetup {
         reactive {
             val constraints = constraints()

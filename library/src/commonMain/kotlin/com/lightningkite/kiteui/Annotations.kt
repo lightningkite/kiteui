@@ -58,7 +58,55 @@ annotation class ExperimentalKiteUi
 annotation class Untested
 
 
+/**
+ * Marks APIs that bypass the compile-time modifier ordering system.
+ *
+ * KiteUI enforces a canonical modifier order through the [ElementWriter][com.lightningkite.kiteui.views.ElementWriter]
+ * type hierarchy:
+ *
+ * `alignment → weight → shownWhen → sizing → theme → scrolling → element`
+ *
+ * APIs marked with [UnsafeModifier] allow you to circumvent this ordering, which can lead to:
+ * - Layout inconsistencies (e.g., applying alignment after sizing)
+ * - Theme inheritance issues (e.g., applying themes after scrolling wrappers)
+ * - Subtle rendering bugs that vary by platform
+ *
+ * ## Common Use Cases
+ *
+ * **Converting to unrestricted modifier access:**
+ * ```kotlin
+ * @UnsafeModifier
+ * fun ElementWriter.withUnsafeModifiers(): ViewWriter
+ * ```
+ *
+ * **Applying modifiers inside element setup (backwards compatibility):**
+ * ```kotlin
+ * @UnsafeModifier
+ * fun Element.applyDynamicTheme { ... }
+ * ```
+ *
+ * **Producing elements with unrestricted modifiers:**
+ * ```kotlin
+ * @UnsafeModifier
+ * fun ElementWriter.produceAtMostOneUnsafe(action: ViewWriter.() -> Unit): Element?
+ * ```
+ *
+ * ## When to Use
+ *
+ * Only use [UnsafeModifier] APIs when:
+ * - You're maintaining legacy code that applies modifiers inside elements
+ * - You need dynamic modifier ordering based on runtime conditions
+ * - You're implementing low-level framework code that needs fine-grained control
+ *
+ * **Prefer safe alternatives:** Use the modifier system which enforces correct ordering:
+ * ```kotlin
+ * centered.card.col { /* content */ }  // Safe - enforced order
+ * ```
+ *
+ * @see com.lightningkite.kiteui.views.ElementWriter
+ * @see com.lightningkite.kiteui.views.ViewWriter
+ */
 @Suppress("ExperimentalAnnotationRetention")
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn("Applying modifiers in the wrong order can lead to subtle bugs.", RequiresOptIn.Level.WARNING)
-annotation class UnsafeModifierOrdering
+annotation class UnsafeModifier

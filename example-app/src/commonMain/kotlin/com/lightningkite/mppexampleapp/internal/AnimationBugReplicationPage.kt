@@ -3,15 +3,12 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.compact
-import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.button
-import com.lightningkite.kiteui.views.direct.changingWeight
+import com.lightningkite.kiteui.views.direct.dynamicWeight
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.padded
@@ -20,7 +17,6 @@ import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.direct.shownWhen
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.expanding
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.core.Signal
 
@@ -71,7 +67,7 @@ class AnimationBugReplicationPage: Page {
     override fun ElementWriter.CanAddTheme.render() {
         themed(ListSemantic).col {
             for((index, subpage) in subpages.withIndex()) {
-                changingWeight { if(index == selectedSubpage()) 1f else 0f }.col {
+                dynamicWeight { if(index == selectedSubpage()) 1f else 0f }.col {
                     gap = 0.px
                     with(subpage) {
                         compact.button {

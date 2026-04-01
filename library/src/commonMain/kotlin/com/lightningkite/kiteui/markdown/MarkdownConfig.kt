@@ -5,13 +5,11 @@ import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.DangerSemantic
 import com.lightningkite.kiteui.models.ImportantSemantic
 import com.lightningkite.kiteui.models.Semantic
-import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.WarningSemantic
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.externalLink
 import com.lightningkite.kiteui.views.direct.link

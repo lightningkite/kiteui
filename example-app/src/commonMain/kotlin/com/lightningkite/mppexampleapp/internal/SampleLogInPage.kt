@@ -50,7 +50,7 @@ object SampleLogInPage : Page {
                                 title = "Log In",
                                 icon = Icon.login,
                             ) {
-                                fakeLogin(email)
+                                context.fakeLogin(email)
                             }
                         }
                     }
@@ -58,7 +58,7 @@ object SampleLogInPage : Page {
                         h6 { content = "Log In" }
                         onClick {
                             delay(1000)
-                            fakeLogin(email)
+                            context.fakeLogin(email)
                         }
                     }
                 }
@@ -67,7 +67,7 @@ object SampleLogInPage : Page {
         }
     }
 
-    private suspend fun ViewWriter.fakeLogin(email: Signal<String>) {
+    private suspend fun ElementContext.fakeLogin(email: Signal<String>) {
         fetch("fake-login/${email()}")
         pageNavigator.navigate(ControlsPage)
     }

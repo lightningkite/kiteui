@@ -10,7 +10,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-actual fun ViewWriter.platformSpecific(): Unit {
+actual fun ElementWriter.platformSpecific(): Unit {
     col {
         text("Lookie here at this icon:")
         val visible = Signal(false)

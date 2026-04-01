@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.direct.*
 object PopoverTestingPage : Page {
     override fun ElementWriter.CanAddTheme.render(): Unit {
         frame {
-            fun ViewWriter.testGrouping() = col {
+            fun ElementWriter.testGrouping() = col {
                 for (horizontal in listOf(false, true)) {
                     for (after in listOf(false, true)) {
                         row {

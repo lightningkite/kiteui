@@ -1,6 +1,8 @@
 package com.lightningkite.mppexampleapp.internal
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.lottie.views.direct.LottieView
 import com.lightningkite.kiteui.lottie.views.direct.lottie
 import com.lightningkite.kiteui.models.px
@@ -9,6 +11,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.*
 
+@OptIn(ExperimentalKiteUi::class, Untested::class)
 @Routable("lottie")
 object LottieExamplePage : Page {
 

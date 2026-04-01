@@ -228,7 +228,7 @@ object VectorsTestPage : Page {
                 }
             }
             row {
-                sizeConstraints(width = 4.rem, height = 4.rem).themeFromLast {
+                sizeConstraints(width = 4.rem, height = 4.rem).themed(ThemeDerivation {
                     it.copy(
                         id = "grad0",
                         background = LinearGradient(
@@ -237,9 +237,9 @@ object VectorsTestPage : Page {
                                 GradientStop(1f, Color.red),
                             ), Angle.zero, false
                         )
-                    )
-                }.frame { space() }
-                sizeConstraints(width = 4.rem, height = 4.rem).themeFromLast {
+                    ).withBack
+                }).frame { space() }
+                sizeConstraints(width = 4.rem, height = 4.rem).themed(ThemeDerivation {
                     it.copy(
                         id = "grad1",
                         background = LinearGradient(
@@ -248,9 +248,9 @@ object VectorsTestPage : Page {
                                 GradientStop(1f, Color.red),
                             ), Angle.eighthTurn, false
                         )
-                    )
-                }.frame { space() }
-                sizeConstraints(width = 4.rem, height = 4.rem).themeFromLast {
+                    ).withBack
+                }).frame { space() }
+                sizeConstraints(width = 4.rem, height = 4.rem).themed(ThemeDerivation {
                     it.copy(
                         id = "grad2",
                         background = LinearGradient(
@@ -259,8 +259,8 @@ object VectorsTestPage : Page {
                                 GradientStop(1f, Color.red),
                             ), Angle.eighthTurn + Angle.halfTurn, false
                         )
-                    )
-                }.frame { space() }
+                    ).withBack
+                }).frame { space() }
             }
 
             listOf(1, 2, 4, 8).forEachIndexed { idx, size ->

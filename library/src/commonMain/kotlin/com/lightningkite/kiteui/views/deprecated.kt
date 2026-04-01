@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.UnsafeModifier
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
@@ -91,6 +92,48 @@ operator fun String.minus(writer: ViewWriter): ViewWriter = writer.also {
         debugName = this@minus
     }
 }
+
+
+@Deprecated("Use modifier syntax or `applyDynamicTheme`")
+@UnsafeModifier
+/**
+ * Apply a dynamic theme directly to an [Element] (old version)
+ *
+ * The new version is [dynamicThemed] (with a 'd') applied as a modifier __outside__ the element:
+ *
+ * ```kotlin
+ * val myTheme: Reactive<ThemeDerivation> = ...
+ *
+ * // from this
+ * frame {
+ *    dynamicTheme { myTheme() }
+ *    text("hello world")
+ * }
+ *
+ * // to this
+ * dynamicThemed { myTheme() }.frame {
+ *    text("hello world")
+ * }
+ * ```
+ *
+ * This change was made to help encourage safety. Dynamic themes require [themeChoice][Element.themeChoice] to be
+ * static at the time they are defined. Also, you can only call `dynamicTheme` once per element.
+ *
+ * If you change the `themeChoice` after a call to `dynamicTheme` you won't get the result you expect. Similarly,
+ * if you call `dynamicTheme` twice on an element you'll get weird bugs. The modifier syntax enforces this contract.
+ * If you apply a dynamic theme directly _you_ are responsible to uphold this contract.
+ *
+ * ```kotlin
+ * frame {
+ *    themeChoice += CardSemantic
+ *    dynamicTheme { myTheme() } // dynamic theme applied
+ *
+ *    themeChoice += ImportantSemantic // <- Bug!!
+ *    dynamicTheme { myTheme2() } // <- Bug!!
+ * }
+ * ```
+ * */
+fun Element.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) = applyDynamicTheme(calculate)
 
 @Deprecated("Just bind to themeChoice directly", level = DeprecationLevel.ERROR)
 @ViewModifierDsl3

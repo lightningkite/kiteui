@@ -19,6 +19,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.kiteui.views.dynamicTheme
 import com.lightningkite.mppexampleapp.internal.RootPage
 import com.lightningkite.mppexampleapp.widgets.code
 import com.lightningkite.reactive.context.*

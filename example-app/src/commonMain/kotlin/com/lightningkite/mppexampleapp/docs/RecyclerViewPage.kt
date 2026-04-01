@@ -31,7 +31,7 @@ object RecyclerViewPage : DocPage {
                     }
                 }
             """.trimIndent()) {
-                expanding.recyclerView {
+                recyclerView {
                     children(
                         items = remember { (1..20).toList() },
                         id = { it }
@@ -54,12 +54,12 @@ object RecyclerViewPage : DocPage {
                     }
                 }
             """.trimIndent()) {
-                expanding.horizontalRecyclerView {
+                horizontalRecyclerView {
                     children(
                         items = remember { (1..20).toList() },
                         id = { it }
                     ) { _ ->
-                        card.sizedBox(SizeConstraints(width = 10.rem)).centered.text("Item")
+                        centered.sizedBox(SizeConstraints(width = 10.rem)).card.text("Item")
                     }
                 }
             }
@@ -78,7 +78,7 @@ object RecyclerViewPage : DocPage {
                     }
                 }
             """.trimIndent()) {
-                expanding.recyclerView {
+                recyclerView {
                     placer = RecyclerViewPlacerVerticalGrid(2)
                     children(
                         items = remember { (1..20).toList() },
@@ -157,7 +157,7 @@ object RecyclerViewPage : DocPage {
                 }
             """.trimIndent()) {
                 // Simple example with a single type for demonstration
-                expanding.recyclerView {
+                recyclerView {
                     children(
                         items = remember { 
                             listOf(

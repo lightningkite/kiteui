@@ -145,7 +145,7 @@ object ViewModifiersPage : DocPage {
             }
             """.trimIndent()
             ) {
-                hasPopover {
+                hintPopover {
                     card.col {
                         card.button {
                             text("Popover")

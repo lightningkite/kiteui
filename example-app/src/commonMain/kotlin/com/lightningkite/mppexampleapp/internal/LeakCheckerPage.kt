@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
@@ -147,9 +148,9 @@ object LeakCheckerPage : Page {
 //                }
 //            }
             frame {
-                reactiveScope {
-                    if(children.size > 0) {
-                        children[0].leakDetect()
+                reactive {
+                    if (children.isNotEmpty()) {
+                        children[0].underlyingNativeElement.leakDetect()
                         removeChild(0)
                     }
                     val m = makers[index() % makers.size]

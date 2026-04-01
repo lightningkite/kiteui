@@ -8,7 +8,6 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.scrolling
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -43,7 +42,7 @@ object LayoutExamplesPage : Page {
             card.col {
                 h2("Sample from another project")
                 card.row {
-                    expanding.centered.rowCollapsingToColumn(30.rem) {
+                    centered.expanding.rowCollapsingToColumn(30.rem) {
                         centered.sizeConstraints(width = 5.rem, height = 5.rem).image {
                             source = Resources.imagesSnowyBackground
                             this.description = ""
@@ -66,13 +65,13 @@ object LayoutExamplesPage : Page {
                     }
 //                    gravity(Align.End, Align.Center) - row {
                     align(Align.End, Align.Center).row {
-                        shownWhen { showIcons() }.centered.toggleButton {
+                        centered.shownWhen { showIcons() }.toggleButton {
                             icon {
                                 source = Icon.starFilled
                             }
                         }
 
-                        shownWhen { true }.centered.link {
+                        centered.link {
                             icon {
                                 source = Icon.done
                                 description = "Update"
@@ -270,19 +269,15 @@ object LayoutExamplesPage : Page {
                     frame { important.text("X") }
                 }
                 card.button {
-                    gap = 0.rem
                     text("gap = 0.rem")
                 }
                 card.button {
-                    gap = 0.5.rem
                     text("gap = 0.5.rem")
                 }
                 card.button {
-                    gap = 1.rem
                     text("gap = 1.rem")
                 }
                 card.button {
-                    gap = 2.rem
                     text("gap = 2.rem")
                 }
             }

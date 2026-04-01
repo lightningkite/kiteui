@@ -3,15 +3,14 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
-import com.lightningkite.kiteui.UnsafeModifierOrdering
+import com.lightningkite.kiteui.UnsafeModifier
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.ReactiveContext
-import com.lightningkite.reactive.core.Reactive
 
-@UnsafeModifierOrdering
+@UnsafeModifier
 fun ElementWriter.withUnsafeModifiers(): ViewWriter = object : ViewWriter, ElementWriter by this {}
 
 @ViewModifierDsl3
@@ -27,7 +26,7 @@ expect fun ElementWriter.textPopover(message: String): ElementWriter
 expect fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen
+expect fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen
 
 @ViewModifierDsl3
 expect fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight
@@ -157,7 +156,7 @@ fun ElementWriter.CanAddSizing.sizeConstraints(
 )
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme
+expect fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme
 
 @ViewModifierDsl3
 inline val ElementWriter.CanAddTheme.padded: ElementWriter.CanAddTheme get() = themed(ForcePaddingSemantic)

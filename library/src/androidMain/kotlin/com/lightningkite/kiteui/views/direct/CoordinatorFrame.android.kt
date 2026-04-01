@@ -9,7 +9,7 @@ import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
 import com.lightningkite.kiteui.Log
-import com.lightningkite.kiteui.UnsafeModifierOrdering
+import com.lightningkite.kiteui.UnsafeModifier
 import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
@@ -20,7 +20,6 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
-import com.lightningkite.kiteui.views.produceExactlyOne
 import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.delay
@@ -42,7 +41,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
-    @OptIn(UnsafeModifierOrdering::class)
+    @OptIn(UnsafeModifier::class)
     actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,

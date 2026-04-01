@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.views.direct.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
-actual fun ViewWriter.platformSpecific(): Unit {
-    SupervisorJob() + Dispatchers.Main
+actual fun ElementWriter.platformSpecific(): Unit {
     text("Nothing yet")
 }

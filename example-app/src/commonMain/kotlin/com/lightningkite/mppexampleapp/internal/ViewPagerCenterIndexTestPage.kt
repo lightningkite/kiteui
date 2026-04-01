@@ -26,8 +26,7 @@ object ViewPagerCenterIndexTestPage : Page {
     override fun ElementWriter.CanAddTheme.render() {
         frame {
             val slides = Constant((0..10).toList())
-            unpadded.expanding
-            val recycler = horizontalRecyclerView {
+            val recycler = expanding.unpadded.horizontalRecyclerView {
                 placer = RecyclerViewPagingPlacer()
                 snapToElements = Align.Center
                 scrollSnapStop = true

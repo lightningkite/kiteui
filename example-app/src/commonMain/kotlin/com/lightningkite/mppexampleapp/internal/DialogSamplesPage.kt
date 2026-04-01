@@ -5,11 +5,9 @@ import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.applySafeInsets
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
-import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.kiteui.views.themed
 

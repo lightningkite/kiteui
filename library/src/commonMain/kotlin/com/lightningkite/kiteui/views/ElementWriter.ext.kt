@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.OverrideOnly
-import com.lightningkite.kiteui.UnsafeModifierOrdering
+import com.lightningkite.kiteui.UnsafeModifier
 
 private class BeforeSetup(
     val wraps: ElementWriter,
@@ -16,7 +16,6 @@ private class BeforeSetup(
 
 fun ElementWriter.beforeSetup(setup: Element.() -> Unit): ElementWriter = BeforeSetup(this, setup)
 fun ElementWriter.CanAddScrolling.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddScrolling = BeforeSetup(this, setup)
-fun ElementWriter.CanAddDynamicTheme.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddDynamicTheme = BeforeSetup(this, setup)
 fun ElementWriter.CanAddTheme.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddTheme = BeforeSetup(this, setup)
 fun ElementWriter.CanAddSizing.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddSizing = BeforeSetup(this, setup)
 fun ElementWriter.CanAddShownWhen.beforeSetup(setup: Element.() -> Unit): ElementWriter.CanAddShownWhen = BeforeSetup(this, setup)
@@ -39,7 +38,7 @@ fun ElementWriter.CanAddAlignment.split(): ElementWriter.CanAddAlignment = Split
 fun ViewWriter.split(): ViewWriter = Split(this)
 
 
-@UnsafeModifierOrdering
+@UnsafeModifier
 inline fun ElementWriter.produceAtMostOneUnsafe(action: ViewWriter.() -> Unit): Element? {
     var output: Element? = null
     @OptIn(OverrideOnly::class)
@@ -54,13 +53,13 @@ inline fun ElementWriter.produceAtMostOneUnsafe(action: ViewWriter.() -> Unit): 
     return output
 }
 
-@UnsafeModifierOrdering
+@UnsafeModifier
 inline fun ElementWriter.produceExactlyOneUnsafe(action: ViewWriter.() -> Unit): Element =
     produceAtMostOneUnsafe(action) ?: throw IllegalStateException("Produced no views at this layer, but expected one.")
 
 
 inline fun ViewWriter.produceAtMostOneView(action: ViewWriter.() -> Unit): Element? =
-    @OptIn(UnsafeModifierOrdering::class)
+    @OptIn(UnsafeModifier::class)
     produceAtMostOneUnsafe(action)
 
 inline fun ViewWriter.produceExactlyOneView(action: ViewWriter.() -> Unit): Element =
@@ -68,7 +67,7 @@ inline fun ViewWriter.produceExactlyOneView(action: ViewWriter.() -> Unit): Elem
 
 
 inline fun ElementWriter.produceAtMostOne(action: ElementWriter.() -> Unit): Element? =
-    @OptIn(UnsafeModifierOrdering::class)
+    @OptIn(UnsafeModifier::class)
     produceAtMostOneUnsafe(action)
 
 inline fun ElementWriter.produceExactlyOne(action: ElementWriter.() -> Unit): Element =

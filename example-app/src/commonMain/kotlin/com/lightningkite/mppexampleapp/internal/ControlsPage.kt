@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.numberInput
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.toast
 import com.lightningkite.kiteui.views.scrollsHorizontally
 import com.lightningkite.reactive.core.*
@@ -18,6 +17,7 @@ import kotlin.time.measureTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
+import kotlin.time.Duration.Companion.seconds
 
 @Routable("controls")
 object ControlsPage : Page {
@@ -71,15 +71,6 @@ object ControlsPage : Page {
 
                 text { ::content { ratio().times(100).roundToInt().toString() + "%" } }
 
-                val signal = Signal(true)
-
-                card.important.themed {
-                    if (signal()) ImportantSemantic
-                    else null
-                }.row {
-
-                }
-
                 scrollingHorizontally.row {
                     expanding.space()
                     sizeConstraints(width = 5.rem).run {
@@ -108,7 +99,7 @@ object ControlsPage : Page {
                     button {
                         onClick {
                             delay(1000L);
-                            toast("OK! RUN!")
+                            context.toast("OK! RUN!", 3.seconds)
                         }; text {
                         content = "Sample"
                     }; ::enabled { booleanContent() }

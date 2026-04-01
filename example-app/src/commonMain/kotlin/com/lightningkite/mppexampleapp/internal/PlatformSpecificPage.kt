@@ -13,4 +13,4 @@ object PlatformSpecificPage : Page {
     }
 }
 
-expect fun ViewWriter.platformSpecific(): Unit
+expect fun ElementWriter.platformSpecific(): Unit

@@ -9,7 +9,6 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.titledSection
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*

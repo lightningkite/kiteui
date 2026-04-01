@@ -3,7 +3,6 @@ package com.lightningkite.mppexampleapp.docs
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("docs/text")
@@ -49,14 +48,14 @@ object TextElementPage : DocPage {
             example(
                 """
                 col {
-                    tweakTheme { it.copy(body = it.body.copy(bold = true)) }.text("Bold Text")
-                    tweakTheme { it.copy(foreground = Color.red) }.text("Red Text")
+                    themed(ThemeDerivation { it.copy(id = "bold", font = it.font.copy(bold = true)).withoutBack }).text("Bold Text")
+                    themed(ThemeDerivation { it.copy(id = "red", foreground = Color.red).withoutBack }).text("Red Text")
                 }
                 """.trimIndent()
             ) {
                 col {
-                    tweakTheme { it.copy(id = "bold", font = it.font.copy(bold = true)) }.text("Bold Text")
-                    tweakTheme { it.copy(id = "red", foreground = Color.red) }.text("Red Text")
+                    themed(ThemeDerivation { it.copy(id = "bold", font = it.font.copy(bold = true)).withoutBack }).text("Bold Text")
+                    themed(ThemeDerivation { it.copy(id = "red", foreground = Color.red).withoutBack }).text("Red Text")
                 }
             }
             text("Common style tweaks are available via some shortcuts.")
@@ -84,14 +83,14 @@ object TextElementPage : DocPage {
                 """
                 col {
                     for(weight in 900 downTo 100) {
-                        tweakTheme { it.copy(body = it.body.copy(weight = weight)) }.text("Weight ${'$'}weight")
+                        themed(ThemeDerivation { it.copy(id = "weight${'$'}weight", font = it.font.copy(weight = weight)).withoutBack }).text("Weight ${'$'}weight")
                     }
                 }
                 """.trimIndent()
             ) {
                 col {
                     for(weight in 900 downTo 100 step 100) {
-                        tweakTheme { it.copy(id = "weight$weight", font = it.font.copy(weight = weight)) }.text("Weight $weight")
+                        themed(ThemeDerivation { it.copy(id = "weight$weight", font = it.font.copy(weight = weight)).withoutBack }).text("Weight $weight")
                     }
                 }
             }

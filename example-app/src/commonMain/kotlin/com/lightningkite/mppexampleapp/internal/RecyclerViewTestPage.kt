@@ -83,7 +83,7 @@ object RecyclerViewTestPage : Page {
                             else null
                         }
                         row {
-                            expanding.centered.text { ::content { "Item ${it()}" } }
+                            centered.expanding.text { ::content { "Item ${it()}" } }
                             centered.button {
                                 text {
                                     ::content { if (expanded() == it()) "Expanded" else "Expand" }

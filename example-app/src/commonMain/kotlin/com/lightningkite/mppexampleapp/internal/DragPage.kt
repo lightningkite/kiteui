@@ -14,7 +14,6 @@ import com.lightningkite.kiteui.models.lighten
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
@@ -22,6 +21,7 @@ import com.lightningkite.kiteui.views.l2.childrenReorderable
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.kiteui.views.l2.forEachReorderable
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.kiteui.views.dynamicTheme
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*

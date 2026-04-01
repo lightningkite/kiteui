@@ -1,11 +1,10 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.OverrideOnly
+import com.lightningkite.kiteui.UnsafeModifier
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.ElementWriter.CanAddTheme
 import com.lightningkite.reactive.context.ReactiveContext
-import com.lightningkite.reactive.context.reactive
-import com.lightningkite.reactive.core.ReactiveMutableList
 
 private class ThemedWriter(
     val base: CanAddTheme,
@@ -18,29 +17,56 @@ private class ThemedWriter(
     }
 }
 
-val ElementContext.localDynamicThemeCalculations: ReactiveMutableList<ReactiveContext.() -> ThemeDerivation?> by ContextAddon.Local { ReactiveMutableList() }
-
-fun Element.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
-    val dynamic = context.localDynamicThemeCalculations
-    val first = dynamic.isEmpty()
-    dynamic.add(calculate)
-
-    if (first) {
-        val existing = themeChoice
-        reactive {
-            themeChoice = existing + dynamic().fold(ThemeDerivation.None as ThemeDerivation) { acc, t ->
-                acc + (t() ?: return@fold acc)
-            }
-        }
-    }
+@UnsafeModifier
+/**
+ * Apply a dynamic theme directly to an [Element]
+ *
+ * The preferred version of this operation is [dynamicThemed] (with a 'd') applied as a modifier __outside__ the element:
+ *
+ * ```kotlin
+ * val myTheme: Reactive<ThemeDerivation> = ...
+ *
+ * // from this
+ * frame {
+ *    applyDynamicTheme { myTheme() }
+ *    text("hello world")
+ * }
+ *
+ * // to this
+ * dynamicThemed { myTheme() }.frame {
+ *    text("hello world")
+ * }
+ * ```
+ *
+ * This change was made to help encourage safety. Dynamic themes require [themeChoice][Element.themeChoice] to be
+ * static at the time they are defined. Also, you can only call `applyDynamicTheme` once per element.
+ *
+ * If you change the `themeChoice` after a call to `applyDynamicTheme` you won't get the result you expect. Similarly,
+ * if you call `applyDynamicTheme` twice on an element you'll get weird bugs. The modifier syntax enforces this contract.
+ * If you apply a dynamic theme directly _you_ are responsible to uphold this contract.
+ *
+ * ```kotlin
+ * frame {
+ *    themeChoice += CardSemantic
+ *    applyDynamicTheme { myTheme() } // dynamic theme applied
+ *
+ *    themeChoice += ImportantSemantic // <- Bug!!
+ *    applyDynamicTheme { myTheme2() } // <- Bug!!
+ * }
+ * ```
+ * */
+fun Element.applyDynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
+    val existing = themeChoice
+    ::themeChoice { calculate()?.let { existing + it } ?: existing }
 }
 
 @ViewModifierDsl3
 fun CanAddTheme.themed(theme: ThemeDerivation): CanAddTheme = ThemedWriter(this, theme)
 
 @ViewModifierDsl3
-fun ElementWriter.CanAddDynamicTheme.themed(calculate: ReactiveContext.() -> ThemeDerivation?): ElementWriter.CanAddDynamicTheme {
-    return beforeSetup { dynamicTheme(calculate) }
+fun CanAddTheme.dynamicThemed(calculate: ReactiveContext.() -> ThemeDerivation?): ElementWriter.CanAddScrolling {
+    @OptIn(UnsafeModifier::class)
+    return beforeSetup { applyDynamicTheme(calculate) }
 }
 
 @ViewModifierDsl3

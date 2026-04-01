@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.dynamicTheme
@@ -15,12 +16,11 @@ import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.MutableRemember
 import com.lightningkite.reactive.core.ReactiveWithMutableValue
 import com.lightningkite.reactive.core.Signal
-import com.lightningkite.reactive.extensions.debounce
 import com.lightningkite.reactive.extensions.value
 import kotlin.math.abs
 
 
-fun ViewWriter.colorPicker(color: MutableReactive<Color>) {
+fun ElementWriter.colorPicker(color: MutableReactive<Color>) {
     col {
         val selectedType = Signal(ColorPickerOptions.RGB)
         val debounced = color.debounce(100)

@@ -168,18 +168,6 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
     interface CanAddScrolling : ElementWriter
 
     /**
-     * Allows dynamic theme modifiers to be applied.
-     *
-     * Unlike other modifiers, theme modifiers are _repeatable_, meaning that you can apply theming multiple times on a single element.
-     * The end result is the sum of all applied themes. Dynamic themes require all static themes to be defined, which is why this
-     * is a separate modifier interface.
-     *
-     * Available modifiers (in addition to [CanAddScrolling] modifiers):
-     * - Dynamic theme application: `dynamicThemed(...)`
-     */
-    interface CanAddDynamicTheme : CanAddScrolling
-
-    /**
      * Allows static theme modifiers to be applied.
      *
      * Unlike other modifiers, theme modifiers are _repeatable_, meaning that you can apply theming multiple times on a single element.
@@ -191,7 +179,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * - Emphasis: `important`, `critical`, `warning`, `danger`, `affirmative`, `emphasized`, `compact`
      * - Text styling: `bold`, `italic`, `allCaps`, `strikethrough`, `underline`, `textSize(size)`, `withSpacing(multiplier)`
      */
-    interface CanAddTheme : CanAddDynamicTheme
+    interface CanAddTheme : CanAddScrolling
 
     /**
      * Allows sizing modifiers to be applied.

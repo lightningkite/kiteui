@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.NativeElementCommonCode
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.theme

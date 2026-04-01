@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.emphasized
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.titledSection
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*

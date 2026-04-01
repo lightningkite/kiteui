@@ -1,11 +1,8 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.UnsafeModifierOrdering
 import com.lightningkite.kiteui.models.DialogSemantic
-import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.PopoverSemantic
 import com.lightningkite.kiteui.models.ScreenTransitions
-import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.beforeSetup

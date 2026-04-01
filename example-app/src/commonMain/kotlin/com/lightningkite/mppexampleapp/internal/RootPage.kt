@@ -25,7 +25,7 @@ import com.lightningkite.kiteui.views.direct.subtext
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.direct.weight
 import com.lightningkite.kiteui.views.expanding
-import com.lightningkite.kiteui.views.l2.icon
+import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.docs.VideoElementPage
 import com.lightningkite.mppexampleapp.docs.ViewPagerElementPage
 import com.lightningkite.mppexampleapp.internal.ColorTestPage
@@ -47,7 +47,7 @@ object RootPage : Page {
                 text("These test pages aren't necessarily meant to be examples of what you can do with KiteUI.  They are meant to be a way to test out new features and find bugs.  They are also meant to be a way to test out different layouts and components.  However, you may find them interesting.")
             }
             space()
-            ListSemantic.onNext.col {
+            themed(ListSemantic).col {
 
                 fun ViewWriter.linkPage(screen: () -> Page) = card.link {
                     to = screen
@@ -55,7 +55,7 @@ object RootPage : Page {
                         expanding.text {
                             ::content{ screen().title() }
                         }
-                        icon(Icon.Companion.chevronRight, "Open")
+                        icon(Icon.chevronRight, "Open")
                     }
                 }
 
@@ -77,7 +77,6 @@ object RootPage : Page {
 
                 sectionLabel("Layout & Containers")
                 linkPage { LayoutExamplesPage }
-                linkPage { ContainerAlignmentDemoPage }
                 linkPage { RowWrappingPage }
                 linkPage { ProgrammaticLayoutTestPage }
                 linkPage { FullScreenPage() }
@@ -179,7 +178,7 @@ object RootPage : Page {
                     }
                 }
 
-                calculationContext.onRemove {
+                onRemove {
                     println("Left root screen")
                 }
             }

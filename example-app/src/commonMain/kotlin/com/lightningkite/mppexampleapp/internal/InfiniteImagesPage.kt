@@ -77,7 +77,7 @@ class ImageViewPager(val initialIndex: Int) : Page {
     val currentPage = Signal(initialIndex)
 
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
-        themeFromLast { it.copy(id="dumb", background = Color.black, foreground = Color.white) }.frame {
+        themed(ThemeDerivation { it.copy(id="dumb", background = Color.black, foreground = Color.white).withoutBack }).frame {
             val rv: ViewPager
             viewPager {
                 rv = this

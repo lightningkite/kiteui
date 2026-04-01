@@ -11,7 +11,6 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.Resources
@@ -31,41 +30,37 @@ object ImageTestPage : Page {
     }
 
 
-
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
-            scrolling.sizeConstraints(width = 40.rem).col {
+        scrolling.col {
+            text("scaleType = ${ImageScaleType.Crop}")
 
-                text("scaleType = ${ImageScaleType.Crop}")
+            centered.sizeConstraints(
+                width = 6.rem, height = 6.rem
+            ).themed(ImageSemantic).image {
+                source = Resources.imagesSnowyBackground
+                scaleType = ImageScaleType.Crop
+            }
 
-                themed(ImageSemantic).centered.sizeConstraints(
-                    width = 6.rem,
-                    height = 6.rem
-                ).image {
-                    source = Resources.imagesSnowyBackground
-                    scaleType = ImageScaleType.Crop
-                }
+            text(" Tests scaleType = ${ImageScaleType.Stretch}")
+            themed(ImageSemantic).image {
+                source = Resources.imagesSnowyBackground
+                scaleType = ImageScaleType.Stretch
+            }
 
-                text(" Tests scaleType = ${ImageScaleType.Stretch}")
-                themed(ImageSemantic).image {
-                    source = Resources.imagesSnowyBackground
-                    scaleType = ImageScaleType.Stretch
-                }
+            text("Resource .GIF from Resource")
+            val gif = rememberSuspending {
+                ImageRaw(Resources.imagesGifTest())
+            }
+            centered.sizeConstraints(
+                width = 20.rem, height = 20.rem
+            ).image {
+                ::source{ gif() }
+            }
 
-                text("Resource .GIF from Resource")
-                val gif = rememberSuspending {
-                    ImageRaw(Resources.imagesGifTest())
-                }
-                centered.sizeConstraints(
-                    width = 20.rem,
-                    height = 20.rem
-                ).image {
-                    ::source{ gif() }
-                }
-
-                text("Remote gif ")
-                centered.sizeConstraints(width = 20.rem,height=20.rem).image{
-                    source = ImageRemote("https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif")
-                }
+            text("Remote gif ")
+            centered.sizeConstraints(width = 20.rem, height = 20.rem).image {
+                source = ImageRemote("https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif")
             }
         }
+    }
 }

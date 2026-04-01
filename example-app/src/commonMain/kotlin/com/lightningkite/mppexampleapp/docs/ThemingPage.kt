@@ -11,7 +11,6 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.Transformation
 import com.lightningkite.kiteui.models.override
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
@@ -19,11 +18,6 @@ import com.lightningkite.kiteui.views.l2.titledSection
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.appTheme
 import com.lightningkite.mppexampleapp.defaultTheme
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 
 @Routable("docs/theming")
@@ -220,4 +214,4 @@ data object InvertedSemantic : Semantic("invert") {
 }
 
 @ViewModifierDsl3
-inline val ViewWriter.inverted: ViewWriter get() = themed(InvertedSemantic)
+inline val ElementWriter.CanAddTheme.inverted: ElementWriter.CanAddTheme get() = themed(InvertedSemantic)

@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.reactive.core.Signal
 
 /**

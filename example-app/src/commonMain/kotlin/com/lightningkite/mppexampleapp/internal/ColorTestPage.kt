@@ -69,7 +69,7 @@ object ColorTestPage : Page {
     }
 
     fun ViewWriter.changeAppBackgroundColor() {
-        important.centered.menuButton {
+        centered.important.menuButton {
             text { content = "Background Color" }
             requireClick = true
 

@@ -6,6 +6,160 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.widgets.code
+
+@Routable("docs/troubleshooting")
+object TroubleshootingPage : DocPage {
+    override val covers: List<String> = listOf(
+        "troubleshooting", "FAQ", "problems", "errors", "debugging",
+        "common issues", "help", "fixes"
+    )
+
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
+        article {
+            titledSection("Troubleshooting and FAQ") {
+                text("Common issues and their solutions when working with KiteUI.")
+
+                space()
+
+                titledSection("Reactivity Issues") {
+
+                    h5("Q: My UI doesn't update when I change a value")
+                    card.col {
+                        text("Make sure you're using Signal or other reactive types, not regular variables:")
+                        code {
+                            content = """
+                                // WRONG - won't update UI
+                                var count = 0
+                                text { content = count.toString() }
+
+                                // CORRECT - will update UI
+                                val count = Signal(0)
+                                text { ::content { count().toString() } }
+                            """.trimIndent()
+                        }
+                    }
+
+                    space()
+                    h5("Q: Changes only appear after I reload the page")
+                    card.col {
+                        text("You're likely modifying data without triggering reactivity:")
+                        code {
+                            content = """
+                                // WRONG - mutating list won't trigger updates
+                                val items = Signal(mutableListOf("a", "b"))
+                                items().add("c")  // UI won't update!
+
+                                // CORRECT - replace the whole list
+                                items.value = items() + "c"
+                            """.trimIndent()
+                        }
+                    }
+
+                    space()
+                    h5("Q: How do I debug reactive dependencies?")
+                    card.col {
+                        text("Check what your reactive block is reading:")
+                        code {
+                            content = """
+                                val result = remember {
+                                    println("Dependencies: a=${'$'}{a()}, b=${'$'}{b()}")
+                                    a() + b()  // Depends on both a and b
+                                }
+                            """.trimIndent()
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Navigation Issues") {
+
+                    h5("Q: Navigation doesn't work")
+                    card.col {
+                        text("Ensure your page has the Routable annotation:")
+                        code {
+                            content = """
+                                // CORRECT
+                                // Annotation: Routable("my/path")
+                                object MyPage : Page {
+                                    override fun ViewWriter.render() = run {
+                                        text("My Page")
+                                    }
+                                }
+                            """.trimIndent()
+                        }
+                        text("Then run generateAutoRoutes gradle task or rebuild the project.")
+                    }
+
+                    space()
+                    h5("Q: Parameters aren't being passed correctly")
+                    card.col {
+                        text("Make sure parameter types are serializable:")
+                        code {
+                            content = """
+                                // CORRECT - basic types work
+                                // Annotation: Routable("user/{id}")
+                                class UserPage(val id: String) : Page
+
+                                // ALSO CORRECT - custom serializable types
+                                // Annotation: Routable("item/{item}")
+                                class ItemPage(val item: @Serializable MyItem) : Page
+                            """.trimIndent()
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Styling and Theme Issues") {
+
+                    h5("Q: My semantic modifiers don't seem to work")
+                    card.col {
+                        text("Check modifier order: Position > Visibility > Scroll > Theme")
+                        code {
+                            content = """
+                                // WRONG order
+                                card - centered - text("Hello")
+
+                                // CORRECT order
+                                centered - card - text("Hello")
+                            """.trimIndent()
+                        }
+                    }
+
+                    space()
+                    h5("Q: Why does applying 'card' not create a visible card?")
+                    card.col {
+                        text("Applying the same semantic twice won't create a new card. Use explicit 'card' modifier:")
+                        code {
+                            content = """
+                                important - important - col {  // Won't create card
+                                    text("Text")
+                                }
+
+                                important - card - col {  // Will create card
+                                    text("Text")
+                                }
+                            """.trimIndent()
+                        }
+                    }
+
+                    space()
+                    h5("Q: How do I inspect applied themes?")
+                    card.col {
+                        text("Use browser dev tools to inspect element classes. They follow the pattern 't-themeName-semantic-semantic...'")
+                    }
+                }
+
+                space()
+
+                titledSection("Build Issues") {
+
+                    h5("Q: Compilation fails with 'Unresolved reference'")
+                    card.col {
+                        text("Common causes:")
+                        col {
+                            text("• Missing import statement")
                             text("• Incorrect module dependency")
                             text("• Need to regenerate auto-routes")
                         }
