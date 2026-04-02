@@ -8,10 +8,14 @@ import com.lightningkite.kiteui.views.theme
 import com.lightningkite.reactive.core.*
 import kotlin.js.Json
 import kotlin.js.json
+import kotlin.math.min
+import kotlin.math.sqrt
 import kotlin.time.Duration
+import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.get
@@ -645,5 +649,161 @@ external interface Animation {
 private fun forEach(receiver: Json, action: (key: String, value: dynamic) -> Unit) {
     for (key in js("Object.keys(receiver)")) {
         action(key, receiver[key])
+    }
+}
+
+private class PullToRefreshState {
+    var startY = 0.0
+    var isPulling = false
+    var isRefreshing = false
+    var indicator: HTMLElement? = null
+    var circle: HTMLElement? = null
+    var arrow: HTMLElement? = null
+    var spinner: HTMLElement? = null
+
+    fun resetIndicator() {
+        val ind = indicator ?: return
+        ind.style.transition = "height 0.2s ease, opacity 0.2s ease"
+        ind.style.height = "0px"
+        ind.style.opacity = "0"
+        circle?.style?.transform = "rotate(0deg)"
+        arrow?.style?.display = ""
+        spinner?.style?.display = "none"
+        isPulling = false
+        isRefreshing = false
+    }
+
+    fun updatePosition(scrollElement: HTMLElement) {
+        val ind = indicator ?: return
+        val rect = scrollElement.getBoundingClientRect()
+        ind.style.top = "${rect.top}px"
+        ind.style.left = "${rect.left}px"
+        ind.style.width = "${rect.width}px"
+        // Inherit theme colors from the scroll element
+        val computed = window.getComputedStyle(scrollElement)
+        ind.style.color = computed.color
+        val bg = computed.getPropertyValue("--nearest-background-color").trim()
+        if (bg.isNotEmpty()) {
+            circle?.style?.background = bg
+        }
+    }
+}
+
+@PublishedApi
+internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
+    val state = PullToRefreshState()
+    val PULL_THRESHOLD = 60.0
+    val MAX_PULL = 120.0
+
+    native.onElement { scrollElement ->
+        scrollElement as HTMLElement
+
+        // Append indicator to document.body with fixed positioning.
+        // We must NOT insert raw DOM nodes into any RView-managed container
+        // because it breaks FutureElement child index tracking (e.g. Recycler2).
+        val indicator = document.createElement("div") as HTMLDivElement
+        indicator.className = "ptr-indicator"
+        indicator.style.position = "fixed"
+        indicator.style.transition = "height 0.2s ease, opacity 0.2s ease"
+        indicator.style.opacity = "0"
+
+        val circle = document.createElement("div") as HTMLDivElement
+        circle.className = "ptr-icon-circle"
+
+        val arrow = document.createElement("div") as HTMLDivElement
+        arrow.className = "ptr-arrow"
+        arrow.innerHTML =
+            """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>"""
+
+        val spinner = document.createElement("div") as HTMLDivElement
+        spinner.className = "ptr-spinner"
+        spinner.style.display = "none"
+
+        circle.appendChild(arrow)
+        circle.appendChild(spinner)
+        indicator.appendChild(circle)
+        document.body!!.appendChild(indicator)
+
+        state.indicator = indicator
+        state.circle = circle
+        state.arrow = arrow
+        state.spinner = spinner
+
+        scrollElement.addEventListener("touchstart", { event ->
+            if (state.isRefreshing) return@addEventListener
+            val touch = event.asDynamic().touches[0]
+            state.startY = (touch.clientY as Number).toDouble()
+        }, js("{ passive: true }"))
+
+        scrollElement.addEventListener("touchmove", { event ->
+            if (state.isRefreshing) return@addEventListener
+            if (scrollElement.scrollTop > 0) {
+                if (state.isPulling) state.resetIndicator()
+                return@addEventListener
+            }
+
+            val touch = event.asDynamic().touches[0]
+            val currentY = (touch.clientY as Number).toDouble()
+            val deltaY = currentY - state.startY
+
+            if (deltaY > 0) {
+                state.isPulling = true
+                event.preventDefault()
+
+                // Apply resistance: sqrt curve for natural feel
+                val pullDistance = min(sqrt(deltaY * MAX_PULL), MAX_PULL)
+
+                // Position indicator at top of scroll element
+                state.updatePosition(scrollElement)
+                indicator.style.transition = "none"
+                indicator.style.height = "${pullDistance}px"
+                indicator.style.opacity = "1"
+
+                // Rotate circle based on progress toward threshold
+                val rotation = min(pullDistance / PULL_THRESHOLD, 1.0) * 180.0
+                circle.style.transform = "rotate(${rotation}deg)"
+            } else if (state.isPulling) {
+                state.resetIndicator()
+            }
+        }, js("{ passive: false }"))
+
+        val touchEndHandler: (dynamic) -> Unit = { _ ->
+            if (state.isPulling && !state.isRefreshing) {
+                val indicatorHeight = indicator.style.height.removeSuffix("px").toDoubleOrNull() ?: 0.0
+                if (indicatorHeight >= PULL_THRESHOLD) {
+                    // Trigger refresh
+                    state.isRefreshing = true
+                    arrow.style.display = "none"
+                    spinner.style.display = ""
+                    indicator.style.transition = "height 0.2s ease"
+                    indicator.style.height = "${PULL_THRESHOLD}px"
+                    refreshAction.startAction(this@nativeSetupPullToRefresh)
+                    // For actions that complete synchronously, the reactive scope
+                    // may not re-fire (state stays in "success" type). Schedule
+                    // a fallback reset to catch this case.
+                    window.setTimeout({
+                        if (state.isRefreshing) {
+                            state.resetIndicator()
+                        }
+                    }, 500)
+                } else {
+                    state.resetIndicator()
+                }
+            }
+        }
+        scrollElement.addEventListener("touchend", touchEndHandler)
+        scrollElement.addEventListener("touchcancel", touchEndHandler)
+    }
+
+    // Reactive scope to observe action completion — reset when not loading
+    reactiveScope {
+        val loading = refreshAction.state().handle(
+            success = { false },
+            exception = { false },
+            notReady = { true }
+        )
+        if (!loading && state.isRefreshing) {
+            state.resetIndicator()
+        }
     }
 }

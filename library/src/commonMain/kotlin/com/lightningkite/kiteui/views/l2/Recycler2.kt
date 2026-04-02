@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -21,11 +22,13 @@ import kotlinx.coroutines.launch
 class Recycler2(
     val outerFrame: Frame,
     val vertical: Boolean,
+    val refreshAction: Action?,
     var log: Log?
 ) : ElementWithChildren, Element by outerFrame {
     constructor(
         context: ElementContext,
         vertical: Boolean = true,
+        refreshAction: Action? = null,
         log: Log? = null//ConsoleRoot.tag("Recycler2"),
     ) : this(Frame(context), vertical, log)
 
@@ -85,11 +88,20 @@ class Recycler2(
     init {
         with(outerFrame) frame@{
             themed(ThemeDerivation { if (this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack })
-                .scrolling(vertical = this@Recycler2.vertical, horizontal = !this@Recycler2.vertical) {
-                    this@Recycler2.scroll = this
-                    showScrollBars = false
-                }
-                .programmatic {
+                .let { writer ->
+                    val ra = refreshAction
+                    if (ra != null) {
+                        writer.scrollingWithRefresh(vertical = vertical, horizontal = !vertical, refreshAction = ra) {
+                            scroll = this
+                            showScrollBars = false
+                        }
+                    } else {
+                        writer.scrolling(vertical = vertical, horizontal = !vertical) {
+                            scroll = this
+                            showScrollBars = false
+                        }
+                    }
+                }.programmatic {
                     padding = null
                     @OptIn(ExperimentalKiteUi::class)
                     themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading

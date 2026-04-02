@@ -15,3 +15,6 @@ internal actual fun ContainerElement.nativeAnimateShow() {}
 internal actual fun ContainerElement.nativeAnimateHide() {}
 // by Claude - no-op for SSR (no animation runtime)
 internal actual fun ContainerElement.nativeAnimateWeight(fromWeight: Float, toWeight: Float) {}
+@PublishedApi
+internal actual fun ContainerElement.nativeSetupPullToRefresh(refreshAction: Action) {
+}

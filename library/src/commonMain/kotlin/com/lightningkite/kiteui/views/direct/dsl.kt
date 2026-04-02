@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewDsl
@@ -302,12 +303,13 @@ inline fun ElementWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {})
     return write(ProgrammaticLayout(context), setup)
 }
 
-inline fun ElementWriter.recyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
+inline fun ElementWriter.recyclerView(refreshAction: Action? = null, setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Recycler2(context, vertical = true), setup)
 }
 
-inline fun ElementWriter.horizontalRecyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
+inline fun ElementWriter.horizontalRecyclerView(
+    refreshAction: Action? = null, setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Recycler2(context, vertical = false), setup)
 }

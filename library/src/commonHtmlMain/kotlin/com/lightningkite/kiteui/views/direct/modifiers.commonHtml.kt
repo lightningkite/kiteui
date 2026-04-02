@@ -100,7 +100,14 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
     crossinline setup: ScrollingBehaviors.() -> Unit
 ): ElementWriter =
     // For web, we'll just use regular scrolling as pull-to-refresh isn't a common pattern on web
-    beforeSetup { setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical)) }
+    beforeSetup {
+        setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
+
+        if (vertical) {
+            native.setStyleProperty("overscroll-behavior-y", "none")
+            nativeSetupPullToRefresh(refreshAction)
+        }
+    }
 
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme =
@@ -231,3 +238,6 @@ internal expect fun ContainerElement.nativeAnimateHide()
 
 // by Claude - expect for weight animation
 internal expect fun ContainerElement.nativeAnimateWeight(fromWeight: Float, toWeight: Float)
+
+@PublishedApi
+internal expect fun ContainerElement.nativeSetupPullToRefresh(refreshAction: Action)

@@ -107,6 +107,8 @@ object RootPage : Page {
                 linkPage { HorizontalRecyclerViewPage }
                 linkPage { InfiniteImagesPage }
                 linkPage { R2VPPage }
+                linkPage { Recycler2PullToRefreshTest }
+
 
                 sectionLabel("Media")
                 linkPage { ImageTestPage }
