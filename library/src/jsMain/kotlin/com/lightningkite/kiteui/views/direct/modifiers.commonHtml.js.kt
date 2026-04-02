@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Log
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.native
 import com.lightningkite.kiteui.views.theme
+import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import kotlin.js.Json
 import kotlin.js.json
@@ -690,7 +692,7 @@ private class PullToRefreshState {
 }
 
 @PublishedApi
-internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
+internal actual fun Element.nativeSetupPullToRefresh(refreshAction: Action) {
     val state = PullToRefreshState()
     val PULL_THRESHOLD = 60.0
     val MAX_PULL = 120.0
@@ -796,7 +798,7 @@ internal actual fun RView.nativeSetupPullToRefresh(refreshAction: Action) {
     }
 
     // Reactive scope to observe action completion — reset when not loading
-    reactiveScope {
+    reactive {
         val loading = refreshAction.state().handle(
             success = { false },
             exception = { false },

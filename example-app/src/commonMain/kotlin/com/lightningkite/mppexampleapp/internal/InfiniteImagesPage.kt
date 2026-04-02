@@ -85,7 +85,6 @@ class ImageViewPager(val initialIndex: Int) : Page {
                     val renders = Signal(0)
                     frame {
                         ::transitionId { currImage().toString() }
-                        gap = 0.25.rem
                         image {
                             reactiveScope {
                                 renders.value++

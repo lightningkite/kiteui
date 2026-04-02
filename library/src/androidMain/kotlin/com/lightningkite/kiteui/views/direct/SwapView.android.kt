@@ -42,7 +42,7 @@ actual class SwapView actual constructor(context: ElementContext) : NativeContai
             }
 
             override fun addChild(element: Element) {
-                println("addChild called with $element")
+//                println("addChild called with $element")
                 newViewHolder = element
             }
         }
@@ -50,7 +50,7 @@ actual class SwapView actual constructor(context: ElementContext) : NativeContai
         try {
             swapTimeMakeViewPerformance {
                 writer.createNewView()
-                println("Swapping to $newViewHolder.  RV: ${newViewHolder}, V: ${newViewHolder?.native}, Has parent? ${newViewHolder?.native?.parent}")
+//                println("Swapping to $newViewHolder.  RV: ${newViewHolder}, V: ${newViewHolder?.native}, Has parent? ${newViewHolder?.native?.parent}")
             }
         } finally {
             animationsEnabled = true

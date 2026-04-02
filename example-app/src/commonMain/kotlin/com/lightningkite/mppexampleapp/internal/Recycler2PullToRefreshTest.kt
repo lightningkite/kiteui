@@ -34,8 +34,7 @@ object Recycler2PullToRefreshTest : Page {
         List(elementCount()) { "${it}-${timeStr}" }
     }
 
-
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
             expanding.recyclerView(Action("refresh") { refresh.invokeAll() }) {
                 log = LogRoot.tag("R2")

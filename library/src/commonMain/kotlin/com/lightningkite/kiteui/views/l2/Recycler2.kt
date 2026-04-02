@@ -30,7 +30,7 @@ class Recycler2(
         vertical: Boolean = true,
         refreshAction: Action? = null,
         log: Log? = null//ConsoleRoot.tag("Recycler2"),
-    ) : this(Frame(context), vertical, log)
+    ) : this(Frame(context), vertical, refreshAction, log)
 
     internal lateinit var scroll: ScrollingBehaviors
         private set
@@ -87,21 +87,24 @@ class Recycler2(
 
     init {
         with(outerFrame) frame@{
+
             themed(ThemeDerivation { if (this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack })
                 .let { writer ->
-                    val ra = refreshAction
+                    val self = this@Recycler2
+                    val ra = self.refreshAction
                     if (ra != null) {
-                        writer.scrollingWithRefresh(vertical = vertical, horizontal = !vertical, refreshAction = ra) {
-                            scroll = this
+                        writer.scrollingWithRefresh(vertical = self.vertical, horizontal = !self.vertical, refreshAction = ra) {
+                            self.scroll = this
                             showScrollBars = false
                         }
                     } else {
-                        writer.scrolling(vertical = vertical, horizontal = !vertical) {
-                            scroll = this
+                        writer.scrolling(vertical = self.vertical, horizontal = !self.vertical) {
+                            self.scroll = this
                             showScrollBars = false
                         }
                     }
-                }.programmatic {
+                }
+                .programmatic {
                     padding = null
                     @OptIn(ExperimentalKiteUi::class)
                     themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
@@ -117,7 +120,8 @@ class Recycler2(
                 .scrolling(vertical = this@Recycler2.vertical, horizontal = !this@Recycler2.vertical) {
                     this@Recycler2.fakeScroll = this
                     ignoreInteraction = Platform.current != Platform.Web
-                }.programmatic {
+                }
+                .programmatic {
                     this@Recycler2.fakeScrollContent = this
                     ignoreInteraction = Platform.current != Platform.Web
                     themed(ThemeDerivation {

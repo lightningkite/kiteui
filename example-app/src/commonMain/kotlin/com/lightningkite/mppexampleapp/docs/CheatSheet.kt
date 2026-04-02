@@ -66,11 +66,10 @@ object CheatSheet : DocPage {
     ): Unit {
         val e = ExampleEntry(name)
         known += e
-        card.rowCollapsingToColumn(79.rem)dynamicThemed {
-                if (jump() == e) ImportantSemantic
-                else null
-            }. {
-            
+        card.dynamicThemed {
+            if (jump() == e) ImportantSemantic
+            else null
+        }.rowCollapsingToColumn(79.rem) {
             reactive {
                 if (jump() == e) scrollIntoView(null, Align.Center, true)
             }
@@ -1212,18 +1211,16 @@ object CheatSheet : DocPage {
                                 }
                             }
 
-dynamicThemed {
-                                    val color = try {
-                                        Color.fromHexString(debounced())
-                                    } catch (e: NumberFormatException) {
-                                        Color.white
-                                    }
-                                    SetForeground(color)
-                                }.                            text {
-                                val debounced = input.debounce(200)
+                            val debounced = input.debounce(200)
 
-                                
-
+                            dynamicThemed {
+                                val color = try {
+                                    Color.fromHexString(debounced())
+                                } catch (e: NumberFormatException) {
+                                    Color.white
+                                }
+                                SetForeground(color)
+                            }.text {
                                 ::content { "Filtered input: ${input()}" }
                             }
                         }

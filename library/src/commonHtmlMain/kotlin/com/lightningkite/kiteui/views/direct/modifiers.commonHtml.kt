@@ -5,7 +5,6 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.InternalKiteUi
-import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
@@ -99,7 +98,6 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
 ): ElementWriter =
-    // For web, we'll just use regular scrolling as pull-to-refresh isn't a common pattern on web
     beforeSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
 
@@ -189,7 +187,7 @@ actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: Reacti
 
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
-    return write(
+    return lazyInjectModifierWriter {
         object : NativeContainerElement(context) {
             init {
                 native.tag = "div"
@@ -230,7 +228,7 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: 
             override val spacingForChildCornerRadii: Dimension
                 get() = parent?.spacingForChildCornerRadii ?: 0.px
         }
-    )
+    }
 }
 
 internal expect fun ContainerElement.nativeAnimateShow()
@@ -240,4 +238,4 @@ internal expect fun ContainerElement.nativeAnimateHide()
 internal expect fun ContainerElement.nativeAnimateWeight(fromWeight: Float, toWeight: Float)
 
 @PublishedApi
-internal expect fun ContainerElement.nativeSetupPullToRefresh(refreshAction: Action)
+internal expect fun Element.nativeSetupPullToRefresh(refreshAction: Action)

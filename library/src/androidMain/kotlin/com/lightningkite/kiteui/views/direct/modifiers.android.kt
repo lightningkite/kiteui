@@ -13,8 +13,8 @@ import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.children
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
-import com.lightningkite.kiteui.OverrideOnly
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -23,11 +23,6 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.coroutines.CoroutineContext
 
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen {
@@ -129,107 +124,81 @@ actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Alig
     }
 }
 
+@OptIn(InternalKiteUi::class)
 @ViewModifierDsl3
 actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
-    return write(ScrollView(context, horizontal = horizontal, vertical = vertical), setup)
+    return lazyInjectModifierWriter(setup) {
+        ScrollView(context, horizontal = horizontal, vertical = vertical)
+    }
 }
 
+@OptIn(InternalKiteUi::class)
 @ViewModifierDsl3
 actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWriter {
-    if (!vertical) {
-        return __scrollsUncontracted(vertical, horizontal, setup)
-    }
-
-    val refreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(context.activity)
-    refreshLayout.setOnRefreshListener {
-        refreshAction.startAction(this)
-        reactiveScope {
-            refreshLayout.isRefreshing = refreshAction.state().handle(
-                success = { false },
-                exception = { false },
-                notReady = { true }
-            )
-        }
-    }
+): ElementWriter {
+    if (!vertical) return __scrollsUncontracted(vertical = false, horizontal, setup)
 
     // Add SwipeRefreshLayout wrapper to the parent, then nest ScrollView inside it.
     // Return ScrollView so subsequent children go into the scrollable area.
     // SwipeRefreshLayout has internal child views (progress spinner), so we must
-    // override child management to avoid native/RView count mismatch assertions.
-    return write(object : RViewWriter(context) {
-        override val native: View = refreshLayout
-        val myChildren: ArrayList<View> = ArrayList()
-        override fun internalAddChild(index: Int, view: RView) {
-            // Apply parent's default alignment if child doesn't have explicit alignment set
-            var needsLayoutParamUpdate = false
-
-            if (view.lastSetHorizontalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildHorizontalAlign != null) {
-                view.lastSetHorizontalAlign = newChildHorizontalAlign!!
-                needsLayoutParamUpdate = true
-            }
-            if (view.lastSetVerticalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildVerticalAlign != null) {
-                view.lastSetVerticalAlign = newChildVerticalAlign!!
-                needsLayoutParamUpdate = true
-            }
-
-            // If we applied defaults, update layout params (align() modifier wasn't called)
-            if (needsLayoutParamUpdate) {
-                val params = view.lparams
-                val horizontalGravity = when (view.lastSetHorizontalAlign) {
-                    com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.START
-                    com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_HORIZONTAL
-                    com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.END
-                    else -> android.view.Gravity.CENTER_HORIZONTAL
-                }
-                val verticalGravity = when (view.lastSetVerticalAlign) {
-                    com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.TOP
-                    com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_VERTICAL
-                    com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.BOTTOM
-                    else -> android.view.Gravity.CENTER_VERTICAL
-                }
-
-                if (params is com.lightningkite.kiteui.views.direct.SimplifiedLinearLayoutLayoutParams)
-                    params.gravity = horizontalGravity or verticalGravity
-                else if (params is android.widget.FrameLayout.LayoutParams)
-                    params.gravity = horizontalGravity or verticalGravity
-                else if (params is androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams)
-                    params.gravity = horizontalGravity or verticalGravity
-            }
-
-            myChildren.add(index, view.native)
-            (native as ViewGroup).addView(view.native, index)
-        }
-
-        override fun internalRemoveChild(index: Int) {
-            (native as ViewGroup).let {
-                it.removeViewAt(it.children.indexOf(myChildren.removeAt(index)))
+    // override child management to avoid native/ContainerElement count mismatch assertions.
+    return lazyInjectModifierWriter {
+        val refreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(context.activity)
+        refreshLayout.setOnRefreshListener {
+            refreshAction.startAction(this)
+            reactive {
+                refreshLayout.isRefreshing = refreshAction.state().handle(
+                    success = { false },
+                    exception = { false },
+                    notReady = { true }
+                )
             }
         }
 
-        override fun internalClearChildren() {
-            (native as ViewGroup).let {
-                for (child in myChildren) {
-                    it.removeViewAt(it.children.indexOf(child))
+        object : NativeContainerElement(context) {
+            override val native = refreshLayout
+            val myChildren: ArrayList<View> = ArrayList()
+
+            override fun nativeAddChild(index: Int, element: Element) {
+                myChildren.add(index, element.native)
+                native.addView(element.native, index)
+            }
+
+            override fun nativeRemoveChild(index: Int) {
+                native.let {
+                    it.removeViewAt(it.children.indexOf(myChildren.removeAt(index)))
                 }
-                myChildren.clear()
+            }
+
+            override fun nativeClearChildren() {
+                native.let {
+                    for (child in myChildren) {
+                        it.removeViewAt(it.children.indexOf(child))
+                    }
+                    myChildren.clear()
+                }
             }
         }
-    }, {}).write(ScrollView(context, horizontal = horizontal, vertical = vertical), setup)
+    }.lazyInjectModifierWriter(setup) {
+        ScrollView(context, horizontal = horizontal, vertical = true)
+    }
 }
 
+@OptIn(InternalKiteUi::class)
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
-        return write(object : NativeContainerElement(context) {
-            override val native: ViewGroup = DesiredSizeView(context.activity).apply {
-                this.constraints = constraints
+        return lazyInjectModifierWriter {
+            object : NativeContainerElement(context) {
+                override val native: ViewGroup = DesiredSizeView(context.activity).apply {
+                    this.constraints = constraints
+                }
             }
-        })
+        }
     } else {
         return beforeSetup {
             constraints.width?.let { it: Dimension -> lparams.width = it.value.toInt() }
@@ -246,15 +215,18 @@ actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): El
     }
 }
 
+@OptIn(InternalKiteUi::class)
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
-    return write(object : NativeContainerElement(context) {
-        override val native: ViewGroup = DesiredSizeView(context.activity).apply {
-            reactive {
-                this@apply.constraints = constraints()
+    return lazyInjectModifierWriter {
+        object : NativeContainerElement(context) {
+            override val native: ViewGroup = DesiredSizeView(context.activity).apply {
+                reactive {
+                    this@apply.constraints = constraints()
+                }
             }
         }
-    })
+    }
 }
 
 interface MaxSizeLayoutParams {
@@ -417,7 +389,7 @@ actual fun ElementWriter.textPopover(message: String): ElementWriter {
 
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
-    return this@shownWhen.beforeSetup {
+    return beforeSetup {
         shown = default
         var existingAnimator: ValueAnimator? = null
         var goal = default
