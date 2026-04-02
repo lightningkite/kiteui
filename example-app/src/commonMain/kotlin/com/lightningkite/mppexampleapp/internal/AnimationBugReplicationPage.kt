@@ -7,9 +7,10 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.compact
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.button
-import com.lightningkite.kiteui.views.direct.dynamicWeight
 import com.lightningkite.kiteui.views.direct.col
+import com.lightningkite.kiteui.views.direct.dynamicWeight
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.padded
 import com.lightningkite.kiteui.views.direct.row

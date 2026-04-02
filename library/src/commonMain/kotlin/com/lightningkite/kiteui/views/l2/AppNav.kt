@@ -129,7 +129,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     }
 }
 
-fun ElementWriter.CanAddTheme.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
+fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     themed(OuterSemantic).col {
         debugName = "outer nav"
@@ -204,7 +204,7 @@ fun ElementWriter.CanAddTheme.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     }
 }
 
-fun ElementWriter.CanAddTheme.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
+fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     themed(OuterSemantic).col {
 // Nav 4 left and top - add dropdown for user info

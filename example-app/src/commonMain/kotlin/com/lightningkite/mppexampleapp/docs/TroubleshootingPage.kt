@@ -82,7 +82,7 @@ object TroubleshootingPage : DocPage {
                                 // CORRECT
                                 // Annotation: Routable("my/path")
                                 object MyPage : Page {
-                                    override fun ViewWriter.render() = run {
+                                    override fun ElementWriter.CanAddTheme.render() = run {
                                         text("My Page")
                                     }
                                 }

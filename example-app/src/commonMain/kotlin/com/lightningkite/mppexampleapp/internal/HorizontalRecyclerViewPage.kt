@@ -61,12 +61,12 @@ object HorizontalRecyclerViewPage : Page {
                 scrollToIndex(10, Align.Start)
                 children(items, id = { it }) {
                     col {
-                        row {
-                            dynamicTheme {
+dynamicThemed {
                                 if (it() == 50) ImportantSemantic
                                 else if (it() % 7 == 0) HoverSemantic
                                 else null
-                            }
+                            }.                        row {
+                            
                             centered.expanding.text { ::content { "Item ${it()}" } }
                             centered.button {
                                 text {

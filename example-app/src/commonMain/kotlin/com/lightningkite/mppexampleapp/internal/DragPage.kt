@@ -15,13 +15,13 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.dynamicTheme
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.kiteui.views.l2.childrenReorderable
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.kiteui.views.l2.forEachReorderable
 import com.lightningkite.kiteui.views.themed
-import com.lightningkite.kiteui.views.dynamicTheme
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -58,8 +58,8 @@ object DragPage : Page {
                         )
                     }
                 ) { number ->
-                    card.frame {
-                        dynamicTheme { Highlight(number()) }
+                    card.dynamicThemed { Highlight(number()) }.frame {
+                        
                         centered.text { ::content { number().toString() } }
                     }
                 }
@@ -77,8 +77,7 @@ object DragPage : Page {
                         numbers.modify { move.reorder(it) }
                     }
                 ) { number ->
-                    card.frame {
-                        dynamicTheme { Highlight(number()) }
+                    card.dynamicThemed { Highlight(number()) }.frame {
                         centered.text { ::content { number().toString() } }
                     }
                 }

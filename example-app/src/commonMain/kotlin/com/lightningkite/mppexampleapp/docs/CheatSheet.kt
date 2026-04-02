@@ -16,10 +16,10 @@ import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.dynamicTheme
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.kiteui.views.themed
-import com.lightningkite.kiteui.views.dynamicTheme
 import com.lightningkite.mppexampleapp.internal.RootPage
 import com.lightningkite.mppexampleapp.widgets.code
 import com.lightningkite.reactive.context.*
@@ -66,11 +66,11 @@ object CheatSheet : DocPage {
     ): Unit {
         val e = ExampleEntry(name)
         known += e
-        card.rowCollapsingToColumn(79.rem) {
-            dynamicTheme {
+        card.rowCollapsingToColumn(79.rem)dynamicThemed {
                 if (jump() == e) ImportantSemantic
                 else null
-            }
+            }. {
+            
             reactive {
                 if (jump() == e) scrollIntoView(null, Align.Center, true)
             }
@@ -1212,17 +1212,17 @@ object CheatSheet : DocPage {
                                 }
                             }
 
-                            text {
-                                val debounced = input.debounce(200)
-
-                                dynamicTheme {
+dynamicThemed {
                                     val color = try {
                                         Color.fromHexString(debounced())
                                     } catch (e: NumberFormatException) {
                                         Color.white
                                     }
                                     SetForeground(color)
-                                }
+                                }.                            text {
+                                val debounced = input.debounce(200)
+
+                                
 
                                 ::content { "Filtered input: ${input()}" }
                             }

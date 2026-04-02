@@ -42,18 +42,15 @@ object ColorTestPage : Page {
 
                 padding = 0.dp
                 frame {
-                    text {
-                        content = "Change Me!"
-                        dynamicTheme {
-                            ThemeDerivation {
-                                it.copy(
-                                    id = "color_${debounced().toInt()}",
-                                    background = debounced(),
-                                    foreground = debounced().highlight(1f),
-                                ).withBack
-                            }
+                    dynamicThemed {
+                        ThemeDerivation {
+                            it.copy(
+                                id = "color_${debounced().toInt()}",
+                                background = debounced(),
+                                foreground = debounced().highlight(1f),
+                            ).withBack
                         }
-                    }
+                    }.text("Change Me!")
                 }
 
                 opensMenu {
