@@ -65,15 +65,22 @@ interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
 }
 
 /**
- * An element that can contain child elements.
+ * An element that can have child elements, but can not add children directly
+ * */
+interface ElementWithChildren : Element {
+    val children: List<Element>
+}
+
+/**
+ * An element that can contain and add child elements
  *
  * Container elements manage child lifecycle, layout, and theming propagation.
  */
-interface ContainerElement : Element, ViewWriter {
+interface ContainerElement : Element, ElementWithChildren, ViewWriter {
     override val underlyingNativeElement: NativeContainerElement
 
     /** List of child elements in this container */
-    val children: List<Element>
+    override val children: List<Element>
 
     /** Adds a child element at the specified index */
     fun addChild(index: Int, element: Element)

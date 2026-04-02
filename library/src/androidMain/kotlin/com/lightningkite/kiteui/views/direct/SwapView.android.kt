@@ -17,6 +17,8 @@ import com.lightningkite.reactive.context.*
 
 
 actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
+    actual override val underlyingNativeElement: SwapView get() = this
+
     override val native = FrameLayout(context.activity)
 
     companion object {

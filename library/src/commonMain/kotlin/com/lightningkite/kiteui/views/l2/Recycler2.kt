@@ -22,7 +22,7 @@ class Recycler2(
     val outerFrame: Frame,
     val vertical: Boolean,
     var log: Log?
-) : ContainerElement by outerFrame, LinearLayoutElement {
+) : ElementWithChildren, Element by outerFrame {
     constructor(
         context: ElementContext,
         vertical: Boolean = true,
@@ -39,15 +39,13 @@ class Recycler2(
     internal val fakeScrollContent: ProgrammaticLayout
     internal val fakeScrollIndicator: Frame
 
-    override var gap: Dimension?
+    override val children: List<Element> get() = cells.children
+
+    var gap: Dimension?
         get() = cells.gap
         set(value) {
             cells.gap = value
         }
-
-    @Deprecated("Will probably be removed in the future.")
-    override val spacingForChildCornerRadii: Dimension
-        get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 
     override var paddingByEdge: Edges?
         get() = cells.paddingByEdge

@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui.views
 
-private fun Element.children(): List<Element> =
-    (this as? ContainerElement)?.children ?: emptyList()
+fun Element.driverChildren(): List<Element> =
+    (this as? ElementWithChildren)?.children ?: emptyList()
 
-private fun Element.childrenOrNull(): List<Element>? =
-    (this as? ContainerElement)?.children
+fun Element.driverChildrenOrNull(): List<Element>? =
+    (this as? ElementWithChildren)?.children
 
 /**
  * Renders a text snapshot of this view's subtree for AI driver / testing inspection.
@@ -18,7 +18,7 @@ fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Element.Driv
 
         if (options.interactiveOnly && view.driverActions.keys.all { it in baseActions } && view.driverValue == null && view.debugName == null) {
             // Skip structural-only nodes but still walk children
-            for (child in view.children()) walk(child, depth)
+            for (child in view.driverChildren()) walk(child, depth)
             return
         }
 
@@ -26,7 +26,7 @@ fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Element.Driv
 
         appendLine(line)
 
-        for (child in view.children()) walk(child, depth + 1)
+        for (child in view.driverChildren()) walk(child, depth + 1)
     }
 
     walk(this@driverSnapshot, 0)
@@ -54,11 +54,11 @@ fun Element.driverFind(query: String, includeHidden: Boolean = false): String = 
         if (nameMatch || valueMatch || typeMatch || actionMatch) {
             results.add(path to view)
         }
-        for (child in view.children()) walk(child, path)
+        for (child in view.driverChildren()) walk(child, path)
     }
     // Start from root's children so returned paths align with resolveDriverPath's indexing.
     // resolveDriverPath("0") means root.driverChildren[0], so paths must be relative to root's children.
-    for (child in this@driverFind.children()) walk(child, "")
+    for (child in this@driverFind.driverChildren()) walk(child, "")
     if (results.isEmpty()) {
         append("No views matching '$query'")
     } else {
@@ -90,10 +90,10 @@ fun Element.driverFindClickable(query: String, includeHidden: Boolean = false): 
         if (nameMatch || valueMatch || typeMatch || actionMatch) {
             matches.add(view)
         }
-        for (child in view.children()) walk(child, path)
+        for (child in view.driverChildren()) walk(child, path)
     }
     // Start from root's children so returned paths align with resolveDriverPath's indexing.
-    for (child in this@driverFindClickable.children()) walk(child, "")
+    for (child in this@driverFindClickable.driverChildren()) walk(child, "")
 
     val seen = mutableSetOf<Element>()
     val results = mutableListOf<Pair<String, Element>>()
@@ -162,7 +162,7 @@ fun Element.resolveDriverPath(path: String): Element? {
         current = current.parent ?: return null
     } else {
         val firstTarget = first.toIntOrNull()?.let { idx ->
-            current.childrenOrNull()?.getOrNull(idx)
+            current.driverChildrenOrNull()?.getOrNull(idx)
         } ?: current.findByName(first)
         current = firstTarget ?: return null
     }
@@ -175,8 +175,8 @@ fun Element.resolveDriverPath(path: String): Element? {
             continue
         }
         val next = seg.toIntOrNull()?.let { idx ->
-            current.childrenOrNull()?.getOrNull(idx)
-        } ?: current.childrenOrNull()?.firstOrNull { it.debugName == seg }
+            current.driverChildrenOrNull()?.getOrNull(idx)
+        } ?: current.driverChildrenOrNull()?.firstOrNull { it.debugName == seg }
         current = next ?: return null
     }
     return current
@@ -184,7 +184,7 @@ fun Element.resolveDriverPath(path: String): Element? {
 
 private fun Element.findByName(name: String): Element? {
     if (debugName == name) return this
-    for (child in children()) {
+    for (child in driverChildren()) {
         val found = child.findByName(name)
         if (found != null) return found
     }

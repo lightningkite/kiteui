@@ -7,7 +7,10 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
 
-expect class SwapView(context: ElementContext) : NativeContainerElement {
+expect class SwapView(context: ElementContext) : ElementWithChildren, NativeElement {
+    override val underlyingNativeElement: SwapView
+    override val children: List<Element>
+
     fun swap(
         transition: ScreenTransition = ScreenTransition.Fade,
         createNewView: ViewWriter.() -> Unit

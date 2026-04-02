@@ -80,6 +80,7 @@ object RecyclerViewPage : DocPage {
             """.trimIndent()) {
                 recyclerView {
                     placer = RecyclerViewPlacerVerticalGrid(2)
+
                     children(
                         items = remember { (1..20).toList() },
                         id = { it }

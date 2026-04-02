@@ -77,8 +77,7 @@ class VideoView(private val frame: Frame) : Element by frame {
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
         }
 
-    var ready = false
-        private set
+    private var ready = false
 
     @OverrideOnly
     override fun onStartup() {

@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.core.*
 
@@ -49,14 +50,10 @@ val ElementContext.appNavFactory by contextAddon<Signal<ViewWriter.(AppNav.() ->
     )
 )
 
-@Deprecated("Use directly through context", ReplaceWith("context.appNavFactory"))
-val ViewWriter.appNavFactory
-    get() = context.appNavFactory
-
 fun ElementWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit) {
     return appBase(main, dialog) {
         swapView {
-            debugName = "swapView for appNavFactory"
+            debugName = "swap-appNavFactory"
             swapping(
                 current = { context.appNavFactory() },
                 views = { it(this, setup) }
@@ -69,7 +66,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     val showMenu = Signal(false)
     themed(OuterSemantic).col {
-        debugName = "outer nav"
+        debugName = "outer-nav"
         bar.row {
             applySafeInsets(bottom = false)
             debugName = "top bar"

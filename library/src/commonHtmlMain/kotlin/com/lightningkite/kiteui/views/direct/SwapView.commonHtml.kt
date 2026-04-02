@@ -5,6 +5,8 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
+    actual override val underlyingNativeElement: SwapView get() = this
+
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")
