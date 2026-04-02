@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
@@ -8,6 +9,7 @@ import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.VisualMediaSource
 import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.NativeElementCommonCode
 import com.lightningkite.kiteui.views.areAnimationsEnabled
@@ -26,9 +28,8 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 
-class MediaView(viewWriter: ElementWriter) : CoroutineScope {
-    val rView: Frame = with(viewWriter) { frame { } }
-    override val coroutineContext: CoroutineContext get() = rView.coroutineContext
+class MediaView(private val frame: Frame) : Element by frame {
+    constructor(context: ElementContext) : this(Frame(context))
 
     data class Info(
         val sources: List<VisualMediaSource>,
@@ -43,9 +44,7 @@ class MediaView(viewWriter: ElementWriter) : CoroutineScope {
             (currentRawMediaView.value as? RawVideoView)?.showControls = showControls
             (currentRawMediaView.value as? RawVideoView)?.loop = loop
         }
-        onRemove {
-            removeListener()
-        }
+        onRemove(removeListener)
     }
 
     var info: Info? = null
@@ -88,7 +87,10 @@ class MediaView(viewWriter: ElementWriter) : CoroutineScope {
 
 
     var ready = false
-    fun postSetup() {
+
+    @OverrideOnly
+    override fun onStartup() {
+        frame.onStartup()
         ready = true
         refresh()
     }
@@ -96,20 +98,9 @@ class MediaView(viewWriter: ElementWriter) : CoroutineScope {
     private var lastRendered: Info? = null
     private var lastRender: List<Element>? = null
 
-    val activityIndicator: ActivityIndicator
-
-    init {
-        with(rView) {
-            centered.activityIndicator {
-                cannotBeCovered = false
-                activityIndicator = this
-                opacity = 0.0
-            }
-        }
-    }
+    val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
 
     val shownInfo = RawReactive<Info?>(ReactiveState(null))
-    val shown by rView::shown
     var cannotBeCovered = false
 
     @OptIn(ExperimentalKiteUi::class)
@@ -118,7 +109,7 @@ class MediaView(viewWriter: ElementWriter) : CoroutineScope {
         val info = info
         if (lastRendered != info) {
             lastRender?.forEach {
-                if (rView.areAnimationsEnabled) {
+                if (frame.areAnimationsEnabled) {
                     if(!opaqueTransitions) it.opacity = 0.0
                     if(it is RawVideoView) {
                         launch {
@@ -134,99 +125,98 @@ class MediaView(viewWriter: ElementWriter) : CoroutineScope {
                         }
                     }
                     afterTimeout(it.theme.transitionDuration.inWholeMilliseconds) {
-                        rView.removeChild(it)
+                        frame.removeChild(it)
                     }
                 } else {
-                    rView.removeChild(it)
+                    frame.removeChild(it)
                 }
             }
             shownInfo.state = ReactiveState.notReady
             lastRendered = info
             activityIndicator.opacity = 1.0
-            lastRender = info?.let {
+            lastRender = info?.let { info ->
+                val self = this@MediaView
+
                 buildList {
-                    with(rView) {
-                        for (source in it.sources) {
-                            when (source) {
-                                is ImageSource -> {
+                    for (source in info.sources) {
+                        when (source) {
+                            is ImageSource -> {
+                                add(frame.themed(
+                                    ThemeDerivation { if (frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }
+                                ).rawImage(source, info.description ?: "", info.scaleType) {
+                                    themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+                                    themeChoice
+                                    opacity = 0.0
+                                    reactive {
+                                        this@rawImage.state.state().handle(
+                                            success = {
+                                                opacity = 1.0
+                                                if (self.lastRendered == info) {
+                                                    self.activityIndicator.opacity = 0.0
+                                                    self.shownInfo.state = ReactiveState(info)
+                                                    self.currentRawMediaView.value = this@rawImage
+                                                }
+                                            },
+                                            exception = {
+                                                if (self.lastRendered == info) {
+                                                    self.activityIndicator.opacity = 0.0
+                                                    self.shownInfo.state = ReactiveState.exception(it)
+                                                    self.lastRendered = null
+                                                    if (self.info !== info) {
+                                                        self.refresh()
+                                                    }
+                                                }
+                                            },
+                                            notReady = {}
+                                        )
+                                    }
+                                })
+                            }
 
-                                    add(themed(
-                                        ThemeDerivation { if (rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }
-                                    ).rawImage(source, it.description ?: "", it.scaleType) {
-                                        themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
-                                        themeChoice
-                                        opacity = 0.0
-                                        reactive {
-                                            this@rawImage.state.state().handle(
-                                                success = {
-                                                    opacity = 1.0
-                                                    if (lastRendered == info) {
-                                                        activityIndicator.opacity = 0.0
-                                                        this@MediaView.shownInfo.state = ReactiveState(info)
-                                                        currentRawMediaView.value = this@rawImage
+                            is VideoSource -> {
+                                add(frame.themed(
+                                    ThemeDerivation { if (frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }
+                                ).rawVideo(source, info.description ?: "", info.scaleType) {
+                                    themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+                                    themeChoice
+                                    opacity = 0.0
+                                    launch { volume set 0f }
+                                    this.showControls = this@MediaView.showControls
+                                    this.loop = this@MediaView.loop
+                                    reactive {
+                                        this@rawVideo.state.state().handle(
+                                            success = {
+                                                launch {
+                                                    val transitionTime = theme.transitionDuration * 3 / 4
+                                                    val start = Clock.System.now()
+                                                    while (Clock.System.now() - start < transitionTime) {
+                                                        delay(1.seconds / 30)
+                                                        volume set ((Clock.System.now() - start) / transitionTime).toFloat()
+                                                            .coerceIn(0f, 1f)
                                                     }
-                                                },
-                                                exception = {
-                                                    if (lastRendered == info) {
-                                                        activityIndicator.opacity = 0.0
-                                                        this@MediaView.shownInfo.state = ReactiveState.exception(it)
-                                                        lastRendered = null
-                                                        if (this@MediaView.info !== info) {
-                                                            refresh()
-                                                        }
+                                                    volume set 1f
+                                                }
+                                                opacity = 1.0
+                                                if (self.lastRendered == info) {
+                                                    self.activityIndicator.opacity = 0.0
+                                                    self.shownInfo.state = ReactiveState(info)
+                                                    self.currentRawMediaView.value = this@rawVideo
+                                                }
+                                            },
+                                            exception = {
+                                                if (self.lastRendered == info) {
+                                                    self.activityIndicator.opacity = 0.0
+                                                    self.shownInfo.state = ReactiveState.exception(it)
+                                                    self.lastRendered = null
+                                                    if (self.info !== info) {
+                                                        self.refresh()
                                                     }
-                                                },
-                                                notReady = {}
-                                            )
-                                        }
-                                    })
-                                }
-
-                                is VideoSource -> {
-                                    add(themed(
-                                        ThemeDerivation { if (rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }
-                                    ).rawVideo(source, it.description ?: "", it.scaleType) {
-                                        themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
-                                        themeChoice
-                                        opacity = 0.0
-                                        launch { volume set 0f }
-                                        this.showControls = this@MediaView.showControls
-                                        this.loop = this@MediaView.loop
-                                        reactive {
-                                            this@rawVideo.state.state().handle(
-                                                success = {
-                                                    launch {
-                                                        val transitionTime = theme.transitionDuration * 3 / 4
-                                                        var start = Clock.System.now()
-                                                        while (Clock.System.now() - start < transitionTime) {
-                                                            delay(1.seconds / 30)
-                                                            volume set ((Clock.System.now() - start) / transitionTime).toFloat()
-                                                                .coerceIn(0f, 1f)
-                                                        }
-                                                        volume set 1f
-                                                    }
-                                                    opacity = 1.0
-                                                    if (lastRendered == info) {
-                                                        activityIndicator.opacity = 0.0
-                                                        this@MediaView.shownInfo.state = ReactiveState(info)
-                                                        currentRawMediaView.value = this@rawVideo
-                                                    }
-                                                },
-                                                exception = {
-                                                    if (lastRendered == info) {
-                                                        activityIndicator.opacity = 0.0
-                                                        this@MediaView.shownInfo.state = ReactiveState.exception(it)
-                                                        lastRendered = null
-                                                        if (this@MediaView.info !== info) {
-                                                            refresh()
-                                                        }
-                                                    }
-                                                },
-                                                notReady = {}
-                                            )
-                                        }
-                                    })
-                                }
+                                                }
+                                            },
+                                            notReady = {}
+                                        )
+                                    }
+                                })
                             }
                         }
                     }
@@ -240,4 +230,7 @@ class MediaView(viewWriter: ElementWriter) : CoroutineScope {
     }
 
     var showLoadingIndicator: Boolean by activityIndicator::shown
+
+    @Deprecated("no longer needed", ReplaceWith("this"))
+    inline val rView: Element get() = this
 }

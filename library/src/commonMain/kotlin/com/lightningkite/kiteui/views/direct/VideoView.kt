@@ -1,10 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.ThemeDerivation
+import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.NativeElementCommonCode
 import com.lightningkite.kiteui.views.areAnimationsEnabled
@@ -19,11 +22,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 
-@Deprecated("Use VideoView instead") typealias Video = VideoView
-
-class VideoView(viewWriter: ElementWriter) : CoroutineScope {
-    val rView: Frame = with(viewWriter) { frame { } }
-    override val coroutineContext: CoroutineContext get() = rView.coroutineContext
+class VideoView(private val frame: Frame) : Element by frame {
+    constructor(context: ElementContext) : this(Frame(context))
 
     data class Info(
         val sources: List<VideoSource>,
@@ -78,7 +78,11 @@ class VideoView(viewWriter: ElementWriter) : CoroutineScope {
         }
 
     var ready = false
-    fun postSetup() {
+        private set
+
+    @OverrideOnly
+    override fun onStartup() {
+        frame.onStartup()
         ready = true
         refresh()
     }
@@ -86,19 +90,9 @@ class VideoView(viewWriter: ElementWriter) : CoroutineScope {
     private var lastRendered: Info? = null
     private var lastRender: List<RawVideoView>? = null
 
-    val activityIndicator: ActivityIndicator
-    init {
-        with(rView) {
-            centered.activityIndicator {
-                cannotBeCovered = false
-                activityIndicator = this
-                opacity = 0.0
-            }
-        }
-    }
+    val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
 
     val shownInfo = RawReactive<Info?>(ReactiveState(null))
-    val shown by rView::shown
     var cannotBeCovered = false
 
     @OptIn(ExperimentalKiteUi::class)
@@ -107,24 +101,27 @@ class VideoView(viewWriter: ElementWriter) : CoroutineScope {
         val info = info
         if (lastRendered != info) {
             lastRender?.forEach {
-                if(rView.areAnimationsEnabled) {
+                if (frame.areAnimationsEnabled) {
                     it.opacity = 0.0
                     afterTimeout(it.theme.transitionDuration.inWholeMilliseconds) {
-                        rView.removeChild(it)
+                        frame.removeChild(it)
                     }
                 } else {
-                    rView.removeChild(it)
+                    frame.removeChild(it)
                 }
             }
             shownInfo.state = ReactiveState.notReady
             lastRendered = info
             activityIndicator.opacity = 1.0
             lastRender = info?.let {
+                val self = this@VideoView
+
                 buildList {
-                    with(rView) {
+                    with(frame) {
                         for (videoSource in it.sources) {
-                            add(themed(
-                                ThemeDerivation { if(rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }
+                            add(
+                                themed(
+                                ThemeDerivation { if (self.frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }
                             ).rawVideo(videoSource, it.description ?: "", it.scaleType) {
                                 themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
                                 themeChoice
@@ -133,18 +130,18 @@ class VideoView(viewWriter: ElementWriter) : CoroutineScope {
                                     this@rawVideo.state.state().handle(
                                         success = {
                                             opacity = 1.0
-                                            if(lastRendered == info) {
-                                                activityIndicator.opacity = 0.0
-                                                this@VideoView.shownInfo.state = ReactiveState(info)
+                                            if (self.lastRendered == info) {
+                                                self.activityIndicator.opacity = 0.0
+                                                self.shownInfo.state = ReactiveState(info)
                                             }
-                                          },
+                                        },
                                         exception = {
-                                            if(lastRendered == info) {
-                                                activityIndicator.opacity = 0.0
-                                                this@VideoView.shownInfo.state = ReactiveState.exception(it)
-                                                lastRendered = null
-                                                if(this@VideoView.info !== info) {
-                                                    refresh()
+                                            if (self.lastRendered == info) {
+                                                self.activityIndicator.opacity = 0.0
+                                                self.shownInfo.state = ReactiveState.exception(it)
+                                                self.lastRendered = null
+                                                if (self.info !== info) {
+                                                    self.refresh()
                                                 }
                                             }
                                         },
@@ -152,17 +149,21 @@ class VideoView(viewWriter: ElementWriter) : CoroutineScope {
                                     )
                                 }
                             }.also {
-                                current.value = it
+                                self.current.value = it
                             })
                         }
                     }
                 }
-            } ?: run{
+            } ?: run {
                 this@VideoView.shownInfo.state = ReactiveState(null)
                 activityIndicator.opacity = 0.0
                 null
             }
         }
     }
+
     var showLoadingIndicator: Boolean by activityIndicator::shown
+
+    @Deprecated("No longer needed", ReplaceWith("this"))
+    inline val rView: Element get() = this
 }

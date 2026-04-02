@@ -65,7 +65,7 @@ class ImageView(private val frame: Frame) : Element by frame {
 
     private var ready = false
 
-    @OptIn(OverrideOnly::class)
+    @OverrideOnly
     override fun onStartup() {
         frame.onStartup()
         ready = true

@@ -67,6 +67,7 @@ object RootPage : Page {
 
                 sectionLabel("Core UI & Controls")
                 linkPage { ControlsPage }
+                linkPage { TestRepeatableModifiers }
                 linkPage { ThemesPage }
                 linkPage { ColorTestPage }
                 linkPage { SliderExamplePage }

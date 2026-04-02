@@ -19,15 +19,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class Recycler2(
-    writer: ElementWriter,
-    val vertical: Boolean = true,
-    var log: Log? = null//ConsoleRoot.tag("Recycler2"),
-): CoroutineScopeHelpers {
-    override val coroutineContext: CoroutineContext
-        get() = outerFrame.coroutineContext
-    val outerFrame: Frame
+    val outerFrame: Frame,
+    val vertical: Boolean,
+    var log: Log?
+) : ContainerElement by outerFrame, LinearLayoutElement {
+    constructor(
+        context: ElementContext,
+        vertical: Boolean = true,
+        log: Log? = null//ConsoleRoot.tag("Recycler2"),
+    ) : this(Frame(context), vertical, log)
+
     internal lateinit var scroll: ScrollingBehaviors
         private set
+
     internal val cells: ProgrammaticLayout
     internal val scrollSentinel: Frame
     internal lateinit var fakeScroll: ScrollingBehaviors
@@ -35,25 +39,20 @@ class Recycler2(
     internal val fakeScrollContent: ProgrammaticLayout
     internal val fakeScrollIndicator: Frame
 
-    var gap: Dimension?
+    override var gap: Dimension?
         get() = cells.gap
         set(value) {
             cells.gap = value
         }
-    var paddingByEdge: Edges?
+
+    @Deprecated("Will probably be removed in the future.")
+    override val spacingForChildCornerRadii: Dimension
+        get() = super<LinearLayoutElement>.spacingForChildCornerRadii
+
+    override var paddingByEdge: Edges?
         get() = cells.paddingByEdge
         set(value) {
             cells.paddingByEdge = value
-        }
-    var padding: Dimension?
-        get() = cells.padding
-        set(value) {
-            cells.padding = value
-        }
-    var exists: Boolean
-        get() = outerFrame.shown
-        set(value) {
-            outerFrame.shown = value
         }
 
     var recycling: Boolean = true
@@ -86,33 +85,30 @@ class Recycler2(
         }
 
     init {
-        writer.frame {
-            padding = 0.px
-            outerFrame = this
-
-            themed(ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack })
-                .scrolling(vertical = vertical, horizontal = !vertical) {
-                    scroll = this
+        with(outerFrame) frame@{
+            themed(ThemeDerivation { if (this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack })
+                .scrolling(vertical = this@Recycler2.vertical, horizontal = !this@Recycler2.vertical) {
+                    this@Recycler2.scroll = this
                     showScrollBars = false
                 }
                 .programmatic {
                     padding = null
                     @OptIn(ExperimentalKiteUi::class)
                     themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
-    //                    viewDebugTarget = this
-                    cells = this
+                    //                    viewDebugTarget = this
+                    this@Recycler2.cells = this
                     unpadded.frame {
-                        scrollSentinel = this
+                        this@Recycler2.scrollSentinel = this
                     }
                 }
 
-            (if (vertical) atEnd.sizeConstraints(width = 1.rem, maxWidth = 1.rem)
+            (if (this@Recycler2.vertical) atEnd.sizeConstraints(width = 1.rem, maxWidth = 1.rem)
             else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem))
-                .scrolling(vertical = vertical, horizontal = !vertical) {
-                    fakeScroll = this
+                .scrolling(vertical = this@Recycler2.vertical, horizontal = !this@Recycler2.vertical) {
+                    this@Recycler2.fakeScroll = this
                     ignoreInteraction = Platform.current != Platform.Web
                 }.programmatic {
-                    fakeScrollContent = this
+                    this@Recycler2.fakeScrollContent = this
                     ignoreInteraction = Platform.current != Platform.Web
                     themed(ThemeDerivation {
                         it.copy(
@@ -121,7 +117,7 @@ class Recycler2(
                         ).withBack
                     }).unpadded.frame {
                         ignoreInteraction = Platform.current != Platform.Web
-                        fakeScrollIndicator = this
+                        this@Recycler2.fakeScrollIndicator = this
                         opacity = 0.0
                     }
                 }
@@ -219,7 +215,7 @@ class Recycler2(
         private var constraint: Size = Size.Zero
         private var inProgress: ProgrammingLayoutInProgress? = null
         private var _size: Size? = null
-        
+
         fun setup(
             type: RecyclerViewRenderer<T>,
             constrain: Size,
@@ -230,37 +226,27 @@ class Recycler2(
             this.type = type
             this.data.state = data
             this.indexProp.value = index
-            
+
             log?.log("CELL CREATED: from $data at $index")
-            
-            @OptIn(OverrideOnly::class)
-            val writer = object: ViewWriter {
-                override val context: ElementContext
-                    get() = cells.context
 
-                override fun willAddChild(element: Element) {
-                    return cells.willAddChild(element)
-                }
-
+            val writer = object : ViewWriter by cells {
+                @OverrideOnly
                 override fun addChild(element: Element) {
                     // Accessibility: we're going to ensure this is inserted in the correct order.
                     this@MyCell.view = element
-                    if(recycling) {
-                        cells.addChild(element)
+                    if (this@Recycler2.recycling) {
+                        this@Recycler2.cells.addChild(element)
                     } else {
-                        val index = if(activeCells.isEmpty()) -1
-                        else if (index > activeCells.last().index) -1
-                        else if (index < activeCells.first().index) 0
-                        else activeCells.binarySearchBy(index) { it.index }
-                        if (index == -1) cells.addChild(element)
-                        else cells.addChild(index, element)
+                        val index = if (this@Recycler2.activeCells.isEmpty()) -1
+                        else if (index > this@Recycler2.activeCells.last().index) -1
+                        else if (index < this@Recycler2.activeCells.first().index) 0
+                        else this@Recycler2.activeCells.binarySearchBy(index) { it.index }
+                        if (index == -1) this@Recycler2.cells.addChild(element)
+                        else this@Recycler2.cells.addChild(index, element)
                     }
                 }
-
-                override val coroutineContext: CoroutineContext
-                    get() = cells.coroutineContext
-
             }
+
             type.render(writer, this.data, indexProp)
             constraint = constrain
             _size = null
@@ -286,7 +272,7 @@ class Recycler2(
             activeCells.remove(this)
             afterTimeout(view.theme.transitionDuration.inWholeMilliseconds) {
                 view.shown = false
-                if(recycling) {
+                if (recycling) {
                     reuse.add(this@MyCell)
                 } else {
                     cells.removeChild(view)
@@ -297,7 +283,7 @@ class Recycler2(
         fun instantDismiss() {
             view.shown = false
             activeCells.remove(this)
-            if(recycling) {
+            if (recycling) {
                 reuseableCells.add(this@MyCell)
             } else {
                 cells.removeChild(view)
@@ -563,7 +549,7 @@ class Recycler2(
                 log?.log("measure stop: if (within == Size.Zero) {")
                 return default
             }
-            if(!needToLayoutFirst) {
+            if (!needToLayoutFirst) {
                 viewport = scroll.viewport.state.getOrNull() ?: run {
                     log?.log("measure stop: viewport = scroll.viewport.state.getOrNull() ?: run {")
                     return default
@@ -672,7 +658,7 @@ class Recycler2(
                         (activeCellsByID.remove(id)?.also {
                             // Same item ID: Data change should be animated here
                             it.onPullForPlacing(size, ReactiveState(item), index, inProgress)
-                        } ?: reuseableCells.takeIf { recycling }?.popOrNull {  it.type == renderer }?.also {
+                        } ?: reuseableCells.takeIf { recycling }?.popOrNull { it.type == renderer }?.also {
                             // If placing just offscreen, place without animation.
                             it.view.withoutAnimation { it.onPullForPlacing(size, ReactiveState(item), index, inProgress) }
                             activeCells += it
@@ -984,7 +970,7 @@ class Recycler2(
 }
 
 internal fun <T> MutableList<T>.popOrNull(): T? = if (!isEmpty()) removeAt(lastIndex) else null
-internal fun <T> MutableList<T>.popOrNull(condition: (T)->Boolean): T? = indexOfFirst(condition).let { if(it != -1) removeAt(it) else null }
+internal fun <T> MutableList<T>.popOrNull(condition: (T) -> Boolean): T? = indexOfFirst(condition).let { if (it != -1) removeAt(it) else null }
 internal fun rectOverlaps(
     l1: Double,
     t1: Double,

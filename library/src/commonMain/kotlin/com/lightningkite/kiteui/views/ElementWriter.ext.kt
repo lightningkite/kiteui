@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.UnsafeModifier
 

@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -23,8 +24,9 @@ object R2VPPage : Page {
         col {
             val expanded = Signal(-1)
             var recyclerView: Recycler2? = null
+
             row {
-                for (align in Align.values()) {
+                for (align in Align.entries) {
                     expanding.button {
                         subtext("Jump ${align.name}")
                         onClick { recyclerView?.scrollToIndex(75, align, false) }
@@ -32,15 +34,15 @@ object R2VPPage : Page {
                 }
             }
             row {
-                for (align in Align.values()) {
+                for (align in Align.entries) {
                     expanding.button {
                         subtext("Scroll ${align.name}")
                         onClick { recyclerView?.scrollToIndex(75, align, true) }
                     }
                 }
             }
-            expanding
-            recyclerView = Recycler2(this, vertical = false).apply {
+
+            recyclerView = expanding.write(Recycler2(context, vertical = false)) {
 //                log = ConsoleRoot.tag("R2")
                 scrollToIndex(2, Align.Center, animate = false)
                 this.snapToElements = Align.Center
@@ -48,7 +50,7 @@ object R2VPPage : Page {
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
                     override fun render(viewWriter: ViewWriter, data: Reactive<Int>, index: Reactive<Int>): Unit =
                         with(viewWriter) {
-                            padded.stack {
+                            padded.frame {
                                 card.button {
                                     sizeConstraints(minHeight = 10.rem).col {
                                         text { ::content { data().toString() } }
@@ -66,7 +68,6 @@ object R2VPPage : Page {
                                     }
                                 }
                             }
-
                         }
                 }
 //                scrollToIndex(50, Align.Center)
@@ -83,6 +84,7 @@ object R2VPPage : Page {
                     }
                 }
             }
+
             row {
                 button {
                     text("left")

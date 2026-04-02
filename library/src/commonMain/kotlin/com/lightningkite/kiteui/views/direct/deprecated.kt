@@ -37,3 +37,5 @@ fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() -> Floa
 @ViewModifierDsl3
 @Deprecated("Renamed for consistency", ReplaceWith("dynamicSizeConstraints(constraints)"))
 fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme = dynamicSizeConstraints(constraints)
+
+@Deprecated("Use VideoView instead", ReplaceWith("VideoView"), level = DeprecationLevel.ERROR) typealias Video = VideoView

@@ -5,6 +5,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
@@ -162,48 +163,67 @@ actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: Reacti
 
 // End
 
+//inline fun ElementWriter.addsSecretElement(crossinline produce: () -> ContainerElement): ViewWriter =
+//    object : ViewWriter, ElementWriter by this {
+//        var current: ContainerElement? = null
+//
+//        @OverrideOnly
+//        override fun willAddChild(element: Element) {
+//            val e = this@addsSecretElement.write(produce())
+//            current = e
+//            e.willAddChild(element)
+//        }
+//
+//        @OverrideOnly
+//        override fun addChild(element: Element) {
+//            current?.addChild(element) ?: throw IllegalStateException("addChild called on $element before willAddChild!")
+//        }
+//    }
+
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
-    return write(object : NativeContainerElement(context) {
-        init {
-            native.tag = "div"
-            native.classes.add("noInteraction")
-            native.classes.add("kiteui-stack")
-            native.attributes.hidden = !default
-            var currentState = default
+    return write(
+        object : NativeContainerElement(context) {
+            init {
+                native.tag = "div"
+                native.classes.add("noInteraction")
+                native.classes.add("kiteui-stack")
+                native.attributes.hidden = !default
+                var currentState = default
 
-            reactive {
-                if (areAnimationsEnabled && fullyStarted) {
-                    val c = condition()
-                    if (c != currentState) {
-                        if (condition()) {
-                            nativeAnimateShow()
-                        } else {
-                            nativeAnimateHide()
+                reactive {
+                    if (areAnimationsEnabled && fullyStarted) {
+                        val c = condition()
+                        if (c != currentState) {
+                            if (condition()) {
+                                nativeAnimateShow()
+                            } else {
+                                nativeAnimateHide()
+                            }
                         }
+                        currentState = c
+                    } else {
+                        val c = condition()
+                        if (c != currentState) {
+                            native.attributes.hidden = !c
+                        }
+                        currentState = c
                     }
-                    currentState = c
-                } else {
-                    val c = condition()
-                    if (c != currentState) {
-                        native.attributes.hidden = !c
-                    }
-                    currentState = c
                 }
             }
-        }
 
-        override fun nativeAddChild(index: Int, element: Element) {
-            super.nativeAddChild(index, element)
-            element.underlyingNativeElement.themeBase = GetBaseTheme.fromParentNonCascading
-            Frame.internalAddChildStack(this, index, element)
-        }
+            override fun nativeAddChild(index: Int, element: Element) {
+                super.nativeAddChild(index, element)
+                element.underlyingNativeElement.themeBase = GetBaseTheme.fromParentNonCascading
+                Frame.internalAddChildStack(this, index, element)
+            }
 
-        @Deprecated("Will probably be removed in the future.")
-        @Suppress("DEPRECATION")
-        override val spacingForChildCornerRadii: Dimension
-            get() = parent?.spacingForChildCornerRadii ?: 0.px
-    }) {}
+            @Suppress("DEPRECATION")
+            @Deprecated("Will probably be removed in the future.")
+            override val spacingForChildCornerRadii: Dimension
+                get() = parent?.spacingForChildCornerRadii ?: 0.px
+        }
+    )
 }
 
 internal expect fun ContainerElement.nativeAnimateShow()

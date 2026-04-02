@@ -12,6 +12,7 @@ import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.kiteui.views.write
 import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.extensions.modify
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -229,7 +230,7 @@ inline fun ElementWriter.textInput(setup: TextInput.() -> Unit = {}): TextInput 
     return write(TextInput(context), setup)
 }
 
-@Deprecated("Use textInput instead", ReplaceWith("this.textInput(setup)", "com.lightningkite.kiteui.views.direct.textInput"))
+@Deprecated("Use textInput instead", ReplaceWith("textInput(setup)", "com.lightningkite.kiteui.views.direct.textInput"))
 inline fun ElementWriter.textField(setup: TextInput.() -> Unit = {}): TextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextInput(context), setup)
@@ -252,18 +253,12 @@ inline fun ElementWriter.toggleButton(setup: ToggleButton.() -> Unit = {}): Togg
 
 inline fun ElementWriter.video(setup: VideoView.() -> Unit = {}): VideoView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return VideoView(this).apply {
-        setup()
-        postSetup()
-    }
+    return write(VideoView(context), setup)
 }
 
 inline fun ElementWriter.media(setup: MediaView.() -> Unit = {}): MediaView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return MediaView(this).apply {
-        setup()
-        postSetup()
-    }
+    return write(MediaView(context), setup)
 }
 
 inline fun ElementWriter.rawVideo(
@@ -307,16 +302,19 @@ inline fun ElementWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {})
     return write(ProgrammaticLayout(context), setup)
 }
 
-@ViewDsl
 inline fun ElementWriter.recyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return Recycler2(this, true).apply(setup)
+    return write(Recycler2(context, vertical = true), setup)
 }
 
-@ViewDsl
+inline fun ElementWriter.horizontalRecyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(Recycler2(context, vertical = false), setup)
+}
+
 inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return Recycler2(this, false).apply {
+    return write(Recycler2(context, vertical = false)) {
         placer = RecyclerViewPagingPlacer()
         snapToElements = Align.Center
         scrollSnapStop = true
@@ -326,22 +324,18 @@ inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 
                 align(Align.Start, Align.Center).frame {
                     button {
                         icon(Icon.chevronLeft, "Previous")
-                        onClick { centerIndex set centerIndex() - 1 }
+                        onClick("Previous") { this@write.centerIndex.modify { it - 1 } }
                     }
                 }
                 align(Align.End, Align.Center).frame {
                     button {
                         icon(Icon.chevronRight, "Next")
-                        onClick { centerIndex set centerIndex() + 1 }
+                        onClick("Next") { this@write.centerIndex.modify { it + 1 } }
                     }
                 }
             }
         }
-    }.apply(setup)
-}
 
-@ViewDsl
-inline fun ElementWriter.horizontalRecyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return Recycler2(this, false).apply(setup)
+        setup()
+    }
 }
