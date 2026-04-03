@@ -7,10 +7,12 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeContainerElement
 import com.lightningkite.kiteui.views.informParentOfSizeChangeDueToChild
 import com.lightningkite.kiteui.views.layoutSubviewsAndLayers
+import com.lightningkite.kiteui.views.theme
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -26,10 +28,10 @@ import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIEvent
 import platform.UIKit.UIView
 
-actual class ProgrammaticLayout actual constructor(context: ElementContext) : RView(context) {
+actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
-        rview = WeakReference(this@ProgrammaticLayout)
+        element = WeakReference(this@ProgrammaticLayout)
         onRemove { delegate = ProgrammaticLayoutDelegate.AllFull }
     }
     actual var delegate: ProgrammaticLayoutDelegate by native::delegate
@@ -47,19 +49,15 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : RV
         native.setNeedsLayout()
     }
 
-    override var gap: Dimension?
-        get() = super.gap
+    actual override var gap: Dimension? = null
         set(value) {
-            super.gap = value
+            field = value
             native.spacingCurrentPx = gap?.viewUnits ?: theme.gap.viewUnits
         }
 
-    override fun internalAddChild(index: Int, view: RView) {
-        super.internalAddChild(index, view)
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.spacingCurrentPx = gap?.viewUnits ?: theme.gap.viewUnits
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        native.spacingCurrentPx = gap?.viewUnits ?: theme.theme.gap.viewUnits
     }
 }
 
@@ -76,7 +74,7 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
             setNeedsLayout()
         }
     private var currentSize: Size = Size.Zero
-    var rview: WeakReference<ProgrammaticLayout>? = null
+    var element: WeakReference<ProgrammaticLayout>? = null
     private val inProgress = object: ProgrammingLayoutInProgress {
         override val within: Size
             get() = currentSize
@@ -86,25 +84,25 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
         override val paddingLeft: Double get() = paddingLeftCurrentPx
         override val paddingRight: Double get() = paddingRightCurrentPx
         override val paddingBottom: Double get() = paddingBottomCurrentPx
-        override fun measure(child: RView, sizeConstraint: Size): Size {
-            return child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
+        override fun measure(child: Element, sizeConstraint: Size): Size {
+            return child.underlyingNativeElement.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
                 child.debugPrint { "Child ${child} measured within $sizeConstraint to be $it" }
             }
         }
 
-        override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
+        override fun place(child: Element, left: Double, top: Double, right: Double, bottom: Double) {
             child.debugPrint { "Child ${child} placed at $left, $top, $right, $bottom" }
-            child.native.setPsuedoframe(left, top, right - left, bottom - top)
-            child.native.layoutSubviewsAndLayers()
+            child.underlyingNativeElement.native.setPsuedoframe(left, top, right - left, bottom - top)
+            child.underlyingNativeElement.native.layoutSubviewsAndLayers()
         }
 
-        override fun existingPosition(child: RView): Rect = child.native.frame.useContents { Rect.fromSize(left = origin.x, top = origin.y, width = size.width, height = size.height) }
+        override fun existingPosition(child: Element): Rect = child.underlyingNativeElement.native.frame.useContents { Rect.fromSize(left = origin.x, top = origin.y, width = size.width, height = size.height) }
     }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val before = inLayout
         inLayout = true
-        val r = delegate.measure(rview?.get() ?: return CGSizeMake(0.0, 0.0), inProgress, size.useContents { Size(width, height) }).let { CGSizeMake(it.width, it.height) }
+        val r = delegate.measure(element?.get() ?: return CGSizeMake(0.0, 0.0), inProgress, size.useContents { Size(width, height) }).let { CGSizeMake(it.width, it.height) }
         inLayout = before
         return r
     }
@@ -138,12 +136,12 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
 //            Exception("layoutSubviews").printStackTrace()
             inLayout = true
             // TODO: is this weird that the result is dropped?
-            delegate.measure(rview?.get() ?: run {
-                Log.warn("ProgrammaticLayout.layoutSubviews won't work because RView is inaccessible")
+            delegate.measure(element?.get() ?: run {
+                Log.warn("ProgrammaticLayout.layoutSubviews won't work because Element is inaccessible")
                 return
             }, inProgress, bounds.useContents { Size(size.width, size.height) })
-            delegate.layout(rview?.get() ?: run {
-                Log.warn("ProgrammaticLayout.layoutSubviews won't work because RView is inaccessible")
+            delegate.layout(element?.get() ?: run {
+                Log.warn("ProgrammaticLayout.layoutSubviews won't work because Element is inaccessible")
                 return
             }, inProgress, bounds.useContents { Size(size.width, size.height) })
             inLayout = false

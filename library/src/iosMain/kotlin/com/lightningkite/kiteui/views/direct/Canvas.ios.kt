@@ -5,8 +5,9 @@ import com.lightningkite.kiteui.objc.UIGestureRecognizerCustomPProtocol
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
+import com.lightningkite.kiteui.views.theme
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -17,19 +18,19 @@ import platform.CoreGraphics.*
 import platform.UIKit.*
 import platform.darwin.*
 
-actual class Canvas actual constructor(context: ElementContext) : RView(context) {
+actual class Canvas actual constructor(context: ElementContext) : NativeElement(context) {
     override val native = CanvasView()
 
     actual var delegate: CanvasDelegate?
         get() = native.delegate
         set(value) {
             native.delegate = value
-            value?.theme = themeAndBack.theme
+            value?.theme = theme
             delegate?.invalidate?.invoke()
         }
 
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         delegate?.theme = theme.theme
         delegate?.invalidate?.invoke()
     }

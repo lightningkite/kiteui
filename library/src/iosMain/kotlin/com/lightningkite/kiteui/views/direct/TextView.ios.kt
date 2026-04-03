@@ -6,15 +6,12 @@ import com.lightningkite.kiteui.views.*
 import kotlin.experimental.ExperimentalNativeApi
 import platform.Foundation.*
 import platform.UIKit.*
+import kotlin.native.ref.WeakReference
 
 @OptIn(ExperimentalNativeApi::class)
-actual class TextView actual constructor(context: ElementContext) : RView(context) {
+actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = content
     override val native = UILabelWithLayerBackground(WeakReference(context))
-//    init {
-//        native.rContext = context
-//        onRemove { native.rContext = null }
-//    }
     val label get() = native.label
 
     init {
@@ -127,18 +124,11 @@ actual class TextView actual constructor(context: ElementContext) : RView(contex
             }
         }
 
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme);
-        val theme = theme.theme
-        native.foreground = theme.foreground
-        fontAndStyle = theme.font
-        applyAlign(_align ?: theme.font.align)
-
-        //
-//        sizeConstraints = SizeConstraints(
-//            minWidth = theme.font.size * 0.6,
-//            minHeight = theme.font.size * 1.5,
-//        )
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        native.foreground = theme.theme.foreground
+        fontAndStyle = theme.theme.font
+        applyAlign(_align ?: theme.theme.font.align)
     }
 
     private var originalHtml: NSAttributedString? = null

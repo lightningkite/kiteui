@@ -1,8 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.beforeSetup
+import platform.UIKit.UIControl
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.onRemove
@@ -20,8 +22,7 @@ private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by c
     null
 )
 
-actual class CoordinatorFrame actual constructor(context: ElementContext) : RView(context) {
-
+actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val native = FrameLayout()
 
     // The system only keeps weak references to the following objects, so we must keep our own references for the
@@ -38,7 +39,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
         startState: BottomSheetState,
         shouldRemoveExpandedCorners: Boolean,
         blockBehind: Boolean,
-        content: ViewWriter.(control: BottomSheetControl) -> Unit,
+        content: ElementWriter.CanAddShownWhen.(control: BottomSheetControl) -> Unit,
     ) {
         val viewController = object : UIViewController(null, null) {
             override fun viewDidDisappear(animated: Boolean) {
@@ -54,16 +55,15 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
         }
         viewController.kiteUi(context.split(viewController)) {
             beforeSetup {
-                parent = this@CoordinatorFrame
-                launch {
-                    while (true) {
+                underlyingNativeElement.parent = this@CoordinatorFrame
+                launch {    // TODO: What the fuck
+                    while(true) {
                         delay(100)
-                        refreshTheming()
+                        underlyingNativeElement.refreshTheming()
                     }
                 }
-            }
-                .split().frame {
-                    overlayFrame = this
+            }.split().frame {
+                context.overlayFrame = this
                 content(control)
             }
         }
@@ -110,9 +110,9 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
     actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> Unit,
+        content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit,
     ) {
-        var willRemove: RView? = null
+        var willRemove: Element? = null
         val transition = ScreenTransitions(ScreenTransition.Pop, ScreenTransition.Push, ScreenTransition.Fade)
         fun closePanel() {
             willRemove?.let {
@@ -150,9 +150,9 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
     actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> Unit,
+        content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit,
     ) {
-        var willRemove: RView? = null
+        var willRemove: Element? = null
         val transition = ScreenTransitions.HorizontalSlide
         fun closePanel() {
             willRemove?.let {
@@ -218,11 +218,19 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : RVie
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : RView(context) {
+actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+    actual override val underlyingNativeElement: CoordinatorDragHandle get() = this
     override val native = FrameLayoutButton()
+    override val control: UIControl get() = native
 
-    override fun postSetup() {
-        super.postSetup()
+    init {
+        @OptIn(com.lightningkite.kiteui.ExperimentalKiteUi::class)
+        elementSpecificTheming += ClickableSemantic
+    }
+
+    @OverrideOnly
+    override fun onStartup() {
+        super.onStartup()
         val e = bottomSheetState ?: return
         onRemove(native.setOnClick {
             launch {
@@ -233,13 +241,6 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
                 }
             }
         })
-    }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if (native.highlighted) t = t[DownSemantic]
-        if (native.focused) t = t[FocusSemantic]
-        return super.applyState(t)
     }
 }
 

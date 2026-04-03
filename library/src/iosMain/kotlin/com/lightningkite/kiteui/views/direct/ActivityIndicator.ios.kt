@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.UIActivityIndicatorView
 
-actual class ActivityIndicator actual constructor(context: ElementContext): RView(context) {
+actual class ActivityIndicator actual constructor(context: ElementContext): NativeElement(context) {
     override val native = UIActivityIndicatorView().apply {
         hidden = false
         startAnimating()
@@ -14,7 +14,8 @@ actual class ActivityIndicator actual constructor(context: ElementContext): RVie
         userInteractionEnabled = false
     }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.color = theme.foreground.closestColor().toUiColor()
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        native.color = theme.theme.foreground.closestColor().toUiColor()
     }
 }

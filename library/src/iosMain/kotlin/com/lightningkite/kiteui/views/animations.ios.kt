@@ -9,7 +9,7 @@ import platform.QuartzCore.CATransaction
 import platform.UIKit.UIView
 import kotlin.time.DurationUnit
 
-actual fun RView.animateIn(
+actual fun Element.animateIn(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {
@@ -39,14 +39,14 @@ actual fun RView.animateIn(
         )
     }
 }
-actual fun RView.animateOut(
+actual fun Element.animateOut(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {
     if(!animationsEnabled) return
     UIView.animateWithDuration(
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
-        completion = { if (!isShutdown) done?.invoke() },
+        completion = { if (!underlyingNativeElement.isShutdown) done?.invoke() },
         animations = {
             val before = isInAnimationBlock
             isInAnimationBlock = true

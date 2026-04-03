@@ -350,9 +350,19 @@ Recent work (newest first):
 - ✅ Context addon migration
 - ✅ Modifier DSL migration
 - ✅ Core Element/ElementWriter/NativeElement interfaces
-- 🚧 iOS native elements (in progress)
+- ✅ iOS native elements (COMPLETE)
+  - ✅ Core NativeElement.ios.kt refactor
+  - ✅ Interactive elements (Button, Checkbox, RadioButton, Switch, etc.)
+  - ✅ Text input elements (TextField, TextArea, AutoComplete, etc.)
+  - ✅ Container elements (LinearLayouts, Frame, ScrollView, DismissBackground, CoordinatorFrame, ProgrammaticLayout, SwapView)
+  - ✅ Link components (Link, ExternalLink)
+  - ✅ Selection elements (Select, MenuButton, Slider)
+  - ✅ Date/Time inputs (LocalDateTimeField, NumberField, FormattedTextInput)
+  - ✅ Icon and toggle components (IconView, ToggleButton, RadioToggleButton)
+  - ✅ Display elements (ActivityIndicator, TextView, Space, Separator, ProgressBar, CircularProgress)
+  - ✅ Media elements (Canvas, RawImageView, Video, WebView)
+  - ⏭️ ImageCrop (commented out - not implemented on iOS)
 - 🚧 Platform-specific modifier implementations
-- 🚧 All direct view components (Button, TextView, etc.)
 - 🚧 Example app updates
 
 ## Testing Strategy

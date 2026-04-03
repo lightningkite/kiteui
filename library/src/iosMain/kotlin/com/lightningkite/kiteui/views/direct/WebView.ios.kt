@@ -1,15 +1,14 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import platform.WebKit.WKWebView
 import platform.WebKit.*
 import platform.Foundation.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGRectZero
 
-actual class WebView actual constructor(context: ElementContext) : RView(context) {
-
+actual class WebView actual constructor(context: ElementContext) : NativeElement(context) {
     override val native: WKWebView
 
     private val webViewConfig = WKWebViewConfiguration().apply {

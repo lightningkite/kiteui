@@ -9,13 +9,15 @@ import platform.QuartzCore.CALayer
 import platform.UIKit.*
 
 
-actual class ProgressBar actual constructor(context: ElementContext) : RView(context) {
+actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
     override val native = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme);
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         native.progressLayer.setMask(backgroundLayer?.getOrInitBackgroundMask())
         native.progressLayer.tintColor = theme[CardSemantic].theme.foreground.closestColor().toUiColor()
     }
+
     actual var ratio by native::progress
 }
 

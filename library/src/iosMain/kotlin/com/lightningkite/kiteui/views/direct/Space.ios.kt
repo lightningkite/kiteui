@@ -11,14 +11,12 @@ import platform.UIKit.UIView
 
 
 
-actual class Space actual constructor(context: ElementContext, private val multiplier: Double): RView(context) {
-    
+actual class Space actual constructor(context: ElementContext, private val multiplier: Double): NativeElement(context) {
     override val native = NSpace()
-    override fun applyTheme(theme: ThemeAndBack) {
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         native.natSize = CGSizeMake(theme.theme.gap.value * multiplier, theme.theme.gap.value * multiplier)
-    }
-    init {
-//        sizeConstraints =
     }
 }
 

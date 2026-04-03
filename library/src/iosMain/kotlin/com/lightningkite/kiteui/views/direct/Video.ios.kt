@@ -45,7 +45,7 @@ actual class RawVideoView actual constructor(
     actual val description: String,
     actual val scaleType: ImageScaleType,
     actual val preloadHint: PreloadHint,
-) : RView(context) {
+) : NativeElement(context) {
 
     // Delegate is a regular class (not inner) to avoid retain cycle
     class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {

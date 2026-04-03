@@ -32,20 +32,20 @@ import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
 import platform.posix.QOS_CLASS_DEFAULT
 
-actual abstract class RawImageViewLike
-constructor(
+actual abstract class RawImageViewLike constructor(
     context: ElementContext,
     actual val source: ImageSource,
     actual val description: String,
     actual val scaleType: ImageScaleType,
-) : RView(context) {
+) : NativeElement(context) {
     actual abstract val state: Reactive<Unit>
 
     protected suspend fun load(value: ImageSource?, size: Size?): UIImage? = value.load(size)
 
-    override fun applyTheme(theme: ThemeAndBack) {
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         native.clipsToBounds = true
-        super.applyBackgroundChanges(theme)
+        applyBackgroundChanges(theme)
     }
 
     override val disableBackground = true
@@ -162,8 +162,7 @@ suspend fun ImageSource?.load(size: Size?): UIImage? =
             else -> null
         }
 
-actual class RawImageView
-actual constructor(
+actual class RawImageView actual constructor(
     context: ElementContext,
     source: ImageSource,
     description: String,
@@ -203,8 +202,7 @@ actual constructor(
     }
 }
 
-actual class SizelessRawImageView
-actual constructor(
+actual class SizelessRawImageView actual constructor(
     context: ElementContext,
     source: ImageSource,
     description: String,
@@ -272,8 +270,7 @@ class UIImageViewFixedSizing() : UIImageView(CGRectZero.readValue()) {
     var naturalSize: Boolean = false
 }
 
-actual class RawImageViewZoomable
-actual constructor(
+actual class RawImageViewZoomable actual constructor(
     context: ElementContext,
     source: ImageSource,
     description: String,
