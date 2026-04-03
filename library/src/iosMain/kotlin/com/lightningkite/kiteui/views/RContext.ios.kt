@@ -5,12 +5,12 @@ import platform.UIKit.UIApplication
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
-actual class RContext(val controller: UIViewController, val parent: RContext? = null) : RContextHelper() {
+actual class ElementContext(val controller: UIViewController, val parent: ElementContext? = null) : ElementContextCommonCode(parent) {
     // by Claude - use addons.child() for lazy parent lookup instead of copying
-    actual fun split(): RContext = RContext(controller).apply { addons = this@RContext.addons.child() }
-    fun split(controller: UIViewController): RContext = RContext(controller, this@RContext).apply { addons = this@RContext.addons.child() }
+    actual fun split(): ElementContext = ElementContext(controller, parent = this)
+    fun split(controller: UIViewController): ElementContext = ElementContext(controller, parent = this)
 
-    actual override val darkMode: Boolean?
+    actual val darkMode: Boolean?
         get() = when (controller.traitCollection.userInterfaceStyle) {
             UIUserInterfaceStyle.UIUserInterfaceStyleDark -> true
             UIUserInterfaceStyle.UIUserInterfaceStyleLight -> false
@@ -37,14 +37,14 @@ actual class RContext(val controller: UIViewController, val parent: RContext? = 
         controller.presentingViewController?.dismissViewControllerAnimated(true) {}
     }
     fun present(vc: UIViewController) {
-        // 1. Try to find a valid controller in the RContext hierarchy
+        // 1. Try to find a valid controller in the ElementContext hierarchy
         val contextToUse = generateSequence(this) { it.parent }.firstOrNull {
             !it.dismissing && it.controller.view.window != null
         }
 
         val host = contextToUse?.controllerForPresenting ?: run {
             // 2. FALLBACK: Get the actual active root view controller from the window
-            Log.info("RContext chain stale, falling back to Window Root")
+            Log.info("ElementContext chain stale, falling back to Window Root")
             UIApplication.sharedApplication.keyWindow?.rootViewController?.let {
                 generateSequence(it) { current -> current.presentedViewController }.last()
             }

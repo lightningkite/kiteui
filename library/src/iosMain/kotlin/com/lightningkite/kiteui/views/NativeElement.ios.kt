@@ -49,10 +49,10 @@ import kotlin.math.sin
 import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
 
-
-
-actual abstract class RView actual constructor(context: ElementContext) : RViewHelper(context) {
+actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
     abstract val native: UIView
+    protected open val addChildTarget: UIView get() = native
+
     var tag: Any? = null
 
     actual override var showOnPrint: Boolean = true
@@ -63,19 +63,17 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
             native.extensionSizeConstraints = value
         }
 
-    override var opacity: Double
-        get() = super.opacity
+    actual override var opacity: Double = 1.0
         set(value) {
-            super.opacity = value
+            field = value
             animateIfAllowed {
                 native.alpha = value
             }
         }
 
-    override var shown: Boolean
-        get() = super.shown
+    actual override var shown: Boolean = true
         set(value) {
-            super.shown = value
+            field = value
             native.hidden = !value
             if (fullyStarted) {
                 native.informParentOfSizeChange()
@@ -96,46 +94,28 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
 //        }
         }
 
-    override var visible: Boolean
-        get() = super.visible
+    actual override var visible: Boolean = true
         set(value) {
-            super.visible = value
+            field = value
             animateIfAllowed {
                 native.alpha = if (value) 1.0 else 0.0
             }
         }
 
-    private val mySpacing get() = (gap ?: theme.gap)
-    override var gap: Dimension?
-        get() = super.gap
+    actual override var ignoreInteraction: Boolean = false
         set(value) {
-            super.gap = value
-            native.spacingOverride?.value = value
-            val gap = mySpacing.value
-            for (child in children) {
-                child.native.layoutLayers(gap)
-            }
-        }
-
-    override var ignoreInteraction: Boolean
-        get() = super.ignoreInteraction
-        set(value) {
-            super.ignoreInteraction = value
+            field = value
             native.extensionIgnoreInteraction = value
         }
 
     // Update padding based on safe insets
-    override fun refreshPadding() {
+    actual override fun refreshPadding() {
         val value = appliedPadding
         native.extensionPadding = value
         native.informParentOfSizeChange()
-        val gap = max(mySpacing.value, padding?.value ?: 0.0)
-        for (child in children) {
-            child.native.layoutLayers(gap)
-        }
     }
 
-    actual override fun screenRectangle(): Rect? {
+    actual fun screenRectangle(): Rect? {
         val windowView = native.window?.rootViewController?.view ?: return null
         val parent = native.superview ?: return null
         return windowView.convertRect(native.frame, fromView = parent).useContents {
@@ -147,7 +127,8 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
             )
         }
     }
-    actual override fun parentRectangle(): Rect? {
+
+    actual fun parentRectangle(): Rect? {
         return native.frame.useContents {
             Rect(
                 left = (origin.x),
@@ -180,23 +161,22 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
     }
 
 
-
-
     protected var previousLoadAnimationHandle: (() -> Unit)? = null
     protected var backgroundLayer: CAGradientLayerResizing? = null
 
     /**
      * No matter how we set the zPosition or the "at" argument of the insertSublayer call, layers always cover the
      * content of UIImageView elements. Thus, we require a method of disabling the KiteUI background drawing entirely
-     * for subclasses of RView. In this way, themes with a back may be applied so that corner radius is respected
+     * for subclasses of Element. In this way, themes with a back may be applied so that corner radius is respected
      * without drawing anything that would cover the content of the view.
      */
     protected open val disableBackground = false
 
-    class BlurBackgroundView: UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
+    class BlurBackgroundView : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
+
     var effectBackground: BlurBackgroundView? = null
 
-    actual override fun applyTheme(theme: ThemeAndBack) {
+    actual override fun nativeApplyTheme(theme: ThemeAndBack) {
         native.clipsToBounds = theme.drawBackground
         applyBackgroundChanges(theme)
     }
@@ -216,7 +196,7 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
             shadowRadius = 0.0
         }
 
-        if(theme.theme.blurBackground.value == 0.0) effectBackground?.let {
+        if (theme.theme.blurBackground.value == 0.0) effectBackground?.let {
             it.removeFromSuperview()
             effectBackground = null
         } else {
@@ -224,7 +204,7 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
                 addChildTarget.insertSubview(this, 0)
                 effectBackground = this
             })
-            effect.effect = when(theme.theme.blurBackground.value) {
+            effect.effect = when (theme.theme.blurBackground.value) {
                 in 0.0..<5.0 -> UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleExtraLight)
                 in 5.0..<10.0 -> UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleLight)
                 else -> UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular)
@@ -314,7 +294,7 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
                 parentSpacing = (parent?.spacingForChildCornerRadii ?: 0.px).value
                 desiredCornerRadius = theme.theme.cornerRadii
 
-                val bounds = this@RView.native.layerSize()
+                val bounds = this@NativeElement.native.layerSize()
 
                 frame = bounds
                 refreshCorners()
@@ -358,57 +338,22 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
         WeakReference(native).checkLeakAfterDelay(1_000)
     }
 
-    override fun postSetup() {
-        super.postSetup()
+    override fun onStartup() {
+        super.onStartup()
         ObjCountTrackers.track(this)
         ObjCountTrackers.track(native)
-    }
-
-    protected open val addChildTarget: UIView get() = native
-    actual override fun internalAddChild(index: Int, view: RView) {
-        // Apply parent's default alignment if child doesn't have explicit alignment set
-        if (view.lastSetHorizontalAlign == Align.Stretch && newChildHorizontalAlign != null) {
-            view.lastSetHorizontalAlign = newChildHorizontalAlign!!
-            view.native.extensionHorizontalAlign = newChildHorizontalAlign
-        }
-        if (view.lastSetVerticalAlign == Align.Stretch && newChildVerticalAlign != null) {
-            view.lastSetVerticalAlign = newChildVerticalAlign!!
-            view.native.extensionVerticalAlign = newChildVerticalAlign
-        }
-
-        val existingView = children.getOrNull(index)
-        val existingIndex = addChildTarget.subviews.indexOfFirst { it == existingView?.native }
-        if (existingIndex == -1)
-            addChildTarget.addSubview(view.native)
-        else
-            addChildTarget.insertSubview(view.native, existingIndex.toLong())
-    }
-
-    actual override fun internalRemoveChild(index: Int) {
-        if (index >= children.size || index < 0) {
-            throw IllegalStateException("Index $index not in 0..<${addChildTarget.subviews.size}")
-        }
-        children[index].native.removeFromSuperview()
-    }
-
-    actual override fun internalClearChildren() {
-        children.toList().forEach {
-            it.native.removeFromSuperview()
-        }
     }
 
     private var dragInteraction: UIDragInteraction? = null
     private var dragDelegate: DragInteractionDelegate? = null
 
-    override var dragData: DragData?
-        get() = super.dragData
+    actual override var dragData: DragData? = null
         set(value) {
-            super.dragData = value
+            field = value
             if (value != null) {
                 if (dragInteraction == null) {
-
                     val interaction = UIDragInteraction(DragInteractionDelegate(this).also {
-                        dragDelegate=it
+                        dragDelegate = it
                     })
                     interaction.enabled = true
                     native.addInteraction(interaction)
@@ -424,7 +369,7 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
             }
         }
 
-    private class DragInteractionDelegate(view: RView) : NSObject(), UIDragInteractionDelegateProtocol {
+    private class DragInteractionDelegate(view: Element) : NSObject(), UIDragInteractionDelegateProtocol {
         @OptIn(ExperimentalNativeApi::class)
         private val owner = WeakReference(view)
 
@@ -444,26 +389,26 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
         }
 
 
-        fun addChildDropInteractionToParentScrollViews(currentView: RView) {
+        fun addChildDropInteractionToParentScrollViews(currentView: ContainerElement) {
             currentView.children.forEach { child ->
                 // Check if this child is a ScrollView
                 if (child is ScrollView) {
                     child.children.forEach {
-                        if (it.dropInteractionDelegate != null && child.scrollViewDropInteraction == null) {
-                            child.dropInteractionDelegate = it.dropInteractionDelegate
+                        if (it.underlyingNativeElement.dropInteractionDelegate != null && child.scrollViewDropInteraction == null) {
+                            child.dropInteractionDelegate = it.underlyingNativeElement.dropInteractionDelegate
                             val interaction = UIDropInteraction(DropInteractionDelegate(child))
                             child.scrollViewDropInteraction = interaction
                             child.native.addInteraction(interaction)
                         }
                     }
                 }
-                if (child.children.isNotEmpty()) {
+                if (child is ContainerElement && child.children.isNotEmpty()) {
                     addChildDropInteractionToParentScrollViews(child)
                 }
             }
         }
 
-        fun removeChildDropInteractionToParentScrollViews(currentView: RView) {
+        fun removeChildDropInteractionToParentScrollViews(currentView: ContainerElement) {
             currentView.children.forEach { child ->
                 // Check if this child is a ScrollView
                 if (child is ScrollView) {
@@ -473,7 +418,7 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
                     }
                     child.dropInteractionDelegate = null
                 }
-                if (child.children.isNotEmpty()) {
+                if (child is ContainerElement && child.children.isNotEmpty()) {
                     removeChildDropInteractionToParentScrollViews(child)
                 }
             }
@@ -490,14 +435,16 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
 
         @ObjCSignatureOverride
         @OptIn(ExperimentalNativeApi::class)
-        override fun dragInteraction(interaction: platform.UIKit.UIDragInteraction, session: platform.UIKit.UIDragSessionProtocol, didEndWithOperation: kotlin.ULong /* from: platform.UIKit.UIDropOperation */): kotlin.Unit  {
+        override fun dragInteraction(
+            interaction: platform.UIKit.UIDragInteraction,
+            session: platform.UIKit.UIDragSessionProtocol,
+            didEndWithOperation: kotlin.ULong /* from: platform.UIKit.UIDropOperation */
+        ): kotlin.Unit {
             val view = owner.get() ?: return
             view.parent?.let {
                 removeChildDropInteractionToParentScrollViews(it)
             }
         }
-
-
     }
 
 
@@ -505,10 +452,9 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
     var dropInteractionDelegate: DropInteractionDelegate? = null
     var scrollViewDropInteraction: UIDropInteraction? = null
 
-    override var dropTargetDelegate: DropTargetDelegate?
-        get() = super.dropTargetDelegate
+    actual override var dropTargetDelegate: DropTargetDelegate? = null
         set(value) {
-            super.dropTargetDelegate = value
+            field = value
             if (value != null) {
                 if (dropInteraction == null) {
                     val interaction = UIDropInteraction(DropInteractionDelegate(this).also {
@@ -525,152 +471,69 @@ actual abstract class RView actual constructor(context: ElementContext) : RViewH
             }
         }
 
-
-
     // A private delegate class to handle drop events
-        class DropInteractionDelegate(view: RView) : NSObject(), UIDropInteractionDelegateProtocol {
-            @OptIn(ExperimentalNativeApi::class)
-            private val owner = WeakReference(view)
+    class DropInteractionDelegate(view: Element) : NSObject(), UIDropInteractionDelegateProtocol {
+        @OptIn(ExperimentalNativeApi::class)
+        private val owner = WeakReference(view)
 
-            private fun getDragDataPlaceholder(session: UIDropSessionProtocol): DragData? {
-                val local = session.localDragSession?.localContext as? DragData
-                if(local != null) return local
+        private fun getDragDataPlaceholder(session: UIDropSessionProtocol): DragData? {
+            val local = session.localDragSession?.localContext as? DragData
+            if (local != null) return local
 
-                val provider = (session.items.firstOrNull() as? UIDragItem)?.itemProvider ?: return null
-                val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
+            val provider = (session.items.firstOrNull() as? UIDragItem)?.itemProvider ?: return null
+            val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
 
-                return DragData(mimeType = mimeType, data = "", label = "External Data", dragShadow = null)
-            }
-
-
-            @OptIn(ExperimentalNativeApi::class)
-            @ObjCSignatureOverride
-            override fun dropInteraction(interaction: UIDropInteraction, canHandleSession: UIDropSessionProtocol): Boolean {
-                val view = owner.get() ?: return false
-                return true
-            }
-
-            @OptIn(ExperimentalNativeApi::class)
-            @ObjCSignatureOverride
-            override fun dropInteraction(interaction: UIDropInteraction, sessionDidUpdate: UIDropSessionProtocol): UIDropProposal {
-                val view = owner.get() ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
-                val delegate = view.dropTargetDelegate ?: view.children.firstOrNull { it.dropTargetDelegate != null }?.dropTargetDelegate
-                    ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
-                getDragDataPlaceholder(sessionDidUpdate)?.let { data ->
-                    val targetView = if (view is ScrollView) view.children.firstOrNull { it.dropTargetDelegate != null } ?: view else view
-                    val location = sessionDidUpdate.locationInView(targetView.native)
-                    val event = DragEvent(data, location.useContents { x }, location.useContents { y })
-                    delegate.over(event)
-                }
-
-                return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationMove)
-            }
-
-
-            @ObjCSignatureOverride
-            @OptIn(ExperimentalNativeApi::class)
-            override fun dropInteraction(interaction: UIDropInteraction, performDrop: UIDropSessionProtocol) {
-                val view = owner.get() ?: return
-                val delegate = view.dropTargetDelegate ?: view.children.firstOrNull { it.dropTargetDelegate != null }?.dropTargetDelegate
-                    ?: return
-                val localData = (performDrop.items.firstOrNull() as? UIDragItem)?.localObject as? DragData
-                if (localData != null) {
-                    // Use consistent location calculation - target the view with the delegate
-                    val targetView = if (view is ScrollView) view.children.firstOrNull { it.dropTargetDelegate != null } ?: view else view
-                    val location = performDrop.locationInView(targetView.native)
-                    val event = DragEvent(
-                        data = localData,
-                        xInView = location.useContents { x },
-                        yInView = location.useContents { y },
-                    )
-                    delegate.drop(event)
-                    return
-                }
-            }
+            return DragData(mimeType = mimeType, data = "", label = "External Data", dragShadow = null)
         }
 
-}
 
-var animationsEnabled: Boolean = true
-var isInAnimationBlock: Boolean = false
-actual val RView.areAnimationsEnabled: Boolean get() = animationsEnabled
-actual inline fun RView.withoutAnimation(action: () -> Unit) {
-    native.withoutAnimation(action)
-}
-
-inline fun UIView.debugPrint(get: ()->String) {
-    if(debugMode && viewDebugTarget?.native == this)
-        Log.tag("viewDebugTarget").info(get())
-}
-inline fun UIView.withoutAnimation(action: () -> Unit) {
-    assertMainThread()
-    val before = animationsEnabled
-    try {
-        animationsEnabled = false
-        CATransaction.begin()
-        CATransaction.disableActions()
-        try {
-            action()
-        } finally {
-            CATransaction.commit()
+        @OptIn(ExperimentalNativeApi::class)
+        @ObjCSignatureOverride
+        override fun dropInteraction(interaction: UIDropInteraction, canHandleSession: UIDropSessionProtocol): Boolean {
+            val view = owner.get() ?: return false
+            return true
         }
-    } finally {
-        animationsEnabled = before
+
+        @OptIn(ExperimentalNativeApi::class)
+        @ObjCSignatureOverride
+        override fun dropInteraction(interaction: UIDropInteraction, sessionDidUpdate: UIDropSessionProtocol): UIDropProposal {
+            val view = owner.get() ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
+            val delegate = view.dropTargetDelegate ?: (view as? ContainerElement)?.children?.firstOrNull { it.dropTargetDelegate != null }?.dropTargetDelegate
+            ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
+            getDragDataPlaceholder(sessionDidUpdate)?.let { data ->
+                val targetView = if (view is ScrollView) view.children.firstOrNull { it.dropTargetDelegate != null } ?: view else view
+                val location = sessionDidUpdate.locationInView(targetView.native)
+                val event = DragEvent(data, location.useContents { x }, location.useContents { y })
+                delegate.over(event)
+            }
+
+            return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationMove)
+        }
+
+
+        @ObjCSignatureOverride
+        @OptIn(ExperimentalNativeApi::class)
+        override fun dropInteraction(interaction: UIDropInteraction, performDrop: UIDropSessionProtocol) {
+            val view = owner.get() ?: return
+            val delegate = view.dropTargetDelegate ?: (view as? ContainerElement)?.children?.firstOrNull { it.dropTargetDelegate != null }?.dropTargetDelegate
+            ?: return
+            val localData = (performDrop.items.firstOrNull() as? UIDragItem)?.localObject as? DragData
+            if (localData != null) {
+                // Use consistent location calculation - target the view with the delegate
+                val targetView = if (view is ScrollView) view.children.firstOrNull { it.dropTargetDelegate != null } ?: view else view
+                val location = performDrop.locationInView(targetView.native)
+                val event = DragEvent(
+                    data = localData,
+                    xInView = location.useContents { x },
+                    yInView = location.useContents { y },
+                )
+                delegate.drop(event)
+                return
+            }
+        }
     }
 }
 
-inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
-    if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.5) {
-        val before = isInAnimationBlock
-        isInAnimationBlock = true
-        try {
-            action()
-        } finally {
-            isInAnimationBlock = before
-        }
-    } else {
-        action()
-    }
-}
-
-inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
-    if (animationsEnabled) UIView.animateWithDuration(
-        duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
-        completion = { onComplete() },
-        animations = {
-            val before = isInAnimationBlock
-            isInAnimationBlock = true
-            try {
-                action()
-            } finally {
-                isInAnimationBlock = before
-            }
-        }
-    ) else {
-        action()
-        onComplete()
-    }
-}
-
-inline fun RView.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
-    if (animationsEnabled) UIView.transitionWithView(
-        view = native,
-        duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
-        completion = { onComplete() },
-        animations = {
-            val before = isInAnimationBlock
-            isInAnimationBlock = true
-            try {
-                action()
-            } finally {
-                isInAnimationBlock = before
-            }
-        },
-        options = UIViewAnimationOptionTransitionCrossDissolve
-    ) else {
-        action()
-        onComplete()
-    }
-}
+val Element.native: UIView get() = underlyingNativeElement.native
 
 

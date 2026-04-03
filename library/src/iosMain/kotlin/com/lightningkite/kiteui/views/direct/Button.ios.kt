@@ -1,56 +1,43 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.context.reactive
+import platform.UIKit.UIControl
 
-actual class Button actual constructor(context: ElementContext) : RViewWithSecondaryAction(context) {
+@OptIn(ExperimentalKiteUi::class)
+actual class Button actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + buttonDriverActions()
     override val native = FrameLayoutButton()
+    override val control: UIControl get() = native
 
     init {
         activityIndicator {
             opacity = 0.0
-            ::opacity.invoke { if (this@Button.working()) 1.0 else 0.0 }
+            ::opacity.invoke { if (working()) 1.0 else 0.0 }
             native.extensionSizeConstraints = SizeConstraints(minWidth = null, minHeight = null)
         }
     }
 
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
+    override fun nativeSetAction(action: Action?) {
         onRemove(native.setOnClick {
-            value?.startAction(this)
+            action?.startAction(this)
         })
     }
 
-    override fun secondaryActionSet(value: Action?) {
-        super.secondaryActionSet(value)
+    override fun nativeSetSecondaryAction(action: Action?) {
         onRemove(native.setOnLongPress {
-            value?.startAction(this)
+            action?.startAction(this)
         })
     }
-
-    actual var enabled: Boolean
-        get() = native.enabled
-        set(value) {
-            native.enabled = value
-        }
 
     init {
-        onRemove(native.observe("highlighted", { refreshTheming() }))
-        onRemove(native.observe("selected", { refreshTheming() }))
-        onRemove(native.observe("enabled", { refreshTheming() }))
-        reactiveScope {
-            opacity = if (loading()) 0.7 else 1.0
-        }
-    }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if (!enabled) t = t[DisabledSemantic]
-        if (native.highlighted) t = t[DownSemantic]
-        if (native.focused) t = t[FocusSemantic]
-        return super.applyState(t)
+        onRemove(native.observe("highlighted") { refreshTheming() })
+        onRemove(native.observe("selected") { refreshTheming() })
+        onRemove(native.observe("enabled") { refreshTheming() })
+        ::opacity { if (loading()) 0.7 else 1.0 }
     }
 }

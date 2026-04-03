@@ -1,23 +1,27 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Edges
-import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
-import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlin.math.max
-import kotlinx.cinterop.*
-import platform.CoreGraphics.*
-import platform.UIKit.*
+import com.lightningkite.kiteui.views.extensionCollapsed
+import com.lightningkite.kiteui.views.extensionPadding
+import com.lightningkite.kiteui.views.extensionSafeInsetPadding
+import com.lightningkite.kiteui.views.extensionSizeConstraints
+import com.lightningkite.kiteui.views.informParentOfSizeChange
+import com.lightningkite.kiteui.views.informParentOfSizeChangeDueToChild
+import com.lightningkite.kiteui.views.layoutSubviewsAndLayers
+import com.lightningkite.reactive.core.Signal
+import kotlinx.cinterop.CValue
+import kotlinx.cinterop.readValue
+import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGPoint
+import platform.CoreGraphics.CGRectZero
+import platform.CoreGraphics.CGSize
+import platform.CoreGraphics.CGSizeMake
+import platform.UIKit.UIEvent
+import platform.UIKit.UIView
 import platform.darwin.NSInteger
+import kotlin.math.max
 
 /**
  * A layout that arranges its children in rows and wraps to the next row when there's not enough space.
@@ -225,55 +229,5 @@ class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
 
     override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
         return frameLayoutHitTest(point, withEvent)
-    }
-}
-
-actual class RowWrappingOld actual constructor(context: ElementContext) : RView(context) {
-    override val native = FlexLayout()
-
-    override var gap: Dimension?
-        get() = super.gap
-        set(value) {
-            super.gap = value
-            native.gap = (value ?: theme.gap).value
-            native.lineGap = (value ?: theme.gap).value
-        }
-
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
-        native.gap = (gap ?: theme.theme.gap).value
-        native.lineGap = (gap ?: theme.theme.gap).value
-    }
-
-    override fun internalAddChild(index: Int, view: RView) {
-        // Apply parent's default alignment if child doesn't have explicit alignment set
-        if (view.lastSetHorizontalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildHorizontalAlign != null) {
-            view.lastSetHorizontalAlign = newChildHorizontalAlign!!
-            view.native.extensionHorizontalAlign = newChildHorizontalAlign
-        }
-        if (view.lastSetVerticalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildVerticalAlign != null) {
-            view.lastSetVerticalAlign = newChildVerticalAlign!!
-            view.native.extensionVerticalAlign = newChildVerticalAlign
-        }
-
-        if (index == native.arrangedSubviews.size)
-            native.addArrangedSubview(view.native)
-        else
-            native.insertArrangedSubview(view.native, index.toLong())
-        if (children[index].native != native.arrangedSubviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.arrangedSubviews}")
-    }
-
-    override fun internalRemoveChild(index: Int) {
-        if (children[index].native != native.arrangedSubviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.arrangedSubviews}")
-        if (index >= native.arrangedSubviews.size || index < 0) {
-            throw IllegalStateException("Index $index not in 0..<${native.arrangedSubviews.size}")
-        }
-        native.arrangedSubviews[index].removeFromSuperview()
-    }
-
-    override fun internalClearChildren() {
-        native.arrangedSubviews.toList().forEach {
-            it.removeFromSuperview()
-        }
     }
 }

@@ -30,33 +30,34 @@ class ContextAddon<T>(val init: Init<T>) {
     constructor(init: (ElementContext) -> T) : this(Init.Lazy(init))
 
     @Suppress("UNCHECKED_CAST")
-    private fun ElementContext.get(property: KProperty<*>): T =
-        addons.getOrPut(property.name) { init.get(this, property) } as T
+    operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T =
+        thisRef.addons.getOrPut(property.name) { init.get(thisRef, property) } as T
 
-    private fun ElementContext.set(property: KProperty<*>, value: T) {
-        addons[property.name] = value
+    operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) {
+        thisRef.addons[property.name] = value
     }
-
-    operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T = thisRef.get(property)
-    operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) { thisRef.set(property, value) }
-
-//    operator fun getValue(thisRef: Element, property: KProperty<*>): T = thisRef.context.get(property)
-//    operator fun setValue(thisRef: Element, property: KProperty<*>, value: T) { thisRef.context.set(property, value) }
-//
-//    operator fun getValue(thisRef: ElementWriter, property: KProperty<*>): T = thisRef.context.get(property)
-//    operator fun setValue(thisRef: ElementWriter, property: KProperty<*>, value: T) { thisRef.context.set(property, value) }
 
     class Local<T>(val init: Init<T>) {
         constructor(value: T) : this(Init.Value(value))
         constructor(init: (ElementContext) -> T) : this(Init.Lazy(init))
 
         @Suppress("UNCHECKED_CAST")
-        operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T =
-            thisRef.addons.getOrPutLocal(property.name) { init.get(thisRef, property) } as T
+        private fun ElementContext.get(property: KProperty<*>): T =
+            addons.getOrPut(property.name) { init.get(this, property) } as T
 
-        operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) {
-            thisRef.addons[property.name] = value
+        private fun ElementContext.set(property: KProperty<*>, value: T) {
+            addons[property.name] = value
         }
+
+        @Suppress("UNCHECKED_CAST")
+        operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T = thisRef.get(property)
+        operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) = thisRef.set(property, value)
+
+        operator fun getValue(thisRef: Element, property: KProperty<*>): T = thisRef.context.get(property)
+        operator fun setValue(thisRef: Element, property: KProperty<*>, value: T) { thisRef.context.set(property, value) }
+
+        operator fun getValue(thisRef: ElementWriter, property: KProperty<*>): T = thisRef.context.get(property)
+        operator fun setValue(thisRef: ElementWriter, property: KProperty<*>, value: T) { thisRef.context.set(property, value) }
     }
 }
 

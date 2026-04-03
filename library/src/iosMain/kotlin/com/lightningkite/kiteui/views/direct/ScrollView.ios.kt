@@ -2,26 +2,28 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.RViewWriter
-import com.lightningkite.kiteui.views.extensionIgnoreInteraction
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import kotlin.math.abs
-import kotlinx.cinterop.*
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.onRemove
+import com.lightningkite.reactive.core.BasicListenable
+import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.Signal
+import com.lightningkite.reactive.extensions.plus
+import com.lightningkite.reactive.lensing.lensListenable
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CValue
+import kotlinx.cinterop.pointed
+import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
 import platform.UIKit.*
 import platform.darwin.NSObject
+import kotlin.math.abs
 
 class ScrollView(
     context: ElementContext,
     override val horizontal: Boolean,
     override val vertical: Boolean
-) : RViewWriter(context), ScrollingBehaviors {
+) : NativeContainerElement(context), ScrollingBehaviors {
     override val native = FrameLayout()
     val scroller = ScrollLayout()
     init { native.addSubview(scroller) }
@@ -30,7 +32,7 @@ class ScrollView(
     private val sizeChange = BasicListenable()
     private val scroll = BasicListenable()
 
-    override val addChildTarget get() = scroller
+//    override val addChildTarget get() = scroller
 
     private val dg: UIScrollViewDelegateProtocol = object : NSObject(), UIScrollViewDelegateProtocol {
         override fun scrollViewDidScroll(scrollView: UIScrollView) {
@@ -207,7 +209,7 @@ class ScrollView(
             animated = animated
         )
     }
-    override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    override fun scrollTo(element: Element, horizontal: Align, vertical: Align, animated: Boolean) {
         scrollTo(
             left = when(horizontal) {
                 Align.Start -> element.native.bounds.useContents { origin.x }

@@ -6,13 +6,15 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import platform.UIKit.UIControl
 
 
-actual class Checkbox actual constructor(context: ElementContext) : RView(context) {
+actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = checkboxDriverValue()
     override val driverActions get() = super.driverActions + checkboxDriverActions()
     override val native: WrapperView = WrapperView()
     val button = FrameLayoutButton()
+    override val control: UIControl get() = button
     override val addChildTarget get() = button
     init {
         button.extensionHorizontalAlign = Align.Center

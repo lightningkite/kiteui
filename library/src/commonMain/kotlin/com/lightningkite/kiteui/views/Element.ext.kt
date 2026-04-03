@@ -3,6 +3,9 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.reactive.context.StatusListener
+import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.ReactiveState
+import com.lightningkite.reactive.core.Release
 import kotlinx.coroutines.CoroutineScope
 
 
@@ -23,6 +26,21 @@ fun Element.viewPath(): String = generateSequence(this) { it.parent }
     .toList()
     .reversed()
     .joinToString("/")
+
+
+private class FalseWhenSuccessful(val status: Reactive<*>): Reactive<Boolean> {
+    override val state: ReactiveState<Boolean> get() =
+        ReactiveState(!status.state.success)
+
+    override fun addListener(listener: () -> Unit): Release = status.addListener(listener)
+}
+@Suppress("UNCHECKED_CAST")
+val NativeElement.working: Reactive<Boolean> get() =
+    context.addons.getOrPutLocal("NativeElement.working") { FalseWhenSuccessful(foregroundProcesses) } as Reactive<Boolean>
+
+@Suppress("UNCHECKED_CAST")
+val NativeElement.loading: Reactive<Boolean> get() =
+    context.addons.getOrPutLocal("NativeElement.loading") { FalseWhenSuccessful(backgroundProcesses) } as Reactive<Boolean>
 
 /**
  * Returns whether animations are currently enabled for this element.
