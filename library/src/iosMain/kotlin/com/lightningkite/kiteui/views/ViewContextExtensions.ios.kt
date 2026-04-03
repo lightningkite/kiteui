@@ -17,16 +17,16 @@ import kotlinx.coroutines.launch
 import platform.UIKit.UIModalPresentationOverFullScreen
 import platform.UIKit.UIViewController
 
-actual fun ViewWriter.overlayWriter(
+actual fun ElementContext.overlay(
     modal: Boolean,
     transition: ScreenTransitions,
-    body: ViewWriter.(remove: () -> Unit) -> Unit
+    body: ContainerElement.(remove: () -> Unit) -> Unit
 ) {
     if (!modal) {
-        var willRemove: RView? = null
+        var willRemove: Element? = null
         with(overlayFrame ?: return) {
             withoutAnimation {
-                beforeSetup {
+                beforeSetupContainer {
                     animateIn(transition.forward)
                     willRemove = this
                 }.body {
@@ -40,7 +40,7 @@ actual fun ViewWriter.overlayWriter(
         }
     } else {
         println("Waiting...")
-        val theme = this@overlayWriter.overlayFrame?.theme ?: Theme.placeholder
+        val theme = this@overlay.overlayFrame?.theme ?: Theme.placeholder
         println("Let's go!")
         val viewController = object : UIViewController(null, null) {
             override fun viewDidDisappear(animated: Boolean) {
@@ -49,10 +49,10 @@ actual fun ViewWriter.overlayWriter(
         }
         viewController.definesPresentationContext = true
         viewController.modalPresentationStyle = UIModalPresentationOverFullScreen
-        viewController.kiteUi(context.split(viewController)) {
+        viewController.kiteUi(split(viewController)) {
             beforeSetup { themeChoice = ThemeDerivation { theme.withoutBack } }.frame {
-                coordinatorFrame = null
-                overlayFrame = this
+                context.coordinatorFrame = null
+                context.overlayFrame = this
                 body {
                     this@kiteUi.context.dismissSelf()
                 }
@@ -60,7 +60,7 @@ actual fun ViewWriter.overlayWriter(
         }
         AppScope.launch {
             delay(100)
-            context.present(viewController)
+            present(viewController)
         }
     }
 }

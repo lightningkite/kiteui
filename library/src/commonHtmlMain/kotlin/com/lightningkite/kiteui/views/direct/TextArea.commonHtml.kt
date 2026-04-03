@@ -69,8 +69,4 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
             field = value
             textarea.attributes.placeholder = value
         }
-
-    override var enabled: Boolean
-        get() = !(textarea.attributes.disabled ?: false)
-        set(value) { textarea.attributes.disabled = !value }
 }

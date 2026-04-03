@@ -250,24 +250,6 @@ val ElementWriter.CanAddTheme.withDefaultPadding: ElementWriter.CanAddTheme get(
 
 // views
 
-class Label(val label: TextView, val container: RowOrCol): ContainerElement by container {
-    var content: String by label::content
-}
-
-@OptIn(ExperimentalContracts::class)
-@Deprecated("use the new label: label(String, RowOrCol.() -> Unit)")
-inline fun ElementWriter.label(setup: Label.() -> Unit = {}): Label {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    val l: Label
-    col {
-        val label = subtext()
-        gap = 0.px
-        l = Label(label, this)
-        setup(l)
-    }
-    return l
-}
-
 @Deprecated("Use NumberInput instead", ReplaceWith("NumberInput"))
 typealias NumberField = NumberInput
 

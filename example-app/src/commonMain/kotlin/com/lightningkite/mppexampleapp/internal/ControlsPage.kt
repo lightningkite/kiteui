@@ -7,6 +7,8 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.numberInput
+import com.lightningkite.kiteui.views.l2.LabelSemantic
+import com.lightningkite.kiteui.views.l2.label
 import com.lightningkite.kiteui.views.l2.toast
 import com.lightningkite.kiteui.views.scrollsHorizontally
 import com.lightningkite.reactive.core.*

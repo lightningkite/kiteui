@@ -87,15 +87,6 @@ inline fun ElementWriter.rawImageZoomable(source: ImageSource, description: Stri
     return write(RawImageViewZoomable(context, source, description, scaleType), setup)
 }
 
-inline fun ElementWriter.label(label: String, content: RowOrCol.() -> Unit): Unit {
-    contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
-    col {
-        gap = 0.px
-        themed(FieldLabelSemantic).text(label)
-        content()
-    }
-}
-
 inline fun ElementWriter.phoneNumberInput(setup: PhoneNumberInput.() -> Unit = {}): PhoneNumberInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(PhoneNumberInput(context), setup)
@@ -305,13 +296,15 @@ inline fun ElementWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {})
 
 inline fun ElementWriter.recyclerView(refreshAction: Action? = null, setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(Recycler2(context, vertical = true), setup)
+    return write(Recycler2(context, vertical = true, refreshAction = refreshAction), setup)
 }
 
 inline fun ElementWriter.horizontalRecyclerView(
-    refreshAction: Action? = null, setup: Recycler2.() -> Unit = {}): Recycler2 {
+    refreshAction: Action? = null,
+    setup: Recycler2.() -> Unit = {}
+): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(Recycler2(context, vertical = false), setup)
+    return write(Recycler2(context, vertical = false, refreshAction = refreshAction), setup)
 }
 
 inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {

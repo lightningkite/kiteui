@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.probablyAppleUser
+import com.lightningkite.kiteui.views.l2.LabelSemantic
 import kotlin.jvm.JvmInline
 import kotlin.random.Random
 import kotlin.reflect.KClass
@@ -614,14 +615,8 @@ data object LoadingSemantic : Semantic("ld") {
     ).withBackNoPadding
 }
 
-/**
- * Semantic for field labels in forms.
- *
- * Delegates to [SubtextSemantic] to render labels in a smaller, subdued style.
- */
-data object FieldLabelSemantic: Semantic("flabel") {
-    override fun default(theme: Theme): ThemeAndBack = theme[SubtextSemantic]
-}
+@Deprecated("Renamed", ReplaceWith("LabelSemantic", "com.lightningkite.kiteui.views.l2.LabelSemantic"))
+typealias FieldLabelSemantic = LabelSemantic
 
 /**
  * Semantic for elements that are actively working or processing.

@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.scrolling
+import com.lightningkite.kiteui.views.l2.label
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*

@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.confirmDanger
 import com.lightningkite.kiteui.views.l2.applySafeInsets
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
 import com.lightningkite.kiteui.views.l2.field
@@ -20,7 +21,7 @@ object DialogSamplesPage : Page {
             button {
                 h6("Confirm Test")
                 onClick {
-                    confirmDanger("Delete", body = "Delete this item?") {
+                    context.confirmDanger("Delete", body = "Delete this item?") {
                         println("Delete!")
                     }
                 }
@@ -62,7 +63,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch Test bottomSheet" }
                 onClick {
-                    coordinatorFrame!!.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) {
+                    context.coordinatorFrame!!.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) {
                         themed(DialogSemantic).col {
                             applySafeInsets()
                             centered.coordinatorDragHandle()
@@ -79,7 +80,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch Test leftSlidingPanel" }
                 onClick {
-                    coordinatorFrame!!.leftSlidingPanel {
+                    context.coordinatorFrame!!.leftSlidingPanel {
                         themed(DialogSemantic).col {
                             button {
                                 text("Close")
@@ -94,7 +95,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch Test rightSlidingPanel" }
                 onClick {
-                    coordinatorFrame!!.rightSlidingPanel {
+                    context.coordinatorFrame!!.rightSlidingPanel {
                         themed(DialogSemantic).col {
                             button {
                                 text("Close")

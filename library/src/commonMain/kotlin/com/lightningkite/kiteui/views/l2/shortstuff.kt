@@ -53,14 +53,3 @@ fun ElementWriter.CanAddShownWhen.errorText() {
         }
     }
 }
-
-@OptIn(ExperimentalContracts::class)
-inline fun ElementWriter.field(label: String, content: ElementWriter.CanAddTheme.() -> Unit) {
-    contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
-    col {
-        gap = 0.px
-        themed(FieldLabelSemantic).text(label)
-        fieldTheme.content()
-        errorText()
-    }
-}
