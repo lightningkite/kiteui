@@ -94,6 +94,8 @@ data class Icon(
         }
     )
 
+    fun resize(size: Dimension): Icon = copy(width = size, height = size)
+
     companion object {
         val dot = Icon(
             1.5.rem,

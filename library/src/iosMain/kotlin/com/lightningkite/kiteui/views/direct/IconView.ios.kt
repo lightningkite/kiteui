@@ -19,7 +19,7 @@ import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransform3DMakeScale
 import platform.UIKit.*
 
-actual class IconView actual constructor(context: ElementContext): RView(context) {
+actual class IconView actual constructor(context: ElementContext): NativeElement(context) {
     override val native = NIconView()
     actual var source: Icon?
         get() = native.icon
@@ -34,8 +34,9 @@ actual class IconView actual constructor(context: ElementContext): RView(context
             native.accessibilityLabel = value
         }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.iconPaint = theme.icon
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme);
+        native.iconPaint = theme.theme.icon
     }
 }
 

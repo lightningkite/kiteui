@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import kotlinx.datetime.*
 import platform.Foundation.NSCalendar
@@ -16,11 +17,12 @@ import platform.Foundation.localTimeZone
 import platform.UIKit.*
 
 
-actual class LocalDateField actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
     override val driverActions get() = super.driverActions + localDateDriverActions()
     override val native = WrapperView()
     val textField = TextFieldInput(this)
+    override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalDate?>(null)
@@ -55,7 +57,7 @@ actual class LocalDateField actual constructor(context: ElementContext) : RViewW
                 _content.value = this.date.toKotlinInstant().toLocalDateTime(TimeZone.currentSystemDefault()).date
             }
         }
-        reactiveScope {
+        reactive {
             textField.text = _content.invoke()?.renderToString() ?: "-"
         }
     }
@@ -66,10 +68,13 @@ actual class LocalDateField actual constructor(context: ElementContext) : RViewW
             updateFont()
             native.informParentOfSizeChange()
         }
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.font
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        textField.textColor = theme.theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.theme.font
     }
+
     fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
@@ -77,39 +82,21 @@ actual class LocalDateField actual constructor(context: ElementContext) : RViewW
         } ?: UIFont.systemFontOfSize(16.0)
         textField.textAlignment = alignment
     }
-
-    var enabled: Boolean
-        get() = textField.enabled
-        set(value) {
-            textField.enabled = value
-            refreshTheming()
-        }
-    init {
-        onRemove(textField.observe("highlighted", { refreshTheming() }))
-        onRemove(textField.observe("selected", { refreshTheming() }))
-        onRemove(textField.observe("enabled", { refreshTheming() }))
-    }
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        if(textField.highlighted) t = t[DownSemantic]
-        if(textField.focused) t = t[FocusSemantic]
-        return super.applyState(t)
-    }
 }
 
-actual class LocalTimeField actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
     override val driverActions get() = super.driverActions + localTimeDriverActions()
     override val native = WrapperView()
     val textField = TextFieldInput(this)
+    override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalTime?>(null)
     actual val content: MutableReactiveValue<LocalTime?> get() = _content
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-        textField.action = value
+
+    override fun nativeSetAction(action: Action?) {
+        textField.action = action
     }
 
     actual var range: ClosedRange<LocalTime>? = null
@@ -128,9 +115,6 @@ actual class LocalTimeField actual constructor(context: ElementContext) : RViewW
             }
         }
 
-
-
-
     init {
         textField.inputView = UIDatePicker().apply {
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleWheels)
@@ -140,7 +124,7 @@ actual class LocalTimeField actual constructor(context: ElementContext) : RViewW
                 _content.value = this.date.toKotlinInstant().toLocalDateTime(TimeZone.currentSystemDefault()).time
             }
         }
-        reactiveScope {
+        reactive {
             textField.text = _content.invoke()?.renderToString() ?: "-"
         }
     }
@@ -151,10 +135,13 @@ actual class LocalTimeField actual constructor(context: ElementContext) : RViewW
             updateFont()
             native.informParentOfSizeChange()
         }
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.font
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        textField.textColor = theme.theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.theme.font
     }
+
     fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
@@ -162,39 +149,20 @@ actual class LocalTimeField actual constructor(context: ElementContext) : RViewW
         } ?: UIFont.systemFontOfSize(16.0)
         textField.textAlignment = alignment
     }
-
-    var enabled: Boolean
-        get() = textField.enabled
-        set(value) {
-            textField.enabled = value
-            refreshTheming()
-        }
-    init {
-        onRemove(textField.observe("highlighted", { refreshTheming() }))
-        onRemove(textField.observe("selected", { refreshTheming() }))
-        onRemove(textField.observe("enabled", { refreshTheming() }))
-    }
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        if(textField.highlighted) t = t[DownSemantic]
-        if(textField.focused) t = t[FocusSemantic]
-        return super.applyState(t)
-    }
 }
 
-actual class LocalDateTimeField actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
     override val driverActions get() = super.driverActions + localDateTimeDriverActions()
     override val native = WrapperView()
     val textField = TextFieldInput(this)
+    override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalDateTime?>(null)
     actual val content: MutableReactiveValue<LocalDateTime?> get() = _content
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-        textField.action = value
+    override fun nativeSetAction(action: Action?) {
+        textField.action = action
     }
     actual var range: ClosedRange<LocalDateTime>? = null
         set(value) {
@@ -222,7 +190,7 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : RV
                 _content.value = this.date.toKotlinInstant().toLocalDateTime(TimeZone.currentSystemDefault())
             }
         }
-        reactiveScope {
+        reactive {
             textField.text = _content.invoke()?.renderToString() ?: "-"
         }
     }
@@ -233,35 +201,19 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : RV
             updateFont()
             native.informParentOfSizeChange()
         }
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.font
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        textField.textColor = theme.theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.theme.font
     }
+
     fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
         } ?: UIFont.systemFontOfSize(16.0)
         textField.textAlignment = alignment
-    }
-
-    var enabled: Boolean
-        get() = textField.enabled
-        set(value) {
-            textField.enabled = value
-            refreshTheming()
-        }
-    init {
-        onRemove(textField.observe("highlighted", { refreshTheming() }))
-        onRemove(textField.observe("selected", { refreshTheming() }))
-        onRemove(textField.observe("enabled", { refreshTheming() }))
-    }
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        if(textField.highlighted) t = t[DownSemantic]
-        if(textField.focused) t = t[FocusSemantic]
-        return super.applyState(t)
     }
 }
 

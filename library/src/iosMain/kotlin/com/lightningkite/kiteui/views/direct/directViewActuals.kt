@@ -1,5 +1,3 @@
-
-
 package com.lightningkite.kiteui.views.direct
 
 
@@ -24,8 +22,8 @@ import platform.objc.sel_registerName
 class Ref<T>(var target: T?)
 
 
-inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: ()->Unit): ()->Unit {
-    val actionHolder = object: NSObject() {
+inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: () -> Unit): Release {
+    val actionHolder = object : NSObject() {
         @ObjCAction
         fun eventHandler() = action()
     }
@@ -48,8 +46,8 @@ inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIC
 }
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
-fun NSObject.observe(key: String, action: ()->Unit): ()->Unit {
-    val observer = object: NSObject(), KeyValueObserverProtocol {
+fun NSObject.observe(key: String, action: () -> Unit): Release {
+    val observer = object : NSObject(), KeyValueObserverProtocol {
         override fun observeValueForKeyPath(
             keyPath: String?,
             ofObject: Any?,
@@ -64,7 +62,7 @@ fun NSObject.observe(key: String, action: ()->Unit): ()->Unit {
 }
 
 @OptIn(ExperimentalNativeApi::class)
-private class ObserveRemover(val source: WeakReference<NSObject>, val key: String, var observer: NSObject? = null): ()->Unit {
+private class ObserveRemover(val source: WeakReference<NSObject>, val key: String, var observer: NSObject? = null) : Release {
     override fun invoke() {
         source.get()?.let { source ->
             observer?.let { obs ->
@@ -95,7 +93,7 @@ private fun UIView.findNextParentFocus(startingAtIndex: Int): UIView? {
 
 private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
     var index = startingAtIndex
-    while(index < subviews.size) {
+    while (index < subviews.size) {
         val sub = subviews[index] as UIView
         if (sub.canBecomeFirstResponder) {
             return sub
@@ -108,7 +106,8 @@ private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
 }
 
 val NextFocusDelegateShared = NextFocusDelegate()
-class NextFocusDelegate: NSObject(), UITextFieldDelegateProtocol {
+
+class NextFocusDelegate : NSObject(), UITextFieldDelegateProtocol {
     override fun textFieldShouldReturn(textField: UITextField): Boolean {
         textField.findNextFocus()?.let {
             it.becomeFirstResponder()

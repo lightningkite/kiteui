@@ -6,6 +6,8 @@ import com.lightningkite.reactive.core.*
 
 
 actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+    actual override val underlyingNativeElement: Checkbox get() = this
+
     override val driverValue: String? get() = checkboxDriverValue()
     override val driverActions get() = super.driverActions + checkboxDriverActions()
     init {

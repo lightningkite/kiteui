@@ -2,15 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.core.MutableReactiveValue
 import platform.UIKit.*
 import platform.darwin.NSObject
 
 
-
-actual class AutoCompleteTextField actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
     override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     override val native = WrapperView()
@@ -19,14 +18,16 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
     }
+    override val control: UIControl get() = textField
 
     init {
         native.addSubview(textField)
     }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.font
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        textField.textColor = theme.theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.theme.font
     }
 
     fun updateFont() {
@@ -67,10 +68,12 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
                 // fire change event so reactive listeners are notified on programmatic updates
                 textField.sendActionsForControlEvents(UIControlEventEditingChanged)
             }
+
         override fun addListener(listener: () -> Unit): () -> Unit {
             return textField.onEvent(this@AutoCompleteTextField, UIControlEventEditingChanged, listener)
         }
     }
+
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
@@ -79,42 +82,44 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
             textField.textContentType = value.autocomplete.iosTextContentType
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
+
     @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-            textField.delegate = value?.let { action ->
-                // Use weak reference to avoid retain cycle
-                val weakSelf = kotlin.native.ref.WeakReference(this)
-                val d = object : NSObject(), UITextFieldDelegateProtocol {
-                    override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                        weakSelf.get()?.let { action.startAction(it) }
-                        return true
-                    }
+    override fun nativeSetAction(action: Action?) {
+        textField.delegate = action?.let { action ->
+            // Use weak reference to avoid retain cycle
+            val weakSelf = kotlin.native.ref.WeakReference(this)
+            val d = object : NSObject(), UITextFieldDelegateProtocol {
+                override fun textFieldShouldReturn(textField: UITextField): Boolean {
+                    weakSelf.get()?.let { action.startAction(it) }
+                    return true
                 }
-                textField.extensionStrongRef = d
-                d
-            } ?: NextFocusDelegateShared
-            textField.returnKeyType = when (value?.title) {
-                "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
-                "Go" -> UIReturnKeyType.UIReturnKeyGo
-                "Next" -> UIReturnKeyType.UIReturnKeyNext
-                "Continue" -> UIReturnKeyType.UIReturnKeyContinue
-                "Default" -> UIReturnKeyType.UIReturnKeyDefault
-                "Join" -> UIReturnKeyType.UIReturnKeyJoin
-                "Done" -> UIReturnKeyType.UIReturnKeyDone
-                "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
-                "Send" -> UIReturnKeyType.UIReturnKeySend
-                "Google" -> UIReturnKeyType.UIReturnKeyGoogle
-                "Route" -> UIReturnKeyType.UIReturnKeyRoute
-                "Search" -> UIReturnKeyType.UIReturnKeySearch
-                else -> UIReturnKeyType.UIReturnKeyDone
             }
+            textField.extensionStrongRef = d
+            d
+        } ?: NextFocusDelegateShared
+        textField.returnKeyType = when (action?.title) {
+            "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
+            "Go" -> UIReturnKeyType.UIReturnKeyGo
+            "Next" -> UIReturnKeyType.UIReturnKeyNext
+            "Continue" -> UIReturnKeyType.UIReturnKeyContinue
+            "Default" -> UIReturnKeyType.UIReturnKeyDefault
+            "Join" -> UIReturnKeyType.UIReturnKeyJoin
+            "Done" -> UIReturnKeyType.UIReturnKeyDone
+            "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
+            "Send" -> UIReturnKeyType.UIReturnKeySend
+            "Google" -> UIReturnKeyType.UIReturnKeyGoogle
+            "Route" -> UIReturnKeyType.UIReturnKeyRoute
+            "Search" -> UIReturnKeyType.UIReturnKeySearch
+            else -> UIReturnKeyType.UIReturnKeyDone
         }
+    }
+
     var hint: String = ""
         set(value) {
             field = value
             updateHint()
         }
+
     inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
@@ -137,6 +142,7 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
                 Align.Stretch -> NSTextAlignmentJustified
             }
         }
+
     actual var suggestions: List<String> = listOf()
 }
 

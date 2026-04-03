@@ -1,12 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ClickableSemantic
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.rel
 import kotlinx.coroutines.launch
 
 
-actual class ExternalLink actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + externalLinkDriverActions()
     init {
         themeChoice += ClickableSemantic
@@ -24,6 +25,7 @@ actual class ExternalLink actual constructor(context: ElementContext) : NativeIn
         set(value) {
             native.attributes.href = value
         }
+
     actual inline var newTab: Boolean
         get() = native.attributes.target == "_blank"
         set(value) {
@@ -31,9 +33,17 @@ actual class ExternalLink actual constructor(context: ElementContext) : NativeIn
             // by Claude - set rel for SEO and security on new-tab links
             native.attributes.rel = if (value) "noopener noreferrer" else null
         }
-    actual fun onNavigate(action: suspend () -> Unit): Unit {
+
+    private var eventListenerAdded = false
+    private fun registerEventListener() {
+        if (eventListenerAdded) return
         native.addEventListener("click") {
-            launch { action() }
+            action?.startAction(this)
+            if (to != null) onNavigateAction?.startAction(this)
         }
+        eventListenerAdded = true
     }
+
+    override fun nativeSetAction(action: Action?) { registerEventListener() }
+    override fun nativeSetSecondaryAction(action: Action?) { registerEventListener() }
 }

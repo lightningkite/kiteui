@@ -9,41 +9,29 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class Link actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
+actual class Link actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + linkDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
-    actual var to: (() -> Page)? = null
-        set(value) {
-            field = value
-            native.setOnClickListener { view ->
-                onClick?.let { launch { it() } }
-                value?.invoke()?.let { it ->
-                    launch {
-                        onNavigate?.invoke()
-                        if (resetsStack) {
-                            onNavigator.reset(it)
-                        } else {
-                            onNavigator.navigate(it)
-                        }
-                    }
+    init {
+        native.setOnClickListener { _ ->
+            launch {
+                action?.startAction(this@launch)
+                to?.invoke()?.let { to ->
+                    onNavigateAction?.startAction(this@launch)
+
+                    if (resetsStack) onNavigator.reset(to)
+                    else onNavigator.navigate(to)
                 }
             }
         }
+    }
+
+    actual var to: (() -> Page)? = null
     actual var newTab: Boolean = false
-    private var onNavigate: (suspend () -> Unit)? = null
-    actual fun onNavigate(action: suspend () -> Unit): Unit {
-        onNavigate = action
-    }
-
-    private var onClick: (suspend () -> Unit)? = null
-    actual fun onClick(action: suspend () -> Unit): Unit {
-        onClick = action
-    }
-
-    actual var onNavigator: PageNavigator = mainPageNavigator
+    actual var onNavigator: PageNavigator = context.mainPageNavigator
     actual var resetsStack: Boolean = false
 
     override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)

@@ -16,11 +16,11 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 
-actual class NumberInput actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
     override val driverActions get() = super.driverActions + numberInputDriverActions()
     override val native = WrapperView()
-    val trigger: NSObject = object: NSObject() {
+    val trigger: NSObject = object : NSObject() {
         @ObjCAction
         fun done() {
             action?.let {
@@ -42,12 +42,15 @@ actual class NumberInput actual constructor(context: ElementContext) : RViewWith
             barStyle = UIBarStyleDefault
             setTranslucent(true)
             sizeToFit()
-            setItems(listOf(
-                UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
-                UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = trigger, action =sel_registerName("done")),
-            ), animated = false)
+            setItems(
+                listOf(
+                    UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
+                    UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = trigger, action = sel_registerName("done")),
+                ), animated = false
+            )
         }
     }
+    override val control: UIControl get() = textField
 
     init {
         native.addSubview(textField)
@@ -80,10 +83,11 @@ actual class NumberInput actual constructor(context: ElementContext) : RViewWith
         }
     }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.font
-        applyAlign(_align ?: theme.font.align)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        textField.textColor = theme.theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.theme.font
+        applyAlign(_align ?: theme.theme.font.align)
     }
 
     fun updateFont() {
@@ -111,12 +115,13 @@ actual class NumberInput actual constructor(context: ElementContext) : RViewWith
         override var value: Double?
             get() = (textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull()
             set(value) {
-                if(textField.text != (value?.commaString() ?: "")) {
+                if (textField.text != (value?.commaString() ?: "")) {
                     textField.text = value?.commaString() ?: ""
                     // fire change event so reactive listeners are notified on programmatic updates
                     textField.sendActionsForControlEvents(UIControlEventEditingChanged)
                 }
             }
+
         override fun addListener(listener: () -> Unit): () -> Unit {
             return textField.onEvent(this@NumberInput, UIControlEventEditingChanged, listener)
         }
@@ -131,36 +136,36 @@ actual class NumberInput actual constructor(context: ElementContext) : RViewWith
         }
 
     @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-            textField.delegate = value?.let { action ->
-                // Use weak reference to avoid retain cycle
-                val weakSelf = kotlin.native.ref.WeakReference(this)
-                val d = object : NSObject(), UITextFieldDelegateProtocol {
-                    override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                        weakSelf.get()?.let { action.startAction(it) }
-                        return true
-                    }
+    override fun nativeSetAction(action: Action?) {
+        textField.delegate = action?.let { action ->
+            // Use weak reference to avoid retain cycle
+            val weakSelf = kotlin.native.ref.WeakReference(this)
+            val d = object : NSObject(), UITextFieldDelegateProtocol {
+                override fun textFieldShouldReturn(textField: UITextField): Boolean {
+                    weakSelf.get()?.let { action.startAction(it) }
+                    return true
                 }
-                textField.extensionStrongRef = d
-                d
-            } ?: NextFocusDelegateShared
-            textField.returnKeyType = when (value?.title) {
-                "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
-                "Go" -> UIReturnKeyType.UIReturnKeyGo
-                "Next" -> UIReturnKeyType.UIReturnKeyNext
-                "Continue" -> UIReturnKeyType.UIReturnKeyContinue
-                "Default" -> UIReturnKeyType.UIReturnKeyDefault
-                "Join" -> UIReturnKeyType.UIReturnKeyJoin
-                "Done" -> UIReturnKeyType.UIReturnKeyDone
-                "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
-                "Send" -> UIReturnKeyType.UIReturnKeySend
-                "Google" -> UIReturnKeyType.UIReturnKeyGoogle
-                "Route" -> UIReturnKeyType.UIReturnKeyRoute
-                "Search" -> UIReturnKeyType.UIReturnKeySearch
-                else -> UIReturnKeyType.UIReturnKeyDone
             }
+            textField.extensionStrongRef = d
+            d
+        } ?: NextFocusDelegateShared
+        textField.returnKeyType = when (action?.title) {
+            "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
+            "Go" -> UIReturnKeyType.UIReturnKeyGo
+            "Next" -> UIReturnKeyType.UIReturnKeyNext
+            "Continue" -> UIReturnKeyType.UIReturnKeyContinue
+            "Default" -> UIReturnKeyType.UIReturnKeyDefault
+            "Join" -> UIReturnKeyType.UIReturnKeyJoin
+            "Done" -> UIReturnKeyType.UIReturnKeyDone
+            "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
+            "Send" -> UIReturnKeyType.UIReturnKeySend
+            "Google" -> UIReturnKeyType.UIReturnKeyGoogle
+            "Route" -> UIReturnKeyType.UIReturnKeyRoute
+            "Search" -> UIReturnKeyType.UIReturnKeySearch
+            else -> UIReturnKeyType.UIReturnKeyDone
         }
+    }
+
     actual var hint: String = ""
         set(value) {
             field = value
@@ -188,24 +193,6 @@ actual class NumberInput actual constructor(context: ElementContext) : RViewWith
             Align.Stretch -> NSTextAlignmentJustified
         }
     }
-    actual var range: ClosedRange<Double>? = null
 
-    actual var enabled: Boolean
-        get() = textField.enabled
-        set(value) {
-            textField.enabled = value
-            refreshTheming()
-        }
-    init {
-        onRemove(textField.observe("highlighted", { refreshTheming() }))
-        onRemove(textField.observe("selected", { refreshTheming() }))
-        onRemove(textField.observe("enabled", { refreshTheming() }))
-    }
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if(!textField.enabled) t = t[DisabledSemantic]
-        if(textField.highlighted) t = t[DownSemantic]
-        if(textField.focused) t = t[FocusSemantic]
-        return super.applyState(t)
-    }
+    actual var range: ClosedRange<Double>? = null
 }

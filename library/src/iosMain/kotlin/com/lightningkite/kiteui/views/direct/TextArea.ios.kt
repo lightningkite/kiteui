@@ -1,7 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -13,13 +15,13 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-actual class TextArea actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class TextArea actual constructor(context: ElementContext) : NativeElement(context), ElementWithAction {
     override val driverValue: String? get() = textAreaDriverValue()
-    override val driverActions get() = super.driverActions + textAreaDriverActions()
+    override val driverActions get() = super<NativeElement>.driverActions + textAreaDriverActions()
     override val native = WrapperView()
     private val delegate = TextAreaDelegate()
 
-    val trigger: NSObject = object: NSObject() {
+    val trigger: NSObject = object : NSObject() {
         @ObjCAction
         fun done() {
             action?.let {
@@ -29,6 +31,7 @@ actual class TextArea actual constructor(context: ElementContext) : RViewWithAct
             }
         }
     }
+
     val textField = UITextView().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
@@ -43,25 +46,29 @@ actual class TextArea actual constructor(context: ElementContext) : RViewWithAct
             barStyle = UIBarStyleDefault
             setTranslucent(true)
             sizeToFit()
-            setItems(listOf(
-                UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
-                UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = trigger, action =sel_registerName("done")),
-            ), animated = false)
+            setItems(
+                listOf(
+                    UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
+                    UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = trigger, action = sel_registerName("done")),
+                ), animated = false
+            )
         }
     }
 
     init {
         native.addSubview(textField)
     }
+
     init {
         delegate.listeners.add {
             textField.informParentOfSizeChange()
         }
     }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.font
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        textField.textColor = theme.theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.theme.font
     }
 
     fun updateFont() {
@@ -96,12 +103,13 @@ actual class TextArea actual constructor(context: ElementContext) : RViewWithAct
         override var value: String
             get() = textField.text
             set(value) {
-                if(textField.text != value) {
+                if (textField.text != value) {
                     textField.text = value
                     // fire change event so reactive listeners are notified on programmatic updates
                     delegate.listeners.invokeAllSafe()
                 }
             }
+
         override fun addListener(listener: () -> Unit): () -> Unit {
             delegate.listeners.add(listener)
             return {
@@ -110,6 +118,7 @@ actual class TextArea actual constructor(context: ElementContext) : RViewWithAct
             }
         }
     }
+
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
@@ -118,11 +127,13 @@ actual class TextArea actual constructor(context: ElementContext) : RViewWithAct
             textField.textContentType = value.autocomplete.iosTextContentType
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
+
     actual var hint: String = ""
         set(value) {
             field = value
             updateHint()
         }
+
     inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
@@ -145,22 +156,35 @@ actual class TextArea actual constructor(context: ElementContext) : RViewWithAct
                 Align.Stretch -> NSTextAlignmentJustified
             }
         }
-    actual var enabled: Boolean
+
+    private var releaseAction: Release? = null
+    actual override var action: Action? = null
+        set(value) {
+            field = value
+            releaseAction?.invoke()
+            releaseAction = value?.let { watchForegroundProcess(it) }
+        }
+
+    actual override var enabled: Boolean
         get() = textField.editable
         set(value) {
             textField.setEditable(value)
             refreshTheming()
         }
+
     init {
-        onRemove(textField.observe("highlighted", { refreshTheming() }))
-        onRemove(textField.observe("selected", { refreshTheming() }))
-        onRemove(textField.observe("enabled", { refreshTheming() }))
+        @OptIn(ExperimentalKiteUi::class)
+        elementSpecificTheming += ElementSpecificTheming {
+            var t: ThemeDerivation = ClickableSemantic
+            if (!enabled) t += DisabledSemantic
+            if (textField.focused) t += FocusSemantic
+            t
+        }
     }
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if(!textField.editable) t = t[DisabledSemantic]
-        if(native.focused) t = t[FocusSemantic]
-        return super.applyState(t)
+
+    init {
+        onRemove(textField.observe("selected") { refreshTheming() })
+        onRemove(textField.observe("enabled") { refreshTheming() })
     }
 }
 
@@ -169,4 +193,6 @@ private class TextAreaDelegate() : NSObject(), UITextViewDelegateProtocol {
     override fun textViewDidChange(textView: UITextView) {
         listeners.invokeAllSafe()
     }
+
+    override fun debugDescription(): String? = super<UITextViewDelegateProtocol>.debugDescription()
 }

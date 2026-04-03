@@ -5,67 +5,65 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import platform.UIKit.*
 
-actual class Slider actual constructor(context: ElementContext) : RView(context) {
+actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
     override val driverActions get() = super.driverActions + sliderDriverActions()
     override val native = UISlider()
+    override val control: UIControl get() = native
 
     private val valueProp = Signal(0.5f)
-    actual val value: MutableReactiveValue<Float>
-        get() {
-            return object : MutableReactiveValue<Float> {
-                override fun addListener(listener: () -> Unit): () -> Unit {
-                    return native.onEvent(this@Slider, UIControlEventValueChanged) {
-                        // Apply step if it's set
-                        step?.let { stepValue ->
-                            if (stepValue > 0) {
-                                val currentValue = native.value.toFloat()
-                                val steps = ((currentValue - min) / stepValue).toInt()
-                                val steppedValue = min + (steps * stepValue)
-                                // Update slider position to match stepped value
-                                native.value = steppedValue.toFloat()
-                            }
-                        }
-                        listener()
+    actual val value: MutableReactiveValue<Float> = object : MutableReactiveValue<Float> {
+        override fun addListener(listener: () -> Unit): Release {
+            return native.onEvent(this@Slider, UIControlEventValueChanged) {
+                // Apply step if it's set
+                step?.let { stepValue ->
+                    if (stepValue > 0) {
+                        val currentValue = native.value.toFloat()
+                        val steps = ((currentValue - min) / stepValue).toInt()
+                        val steppedValue = min + (steps * stepValue)
+                        // Update slider position to match stepped value
+                        native.value = steppedValue.toFloat()
                     }
                 }
-
-                override var value: Float
-                    get() {
-                        val rawValue = native.value.toFloat()
-
-                        // Apply step if it's set
-                        return step?.let { stepValue ->
-                            if (stepValue > 0) {
-                                val steps = ((rawValue - min) / stepValue).toInt()
-                                min + (steps * stepValue)
-                            } else {
-                                rawValue
-                            }
-                        } ?: rawValue
-                    }
-                    set(value) {
-                        // Ensure value is within min/max range
-                        val clampedValue = value.coerceIn(min, max)
-
-                        // Apply step if it's set
-                        val finalValue = step?.let { stepValue ->
-                            if (stepValue > 0) {
-                                val steps = ((clampedValue - min) / stepValue).toInt()
-                                min + (steps * stepValue)
-                            } else {
-                                clampedValue
-                            }
-                        } ?: clampedValue
-
-                        if (native.value.toFloat() != finalValue) {
-                            native.value = finalValue
-                            // fire change event so reactive listeners are notified on programmatic updates
-                            native.sendActionsForControlEvents(UIControlEventValueChanged)
-                        }
-                    }
+                listener()
             }
         }
+
+        override var value: Float
+            get() {
+                val rawValue = native.value.toFloat()
+
+                // Apply step if it's set
+                return step?.let { stepValue ->
+                    if (stepValue > 0) {
+                        val steps = ((rawValue - min) / stepValue).toInt()
+                        min + (steps * stepValue)
+                    } else {
+                        rawValue
+                    }
+                } ?: rawValue
+            }
+            set(value) {
+                // Ensure value is within min/max range
+                val clampedValue = value.coerceIn(min, max)
+
+                // Apply step if it's set
+                val finalValue = step?.let { stepValue ->
+                    if (stepValue > 0) {
+                        val steps = ((clampedValue - min) / stepValue).toInt()
+                        min + (steps * stepValue)
+                    } else {
+                        clampedValue
+                    }
+                } ?: clampedValue
+
+                if (native.value.toFloat() != finalValue) {
+                    native.value = finalValue
+                    // fire change event so reactive listeners are notified on programmatic updates
+                    native.sendActionsForControlEvents(UIControlEventValueChanged)
+                }
+            }
+    }
 
     actual var min: Float = 0f
         set(value) {
@@ -99,21 +97,8 @@ actual class Slider actual constructor(context: ElementContext) : RView(context)
         value.value = valueProp.value
     }
 
-    actual var enabled: Boolean
-        get() = native.enabled
-        set(value) {
-            native.enabled = value
-            refreshTheming()
-        }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if (!enabled) t = t[DisabledSemantic]
-        return super.applyState(t)
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) {
-        super.applyTheme(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
         val t = theme.theme
 
         // Apply theme colors to the slider

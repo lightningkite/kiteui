@@ -5,14 +5,16 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.*
+import platform.UIKit.UIControl
 
-actual class MenuButton actual constructor(context: ElementContext): RView(context) {
+actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
     override val driverActions get() = super.driverActions + menuDriverActions()
     override val native = FrameLayoutButton()
+    override val control: UIControl get() = native
 
     actual fun opensMenu(createMenu: Frame.() -> Unit) {
         onRemove(native.setOnClick {
-            var willRemove: RView? = null
+            var willRemove: Element? = null
             val f= overlayFrame!!
             f.popoverWriter {
                 willRemove?.let { f.removeChild(it) }
@@ -35,7 +37,7 @@ actual class MenuButton actual constructor(context: ElementContext): RView(conte
                             )
                         ).withBack
                     }
-                    native.anchor = preferredDirection to this@MenuButton.native
+                    native.anchor = this@MenuButton.preferredDirection to this@MenuButton.native
                     onClick {
                         closePopovers()
                     }
@@ -46,24 +48,7 @@ actual class MenuButton actual constructor(context: ElementContext): RView(conte
             }
         })
     }
-    actual var enabled: Boolean
-        get() = native.enabled
-        set(value) {
-            native.enabled = value
-        }
+
     actual var requireClick: Boolean = true
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
-
-    init {
-        onRemove(native.observe("highlighted", { refreshTheming() }))
-        onRemove(native.observe("selected", { refreshTheming() }))
-        onRemove(native.observe("enabled", { refreshTheming() }))
-    }
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        if(native.highlighted) t = t[DownSemantic]
-        if(native.focused) t = t[FocusSemantic]
-        return super.applyState(t)
-    }
 }

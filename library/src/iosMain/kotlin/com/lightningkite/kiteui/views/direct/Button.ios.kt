@@ -35,9 +35,6 @@ actual class Button actual constructor(context: ElementContext) : NativeContaine
     }
 
     init {
-        onRemove(native.observe("highlighted") { refreshTheming() })
-        onRemove(native.observe("selected") { refreshTheming() })
-        onRemove(native.observe("enabled") { refreshTheming() })
         ::opacity { if (loading()) 0.7 else 1.0 }
     }
 }

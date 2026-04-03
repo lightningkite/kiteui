@@ -239,7 +239,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
     /**
      * Recalculates and applies the element's theme.
      *
-     * Combines the base theme (from parent), theme choice (semantic modifiers like 'important'),
+     * Combines the base theme (typically from parent), theme choice (semantic modifiers like 'important'),
      * and state-based theming (loading/error states) to produce the final theme.
      */
     fun refreshTheming() {

@@ -9,7 +9,7 @@ import com.lightningkite.reactive.core.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
-actual class FormattedTextInput actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
     override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
     override val native = WrapperView()
@@ -19,6 +19,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : RV
         backgroundColor = UIColor.clearColor
         delegate = NextFocusDelegateShared
     }
+    override val control: UIControl get() = textField
 
     init {
         native.addSubview(textField)
@@ -52,10 +53,11 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : RV
         }
     }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.font
-        applyAlign(_align ?: theme.font.align)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        textField.textColor = theme.theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.theme.font
+        applyAlign(_align ?: theme.theme.font.align)
     }
 
     fun updateFont() {
@@ -114,9 +116,8 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : RV
         }
 
     @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-        textField.delegate = value?.let { action ->
+    override fun nativeSetAction(action: Action?) {
+        textField.delegate = action?.let { action ->
             // Use weak reference to avoid retain cycle
             val weakSelf = kotlin.native.ref.WeakReference(this)
             val d = object : NSObject(), UITextFieldDelegateProtocol {
@@ -128,7 +129,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : RV
             textField.extensionStrongRef = d
             d
         } ?: NextFocusDelegateShared
-        textField.returnKeyType = when (value?.title) {
+        textField.returnKeyType = when (action?.title) {
             "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
             "Go" -> UIReturnKeyType.UIReturnKeyGo
             "Next" -> UIReturnKeyType.UIReturnKeyNext
@@ -171,26 +172,5 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : RV
             Align.End -> NSTextAlignmentRight
             Align.Stretch -> NSTextAlignmentJustified
         }
-    }
-
-    actual var enabled: Boolean
-        get() = textField.enabled
-        set(value) {
-            textField.enabled = value
-            refreshTheming()
-        }
-
-    init {
-        onRemove(textField.observe("highlighted", { refreshTheming() }))
-        onRemove(textField.observe("selected", { refreshTheming() }))
-        onRemove(textField.observe("enabled", { refreshTheming() }))
-    }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if (!textField.enabled) t = t[DisabledSemantic]
-        if (textField.highlighted) t = t[DownSemantic]
-        if (textField.focused) t = t[FocusSemantic]
-        return super.applyState(t)
     }
 }

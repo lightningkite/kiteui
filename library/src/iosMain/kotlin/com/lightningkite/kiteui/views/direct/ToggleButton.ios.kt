@@ -1,39 +1,33 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.toggle
+import platform.UIKit.UIControl
 
 
-actual class ToggleButton actual constructor(context: ElementContext) : RView(context) {
+actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
     override val driverActions get() = super.driverActions + toggleDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
-    actual inline var enabled: Boolean
-        get() = native.enabled
-        set(value) {
-            native.enabled = value
-        }
+    override val control: UIControl get() = native
+
     private val _checked = Signal(false)
     actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
-        onRemove(native.observe("highlighted", { refreshTheming() }))
-        onRemove(native.observe("selected", { refreshTheming() }))
-        onRemove(native.observe("enabled", { refreshTheming() }))
         _checked.addListener { refreshTheming() }
         onRemove(native.setOnClick {
-            _checked.value = !_checked.value
+            _checked.toggle()
         })
-    }
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(_checked.value) t = t[SelectedSemantic]
-        else t = t[UnselectedSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        if(native.highlighted) t = t[DownSemantic]
-        if(native.focused) t = t[FocusSemantic]
-        return super.applyState(t)
+
+        @OptIn(ExperimentalKiteUi::class)
+        elementSpecificTheming += ElementSpecificTheming {
+            if (_checked.value) SelectedSemantic
+            else UnselectedSemantic
+        }
     }
 }

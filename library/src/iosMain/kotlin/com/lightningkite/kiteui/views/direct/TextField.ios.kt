@@ -15,9 +15,10 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 
-actual class TextInput actual constructor(context: ElementContext) : RViewWithAction(context) {
+actual class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
     override val driverActions get() = super.driverActions + textInputDriverActions()
+
     companion object {
         var alwaysToolbar = false
     }
@@ -63,11 +64,12 @@ actual class TextInput actual constructor(context: ElementContext) : RViewWithAc
         }
     }
 
+    override val control: UIControl get() = textField
+
     init {
         native.addSubview(textField)
 
-
-        dropTargetDelegate = object : DropTargetDelegate {
+        dropTargetDelegate = object : com.lightningkite.kiteui.models.DropTargetDelegate {
             override fun drop(event: DragEvent): Boolean {
                 // Prioritize official text mime types
                 for ((mimeType, data) in event.data.typeToData) {
@@ -93,11 +95,12 @@ actual class TextInput actual constructor(context: ElementContext) : RViewWithAc
         }
     }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.font
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme);
+        textField.textColor = theme.theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.theme.font
         updateHint()
-        applyAlign(_align ?: theme.font.align)
+        applyAlign(_align ?: theme.theme.font.align)
     }
 
     fun updateFont() {
@@ -151,9 +154,8 @@ actual class TextInput actual constructor(context: ElementContext) : RViewWithAc
         }
 
     @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
-    override fun actionSet(value: Action?) {
-        super.actionSet(value)
-        textField.delegate = value?.let { action ->
+    override fun nativeSetAction(action: Action?) {
+        textField.delegate = action?.let { action ->
             // Use weak reference to avoid retain cycle
             val weakSelf = kotlin.native.ref.WeakReference(this)
             val d = object : NSObject(), UITextFieldDelegateProtocol {
@@ -166,7 +168,7 @@ actual class TextInput actual constructor(context: ElementContext) : RViewWithAc
             textField.extensionStrongRef = d
             d
         } ?: NextFocusDelegateShared
-        textField.returnKeyType = when (value?.title) {
+        textField.returnKeyType = when (action?.title) {
             "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
             "Go" -> UIReturnKeyType.UIReturnKeyGo
             "Next" -> UIReturnKeyType.UIReturnKeyNext
@@ -210,26 +212,9 @@ actual class TextInput actual constructor(context: ElementContext) : RViewWithAc
             Align.Stretch -> NSTextAlignmentJustified
         }
     }
-    actual var enabled: Boolean
-        get() = textField.enabled
-        set(value) {
-            textField.enabled = value
-            refreshTheming()
-        }
 
     init {
         onRemove { textField.delegate = null }
-        onRemove(textField.observe("highlighted", { refreshTheming() }))
-        onRemove(textField.observe("selected", { refreshTheming() }))
-        onRemove(textField.observe("enabled", { refreshTheming() }))
-    }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if (!textField.enabled) t = t[DisabledSemantic]
-        if (textField.highlighted) t = t[DownSemantic]
-        if (textField.focused) t = t[FocusSemantic]
-        return super.applyState(t)
     }
 }
 

@@ -12,15 +12,18 @@ import platform.darwin.NSInteger
 import platform.darwin.NSObject
 
 
-actual class Select actual constructor(context: ElementContext): RView(context) {
+actual class Select actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
-    override val driverActions get() = super.driverActions + buildMap {
-        _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
-    }
+    override val driverActions
+        get() = super.driverActions + buildMap {
+            _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
+        }
     override val native = WrapperView()
     val textField = TextFieldInput(this)
+    override val control: UIControl get() = textField
+
     init {
         native.addSubview(textField)
         textField.inputView = UIPickerView()
@@ -32,29 +35,33 @@ actual class Select actual constructor(context: ElementContext): RView(context) 
         render: (T) -> String
     ) {
         val picker = (textField.inputView as UIPickerView)
-        val source = object: NSObject(), UIPickerViewDataSourceProtocol, UIPickerViewDelegateProtocol {
+        val source = object : NSObject(), UIPickerViewDataSourceProtocol, UIPickerViewDelegateProtocol {
             var list: List<T> = listOf()
 
             init {
-                reactiveScope {
+                reactive {
                     list = data()
                     picker.reloadAllComponents()
                 }
-                reactiveScope { textField.text = render(edits()) }
+                reactive { textField.text = render(edits()) }
             }
 
             override fun numberOfComponentsInPickerView(pickerView: UIPickerView): NSInteger = 1L
+
             @ObjCSignatureOverride
             override fun pickerView(pickerView: UIPickerView, numberOfRowsInComponent: NSInteger): NSInteger = list.size.toLong()
+
             @ObjCSignatureOverride
             override fun pickerView(pickerView: UIPickerView, titleForRow: NSInteger, forComponent: NSInteger): String? {
                 return render(list[titleForRow.toInt()])
             }
+
             var index = 0
             val set = Action("Set Value", Icon.send, frequencyCap = null, ignoreRetryWhileRunning = false) {
                 val item = list[index]
                 edits set item
             }
+
             @ObjCSignatureOverride
             override fun pickerView(pickerView: UIPickerView, didSelectRow: NSInteger, inComponent: NSInteger) {
                 index = didSelectRow.toInt()
@@ -70,7 +77,7 @@ actual class Select actual constructor(context: ElementContext): RView(context) 
             picker.setDelegate(null)
         }
         // Driver support: track selected display and allow setValue
-        reactiveScope {
+        reactive {
             _driverSelectedDisplay = render(edits())
         }
         _driverSelectSetValue = { displayText ->
@@ -86,34 +93,18 @@ actual class Select actual constructor(context: ElementContext): RView(context) 
             updateFont()
             native.informParentOfSizeChange()
         }
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.font
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme)
+        textField.textColor = theme.theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.theme.font
     }
+
     fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
         } ?: UIFont.systemFontOfSize(16.0)
         textField.textAlignment = alignment
-    }
-
-    actual var enabled: Boolean
-        get() = textField.enabled
-        set(value) {
-            textField.enabled = value
-            refreshTheming()
-        }
-    init {
-        onRemove(textField.observe("highlighted", { refreshTheming() }))
-        onRemove(textField.observe("selected", { refreshTheming() }))
-        onRemove(textField.observe("enabled", { refreshTheming() }))
-    }
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme[ClickableSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        if(textField.highlighted) t = t[DownSemantic]
-        if(textField.focused) t = t[FocusSemantic]
-        return super.applyState(t)
     }
 }

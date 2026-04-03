@@ -5,6 +5,8 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 actual class RadioButton actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+    actual override val underlyingNativeElement: RadioButton get() = this
+
     override val driverValue: String? get() = radioDriverValue()
     override val driverActions get() = super.driverActions + radioDriverActions()
     init {

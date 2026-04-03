@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class RadioToggleButton actual constructor(context: ElementContext) : NativeContainerElement(context) {
+actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = radioToggleDriverValue()
     override val driverActions get() = super.driverActions + radioToggleDriverActions()
     val input = FutureElement().apply {
@@ -60,10 +60,4 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
                 native.classes.remove("checked")
         }
     }
-
-    actual inline var enabled: Boolean
-        get() = input.attributes.disabled != true
-        set(value) {
-            input.attributes.disabled = !value
-        }
 }

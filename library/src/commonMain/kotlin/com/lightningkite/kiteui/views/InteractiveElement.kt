@@ -12,13 +12,21 @@ interface InteractiveElement : Element {
 
 /**
  * An interactive element with a primary action (e.g., button click, form submit).
+ *
+ * Elements inheriting this interface are responsible for displaying working animations when the
+ * action is in progress (e.g. manage [StatusListener.watchForegroundProcess][com.lightningkite.reactive.context.StatusListener.watchForegroundProcess]
+ * on the action when set)
  */
 interface ElementWithAction : InteractiveElement {
     var action: Action?
 }
 
 /**
- * An interactive element with both primary and secondary actions (e.g., swipe actions, context menus).
+ * An interactive element with both primary and secondary actions (e.g., swipe actions, `onNavigate` actions, context menus).
+ *
+ * Elements inheriting this interface are responsible for displaying working animations when the
+ * action is in progress (e.g. manage [StatusListener.watchForegroundProcess][com.lightningkite.reactive.context.StatusListener.watchForegroundProcess]
+ * on the action when set)
  */
 interface ElementWithSecondaryAction : ElementWithAction {
     var secondaryAction: Action?

@@ -24,15 +24,14 @@ fun ElementWriter.navGroupColumn(
     }
 }
 
-private fun Element.selectedIfRouteMatches(it: NavLink) {
-    dynamicTheme {
-        val matchingPage = mainPageNavigator.currentPage()
-            ?.let { mainPageNavigator.routes.render(it) }?.urlLikePath?.segments == mainPageNavigator.routes.render(
+private fun ElementWriter.CanAddTheme.selectedIfRouteMatches(it: NavLink): ElementWriter.CanAddScrolling =
+    dynamicThemed {
+        val matchingPage = context.mainPageNavigator.currentPage()
+            ?.let { context.mainPageNavigator.routes.render(it) }?.urlLikePath?.segments == context.mainPageNavigator.routes.render(
             it.destination.invoke(this)()
         )?.urlLikePath?.segments
         if (matchingPage) SelectedSemantic else ForcePaddingSemantic
     }
-}
 
 private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNavigate: suspend () -> Unit = {}) {
     themeChoice += ListSemantic
@@ -61,7 +60,7 @@ private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElem
                 ::shown { it.hidden?.invoke(this) != true }
                 ::to { it.to(this) }
                 display(it)
-                this.onNavigate(onNavigate)
+                this.onNavigate(action = onNavigate)
             }
 
             is NavGroup -> {
@@ -92,15 +91,14 @@ private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElem
                 }
             }
 
-            is NavLink -> link {
-                selectedIfRouteMatches(it)
+            is NavLink -> selectedIfRouteMatches(it).link {
                 resetsStack = true
                 shown = false
 
                 ::shown { it.hidden?.invoke() != true }
                 ::to { it.destination(this) }
                 display(it)
-                this.onNavigate(onNavigate)
+                this.onNavigate(action = onNavigate)
             }
         }
     }
@@ -160,8 +158,7 @@ private fun ContainerElement.navGroupActionsInner(readable: Reactive<List<NavEle
                 it.square(this@forEach)
             }
 
-            is NavLink -> link {
-                selectedIfRouteMatches(it)
+            is NavLink -> selectedIfRouteMatches(it).link {
                 resetsStack = true
                 shown = false
                 ::shown { it.hidden?.invoke() != true }
@@ -215,8 +212,7 @@ private fun ContainerElement.navGroupTopInner(readable: Reactive<List<NavElement
                 text { ::content { it.title() } }
             }
 
-            is NavLink -> link {
-                selectedIfRouteMatches(it)
+            is NavLink -> selectedIfRouteMatches(it).link {
                 resetsStack = true
                 shown = false
                 ::shown { it.hidden?.invoke() != true }
@@ -308,15 +304,13 @@ fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: Cont
                 }
 
                 is NavLink -> {
-                    expanding.link {
-                        selectedIfRouteMatches(it)
+                    expanding.selectedIfRouteMatches(it).link {
                         resetsStack = true
                         shown = false
                         ::shown { it.hidden?.invoke() != true }
                         display(it)
                         ::to { it.destination() }
                     }
-                    Unit
                 }
             }
         }

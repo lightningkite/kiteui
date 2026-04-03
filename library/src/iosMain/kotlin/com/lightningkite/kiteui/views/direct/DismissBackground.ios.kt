@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
@@ -21,27 +23,28 @@ import platform.UIKit.*
 import platform.darwin.sel_registerName
 
 
-actual class DismissBackground actual constructor(context: ElementContext) : RView(context) {
-    
+actual class DismissBackground actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val native = NDismissBackground()
-    actual fun onClick(action: suspend () -> Unit): Unit {
+    actual fun onClick(action: suspend () -> Unit) {
         native.onClick = {
             launch { action() }
         }
     }
 
-    override fun postSetup() {
-        super.postSetup()
+    @OverrideOnly
+    override fun onStartup() {
+        super.onStartup()
         children.forEach { it.native.userInteractionEnabled = true }
     }
 
     init {
-        onClick { dialogPageNavigator.clear() }
+        onClick { this.context.dialogPageNavigator.clear() }
         onRemove { native.onClick = {} }
     }
 
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        return super.applyState(theme[DismissSemantic])
+    init {
+        @OptIn(ExperimentalKiteUi::class)
+        elementSpecificTheming += DismissSemantic
     }
 }
 

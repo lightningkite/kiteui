@@ -1,37 +1,38 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.toggle
 import platform.UIKit.UIControl
 
 
-actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+    actual override val underlyingNativeElement: Checkbox get() = this
+
     override val driverValue: String? get() = checkboxDriverValue()
     override val driverActions get() = super.driverActions + checkboxDriverActions()
     override val native: WrapperView = WrapperView()
     val button = FrameLayoutButton()
     override val control: UIControl get() = button
     override val addChildTarget get() = button
+
     init {
         button.extensionHorizontalAlign = Align.Center
         button.extensionVerticalAlign = Align.Center
         native.addSubview(button)
     }
 
-    actual inline var enabled: Boolean
-        get() = button.enabled
-        set(value) {
-            button.enabled = value
-        }
     private val _checked = Signal(false)
     actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
-        themeChoice = ThemeDerivation {
+        @OptIn(ExperimentalKiteUi::class)
+        elementSpecificTheming += ThemeDerivation {
             it.copy(
                 id = "rad",
                 outline = it.icon,
@@ -41,11 +42,13 @@ actual class Checkbox actual constructor(context: ElementContext) : NativeIntera
                 padding = it.padding / 4,
             ).withBack
         }
-        icon(Icon.done.copy(width = 1.rem, height = 1.rem), "") {
-            ::visible.invoke { checked() }
+        icon {
+            source = Icon.done.resize(1.rem)
+            ::description { if (this@Checkbox.checked()) "checked" else "unchecked" }
+            ::visible bind this@Checkbox.checked
         }
         onRemove(button.setOnClick {
-            _checked.value = !_checked.value
+            _checked.toggle()
         })
     }
 }
