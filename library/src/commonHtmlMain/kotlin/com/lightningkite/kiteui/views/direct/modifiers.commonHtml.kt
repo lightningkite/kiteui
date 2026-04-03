@@ -48,34 +48,36 @@ actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAd
 // by Claude - wrapper pattern for animation-aware weight changes
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
-    return write(object : NativeContainerElement(context) {
-        init {
-            native.tag = "div"
-            native.classes.add("noInteraction")
-            native.classes.add("kiteui-stack")
-            var previousAmount: Float? = null
-            reactive {
-                val newAmount = amount()
-                val oldAmount = previousAmount
-                previousAmount = newAmount
-                if (areAnimationsEnabled && fullyStarted && oldAmount != null && oldAmount != newAmount) {
-                    nativeAnimateWeight(oldAmount, newAmount)
-                } else {
-                    // Apply immediately (initial render or animations disabled)
-                    native.style.flexGrow = "$newAmount"
-                    native.style.flexShrink = "$newAmount"
-                    native.style.flexBasis = if (newAmount != 0f) "0" else "auto"
+    return lazyInjectModifierWriter {
+        object : NativeContainerElement(context) {
+            init {
+                native.tag = "div"
+                native.classes.add("noInteraction")
+                native.classes.add("kiteui-stack")
+                var previousAmount: Float? = null
+                reactive {
+                    val newAmount = amount()
+                    val oldAmount = previousAmount
+                    previousAmount = newAmount
+                    if (areAnimationsEnabled && fullyStarted && oldAmount != null && oldAmount != newAmount) {
+                        nativeAnimateWeight(oldAmount, newAmount)
+                    } else {
+                        // Apply immediately (initial render or animations disabled)
+                        native.style.flexGrow = "$newAmount"
+                        native.style.flexShrink = "$newAmount"
+                        native.style.flexBasis = if (newAmount != 0f) "0" else "auto"
+                    }
+                    parent?.native?.classes?.add("childHasWeight")
                 }
-                parent?.native?.classes?.add("childHasWeight")
+            }
+
+            override fun nativeAddChild(index: Int, element: Element) {
+                super.nativeAddChild(index, element)
+                element.underlyingNativeElement.themeBase = GetBaseTheme.fromParentNonCascading
+                Frame.internalAddChildStack(this, index, element)
             }
         }
-
-        override fun nativeAddChild(index: Int, element: Element) {
-            super.nativeAddChild(index, element)
-            element.underlyingNativeElement.themeBase = GetBaseTheme.fromParentNonCascading
-            Frame.internalAddChildStack(this, index, element)
-        }
-    }) {}
+    }
 }
 
 @ViewModifierDsl3

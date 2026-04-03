@@ -19,7 +19,6 @@ import platform.UIKit.UITapGestureRecognizer
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-
 @ViewModifierDsl3
 actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
@@ -40,88 +39,30 @@ actual fun ElementWriter.hintPopover(
     }
 }
 
-
 @ViewModifierDsl3
-actual fun ElementWriter.hasPopover(
-    requiresClick: Boolean,
-    preferredDirection: PopoverPreferredDirection,
-    setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
-): ElementWriter {
-    return beforeSetup {
-        val originalNavigator = pageNavigator
-        fun openDialog() {
-            dialogPageNavigator.navigate(object : Page {
-                override fun ViewWriter.render(): Unit = run {
-                    dismissBackground {
-                        centered.frame {
-                            with(split()) {
-                                pageNavigator = originalNavigator
-                                setup(object : PopoverContext {
-                                    override val calculationContext: CalculationContext
-                                        get() = this@beforeNextElementSetup
-
-                                    override fun close() {
-                                        dialogPageNavigator.dismiss()
-                                    }
-                                })
-                            }
-                        }
-                    }
-                }
-            })
-        }
-        if (this is Button) {
-            onClick { openDialog() }
-        } else {
-            val actionHolder = object : NSObject() {
-                @ObjCAction
-                fun eventHandler() = openDialog()
-            }
-            val rec = UITapGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
-            native.addGestureRecognizer(rec)
-        }
-    }
+actual fun ElementWriter.textPopover(message: String): ElementWriter = hintPopover {
+    themed(PopoverSemantic).text(message)
 }
-
-@ViewModifierDsl3
-actual fun ElementWriter.textPopover(message: String): ElementWriter = TODO()
 
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen {
     return beforeSetup {
-        lastSetWeight = amount
         native.extensionWeight = amount
     }
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
+actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
     return beforeSetup {
-        reactiveScope {
-            val amount = amount()
-            native.extensionWeight = amount
-            lastSetWeight = amount
-        }
+        native::extensionWeight { amount() }
     }
 }
 
 @ViewModifierDsl3
 actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
-    return this@align.beforeSetup {
-        lastSetHorizontalAlign = horizontal
-        lastSetVerticalAlign = vertical
-
-        // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
-        val effectiveHorizontal = if (horizontal == Align.Stretch) {
-            parent?.newChildHorizontalAlign ?: horizontal
-        } else horizontal
-
-        val effectiveVertical = if (vertical == Align.Stretch) {
-            parent?.newChildVerticalAlign ?: vertical
-        } else vertical
-
-        native.extensionHorizontalAlign = effectiveHorizontal
-        native.extensionVerticalAlign = effectiveVertical
+    return beforeSetup {
+        native.extensionHorizontalAlign = horizontal
+        native.extensionVerticalAlign = vertical
     }
 }
 
@@ -131,7 +72,9 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit
 ): ElementWriter {
-    return write(ScrollView(context, horizontal = horizontal, vertical = vertical),setup)
+    return lazyInjectModifierWriter(setup) {
+        ScrollView(context, horizontal = horizontal, vertical = vertical)
+    }
 }
 
 @ViewModifierDsl3
@@ -140,7 +83,7 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ElementWriter {
+): ElementWriter = lazyInjectModifierWriter(setup) {
     val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical)
 
     if (vertical) {
@@ -172,7 +115,7 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
         scrollView.tag = target
     }
 
-    return write(scrollView, setup)
+    scrollView
 }
 
 @ViewModifierDsl3
@@ -181,9 +124,9 @@ actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): El
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
+actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
     return beforeSetup {
-        reactiveScope {
+        reactive {
             native.extensionSizeConstraints = constraints()
             native.informParentOfSizeChange()
         }
@@ -192,51 +135,48 @@ actual fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: React
 
 // End
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme {
-    return this@shownWhen.beforeSetup(//                println("$native Committed $lastCommitted")//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
-//                        println("$native Committed $lastCommitted")
-//                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")//            println("$native Starting run $myRun")
-        {
-            native.hidden = !default
-            var runNumber = 0
-            var lastCommitted = 0
-            reactiveScope {
-                val value = condition()
-                val myRun = ++runNumber
+actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
+    return beforeSetup {
+        native.hidden = !default
+        var runNumber = 0
+        var lastCommitted = 0
+        reactive {
+            val value = condition()
+            val myRun = ++runNumber
 //            println("$native Starting run $myRun")
-                if (animationsEnabled) {
-                    if (native.hidden) {
-                        native.alpha = 0.0
-                        native.hidden = false
+            if (animationsEnabled) {
+                if (native.hidden) {
+                    native.alpha = 0.0
+                    native.hidden = false
 //                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")
-                        native.extensionCollapsed = true
-                    }
-                    animateIfAllowed(onComplete = {
-                        if (myRun > lastCommitted) {
-                            native.hidden = !value
-//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
-                            native.extensionCollapsed = false
-                            native.informParentOfSizeChange()
-                            lastCommitted = myRun
-//                        println("$native Committed $lastCommitted")
-                        } else {
-//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")
-                        }
-                    }) {
-                        if (!value) native.alpha = 0.0
-                        else native.alpha = opacity
-                        native.extensionCollapsed = !value
-                        native.informParentOfSizeChange()
-                        native.superview?.layoutIfNeeded()
-                    }
-                } else {
-                    native.extensionCollapsed = false
-                    native.alpha = opacity
-                    native.hidden = !value
-                    native.informParentOfSizeChange()
-                    lastCommitted = myRun
-//                println("$native Committed $lastCommitted")
+                    native.extensionCollapsed = true
                 }
+                animateIfAllowed(onComplete = {
+                    if (myRun > lastCommitted) {
+                        native.hidden = !value
+//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
+                        native.extensionCollapsed = false
+                        native.informParentOfSizeChange()
+                        lastCommitted = myRun
+//                        println("$native Committed $lastCommitted")
+                    } else {
+//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")
+                    }
+                }) {
+                    if (!value) native.alpha = 0.0
+                    else native.alpha = opacity
+                    native.extensionCollapsed = !value
+                    native.informParentOfSizeChange()
+                    native.superview?.layoutIfNeeded()
+                }
+            } else {
+                native.extensionCollapsed = false
+                native.alpha = opacity
+                native.hidden = !value
+                native.informParentOfSizeChange()
+                lastCommitted = myRun
+//                println("$native Committed $lastCommitted")
             }
-        })
+        }
+    }
 }
