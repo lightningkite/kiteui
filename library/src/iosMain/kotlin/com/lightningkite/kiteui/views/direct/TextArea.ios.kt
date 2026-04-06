@@ -194,6 +194,4 @@ private class TextAreaDelegate() : NSObject(), UITextViewDelegateProtocol {
     override fun textViewDidChange(textView: UITextView) {
         listeners.invokeAllSafe()
     }
-
-    override fun debugDescription(): String? = super<UITextViewDelegateProtocol>.debugDescription()
 }

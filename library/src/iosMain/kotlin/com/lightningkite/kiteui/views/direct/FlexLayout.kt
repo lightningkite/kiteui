@@ -3,6 +3,8 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Edges
+import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
+import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.views.extensionCollapsed
 import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.extensionSafeInsetPadding
