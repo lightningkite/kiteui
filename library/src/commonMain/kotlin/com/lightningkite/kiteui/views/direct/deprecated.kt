@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewModifierDsl3
-import com.lightningkite.kiteui.views.l2.LabelView
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.write
 import com.lightningkite.reactive.context.ReactiveContext

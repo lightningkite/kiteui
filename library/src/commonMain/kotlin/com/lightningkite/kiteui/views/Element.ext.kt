@@ -58,8 +58,8 @@ expect val Element.areAnimationsEnabled: Boolean
  */
 expect inline fun Element.withoutAnimation(action: () -> Unit)
 
-inline fun Element.withoutLoadingAnimations(block: CoroutineScope.() -> Unit) {
-    CoroutineScope(coroutineContext.minusKey(StatusListener.Key)).run(block)
+inline fun Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHelpers.() -> Unit) {
+    object : KiteUiCoroutineScopeHelpers, CoroutineScope by CoroutineScope(coroutineContext.minusKey(StatusListener.Key)) {}.run(block)
 }
 
 internal inline fun ContainerElement.beforeSetupContainer(crossinline action: Element.() -> Unit): ContainerElement =

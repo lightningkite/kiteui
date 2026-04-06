@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmInline
 
 /**
  * Platform-specific native element implementation.
@@ -187,35 +188,6 @@ abstract class NativeElementCommonCode internal constructor(override val context
         }
     }
 
-    /**
-     * Strategy for applying state-based theme modifications (loading, error, working states).
-     * Can be combined using the plus operator.
-     */
-    fun interface ElementSpecificTheming {
-        operator fun invoke(element: NativeElement): ThemeDerivation
-
-        operator fun plus(other: ElementSpecificTheming): ElementSpecificTheming {
-            return ElementSpecificTheming { e -> this(e) + other(e) }
-        }
-
-        operator fun plus(theme: ThemeDerivation): ElementSpecificTheming {
-            return ElementSpecificTheming { e -> this(e) + theme }
-        }
-
-        companion object {
-            /** Default state theming that applies loading/working/error semantics */
-            val loadingAndProcessing = ElementSpecificTheming { e ->
-                val t = e.foregroundProcesses.state.handle(
-                    success = { ThemeDerivation.None },
-                    notReady = { WorkingSemantic },
-                    exception = { WorkingSemantic }
-                )
-
-                if (!e.backgroundProcesses.state.success) t + LoadingSemantic else t
-            }
-        }
-    }
-
     @ExperimentalKiteUi
     var themeBase: GetBaseTheme = GetBaseTheme.fromParent
         set(value) {
@@ -223,16 +195,16 @@ abstract class NativeElementCommonCode internal constructor(override val context
             refreshTheming()
         }
 
-    final override var themeChoice: ThemeDerivation = ThemeDerivation.None
-        set(value) {
-            field = value
-            refreshTheming()
-        }
-
     @ExperimentalKiteUi
-    var elementSpecificTheming: ElementSpecificTheming = ElementSpecificTheming.loadingAndProcessing
+    var themePipeline: ThemePipeline = ThemePipeline(
+        ThemePipeline.Step.userChoice to null,
+        ThemePipeline.Step.processingStatus to ThemePipeline.Operation.processingTheming
+    )
+
+    final override var themeChoice: ThemeDerivation
+        get() = themePipeline.get(ThemePipeline.Step.userChoice, outermostElement)
         set(value) {
-            field = value
+            themePipeline.set(ThemePipeline.Step.userChoice, value)
             refreshTheming()
         }
 
@@ -258,7 +230,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
             }
             "refreshTheming will set! $source Base theme is ${base.id}"
         }
-        val t = themeChoice(base) + elementSpecificTheming(this)
+        val t = themePipeline.apply(outermostElement, base)
         debug { "refreshTheming will set to ${t.theme.id}!" }
         themeAndBack = t
     }
@@ -415,6 +387,104 @@ abstract class NativeElementCommonCode internal constructor(override val context
             return false
         }
         return true
+    }
+
+    class ThemePipeline(private val operations: ArrayList<Pair<Step, Operation?>>) {
+        constructor(vararg init: Pair<Step, Operation?>) : this(arrayListOf(*init))
+
+        @JvmInline
+        value class Step(val order: Float) {
+            companion object {
+                val elementStyling = Step(0f)       // 1. what the element chooses for itself
+                val userChoice = Step(0.2f)         // 2. what the user chooses for the element
+                val dynamicChoice = Step(0.4f)      // 3. what the user chooses for the element but reactive (dynamicThemed)
+                val elementStatus = Step(0.6f)      // 4. themes applied to the element because of its own internal state (selected, checked, disabled, etc.)
+                val processingStatus = Step(0.8f)   // 5. theming applied because of loading/processing of background/foreground tasks in the element
+            }
+        }
+
+        sealed interface Operation {
+            fun get(element: Element): ThemeDerivation
+            fun apply(element: Element, theme: Theme): ThemeAndBack = get(element)(theme)
+
+            operator fun plus(other: Operation): Operation = Chain(this, other)
+
+            data class Constant(val theme: ThemeDerivation) : Operation {
+                override fun get(element: Element): ThemeDerivation = theme
+            }
+            data class Variable(val theme: (Element) -> ThemeDerivation) : Operation {
+                override fun get(element: Element): ThemeDerivation = theme(element)
+            }
+            data class Chain(val left: Operation, val right: Operation): Operation {
+                override fun get(element: Element): ThemeDerivation =
+                    ThemeDerivation.Chain(left.get(element), right.get(element))
+
+                override fun apply(element: Element, theme: Theme): ThemeAndBack =
+                    left.apply(element, theme) + right.get(element)
+            }
+
+            companion object {
+                val processingTheming = Variable { element ->
+                    val element = element.underlyingNativeElement
+                    val t = element.foregroundProcesses.state.handle(
+                        success = { ThemeDerivation.None },
+                        notReady = { WorkingSemantic },
+                        exception = { WorkingSemantic }
+                    )
+                    if (!element.backgroundProcesses.state.success) t + LoadingSemantic else t
+                }
+            }
+        }
+
+        fun get(step: Step, element: Element): ThemeDerivation =
+            operations.find { it.first == step }?.second?.get(element) ?: ThemeDerivation.None
+
+        fun get(element: Element): ThemeDerivation =
+            operations.fold(null) { acc: ThemeDerivation?, (_, op) ->
+                when {
+                    acc == null -> op?.get(element)
+                    op == null -> acc
+                    else -> acc + op.get(element)
+                }
+            } ?: ThemeDerivation.None
+
+        fun apply(element: Element, theme: Theme): ThemeAndBack =
+            operations.fold(null) { acc: ThemeAndBack?, (_, op) ->
+                when {
+                    acc == null -> op?.apply(element, theme)
+                    op == null -> acc
+                    else -> acc + op.get(element)
+                }
+            } ?: theme.withoutBack
+
+        fun add(step: Step, op: Operation) {
+            val idx = operations.indexOfFirst { it.first == step }
+            if (idx == -1) {
+                operations.add(step to op)
+                operations.sortBy { it.first.order }
+            }
+            else {
+                val c = operations[idx].second
+                operations[idx] = step to (c?.plus(op) ?: op)
+            }
+        }
+
+        fun add(step: Step, theme: ThemeDerivation) = add(step, Operation.Constant(theme))
+        fun add(step: Step, theme: (Element) -> ThemeDerivation) = add(step, Operation.Variable(theme))
+
+        fun set(step: Step, op: Operation?) {
+            val idx = operations.indexOfFirst { it.first == step }
+            if (idx == -1) {
+                operations.add(step to op)
+                operations.sortBy { it.first.order }
+            }
+            else {
+                operations[idx] = step to op
+            }
+        }
+
+        fun set(step: Step, theme: ThemeDerivation?) = set(step, theme?.let(Operation::Constant))
+        fun set(step: Step, theme: (Element) -> ThemeDerivation) = set(step, Operation.Variable(theme))
     }
 }
 

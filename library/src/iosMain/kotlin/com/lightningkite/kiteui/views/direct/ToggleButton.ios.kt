@@ -25,7 +25,7 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
         })
 
         @OptIn(ExperimentalKiteUi::class)
-        elementSpecificTheming += ElementSpecificTheming {
+        themePipeline.add(ThemePipeline.Step.elementStatus) {
             if (_checked.value) SelectedSemantic
             else UnselectedSemantic
         }

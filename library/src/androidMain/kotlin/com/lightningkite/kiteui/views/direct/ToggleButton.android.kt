@@ -20,7 +20,7 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
     init {
         checked.addListener { refreshTheming() }
 
-        elementSpecificTheming += ElementSpecificTheming {
+        themePipeline.add(ThemePipeline.Step.elementStatus) {
             if (checkedProp.value) SelectedSemantic
             else UnselectedSemantic
         }

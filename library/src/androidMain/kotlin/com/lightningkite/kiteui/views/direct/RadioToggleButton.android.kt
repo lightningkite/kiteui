@@ -20,7 +20,7 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
     init {
         checked.addListener { refreshTheming() }
 
-        elementSpecificTheming += ElementSpecificTheming {
+        themePipeline.add(ThemePipeline.Step.elementStatus) {
             if (checkedProp.value) SelectedSemantic
             else UnselectedSemantic
         }

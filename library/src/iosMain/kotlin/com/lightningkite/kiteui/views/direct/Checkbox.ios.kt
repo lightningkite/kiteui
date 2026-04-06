@@ -4,7 +4,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.toggle
@@ -32,16 +31,19 @@ actual class Checkbox actual constructor(context: ElementContext) : NativeIntera
 
     init {
         @OptIn(ExperimentalKiteUi::class)
-        elementSpecificTheming += ThemeDerivation {
-            it.copy(
-                id = "rad",
-                outline = it.icon,
-                iconOverride = it.foreground,
-                outlineWidth = maxOf(it.outlineWidth, 1.dp),
-                gap = it.gap / 4,
-                padding = it.padding / 4,
-            ).withBack
-        }
+        themePipeline.add(
+            ThemePipeline.Step.elementStyling,
+            ThemeDerivation {
+                it.copy(
+                    id = "chkbox",
+                    outline = it.icon,
+                    iconOverride = it.foreground,
+                    outlineWidth = maxOf(it.outlineWidth, 1.dp),
+                    gap = it.gap / 4,
+                    padding = it.padding / 4,
+                ).withBack
+            }
+        )
         icon {
             source = Icon.done.resize(1.rem)
             ::description { if (this@Checkbox.checked()) "checked" else "unchecked" }

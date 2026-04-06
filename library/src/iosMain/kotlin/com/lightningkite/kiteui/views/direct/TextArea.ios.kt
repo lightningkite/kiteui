@@ -15,6 +15,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
+@OptIn(ExperimentalKiteUi::class)
 actual class TextArea actual constructor(context: ElementContext) : NativeElement(context), ElementWithAction {
     override val driverValue: String? get() = textAreaDriverValue()
     override val driverActions get() = super<NativeElement>.driverActions + textAreaDriverActions()
@@ -173,9 +174,9 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         }
 
     init {
-        @OptIn(ExperimentalKiteUi::class)
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ClickableSemantic
+        themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
+        themePipeline.add(ThemePipeline.Step.elementStatus) {
+            var t: ThemeDerivation = ThemeDerivation.None
             if (!enabled) t += DisabledSemantic
             if (textField.focused) t += FocusSemantic
             t

@@ -18,9 +18,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon<MutableReactive<BottomSheetState>?>(
-    null
-)
+private var ElementContext.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon(null)
 
 actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val native = FrameLayout()
@@ -223,15 +221,10 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
     override val native = FrameLayoutButton()
     override val control: UIControl get() = native
 
-    init {
-        @OptIn(com.lightningkite.kiteui.ExperimentalKiteUi::class)
-        elementSpecificTheming += ClickableSemantic
-    }
-
     @OverrideOnly
     override fun onStartup() {
         super.onStartup()
-        val e = bottomSheetState ?: return
+        val e = context.bottomSheetState ?: return
         onRemove(native.setOnClick {
             launch {
                 e set when (e()) {

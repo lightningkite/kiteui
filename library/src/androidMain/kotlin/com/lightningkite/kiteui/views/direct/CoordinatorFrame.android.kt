@@ -8,6 +8,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.UnsafeModifier
 import com.lightningkite.kiteui.models.CardSemantic
@@ -234,11 +235,12 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
     }
 }
 
+@OptIn(ExperimentalKiteUi::class)
 actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeElement(context) {
     actual override val underlyingNativeElement: CoordinatorDragHandle = this
 
     init {
-        elementSpecificTheming += CardSemantic
+        themePipeline.add(ThemePipeline.Step.elementStyling, CardSemantic)
     }
 
     override val native: BottomSheetDragHandleView = BottomSheetDragHandleView(context.activity).apply {
@@ -248,8 +250,7 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
-        native.setImageDrawable(drawableWithoutCorners(theme.theme.icon, Color.transparent, 0.px).apply {
-        })
+        native.setImageDrawable(drawableWithoutCorners(theme.theme.icon, Color.transparent, 0.px))
     }
 }
 

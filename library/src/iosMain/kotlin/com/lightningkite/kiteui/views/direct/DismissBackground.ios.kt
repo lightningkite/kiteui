@@ -44,7 +44,7 @@ actual class DismissBackground actual constructor(context: ElementContext) : Nat
 
     init {
         @OptIn(ExperimentalKiteUi::class)
-        elementSpecificTheming += DismissSemantic
+        themePipeline.add(ThemePipeline.Step.elementStyling, DismissSemantic)
     }
 }
 

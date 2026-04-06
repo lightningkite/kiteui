@@ -23,14 +23,21 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
             refreshTheming()
         }
 
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ClickableSemantic
-            if (!enabled) t += DisabledSemantic
-            if (control.highlighted) t += DownSemantic
-            if (control.focused) t += FocusSemantic
+    companion object {
+        private val statusThemes = ThemePipeline.Operation.Variable { e ->
+            val e = e.underlyingNativeElement as NativeInteractiveElement
+
+            var t: ThemeDerivation = ThemeDerivation.None
+            if (!e.enabled) t += DisabledSemantic
+            if (e.control.highlighted) t += DownSemantic
+            if (e.control.focused) t += FocusSemantic
             t
         }
+    }
+
+    init {
+        themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
+        themePipeline.add(ThemePipeline.Step.elementStatus, statusThemes)
     }
 
     init {
@@ -51,14 +58,21 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
             control.enabled = value
         }
 
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ClickableSemantic
-            if (!enabled) t += DisabledSemantic
-            if (control.highlighted) t += DownSemantic
-            if (control.focused) t += FocusSemantic
+    companion object {
+        private val statusThemes = ThemePipeline.Operation.Variable { e ->
+            val e = e.underlyingNativeElement as NativeInteractiveContainerElement
+
+            var t: ThemeDerivation = ThemeDerivation.None
+            if (!e.enabled) t += DisabledSemantic
+            if (e.control.highlighted) t += DownSemantic
+            if (e.control.focused) t += FocusSemantic
             t
         }
+    }
+
+    init {
+        themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
+        themePipeline.add(ThemePipeline.Step.elementStatus, statusThemes)
     }
 
     init {

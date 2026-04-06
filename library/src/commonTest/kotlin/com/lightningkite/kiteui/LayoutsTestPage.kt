@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 
 class LayoutsTestPage : Page {
     val checks = ArrayList<() -> Unit>()
-    override fun ViewWriter.render(): Unit {
+    override fun ElementWriter.CanAddTheme.render(): Unit {
         fun RView.parentRelativeRect() = parent!!.let { rectangleRelativeTo(it) }!!
         card.col {
             checks += { println(screenRectangle()) }
@@ -36,7 +36,7 @@ class LayoutsTestPage : Page {
                     assertEquals(true, parent?.themeAndBack?.padding)
                     assertEquals(
                         theme.gap.viewUnits,
-                        screenRectangle()?.top?.minus(above?.screenRectangle()?.bottom ?: 0.0) ?: 0.0,
+                        screenRectangle()?.top?.minus(above.underlyingNativeElement.screenRectangle()?.bottom ?: 0.0) ?: 0.0,
                         1.0
                     )
                 }
@@ -102,9 +102,9 @@ class LayoutsTestPage : Page {
  * @return The rectangle of this view in the other view's coordinate space, or null if either
  *         view doesn't have a screen rectangle (e.g., not visible or not yet laid out).
  */
-fun RView.rectangleRelativeTo(other: RView): Rect? {
-    val myRect = screenRectangle() ?: return null
-    val otherRect = other.screenRectangle() ?: return null
+fun Element.rectangleRelativeTo(other: Element): Rect? {
+    val myRect = underlyingNativeElement.screenRectangle() ?: return null
+    val otherRect = other.underlyingNativeElement.screenRectangle() ?: return null
     return Rect(
         left = myRect.left - otherRect.left,
         top = myRect.top - otherRect.top,

@@ -4,7 +4,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import platform.UIKit.UIControl
@@ -31,17 +30,20 @@ actual class RadioButton actual constructor(context: ElementContext) : NativeCon
 
     init {
         @OptIn(ExperimentalKiteUi::class)
-        elementSpecificTheming += ThemeDerivation {
-            it.copy(
-                id = "rad",
-                outline = it.icon,
-                iconOverride = it.foreground,
-                outlineWidth = maxOf(it.outlineWidth, 1.dp),
-                gap = it.gap / 4,
-                padding = it.padding / 4,
-                cornerRadii = CornerRadii.RatioOfSize(0.5f),
-            ).withBack
-        }
+        themePipeline.add(
+            ThemePipeline.Step.elementStyling,
+            ThemeDerivation {
+                it.copy(
+                    id = "radbtn",
+                    outline = it.icon,
+                    iconOverride = it.foreground,
+                    outlineWidth = maxOf(it.outlineWidth, 1.dp),
+                    gap = it.gap / 4,
+                    padding = it.padding / 4,
+                    cornerRadii = CornerRadii.RatioOfSize(0.5f),
+                ).withBack
+            }
+        )
 
         centered.icon {
             source = Icon.dot.resize(1.rem)

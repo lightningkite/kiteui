@@ -3,6 +3,12 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
+import com.lightningkite.kiteui.models.ThemeDerivation
+
+private val enabledTheming = NativeElementCommonCode.ThemePipeline.Operation.Variable { e ->
+    val e = e.underlyingNativeElement as InteractiveElement
+    if (!e.enabled) DisabledSemantic else ThemeDerivation.None
+}
 
 @OptIn(ExperimentalKiteUi::class)
 actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
@@ -14,10 +20,7 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
         }
 
     init {
-        elementSpecificTheming += ElementSpecificTheming { _ ->
-            if (!enabled) ClickableSemantic + DisabledSemantic
-            else ClickableSemantic
-        }
+        themePipeline.add(ThemePipeline.Step.elementStatus, enabledTheming)
     }
 }
 
@@ -31,9 +34,6 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
         }
 
     init {
-        elementSpecificTheming += ElementSpecificTheming { _ ->
-            if (!enabled) ClickableSemantic + DisabledSemantic
-            else ClickableSemantic
-        }
+        themePipeline.add(ThemePipeline.Step.elementStatus, enabledTheming)
     }
 }

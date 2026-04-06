@@ -76,28 +76,52 @@ inline fun ElementWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-fun ElementWriter.h1(text: String) = h1 { content = text }
+fun ElementWriter.h1(text: String, align: Align? = null) = h1 {
+    content = text
+    this.align = align
+}
 
 @ViewDsl
-fun ElementWriter.h2(text: String) = h2 { content = text }
+fun ElementWriter.h2(text: String, align: Align? = null) = h2 {
+    content = text
+    this.align = align
+}
 
 @ViewDsl
-fun ElementWriter.h3(text: String) = h3 { content = text }
+fun ElementWriter.h3(text: String, align: Align? = null) = h3 {
+    content = text
+    this.align = align
+}
 
 @ViewDsl
-fun ElementWriter.h4(text: String) = h4 { content = text }
+fun ElementWriter.h4(text: String, align: Align? = null) = h4 {
+    content = text
+    this.align = align
+}
 
 @ViewDsl
-fun ElementWriter.h5(text: String) = h5 { content = text }
+fun ElementWriter.h5(text: String, align: Align? = null) = h5 {
+    content = text
+    this.align = align
+}
 
 @ViewDsl
-fun ElementWriter.h6(text: String) = h6 { content = text }
+fun ElementWriter.h6(text: String, align: Align? = null) = h6 {
+    content = text
+    this.align = align
+}
 
 @ViewDsl
-fun ElementWriter.text(text: String) = text { content = text }
+fun ElementWriter.text(text: String, align: Align? = null) = text {
+    content = text
+    this.align = align
+}
 
 @ViewDsl
-fun ElementWriter.subtext(text: String) = subtext { content = text }
+fun ElementWriter.subtext(text: String, align: Align? = null) = subtext {
+    content = text
+    this.align = align
+}
 
 @ViewDsl
 fun ElementWriter.checkbox(checked: MutableReactive<Boolean>) = checkbox { this.checked bind checked }

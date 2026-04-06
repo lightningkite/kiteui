@@ -20,14 +20,6 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
     override val driverValue: String? get() = formattedTextInputDriverValue()
     override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
 
-    init {
-        elementSpecificTheming += ElementSpecificTheming {
-            var t: ThemeDerivation = ThemeDerivation.None
-            if (!enabled) t += DisabledSemantic
-            t
-        }
-    }
-
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->

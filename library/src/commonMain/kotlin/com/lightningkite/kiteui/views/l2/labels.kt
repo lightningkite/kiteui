@@ -22,7 +22,7 @@ data object LabelSemantic : Semantic("label") {
 }
 
 /**
- * Semantic for decreasing the space between labels and main content
+ * Semantic for sections with a label, used to control the space between labels and main content
  *
  * Automatically applied to [labels][label]
  * */
@@ -33,7 +33,7 @@ data object LabelGapSemantic : Semantic("labelgp") {
     )
 }
 
-class LabelView(private val container: RowOrCol): LinearLayoutElement by container {
+class LabeledView(private val container: RowOrCol): LinearLayoutElement by container {
     constructor(context: ElementContext) : this(RowOrCol(context))
 
     private val label = atStart.themed(LabelSemantic).text()
@@ -41,16 +41,19 @@ class LabelView(private val container: RowOrCol): LinearLayoutElement by contain
 
     init {
         @OptIn(ExperimentalKiteUi::class)
-        container.elementSpecificTheming += LabelGapSemantic    // apply label gap to column
+        container.themePipeline.add(
+            NativeElementCommonCode.ThemePipeline.Step.elementStyling,
+            LabelGapSemantic
+        )
     }
 }
 
-inline fun ElementWriter.label(setup: LabelView.() -> Unit = {}): LabelView {
+inline fun ElementWriter.label(setup: LabeledView.() -> Unit = {}): LabeledView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(LabelView(context), setup)
+    return write(LabeledView(context), setup)
 }
 
-inline fun ElementWriter.label(label: String, setup: LinearLayoutElement.() -> Unit): LabelView {
+inline fun ElementWriter.label(label: String, setup: LinearLayoutElement.() -> Unit): LabeledView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return label {
         content = label
@@ -58,7 +61,7 @@ inline fun ElementWriter.label(label: String, setup: LinearLayoutElement.() -> U
     }
 }
 
-inline fun ElementWriter.field(label: String, content: ElementWriter.CanAddTheme.() -> Unit): LabelView {
+inline fun ElementWriter.field(label: String, content: ElementWriter.CanAddTheme.() -> Unit): LabeledView {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     return label(label) {
         fieldTheme.content()

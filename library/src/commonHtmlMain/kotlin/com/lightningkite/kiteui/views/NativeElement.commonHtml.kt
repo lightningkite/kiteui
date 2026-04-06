@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
+import com.lightningkite.kiteui.views.NativeElementCommonCode.ThemePipeline
 
 actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
     var native = FutureElement().also { it.classes.add("kui") }

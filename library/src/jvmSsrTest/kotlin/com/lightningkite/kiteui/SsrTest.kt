@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.flat2
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.models.turns
@@ -22,7 +23,7 @@ class SsrTest {
         val context = ElementContext("/")
         val writer = Frame(context)
         with(writer) {
-            dynamicTheme(Theme.flat2("f2", hue = 0.6.turns)).scrolling.col {
+            themed(ThemeDerivation(Theme.flat2("f2", hue = 0.6.turns))).scrolling.col {
                 centered.sizeConstraints(width = 50.rem).card.col {
                     centered.h1("Welcome to my Website")
                     centered.text("I hope you like it!")

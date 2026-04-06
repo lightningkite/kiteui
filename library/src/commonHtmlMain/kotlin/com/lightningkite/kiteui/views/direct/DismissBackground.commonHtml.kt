@@ -23,11 +23,14 @@ actual class DismissBackground actual constructor(context: ElementContext) : Nat
         element.native.addEventListener("click") { ev -> ev.stopImmediatePropagation() }
     }
 
-    actual fun onClick(action: suspend () -> Unit): Unit {
+    actual fun onClick(action: suspend () -> Unit) {
         native.replaceEventListener("click") { launch { action() } }
     }
 
     init {
-        elementSpecificTheming += DismissSemantic
+        themePipeline.add(
+            ThemePipeline.Step.elementStyling,
+            DismissSemantic
+        )
     }
 }

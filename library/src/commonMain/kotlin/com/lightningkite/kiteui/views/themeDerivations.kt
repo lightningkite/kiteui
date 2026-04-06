@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.UnsafeModifier
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.ElementWriter.CanAddTheme
 import com.lightningkite.reactive.context.ReactiveContext
+import com.lightningkite.reactive.context.reactive
 
 private class ThemedWriter(
     val base: CanAddTheme,
@@ -56,8 +58,15 @@ private class ThemedWriter(
  * ```
  * */
 fun Element.applyDynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
-    val existing = themeChoice
-    ::themeChoice { calculate()?.let { existing + it } ?: existing }
+    val e = underlyingNativeElement
+    @OptIn(ExperimentalKiteUi::class)
+    reactive {
+        e.themePipeline.set(
+            NativeElementCommonCode.ThemePipeline.Step.dynamicChoice,
+            calculate()
+        )
+        e.refreshTheming()
+    }
 }
 
 @ViewModifierDsl3

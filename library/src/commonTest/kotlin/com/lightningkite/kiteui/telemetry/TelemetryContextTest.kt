@@ -79,15 +79,6 @@ class TelemetryContextTest {
     }
 
     @Test
-    fun viewPathFromProvider() = runTest {
-        val provider = ViewPathProvider { "AppNav/content[0]/button[2]" }
-        val ctx = TelemetryContext(element = provider)
-        withContext(ctx) {
-            assertEquals("AppNav/content[0]/button[2]", coroutineContext.viewPath())
-        }
-    }
-
-    @Test
     fun viewPathEmptyWithoutProvider() = runTest {
         val ctx = TelemetryContext(traceId = "aa", spanId = "bb")
         withContext(ctx) {

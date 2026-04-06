@@ -22,7 +22,7 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
         })
 
         @OptIn(ExperimentalKiteUi::class)
-        elementSpecificTheming += ElementSpecificTheming {
+        themePipeline.add(ThemePipeline.Step.elementStatus) {
             if (_checked.value) SelectedSemantic
             else UnselectedSemantic
         }
