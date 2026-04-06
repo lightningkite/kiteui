@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views
 
 
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
@@ -14,8 +15,6 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -30,6 +29,8 @@ import platform.UIKit.*
 import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.experimental.ExperimentalNativeApi
 
 fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> Unit) {
     setup({ theme }, app)
@@ -81,18 +82,19 @@ fun UIViewController.kiteUi(context: ElementContext = ElementContext(this@kiteUi
     val safeInsetProperty = Signal(Edges.ZERO)
 
     @OptIn(DelicateCoroutinesApi::class)
-    val writer = object : ViewWriter(), CalculationContext {
+    val writer = object : ViewWriter {
         override val coroutineContext: CoroutineContext = scope
         override val context: ElementContext = context
-        override val representsView: RView? = null
-        override fun willAddChild(view: RView) {
+        @OverrideOnly
+        override fun willAddChild(element: Element) {
         }
-        override fun addChild(view: RView) {
-            this@kiteUi.view.addSubview(view.native)
+        @OverrideOnly
+        override fun addChild(element: Element) {
+            this@kiteUi.view.addSubview(element.native)
         }
     }
-    writer.safeInsets = safeInsetProperty
-    val created = writer.produceExactlyOne { app() }
+    context.safeInsets = safeInsetProperty
+    val created = writer.produceExactlyOneView { app() }
 
     val subview = created.native
     subview.translatesAutoresizingMaskIntoConstraints = false
@@ -177,16 +179,15 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
     systemBarBackground.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
     systemBarBackground.bottomAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.topAnchor).setActive(true)
     kiteUi {
-        reactiveScope {
+        reactive {
             systemBarBackground.backgroundColor =
                 themeCalculation()[SystemBarSemantic].theme.background.closestColor().toUiColor()
         }
-        reactiveScope {
+        reactive {
             view.backgroundColor = themeCalculation()[BarSemantic].theme.background.closestColor().toUiColor()
         }
-        beforeNextElementSetup {
+        beforeSetup {
             ::themeChoice { ThemeDerivation.SetAsBase(themeCalculation()) }
         }.app()
     }
-
 }

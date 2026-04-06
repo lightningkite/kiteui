@@ -26,7 +26,7 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
         if (view.hidden || view.extensionCollapsed == true) return@zip
-        if(view is RView.BlurBackgroundView) {
+        if(view is NativeElement.BlurBackgroundView) {
             view.setPsuedoframe(0.0, 0.0, mySize.width, mySize.height)
             return@zip
         }
@@ -71,7 +71,7 @@ fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<S
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
         if (view.hidden || view.extensionCollapsed == true) return@zip
-        if(view is RView.BlurBackgroundView) {
+        if(view is NativeElement.BlurBackgroundView) {
             view.setPsuedoframe(0.0, 0.0, mySize.width, mySize.height)
             return@zip
         }
@@ -106,7 +106,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
     if (!pointInside(point, withEvent)) return null
     for (it in subviews.asReversed()) {
         it as UIView
-        if(it is RView.BlurBackgroundView) continue
+        if(it is NativeElement.BlurBackgroundView) continue
 //        println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()}")
         if (it.hidden) {
 //            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.hidden")
@@ -187,7 +187,7 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
     return subviews.mapIndexed { index: Int, it: Any? ->
         it as UIView
         if (it.hidden || it.extensionCollapsed == true) return@mapIndexed Size()
-        if(it is RView.BlurBackgroundView) {
+        if(it is NativeElement.BlurBackgroundView) {
             return@mapIndexed Size()
         }
         val measureInput = remaining.copy(width = remaining.width, height = remaining.height)

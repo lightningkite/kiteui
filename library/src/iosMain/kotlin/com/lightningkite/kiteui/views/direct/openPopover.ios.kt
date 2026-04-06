@@ -1,24 +1,14 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.Color
-import com.lightningkite.kiteui.models.CornerRadii
-import com.lightningkite.kiteui.models.DismissSemantic
-import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.models.PopoverSemantic
-import com.lightningkite.kiteui.models.SemanticOverrides
-import com.lightningkite.kiteui.models.ThemeDerivation
-import com.lightningkite.kiteui.models.dp
-import com.lightningkite.kiteui.models.override
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.closePopovers
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
-import com.lightningkite.kiteui.views.popoverWriter
 
-actual fun RView.openPopover(
+actual fun Element.openPopover(
     preferredDirection: PopoverPreferredDirection,
     createMenu: Frame.() -> Unit
 ) {
-    var willRemove: RView? = null
+    var willRemove: Element? = null
     val f= overlayFrame!!
     f.popoverWriter {
         willRemove?.let { f.removeChild(it) }
@@ -43,9 +33,9 @@ actual fun RView.openPopover(
             }
             native.anchor = preferredDirection to this@openPopover.native
             onClick {
-                closePopovers()
+                context.closePopovers()
             }
-            PopoverSemantic.onNext.frame {
+            themed(PopoverSemantic).frame {
                 createMenu()
             }
         }

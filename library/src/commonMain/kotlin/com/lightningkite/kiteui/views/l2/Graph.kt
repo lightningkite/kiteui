@@ -4,8 +4,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 import com.lightningkite.kiteui.views.canvas.TextAlign
 import com.lightningkite.kiteui.views.canvas.clear
@@ -393,7 +391,7 @@ open class GraphDelegate : CanvasDelegate() {
     }
 }
 
-class GraphView(private val canvas: Canvas) : Element by canvas, GraphDelegate() {
+class GraphCanvas(private val canvas: Canvas) : Element by canvas, GraphDelegate() {
     constructor(context: ElementContext) : this(Canvas(context))
 
     init {
@@ -402,12 +400,12 @@ class GraphView(private val canvas: Canvas) : Element by canvas, GraphDelegate()
 }
 
 /**
- * Extension function to create a graph canvas with the given setup.
+ * Create a [GraphCanvas] with the given setup.
  */
 @OptIn(ExperimentalContracts::class)
-inline fun ElementWriter.graph(setup: GraphView.() -> Unit = {}): GraphView {
+inline fun ElementWriter.graph(setup: GraphCanvas.() -> Unit = {}): GraphCanvas {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(GraphView(context), setup)
+    return write(GraphCanvas(context), setup)
 }
 
 /**
@@ -415,8 +413,8 @@ inline fun ElementWriter.graph(setup: GraphView.() -> Unit = {}): GraphView {
  */
 inline fun ElementWriter.lineGraph(
     data: List<Point>,
-    setup: GraphView.() -> Unit = {}
-): GraphView {
+    setup: GraphCanvas.() -> Unit = {}
+): GraphCanvas {
     return graph {
         this.data = data
         setup()
@@ -431,8 +429,8 @@ inline fun ElementWriter.lineGraph(
 @JsName("lineGraphFromYValues")
 inline fun ElementWriter.lineGraph(
     yValues: List<Double>,
-    setup: GraphView.() -> Unit = {}
-): GraphView {
+    setup: GraphCanvas.() -> Unit = {}
+): GraphCanvas {
     val points = yValues.mapIndexed { index, y -> Point(index.toDouble(), y) }
     return lineGraph(points, setup)
 }
@@ -444,7 +442,7 @@ inline fun ElementWriter.lineGraph(
 @JsName("lineGraphFromPairs")
 inline fun ElementWriter.lineGraph(
     points: List<Pair<Double, Double>>,
-    setup: GraphView.() -> Unit = {}
-): GraphView {
+    setup: GraphCanvas.() -> Unit = {}
+): GraphCanvas {
     return lineGraph(points.map { Point(it.first, it.second) }, setup)
 }

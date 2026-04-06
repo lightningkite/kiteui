@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -88,9 +89,7 @@ object ThemeTesterPage : DocPage {
                             it.name in setOf("compact", "down", "hover", "selected", "disabled", "embedded")
                         }) {
                             row {
-                                centered.checkbox {
-                                    checked bind selectedSemantics.contains(option.name)
-                                }
+                                centered.checkbox(selectedSemantics.contains(option.name))
                                 centered.text(option.name)
                                 textPopover(option.description).icon(Icon.help, "")
                             }
@@ -178,8 +177,6 @@ object ThemeTesterPage : DocPage {
                             h4("Nested Semantic Test")
                             text("Below shows the same semantics nested inside themselves:")
 
-
-
                             dynamicThemed {
                                 var derivation: ThemeDerivation = ThemeDerivation.None
                                 for (semanticName in selectedSemantics()) {
@@ -192,8 +189,6 @@ object ThemeTesterPage : DocPage {
                             }.col {
                                 text("Nested Level 1")
 
-
-
                                 dynamicThemed {
                                     var derivation: ThemeDerivation = ThemeDerivation.None
                                     for (semanticName in selectedSemantics()) {
@@ -205,8 +200,6 @@ object ThemeTesterPage : DocPage {
                                     derivation
                                 }.col {
                                     text("Nested Level 2")
-
-
 
                                     col {
                                         text("Nested Level 3")
