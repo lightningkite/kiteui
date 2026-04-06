@@ -197,7 +197,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     @ExperimentalKiteUi
     var themePipeline: ThemePipeline = ThemePipeline(
-        ThemePipeline.Step.userChoice to null,
+        ThemePipeline.Step.userChoice to null,  // pre-allocate (likely)
         ThemePipeline.Step.processingStatus to ThemePipeline.Operation.processingTheming
     )
 

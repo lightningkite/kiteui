@@ -28,7 +28,7 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
             val e = e.underlyingNativeElement as NativeInteractiveElement
 
             var t: ThemeDerivation = ThemeDerivation.None
-            if (!e.enabled) t += DisabledSemantic
+            if (!e.control.enabled) t += DisabledSemantic
             if (e.control.highlighted) t += DownSemantic
             if (e.control.focused) t += FocusSemantic
             t
@@ -63,7 +63,7 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
             val e = e.underlyingNativeElement as NativeInteractiveContainerElement
 
             var t: ThemeDerivation = ThemeDerivation.None
-            if (!e.enabled) t += DisabledSemantic
+            if (!e.control.enabled) t += DisabledSemantic
             if (e.control.highlighted) t += DownSemantic
             if (e.control.focused) t += FocusSemantic
             t

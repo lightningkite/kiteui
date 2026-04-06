@@ -9,8 +9,11 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.confirmDanger
 import com.lightningkite.kiteui.views.l2.applySafeInsets
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
+import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.kiteui.views.l2.field
+import com.lightningkite.kiteui.views.l2.label
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.reactive.core.Signal
 
 @Routable("sample/dialog")
 object DialogSamplesPage : Page {

@@ -6,8 +6,7 @@ import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeDerivation
 
 private val enabledTheming = NativeElementCommonCode.ThemePipeline.Operation.Variable { e ->
-    val e = e.underlyingNativeElement as InteractiveElement
-    if (!e.enabled) DisabledSemantic else ThemeDerivation.None
+    if (!e.native.isEnabled) DisabledSemantic else ThemeDerivation.None
 }
 
 @OptIn(ExperimentalKiteUi::class)
