@@ -39,6 +39,20 @@ object DialogSamplesPage : Page {
                     dialog { close ->
                         col {
                             text("INPUT TIME!")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
+                            text("Test")
                             field("Field") {
                                 textInput {  }
                             }
