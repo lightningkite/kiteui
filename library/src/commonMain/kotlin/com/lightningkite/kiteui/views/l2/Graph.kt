@@ -1,7 +1,10 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
+import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 import com.lightningkite.kiteui.views.canvas.TextAlign
@@ -15,6 +18,10 @@ import com.lightningkite.kiteui.views.canvas.strokePaint
 import com.lightningkite.kiteui.views.canvas.textAlign
 import com.lightningkite.kiteui.views.canvas.width
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.write
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 import kotlin.math.*
@@ -28,7 +35,7 @@ data class Point(val x: Double, val y: Double)
  * Delegate class for drawing graphs on a Canvas.
  * This provides basic graphing functionality with customizable appearance.
  */
-class GraphDelegate : CanvasDelegate() {
+open class GraphDelegate : CanvasDelegate() {
     // Data to be displayed on the graph
     var data: List<Point> = emptyList()
 
@@ -36,37 +43,60 @@ class GraphDelegate : CanvasDelegate() {
     private var _lineColor: Color? = null // Color.blue
     var lineColor: Color
         get() = _lineColor ?: theme.foreground.closestColor()
-        set(value) { _lineColor = value }
+        set(value) {
+            _lineColor = value
+        }
+
     private var _pointColor: Color? = null // Color.red
     var pointColor: Color
         get() = _pointColor ?: theme.foreground.closestColor()
-        set(value) { _pointColor = value }
+        set(value) {
+            _pointColor = value
+        }
+
     private var _gridColor: Color? = null // Color(0.8f, 0.8f, 0.8f, 1.0f)
     var gridColor: Color
         get() = _gridColor ?: theme.background.closestColor().highlight(0.1f)
-        set(value) { _gridColor = value }
+        set(value) {
+            _gridColor = value
+        }
+
     private var _axisColor: Color? = null // Color.black
     var axisColor: Color
         get() = _axisColor ?: theme.foreground.closestColor()
-        set(value) { _axisColor = value }
+        set(value) {
+            _axisColor = value
+        }
+
     private var _textColor: Color? = null // Color.black
     var textColor: Color
         get() = _textColor ?: theme.foreground.closestColor()
-        set(value) { _textColor = value }
+        set(value) {
+            _textColor = value
+        }
     var showGrid: Boolean = true
     var showPoints: Boolean = true
+
     private var _pointSize: Dimension? = null // 5.0.dp
     var pointSize: Dimension
         get() = _pointSize ?: theme.padding.left
-        set(value) { _pointSize = value }
+        set(value) {
+            _pointSize = value
+        }
+
     private var _lineWidth: Dimension? = null // 2.0.dp
     var lineWidth: Dimension
         get() = _lineWidth ?: 1.dp
-        set(value) { _lineWidth = value }
+        set(value) {
+            _lineWidth = value
+        }
+
     private var _padding: Dimension? = null // 0.dp
     var padding: Dimension
         get() = _padding ?: (theme.font.size * 4)
-        set(value) { _padding = value }
+        set(value) {
+            _padding = value
+        }
 
     // Axis labels
     var xAxisLabel: String = "X"
@@ -251,7 +281,7 @@ class GraphDelegate : CanvasDelegate() {
         val width = context.width
         val height = context.height
         val paddingCanvas = padding.canvasUnits
-        if(width < paddingCanvas * 2 || height < paddingCanvas * 2) return
+        if (width < paddingCanvas * 2 || height < paddingCanvas * 2) return
 
         with(context) {
             strokePaint = axisColor
@@ -363,13 +393,21 @@ class GraphDelegate : CanvasDelegate() {
     }
 }
 
+class GraphView(private val canvas: Canvas) : Element by canvas, GraphDelegate() {
+    constructor(context: ElementContext) : this(Canvas(context))
+
+    init {
+        canvas.delegate = this as GraphDelegate
+    }
+}
+
 /**
  * Extension function to create a graph canvas with the given setup.
  */
-inline fun ElementWriter.graph(setup: GraphDelegate.() -> Unit = {}): Canvas {
-    return canvas {
-        delegate = GraphDelegate().apply(setup)
-    }
+@OptIn(ExperimentalContracts::class)
+inline fun ElementWriter.graph(setup: GraphView.() -> Unit = {}): GraphView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(GraphView(context), setup)
 }
 
 /**
@@ -377,8 +415,8 @@ inline fun ElementWriter.graph(setup: GraphDelegate.() -> Unit = {}): Canvas {
  */
 inline fun ElementWriter.lineGraph(
     data: List<Point>,
-    setup: GraphDelegate.() -> Unit = {}
-): Canvas {
+    setup: GraphView.() -> Unit = {}
+): GraphView {
     return graph {
         this.data = data
         setup()
@@ -393,8 +431,8 @@ inline fun ElementWriter.lineGraph(
 @JsName("lineGraphFromYValues")
 inline fun ElementWriter.lineGraph(
     yValues: List<Double>,
-    setup: GraphDelegate.() -> Unit = {}
-): Canvas {
+    setup: GraphView.() -> Unit = {}
+): GraphView {
     val points = yValues.mapIndexed { index, y -> Point(index.toDouble(), y) }
     return lineGraph(points, setup)
 }
@@ -406,7 +444,7 @@ inline fun ElementWriter.lineGraph(
 @JsName("lineGraphFromPairs")
 inline fun ElementWriter.lineGraph(
     points: List<Pair<Double, Double>>,
-    setup: GraphDelegate.() -> Unit = {}
-): Canvas {
+    setup: GraphView.() -> Unit = {}
+): GraphView {
     return lineGraph(points.map { Point(it.first, it.second) }, setup)
 }
