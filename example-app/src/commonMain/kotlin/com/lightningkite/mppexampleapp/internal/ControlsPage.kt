@@ -105,9 +105,9 @@ object ControlsPage : Page {
                         onClick {
                             delay(1000L);
                             context.toast("OK! RUN!", 3.seconds)
-                        }; text {
-                        content = "Sample"
-                    }; ::enabled { booleanContent() }
+                        };
+                        text { content = "Sample" }
+                        ::enabled bind booleanContent
                     }
                     card.button {
                         var error = false

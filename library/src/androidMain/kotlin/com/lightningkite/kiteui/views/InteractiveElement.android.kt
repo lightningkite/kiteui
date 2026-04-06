@@ -20,6 +20,7 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
         }
 
     init {
+        themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
         themePipeline.add(ThemePipeline.Step.elementStatus, enabledTheming)
     }
 }
@@ -34,6 +35,7 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
         }
 
     init {
+        themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
         themePipeline.add(ThemePipeline.Step.elementStatus, enabledTheming)
     }
 }
