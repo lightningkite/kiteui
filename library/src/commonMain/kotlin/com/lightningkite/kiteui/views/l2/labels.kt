@@ -40,11 +40,7 @@ class LabeledView(private val container: RowOrCol): LinearLayoutElement by conta
     var content: String by label::content
 
     init {
-        @OptIn(ExperimentalKiteUi::class)
-        container.themePipeline.add(
-            NativeElementCommonCode.ThemePipeline.Step.elementStyling,
-            LabelGapSemantic
-        )
+        themeChoice += LabelGapSemantic
     }
 }
 
