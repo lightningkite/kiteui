@@ -78,15 +78,4 @@ class WorkAndLoadTracker(
         scope.onRemove(r)
         return r
     }
-
-
-    val statusListener = object : StatusListener {
-        override fun working(readable: Reactive<*>) {
-            listenForWorking(readable)
-        }
-
-        override fun loading(readable: Reactive<*>) {
-            listenForStatus(readable)
-        }
-    }
 }

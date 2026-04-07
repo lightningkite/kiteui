@@ -10,7 +10,7 @@ import kotlin.contracts.contract
 import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
-abstract class ViewWriter: CoroutineScopeHelpers() {
+abstract class ViewWriter: CoroutineScopeHelpers {
     abstract val context: RContext
     abstract fun willAddChild(view: RView)
     abstract fun addChild(view: RView)

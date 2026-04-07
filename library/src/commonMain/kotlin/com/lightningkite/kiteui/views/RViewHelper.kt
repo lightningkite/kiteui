@@ -498,13 +498,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewP
             }
         })
         add(object : StatusListener {
-            override fun working(reactive: Reactive<*>) {
-                listenForWorking(reactive)
-            }
-
-            override fun loading(reactive: Reactive<*>) {
-                listenForStatus(reactive)
-            }
+            override fun watchBackgroundProcess(status: Reactive<*>): Release = listenForStatus(status)
+            override fun watchForegroundProcess(status: Reactive<*>): Release = listenForWorking(status)
         })
         // Use ssrDispatcher if set (for SSR synchronous execution), otherwise use Main dispatcher
         add(context.ssrDispatcher ?: Dispatchers.Main.immediate)

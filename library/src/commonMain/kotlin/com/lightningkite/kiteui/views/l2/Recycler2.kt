@@ -24,7 +24,7 @@ class Recycler2(
     val vertical: Boolean = true,
     val refreshAction: Action? = null,
     var log: Log? = null//ConsoleRoot.tag("Recycler2"),
-): CoroutineScopeHelpers() {
+): CoroutineScopeHelpers {
     override val coroutineContext: CoroutineContext
         get() = outerFrame.coroutineContext
     val outerFrame: Frame
