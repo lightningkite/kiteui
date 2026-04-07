@@ -1,25 +1,25 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.direct.numberInput
-import com.lightningkite.kiteui.views.l2.LabelSemantic
-import com.lightningkite.kiteui.views.l2.label
 import com.lightningkite.kiteui.views.l2.toast
-import com.lightningkite.kiteui.views.scrollsHorizontally
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.core.MutableReactiveValue
+import com.lightningkite.reactive.core.Signal
+import com.lightningkite.reactive.core.remember
+import com.lightningkite.reactive.extensions.equalTo
+import com.lightningkite.reactive.extensions.invokeAllSafe
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.datetime.*
 import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.datetime.*
 
 @Routable("controls")
 object ControlsPage : Page {
@@ -92,8 +92,8 @@ object ControlsPage : Page {
 
             card.col {
                 h2 { content = "Buttons" }
-                scrollsHorizontally.row {
-                    expanding.space {}
+                scrollingHorizontally.row {
+                    expanding.space()
                     centered.important.compact.compact.hintPopover {
                         text("Hint")
                     }.button {
@@ -103,9 +103,9 @@ object ControlsPage : Page {
                     }
                     button {
                         onClick {
-                            delay(1000L);
+                            delay(1000L)
                             context.toast("OK! RUN!", 3.seconds)
-                        };
+                        }
                         text { content = "Sample" }
                         ::enabled bind booleanContent
                     }
@@ -118,8 +118,8 @@ object ControlsPage : Page {
                                 if (!it.ok) throw Exception(it.text())
                             }
                             else delay(100)
-                        };
-                        text { content = "Card" };
+                        }
+                        text { content = "Card" }
                         ::enabled { booleanContent() }
                     }
                     important.button {
@@ -131,30 +131,30 @@ object ControlsPage : Page {
                     critical.button {
                         text("Critical")
 
-                        onClick { delay(1000L) };
+                        onClick { delay(1000L) }
                         ::enabled { booleanContent() }
                     }
                     warning.button {
                         text("Warning")
 
-                        onClick { delay(1000L) };
+                        onClick { delay(1000L) }
                         ::enabled { booleanContent() }
                     }
                     danger.button {
                         text("Danger")
 
-                        onClick { delay(1000L) };
+                        onClick { delay(1000L) }
                         ::enabled { booleanContent() }
                     }
-                    expanding.space {}
+                    expanding.space()
                 }
 //                errorText()
             }
 
             card.col {
                 h2 { content = "Toggle Buttons" }
-                scrollsHorizontally.row {
-                    weight(1f).space {}
+                scrollingHorizontally.row {
+                    expanding.space()
                     toggleButton {
                         checked bind booleanContent; row {
                         icon(
@@ -183,14 +183,14 @@ object ControlsPage : Page {
                         ); centered.text { content = "Critical" }
                     }
                     }
-                    weight(1f).space {}
+                    expanding.space()
                 }
             }
 
             card.col {
                 h2 { content = "Menus" }
-                scrollsHorizontally.row {
-                    weight(1f).space {}
+                scrollingHorizontally.row {
+                    expanding.space()
                     menuButton {
                         text("Menu")
                         opensMenu {
@@ -200,9 +200,9 @@ object ControlsPage : Page {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A"); onClick { closePopovers() } }
-                                            button { text("B"); onClick { closePopovers() } }
-                                            button { text("C"); onClick { closePopovers() } }
+                                            button { text("A"); onClick { context.closePopovers() } }
+                                            button { text("B"); onClick { context.closePopovers() } }
+                                            button { text("C"); onClick { context.closePopovers() } }
                                         }
                                     }
                                 }
@@ -211,9 +211,9 @@ object ControlsPage : Page {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A"); onClick { closePopovers() } }
-                                            button { text("B"); onClick { closePopovers() } }
-                                            button { text("C"); onClick { closePopovers() } }
+                                            button { text("A"); onClick { context.closePopovers() } }
+                                            button { text("B"); onClick { context.closePopovers() } }
+                                            button { text("C"); onClick { context.closePopovers() } }
                                         }
                                     }
                                 }
@@ -222,9 +222,9 @@ object ControlsPage : Page {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A"); onClick { closePopovers() } }
-                                            button { text("B"); onClick { closePopovers() } }
-                                            button { text("C"); onClick { closePopovers() } }
+                                            button { text("A"); onClick { context.closePopovers() } }
+                                            button { text("B"); onClick { context.closePopovers() } }
+                                            button { text("C"); onClick { context.closePopovers() } }
                                         }
                                     }
                                 }
@@ -235,9 +235,9 @@ object ControlsPage : Page {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A"); onClick { closePopovers() } }
-                                button { text("B"); onClick { closePopovers() } }
-                                button { text("C"); onClick { closePopovers() } }
+                                button { text("A"); onClick { context.closePopovers() } }
+                                button { text("B"); onClick { context.closePopovers() } }
+                                button { text("C"); onClick { context.closePopovers() } }
                             }
                         }
                     }
@@ -245,9 +245,9 @@ object ControlsPage : Page {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A"); onClick { closePopovers() } }
-                                button { text("B"); onClick { closePopovers() } }
-                                button { text("C"); onClick { closePopovers() } }
+                                button { text("A"); onClick { context.closePopovers() } }
+                                button { text("B"); onClick { context.closePopovers() } }
+                                button { text("C"); onClick { context.closePopovers() } }
                             }
                         }
                     }
@@ -255,13 +255,13 @@ object ControlsPage : Page {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A"); onClick { closePopovers() } }
-                                button { text("B"); onClick { closePopovers() } }
-                                button { text("C"); onClick { closePopovers() } }
+                                button { text("A"); onClick { context.closePopovers() } }
+                                button { text("B"); onClick { context.closePopovers() } }
+                                button { text("C"); onClick { context.closePopovers() } }
                             }
                         }
                     }
-                    weight(1f).space {}
+                    expanding.space()
                 }
             }
 
@@ -270,25 +270,25 @@ object ControlsPage : Page {
                 col {
                     padded.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             switch { checked bind booleanContent; }
                         }
                     }
                     card.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             switch { checked bind booleanContent; }
                         }
                     }
                     important.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             switch { checked bind booleanContent; }
                         }
                     }
                     critical.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             switch { checked bind booleanContent; }
                         }
                     }
@@ -300,25 +300,25 @@ object ControlsPage : Page {
                 col {
                     padded.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             checkbox { checked bind booleanContent }
                         }
                     }
                     card.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             checkbox { checked bind booleanContent }
                         }
                     }
                     important.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             checkbox { checked bind booleanContent }
                         }
                     }
                     critical.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             checkbox { checked bind booleanContent }
                         }
                     }
@@ -331,25 +331,25 @@ object ControlsPage : Page {
                 col {
                     padded.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             radioButton { checked bind selected.equalTo(1) }
                         }
                     }
                     card.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             radioButton { checked bind selected.equalTo(2) }
                         }
                     }
                     important.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             radioButton { checked bind selected.equalTo(3) }
                         }
                     }
                     critical.frame {
                         row {
-                            weight(1f).h3 { content = "Example Setting" }
+                            expanding.h3 { content = "Example Setting" }
                             radioButton { checked bind selected.equalTo(4) }
                         }
                     }
@@ -358,15 +358,15 @@ object ControlsPage : Page {
 
             card.col {
                 h2 { content = "Activity Indicators" }
-                scrollsHorizontally.row {
-                    weight(1f).space {}
+                scrollingHorizontally.row {
+                    expanding.space()
                     padded.frame { activityIndicator() }
                     card.frame { activityIndicator() }
                     important.frame { activityIndicator() }
                     critical.frame { activityIndicator() }
                     warning.frame { activityIndicator() }
                     danger.frame { activityIndicator() }
-                    weight(1f).space {}
+                    expanding.space()
                 }
             }
 
@@ -374,12 +374,11 @@ object ControlsPage : Page {
                 h2 { content = "Drop Downs" }
                 val options = remember { listOf("Apple", "Banana", "Crepe") }
                 val value = Signal("Banana")
-                padded.fieldTheme.select { bind(value, data = options, render = { it }) }
-                card.fieldTheme.select { bind(value, data = options, render = { it }) }
-                important.fieldTheme.select { bind(value, data = options, render = { it }) }
-                critical.fieldTheme.select { bind(value, data = options, render = { it }) }
-                warning.fieldTheme.select { bind(value, data = options, render = { it }) }
-                danger.fieldTheme.select { bind(value, data = options, render = { it }) }
+
+                for (theme in listOf(padded, card, important, critical, warning, danger))
+                    theme.fieldTheme.select {
+                        bind(value, data = options) { it }
+                    }
             }
 
             card.col {
@@ -429,9 +428,9 @@ object ControlsPage : Page {
                 h2 { content = "Number Fields" }
                 text { ::content { "Value: ${number()}" } }
                 fieldTheme.numberInput { content bind number }
-                card.fieldTheme.numberField { content bind number }
-                important.fieldTheme.numberField { content bind number }
-                critical.fieldTheme.numberField { content bind number }
+                card.fieldTheme.numberInput { content bind number }
+                important.fieldTheme.numberInput { content bind number }
+                critical.fieldTheme.numberInput { content bind number }
             }
 
             card.col {
@@ -439,10 +438,10 @@ object ControlsPage : Page {
                 val text = Signal("text")
                 h2 { content = "Text Fields" }
                 text { ::content { "Text: ${text()}" } }
-                fieldTheme.textField { content bind text }
-                card.fieldTheme.textField { content bind text }
-                important.fieldTheme.textField { content bind text }
-                critical.fieldTheme.textField { content bind text }
+                fieldTheme.textInput { content bind text }
+                card.fieldTheme.textInput { content bind text }
+                important.fieldTheme.textInput { content bind text }
+                critical.fieldTheme.textInput { content bind text }
             }
 
             card.col {
@@ -456,7 +455,7 @@ object ControlsPage : Page {
 
             card.col {
                 h2 { content = "Images" }
-                scrollsHorizontally.row {
+                scrollingHorizontally.row {
                     sizedBox(
                         SizeConstraints(
                             width = 5.rem

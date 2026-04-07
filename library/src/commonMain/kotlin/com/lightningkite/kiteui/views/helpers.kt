@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 
 @ViewModifierDsl3 val ElementWriter.CanAddAlignment.atStart get() = align(Align.Start, Align.Stretch)
@@ -26,10 +25,14 @@ import kotlin.math.min
 @ViewModifierDsl3 val ElementWriter.CanAddAlignment.atCenterEnd get() = align(Align.End, Align.Center)
 @ViewModifierDsl3 val ElementWriter.CanAddAlignment.atBottomEnd get() = align(Align.End, Align.End)
 
-@ViewModifierDsl3 val ElementWriter.CanAddWeight.expanding get() = weight(1f)
+@ViewModifierDsl3 inline val ElementWriter.CanAddWeight.expanding get() = weight(1f)
+
+@ViewModifierDsl3 fun ElementWriter.CanAddSizing.setHeight(height: Dimension) = sizedBox(SizeConstraints(height = height))
+@ViewModifierDsl3 fun ElementWriter.CanAddSizing.setWidth(height: Dimension) = sizedBox(SizeConstraints(width = height))
+@ViewModifierDsl3 fun ElementWriter.CanAddSizing.maxHeight(height: Dimension) = sizedBox(SizeConstraints(maxHeight = height))
+@ViewModifierDsl3 fun ElementWriter.CanAddSizing.maxWidth(width: Dimension) = sizedBox(SizeConstraints(maxWidth = width))
 
 @ViewModifierDsl3 fun ElementWriter.CanAddAlignment.maxWidthCentered(width: Dimension) = align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(maxWidth = width))
-@ViewModifierDsl3 fun ElementWriter.CanAddSizing.maxHeight(height: Dimension) = sizedBox(SizeConstraints(maxHeight = height))
 
 @ViewDsl
 fun ElementWriter.icon(source: ReactiveContext.()->Icon, description: String, setup: IconView.()->Unit = {}) {
