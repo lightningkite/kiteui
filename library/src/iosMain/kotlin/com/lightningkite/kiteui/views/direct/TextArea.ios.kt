@@ -163,7 +163,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         set(value) {
             field = value
             releaseAction?.invoke()
-            releaseAction = value?.let { watchForegroundProcess(it) }
+            releaseAction = value?.let { working(it) }
         }
 
     actual override var enabled: Boolean

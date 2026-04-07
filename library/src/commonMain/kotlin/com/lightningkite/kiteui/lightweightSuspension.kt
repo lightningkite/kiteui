@@ -24,6 +24,6 @@ fun CoroutineScope.load(context: CoroutineContext = EmptyCoroutineContext, actio
             ) == false
         ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
     )
-    coroutineContext.plus(context)[StatusListener]?.watchBackgroundProcess(state)
+    coroutineContext.plus(context)[StatusListener]?.loading(state)
     return result
 }

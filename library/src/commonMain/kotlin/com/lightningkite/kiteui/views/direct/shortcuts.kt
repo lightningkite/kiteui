@@ -130,7 +130,7 @@ fun ElementWriter.checkbox(checked: MutableReactive<Boolean>) = checkbox { this.
 fun ElementWriter.radioButton(checked: MutableReactive<Boolean>) = radioButton { this.checked bind checked }
 
 @ViewDsl
-fun ElementWriter.progressBar(ratio: Reactive<Float>) = progressBar { ::ratio bind ratio }
+fun ElementWriter.progressBar(ratio: Reactive<Float>) = progressBar { ::ratio { ratio() } }
 
 @ViewDsl
 inline fun ElementWriter.icon(icon: Icon, description: String, setup: IconView.() -> Unit = {}): IconView {

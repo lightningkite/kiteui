@@ -59,7 +59,7 @@ fun <T> ContainerElement.forEachUpdating(
 ) {
     val currentViews = ArrayList<LateInitSignal<T>>()
     val currentView = this
-    reactive(onLoad = {
+    reactive<Unit>(onLoad = {
         currentView.withoutAnimation {
             if (placeholdersWhileLoading <= 0) return@reactive
             if (currentViews.size < placeholdersWhileLoading) {

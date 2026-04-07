@@ -14,7 +14,7 @@ interface InteractiveElement : Element {
  * An interactive element with a primary action (e.g., button click, form submit).
  *
  * Elements inheriting this interface are responsible for displaying working animations when the
- * action is in progress (e.g. manage [StatusListener.watchForegroundProcess][com.lightningkite.reactive.context.StatusListener.watchForegroundProcess]
+ * action is in progress (e.g. manage [StatusListener.working][com.lightningkite.reactive.context.StatusListener.working]
  * on the action when set)
  */
 interface ElementWithAction : InteractiveElement {
@@ -25,7 +25,7 @@ interface ElementWithAction : InteractiveElement {
  * An interactive element with both primary and secondary actions (e.g., swipe actions, `onNavigate` actions, context menus).
  *
  * Elements inheriting this interface are responsible for displaying working animations when the
- * action is in progress (e.g. manage [StatusListener.watchForegroundProcess][com.lightningkite.reactive.context.StatusListener.watchForegroundProcess]
+ * action is in progress (e.g. manage [StatusListener.working][com.lightningkite.reactive.context.StatusListener.working]
  * on the action when set)
  */
 interface ElementWithSecondaryAction : ElementWithAction {
@@ -68,7 +68,7 @@ abstract class NativeElementWithAction(context: ElementContext) : ElementWithAct
         set(value) {
             field = value
             stopWatchingAction?.invoke()
-            stopWatchingAction = value?.let { watchForegroundProcess(it) }
+            stopWatchingAction = value?.let { working(it); {} } // TODO: Revert
             nativeSetAction(value)
         }
 }
@@ -86,7 +86,7 @@ abstract class NativeElementWithSecondaryAction(context: ElementContext) : Eleme
         set(value) {
             field = value
             stopWatchingSecondaryAction?.invoke()
-            stopWatchingSecondaryAction = value?.let { watchForegroundProcess(it) }
+            stopWatchingSecondaryAction = value?.let { working(it); {} } // TODO: Revert
             nativeSetSecondaryAction(value)
         }
 }
@@ -107,7 +107,7 @@ abstract class NativeContainerElementWithAction(context: ElementContext) : Eleme
         set(value) {
             field = value
             stopWatchingAction?.invoke()
-            stopWatchingAction = value?.let { watchForegroundProcess(it) }
+            stopWatchingAction = value?.let { working(it); {} } // TODO: Revert
             nativeSetAction(value)
         }
 }
@@ -125,7 +125,7 @@ abstract class NativeContainerElementWithSecondaryAction(context: ElementContext
         set(value) {
             field = value
             stopWatchingSecondaryAction?.invoke()
-            stopWatchingSecondaryAction = value?.let { watchForegroundProcess(it) }
+            stopWatchingSecondaryAction = value?.let { working(it); {} } // TODO: Revert
             nativeSetSecondaryAction(value)
         }
 }

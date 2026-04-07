@@ -16,6 +16,7 @@ import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.MutableRemember
 import com.lightningkite.reactive.core.ReactiveWithMutableValue
 import com.lightningkite.reactive.core.Signal
+import com.lightningkite.reactive.extensions.debounce
 import com.lightningkite.reactive.extensions.value
 import kotlin.math.abs
 

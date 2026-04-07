@@ -300,7 +300,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
                 else SEV_OK
 
         fun watch(status: Reactive<*>): Release {
-            if (!processes.add(status)) return Listenable.Never.NOOP_RELEASE    // we are already listening to this status
+            if (!processes.add(status)) return {}    // we are already listening to this status
 
             var prevSeverity: Int = -1  // intentionally using -1 as sentinel value to avoid boxing
 
@@ -341,8 +341,12 @@ abstract class NativeElementCommonCode internal constructor(override val context
     private val internalBackgroundProcesses = Processes(foreground = false)
     private val internalForegroundProcesses = Processes(foreground = true)
 
-    override fun watchBackgroundProcess(status: Reactive<*>): Release = internalBackgroundProcesses.watch(status).also(::onRemove)
-    override fun watchForegroundProcess(status: Reactive<*>): Release = internalForegroundProcesses.watch(status).also(::onRemove)
+    override fun loading(reactive: Reactive<*>) {
+        internalBackgroundProcesses.watch(reactive).also(::onRemove)
+    }
+    override fun working(reactive: Reactive<*>) {
+        internalForegroundProcesses.watch(reactive).also(::onRemove)
+    }
 
     /** Aggregate state of background processes (data loading, etc.) - affects loading semantics */
     val backgroundProcesses: Reactive<*> get() = internalBackgroundProcesses

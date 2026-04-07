@@ -107,7 +107,7 @@ object ControlsPage : Page {
                             context.toast("OK! RUN!", 3.seconds)
                         };
                         text { content = "Sample" }
-                        ::enabled bind booleanContent
+                        ::enabled { booleanContent() }
                     }
                     card.button {
                         var error = false

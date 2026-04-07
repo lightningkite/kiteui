@@ -268,7 +268,7 @@ object DataPage : DocPage {
                         ) {
                             col {
                                 fieldTheme.textInput { content bind emailAddress }
-                                card.text { ::content bind emailAddress }
+                                card.text { ::content { emailAddress() } }
                             }
                         }
                         text("Try editing the email address and you'll see the value immediately reflected in the text below it.")
@@ -297,7 +297,7 @@ object DataPage : DocPage {
                         ) {
                             col {
                                 fieldTheme.textInput { content bind counterAsString }
-                                card.text { ::content bind counterAsString }
+                                card.text { ::content { counterAsString() } }
                                 card.button { text("Increment"); onClick { counter.value++ } }
                             }
                         }

@@ -15,7 +15,6 @@ import com.lightningkite.kiteui.views.theme
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.addAndRunStateListener
 
 class ImageView(private val frame: Frame) : Element by frame {
     constructor(context: ElementContext) : this(Frame(context))
@@ -55,8 +54,8 @@ class ImageView(private val frame: Frame) : Element by frame {
 
     private val spinner = frame.centered.activityIndicator {
         this@ImageView.shownInfo
-            .addAndRunStateListener { s ->
-                opacity = if (s.success) 0.0 else 1.0
+            .addAndRunListener {
+                opacity = if (this@ImageView.shownInfo.state.success) 0.0 else 1.0
             }
             .also(::onRemove)
     }
