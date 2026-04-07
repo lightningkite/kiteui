@@ -26,7 +26,7 @@ annotation class InternalKiteUi
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(
-    level = RequiresOptIn.Level.WARNING,
+    level = RequiresOptIn.Level.ERROR,
     message = "This method is meant to be overridden but not used directly in client code."
 )
 /**

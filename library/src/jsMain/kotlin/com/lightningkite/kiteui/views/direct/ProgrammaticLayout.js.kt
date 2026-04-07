@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
@@ -23,6 +24,7 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : Na
         }
     var log: Log? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
+    @OverrideOnly
     override fun onStartup() {
         super.onStartup()
         onRemove(parent!!.native.resizeObserver().addListener {

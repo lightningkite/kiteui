@@ -119,7 +119,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * For example, here is a wrapper which collects all written elements into a list.
      *
      * ```
-     * class CollectElementsWriter(private val wraps: ElementWriter) : Element by wraps {
+     * class CollectElementsWriter(private val wraps: ElementWriter) : ElementWriter by wraps {
      *      val elements = mutableListOf<Element>()
      *
      *      override fun addChild(element: Element) {

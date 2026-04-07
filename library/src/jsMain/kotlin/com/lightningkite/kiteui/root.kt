@@ -1,5 +1,3 @@
-@file:OptIn(OverrideOnly::class)
-
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.dom.DOMElement
@@ -25,8 +23,10 @@ private class Root(val beforeDocumentAppend: Element.() -> Unit) : ViewWriter, C
         ExternalServices.baseContext = it
     }
 
+    @OverrideOnly
     override fun willAddChild(element: Element) {}
 
+    @OverrideOnly
     override fun addChild(element: Element) {
         println("Root adding element: $element")
         beforeDocumentAppend(element)
@@ -145,8 +145,10 @@ private fun hydrateRootInternal(
     val root = object : ViewWriter, CoroutineScope by AppScope {
         override val context: ElementContext = elementContext
 
+        @OverrideOnly
         override fun willAddChild(element: Element) {}
 
+        @OverrideOnly
         override fun addChild(element: Element) {
             themeApplicator(element)
 

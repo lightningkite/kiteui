@@ -42,8 +42,8 @@ fun ViewWriter.split(): ViewWriter = Split(this)
 @UnsafeModifier
 inline fun ElementWriter.produceAtMostOneUnsafe(action: ViewWriter.() -> Unit): Element? {
     var output: Element? = null
-    @OptIn(OverrideOnly::class)
     val writer = object : ElementWriter by this, ViewWriter {
+        @OverrideOnly
         override fun addChild(element: Element) {
             if (output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")
             this@produceAtMostOneUnsafe.addChild(element)

@@ -133,10 +133,10 @@ class SsrContext(
             // Use Unconfined so reactive bindings update synchronously when resources load
             val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
 
-            @OptIn(OverrideOnly::class)
             val viewWriter = object : ViewWriter, CoroutineScope by appScope {
                 override val context: ElementContext = elementContext
 
+                @OverrideOnly
                 override fun willAddChild(element: Element) {
                     theme?.let { t ->
                         // Use direct assignment (not reactive binding) to match JS behavior
@@ -146,6 +146,7 @@ class SsrContext(
                     }
                 }
 
+                @OverrideOnly
                 override fun addChild(element: Element) {
                     frame.addChild(element)
                 }

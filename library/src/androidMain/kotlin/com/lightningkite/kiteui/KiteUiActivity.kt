@@ -32,7 +32,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.max
 
-@OptIn(OverrideOnly::class)
 abstract class KiteUiActivity : AppCompatActivity() {
     open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
     var savedInstanceState: Bundle? = null
@@ -47,10 +46,12 @@ abstract class KiteUiActivity : AppCompatActivity() {
             context.safeInsets = safeInsetsProperty
         }
 
+        @OverrideOnly
         override fun willAddChild(element: Element) {
             element::themeChoice { ThemeDerivation.SetAsBase(theme()) }
         }
 
+        @OverrideOnly
         override fun addChild(element: Element) {
             root = element
             setContentView(element.native)

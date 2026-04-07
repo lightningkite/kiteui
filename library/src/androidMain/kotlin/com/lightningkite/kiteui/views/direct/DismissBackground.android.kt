@@ -29,7 +29,7 @@ actual class DismissBackground actual constructor(context: ElementContext): Nati
         }
     }
 
-    @OptIn(OverrideOnly::class)
+    @OverrideOnly
     override fun onStartup() {
         super.onStartup()
         children.forEach { it.underlyingNativeElement.native.isClickable = true }

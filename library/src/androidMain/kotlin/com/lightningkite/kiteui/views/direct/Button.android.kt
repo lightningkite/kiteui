@@ -21,7 +21,7 @@ actual class Button actual constructor(context: ElementContext): NativeContainer
         isClickable = true
     }
 
-    @OptIn(OverrideOnly::class)
+    @OverrideOnly
     override fun onStartup() {
         super.onStartup()
         addChild(object: NativeElement(context) {

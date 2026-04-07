@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.dom.DOMRect
 import com.lightningkite.kiteui.models.Align
 
@@ -45,6 +46,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
         if (blockView != null) return
         val o = source.context.overlayFrame ?: return
         val v = existingView ?: return
+        @OptIn(OverrideOnly::class)
         o.addChild(
             o.children.indexOf(v),
             object : NativeElement(o.context) {

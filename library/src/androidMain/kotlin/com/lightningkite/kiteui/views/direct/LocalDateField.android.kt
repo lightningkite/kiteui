@@ -43,7 +43,7 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
         }
     }
 
-    @OptIn(OverrideOnly::class)
+    @OverrideOnly
     override fun onStartup() {
         super.onStartup()
         native.addView(

@@ -8,7 +8,6 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(OverrideOnly::class)
 actual fun ElementWriter.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,
@@ -23,16 +22,19 @@ actual fun ElementWriter.openBottomSheet(
             override val coroutineContext: CoroutineContext = overlay.coroutineContext
             override val context: ElementContext get() = this@openBottomSheet.context
 
+            @OverrideOnly
             override fun willAddChild(element: Element) {
                 element.underlyingNativeElement.parent = overlay
                 element.themeChoice = ThemeDerivation.Set(overlay.theme.let { it.revert ?: it }[DialogSemantic].theme)
             }
 
+            @OverrideOnly
             override fun addChild(element: Element) {
                 createdView = element
                 dialog.setContentView(element.native)
             }
         }.popoverWriter {
+            @OptIn(OverrideOnly::class)
             createdView?.onShutdown()
             dialog.dismiss()
         }.apply {

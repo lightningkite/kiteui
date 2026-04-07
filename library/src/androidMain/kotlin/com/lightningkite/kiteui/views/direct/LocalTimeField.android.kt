@@ -33,7 +33,7 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
         }
     }
 
-    @OptIn(OverrideOnly::class)
+    @OverrideOnly
     override fun onStartup() {
         super.onStartup()
         val text = android.widget.TextView(context.activity)
