@@ -97,6 +97,7 @@ object RootPage : Page {
                 linkPage { ScrollIntoViewTest }
                 linkPage { CoveringTestPage }
                 linkPage { PopoverTestingPage }
+                linkPage { NestedPopoverTestPage }
 
                 sectionLabel("Recycler / Lists")
                 linkPage { RecyclerViewTestPage }
