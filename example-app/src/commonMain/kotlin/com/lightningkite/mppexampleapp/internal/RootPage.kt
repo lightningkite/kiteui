@@ -97,6 +97,7 @@ object RootPage : Page {
                 linkPage { ScrollIntoViewTest }
                 linkPage { CoveringTestPage }
                 linkPage { PopoverTestingPage }
+                linkPage { NestedPopoverTestPage }
 
                 sectionLabel("Recycler / Lists")
                 linkPage { RecyclerViewTestPage }
@@ -135,6 +136,7 @@ object RootPage : Page {
 
                 sectionLabel("Reactivity & State")
                 linkPage { ReactivityPage }
+                linkPage { ClearChildrenBugPage }
 
                 sectionLabel("Platform & Device")
                 linkPage { PlatformSpecificPage }
