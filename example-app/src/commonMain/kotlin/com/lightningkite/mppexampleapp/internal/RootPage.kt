@@ -136,7 +136,6 @@ object RootPage : Page {
 
                 sectionLabel("Reactivity & State")
                 linkPage { ReactivityPage }
-                linkPage { ClearChildrenBugPage }
 
                 sectionLabel("Platform & Device")
                 linkPage { PlatformSpecificPage }
