@@ -143,6 +143,7 @@ object RootPage : Page {
                 sectionLabel("Performance & Diagnostics")
                 linkPage { PerformanceTestPage }
                 linkPage { LeakCheckerPage }
+                linkPage { TelemetryTestPage }
 
                 sectionLabel("Interaction & Gestures")
                 linkPage { ClickTestPage }

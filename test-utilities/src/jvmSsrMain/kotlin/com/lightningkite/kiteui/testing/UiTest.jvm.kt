@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.externalServices
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.Frame
+import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.resetMain
@@ -21,6 +22,7 @@ actual fun uiTest(
     try {
         val context = RContext("/")
         val root = Frame(context)
+        root.overlayFrame = root
         if (mockExternalServices != null) {
             context.addons[ViewWriter::externalServices.name] = mockExternalServices
         }

@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.telemetry
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.test.*
 
 class TelemetryContextTest {
@@ -45,25 +44,6 @@ class TelemetryContextTest {
     fun emptyContextHasNoElement() {
         val element = EmptyCoroutineContext[TelemetryContext]
         assertNull(element)
-    }
-
-    // --- TelemetryContext.current() factory ---
-
-    @Test
-    fun currentCapturesFromExistingContext() = runTest {
-        val parent = TelemetryContext(traceId = "aabb1122ccdd3344eeff5566aabb7788", spanId = "1122334455667788")
-        withContext(parent) {
-            val captured = TelemetryContext.current()
-            assertEquals("aabb1122ccdd3344eeff5566aabb7788", captured.traceId)
-            assertEquals("1122334455667788", captured.spanId)
-        }
-    }
-
-    @Test
-    fun currentReturnsEmptyWhenNoContext() = runTest {
-        val captured = TelemetryContext.current()
-        assertEquals("", captured.traceId)
-        assertEquals("", captured.spanId)
     }
 
     @Test

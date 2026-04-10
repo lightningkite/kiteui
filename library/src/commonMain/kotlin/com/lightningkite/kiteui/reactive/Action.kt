@@ -7,11 +7,27 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.*
-import kotlin.coroutines.coroutineContext
+
+/**
+ * Returned by [actionInstrumentors] to wrap an action's execution with telemetry or other instrumentation.
+ * @param coroutineContext added to the launched coroutine (e.g. trace/span propagation)
+ * @param onStart called at the start of the action coroutine (e.g. to set active span globals)
+ * @param onEnd called in `finally` when the action completes or is cancelled
+ */
+class ActionInstrumentation(
+    val coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    val onStart: () -> Unit = {},
+    val onEnd: () -> Unit = {},
+)
+
+/** Interceptors called on every [Action.startAction]. Each may return an [ActionInstrumentation] to wrap the action. */
+val actionInstrumentors: MutableList<(scope: CoroutineScope, title: String) -> ActionInstrumentation?> = mutableListOf()
 
 interface Action: Reactive<Boolean> {
     val title: String
@@ -68,20 +84,28 @@ class RetryableAction(
     override fun startAction(scope: CoroutineScope) {
         if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         lastJob?.cancel()
+        val instrumentations = actionInstrumentors.mapNotNull { it(scope, title) }
+        val extraContext = instrumentations.fold<ActionInstrumentation, CoroutineContext>(EmptyCoroutineContext) { acc, it -> acc + it.coroutineContext }
         lastJob = (keepRunningWhile ?: scope).let { calculationContext ->
             var done = false
             val job = calculationContext.launch(
+                context = extraContext,
                 start = if (calculationContext.coroutineContext[CoroutineDispatcher]?.isDispatchNeeded(
                         calculationContext.coroutineContext
                     ) == false
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
-                val result = reactiveState {
-                    action()
-                    true
+                instrumentations.forEach { it.onStart() }
+                try {
+                    val result = reactiveState {
+                        action()
+                        true
+                    }
+                    done = true
+                    reportTo.state = result
+                } finally {
+                    instrumentations.forEach { it.onEnd() }
                 }
-                done = true
-                reportTo.state = result
             }
 
             if (done) {
@@ -136,21 +160,29 @@ class DependentAction(
         if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         dependencyBlockStart()
         lastJob?.cancel()
+        val instrumentations = actionInstrumentors.mapNotNull { it(scope, title) }
+        val extraContext = instrumentations.fold<ActionInstrumentation, CoroutineContext>(EmptyCoroutineContext) { acc, it -> acc + it.coroutineContext }
         lastJob = (keepRunningWhile ?: scope).let { calculationContext ->
             var done = false
             val job = calculationContext.launch(
+                context = extraContext,
                 start = if (calculationContext.coroutineContext[CoroutineDispatcher]?.isDispatchNeeded(
                         calculationContext.coroutineContext
                     ) == false
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
-                val result = reactiveState {
-                    action()
-                    true
+                instrumentations.forEach { it.onStart() }
+                try {
+                    val result = reactiveState {
+                        action()
+                        true
+                    }
+                    dependencyBlockEnd()
+                    done = true
+                    reportTo.state = result
+                } finally {
+                    instrumentations.forEach { it.onEnd() }
                 }
-                dependencyBlockEnd()
-                done = true
-                reportTo.state = result
             }
 
             if (done) {

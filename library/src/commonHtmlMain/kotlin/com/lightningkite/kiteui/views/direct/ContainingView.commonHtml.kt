@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.*
 actual class Frame actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
-        native.style.lineHeight = "0px !important"
+        native.style.lineHeight = "0px"
     }
 
     override fun internalAddChild(index: Int, view: RView) {

@@ -22,7 +22,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
 
     init {
         native.tag = "div"
-        native.style.lineHeight = "0px !important"
+        native.style.lineHeight = "0px"
     }
 
     override fun internalAddChild(index: Int, view: RView) {

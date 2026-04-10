@@ -88,20 +88,12 @@ data class OtlpSpan(
     val endTimeUnixNano: String,
     val attributes: List<OtlpKeyValue> = emptyList(),
     val status: OtlpSpanStatus? = null,
-    val events: List<OtlpSpanEvent> = emptyList(),
 )
 
 @Serializable
 data class OtlpSpanStatus(
     val code: Int = 0,                  // 0=UNSET, 1=OK, 2=ERROR
     val message: String = ""
-)
-
-@Serializable
-data class OtlpSpanEvent(
-    val name: String,
-    val timeUnixNano: String,
-    val attributes: List<OtlpKeyValue> = emptyList(),
 )
 
 // ===== Metrics =====
