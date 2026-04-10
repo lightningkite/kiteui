@@ -34,8 +34,10 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         override var value: Double?
             get() = native.attributes.valueString?.filter { it.isDigit() || it in setOf('-', '.') }?.toDoubleOrNull()
             set(value) {
-                if(native.attributes.valueString != value?.commaString())
+                if(native.attributes.valueString != value?.commaString()) {
                     native.attributes.valueString = value?.commaString()
+                    invokeAllListeners()
+                }
             }
     }
 

@@ -4,13 +4,17 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.reactive.ActionInstrumentation
 import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.kiteui.reactive.actionInstrumentors
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.viewPath
 import com.lightningkite.reactive.core.AppScope
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.currentCoroutineContext
 import kotlin.random.Random
 import kotlin.time.Clock
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
@@ -71,6 +75,26 @@ class Telemetry(val config: TelemetryConfig) {
         instrumentFetch(url, method, headers, body, proceed)
     }
     private val installedLogInterceptor = TelemetryLogInterceptor(this)
+    private val installedActionInstrumentor: (CoroutineScope, String) -> ActionInstrumentation? = { scope, title ->
+        val interaction = startInteraction(scope, title)
+        var savedTraceId = ""
+        var savedSpanId = ""
+        ActionInstrumentation(
+            coroutineContext = interaction.coroutineContext,
+            onStart = {
+                savedTraceId = activeTraceId
+                savedSpanId = activeSpanId
+                activeTraceId = interaction.telemetryContext.traceId
+                activeSpanId = interaction.telemetryContext.spanId
+            },
+            onEnd = {
+                activeTraceId = savedTraceId
+                activeSpanId = savedSpanId
+                interaction.end()
+            },
+        )
+    }
+    private val installedSpanRecorder: (OtlpSpan) -> Unit = { exporter.addSpan(it) }
     private val exceptionHandlerInterceptor = ExceptionHandler(10f) { e, meta ->
         recordException(e,
             if (meta == null) "" else listOfNotNull(
@@ -122,6 +146,12 @@ class Telemetry(val config: TelemetryConfig) {
 
         // Fetch interceptor
         fetchInterceptors.add(installedFetchInterceptor)
+
+        // Action instrumentor — creates interaction spans for user-triggered actions
+        actionInstrumentors.add(installedActionInstrumentor)
+
+        // Span recorder — enables the public span() function
+        spanRecorder = installedSpanRecorder
 
         // Navigation hook
         bindNavigation(navigator)
@@ -205,6 +235,8 @@ class Telemetry(val config: TelemetryConfig) {
         fetchInterceptors.remove(installedFetchInterceptor)
         Log.interceptors.remove(installedLogInterceptor)
         elementContext?.exceptionHandlers?.remove(exceptionHandlerInterceptor)
+        actionInstrumentors.remove(installedActionInstrumentor)
+        if (spanRecorder === installedSpanRecorder) spanRecorder = null
         throwableHookActive = false
         crashHookActive = false
         navCleanup?.invoke()
@@ -350,6 +382,12 @@ class Telemetry(val config: TelemetryConfig) {
             if (pageName != lastPageName) {
                 endCurrentPageSpan()
 
+                // Rotate trace ID so each page visit is its own trace.
+                // Skip on first navigation to keep cold_start span in the same trace.
+                if (lastPageName != null) {
+                    currentTraceId = traceId()
+                }
+
                 lastPageName = pageName
                 lastPageStartNanos = nanosString()
                 lastPageSpanId = spanId()
@@ -438,10 +476,66 @@ class Telemetry(val config: TelemetryConfig) {
                     add(OtlpKeyValue("app.debug", OtlpAnyValue(boolValue = Build.debug)))
                     try { addAll(config.exceptionAttributes()) } catch (_: Exception) {}
                 },
-                traceId = currentTraceId,
-                spanId = currentSpanId,
+                traceId = activeTraceId.ifEmpty { currentTraceId },
+                spanId = activeSpanId.ifEmpty { currentSpanId },
             )
         )
+    }
+
+    // ===== Interaction spans (Phase 2) =====
+
+    /**
+     * Creates an interaction span for an [Action] invocation.
+     * Called by the Action framework when a user-triggered action starts.
+     *
+     * Returns an [InteractionSpan] that:
+     * - Provides a [TelemetryContext] to propagate trace/span IDs into the action's coroutine
+     * - Records the interaction span and increments `action.invocations` counter on [InteractionSpan.end]
+     */
+    internal fun startInteraction(scope: CoroutineScope, actionTitle: String): InteractionSpan {
+        val interactionSpanId = spanId()
+        val startNanos = nanosString()
+        val interactionTraceId = currentTraceId
+        val parentSpanId = currentSpanId
+        val viewPathProvider = scope.coroutineContext[TelemetryContext]?.viewPathProvider
+        val viewPath = viewPathProvider?.viewPath() ?: ""
+
+        val ctx = TelemetryContext(
+            traceId = interactionTraceId,
+            spanId = interactionSpanId,
+            viewPathProvider = viewPathProvider,
+            sampled = currentTraceIsSampled,
+        )
+
+        return InteractionSpan(ctx) {
+            // Always count interactions (not sampled — cheap aggregation)
+            exporter.incrementCounter(
+                "action.invocations",
+                attributes = buildList {
+                    add(OtlpKeyValue("action.title", OtlpAnyValue(stringValue = actionTitle)))
+                    if (viewPath.isNotEmpty()) add(OtlpKeyValue("view.path", OtlpAnyValue(stringValue = viewPath)))
+                }
+            )
+
+            if (currentTraceIsSampled) {
+                exporter.addSpan(
+                    OtlpSpan(
+                        traceId = interactionTraceId,
+                        spanId = interactionSpanId,
+                        parentSpanId = parentSpanId,
+                        name = "action: $actionTitle",
+                        kind = 1, // SPAN_KIND_INTERNAL
+                        startTimeUnixNano = startNanos,
+                        endTimeUnixNano = nanosString(),
+                        attributes = buildList {
+                            add(OtlpKeyValue("action.title", OtlpAnyValue(stringValue = actionTitle)))
+                            if (viewPath.isNotEmpty()) add(OtlpKeyValue("view.path", OtlpAnyValue(stringValue = viewPath)))
+                            add(OtlpKeyValue("session.id", OtlpAnyValue(stringValue = sessionId)))
+                        },
+                    )
+                )
+            }
+        }
     }
 
     // ===== ID Generation (companion — pure functions, no instance state) =====
@@ -471,4 +565,20 @@ class Telemetry(val config: TelemetryConfig) {
             }
         }
     }
+}
+
+/**
+ * An in-progress interaction span created by [Telemetry.startInteraction].
+ * Provides a [TelemetryContext] for coroutine context propagation and records
+ * the span + counter when [end] is called.
+ */
+internal class InteractionSpan(
+    internal val telemetryContext: TelemetryContext,
+    private val onEnd: () -> Unit,
+) {
+    /** The coroutine context element to add to the action's coroutine. */
+    val coroutineContext: CoroutineContext get() = telemetryContext
+
+    /** Ends the interaction span and records telemetry. Call from `finally`. */
+    fun end() = onEnd()
 }

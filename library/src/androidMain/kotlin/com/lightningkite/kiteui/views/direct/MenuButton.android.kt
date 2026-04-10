@@ -14,8 +14,10 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
         isClickable = true
     }
 
+    private var _openMenu: (() -> Unit)? = null
+
     actual fun opensMenu(createMenu: Frame.() -> Unit) {
-        native.setOnClickListener { view ->
+        val openFn = {
             var willRemove: Element? = null
             popoverWriter(this.overlayFrame!!) {
                 val r = willRemove
@@ -67,6 +69,8 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
                 }
             }
         }
+        native.setOnClickListener { openFn() }
+        _openMenu = openFn
     }
 
     actual var requireClick: Boolean = true

@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
+    private var _openMenu: (() -> Unit)? = null
     override val driverActions get() = super.driverActions + menuDriverActions()
     val floating = FloatingInfoHolder(this)
     init {
@@ -32,6 +33,7 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
     actual var preferredDirection: PopoverPreferredDirection by floating::preferredDirection
     actual fun opensMenu(createMenu: Frame.() -> Unit) {
         floating.menuGenerator = createMenu
+        _openMenu = { floating.open(); floating.block() }
     }
 }
 

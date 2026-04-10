@@ -21,7 +21,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
 
     init {
         native.tag = "div"
-        native.style.lineHeight = "0px !important"
+        native.style.lineHeight = "0px"
     }
 
     override fun nativeAddChild(index: Int, element: Element) {

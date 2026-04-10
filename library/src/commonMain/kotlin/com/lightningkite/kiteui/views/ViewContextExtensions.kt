@@ -105,6 +105,7 @@ fun ElementWriter.popoverWriter(overlay: ElementWriter = this, popoverRoot: Bool
 
     writer.context.popoverParent = (this@popoverWriter as? ContainerElement)?.takeIf { !popoverRoot }
     writer.context.popoverCloser = null
+    writer.context.popoverKeepOpen = 0  // TODO: Is this right?
 
     return writer
 }

@@ -16,30 +16,10 @@ class TelemetryContext(
     val traceId: String = "",
     val spanId: String = "",
     val element: NativeElement? = null,
+    val sampled: Boolean = false,
 ) : CoroutineContext.Element {
     override val key: CoroutineContext.Key<TelemetryContext> get() = Key
-
-    companion object Key : CoroutineContext.Key<TelemetryContext> {
-        /**
-         * Captures the current trace context from the calling coroutine.
-         *
-         * Usage:
-         * ```kotlin
-         * launch(TelemetryContext.current()) {
-         *     // HTTP calls here inherit the parent's trace context
-         * }
-         * ```
-         */
-        suspend fun current(): TelemetryContext {
-            val ctx = currentCoroutineContext()
-            val existing = ctx[TelemetryContext] ?: return TelemetryContext()
-            return TelemetryContext(
-                traceId = existing.traceId,
-                spanId = existing.spanId,
-                element = existing.element,
-            )
-        }
-    }
+    companion object Key : CoroutineContext.Key<TelemetryContext>
 }
 
 internal fun CoroutineContext.traceId(): String =

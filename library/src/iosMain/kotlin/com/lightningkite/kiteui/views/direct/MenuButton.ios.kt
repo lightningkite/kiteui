@@ -8,14 +8,15 @@ import com.lightningkite.reactive.context.*
 import platform.UIKit.UIControl
 
 actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
+    private var _openMenu: (() -> Unit)? = null
     override val driverActions get() = super.driverActions + menuDriverActions()
     override val native = FrameLayoutButton()
     override val control: UIControl get() = native
 
     actual fun opensMenu(createMenu: Frame.() -> Unit) {
-        onRemove(native.setOnClick {
-            var willRemove: Element? = null
-            val f= overlayFrame!!
+        val openFn: () -> Unit = {
+            var willRemove: RView? = null
+            val f = overlayFrame!!
             f.popoverWriter {
                 willRemove?.let { f.removeChild(it) }
                 willRemove = null
@@ -46,7 +47,9 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
                     }
                 }
             }
-        })
+        }
+        onRemove(native.setOnClick(openFn))
+        _openMenu = openFn
     }
 
     actual var requireClick: Boolean = true
