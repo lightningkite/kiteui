@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
 // So we work around it on non mac machines with this check
 val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
-val iosTargetOverride = true
+val iosTargetOverride = false
 
 val iosTarget = iosTargetOverride || onMac
 
