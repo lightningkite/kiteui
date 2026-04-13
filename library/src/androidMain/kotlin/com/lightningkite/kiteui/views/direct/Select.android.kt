@@ -13,6 +13,7 @@ import android.widget.*
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
@@ -88,9 +89,11 @@ actual class Select actual constructor(context: ElementContext): NativeInteracti
                     var newView: Element? = null
                     val writer = object: ViewWriter, CoroutineScope by this@Select {
                         override val context: ElementContext get() = this@Select.context
+                        @OverrideOnly
                         override fun willAddChild(element: Element) {
                             element.underlyingNativeElement.parent = this@Select.parent
                         }
+                        @OverrideOnly
                         override fun addChild(element: Element) {
                             newView = element
                         }

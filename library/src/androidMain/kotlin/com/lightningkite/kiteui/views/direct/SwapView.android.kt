@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.animation.addListener
 import androidx.transition.*
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
@@ -37,10 +38,12 @@ actual class SwapView actual constructor(context: ElementContext) : NativeContai
             override val context: ElementContext
                 get() = this@SwapView.context
 
+            @OverrideOnly
             override fun willAddChild(element: Element) {
                 element.underlyingNativeElement.parent = this@SwapView
             }
 
+            @OverrideOnly
             override fun addChild(element: Element) {
 //                println("addChild called with $element")
                 newViewHolder = element

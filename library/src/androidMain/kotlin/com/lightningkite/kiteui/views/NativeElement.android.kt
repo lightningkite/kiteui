@@ -24,6 +24,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
@@ -377,6 +378,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
+    @OverrideOnly
     override fun onStartup() {
         super.onStartup()
         // Block touches below
