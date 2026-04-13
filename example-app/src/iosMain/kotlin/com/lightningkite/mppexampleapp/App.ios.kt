@@ -12,11 +12,18 @@ import platform.UIKit.UIViewController
 
 fun root(viewController: UIViewController) {
     remMultiplier = 1.0
-    RViewHelper.leakDetection = true
+//    RViewHelper.leakDetection = true
     viewController.setup(appTheme) {
 //        mainPageNavigator = PageNavigator { AutoRoutes }
 //        dialogPageNavigator = PageNavigator { AutoRoutes }
 //        LeakCheckerScreen.render(this)
-        app(PageNavigator { AutoRoutes }.apply { reset(LeakCheckerPage) }, PageNavigator { AutoRoutes })
+        app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
+//        col {
+//            text("Hello world")
+//            button {
+//                text("Press me")
+//            }
+//        }
+//        text("Hello world")
     }
 }

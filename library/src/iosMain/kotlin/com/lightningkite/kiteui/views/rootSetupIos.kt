@@ -144,6 +144,7 @@ fun UIViewController.kiteUi(context: ElementContext = ElementContext(this@kiteUi
             NSNotificationCenter.defaultCenter.removeObserver(observer)
             remover()
             job.cancel()
+            @OptIn(OverrideOnly::class)
             created.onShutdown()
             true
         } else false

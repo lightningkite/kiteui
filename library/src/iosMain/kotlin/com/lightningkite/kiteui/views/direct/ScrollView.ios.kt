@@ -32,7 +32,7 @@ class ScrollView(
     private val sizeChange = BasicListenable()
     private val scroll = BasicListenable()
 
-//    override val addChildTarget get() = scroller
+    override val addChildTarget get() = scroller
 
     private val dg: UIScrollViewDelegateProtocol = object : NSObject(), UIScrollViewDelegateProtocol {
         override fun scrollViewDidScroll(scrollView: UIScrollView) {

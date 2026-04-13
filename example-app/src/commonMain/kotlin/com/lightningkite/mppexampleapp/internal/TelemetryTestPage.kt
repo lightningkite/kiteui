@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.telemetry.span
+import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.important
@@ -20,7 +21,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Routable("/internal/telemetry-test")
 object TelemetryTestPage : Page {
     override val title: Reactive<String> = Constant("Telemetry Test")
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render() {
         val result = Signal("")
         scrolling.col {
             h1("Telemetry Test")

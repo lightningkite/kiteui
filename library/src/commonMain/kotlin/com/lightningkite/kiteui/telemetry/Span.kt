@@ -51,7 +51,7 @@ suspend fun <T> span(
     val childCtx = TelemetryContext(
         traceId = traceId,
         spanId = childSpanId,
-        viewPathProvider = parentCtx.viewPathProvider,
+        element = parentCtx.element,
         sampled = parentCtx.sampled,
     )
 

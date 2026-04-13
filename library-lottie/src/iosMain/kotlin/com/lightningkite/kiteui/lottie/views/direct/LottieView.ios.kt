@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import com.lightningkite.kiteui.views.canvas.clear
@@ -37,7 +37,7 @@ actual class LottieView actual constructor(
     context: ElementContext,
     actual val source: LottieSource,
     actual val description: String,
-) : RView(context) {
+) : NativeElement(context) {
 
     private val canvasView = LottieCanvasView()
     override val native: UIView get() = canvasView

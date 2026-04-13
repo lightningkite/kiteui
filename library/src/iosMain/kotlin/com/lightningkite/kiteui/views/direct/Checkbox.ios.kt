@@ -21,6 +21,7 @@ actual class Checkbox actual constructor(context: ElementContext) : NativeIntera
     override val addChildTarget get() = button
 
     init {
+        setupControl()
         button.extensionHorizontalAlign = Align.Center
         button.extensionVerticalAlign = Align.Center
         native.addSubview(button)

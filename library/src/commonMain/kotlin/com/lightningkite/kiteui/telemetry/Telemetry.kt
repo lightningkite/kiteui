@@ -497,13 +497,13 @@ class Telemetry(val config: TelemetryConfig) {
         val startNanos = nanosString()
         val interactionTraceId = currentTraceId
         val parentSpanId = currentSpanId
-        val viewPathProvider = scope.coroutineContext[TelemetryContext]?.viewPathProvider
-        val viewPath = viewPathProvider?.viewPath() ?: ""
+        val element = scope.coroutineContext[TelemetryContext]?.element
+        val viewPath = element?.viewPath() ?: ""
 
         val ctx = TelemetryContext(
             traceId = interactionTraceId,
             spanId = interactionSpanId,
-            viewPathProvider = viewPathProvider,
+            element = element,
             sampled = currentTraceIsSampled,
         )
 

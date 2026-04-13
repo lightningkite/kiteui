@@ -1,7 +1,8 @@
 package com.lightningkite.kiteui.testing
 
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.setup
@@ -30,9 +31,9 @@ actual class TestHarness {
     actual val async: AsyncTestSupport = AsyncTestSupport()
     private var window: UIWindow? = null
     private var viewController: UIViewController? = null
-    private var rootView: RView? = null
+    private var rootView: Element? = null
 
-    actual fun render(theme: Theme, content: ViewWriter.() -> Unit): RView {
+    actual fun render(theme: Theme, content: ViewWriter.() -> Unit): Element {
         // Create window and view controller
         val win = UIWindow(frame = CGRectMake(0.0, 0.0, 500.0, 1000.0))
         val vc = UIViewController(null, null)
@@ -45,7 +46,7 @@ actual class TestHarness {
         vc.view.backgroundColor = UIColor.whiteColor  // Default to white background
 
         // Capture the root view using setup
-        lateinit var capturedRoot: RView
+        lateinit var capturedRoot: Element
         vc.setup(theme) {
             frame {
                 content()
@@ -69,8 +70,8 @@ actual class TestHarness {
         return captureViewScreenshot(vc.view, name)
     }
 
-    actual fun screenshotView(view: RView, name: String): ByteArray? {
-        return captureViewScreenshot(view.native, name)
+    actual fun screenshotView(view: Element, name: String): ByteArray? {
+        return captureViewScreenshot(view.underlyingNativeElement.native, name)
     }
 
     @OptIn(ExperimentalForeignApi::class)
@@ -161,6 +162,7 @@ actual class TestHarness {
         return byteArray
     }
 
+    @OptIn(OverrideOnly::class)
     actual fun cleanup() {
         rootView?.onShutdown()
         window = null

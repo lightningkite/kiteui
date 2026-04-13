@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.testing
 
 import com.lightningkite.kiteui.MockExternalServices
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.externalServices
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewWriter
@@ -27,6 +28,7 @@ actual fun uiTest(
             context.addons[ViewWriter::externalServices.name] = mockExternalServices
         }
         content(root)
+        @OptIn(OverrideOnly::class)
         root.onStartup()
 
         val backend = LocalUiTestBackend(

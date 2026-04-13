@@ -12,6 +12,7 @@ actual class Switch actual constructor(context: ElementContext) : NativeInteract
     override val driverActions get() = super.driverActions + switchDriverActions()
     override val native = UISwitch()
     override val control: UIControl get() = native
+    init { setupControl() }
 
     actual val checked: MutableReactiveValue<Boolean> = object : MutableReactiveValue<Boolean> {
         override fun addListener(listener: () -> Unit): () -> Unit {

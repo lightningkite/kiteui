@@ -1,6 +1,7 @@
 // by Claude
 package com.lightningkite.kiteui.camera
 
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
@@ -78,6 +79,7 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
         }
     }
 
+    @OptIn(OverrideOnly::class)
     override fun onShutdown() {
         super.onShutdown()
         stopCamera()

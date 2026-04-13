@@ -16,6 +16,7 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
     actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
+        setupControl()
         _checked.addListener { refreshTheming() }
         onRemove(native.setOnClick {
             _checked.value = true

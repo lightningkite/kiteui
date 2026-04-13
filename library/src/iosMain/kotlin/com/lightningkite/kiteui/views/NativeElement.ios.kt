@@ -338,6 +338,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         WeakReference(native).checkLeakAfterDelay(1_000)
     }
 
+    @OptIn(OverrideOnly::class)
     override fun onStartup() {
         super.onStartup()
         ObjCountTrackers.track(this)

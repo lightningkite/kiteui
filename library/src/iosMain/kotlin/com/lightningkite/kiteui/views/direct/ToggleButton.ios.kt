@@ -19,6 +19,7 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
     actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
+        setupControl()
         _checked.addListener { refreshTheming() }
         onRemove(native.setOnClick {
             _checked.toggle()

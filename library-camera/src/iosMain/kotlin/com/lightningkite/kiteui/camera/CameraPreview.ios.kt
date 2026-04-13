@@ -5,7 +5,8 @@ import com.lightningkite.kiteui.FileReference
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Signal
@@ -20,7 +21,7 @@ import platform.UniformTypeIdentifiers.UTTypeJPEG
 import platform.darwin.*
 import kotlin.coroutines.resume
 
-actual class CameraPreview actual constructor(context: ElementContext) : RView(context) {
+actual class CameraPreview actual constructor(context: ElementContext) : NativeElement(context) {
     val _native = PreviewView()
     override val native: UIView get() = _native
 

@@ -25,6 +25,7 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
     override val control: UIControl get() = textField
 
     init {
+        setupControl()
         native.addSubview(textField)
         textField.inputView = UIPickerView()
     }

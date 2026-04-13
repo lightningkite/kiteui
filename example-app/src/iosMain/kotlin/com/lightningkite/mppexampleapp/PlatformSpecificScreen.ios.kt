@@ -20,7 +20,7 @@ import platform.darwin.*
 
 val subnav = PageNavigator { AutoRoutes }
 @OptIn(ExperimentalForeignApi::class)
-actual fun ViewWriter.platformSpecific(): Unit {
+actual fun ElementWriter.platformSpecific(): Unit {
     col {
         repeat(10) {
             text("TEST")
@@ -37,7 +37,7 @@ actual fun ViewWriter.platformSpecific(): Unit {
 //                    subnav.reset(MemoryPage())
 //            }
 //        }
-//        expanding - navigatorView(subnav)
+//        expanding - navigatoNativeElement(subnav)
     }
 }
 
@@ -52,7 +52,7 @@ class MemoryPage: Page {
 //        return write(MemoryView(context)) {}
 
         text("ok")
-//        return write(WrapperView(context)) {
+//        return write(WrappeNativeElement(context)) {
 //            write(MemoryView2(context)) {
 //                onRemove { leakDetect() }
 //            }
@@ -67,12 +67,12 @@ class MemoryPage: Page {
 //        }
     }
 }
-class WrapperView(context: ElementContext): RView(context) {
+class WrappeNativeElement(context: ElementContext): NativeElement(context) {
     @OptIn(ExperimentalForeignApi::class)
     override val native: UIView = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
 }
 
-class MemoryView(context: ElementContext): RView(context) {
+class MemoryView(context: ElementContext): NativeElement(context) {
     val disgustingAmountOfMemory = IntArray(9_000_000) { it }
     @OptIn(ExperimentalForeignApi::class)
     override val native: UIView = UILabel(CGRectMake(0.0, 0.0, 0.0, 0.0)).also {
@@ -80,7 +80,7 @@ class MemoryView(context: ElementContext): RView(context) {
     }
 }
 
-class MemoryView2(context: ElementContext): RView(context) {
+class MemoryView2(context: ElementContext): NativeElement(context) {
     @OptIn(ExperimentalForeignApi::class)
     override val native: UIView = UILabel(CGRectMake(0.0, 0.0, 0.0, 0.0)).also {
         it.text = "Huge accessibility label"
@@ -89,7 +89,7 @@ class MemoryView2(context: ElementContext): RView(context) {
 }
 
 //@OptIn(ExperimentalForeignApi::class)
-//class MemoryView(context: RContext): RView(context) {
+//class MemoryView(context: RContext): NativeElement(context) {
 //    @OptIn(ExperimentalForeignApi::class)
 //    override val native: UIView = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
 //
@@ -97,9 +97,9 @@ class MemoryView2(context: ElementContext): RView(context) {
 //        val temp = StupidBigView()
 //        ObjCountTrackers.track(temp)
 //        native.addSubview(temp)
-////        temp.removeFromSuperview()
+////        temp.removeFromSupeNativeElement()
 //        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1000 * NSEC_PER_MSEC.toLong()), dispatch_get_main_queue()) {
-//            temp.removeFromSuperview()
+//            temp.removeFromSupeNativeElement()
 //        }
 //    }
 //}

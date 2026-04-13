@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.DriverActionException
+import com.lightningkite.kiteui.views.driverChildren
 import com.lightningkite.kiteui.views.driverSnapshot
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.datetime.*
@@ -96,7 +97,7 @@ fun MenuButton.menuDriverActions(
     click?.let { fn ->
         put("click") {
             fn()
-            overlayFrame?.driverChildren?.lastOrNull()?.driverSnapshot()
+            context.overlayFrame?.driverChildren()?.lastOrNull()?.driverSnapshot()
                 ?: "opened"
         }
     }

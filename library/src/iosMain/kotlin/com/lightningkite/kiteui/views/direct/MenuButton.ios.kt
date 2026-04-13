@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.Reactive
 import platform.UIKit.UIControl
 
 actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
@@ -12,10 +13,11 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
     override val driverActions get() = super.driverActions + menuDriverActions()
     override val native = FrameLayoutButton()
     override val control: UIControl get() = native
+    init { setupControl() }
 
     actual fun opensMenu(createMenu: Frame.() -> Unit) {
         val openFn: () -> Unit = {
-            var willRemove: RView? = null
+            var willRemove: Element? = null
             val f = overlayFrame!!
             f.popoverWriter {
                 willRemove?.let { f.removeChild(it) }

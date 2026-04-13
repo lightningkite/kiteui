@@ -89,6 +89,7 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
         }
 
     init {
+        setupControl()
         native.minimumValue = min.toFloat()
         native.maximumValue = max.toFloat()
         native.value = valueProp.value.toFloat()

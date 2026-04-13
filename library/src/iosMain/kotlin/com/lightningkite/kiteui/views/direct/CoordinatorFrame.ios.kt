@@ -220,6 +220,7 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
     actual override val underlyingNativeElement: CoordinatorDragHandle get() = this
     override val native = FrameLayoutButton()
     override val control: UIControl get() = native
+    init { setupControl() }
 
     @OverrideOnly
     override fun onStartup() {

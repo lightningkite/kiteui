@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.times
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.UILabelWithLayerBackground
 import com.lightningkite.kiteui.views.informParentOfSizeChange
@@ -42,7 +42,7 @@ import platform.UIKit.UIFontWeightTrait
 import platform.UIKit.UIView
 
 @OptIn(ExperimentalForeignApi::class)
-actual class Code actual constructor(context: ElementContext) : RView(context) {
+actual class Code actual constructor(context: ElementContext) : NativeElement(context) {
     val actualNative = UILabelWithLayerBackground(WeakReference(context))
     override val native: UIView = actualNative
     val label get() = actualNative.label
@@ -101,17 +101,6 @@ actual class Code actual constructor(context: ElementContext) : RView(context) {
             }
             label.attributedText = src
         }
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        actualNative.foreground = theme.foreground
-        fontAndStyle = theme.font
-
-        //
-//        sizeConstraints = SizeConstraints(
-//            minWidth = theme.font.size * 0.6,
-//            minHeight = theme.font.size * 1.5,
-//        )
     }
 
     private var originalHtml: NSAttributedString? = null

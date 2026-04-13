@@ -35,13 +35,9 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
         }
     }
 
-    init {
+    protected fun setupControl() {
         themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
         themePipeline.add(ThemePipeline.Step.elementStatus, statusThemes)
-    }
-
-    init {
-        // todo: Maybe should be native.observe?
         onRemove(control.observe("highlighted") { refreshTheming() })
         onRemove(control.observe("selected") { refreshTheming() })
         onRemove(control.observe("enabled") { refreshTheming() })
@@ -70,12 +66,9 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
         }
     }
 
-    init {
+    protected fun setupControl() {
         themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
         themePipeline.add(ThemePipeline.Step.elementStatus, statusThemes)
-    }
-
-    init {
         onRemove(control.observe("highlighted") { refreshTheming() })
         onRemove(control.observe("selected") { refreshTheming() })
         onRemove(control.observe("enabled") { refreshTheming() })

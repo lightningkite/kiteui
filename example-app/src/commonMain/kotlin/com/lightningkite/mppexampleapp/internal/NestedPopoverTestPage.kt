@@ -11,7 +11,7 @@ import com.lightningkite.reactive.core.Reactive
 @Routable("nested-popover-testing")
 object NestedPopoverTestPage : Page {
     override val title: Reactive<String> = Constant("Nested Popover Testing")
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render() {
         scrolling.col {
             h1 { content = "Nested Popover Testing" }
             text("Hover or click a button to open a popover, then interact with the nested button inside. Moving outside the nested popover should close it but keep the parent open.")
