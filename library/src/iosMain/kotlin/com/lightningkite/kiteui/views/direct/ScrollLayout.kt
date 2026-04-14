@@ -110,6 +110,8 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
     }
 
     private var lastReportedSize: Size? = null
+    private var lastContentWidth: Double = -1.0
+    private var lastContentHeight: Double = -1.0
     override fun layoutSubviews() {
         val mySizeWithoutPadding = bounds.useContents { size.local }
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
@@ -145,12 +147,13 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
         primary += size.primary
         primary += padding.primaryEnd
         // Set this first so that layoutSubviews has the new content size
-        setContentSize(
-            CGSizeMake(
-                if (horizontal) primary else 0.0,
-                if (!horizontal) primary else 0.0,
-            )
-        )
+        val newContentWidth = if (horizontal) primary else 0.0
+        val newContentHeight = if (!horizontal) primary else 0.0
+        if (newContentWidth != lastContentWidth || newContentHeight != lastContentHeight) {
+            lastContentWidth = newContentWidth
+            lastContentHeight = newContentHeight
+            setContentSize(CGSizeMake(newContentWidth, newContentHeight))
+        }
         (subviews.firstOrNull() as? UIView)?.debugPrint { "Parent ScrollLayout setting psuedoframe of child" }
         view.setPsuedoframe(
             if (horizontal) ps else offset,
@@ -158,12 +161,12 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
             widthSize,
             heightSize,
         )
-//        val oldSize = view.bounds.useContents { this.size.width to this.size.height }
-//        if (oldSize.first != widthSize || oldSize.second != heightSize || view.explicitlyNeedsLayout != false) {
-        view.explicitlyNeedsLayout = false
-        (subviews.firstOrNull() as? UIView)?.debugPrint { "Parent ScrollLayout child layoutSubviewsAndLayers" }
-        view.layoutSubviewsAndLayers()
-//        }
+        val oldSize = view.bounds.useContents { this.size.width to this.size.height }
+        if (oldSize.first != widthSize || oldSize.second != heightSize || view.explicitlyNeedsLayout != false) {
+            view.explicitlyNeedsLayout = false
+            (subviews.firstOrNull() as? UIView)?.debugPrint { "Parent ScrollLayout child layoutSubviewsAndLayers" }
+            view.layoutSubviewsAndLayers()
+        }
         if (lastReportedSize != mySizeWithoutPadding) {
             onSizeChange()
             lastReportedSize = mySizeWithoutPadding

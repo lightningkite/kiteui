@@ -524,6 +524,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
 
     final override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
         set(value) {
+            if (value == field) return
             val oldCascading = field.theme.let { it.revert ?: it }
             field = value       // Do not call super.themeAndBack = value, it breaks everything for some reason
             nativeApplyTheme(value)
