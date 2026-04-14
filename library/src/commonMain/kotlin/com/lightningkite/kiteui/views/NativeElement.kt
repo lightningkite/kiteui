@@ -487,6 +487,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
         protected set(value) {
+            if (value == field) return
             field = value
             nativeApplyTheme(value)
             refreshPadding()

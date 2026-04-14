@@ -87,6 +87,7 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
         }
     }
 
+    @OverrideOnly
     override fun onStartup() {
         super.onStartup()
         cameraController.apply {

@@ -34,6 +34,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     var horizontal: Boolean = true
     var gap: Double = 0.0
         set(value) {
+            if (field == value) return
             field = value
             debugDescriptionInfo2 = "(gap=$field)"
             setNeedsLayout()
