@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import org.apache.fontbox.ttf.OTFParser
 import org.apache.fontbox.ttf.TTFParser
 import java.io.File
+import java.util.Locale
 
 internal fun String?.str() = if (this == null) "null" else "\"$this\""
 
@@ -346,11 +347,13 @@ internal inline fun String.caseAlter(crossinline update: (after: String) -> Stri
         else update(it.value.filter { !(it == '-' || it == '_' || it.isWhitespace()) })
     }
 
+private fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+private fun String.decapitalize() = replaceFirstChar { it.lowercase(Locale.ROOT) }
 
 internal fun String.titleCase() = caseAlter { " " + it.capitalize() }.capitalize()
 internal fun String.spaceCase() = caseAlter { " " + it }.decapitalize()
-internal fun String.kabobCase() = caseAlter { "-$it" }.toLowerCase()
-internal fun String.snakeCase() = caseAlter { "_$it" }.toLowerCase()
-internal fun String.screamingSnakeCase() = caseAlter { "_$it" }.toUpperCase()
+internal fun String.kabobCase() = caseAlter { "-$it" }.lowercase()
+internal fun String.snakeCase() = caseAlter { "_$it" }.lowercase()
+internal fun String.screamingSnakeCase() = caseAlter { "_$it" }.uppercase()
 internal fun String.camelCase() = caseAlter { it.capitalize() }.decapitalize()
 internal fun String.pascalCase() = caseAlter { it.capitalize() }.capitalize()
