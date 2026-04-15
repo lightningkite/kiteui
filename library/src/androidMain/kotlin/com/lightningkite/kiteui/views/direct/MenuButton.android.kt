@@ -7,13 +7,14 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
-    override val driverActions get() = super.driverActions + menuDriverActions()
+    private var _openMenu: (() -> Unit)? = null
+    override val driverActions get() = super.driverActions + menuDriverActions(_openMenu)
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
     actual fun opensMenu(createMenu: Frame.() -> Unit) {
-        native.setOnClickListener { view ->
+        val openFn = {
             var willRemove: RView? = null
             popoverWriter(this.overlayFrame!!) {
                 val r = willRemove
@@ -65,6 +66,8 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                 }
             }
         }
+        native.setOnClickListener { openFn() }
+        _openMenu = openFn
     }
 
     actual var requireClick: Boolean = true

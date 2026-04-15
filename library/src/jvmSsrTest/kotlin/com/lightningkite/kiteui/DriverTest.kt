@@ -1070,6 +1070,54 @@ class DriverTest {
         assertTrue(results.none { it.name == "hidBtn" }, "Should not find hidden button by default: $results")
     }
 
+    // --- MenuButton ---
+
+    @Test
+    fun menuButtonClickOpensMenu() = uiTest(
+        content = {
+            col {
+                val selected = Signal("")
+                menuButton {
+                    debugName = "menu"
+                    text("Open Menu")
+                    opensMenu {
+                        button {
+                            debugName = "optionA"
+                            text("Option A")
+                            onClick { selected.value = "A" }
+                        }
+                        button {
+                            debugName = "optionB"
+                            text("Option B")
+                            onClick { selected.value = "B" }
+                        }
+                    }
+                }
+                text {
+                    debugName = "result"
+                    ::content { "Selected: ${selected()}" }
+                }
+            }
+        }
+    ) {
+        // Before opening, menu items not in tree
+        val before = snapshot()
+        assertTrue(!before.contains("optionA"), "Menu items should not be in tree before open: $before")
+
+        // Click returns menu snapshot
+        val menuSnap = click("menu")
+        assertTrue(menuSnap.contains("optionA"), "Click should return menu snapshot: $menuSnap")
+
+        // Tree now contains the open menu
+        val after = snapshot()
+        assertTrue(after.contains("optionA"), "Menu items should appear in tree: $after")
+
+        // Click a menu item
+        click("optionA")
+        val result = snapshot("result")
+        assertTrue(result.contains("Selected: A"), "Selection should update: $result")
+    }
+
     // --- path consistency: findAll paths work directly with click ---
 
     @Test
