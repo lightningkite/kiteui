@@ -25,7 +25,6 @@ allprojects {
         maven("https://jitpack.io")
         google()
         mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") // For Skiko Android
     }
 }
 plugins {
