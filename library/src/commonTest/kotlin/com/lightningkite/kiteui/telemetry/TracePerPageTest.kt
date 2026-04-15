@@ -3,13 +3,14 @@ package com.lightningkite.kiteui.telemetry
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.Routes
+import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.test.*
 
 /** Stub pages for navigation tests. */
-private class PageA : Page { override fun ViewWriter.render() {} }
-private class PageB : Page { override fun ViewWriter.render() {} }
-private class PageC : Page { override fun ViewWriter.render() {} }
+private class PageA : Page { override fun ElementWriter.CanAddTheme.render() {} }
+private class PageB : Page { override fun ElementWriter.CanAddTheme.render() {} }
+private class PageC : Page { override fun ElementWriter.CanAddTheme.render() {} }
 
 class TracePerPageTest {
 

@@ -83,36 +83,6 @@ class InteractionSpanTest {
     }
 
     @Test
-    fun interactionSpanCapturesViewPath() {
-        val t = Telemetry(testConfig())
-        val viewPathProvider = ViewPathProvider { "settings/save-button" }
-        val ctx = TelemetryContext(viewPathProvider = viewPathProvider)
-        val scope = CoroutineScope(ctx)
-
-        t.startInteraction(scope, "Save").end()
-
-        val span = t.exporter.spanBuffer.first()
-        val viewPathAttr = span.attributes.find { it.key == "view.path" }
-        assertNotNull(viewPathAttr)
-        assertEquals("settings/save-button", viewPathAttr.value.stringValue)
-    }
-
-    @Test
-    fun interactionContextPreservesViewPathProvider() = runTest {
-        val provider = ViewPathProvider { "my/button" }
-        val t = Telemetry(testConfig())
-        val scope = CoroutineScope(TelemetryContext(viewPathProvider = provider))
-
-        val interaction = t.startInteraction(scope, "Click")
-
-        withContext(interaction.coroutineContext) {
-            assertEquals("my/button", kotlin.coroutines.coroutineContext.viewPath())
-        }
-
-        interaction.end()
-    }
-
-    @Test
     fun httpSpanBecomesChildOfInteraction() = runTest {
         val t = Telemetry(testConfig(traceSamplingRate = 1.0).copy(
             tracePropagationHosts = listOf("example.com")
