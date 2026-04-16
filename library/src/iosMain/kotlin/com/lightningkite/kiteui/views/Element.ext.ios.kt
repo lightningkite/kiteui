@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.assertMainThread
 import com.lightningkite.kiteui.debugMode
 import platform.QuartzCore.CATransaction
+import platform.UIKit.UIAccessibilityIsReduceMotionEnabled
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
 import kotlin.time.DurationUnit
@@ -12,7 +13,7 @@ import kotlin.time.DurationUnit
 var animationsEnabled: Boolean = true
 var isInAnimationBlock: Boolean = false
 
-actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled
+actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled && !UIAccessibilityIsReduceMotionEnabled()
 
 actual inline fun Element.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
@@ -41,7 +42,7 @@ inline fun UIView.withoutAnimation(action: () -> Unit) {
 }
 
 inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
-    if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.5) {
+    if (animationsEnabled && !UIAccessibilityIsReduceMotionEnabled()) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.5) {
         val before = isInAnimationBlock
         isInAnimationBlock = true
         try {
@@ -55,7 +56,7 @@ inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
 }
 
 inline fun Element.animateIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
-    if (animationsEnabled) UIView.animateWithDuration(
+    if (animationsEnabled && !UIAccessibilityIsReduceMotionEnabled()) UIView.animateWithDuration(
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
         completion = { onComplete() },
         animations = {
@@ -74,7 +75,7 @@ inline fun Element.animateIfAllowed(crossinline onComplete: () -> Unit = {}, cro
 }
 
 inline fun Element.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
-    if (animationsEnabled) UIView.transitionWithView(
+    if (animationsEnabled && !UIAccessibilityIsReduceMotionEnabled()) UIView.transitionWithView(
         view = native,
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
         completion = { onComplete() },

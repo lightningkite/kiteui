@@ -7,7 +7,10 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElementWithSecondaryAction
 import com.lightningkite.reactive.context.onRemove
 import kotlinx.coroutines.launch
+import platform.UIKit.UIAccessibilityTraitLink
 import platform.UIKit.UIControl
+import platform.UIKit.accessibilityTraits
+import platform.UIKit.setAccessibilityTraits
 
 actual class Link actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + linkDriverActions()
@@ -28,6 +31,7 @@ actual class Link actual constructor(context: ElementContext): NativeContainerEl
     }
 
     init {
+        native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitLink
         setupControl()
     }
 

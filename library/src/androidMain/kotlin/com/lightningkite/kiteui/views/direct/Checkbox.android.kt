@@ -2,12 +2,10 @@ package com.lightningkite.kiteui.views.direct
 
 import android.R
 import android.content.res.ColorStateList
+import androidx.core.view.ViewCompat
 import androidx.core.widget.CompoundButtonCompat
-import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.MutableReactiveValue
 import android.widget.CheckBox as AndroidCheckBox
@@ -34,4 +32,10 @@ actual class Checkbox actual constructor(context: ElementContext): NativeInterac
     }
 
     actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
+
+    init {
+        checked.addListener {
+            ViewCompat.setStateDescription(native, if (checked.state.let { if (it.ready) it.raw else false }) "Checked" else "Not checked")
+        }
+    }
 }

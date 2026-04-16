@@ -25,6 +25,16 @@ import platform.QuartzCore.CATransform3DMakeScale
 import platform.QuartzCore.CATransform3DMakeTranslation
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
+import com.lightningkite.kiteui.models.LiveRegionMode
+import platform.UIKit.UIAccessibilityPostNotification
+import platform.UIKit.UIAccessibilityScreenChangedNotification
+import platform.UIKit.UIAccessibilityTraitHeader
+import platform.UIKit.accessibilityHint
+import platform.UIKit.accessibilityLabel
+import platform.UIKit.accessibilityTraits
+import platform.UIKit.setAccessibilityHint
+import platform.UIKit.setAccessibilityLabel
+import platform.UIKit.setAccessibilityTraits
 import platform.UIKit.UIBlurEffect
 import platform.UIKit.UIBlurEffectStyle
 import platform.UIKit.UIColor
@@ -54,6 +64,74 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     protected open val addChildTarget: UIView get() = native
 
     var tag: Any? = null
+
+    // --- ACCESSIBILITY ---
+
+    override var accessibleLabel: String?
+        get() = super.accessibleLabel
+        set(value) {
+            super.accessibleLabel = value
+            native.accessibilityLabel = value
+        }
+
+    override var accessibleSemantic: AccessibleSemantic?
+        get() = super.accessibleSemantic
+        set(value) {
+            super.accessibleSemantic = value
+            when (value) {
+                is AccessibleSemantic.Heading -> {
+                    native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitHeader
+                }
+                else -> {
+                    // Clear header trait if it was previously set
+                    native.accessibilityTraits = native.accessibilityTraits and UIAccessibilityTraitHeader.inv()
+                }
+            }
+        }
+
+    override var accessibleLiveRegion: LiveRegionMode
+        get() = super.accessibleLiveRegion
+        set(value) {
+            super.accessibleLiveRegion = value
+            // iOS does not have a direct equivalent to Android's accessibilityLiveRegion.
+            // We store the mode and post UIAccessibility notifications from content-change sites.
+        }
+
+    override var labelFor: Element?
+        get() = super.labelFor
+        set(value) {
+            super.labelFor = value
+            if (value != null) {
+                val targetElement = value.underlyingNativeElement as NativeElement
+                if (targetElement.accessibleLabel == null) {
+                    val text = (outermostElement as? com.lightningkite.kiteui.views.direct.TextView)?.content
+                    if (text != null) {
+                        targetElement.native.accessibilityLabel = text
+                    }
+                }
+            }
+        }
+
+    override var describedBy: Element?
+        get() = super.describedBy
+        set(value) {
+            super.describedBy = value
+            if (value != null) {
+                val text = (value.underlyingNativeElement as? com.lightningkite.kiteui.views.direct.TextView)?.content
+                if (text != null && text.isNotBlank()) {
+                    native.accessibilityHint = text
+                }
+            } else {
+                native.accessibilityHint = null
+            }
+        }
+
+    /** Posts a screen-changed notification if this element is marked as a live region. */
+    fun postLiveRegionNotificationIfNeeded() {
+        if (accessibleLiveRegion != LiveRegionMode.None) {
+            UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, native)
+        }
+    }
 
     actual override var showOnPrint: Boolean = true
 

@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.models.DownSemantic
 import com.lightningkite.kiteui.models.HoverSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.toAwt
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWithSecondaryAction
@@ -52,7 +53,7 @@ actual class Button actual constructor(context: RContext) : RViewWithSecondaryAc
         init {
             isContentAreaFilled = false
             isBorderPainted = false
-            isFocusPainted = false
+            isFocusPainted = true
             isOpaque = false
             isRolloverEnabled = true  // Enable rollover tracking for hover states
             // Remove all internal margins/borders so contentPanel gets full space
@@ -97,6 +98,10 @@ actual class Button actual constructor(context: RContext) : RViewWithSecondaryAc
             contentPanel.revalidate()
             contentPanel.repaint()
         }
+    }
+
+    override fun nativeSetAction(action: Action?) {
+        native.accessibleContext?.accessibleName = accessibleLabel ?: action?.title
     }
 
     actual var enabled: Boolean

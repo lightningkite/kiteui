@@ -6,7 +6,14 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import platform.UIKit.UIAccessibilityTraitButton
 import platform.UIKit.UIControl
+import platform.UIKit.accessibilityTraits
+import platform.UIKit.accessibilityValue
+import platform.UIKit.isAccessibilityElement
+import platform.UIKit.setAccessibilityTraits
+import platform.UIKit.setAccessibilityValue
+import platform.UIKit.setIsAccessibilityElement
 
 
 actual class RadioButton actual constructor(context: ElementContext) : NativeContainerElementWithAction(context) {
@@ -20,6 +27,8 @@ actual class RadioButton actual constructor(context: ElementContext) : NativeCon
     override val control: UIControl get() = button
 
     init {
+        button.isAccessibilityElement = true
+        button.accessibilityTraits = button.accessibilityTraits or UIAccessibilityTraitButton
         button.extensionHorizontalAlign = Align.Center
         button.extensionVerticalAlign = Align.Center
         native.addSubview(button)
@@ -29,6 +38,9 @@ actual class RadioButton actual constructor(context: ElementContext) : NativeCon
     actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
+        _checked.addListener {
+            button.accessibilityValue = if (_checked.value) "1" else "0"
+        }
         @OptIn(ExperimentalKiteUi::class)
         themePipeline.add(
             ThemePipeline.Step.elementStyling,

@@ -4,10 +4,12 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ErrorSemantic
 import com.lightningkite.kiteui.models.InvalidSemantic
 import com.lightningkite.kiteui.models.KeyboardHints
+import com.lightningkite.kiteui.models.LiveRegionMode
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.TextInput
 import com.lightningkite.kiteui.views.direct.shownWhen
 import com.lightningkite.kiteui.views.direct.subtext
+import com.lightningkite.kiteui.views.l2.findFirstInteractiveDescendant
 import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.lensing.validation.*
@@ -25,11 +27,17 @@ fun ViewWriter.issueText(
     transform: (Issue) -> String = { it.summary },
     shownWhen: ReactiveContext.() -> Boolean = { true }
 ): Unit {
-    this.shownWhen { shownWhen() && issues().isNotEmpty() }.themed(ErrorSemantic).subtext {
+    val issueView = this.shownWhen { shownWhen() && issues().isNotEmpty() }.themed(ErrorSemantic).subtext {
         ::content {
             issues().joinToString("\n", transform = transform)
         }
     }
+    // Link the issue text to its sibling interactive element for screen readers
+    issueView.accessibleLiveRegion = LiveRegionMode.Assertive
+    // Walk up the parent chain to find a container with an interactive element as a sibling
+    generateSequence(issueView.parent) { it.parent }
+        .firstNotNullOfOrNull { it.findFirstInteractiveDescendant() }
+        ?.let { it.describedBy = issueView }
 }
 
 private class ValidatedTextInput(private val wraps: TextInput) : Element by wraps {

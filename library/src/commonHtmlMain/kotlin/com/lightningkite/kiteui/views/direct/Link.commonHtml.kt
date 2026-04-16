@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ClickableSemantic
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
@@ -9,7 +10,9 @@ import kotlinx.coroutines.launch
 
 actual class Link actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + linkDriverActions()
-
+    override fun nativeSetAction(action: Action?) {
+        native.setAttribute("aria-label", accessibleLabel ?: action?.title)
+    }
     init {
         themeChoice += ClickableSemantic
         native.tag = "a"

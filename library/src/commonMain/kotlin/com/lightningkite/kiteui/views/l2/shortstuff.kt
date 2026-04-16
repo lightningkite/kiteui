@@ -40,7 +40,7 @@ fun ElementWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.() -
 @ViewDsl
 fun ElementWriter.CanAddShownWhen.errorText() {
     val errors = ReactiveMutableSet<Exception>()
-    shownWhen { errors().isNotEmpty() }.themed(SubtextSemantic).themed(ErrorSemantic).text {
+    val errorView = shownWhen { errors().isNotEmpty() }.themed(SubtextSemantic).themed(ErrorSemantic).text {
         this@errorText.context.exceptionHandlers += ExceptionHandler(1f) {
             errors.add(it);
             { errors.remove(it) }
@@ -52,4 +52,10 @@ fun ElementWriter.CanAddShownWhen.errorText() {
             }
         }
     }
+    // Link the error text to its sibling interactive element for screen readers
+    errorView.accessibleLiveRegion = LiveRegionMode.Assertive
+    // Walk up the parent chain to find a container with an interactive element as a sibling
+    generateSequence(errorView.parent) { it.parent }
+        .firstNotNullOfOrNull { it.findFirstInteractiveDescendant() }
+        ?.let { it.describedBy = errorView }
 }

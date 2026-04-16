@@ -52,6 +52,7 @@ class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverr
 
     init {
         userInteractionEnabled = true
+        isAccessibilityElement = true
         addGestureRecognizer(tapGestureRecognizer)
         addGestureRecognizer(longPressGestureRecognizer)
     }

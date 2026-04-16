@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.LinearLayoutElement
@@ -42,6 +43,26 @@ class LabeledView(private val container: RowOrCol): LinearLayoutElement by conta
     init {
         themeChoice += LabelGapSemantic
     }
+
+    @OverrideOnly
+    override fun onStartup() {
+        container.onStartup()
+        val target = findFirstInteractiveDescendant()
+        if (target != null) {
+            label.labelFor = target
+        }
+    }
+}
+
+internal fun Element.findFirstInteractiveDescendant(): InteractiveElement? {
+    if (this is InteractiveElement) return this
+    if (this is ElementWithChildren) {
+        for (child in children) {
+            val found = child.findFirstInteractiveDescendant()
+            if (found != null) return found
+        }
+    }
+    return null
 }
 
 inline fun ElementWriter.label(setup: LabeledView.() -> Unit = {}): LabeledView {

@@ -6,7 +6,12 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.toggle
+import platform.UIKit.UIAccessibilityTraitButton
 import platform.UIKit.UIControl
+import platform.UIKit.accessibilityTraits
+import platform.UIKit.accessibilityValue
+import platform.UIKit.setAccessibilityTraits
+import platform.UIKit.setAccessibilityValue
 
 
 actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
@@ -19,8 +24,12 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
     actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
+        native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitButton
         setupControl()
-        _checked.addListener { refreshTheming() }
+        _checked.addListener {
+            refreshTheming()
+            native.accessibilityValue = if (_checked.value) "1" else "0"
+        }
         onRemove(native.setOnClick {
             _checked.toggle()
         })

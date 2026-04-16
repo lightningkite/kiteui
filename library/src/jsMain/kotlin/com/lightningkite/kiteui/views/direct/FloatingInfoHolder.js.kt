@@ -13,6 +13,7 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
+import com.lightningkite.kiteui.dom.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 import kotlin.math.min
 import kotlin.random.Random
@@ -87,6 +88,10 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                 native.style.width = "unset"
                 native.style.height = "unset"
                 native.classes.add("popover")
+                native.setAttribute("role", "dialog")
+                native.setAttribute("aria-modal", "true")
+                // Update aria-expanded on the source element
+                source.native.setAttribute("aria-expanded", "true")
                 var tx = 0.0
                 var txm = 0
                 var ty = 0.0
@@ -240,6 +245,14 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                 val repos = { ev: Event -> reposition() }
                 window.addEventListener("scroll", repos, true)
 
+                val escapeHandler = { ev: Event ->
+                    if ((ev as? KeyboardEvent)?.key == "Escape") {
+                        close()
+                    }
+                    Unit
+                }
+                document.addEventListener("keydown", escapeHandler)
+
                 val mouseMove = { it: Event ->
                     it as MouseEvent
                     if (blockView == null && popoverKeepOpen <= 0) {
@@ -274,6 +287,10 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                     closeView = null
                     window.removeEventListener("scroll", repos, true)
                     window.removeEventListener("mousemove", mouseMove)
+                    document.removeEventListener("keydown", escapeHandler)
+                    source.native.setAttribute("aria-expanded", "false")
+                    // Restore focus to the trigger element
+                    (source.native.element as? HTMLElement)?.focus()
                     native.onElement { e ->
                         this.onShutdown()
                         (e as HTMLElement)

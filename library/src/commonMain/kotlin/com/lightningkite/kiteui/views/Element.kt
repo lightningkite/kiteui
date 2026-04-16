@@ -424,6 +424,64 @@ interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
      */
     var showOnPrint: Boolean
 
+    // --- ACCESSIBILITY ---
+
+    /**
+     * Explicit accessible label override.
+     *
+     * When null (default), the platform auto-derives a label from the element's content:
+     * - Button/Link: from `action.title`
+     * - TextInput/TextArea: from associated `label()` or `hint`
+     * - IconView/ImageView: from `description`
+     *
+     * Set this only when the auto-derived label is insufficient (e.g., a complex custom widget).
+     */
+    var accessibleLabel: String?
+
+    /**
+     * Semantic role for assistive technologies and HTML semantic elements.
+     *
+     * On web, changes the HTML tag for proper semantics and SEO (e.g., `<h2>`, `<nav>`, `<main>`).
+     * On iOS, sets accessibility traits (header, etc.). On Android, sets heading/landmark properties.
+     *
+     * Use via modifiers like `heading(level)`, or set automatically by theme modifiers like `nav`.
+     */
+    var accessibleSemantic: AccessibleSemantic?
+
+    /**
+     * Marks this element as a live region for screen reader announcements of dynamic content.
+     *
+     * When content inside this element changes, assistive technologies will announce the update.
+     *
+     * Use via the `liveRegion()` modifier:
+     * ```kotlin
+     * liveRegion() - col { text { ::content { statusMessage() } } }
+     * ```
+     */
+    var accessibleLiveRegion: LiveRegionMode
+
+    /**
+     * Associates this element as the accessible label for another element.
+     *
+     * On web, creates a `<label for="id">` association. On Android, sets `labelFor`.
+     * On iOS, copies this element's text to the target's `accessibilityLabel`.
+     *
+     * Automatically set by [field] and [label] when they contain an interactive element.
+     */
+    var labelFor: Element?
+
+    /**
+     * Associates this element with a description element (e.g., error text, help text).
+     *
+     * On web, sets `aria-describedby` linking to the description element.
+     * On Android, stores the association for components that announce description changes.
+     * On iOS, sets `accessibilityHint` from the description element's text.
+     *
+     * Automatically set by [errorText][com.lightningkite.kiteui.views.l2.errorText] and
+     * [issueText][com.lightningkite.kiteui.reactive.issueText] for form validation.
+     */
+    var describedBy: Element?
+
     val driverValue: String? get() = null
     val driverActions: Map<String, suspend (List<String>) -> String> get() = AiDriver.Defaults.defaultDriverActions(this)
     fun driverDisplay(options: DriverSnapshotOptions): String = AiDriver.Defaults.defaultDriverDisplay(this, options)

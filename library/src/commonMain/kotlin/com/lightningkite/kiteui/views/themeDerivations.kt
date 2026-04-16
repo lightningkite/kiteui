@@ -87,9 +87,9 @@ inline val CanAddTheme.fieldTheme: CanAddTheme get() = themed(FieldSemantic)
 @ViewModifierDsl3
 inline val CanAddTheme.buttonTheme: CanAddTheme get() = themed(ButtonSemantic)
 @ViewModifierDsl3
-inline val CanAddTheme.bar: CanAddTheme get() = themed(BarSemantic)
+inline val CanAddTheme.bar: CanAddTheme get() = themed(BarSemantic).beforeSetup { accessibleSemantic = AccessibleSemantic.Banner }
 @ViewModifierDsl3
-inline val CanAddTheme.nav: CanAddTheme get() = themed(NavSemantic)
+inline val CanAddTheme.nav: CanAddTheme get() = themed(NavSemantic).beforeSetup { accessibleSemantic = AccessibleSemantic.Navigation }
 @ViewModifierDsl3
 inline val CanAddTheme.important: CanAddTheme get() = themed(ImportantSemantic)
 @ViewModifierDsl3

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import android.view.View
 import androidx.annotation.FloatRange
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.ElementContext
@@ -11,7 +12,10 @@ import com.lightningkite.kiteui.views.NativeElement
 
 actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
 
-    override val native = NCircularProgress(context.activity)
+    override val native = NCircularProgress(context.activity).apply {
+        contentDescription = "Progress"
+        accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+    }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)

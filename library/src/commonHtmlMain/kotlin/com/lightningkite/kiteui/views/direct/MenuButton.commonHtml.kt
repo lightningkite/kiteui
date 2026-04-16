@@ -14,6 +14,8 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
         native.tag = "button"
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
+        native.setAttribute("aria-haspopup", "menu")
+        native.setAttribute("aria-expanded", "false")
         native.addEventListener("click") {
             floating.open()
             floating.block()

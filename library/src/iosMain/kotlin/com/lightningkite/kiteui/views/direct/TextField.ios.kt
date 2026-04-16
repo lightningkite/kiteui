@@ -189,6 +189,7 @@ actual class TextInput actual constructor(context: ElementContext) : NativeEleme
         set(value) {
             field = value
             updateHint()
+            textField.accessibilityHint = value.ifEmpty { null }
         }
     private var _align: Align? = null
     actual var align: Align?

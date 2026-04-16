@@ -6,7 +6,12 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
+import platform.UIKit.UIAccessibilityTraitButton
 import platform.UIKit.UIControl
+import platform.UIKit.accessibilityLabel
+import platform.UIKit.accessibilityTraits
+import platform.UIKit.setAccessibilityLabel
+import platform.UIKit.setAccessibilityTraits
 
 @OptIn(ExperimentalKiteUi::class)
 actual class Button actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
@@ -23,6 +28,7 @@ actual class Button actual constructor(context: ElementContext) : NativeContaine
     }
 
     override fun nativeSetAction(action: Action?) {
+        native.accessibilityLabel = accessibleLabel ?: action?.title
         onRemove(native.setOnClick {
             action?.startAction(this)
         })
@@ -35,6 +41,7 @@ actual class Button actual constructor(context: ElementContext) : NativeContaine
     }
 
     init {
+        native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitButton
         setupControl()
         ::opacity { if (loading()) 0.7 else 1.0 }
     }

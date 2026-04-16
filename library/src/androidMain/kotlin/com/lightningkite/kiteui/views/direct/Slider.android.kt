@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.view.View
 import android.widget.SeekBar
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
@@ -101,6 +102,7 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
     init {
         // Android SeekBar uses integers for progress (0-1000)
         nativeSeekBar.max = 1000
+        nativeSeekBar.accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
 
         // Initialize with the property value
         value.value = valueProp.value

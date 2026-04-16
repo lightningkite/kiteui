@@ -6,13 +6,20 @@ import com.lightningkite.reactive.core.MutableReactiveValue
 import platform.UIKit.UIControl
 import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
+import platform.UIKit.isAccessibilityElement
+import platform.UIKit.setIsAccessibilityElement
 
 actual class Switch actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
     override val driverActions get() = super.driverActions + switchDriverActions()
     override val native = UISwitch()
     override val control: UIControl get() = native
-    init { setupControl() }
+    init {
+        // UISwitch already has built-in VoiceOver support (traits, value announcements).
+        // Ensure isAccessibilityElement is set so our accessibleLabel propagates.
+        native.isAccessibilityElement = true
+        setupControl()
+    }
 
     actual val checked: MutableReactiveValue<Boolean> = object : MutableReactiveValue<Boolean> {
         override fun addListener(listener: () -> Unit): () -> Unit {

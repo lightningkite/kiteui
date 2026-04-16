@@ -54,11 +54,16 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
     )
 
     init {
+        native.setAttribute("role", "button")
+        native.setAttribute("aria-pressed", "false")
         checked.addListener {
-            if (checked.value)
+            if (checked.value) {
                 native.classes.add("checked")
-            else
+                native.setAttribute("aria-pressed", "true")
+            } else {
                 native.classes.remove("checked")
+                native.setAttribute("aria-pressed", "false")
+            }
         }.also(::onRemove)
     }
 
@@ -66,5 +71,6 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
         get() = input.attributes.disabled != true
         set(value) {
             input.attributes.disabled = !value
+            native.setAttribute("aria-disabled", if (value) null else "true")
         }
 }

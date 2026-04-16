@@ -7,5 +7,7 @@ actual class ActivityIndicator actual constructor(context: ElementContext): Nati
     init {
         native.tag = "span"
         native.classes.add("spinner")
+        native.setAttribute("role", "status")
+        native.setAttribute("aria-label", "Loading")
     }
 }
