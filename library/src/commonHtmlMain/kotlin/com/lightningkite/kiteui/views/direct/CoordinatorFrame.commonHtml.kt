@@ -88,15 +88,16 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
             }
 
             willRemove = produceAtMostOneView {
-                beforeSetup { animateIn(transition.forward) }
-                if (ratio == null) {
-                    align(Align.Start, Align.Stretch).content(control)
-                } else {
-                    row {
-                        gap = 0.px
-                        ignoreInteraction = true
-                        weight(ratio).content(control)
-                        weight(1f - ratio).frame { ignoreInteraction = true }
+                beforeSetup { animateIn(transition.forward) }.run {
+                    if (ratio == null) {
+                        align(Align.Start, Align.Stretch).content(control)
+                    } else {
+                        row {
+                            gap = 0.px
+                            ignoreInteraction = true
+                            weight(ratio).content(control)
+                            weight(1f - ratio).frame { ignoreInteraction = true }
+                        }
                     }
                 }
             }
@@ -125,15 +126,16 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
             }
 
             willRemove = produceAtMostOneView {
-                beforeSetup { animateIn(transition.forward) }
-                if (ratio == null) {
-                    align(Align.End, Align.Stretch).content(control)
-                } else {
-                    row {
-                        gap = 0.px
-                        ignoreInteraction = true
-                        weight(1f - ratio).frame { ignoreInteraction = true }
-                        weight(ratio).content(control)
+                beforeSetup { animateIn(transition.forward) }.run {
+                    if (ratio == null) {
+                        align(Align.End, Align.Stretch).content(control)
+                    } else {
+                        row {
+                            gap = 0.px
+                            ignoreInteraction = true
+                            weight(1f - ratio).frame { ignoreInteraction = true }
+                            weight(ratio).content(control)
+                        }
                     }
                 }
             }
@@ -158,6 +160,11 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
         native.tag = "button"
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
+    }
+
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        Frame.internalAddChildStack(this, index, element)
     }
 
     val iconView = icon {

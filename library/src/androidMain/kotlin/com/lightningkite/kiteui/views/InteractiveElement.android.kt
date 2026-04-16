@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeDerivation
 
-private val enabledTheming = NativeElementCommonCode.ThemePipeline.Operation.Variable { e ->
+private val enabledTheming = NativeElementCommonCode.ThemePipeline.ThemeForElement { e ->
     if (!e.native.isEnabled) DisabledSemantic else ThemeDerivation.None
 }
 

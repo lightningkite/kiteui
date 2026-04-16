@@ -2,7 +2,6 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.render
-import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.stack
 import kotlin.test.Test
@@ -17,7 +16,7 @@ class LayoutTest {
                 s.render(this)
             }.also { root = it }
         }
-        println(root.screenRectangle())
+        println(root.underlyingNativeElement.screenRectangle())
         s.checks.forEach { it() }
     }
 }

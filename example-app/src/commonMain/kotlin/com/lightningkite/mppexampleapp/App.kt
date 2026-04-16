@@ -1,11 +1,8 @@
 package com.lightningkite.mppexampleapp
 
-import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
-import com.lightningkite.kiteui.exceptions.ExceptionToMessage
 import com.lightningkite.kiteui.exceptions.installDebugHandlers
-import com.lightningkite.kiteui.isDevelopment
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.views.*
@@ -48,7 +45,7 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
     }
 
     Element.Debugger.leakDetect = true
-    val rootView = produceExactlyOne {
+    val rootView = produceExactlyOneElement {
         appNav(navigator, dialog) {
             appName = "KiteUI Sample App"
 

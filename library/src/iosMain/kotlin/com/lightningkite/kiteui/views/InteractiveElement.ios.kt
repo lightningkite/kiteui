@@ -24,7 +24,7 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
         }
 
     companion object {
-        private val statusThemes = ThemePipeline.Operation.Variable { e ->
+        private val statusThemes = ThemePipeline.ThemeForElement { e ->
             val e = e.underlyingNativeElement as NativeInteractiveElement
 
             var t: ThemeDerivation = ThemeDerivation.None
@@ -55,7 +55,7 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
         }
 
     companion object {
-        private val statusThemes = ThemePipeline.Operation.Variable { e ->
+        private val statusThemes = ThemePipeline.ThemeForElement { e ->
             val e = e.underlyingNativeElement as NativeInteractiveContainerElement
 
             var t: ThemeDerivation = ThemeDerivation.None

@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.telemetry.TelemetryContext
+import com.lightningkite.kiteui.utils.OrderedKeyedList
 import com.lightningkite.reactive.context.StatusListener
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
@@ -540,8 +541,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     @ExperimentalKiteUi
     var themePipeline: ThemePipeline = ThemePipeline(
-        ThemePipeline.Step.themeChoice to null,  // pre-allocate (likely)
-        ThemePipeline.Step.processingStatus to ThemePipeline.Operation.processingTheming
+        ThemePipeline.Step.processingStatus to ThemePipeline.ThemeForElement.processingTheming
     )
 
     final override var themeChoice: ThemeDerivation
@@ -764,7 +764,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
      *
      * ## How It Works
      *
-     * Each step can have an [Operation] that produces a [ThemeDerivation]. Operations are
+     * Each step can have an [ThemeForElement] that produces a [ThemeDerivation]. Operations are
      * combined in order to create the final theme:
      *
      * ```kotlin
@@ -775,13 +775,6 @@ abstract class NativeElementCommonCode internal constructor(override val context
      *     .derive(elementStatus)       // Step 4
      *     .derive(processingStatus)    // Step 5
      * ```
-     *
-     * ## Operations
-     *
-     * Operations produce theme derivations:
-     * - [Operation.Constant] - Always returns the same theme
-     * - [Operation.Variable] - Computes theme from current element state
-     * - [Operation.Chain] - Combines two operations
      *
      * ## Adding to the Pipeline
      *
@@ -796,8 +789,12 @@ abstract class NativeElementCommonCode internal constructor(override val context
      * @see ThemeDerivation for how themes are derived
      * @see NativeElementCommonCode.refreshTheming for where this is used
      */
-    class ThemePipeline(private val operations: ArrayList<Pair<Step, Operation?>>) {
-        constructor(vararg init: Pair<Step, Operation?>) : this(arrayListOf(*init))
+    class ThemePipeline(private val operations: OrderedKeyedList<Step, ThemeForElement>) {
+        constructor(vararg init: Pair<Step, ThemeForElement>) : this(
+            OrderedKeyedList(
+                init.mapTo(ArrayList()) { OrderedKeyedList.Entry(it.first, it.second) }
+            )
+        )
 
         /**
          * A step in the theme pipeline with an ordering priority.
@@ -809,7 +806,9 @@ abstract class NativeElementCommonCode internal constructor(override val context
          * is unique.
          */
         @JvmInline
-        value class Step(val order: Float) {
+        value class Step(val order: Float) : Comparable<Step> {
+            override fun compareTo(other: Step): Int = order.compareTo(other.order)
+
             companion object {
                 /** Element's default styling - what the element chooses for itself */
                 val elementStyling = Step(0f)
@@ -836,33 +835,11 @@ abstract class NativeElementCommonCode internal constructor(override val context
             }
         }
 
-        /**
-         * An operation that produces a [ThemeDerivation] for an element.
-         *
-         * Operations can be static (always return the same theme) or dynamic (compute
-         * the theme based on element state).
-         */
-        sealed interface Operation {
+        fun interface ThemeForElement {
             fun get(element: Element): ThemeDerivation
 
-            fun apply(element: Element, theme: Theme): ThemeAndBack = get(element)(theme)
-
-            operator fun plus(other: Operation): Operation = Chain(this, other)
-
-            data class Constant(val theme: ThemeDerivation) : Operation {
+            data class Constant(val theme: ThemeDerivation) : ThemeForElement {
                 override fun get(element: Element): ThemeDerivation = theme
-            }
-
-            data class Variable(val theme: (Element) -> ThemeDerivation) : Operation {
-                override fun get(element: Element): ThemeDerivation = theme(element)
-            }
-
-            data class Chain(val left: Operation, val right: Operation): Operation {
-                override fun get(element: Element): ThemeDerivation =
-                    ThemeDerivation.Chain(left.get(element), right.get(element))
-
-                override fun apply(element: Element, theme: Theme): ThemeAndBack =
-                    left.apply(element, theme) + right.get(element)
             }
 
             companion object {
@@ -877,7 +854,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
                  *
                  * This gives automatic visual feedback for loading states and button clicks.
                  */
-                val processingTheming = Variable { element ->
+                val processingTheming = ThemeForElement { element ->
                     val element = element.underlyingNativeElement
                     val t = element.foregroundProcesses.state.handle(
                         success = { ThemeDerivation.None },
@@ -889,115 +866,36 @@ abstract class NativeElementCommonCode internal constructor(override val context
             }
         }
 
-        /**
-         * Gets the theme derivation at a specific step.
-         *
-         * @param step The pipeline step
-         * @param element The element to get the theme for
-         * @return The theme derivation at that step, or [ThemeDerivation.None] if none set
-         */
-        fun get(step: Step, element: Element): ThemeDerivation =
-            operations.find { it.first == step }?.second?.get(element) ?: ThemeDerivation.None
-
-        /**
-         * Gets the combined theme derivation from all steps.
-         *
-         * Combines all operations in order to produce the final theme derivation.
-         *
-         * @param element The element to get the theme for
-         * @return The combined theme derivation
-         */
-        fun get(element: Element): ThemeDerivation =
-            operations.fold(null) { acc: ThemeDerivation?, (_, op) ->
+        private fun List<OrderedKeyedList.Entry<Step, ThemeForElement>>.foldOn(element: Element): ThemeDerivation =
+            fold(null) { acc: ThemeDerivation?, (_, op) ->
                 when {
-                    acc == null -> op?.get(element)
-                    op == null -> acc
+                    acc == null -> op.get(element)
                     else -> acc + op.get(element)
                 }
             } ?: ThemeDerivation.None
 
-        /**
-         * Applies all pipeline steps to a base theme to produce the final theme.
-         *
-         * This is the main method used by [refreshTheming] to compute the element's theme.
-         *
-         * @param element The element to apply theming for
-         * @param theme The base theme (usually from parent)
-         * @return The final computed [ThemeAndBack]
-         */
+        fun get(step: Step, element: Element): ThemeDerivation = operations.get(step).foldOn(element)
+
+        fun get(element: Element): ThemeDerivation = operations.foldOn(element)
+
         fun apply(element: Element, theme: Theme): ThemeAndBack =
             operations.fold(null) { acc: ThemeAndBack?, (_, op) ->
                 when {
-                    acc == null -> op?.apply(element, theme)
-                    op == null -> acc
+                    acc == null -> op.get(element).invoke(theme)
                     else -> acc + op.get(element)
                 }
             } ?: theme.withoutBack
 
-        /**
-         * Adds an operation to a step, combining with any existing operation.
-         *
-         * Example:
-         * ```kotlin
-         * // First call sets ImportantSemantic
-         * themePipeline.add(Step.elementStyling, ImportantSemantic)
-         * // Second call adds CardSemantic, result is ImportantSemantic + CardSemantic
-         * themePipeline.add(Step.elementStyling, CardSemantic)
-         * ```
-         *
-         * @param step The pipeline step
-         * @param op The operation to add
-         */
-        fun add(step: Step, op: Operation) {
-            val idx = operations.indexOfFirst { it.first == step }
-            if (idx == -1) {
-                operations.add(step to op)
-                operations.sortBy { it.first.order }
-            }
-            else {
-                val c = operations[idx].second
-                operations[idx] = step to (c?.plus(op) ?: op)
-            }
+
+        fun add(step: Step, op: ThemeForElement) = operations.add(step, op)
+        fun add(step: Step, theme: ThemeDerivation) = operations.add(step, ThemeForElement.Constant(theme))
+
+        fun set(step: Step, op: ThemeForElement) = operations.set(step, op)
+
+        fun set(step: Step, theme: ThemeDerivation?) {
+            if (theme == null) operations.remove(step)
+            else operations.set(step, ThemeForElement.Constant(theme))
         }
-
-        /** Convenience method to add a constant theme derivation to the specified [step] in the pipeline. */
-        fun add(step: Step, theme: ThemeDerivation) = add(step, Operation.Constant(theme))
-
-        /** Convenience method to add a variable theme derivation to the specified [step] in the pipeline. */
-        fun add(step: Step, theme: (Element) -> ThemeDerivation) = add(step, Operation.Variable(theme))
-
-        /**
-         * Sets the operation at a step, replacing any existing operation.
-         *
-         * Example:
-         * ```kotlin
-         * // Set the dynamic choice
-         * themePipeline.set(Step.elementStatus, LoadingSemantic)
-         * // Replace with different theme
-         * themePipeline.set(Step.elementStatus, WorkingSemantic)  // LoadingSemantic gone
-         * ```
-         *
-         * Setting to `null` removes the operation at that step.
-         *
-         * @param step The pipeline step
-         * @param op The operation to set, or null to remove
-         */
-        fun set(step: Step, op: Operation?) {
-            val idx = operations.indexOfFirst { it.first == step }
-            if (idx == -1) {
-                operations.add(step to op)
-                operations.sortBy { it.first.order }
-            }
-            else {
-                operations[idx] = step to op
-            }
-        }
-
-        /** Convenience method to set a constant theme derivation. */
-        fun set(step: Step, theme: ThemeDerivation?) = set(step, theme?.let(Operation::Constant))
-
-        /** Convenience method to set a variable theme derivation. */
-        fun set(step: Step, theme: (Element) -> ThemeDerivation) = set(step, Operation.Variable(theme))
     }
 }
 
