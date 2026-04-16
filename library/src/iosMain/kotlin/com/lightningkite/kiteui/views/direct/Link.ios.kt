@@ -27,6 +27,10 @@ actual class Link actual constructor(context: ElementContext): NativeContainerEl
         })
     }
 
+    init {
+        setupControl()
+    }
+
     actual var to: (() -> Page)? = null
     actual var onNavigator: PageNavigator = context.mainPageNavigator
     actual var newTab: Boolean = false

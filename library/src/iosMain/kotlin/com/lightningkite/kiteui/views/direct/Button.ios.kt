@@ -35,6 +35,7 @@ actual class Button actual constructor(context: ElementContext) : NativeContaine
     }
 
     init {
+        setupControl()
         ::opacity { if (loading()) 0.7 else 1.0 }
     }
 }

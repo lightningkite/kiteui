@@ -30,8 +30,6 @@ actual class ExternalLink actual constructor(context: ElementContext): NativeCon
     actual var newTab: Boolean = false
 
     init {
-        onRemove(native.observe("highlighted") { refreshTheming() })
-        onRemove(native.observe("selected") { refreshTheming() })
-        onRemove(native.observe("enabled") { refreshTheming() })
+        setupControl()
     }
 }
