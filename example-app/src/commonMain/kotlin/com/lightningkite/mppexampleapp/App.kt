@@ -17,11 +17,7 @@ import com.lightningkite.mppexampleapp.internal.RootPage
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration.Companion.seconds
 
-val defaultTheme = Theme.flat2("flat2default", 0.6.turns).customize(
-    newId = "asdf",
-    transitionDuration = 0.2.seconds,
-    bodyTransitions = ScreenTransitions.HorizontalSlide,
-)
+val defaultTheme = Theme.y2026()
 //val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
 val appTheme = Signal<Theme>(defaultTheme)
 

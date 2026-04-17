@@ -1,10 +1,7 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.models.Easing
-import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.kiteui.models.Transformation
-import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ElementWriter
@@ -16,6 +13,11 @@ import com.lightningkite.reactive.core.Signal
 object ExperimentPage : Page {
     override val title: Reactive<String>
         get() = super.title
+
+    val squircleSemantic = object : Semantic("squircle") {
+        override fun default(theme: Theme): ThemeAndBack =
+            theme.copy(id = key, cornerShape = CornerShape.Continuous).withBack
+    }
 
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
         col {
@@ -39,6 +41,22 @@ object ExperimentPage : Page {
                     exitTransform = Transformation(translationX = -1.0),
                 )
                 centered.shownWhen(transition = p) { visible() }.card.text("Hello")
+            }
+
+            separator()
+            h2("Corner Shape: Circular vs Continuous")
+
+            row {
+                expanding.col {
+                    text("Circular (default)")
+                    sizeConstraints(height = 6.rem).card.frame { centered.text("Card") }
+                    important.button { text("Button") }
+                }
+                expanding.themed(squircleSemantic).col {
+                    text("Continuous (squircle)")
+                    sizeConstraints(height = 6.rem).card.frame { centered.text("Card") }
+                    important.button { text("Button") }
+                }
             }
         }
     }

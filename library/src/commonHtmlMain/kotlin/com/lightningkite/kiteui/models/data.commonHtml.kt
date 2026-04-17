@@ -67,13 +67,16 @@ actual operator fun Dimension.div(other: Float): Dimension = Dimension(
 actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(this, other)
 actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
 
-fun CornerRadii.toRawCornerRadius(): String = when (this) {
-    is CornerRadii.AdaptiveToSpacing -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
-    is CornerRadii.Fixed -> value.value.toString()
-    is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
-    is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
-    is CornerRadii.PerCorner -> listOf(this.topLeft, this.topRight, this.bottomRight, this.bottomLeft).joinToString(" ") {
-        if (it) "${value.value}" else "0px"
+fun CornerRadii.toRawCornerRadius(scaleCssVar: String? = null): String {
+    fun String.scaled(): String = if (scaleCssVar == null) this else "calc(($this) * var($scaleCssVar))"
+    return when (this) {
+        is CornerRadii.AdaptiveToSpacing -> "calc(min(var(--parentSpacing, 0px), ${value.value}))".scaled()
+        is CornerRadii.Fixed -> value.value.toString().scaled()
+        is CornerRadii.RatioOfSize -> if (scaleCssVar == null) "${ratio.times(100).toInt()}%" else "calc(${ratio.times(100).toInt()}% * var($scaleCssVar))"
+        is CornerRadii.RatioOfSpacing -> if (scaleCssVar == null) "calc(var(--parentSpacing, 0px) * $value)" else "calc(var(--parentSpacing, 0px) * $value * var($scaleCssVar))"
+        is CornerRadii.PerCorner -> listOf(this.topLeft, this.topRight, this.bottomRight, this.bottomLeft).joinToString(" ") {
+            if (it) value.value.toString().scaled() else "0px"
+        }
     }
 }
 

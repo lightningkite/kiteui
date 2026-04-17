@@ -371,6 +371,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
                 zPosition = -99999.0
                 parentSpacing = (parent?.spacingForChildCornerRadii ?: 0.px).value
                 desiredCornerRadius = theme.theme.cornerRadii
+                desiredCornerShape = theme.theme.cornerShape
 
                 val bounds = this@NativeElement.native.layerSize()
 

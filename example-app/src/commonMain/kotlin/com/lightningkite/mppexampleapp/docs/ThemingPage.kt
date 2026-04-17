@@ -174,23 +174,6 @@ object ThemingPage : DocPage {
     }
 }
 
-data object GlassSemantic : Semantic("glass") {
-    override fun default(theme: Theme): ThemeAndBack {
-        return theme.withBack(
-            background = Color.gray.withAlpha(0.25f),
-            blurBackground = 1.rem,
-            semanticOverrides = SemanticOverrides(
-                HoverSemantic.override {
-                    it.withBack(transform = Transformation(scaleX = 1.2, scaleY = 1.2))
-                },
-                DownSemantic.override {
-                    it.withBack(transform = Transformation(scaleX = 0.9, scaleY = 0.9))
-                },
-            )
-        )
-    }
-}
-
 data object AnimatedEmphasis1Semantic : Semantic("ae1s") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         cascading = false,

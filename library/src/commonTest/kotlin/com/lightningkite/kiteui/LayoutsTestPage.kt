@@ -16,12 +16,12 @@ import kotlin.test.assertEquals
 class LayoutsTestPage : Page {
     val checks = ArrayList<() -> Unit>()
     override fun ElementWriter.CanAddTheme.render(): Unit {
-        fun RView.parentRelativeRect() = parent!!.let { rectangleRelativeTo(it) }!!
+        fun Element.parentRelativeRect() = parent!!.let { rectangleRelativeTo(it) }!!
         card.col {
             checks += { println(screenRectangle()) }
             println("Checking card.col {")
             val start = text("Start")
-            lateinit var above: RView
+            lateinit var above: Element
             card.frame {
                 above = this
                 checks += {

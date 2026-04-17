@@ -44,6 +44,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         } catch(e: Exception) {
             Exception("Failed to add print ruleset", e).printStackTrace()
         }
+        // Squircle/continuous corner shape support:
+        // When corner-shape: squircle is supported, boost radius to take advantage of the
+        // tighter squircle curve. Unsupported browsers keep the original radius as circular arcs.
+        dynamicCss.rule(":root { --corner-shape-scale: 1; }")
+        try {
+            dynamicCss.rule("@supports (corner-shape: squircle) { :root:root { --corner-shape-scale: 3; } }")
+        } catch (_: Exception) {}
         @Suppress("CssUnresolvedCustomProperty")
         dynamicCss.rule(
             """
@@ -1050,14 +1057,34 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
             ?.let { addToCss(directSel, "text-decoration-line", it) }
         theme.diff(diff) { font.lineSpacingMultiplier }?.let { addToCss(directSel, "line-height", it.toString()) }
+        if(theme.font.additionalLetterSpacing != 0.px) {
+            println("Additional letter spacing triggered (${theme.font.additionalLetterSpacing}), diff: ${ diff?.font?.additionalLetterSpacing}")
+        }
         theme.diff(diff) { font.additionalLetterSpacing }
-            ?.let { addToCss(directSel, "letter-spacing", it.toString()) }
+            ?.let {
+                println("Adding to spacing...")
+                addToCss(directSel, "letter-spacing", it.value.toString())
+            }
         theme.diff(diff) { outline }?.let { addToCss(directSel, "outline-color", it.closestColor().toWeb()) }
         theme.diff(diff) { transitionDuration }?.let { addToCss(directSel, "transition-duration", it.toCss()) }
         theme.diff(diff) { transitionDuration }?.let { addToCss(directSel, "--transition-duration", it.toCss()) }
         theme.diff(diff) { background }
             ?.let { addToCss(directSel, "--nearest-background-color", it.closestColor().toWeb()) }
-        theme.diff(diff) { cornerRadii }?.let { addToCss(backSel, "border-radius", it.toRawCornerRadius()) }
+        run {
+            val radiiChanged = theme.diff(diff) { cornerRadii }
+            val shapeChanged = theme.diff(diff) { cornerShape }
+            if (radiiChanged != null || shapeChanged != null) {
+                val radii = theme.cornerRadii
+                if (theme.cornerShape == CornerShape.Continuous) {
+                    // Use CSS variable --corner-shape-scale to boost radius when squircle is supported.
+                    // Unsupported browsers get 1x radius; supported browsers get 2x + corner-shape.
+                    addToCss(backSel, "border-radius", radii.toRawCornerRadius(scaleCssVar = "--corner-shape-scale"))
+                    addToCss(backSel, "corner-shape", "squircle")
+                } else {
+                    addToCss(backSel, "border-radius", radii.toRawCornerRadius())
+                }
+            }
+        }
         theme.diff(diff) { blurBackground }?.let {
 
             if(it.value != DimensionRaw.zero) {

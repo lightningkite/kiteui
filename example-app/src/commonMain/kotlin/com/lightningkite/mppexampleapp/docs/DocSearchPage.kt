@@ -46,9 +46,9 @@ object DocSearchPage : Page {
             align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col  {
                 h1("Documentation")
                 text("Here you can find many helpful pages for understanding KiteUI and its tools.")
-                row {
+                fieldTheme.row {
                     centered.icon { source = Icon.search }
-                    expanding.textField {
+                    expanding.textInput {
                         content bind query
                     }
                     centered.button {
