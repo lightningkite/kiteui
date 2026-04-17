@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.Element
@@ -11,8 +12,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
-internal actual fun ContainerElement.nativeAnimateShow() {}
-internal actual fun ContainerElement.nativeAnimateHide() {}
+internal actual fun ContainerElement.nativeAnimateShow(transition: ScreenTransition) {}
+internal actual fun ContainerElement.nativeAnimateHide(transition: ScreenTransition) {}
 // by Claude - no-op for SSR (no animation runtime)
 internal actual fun ContainerElement.nativeAnimateWeight(fromWeight: Float, toWeight: Float) {}
 @PublishedApi

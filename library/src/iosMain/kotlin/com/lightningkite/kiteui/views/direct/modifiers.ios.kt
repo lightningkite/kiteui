@@ -135,7 +135,7 @@ actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: Reacti
 
 // End
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
+actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return beforeSetup {
         native.hidden = !default
         var runNumber = 0
@@ -143,28 +143,38 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: 
         reactive {
             val value = condition()
             val myRun = ++runNumber
-//            println("$native Starting run $myRun")
             if (animationsEnabled) {
                 if (native.hidden) {
                     native.alpha = 0.0
                     native.hidden = false
-//                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")
                     native.extensionCollapsed = true
+                    // Apply visual entry transform if showing
+                    if (value && (transition.entryTransform != Transformation() || transition.fade)) {
+                        native.transform = transition.entryTransform.toCGAffineTransform(native)
+                    }
                 }
                 animateIfAllowed(onComplete = {
                     if (myRun > lastCommitted) {
                         native.hidden = !value
-//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
                         native.extensionCollapsed = false
+                        // Reset transform when animation completes
+                        if (value) native.transform = platform.CoreGraphics.CGAffineTransformMake(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
                         native.informParentOfSizeChange()
                         lastCommitted = myRun
-//                        println("$native Committed $lastCommitted")
-                    } else {
-//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")
                     }
                 }) {
-                    if (!value) native.alpha = 0.0
-                    else native.alpha = opacity
+                    if (!value) {
+                        native.alpha = 0.0
+                        // Apply visual exit transform
+                        if (transition.exitTransform != Transformation() || transition.fade) {
+                            native.transform = transition.exitTransform.toCGAffineTransform(native)
+                            if (transition.fade) native.alpha = 0.0
+                        }
+                    } else {
+                        native.alpha = opacity
+                        // Animate to identity transform
+                        native.transform = platform.CoreGraphics.CGAffineTransformMake(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
+                    }
                     native.extensionCollapsed = !value
                     native.informParentOfSizeChange()
                     native.superview?.layoutIfNeeded()
@@ -175,7 +185,6 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: 
                 native.hidden = !value
                 native.informParentOfSizeChange()
                 lastCommitted = myRun
-//                println("$native Committed $lastCommitted")
             }
         }
     }

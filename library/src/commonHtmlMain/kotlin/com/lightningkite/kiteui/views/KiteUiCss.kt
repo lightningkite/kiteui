@@ -776,20 +776,49 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     private val transitionHandled = HashSet<String>()
     fun transition(transition: ScreenTransition): String {
         if (!transitionHandled.add(transition.name)) return "transition-${transition.name}"
-        fun StringBuilder.extracted(part: ScreenTransitionPart) {
-            for ((key, value) in part.from) append("$key: $value; ")
-            append("} to { ")
-            for ((key, value) in part.to) append("$key: $value; ")
-            append("}")
+
+        fun Transformation.toCssTransform(): String {
+            val parts = mutableListOf<String>()
+            if (translationX != 0.0 || translationY != 0.0) {
+                parts.add("translate(${(translationX * 100).toInt()}%, ${(translationY * 100).toInt()}%)")
+            }
+            if (scaleX != 1.0 || scaleY != 1.0) {
+                parts.add("scale($scaleX, $scaleY)")
+            }
+            if (rotation != 0.0) {
+                parts.add("rotate(${rotation}deg)")
+            }
+            if (rotationX != 0.0) {
+                parts.add("rotateX(${rotationX}deg)")
+            }
+            if (rotationY != 0.0) {
+                parts.add("rotateY(${rotationY}deg)")
+            }
+            if (translationZ != 0.0) {
+                parts.add("translateZ(${translationZ}px)")
+            }
+            return if (parts.isEmpty()) "none" else parts.joinToString(" ")
         }
 
+        // Enter: from entryTransform to identity
         dynamicCss.rule(buildString {
             append("@keyframes transition-${transition.name}-enter { from { ")
-            extracted(transition.enter)
+            append("transform: ${transition.entryTransform.toCssTransform()}; ")
+            if (transition.fade) append("opacity: 0; ")
+            append("} to { ")
+            append("transform: none; ")
+            if (transition.fade) append("opacity: 1; ")
+            append("} }")
         }, 0)
+        // Exit: from identity to exitTransform
         dynamicCss.rule(buildString {
             append("@keyframes transition-${transition.name}-exit { from { ")
-            extracted(transition.exit)
+            append("transform: none; ")
+            if (transition.fade) append("opacity: 1; ")
+            append("} to { ")
+            append("transform: ${transition.exitTransform.toCssTransform()}; ")
+            if (transition.fade) append("opacity: 0; ")
+            append("} }")
         }, 0)
         return "transition-${transition.name}"
     }

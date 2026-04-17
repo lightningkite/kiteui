@@ -10,7 +10,9 @@ actual fun Element.animateIn(
 ) {
     val keyframeName = context.kiteUiCss.transition(transition)
     val transitionTime = theme.transitionDuration
-    native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-enter $transitionTime forwards" }
+    val easing = transition.easing
+    val easingCss = "cubic-bezier(${easing.x1}, ${easing.y1}, ${easing.x2}, ${easing.y2})"
+    native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-enter $transitionTime $easingCss forwards" }
     done?.let { afterTimeout(transitionTime.inWholeMilliseconds, it) }
 }
 actual fun Element.animateOut(
@@ -19,6 +21,8 @@ actual fun Element.animateOut(
 ) {
     val keyframeName = context.kiteUiCss.transition(transition)
     val transitionTime = theme.transitionDuration
-    native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-exit $transitionTime forwards" }
+    val easing = transition.easing
+    val easingCss = "cubic-bezier(${easing.x1}, ${easing.y1}, ${easing.x2}, ${easing.y2})"
+    native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-exit $transitionTime $easingCss forwards" }
     done?.let { afterTimeout(transitionTime.inWholeMilliseconds, it) }
 }

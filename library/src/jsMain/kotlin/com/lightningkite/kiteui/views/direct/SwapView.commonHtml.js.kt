@@ -14,8 +14,10 @@ actual fun SwapView.nativeSwap(
     val keyframeName = context.kiteUiCss.transition(transition)
 
     val transitionTime = theme.transitionDuration
+    val easing = transition.easing
+    val easingCss = "cubic-bezier(${easing.x1}, ${easing.y1}, ${easing.x2}, ${easing.y2})"
     previousLast?.let { view ->
-        view.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-exit $transitionTime forwards" }
+        view.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-exit $transitionTime $easingCss forwards" }
         launch {
             delay(theme.transitionDuration)
             removeChild(view)
@@ -27,7 +29,7 @@ actual fun SwapView.nativeSwap(
     children.lastOrNull().takeUnless { it == previousLast }?.let { newView ->
         previousLast = newView
         shown = true
-        newView.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-enter $transitionTime forwards" }
+        newView.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-enter $transitionTime $easingCss forwards" }
     } ?: run {
         previousLast = null
         if (shown) {

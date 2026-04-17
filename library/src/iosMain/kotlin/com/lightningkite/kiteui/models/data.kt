@@ -1,13 +1,10 @@
 package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.views.toUIFontWeight
-import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
 import platform.UIKit.*
 import kotlin.math.abs
-import kotlin.math.min
 
 // No reason to do a whole function call basic arithmetic
 
@@ -77,68 +74,3 @@ actual data class VideoResource(val name: String, val extension: String) : Video
 actual sealed class AudioSource actual constructor()
 actual data class AudioResource(val name: String, val extension: String) : AudioSource()
 
-actual class ScreenTransition(
-    val name: String,
-    val enter: UIView.()->Unit,
-    val exit: UIView.()->Unit,
-) {
-    operator fun plus(other: ScreenTransition) = ScreenTransition(name = name + other.name, enter = { enter(this); other.enter(this) }, exit = { exit(this); other.exit(this) })
-    actual companion object {
-        actual val None: ScreenTransition = ScreenTransition(
-            name = "None",
-            enter = {},
-            exit = {},
-        )
-
-        private fun translateX(ratio: CGFloat): UIView.()->Unit {
-//            return { transform = CGAffineTransformMakeTranslation(ratio * 100.0, 0.0) }
-            return { transform = CGAffineTransformMakeTranslation((superview?.bounds?.useContents { size.width } ?: bounds?.useContents { size.width } ?: 0.0) * ratio, 0.0) }
-        }
-
-        private fun translateY(ratio: CGFloat): UIView.()->Unit {
-            return { transform = CGAffineTransformMakeTranslation(0.0, (superview?.bounds?.useContents { size.height } ?: bounds?.useContents { size.height } ?: 0.0) * ratio) }
-        }
-
-        actual val Push: ScreenTransition = ScreenTransition(
-            name = "Push",
-            enter = translateX(1.0),
-            exit = translateX(-1.0),
-        )
-        actual val Pop: ScreenTransition = ScreenTransition(
-            name = "Pop",
-            enter = translateX(-1.0),
-            exit = translateX(1.0),
-        )
-        actual val PullUp: ScreenTransition = ScreenTransition(
-            name = "PullUp",
-            enter = translateY(1.0),
-            exit = translateY(1.0),
-        )
-        actual val PullDown: ScreenTransition = ScreenTransition(
-            name = "PullDown",
-            enter = translateY(-1.0),
-            exit = translateY(1.0),
-        )
-        actual val Fade: ScreenTransition = ScreenTransition(
-            name = "Fade",
-            enter = { alpha = 0.0 },
-            exit = { alpha = 0.0 },
-        )
-
-        private val sizeNeutral: UIView.()->Unit = { transform = CGAffineTransformMakeTranslation(0.0, 0.0) }
-
-        private val sizeLarge: UIView.()->Unit = { transform = CGAffineTransformMakeScale(1.33, 1.33).let { CGAffineTransformTranslate(it, 0.0, -100.0) } }
-
-        private val sizeSmall: UIView.()->Unit = { transform = CGAffineTransformMakeScale(0.75, 0.75).let { CGAffineTransformTranslate(it, 0.0, 100.0) } }
-        actual val GrowFade: ScreenTransition = ScreenTransition(
-            name = "Grow",
-            enter = sizeSmall,
-            exit = sizeLarge,
-        ) + Fade
-        actual val ShrinkFade: ScreenTransition = ScreenTransition(
-            name = "Shrink",
-            enter = sizeLarge,
-            exit = sizeSmall,
-        ) + Fade
-    }
-}

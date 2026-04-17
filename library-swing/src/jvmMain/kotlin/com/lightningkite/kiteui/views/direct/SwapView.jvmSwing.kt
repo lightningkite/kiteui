@@ -15,7 +15,6 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.LayoutManager
 import java.awt.RenderingHints
-import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -113,17 +112,7 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
         val targetHeight = if (native.height > 0) native.height else oldView?.native?.height ?: 100
         contentPreferredSize = Dimension(targetWidth, targetHeight)
 
-        // Determine animation type
-        val animationType = when (transition) {
-            ScreenTransition.Push -> AnimationType.SLIDE_LEFT
-            ScreenTransition.Pop -> AnimationType.SLIDE_RIGHT
-            ScreenTransition.PullUp -> AnimationType.SLIDE_UP
-            ScreenTransition.PullDown -> AnimationType.SLIDE_DOWN
-            ScreenTransition.Fade -> AnimationType.FADE
-            ScreenTransition.GrowFade -> AnimationType.GROW_FADE
-            ScreenTransition.ShrinkFade -> AnimationType.SHRINK_FADE
-            else -> AnimationType.FADE
-        }
+        val animationType = AnimationType.GENERIC
 
         // Get background color from the theme
         val backgroundColor = themeAndBack.theme.background.closestColor().toAwt()
@@ -157,7 +146,8 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
             newImage = null,
             animationType = animationType,
             targetSize = contentPreferredSize,
-            backgroundColor = backgroundColor
+            backgroundColor = backgroundColor,
+            transition = transition,
         )
         animationPanel.progress = 0f
         native.add(animationPanel, 0)
@@ -187,8 +177,7 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
                 val elapsed = System.currentTimeMillis() - startTime
                 val progress = (elapsed.toDouble() / animationDurationMs).coerceIn(0.0, 1.0)
 
-                // Ease out cubic
-                val eased = 1 - Math.pow(1 - progress, 3.0)
+                val eased = transition.easing.evaluate(progress.toFloat()).toDouble()
 
                 animationPanel.progress = eased.toFloat()
                 animationPanel.repaint()
@@ -238,17 +227,11 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
 }
 
 private enum class AnimationType {
-    FADE,
-    SLIDE_LEFT,
-    SLIDE_RIGHT,
-    SLIDE_UP,
-    SLIDE_DOWN,
-    GROW_FADE,
-    SHRINK_FADE
+    GENERIC
 }
 
 /**
- * A panel that renders the animation between two views.
+ * A panel that renders the animation between two views using ScreenTransition's Transformation fields.
  * Uses pre-captured BufferedImages of both views to ensure correct rendering.
  */
 private class AnimationPanel(
@@ -256,20 +239,20 @@ private class AnimationPanel(
     newImage: BufferedImage?,
     private val animationType: AnimationType,
     private val targetSize: Dimension,
-    private val backgroundColor: java.awt.Color
+    private val backgroundColor: java.awt.Color,
+    private val transition: ScreenTransition = ScreenTransition.Fade,
 ) : JPanel() {
     var newImage: BufferedImage? = newImage
     var progress: Float = 0f
 
     init {
-        isOpaque = true  // Make opaque to cover content beneath
+        isOpaque = true
         background = backgroundColor
     }
 
     override fun getPreferredSize(): Dimension = targetSize
     override fun getMinimumSize(): Dimension = targetSize
 
-    // Use targetSize dimensions for painting to handle cases where layout hasn't settled
     private val paintWidth: Int get() = if (width > 0) width else targetSize.width
     private val paintHeight: Int get() = if (height > 0) height else targetSize.height
 
@@ -280,165 +263,56 @@ private class AnimationPanel(
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
 
         try {
-            when (animationType) {
-                AnimationType.FADE -> paintFade(g2)
-                AnimationType.SLIDE_LEFT -> paintSlideLeft(g2)
-                AnimationType.SLIDE_RIGHT -> paintSlideRight(g2)
-                AnimationType.SLIDE_UP -> paintSlideUp(g2)
-                AnimationType.SLIDE_DOWN -> paintSlideDown(g2)
-                AnimationType.GROW_FADE -> paintGrowFade(g2)
-                AnimationType.SHRINK_FADE -> paintShrinkFade(g2)
-            }
+            paintGeneric(g2)
         } finally {
             g2.dispose()
         }
     }
 
-    private fun paintFade(g2: Graphics2D) {
-        // Paint new image at full opacity first (underneath)
+    private fun paintGeneric(g2: Graphics2D) {
+        val w = paintWidth.toDouble()
+        val h = paintHeight.toDouble()
+        val centerX = w / 2.0
+        val centerY = h / 2.0
+
+        // Paint new image: interpolate from entryTransform to identity
         newImage?.let { img ->
-            g2.drawImage(img, 0, 0, null)
-        }
-        // Paint old image fading out on top
-        oldImage?.let { img ->
-            val oldAlpha = (1f - progress).coerceIn(0f, 1f)
-            g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, oldAlpha)
-            g2.drawImage(img, 0, 0, null)
-        }
-    }
+            val entry = transition.entryTransform
+            val tx = entry.translationX * w * (1.0 - progress)
+            val ty = entry.translationY * h * (1.0 - progress)
+            val sx = entry.scaleX + (1.0 - entry.scaleX) * progress
+            val sy = entry.scaleY + (1.0 - entry.scaleY) * progress
+            val rot = entry.rotation * (1.0 - progress)
+            val alpha = if (transition.fade) progress.coerceIn(0f, 1f) else 1f
 
-    private fun paintSlideLeft(g2: Graphics2D) {
-        val offset = (paintWidth * progress).toInt()
-
-        // Paint new image sliding in from the right
-        newImage?.let { img ->
-            val transform = g2.transform
-            g2.translate(paintWidth - offset, 0)
-            g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
-        }
-
-        // Paint old image sliding out to the left
-        oldImage?.let { img ->
-            val transform = g2.transform
-            g2.translate(-offset, 0)
-            g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
-        }
-    }
-
-    private fun paintSlideRight(g2: Graphics2D) {
-        val offset = (paintWidth * progress).toInt()
-
-        // Paint new image sliding in from the left
-        newImage?.let { img ->
-            val transform = g2.transform
-            g2.translate(-paintWidth + offset, 0)
-            g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
-        }
-
-        // Paint old image sliding out to the right
-        oldImage?.let { img ->
-            val transform = g2.transform
-            g2.translate(offset, 0)
-            g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
-        }
-    }
-
-    private fun paintSlideUp(g2: Graphics2D) {
-        val offset = (paintHeight * progress).toInt()
-
-        // Paint new image sliding in from the bottom
-        newImage?.let { img ->
-            val transform = g2.transform
-            g2.translate(0, paintHeight - offset)
-            g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
-        }
-
-        // Paint old image sliding out to the top
-        oldImage?.let { img ->
-            val transform = g2.transform
-            g2.translate(0, -offset)
-            g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
-        }
-    }
-
-    private fun paintSlideDown(g2: Graphics2D) {
-        val offset = (paintHeight * progress).toInt()
-
-        // Paint new image sliding in from the top
-        newImage?.let { img ->
-            val transform = g2.transform
-            g2.translate(0, -paintHeight + offset)
-            g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
-        }
-
-        // Paint old image sliding out to the bottom
-        oldImage?.let { img ->
-            val transform = g2.transform
-            g2.translate(0, offset)
-            g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
-        }
-    }
-
-    private fun paintGrowFade(g2: Graphics2D) {
-        // Paint new image growing in (scale from 0.9 to 1.0) with fade
-        newImage?.let { img ->
-            val newAlpha = progress.coerceIn(0f, 1f)
-            val scale = 0.9 + (0.1 * progress)  // Scale from 0.9 to 1.0
-
-            g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, newAlpha)
-
-            val centerX = paintWidth / 2.0
-            val centerY = paintHeight / 2.0
-
-            val transform = g2.transform
-            g2.translate(centerX, centerY)
-            g2.scale(scale, scale)
+            g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
+            val saved = g2.transform
+            g2.translate(centerX + tx, centerY + ty)
+            g2.scale(sx, sy)
+            g2.rotate(Math.toRadians(rot))
             g2.translate(-centerX, -centerY)
-
             g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
+            g2.transform = saved
         }
 
-        // Paint old image fading out on top
-        g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f)
+        // Paint old image: interpolate from identity to exitTransform
         oldImage?.let { img ->
-            val oldAlpha = (1f - progress).coerceIn(0f, 1f)
-            g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, oldAlpha)
-            g2.drawImage(img, 0, 0, null)
-        }
-    }
+            val exit = transition.exitTransform
+            val tx = exit.translationX * w * progress
+            val ty = exit.translationY * h * progress
+            val sx = 1.0 + (exit.scaleX - 1.0) * progress
+            val sy = 1.0 + (exit.scaleY - 1.0) * progress
+            val rot = exit.rotation * progress
+            val alpha = if (transition.fade) (1f - progress).coerceIn(0f, 1f) else 1f
 
-    private fun paintShrinkFade(g2: Graphics2D) {
-        // Paint new image at full opacity first (underneath)
-        newImage?.let { img ->
-            g2.drawImage(img, 0, 0, null)
-        }
-
-        // Paint old image fading out while shrinking on top
-        oldImage?.let { img ->
-            val oldAlpha = (1f - progress).coerceIn(0f, 1f)
-            val scale = 1.0 - (0.1 * progress)  // Scale from 1.0 to 0.9
-
-            g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, oldAlpha)
-
-            val centerX = paintWidth / 2.0
-            val centerY = paintHeight / 2.0
-
-            val transform = g2.transform
-            g2.translate(centerX, centerY)
-            g2.scale(scale, scale)
+            g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
+            val saved = g2.transform
+            g2.translate(centerX + tx, centerY + ty)
+            g2.scale(sx, sy)
+            g2.rotate(Math.toRadians(rot))
             g2.translate(-centerX, -centerY)
-
             g2.drawImage(img, 0, 0, null)
-            g2.transform = transform
+            g2.transform = saved
         }
     }
 }

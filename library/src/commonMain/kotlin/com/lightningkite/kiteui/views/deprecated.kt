@@ -167,7 +167,7 @@ val ViewWriter.marginless: ViewWriter get() = this
 
 @ViewModifierDsl3
 @Deprecated("Renamed to 'shownWhen'", ReplaceWith("shownWhen", "com.lightningkite.kiteui.views.direct.shownWhen"))
-fun ElementWriter.CanAddShownWhen.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme = shownWhen(default, condition)
+fun ElementWriter.CanAddShownWhen.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme = shownWhen(default, condition = condition)
 
 @ViewModifierDsl3
 @Deprecated("use align instead", ReplaceWith("align"))

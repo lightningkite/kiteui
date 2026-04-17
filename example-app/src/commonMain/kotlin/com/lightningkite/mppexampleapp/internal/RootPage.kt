@@ -109,6 +109,7 @@ object RootPage : Page {
                 linkPage { InfiniteImagesPage }
                 linkPage { R2VPPage }
                 linkPage { Recycler2PullToRefreshTest }
+                linkPage { LazyLoadingTestPage }
 
 
                 sectionLabel("Media")
@@ -119,6 +120,7 @@ object RootPage : Page {
                 linkPage { CameraScannerTestPage }
 
                 sectionLabel("Animation")
+                linkPage { ShownWhenTransitionPage }
                 linkPage { LoadAnimationTestPage }
                 linkPage { LottieExamplePage }
                 linkPage { LottieRendererTestPage }

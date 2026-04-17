@@ -388,7 +388,7 @@ actual fun ElementWriter.textPopover(message: String): ElementWriter {
 
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
+actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return beforeSetup {
         shown = default
         var existingAnimator: ValueAnimator? = null
@@ -406,6 +406,15 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: 
             val parent = parent
             shown = true
             val p = parent?.native
+
+            // Apply visual transition start state
+            if (value && animationsEnabled && (transition.fade || transition.entryTransform != Transformation())) {
+                animateIn(transition)
+            }
+            if (!value && animationsEnabled && (transition.fade || transition.exitTransform != Transformation())) {
+                animateOut(transition)
+            }
+
             if (animationsEnabled) {
                 existingAnimator = if (value) {
                     if (p is SimplifiedLinearLayout) {

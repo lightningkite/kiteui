@@ -188,7 +188,7 @@ actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: Reacti
 //    }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
+actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return lazyInjectModifierWriter {
         object : NativeContainerElement(context) {
             init {
@@ -202,10 +202,10 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: 
                     if (areAnimationsEnabled && fullyStarted) {
                         val c = condition()
                         if (c != currentState) {
-                            if (condition()) {
-                                nativeAnimateShow()
+                            if (c) {
+                                nativeAnimateShow(transition)
                             } else {
-                                nativeAnimateHide()
+                                nativeAnimateHide(transition)
                             }
                         }
                         currentState = c
@@ -233,8 +233,8 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, condition: 
     }
 }
 
-internal expect fun ContainerElement.nativeAnimateShow()
-internal expect fun ContainerElement.nativeAnimateHide()
+internal expect fun ContainerElement.nativeAnimateShow(transition: ScreenTransition = ScreenTransition.None)
+internal expect fun ContainerElement.nativeAnimateHide(transition: ScreenTransition = ScreenTransition.None)
 
 // by Claude - expect for weight animation
 internal expect fun ContainerElement.nativeAnimateWeight(fromWeight: Float, toWeight: Float)
