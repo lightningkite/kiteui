@@ -7,11 +7,11 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlin.multiplatform)
 //    alias(libs.plugins.kotlinCocoapods)
-    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.comLightningkiteTestingManual)
+    alias(libs.plugins.testing.manual)
     alias(libs.plugins.roborazzi)
     signing
     alias(libs.plugins.vannitechPublishing)
@@ -66,20 +66,20 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api(libs.comLightningkiteReactive)
-                api(libs.kotlinxSerializationJson)
-                api(libs.kotlinxSerializationProperties)
-                api(libs.kotlinxDatetime)
-                api(libs.kotlinxCoroutinesCore)
-                api(libs.kotlinxSerializationUri)
+                api(libs.reactive)
+                api(libs.kotlinx.serialization.json)
+                api(libs.kotlinx.serialization.properties)
+                api(libs.kotlinx.datetime)
+                api(libs.kotlinx.coroutines.core)
+                api(libs.kotlinx.serialization.uri)
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation(libs.kotlinxCoroutinesTest)
-                implementation(libs.kotlinxCoroutinesCore)
-                implementation(libs.comLightningkiteTestingKotlinTestManualRuntime)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlin.test.manual.runtime)
                 implementation(project(":test-utilities"))
             }
         }
@@ -94,13 +94,13 @@ kotlin {
                 api(libs.timber)
                 api(libs.glide)
                 api(libs.photoview)
-                api(libs.ktorClientCore)
-                api(libs.ktorClientCio)
-                api(libs.ktorClientOkhttp)
-                api(libs.ktorClientWebsockets)
-                api(libs.media3Exoplayer)
-                api(libs.media3Ui)
-                api(libs.media3Common)
+                api(libs.ktor.client.core)
+                api(libs.ktor.client.cio)
+                api(libs.ktor.client.okhttp)
+                api(libs.ktor.client.websockets)
+                api(libs.media3.exoplayer)
+                api(libs.media3.ui)
+                api(libs.media3.common)
                 api(libs.androidxAutofill)
                 api(libs.exifinterface)
             }
@@ -117,8 +117,8 @@ kotlin {
         if (onMac) {
             val iosMain by getting {
                 dependencies {
-                    implementation(libs.ktorClientDarwin)
-                    implementation(libs.ktorClientWebsockets)
+                    implementation(libs.ktor.client.darwin)
+                    implementation(libs.ktor.client.websockets)
                 }
             }
         }
@@ -127,9 +127,9 @@ kotlin {
             dependsOn(commonMain)
             dependencies {
                 api(libs.commonsLang3)
-                api(libs.ktorClientCore)
-                api(libs.ktorClientOkhttp)
-                api(libs.ktorClientWebsockets)
+                api(libs.ktor.client.core)
+                api(libs.ktor.client.okhttp)
+                api(libs.ktor.client.websockets)
             }
         }
 

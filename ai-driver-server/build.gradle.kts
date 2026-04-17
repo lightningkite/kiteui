@@ -1,7 +1,7 @@
 plugins {
-    alias(libs.plugins.kotlinMultiplatform).apply(false)
+    alias(libs.plugins.kotlin.multiplatform).apply(false)
     kotlin("jvm")
-    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.kotlin.plugin.serialization)
     application
 }
 
@@ -17,10 +17,10 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.lightningServerCore)
-    implementation(libs.lightningServerEngineKtor)
-    implementation(libs.lightningServerTyped)
-    implementation(libs.ktorServerNetty)
+    implementation(libs.lightning.server.core)
+    implementation(libs.lightning.server.engine.ktor)
+    implementation(libs.lightning.server.typed)
+    implementation(libs.ktor.server.netty)
     testImplementation(kotlin("test"))
 }
 

@@ -22,7 +22,7 @@ actual class ScrollingBehaviorImpl actual constructor(
         // because it would overwrite the tag of the wrapped element (e.g., <pre> for Code).
         // The JS version doesn't set the tag either - it just adds scroll classes/styles.
         // by Claude - removed tag override to match JS behavior
-        native.style.lineHeight = "0px !important"
+        native.style.lineHeight = "0px"
         if(horizontal) {
             native.classes += "scroll-horizontal"
             native.style.overflowX = "auto"

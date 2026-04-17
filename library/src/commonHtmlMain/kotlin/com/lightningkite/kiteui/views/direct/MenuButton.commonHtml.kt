@@ -6,7 +6,8 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
-    override val driverActions get() = super.driverActions + menuDriverActions()
+    private var _openMenu: (() -> Unit)? = null
+    override val driverActions get() = super.driverActions + menuDriverActions(_openMenu)
     val floating = FloatingInfoHolder(this)
     init {
         themeChoice += ClickableSemantic
@@ -37,6 +38,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
     actual var preferredDirection: PopoverPreferredDirection by floating::preferredDirection
     actual fun opensMenu(createMenu: Frame.() -> Unit) {
         floating.menuGenerator = createMenu
+        _openMenu = { floating.open(); floating.block() }
     }
 }
 

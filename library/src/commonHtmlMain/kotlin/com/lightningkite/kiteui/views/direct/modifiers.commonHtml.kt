@@ -162,9 +162,12 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
 ): ViewWriter {
-    // For web, we'll just use regular scrolling as pull-to-refresh isn't a common pattern on web
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
+        if (vertical) {
+            native.setStyleProperty("overscroll-behavior-y", "none")
+            nativeSetupPullToRefresh(refreshAction)
+        }
     }
         .let { return it }
 }
@@ -282,3 +285,5 @@ internal expect fun RView.nativeAnimateShow()
 internal expect fun RView.nativeAnimateHide()
 // by Claude - expect for weight animation
 internal expect fun RView.nativeAnimateWeight(fromWeight: Float, toWeight: Float)
+@PublishedApi
+internal expect fun RView.nativeSetupPullToRefresh(refreshAction: Action)

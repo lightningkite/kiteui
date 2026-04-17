@@ -93,21 +93,42 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     actual fun flush() {
         measureTime {
             jsonForEach(queue) { media, it ->
-                val str = StringBuilder("@media $media {")
-                jsonForEach(it as Json) { selector, it ->
-                    str.append(selector)
-                    str.append("{")
-                    jsonForEach(it as Json) { key, value ->
-                        str.append(key)
-                        str.append(":")
-                        str.append(value)
-                        str.append(";")
+                val wrapInMedia = media.isNotBlank()
+                if (wrapInMedia) {
+                    // Conditional @media block (e.g. print, hover) — wrap as usual
+                    val str = StringBuilder("@media $media {")
+                    jsonForEach(it as Json) { selector, it ->
+                        str.append(selector)
+                        str.append("{")
+                        jsonForEach(it as Json) { key, value ->
+                            str.append(key)
+                            str.append(":")
+                            str.append(value)
+                            str.append(";")
+                        }
+                        str.append("}")
+                        ruleTotal++
                     }
                     str.append("}")
-                    ruleTotal++
+                    rule(str.toString(), 0)
+                } else {
+                    // Empty media query — emit each rule directly without @media wrapper.
+                    // Chrome's SVG foreignObject renderer ignores CSS inside @media {} blocks
+                    // when rendering SVGs as <img> elements, breaking DOM-to-image screenshots.
+                    jsonForEach(it as Json) { selector, it ->
+                        val str = StringBuilder(selector)
+                        str.append("{")
+                        jsonForEach(it as Json) { key, value ->
+                            str.append(key)
+                            str.append(":")
+                            str.append(value)
+                            str.append(";")
+                        }
+                        str.append("}")
+                        ruleTotal++
+                        rule(str.toString(), 0)
+                    }
                 }
-                str.append("}")
-                rule(str.toString(), 0)
             }
             queue = json()
         }.also {

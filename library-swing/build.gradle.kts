@@ -2,8 +2,8 @@ import com.lightningkite.deployhelpers.*
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.dokka)
     signing
     alias(libs.plugins.vannitechPublishing)
@@ -29,12 +29,12 @@ kotlin {
             resources.srcDir("${project(":library").projectDir}/src/commonMain/resources")
 
             dependencies {
-                api(libs.comLightningkiteReactive)
-                api(libs.kotlinxSerializationJson)
-                api(libs.kotlinxSerializationProperties)
-                api(libs.kotlinxDatetime)
-                api(libs.kotlinxCoroutinesCore)
-                api(libs.kotlinxSerializationUri)
+                api(libs.reactive)
+                api(libs.kotlinx.serialization.json)
+                api(libs.kotlinx.serialization.properties)
+                api(libs.kotlinx.datetime)
+                api(libs.kotlinx.coroutines.core)
+                api(libs.kotlinx.serialization.uri)
             }
         }
 
@@ -45,14 +45,14 @@ kotlin {
             dependencies {
                 // commonJvmMain dependencies
                 api(libs.commonsLang3)
-                api(libs.ktorClientCore)
-                api(libs.ktorClientOkhttp)
-                api(libs.ktorClientWebsockets)
+                api(libs.ktor.client.core)
+                api(libs.ktor.client.okhttp)
+                api(libs.ktor.client.websockets)
 
                 // Swing-specific dependencies
                 api(libs.miglayout.swing)
                 api(libs.swingx.all)
-                api(libs.kotlinxCoroutinesSwing)
+                api(libs.kotlinx.coroutines.swing)
 
                 // JInput for gamepad support (2.0.10 is an uber jar with natives included)
                 api(libs.jinput)

@@ -23,8 +23,8 @@ internal class TelemetryLogInterceptor(private val telemetry: Telemetry) : LogIn
                     if (tag.isNotEmpty()) add(OtlpKeyValue("log.tag", OtlpAnyValue(stringValue = tag)))
                     add(OtlpKeyValue("session.id", OtlpAnyValue(stringValue = telemetry.sessionId)))
                 },
-                traceId = telemetry.currentTraceId,
-                spanId = telemetry.currentSpanId,
+                traceId = activeTraceId.ifEmpty { telemetry.currentTraceId },
+                spanId = activeSpanId.ifEmpty { telemetry.currentSpanId },
             )
         )
     }

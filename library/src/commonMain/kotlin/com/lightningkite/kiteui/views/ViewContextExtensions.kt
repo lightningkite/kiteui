@@ -89,6 +89,7 @@ fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = 
     }
     writer.popoverParent = this@popoverWriter.takeIf { !popoverRoot }
     writer.popoverCloser = null
+    writer.popoverKeepOpen = 0
     return writer
 }
 

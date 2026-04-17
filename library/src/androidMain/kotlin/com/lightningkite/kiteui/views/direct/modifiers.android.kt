@@ -160,86 +160,85 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
 ): ViewWriter {
-    val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
-
-    val view = if (vertical) {
-        val refreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(context.activity)
-        refreshLayout.setOnRefreshListener {
-            refreshAction.startAction(this)
-            reactiveScope {
-                refreshLayout.isRefreshing = refreshAction.state().handle(
-                    success = { false },
-                    exception = { false },
-                    notReady = { true }
-                )
-            }
-        }
-        object: RViewWriter(context) {
-            override val native: View = refreshLayout
-
-            val myChildren: ArrayList<View> = ArrayList()
-            override fun internalAddChild(index: Int, view: RView) {
-                // Apply parent's default alignment if child doesn't have explicit alignment set
-                var needsLayoutParamUpdate = false
-
-                if (view.lastSetHorizontalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildHorizontalAlign != null) {
-                    view.lastSetHorizontalAlign = newChildHorizontalAlign!!
-                    needsLayoutParamUpdate = true
-                }
-                if (view.lastSetVerticalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildVerticalAlign != null) {
-                    view.lastSetVerticalAlign = newChildVerticalAlign!!
-                    needsLayoutParamUpdate = true
-                }
-
-                // If we applied defaults, update layout params (align() modifier wasn't called)
-                if (needsLayoutParamUpdate) {
-                    val params = view.lparams
-                    val horizontalGravity = when (view.lastSetHorizontalAlign) {
-                        com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.START
-                        com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_HORIZONTAL
-                        com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.END
-                        else -> android.view.Gravity.CENTER_HORIZONTAL
-                    }
-                    val verticalGravity = when (view.lastSetVerticalAlign) {
-                        com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.TOP
-                        com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_VERTICAL
-                        com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.BOTTOM
-                        else -> android.view.Gravity.CENTER_VERTICAL
-                    }
-
-                    if (params is com.lightningkite.kiteui.views.direct.SimplifiedLinearLayoutLayoutParams)
-                        params.gravity = horizontalGravity or verticalGravity
-                    else if (params is android.widget.FrameLayout.LayoutParams)
-                        params.gravity = horizontalGravity or verticalGravity
-                    else if (params is androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams)
-                        params.gravity = horizontalGravity or verticalGravity
-                }
-
-                myChildren.add(index, view.native)
-                (native as ViewGroup).addView(view.native, index)
-            }
-
-            override fun internalRemoveChild(index: Int) {
-                (native as ViewGroup).let {
-                    it.removeViewAt(it.children.indexOf(myChildren.removeAt(index)))
-                }
-            }
-
-            override fun internalClearChildren() {
-                (native as ViewGroup).let {
-                    for(child in myChildren) {
-                        it.removeViewAt(it.children.indexOf(child))
-                    }
-                    myChildren.clear()
-                }
-            }
-        }
-    } else {
-        // For horizontal scrolling, just use regular scrolling as SwipeRefreshLayout only supports vertical
-        scrollView
+    if (!vertical) {
+        return __scrollsUncontracted(vertical, horizontal, setup)
     }
 
-    return write(view, {})
+    val refreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(context.activity)
+    refreshLayout.setOnRefreshListener {
+        refreshAction.startAction(this)
+        reactiveScope {
+            refreshLayout.isRefreshing = refreshAction.state().handle(
+                success = { false },
+                exception = { false },
+                notReady = { true }
+            )
+        }
+    }
+
+    // Add SwipeRefreshLayout wrapper to the parent, then nest ScrollView inside it.
+    // Return ScrollView so subsequent children go into the scrollable area.
+    // SwipeRefreshLayout has internal child views (progress spinner), so we must
+    // override child management to avoid native/RView count mismatch assertions.
+    return write(object : RViewWriter(context) {
+        override val native: View = refreshLayout
+        val myChildren: ArrayList<View> = ArrayList()
+        override fun internalAddChild(index: Int, view: RView) {
+            // Apply parent's default alignment if child doesn't have explicit alignment set
+            var needsLayoutParamUpdate = false
+
+            if (view.lastSetHorizontalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildHorizontalAlign != null) {
+                view.lastSetHorizontalAlign = newChildHorizontalAlign!!
+                needsLayoutParamUpdate = true
+            }
+            if (view.lastSetVerticalAlign == com.lightningkite.kiteui.models.Align.Stretch && newChildVerticalAlign != null) {
+                view.lastSetVerticalAlign = newChildVerticalAlign!!
+                needsLayoutParamUpdate = true
+            }
+
+            // If we applied defaults, update layout params (align() modifier wasn't called)
+            if (needsLayoutParamUpdate) {
+                val params = view.lparams
+                val horizontalGravity = when (view.lastSetHorizontalAlign) {
+                    com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.START
+                    com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_HORIZONTAL
+                    com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.END
+                    else -> android.view.Gravity.CENTER_HORIZONTAL
+                }
+                val verticalGravity = when (view.lastSetVerticalAlign) {
+                    com.lightningkite.kiteui.models.Align.Start -> android.view.Gravity.TOP
+                    com.lightningkite.kiteui.models.Align.Center -> android.view.Gravity.CENTER_VERTICAL
+                    com.lightningkite.kiteui.models.Align.End -> android.view.Gravity.BOTTOM
+                    else -> android.view.Gravity.CENTER_VERTICAL
+                }
+
+                if (params is com.lightningkite.kiteui.views.direct.SimplifiedLinearLayoutLayoutParams)
+                    params.gravity = horizontalGravity or verticalGravity
+                else if (params is android.widget.FrameLayout.LayoutParams)
+                    params.gravity = horizontalGravity or verticalGravity
+                else if (params is androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams)
+                    params.gravity = horizontalGravity or verticalGravity
+            }
+
+            myChildren.add(index, view.native)
+            (native as ViewGroup).addView(view.native, index)
+        }
+
+        override fun internalRemoveChild(index: Int) {
+            (native as ViewGroup).let {
+                it.removeViewAt(it.children.indexOf(myChildren.removeAt(index)))
+            }
+        }
+
+        override fun internalClearChildren() {
+            (native as ViewGroup).let {
+                for (child in myChildren) {
+                    it.removeViewAt(it.children.indexOf(child))
+                }
+                myChildren.clear()
+            }
+        }
+    }, {}).write(ScrollView(context, horizontal = horizontal, vertical = vertical), setup)
 }
 
 @ViewModifierDsl3

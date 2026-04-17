@@ -30,11 +30,11 @@ allprojects {
 }
 plugins {
 
-    alias(libs.plugins.kotlinMultiplatform) apply false
-    alias(libs.plugins.kotlinCocoapods) apply false
-    alias(libs.plugins.kotlinPluginSerialization) apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlin.cocoapods) apply false
+    alias(libs.plugins.kotlin.plugin.serialization) apply false
     alias(libs.plugins.androidApplication) apply false
-    alias(libs.plugins.comLightningkiteTestingManual) apply false
+    alias(libs.plugins.testing.manual) apply false
     alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.vannitechPublishing) apply false
     alias(libs.plugins.dokka) apply false

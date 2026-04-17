@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.DriverActionException
+import com.lightningkite.kiteui.views.driverSnapshot
+import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.datetime.*
 
 // --- Button ---
@@ -89,9 +91,15 @@ fun Link.linkDriverActions(): Map<String, suspend (List<String>) -> String> = bu
 // --- MenuButton ---
 
 fun MenuButton.menuDriverActions(
-    click: (suspend (List<String>) -> String)? = null,
+    click: (() -> Unit)? = null,
 ): Map<String, suspend (List<String>) -> String> = buildMap {
-    click?.let { put("click", it) }
+    click?.let { fn ->
+        put("click") {
+            fn()
+            overlayFrame?.driverChildren?.lastOrNull()?.driverSnapshot()
+                ?: "opened"
+        }
+    }
 }
 
 // --- AutoCompleteTextField ---

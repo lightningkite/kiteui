@@ -97,6 +97,7 @@ object RootPage : Page {
                 linkPage { ScrollIntoViewTest }
                 linkPage { CoveringTestPage }
                 linkPage { PopoverTestingPage }
+                linkPage { NestedPopoverTestPage }
 
                 sectionLabel("Recycler / Lists")
                 linkPage { RecyclerViewTestPage }
@@ -105,6 +106,8 @@ object RootPage : Page {
                 linkPage { HorizontalRecyclerViewPage }
                 linkPage { InfiniteImagesPage }
                 linkPage { R2VPPage }
+                linkPage { Recycler2PullToRefreshTest }
+
 
                 sectionLabel("Media")
                 linkPage { ImageTestPage }
@@ -140,6 +143,7 @@ object RootPage : Page {
                 sectionLabel("Performance & Diagnostics")
                 linkPage { PerformanceTestPage }
                 linkPage { LeakCheckerPage }
+                linkPage { TelemetryTestPage }
 
                 sectionLabel("Interaction & Gestures")
                 linkPage { ClickTestPage }
