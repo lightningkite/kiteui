@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.views.valueDouble
 actual class ProgressBar actual constructor(context: ElementContext): NativeElement(context) {
     init {
         native.tag = "progress"
+        native.setAttribute("aria-label", "Progress")
     }
 
     actual var ratio: Float

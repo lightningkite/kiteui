@@ -117,6 +117,12 @@ class CAGradientLayerResizing : CAGradientLayer {
             field = value
             refreshCorners()
         }
+    var desiredCornerShape: CornerShape = CornerShape.Circular
+        set(value) {
+            if (this == null) return //stupid iOS issue prevention
+            field = value
+            refreshCorners()
+        }
     var parentSpacing: CGFloat = 0.0
         set(value) {
             if (this == null) return //stupid iOS issue prevention
@@ -187,14 +193,20 @@ class CAGradientLayerResizing : CAGradientLayer {
             }
         }
 
-        val v = valueOfRadii(desiredCornerRadius)
+        val isContinuous = desiredCornerShape == CornerShape.Continuous
+        // Boost radius when using native squircle — the tighter curve needs a larger value
+        val v = valueOfRadii(desiredCornerRadius) * if (isContinuous) 3.0 else 1.0
+        val curve = if (isContinuous) kCACornerCurveContinuous else kCACornerCurveCircular
         if (desiredCornerRadius is CornerRadii.PerCorner) {
            applyPerCornerRadii(desiredCornerRadius as CornerRadii.PerCorner, v)
         } else {
             superlayer?.modelLayer()?.cornerRadius = v
+            superlayer?.modelLayer()?.cornerCurve = curve
 
             backgroundMask?.cornerRadius = v
+            backgroundMask?.cornerCurve = curve
             cornerRadius = v
+            cornerCurve = curve
             borderShape?.removeFromSuperlayer()
             borderShape = null
             mask = null

@@ -30,7 +30,7 @@ private fun ElementWriter.CanAddTheme.selectedIfRouteMatches(it: NavLink): Eleme
             ?.let { context.mainPageNavigator.routes.render(it) }?.urlLikePath?.segments == context.mainPageNavigator.routes.render(
             it.destination.invoke(this)()
         )?.urlLikePath?.segments
-        if (matchingPage) SelectedSemantic else ForcePaddingSemantic
+        if (matchingPage) SelectedSemantic else UnselectedSemantic
     }
 
 private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNavigate: suspend () -> Unit = {}) {

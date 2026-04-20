@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.views.l2.findFirstInteractiveDescendant
 import com.lightningkite.reactive.context.StatusListener
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
@@ -60,6 +61,20 @@ expect inline fun Element.withoutAnimation(action: () -> Unit)
 
 inline fun Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHelpers.() -> Unit) {
     object : KiteUiCoroutineScopeHelpers, CoroutineScope by CoroutineScope(coroutineContext.minusKey(StatusListener.Key)) {}.run(block)
+}
+
+/**
+ * Requests focus on this element, or on its first interactive descendant if this element
+ * isn't interactive. Used by navigation to move focus to new page content.
+ */
+fun Element.requestFocusOrDescendant() {
+    if (this is InteractiveElement) {
+        requestFocus()
+    } else if (this is ElementWithChildren) {
+        findFirstInteractiveDescendant()?.requestFocus() ?: requestFocus()
+    } else {
+        requestFocus()
+    }
 }
 
 internal inline fun ContainerElement.beforeSetupContainer(crossinline action: Element.() -> Unit): ContainerElement =

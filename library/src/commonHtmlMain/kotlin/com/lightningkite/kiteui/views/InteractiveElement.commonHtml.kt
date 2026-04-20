@@ -5,6 +5,7 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
         get() = native.attributes.disabled != true
         set(value) {
             native.attributes.disabled = !value
+            native.setAttribute("aria-disabled", if (value) null else "true")
         }
 }
 
@@ -13,5 +14,6 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
         get() = native.attributes.disabled != true
         set(value) {
             native.attributes.disabled = !value
+            native.setAttribute("aria-disabled", if (value) null else "true")
         }
 }

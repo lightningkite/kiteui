@@ -44,6 +44,9 @@ actual class ExternalLink actual constructor(context: ElementContext) : NativeCo
         eventListenerAdded = true
     }
 
-    override fun nativeSetAction(action: Action?) { registerEventListener() }
+    override fun nativeSetAction(action: Action?) {
+        registerEventListener()
+        native.setAttribute("aria-label", accessibleLabel ?: action?.title)
+    }
     override fun nativeSetSecondaryAction(action: Action?) { registerEventListener() }
 }

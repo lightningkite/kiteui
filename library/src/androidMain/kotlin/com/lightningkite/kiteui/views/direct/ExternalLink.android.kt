@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.externalServices
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
@@ -27,6 +28,10 @@ actual class ExternalLink actual constructor(context: ElementContext) : NativeCo
     actual var to: String? = null
 
     actual var newTab: Boolean = false
+
+    override fun nativeSetAction(action: Action?) {
+        native.contentDescription = accessibleLabel ?: action?.title
+    }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }

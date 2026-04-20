@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.mainPageNavigator
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
@@ -33,6 +34,10 @@ actual class Link actual constructor(context: ElementContext): NativeContainerEl
     actual var newTab: Boolean = false
     actual var onNavigator: PageNavigator = context.mainPageNavigator
     actual var resetsStack: Boolean = false
+
+    override fun nativeSetAction(action: Action?) {
+        native.contentDescription = accessibleLabel ?: action?.title
+    }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }

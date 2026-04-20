@@ -6,20 +6,23 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
     val defaultColor = Color(red = 0 / 255f, green = 122 / 255f, blue = 255 / 255f, alpha = 1f)
     val highlight = primary ?: defaultColor
     val separator = back.darken(0.1f)
-    fun Paint.backInvert() = if (this == Color.white) back else Color.white
+    val white = Color.gray(0.95f)
+    val black = Color.gray(0.1f)
+    fun Paint.backInvert() = if (this == white) back else white
     Theme(
         id = "clean-${highlight.toInt()}",
-        foreground = Color.black,
-        background = Color.white,
+        foreground = black,
+        background = white,
         outline = separator,
         elevation = 0.px,
-        cornerRadii = CornerRadii.AdaptiveToSpacing(0.5.rem),
-        gap = 0.75.rem,
-        padding = Edges(0.75.rem),
+        cornerRadii = CornerRadii.Fixed(1.rem),
+        cornerShape = CornerShape.Continuous,
+        gap = 1.rem,
+        padding = Edges(1.rem),
         semanticOverrides = SemanticOverrides(
             CardSemantic.override {
-                if(it.background != Color.white)
-                    it.withBack(background = it.background.backInvert(), foreground = Color.black)
+                if (it.background != white)
+                    it.withBack(background = it.background.backInvert(), foreground = black)
                 else
                     it.withBack(outlineWidth = 1.px)
             },
@@ -27,14 +30,22 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
                 it.withBack(
                     outline = separator,
                     outlineWidth = 1.px,
-                    foreground = Color.black,
-                    cornerRadii = CornerRadii.Fixed(0.5.rem)
+                    foreground = black,
+                    cornerRadii = CornerRadii.Fixed(1.rem),
                 )
             },
-            BarSemantic.override { it.withBack },
-            NavSemantic.override { it.withBack },
-            OuterSemantic.override { it.withBack(cascading = false, gap = 1.px, padding = Edges.ZERO, background = separator) },
-            MainContentSemantic.override { it.withBack(cascading = false, cornerRadii = CornerRadii.AdaptiveToSpacing(0.px)) },
+            BarSemantic.override { it.withBack(cascading = false, cornerRadii = CornerRadii.Fixed(0.px)) },
+            NavSemantic.override { it.withBack(cascading = false, cornerRadii = CornerRadii.Fixed(0.px)) },
+            OuterSemantic.override {
+                it.withBack(
+                    cascading = false,
+                    cornerRadii = CornerRadii.Fixed(0.px),
+                    gap = 1.px,
+                    padding = Edges.ZERO,
+                    background = separator
+                )
+            },
+            MainContentSemantic.override { it.withBack(cascading = false, cornerRadii = CornerRadii.Fixed(0.px)) },
             InsetSemantic.override { it.withBack(background = it.background.backInvert()) },
             UnselectedSemantic.override { it.withBack },
             SelectedSemantic.override { it[CardSemantic] },
@@ -42,8 +53,8 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
                 it.withBack(
                     cascading = false,
                     outline = separator,
-                    background = Color.white,
-                    foreground = Color.black,
+                    background = white,
+                    foreground = black,
                     elevation = 4.dp
                 )
             },
@@ -51,23 +62,40 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
                 it.withBack(
                     cascading = false,
                     outline = separator,
-                    background = Color.white,
-                    foreground = Color.black,
+                    background = white,
+                    foreground = black,
                     elevation = 4.dp
                 )
             },
             ImportantSemantic.override {
                 it.withBack(
                     background = highlight,
-                    foreground = if (highlight.perceivedBrightness > 0.4f) Color.white else Color.black,
+                    foreground = if (highlight.perceivedBrightness > 0.4f) white else black,
+                    outlineWidth = 0.px
                 )
             },
             ListSemantic.override {
-                it.copy(id = "lsts", background = back).withBack(
+                it.copy(
+                    id = "directlist",
                     cascading = false,
-                    cornerRadii = CornerRadii.Fixed(0.75.rem),
+                    cornerRadii = CornerRadii.Fixed(1.rem),
                     gap = 1.px,
-                    padding = Edges(0.px)
+                    padding = Edges(0.px),
+                ).withBack(
+                    semanticOverrides = SemanticOverrides(
+                        ListSemantic.override {
+                            it.withBack(
+                                cascading = false,
+                                cornerRadii = CornerRadii.Fixed(1.rem),
+                                outlineWidth = 0.px,
+                                gap = 1.px,
+                                padding = Edges(0.px),
+                                semanticOverrides = SemanticOverrides(
+                                    ListSemantic.override { it.withoutBack },
+                                )
+                            )
+                        },
+                    )
                 )
             },
         )

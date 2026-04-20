@@ -165,4 +165,4 @@ inline val ElementWriter.CanAddTheme.padded: ElementWriter.CanAddTheme get() = t
 val ElementWriter.CanAddTheme.unpadded: ElementWriter.CanAddTheme get() = beforeSetup { padding = 0.px }
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing
+expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, transition: ScreenTransition = ScreenTransition.None, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing

@@ -15,6 +15,10 @@ actual class CircularProgress actual constructor(context: ElementContext) : Nati
     init {
         native.tag = "div"
         native.setStyleProperty("background-color", "transparent")
+        native.setAttribute("role", "progressbar")
+        native.setAttribute("aria-valuemin", "0")
+        native.setAttribute("aria-valuemax", "100")
+        native.setAttribute("aria-valuenow", "0")
 
 
         val svg = document.createElementNS("http://www.w3.org/2000/svg", "svg") as SVGSVGElement
@@ -59,5 +63,6 @@ actual class CircularProgress actual constructor(context: ElementContext) : Nati
             val p = value.coerceIn(0f, 1f)
             val offset = circumference * (1 - p)
             circle.setAttribute("stroke-dashoffset", offset.toString())
+            native.setAttribute("aria-valuenow", (p * 100).toInt().toString())
         }
 }

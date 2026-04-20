@@ -69,7 +69,10 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
                 }
             }
         }
-        native.setOnClickListener { openFn() }
+        native.setOnClickListener {
+            openFn()
+            native.announceForAccessibility("Menu opened")
+        }
         _openMenu = openFn
     }
 

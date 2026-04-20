@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Log
+import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.Element
@@ -22,8 +23,10 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.get
 
+private data class ShowHideRequest(val goal: Boolean, val transition: ScreenTransition)
+
 // by Claude - shared scheduling for show/hide and weight animations
-private val showHideQueue = HashMap<ContainerElement, Boolean>()
+private val showHideQueue = HashMap<ContainerElement, ShowHideRequest>()
 private val weightChangeQueue = HashMap<ContainerElement, Pair<Float, Float>>()
 private var workerScheduled = false
 
@@ -34,15 +37,15 @@ private fun ensureWorkerScheduled() {
     }
 }
 
-internal actual fun ContainerElement.nativeAnimateShow() {
+internal actual fun ContainerElement.nativeAnimateShow(transition: ScreenTransition) {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateShow")
-    showHideQueue[this] = true
+    showHideQueue[this] = ShowHideRequest(true, transition)
     ensureWorkerScheduled()
 }
 
-internal actual fun ContainerElement.nativeAnimateHide() {
+internal actual fun ContainerElement.nativeAnimateHide(transition: ScreenTransition) {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateHide")
-    showHideQueue[this] = false
+    showHideQueue[this] = ShowHideRequest(false, transition)
     ensureWorkerScheduled()
 }
 
@@ -69,6 +72,7 @@ private data class OngoingAnimation(
     val to: Json,
     val goal: Boolean,
     val startRatio: Double,
+    val easingCss: String = "linear",
 ) {
     var totalTime: Double = 1000.0
     val myElement = on.native.element as HTMLElement
@@ -98,7 +102,7 @@ private data class OngoingAnimation(
             arrayOf(from, to),
             json(
                 "duration" to totalTime,
-                "easing" to "linear"
+                "easing" to easingCss
             )
         ).also {
             it.currentTime = (startRatio * totalTime).also { log?.info("Starting at $it") }
@@ -287,7 +291,7 @@ private class OngoingWeightAnimation(
     }
 }
 
-private val log: Log? = Log.tag("showHide")
+private val log: Log? = null
 
 // by Claude - combined worker processes both show/hide and weight queues in a single batch
 private val combinedAnimationWorker = label@{
@@ -337,7 +341,7 @@ private val combinedAnimationWorker = label@{
         currentWeightQueue?.keys?.removeAll { it.parent == null || it.children.isEmpty() || it.native.children.isEmpty() || it.native.element == null }
 
         currentShowHideQueue?.forEach {
-            log?.info("  ShowHide: ${it.key.children.singleOrNull()?.debugName} -> ${it.value}")
+            log?.info("  ShowHide: ${it.key.children.singleOrNull()?.debugName} -> ${it.value.goal}")
         }
         currentWeightQueue?.forEach {
             log?.info("  Weight: ${it.key.children.singleOrNull()?.debugName} -> ${it.value}")
@@ -358,8 +362,8 @@ private val combinedAnimationWorker = label@{
         // === Phase 2: Lock sizes for disappearing/shrinking views ===
         log?.info("// Lock current sizes for disappearing/shrinking views.")
 
-        currentShowHideQueue?.forEach { (on, goal) ->
-            if (goal) return@forEach
+        currentShowHideQueue?.forEach { (on, request) ->
+            if (request.goal) return@forEach
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
             child.style.width = myElement.clientWidth.toString() + "px"
@@ -395,9 +399,9 @@ private val combinedAnimationWorker = label@{
         // Set goal state for show/hide queue
         val beforeVisibility = currentShowHideQueue?.map {
             val was = (it.key.native.element as HTMLElement).hidden
-            (it.key.native.element as HTMLElement).hidden = !it.value
+            (it.key.native.element as HTMLElement).hidden = !it.value.goal
             (it.key.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
-            log?.info("View ${it.key.children.singleOrNull()?.debugName} -> ${it.value}")
+            log?.info("View ${it.key.children.singleOrNull()?.debugName} -> ${it.value.goal}")
             it.key to was
         }
 
@@ -431,8 +435,8 @@ private val combinedAnimationWorker = label@{
         // === Phase 4: Lock sizes for appearing/expanding views ===
         log?.info("// Lock current sizes for appearing/expanding views.")
 
-        currentShowHideQueue?.forEach { (on, goal) ->
-            if (!goal) return@forEach
+        currentShowHideQueue?.forEach { (on, request) ->
+            if (!request.goal) return@forEach
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
             child.style.width = myElement.clientWidth.toString() + "px"
@@ -459,7 +463,9 @@ private val combinedAnimationWorker = label@{
         // === Phase 5: Build keyframes ===
         log?.info("// Queue the animations.")
 
-        val queuedShowHideAnimations = currentShowHideQueue?.map { (on, goal) ->
+        val queuedShowHideAnimations = currentShowHideQueue?.map { (on, request) ->
+            val goal = request.goal
+            val transition = request.transition
 
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
@@ -468,28 +474,25 @@ private val combinedAnimationWorker = label@{
             val childStyle = window.getComputedStyle(child)
             val parentStyle = window.getComputedStyle(parent)
 
-            val x =
-                parentStyle.display == "grid" ||
-                        parentStyle.display == "flex" && parentStyle.flexDirection.contains("row") ||
+            // Frame / CoordinatorFrame are z-stacks — hiding a child shouldn't collapse layout
+            val isZStack = on.parent?.underlyingNativeElement is Frame || on.parent?.underlyingNativeElement is CoordinatorFrame
+            val x = !isZStack && (
+                parentStyle.display == "flex" && parentStyle.flexDirection.contains("row") ||
                         parentStyle.display != "flex" && (displayValuesPreHide[on]
-                    ?: myStyle.display).contains("inline")
-            val y =
-                parentStyle.display == "grid" ||
-                        parentStyle.display == "flex" && parentStyle.flexDirection.contains("column") ||
-                        parentStyle.display != "flex" && parent.classList.contains("optimized")
+                    ?: myStyle.display).contains("inline"))
+            val y = !isZStack && (
+                parentStyle.display == "flex" && parentStyle.flexDirection.contains("column") ||
+                        parentStyle.display != "flex" && parent.classList.contains("optimized"))
             val weighted = myStyle.flexGrow.takeIf { it.isNotBlank() && it != "0" }
             val usingFlexGap = parentStyle.display == "flex"
 
             val before = js("{}")
             val after = js("{}")
             val full = if (goal) after else before
-            val fullTransform = ArrayList<String>()
             val gone = if (goal) before else after
-            val goneTransform = ArrayList<String>()
 
+            // Layout collapse keyframes (automatic based on container type)
             if (x) {
-                goneTransform.add("scaleX(0)")
-                fullTransform.add("scaleX(1)")
                 if (usingFlexGap) {
                     val gapX = parentStyle.columnGap
                     gone.marginLeft = "calc($gapX / -2.0)"
@@ -520,8 +523,6 @@ private val combinedAnimationWorker = label@{
                 }
             }
             if (y) {
-                goneTransform.add("scaleY(0)")
-                fullTransform.add("scaleY(1)")
                 if (usingFlexGap) {
                     val gapY = parentStyle.columnGap
                     gone.marginTop = "calc($gapY / -2.0)"
@@ -558,17 +559,41 @@ private val combinedAnimationWorker = label@{
                 gone.flexShrink = "0"
             }
 
-//            full.opacity = "1"
-//            gone.opacity = "0"
+            // Visual transition keyframes (from ScreenTransition parameter)
+            if (transition.fade) {
+                full.opacity = "1"
+                gone.opacity = "0"
+            }
 
-            goneTransform.takeUnless { it.isEmpty() }?.let {
-//                gone.transform = it.joinToString(" ")
-//                gone.transformOrigin = "top left"
+            // Build CSS transform from Transformation fields for visual effect
+            fun com.lightningkite.kiteui.models.Transformation.toCssTransform(): String? {
+                val parts = mutableListOf<String>()
+                if (translationX != 0.0 || translationY != 0.0) parts.add("translate(${(translationX * 100).toInt()}%, ${(translationY * 100).toInt()}%)")
+                if (scaleX != 1.0 || scaleY != 1.0) parts.add("scale($scaleX, $scaleY)")
+                if (rotation != 0.0) parts.add("rotate(${rotation}deg)")
+                if (rotationX != 0.0) parts.add("rotateX(${rotationX}deg)")
+                if (rotationY != 0.0) parts.add("rotateY(${rotationY}deg)")
+                return if (parts.isEmpty()) null else parts.joinToString(" ")
             }
-            fullTransform.takeUnless { it.isEmpty() }?.let {
-//                full.transform = it.joinToString(" ")
-//                full.transformOrigin = "top left"
+
+            val entryTransformCss = transition.entryTransform.toCssTransform()
+            val exitTransformCss = transition.exitTransform.toCssTransform()
+            if (entryTransformCss != null || exitTransformCss != null) {
+                // "before" is the entry state when showing, the full state when hiding
+                // "after" is the full state when showing, the exit state when hiding
+                if (goal) {
+                    // Showing: before=entry, after=identity
+                    before.transform = entryTransformCss ?: "none"
+                    after.transform = "none"
+                } else {
+                    // Hiding: before=identity, after=exit
+                    before.transform = "none"
+                    after.transform = exitTransformCss ?: "none"
+                }
             }
+
+            val easing = transition.easing
+            val easingCss = "cubic-bezier(${easing.x1}, ${easing.y1}, ${easing.x2}, ${easing.y2})"
 
             @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
             OngoingAnimation(
@@ -578,6 +603,7 @@ private val combinedAnimationWorker = label@{
                 goal = goal,
                 startRatio = 1.0 - pastShowHideRatios.getOrElse(on) { 1.0 }
                     .also { log?.info("Past for ${on.children.singleOrNull()?.debugName} is $it") },
+                easingCss = easingCss,
             )
         }
 

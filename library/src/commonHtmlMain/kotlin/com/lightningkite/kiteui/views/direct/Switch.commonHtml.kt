@@ -11,6 +11,7 @@ actual class Switch actual constructor(context: ElementContext) : NativeInteract
     init {
         native.tag = "input"
         native.attributes.type = "checkbox"
+        native.setAttribute("role", "switch")
         native.classes.add("switch")
         native.classes.add("checkResponsive")
     }

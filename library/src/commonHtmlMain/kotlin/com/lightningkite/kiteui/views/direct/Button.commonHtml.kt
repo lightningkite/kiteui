@@ -1,8 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.Event
+import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.dom.MouseEvent
 import com.lightningkite.kiteui.models.ClickableSemantic
+import com.lightningkite.kiteui.models.KeyCodes
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -10,6 +13,9 @@ import kotlinx.coroutines.launch
 
 actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + buttonDriverActions()
+    override fun nativeSetAction(action: Action?) {
+        native.setAttribute("aria-label", accessibleLabel ?: action?.title)
+    }
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"
@@ -58,9 +64,17 @@ actual class Button actual constructor(context: ElementContext): NativeContainer
             longPressDetect?.cancel()
             longPressDetect = null
         }
+        val keypress = { event: Event ->
+            event as KeyboardEvent
+            if(event.code == KeyCodes.space || event.code == KeyCodes.enter) {
+                val a = if(event.ctrlKey || event.metaKey || event.shiftKey) secondaryAction ?: action else action
+                a?.startAction(this)
+            }
+        }
 
         native.addEventListener("mousedown", beginLongPressCountdown)
         native.addEventListener("touchstart", beginLongPressCountdown)
+        native.addEventListener("keypress", keypress)
 
         native.addEventListener("mouseup", cancelOrClick)
         native.addEventListener("mouseleave", cancel)

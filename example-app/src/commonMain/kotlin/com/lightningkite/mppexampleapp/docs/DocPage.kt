@@ -35,7 +35,7 @@ fun ElementWriter.article(
     setup: LinearLayoutElement.() -> Unit
 ) {
     frame {
-        align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col {
+        align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).scrolling.col {
             setup()
             space(2.0)
         }

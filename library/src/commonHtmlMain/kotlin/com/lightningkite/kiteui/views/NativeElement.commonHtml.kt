@@ -11,6 +11,8 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.views.NativeElementCommonCode.ThemePipeline
 
+private var labelForIdCounter = 0
+
 actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
     var native = FutureElement().also { it.classes.add("kui") }
 
@@ -45,6 +47,75 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         set(value) {
             super.debugName = value
             native.setAttribute("data-debug-name", value ?: "")
+        }
+
+    // --- ACCESSIBILITY ---
+
+    override var accessibleLabel: String?
+        get() = super.accessibleLabel
+        set(value) {
+            super.accessibleLabel = value
+            native.setAttribute("aria-label", value)
+        }
+
+    override var accessibleSemantic: AccessibleSemantic?
+        get() = super.accessibleSemantic
+        set(value) {
+            super.accessibleSemantic = value
+            when (value) {
+                is AccessibleSemantic.Heading -> native.tag = "h${value.level.coerceIn(1, 6)}"
+                is AccessibleSemantic.Main -> native.tag = "main"
+                is AccessibleSemantic.Navigation -> native.tag = "nav"
+                is AccessibleSemantic.Banner -> native.tag = "header"
+                is AccessibleSemantic.ContentInfo -> native.tag = "footer"
+                is AccessibleSemantic.Complementary -> native.tag = "aside"
+                is AccessibleSemantic.Search -> native.tag = "search"
+                null -> {} // Don't reset tag — we don't know the original
+            }
+        }
+
+    override var accessibleLiveRegion: LiveRegionMode
+        get() = super.accessibleLiveRegion
+        set(value) {
+            super.accessibleLiveRegion = value
+            when (value) {
+                LiveRegionMode.None -> native.setAttribute("aria-live", null)
+                LiveRegionMode.Polite -> native.setAttribute("aria-live", "polite")
+                LiveRegionMode.Assertive -> native.setAttribute("aria-live", "assertive")
+            }
+        }
+
+    override var labelFor: Element?
+        get() = super.labelFor
+        set(value) {
+            super.labelFor = value
+            if (value != null) {
+                val targetNative = value.underlyingNativeElement.native
+                if (targetNative.id == null) {
+                    targetNative.id = "kiteui-a11y-${labelForIdCounter++}"
+                }
+                if (native.tag == "span") {
+                    native.tag = "label"
+                }
+                native.setAttribute("for", targetNative.id!!)
+            } else {
+                native.setAttribute("for", null)
+            }
+        }
+
+    override var describedBy: Element?
+        get() = super.describedBy
+        set(value) {
+            super.describedBy = value
+            if (value != null) {
+                val descNative = value.underlyingNativeElement.native
+                if (descNative.id == null) {
+                    descNative.id = "kiteui-a11y-${labelForIdCounter++}"
+                }
+                native.setAttribute("aria-describedby", descNative.id)
+            } else {
+                native.setAttribute("aria-describedby", null)
+            }
         }
 
     // drag 'n drop

@@ -133,6 +133,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         set(value) {
             field = value
             updateHint()
+            textField.accessibilityHint = value.ifEmpty { null }
         }
 
     inline var align: Align

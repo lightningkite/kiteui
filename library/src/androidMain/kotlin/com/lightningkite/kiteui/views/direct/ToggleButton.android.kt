@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
+import androidx.core.view.ViewCompat
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
@@ -18,7 +19,10 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
     actual val checked: MutableReactiveValue<Boolean> get() = checkedProp
 
     init {
-        checked.addListener { refreshTheming() }
+        checked.addListener {
+            refreshTheming()
+            ViewCompat.setStateDescription(native, if (checkedProp.value) "Pressed" else "Not pressed")
+        }
 
         themePipeline.add(ThemePipeline.Step.elementStatus) {
             if (checkedProp.value) SelectedSemantic

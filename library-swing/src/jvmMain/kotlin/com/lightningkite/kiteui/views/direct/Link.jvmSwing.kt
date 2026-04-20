@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.models.toAwt
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.mainPageNavigator
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.px
@@ -40,7 +41,7 @@ actual class Link actual constructor(context: RContext) : RView(context) {
         init {
             isContentAreaFilled = false
             isBorderPainted = false
-            isFocusPainted = false
+            isFocusPainted = true
             isOpaque = false
             isRolloverEnabled = true  // Enable rollover tracking for hover states
             // Remove all internal margins/borders so contentPanel gets full space
@@ -89,6 +90,12 @@ actual class Link actual constructor(context: RContext) : RView(context) {
             native.isEnabled = value
             refreshTheming()
         }
+
+    // TODO: Once Link is migrated to extend NativeContainerElementWithSecondaryAction,
+    // this becomes an override of the base class nativeSetAction.
+    fun nativeSetAction(action: Action?) {
+        native.accessibleContext?.accessibleName = accessibleLabel ?: action?.title
+    }
 
     actual var to: (() -> Page)? = null
 

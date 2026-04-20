@@ -50,6 +50,7 @@ actual class ScrollingBehaviorImpl actual constructor(
         }
 
     private val ro by lazy { native.resizeObserver() }
+    private val mo by lazy { native.mutationObserver(recursive = true) }
     private val clientSize by lazy {
         on.reactive {
             rerunOn(ro)
@@ -62,6 +63,7 @@ actual class ScrollingBehaviorImpl actual constructor(
     private val scrollSize by lazy {
         on.reactive {
             rerunOn(ro)
+            rerunOn(mo)
             Size(
                 native.element?.scrollWidth?.toDouble() ?: throw ReactiveLoading,
                 native.element?.scrollHeight?.toDouble() ?: throw ReactiveLoading,

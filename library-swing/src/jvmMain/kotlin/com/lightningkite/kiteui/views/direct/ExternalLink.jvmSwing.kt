@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.DownSemantic
 import com.lightningkite.kiteui.models.HoverSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.toAwt
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.px
@@ -39,7 +40,7 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
         init {
             isContentAreaFilled = false
             isBorderPainted = false
-            isFocusPainted = false
+            isFocusPainted = true
             isOpaque = false
             isRolloverEnabled = true  // Enable rollover tracking for hover states
             // Remove all internal margins/borders so contentPanel gets full space
@@ -88,6 +89,12 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
             native.isEnabled = value
             refreshTheming()
         }
+
+    // TODO: Once ExternalLink is migrated to extend NativeContainerElementWithSecondaryAction,
+    // this becomes an override of the base class nativeSetAction.
+    fun nativeSetAction(action: Action?) {
+        native.accessibleContext?.accessibleName = accessibleLabel ?: action?.title
+    }
 
     actual var to: String? = null
 

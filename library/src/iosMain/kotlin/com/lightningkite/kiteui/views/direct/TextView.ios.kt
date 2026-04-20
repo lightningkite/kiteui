@@ -69,7 +69,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
         if (originalHtml == null) {
             val alignment = label.textAlignment
             label.font = fontAndStyle?.let {
-                it.font.get(it.size.value, it.weight.toUIFontWeight(), it.italic)
+                it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
             } ?: UIFont.systemFontOfSize(12.0)
             label.textAlignment = alignment
             label.attributedText = NSAttributedString.create(content, mapOf(
@@ -97,7 +97,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
                 val sizeRatio = attrFont.pointSize / 12.0
                 val scaled = fontAndStyle?.let {
                     it.font.get(
-                        (it.size * sizeRatio).value,
+                        (it.size * sizeRatio).value * preferredScaleFactor(),
                         weightNum ?: if (bold) UIFontWeightBold else UIFontWeightSemibold,
                         italic
                     )
@@ -159,7 +159,7 @@ private val dynamicTypeScaleFactors = mapOf(
     UIContentSizeCategoryExtraExtraLarge to 1.31,
     UIContentSizeCategoryExtraExtraExtraLarge to 1.42,
 )
-const val ENABLE_DYNAMIC_TYPE = false
+const val ENABLE_DYNAMIC_TYPE = true
 fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
     dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
 } else {

@@ -696,6 +696,13 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     // --- DEBUGGING & DRIVER ---
 
+    // --- ACCESSIBILITY ---
+    override var accessibleLabel: String? = null
+    override var accessibleSemantic: AccessibleSemantic? = null
+    override var accessibleLiveRegion: LiveRegionMode = LiveRegionMode.None
+    override var labelFor: Element? = null
+    override var describedBy: Element? = null
+
     override var debugName: String? = null
 
     override fun toString(): String =

@@ -1,11 +1,14 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ScreenTransition
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.navigation.render
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
+import com.lightningkite.reactive.core.Reactive
 
 expect class SwapView(context: ElementContext) : ElementWithChildren, NativeElement {
     override val underlyingNativeElement: SwapView

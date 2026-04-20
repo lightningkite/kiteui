@@ -80,6 +80,35 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
+    override var accessibleLabel: String?
+        get() = super.accessibleLabel
+        set(value) {
+            super.accessibleLabel = value
+            native.accessibleContext?.accessibleName = value
+        }
+
+    override var accessibleHeading: Int?
+        get() = super.accessibleHeading
+        set(value) {
+            super.accessibleHeading = value
+            // Swing's AccessibleContext doesn't have a native heading concept.
+            // Store as client property for potential assistive technology bridge.
+            if (native is JComponent) {
+                (native as JComponent).putClientProperty("kiteui.accessibleHeading", value)
+            }
+        }
+
+    override var accessibleLiveRegion: LiveRegionMode
+        get() = super.accessibleLiveRegion
+        set(value) {
+            super.accessibleLiveRegion = value
+            // Swing doesn't have native live region support.
+            // Store as client property for potential assistive technology bridge.
+            if (native is JComponent) {
+                (native as JComponent).putClientProperty("kiteui.accessibleLiveRegion", value.name)
+            }
+        }
+
     override var paddingByEdge: Edges?
         get() = super.paddingByEdge
         set(value) {

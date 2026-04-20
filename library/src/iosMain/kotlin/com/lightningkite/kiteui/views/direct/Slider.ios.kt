@@ -89,6 +89,8 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
         }
 
     init {
+        // UISlider already has built-in VoiceOver support (traits, value announcements).
+        native.isAccessibilityElement = true
         setupControl()
         native.minimumValue = min.toFloat()
         native.maximumValue = max.toFloat()

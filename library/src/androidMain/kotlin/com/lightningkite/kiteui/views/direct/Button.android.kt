@@ -7,6 +7,7 @@ import android.widget.ProgressBar
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 
 @OptIn(ExperimentalKiteUi::class)
@@ -34,6 +35,10 @@ actual class Button actual constructor(context: ElementContext): NativeContainer
         applyThemeWithRipple(theme)
         val theme = theme.theme
         progress.indeterminateTintList = ColorStateList.valueOf(theme.foreground.colorInt())
+    }
+
+    override fun nativeSetAction(action: Action?) {
+        native.contentDescription = accessibleLabel ?: action?.title
     }
 
     init {

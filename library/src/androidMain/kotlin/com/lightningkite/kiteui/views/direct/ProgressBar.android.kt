@@ -7,6 +7,7 @@ import android.graphics.drawable.shapes.RoundRectShape
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.Gravity
+import android.view.View
 import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
@@ -28,6 +29,7 @@ actual class ProgressBar actual constructor(context: ElementContext) : NativeEle
             // The default drawable uses a fixed height; use a custom drawable to support progress bars of any height
             progressDrawable = clipDrawable
             clipToOutline = true
+            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {

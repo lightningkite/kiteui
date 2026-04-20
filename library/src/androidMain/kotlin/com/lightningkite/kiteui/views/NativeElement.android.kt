@@ -27,6 +27,7 @@ import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.debugPrint
+import com.lightningkite.kiteui.models.AccessibleSemantic
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.DragData
@@ -34,6 +35,7 @@ import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.DragShadow
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.models.HoverSemantic
+import com.lightningkite.kiteui.models.LiveRegionMode
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -108,6 +110,56 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
             field = value
             native.isClickable = !value
             native.isFocusable = !value
+        }
+
+    override var accessibleLabel: String?
+        get() = super.accessibleLabel
+        set(value) {
+            super.accessibleLabel = value
+            native.contentDescription = value
+        }
+
+    override var accessibleSemantic: AccessibleSemantic?
+        get() = super.accessibleSemantic
+        set(value) {
+            super.accessibleSemantic = value
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                native.isAccessibilityHeading = value is AccessibleSemantic.Heading
+            }
+        }
+
+    override var accessibleLiveRegion: LiveRegionMode
+        get() = super.accessibleLiveRegion
+        set(value) {
+            super.accessibleLiveRegion = value
+            native.accessibilityLiveRegion = when (value) {
+                LiveRegionMode.None -> View.ACCESSIBILITY_LIVE_REGION_NONE
+                LiveRegionMode.Polite -> View.ACCESSIBILITY_LIVE_REGION_POLITE
+                LiveRegionMode.Assertive -> View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE
+            }
+        }
+
+    override var labelFor: Element?
+        get() = super.labelFor
+        set(value) {
+            super.labelFor = value
+            if (value != null) {
+                val targetView = (value.underlyingNativeElement as NativeElement).native
+                if (targetView.id == View.NO_ID) {
+                    targetView.id = View.generateViewId()
+                }
+                native.labelFor = targetView.id
+            } else {
+                native.labelFor = View.NO_ID
+            }
+        }
+
+    override var describedBy: Element?
+        get() = super.describedBy
+        set(value) {
+            super.describedBy = value
+            // Android doesn't have a direct describedBy API. The association is stored
+            // for use by components (e.g., errorText/issueText) that announce changes.
         }
 
     private class DragShadowBuilder(val shadow: DragShadow) : View.DragShadowBuilder(shadow.view.native) {

@@ -44,6 +44,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         } catch(e: Exception) {
             Exception("Failed to add print ruleset", e).printStackTrace()
         }
+        // Squircle/continuous corner shape support:
+        // When corner-shape: squircle is supported, boost radius to take advantage of the
+        // tighter squircle curve. Unsupported browsers keep the original radius as circular arcs.
+        dynamicCss.rule(":root { --corner-shape-scale: 1; }")
+        try {
+            dynamicCss.rule("@supports (corner-shape: squircle) { :root:root { --corner-shape-scale: 3; } }")
+        } catch (_: Exception) {}
         @Suppress("CssUnresolvedCustomProperty")
         dynamicCss.rule(
             """
@@ -776,20 +783,49 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     private val transitionHandled = HashSet<String>()
     fun transition(transition: ScreenTransition): String {
         if (!transitionHandled.add(transition.name)) return "transition-${transition.name}"
-        fun StringBuilder.extracted(part: ScreenTransitionPart) {
-            for ((key, value) in part.from) append("$key: $value; ")
-            append("} to { ")
-            for ((key, value) in part.to) append("$key: $value; ")
-            append("}")
+
+        fun Transformation.toCssTransform(): String {
+            val parts = mutableListOf<String>()
+            if (translationX != 0.0 || translationY != 0.0) {
+                parts.add("translate(${(translationX * 100).toInt()}%, ${(translationY * 100).toInt()}%)")
+            }
+            if (scaleX != 1.0 || scaleY != 1.0) {
+                parts.add("scale($scaleX, $scaleY)")
+            }
+            if (rotation != 0.0) {
+                parts.add("rotate(${rotation}deg)")
+            }
+            if (rotationX != 0.0) {
+                parts.add("rotateX(${rotationX}deg)")
+            }
+            if (rotationY != 0.0) {
+                parts.add("rotateY(${rotationY}deg)")
+            }
+            if (translationZ != 0.0) {
+                parts.add("translateZ(${translationZ}px)")
+            }
+            return if (parts.isEmpty()) "none" else parts.joinToString(" ")
         }
 
+        // Enter: from entryTransform to identity
         dynamicCss.rule(buildString {
             append("@keyframes transition-${transition.name}-enter { from { ")
-            extracted(transition.enter)
+            append("transform: ${transition.entryTransform.toCssTransform()}; ")
+            if (transition.fade) append("opacity: 0; ")
+            append("} to { ")
+            append("transform: none; ")
+            if (transition.fade) append("opacity: 1; ")
+            append("} }")
         }, 0)
+        // Exit: from identity to exitTransform
         dynamicCss.rule(buildString {
             append("@keyframes transition-${transition.name}-exit { from { ")
-            extracted(transition.exit)
+            append("transform: none; ")
+            if (transition.fade) append("opacity: 1; ")
+            append("} to { ")
+            append("transform: ${transition.exitTransform.toCssTransform()}; ")
+            if (transition.fade) append("opacity: 0; ")
+            append("} }")
         }, 0)
         return "transition-${transition.name}"
     }
@@ -1021,14 +1057,34 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
             ?.let { addToCss(directSel, "text-decoration-line", it) }
         theme.diff(diff) { font.lineSpacingMultiplier }?.let { addToCss(directSel, "line-height", it.toString()) }
+        if(theme.font.additionalLetterSpacing != 0.px) {
+            println("Additional letter spacing triggered (${theme.font.additionalLetterSpacing}), diff: ${ diff?.font?.additionalLetterSpacing}")
+        }
         theme.diff(diff) { font.additionalLetterSpacing }
-            ?.let { addToCss(directSel, "letter-spacing", it.toString()) }
+            ?.let {
+                println("Adding to spacing...")
+                addToCss(directSel, "letter-spacing", it.value.toString())
+            }
         theme.diff(diff) { outline }?.let { addToCss(directSel, "outline-color", it.closestColor().toWeb()) }
         theme.diff(diff) { transitionDuration }?.let { addToCss(directSel, "transition-duration", it.toCss()) }
         theme.diff(diff) { transitionDuration }?.let { addToCss(directSel, "--transition-duration", it.toCss()) }
         theme.diff(diff) { background }
             ?.let { addToCss(directSel, "--nearest-background-color", it.closestColor().toWeb()) }
-        theme.diff(diff) { cornerRadii }?.let { addToCss(backSel, "border-radius", it.toRawCornerRadius()) }
+        run {
+            val radiiChanged = theme.diff(diff) { cornerRadii }
+            val shapeChanged = theme.diff(diff) { cornerShape }
+            if (radiiChanged != null || shapeChanged != null) {
+                val radii = theme.cornerRadii
+                if (theme.cornerShape == CornerShape.Continuous) {
+                    // Use CSS variable --corner-shape-scale to boost radius when squircle is supported.
+                    // Unsupported browsers get 1x radius; supported browsers get 2x + corner-shape.
+                    addToCss(backSel, "border-radius", radii.toRawCornerRadius(scaleCssVar = "--corner-shape-scale"))
+                    addToCss(backSel, "corner-shape", "squircle")
+                } else {
+                    addToCss(backSel, "border-radius", radii.toRawCornerRadius())
+                }
+            }
+        }
         theme.diff(diff) { blurBackground }?.let {
 
             if(it.value != DimensionRaw.zero) {

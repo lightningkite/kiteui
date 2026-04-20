@@ -170,6 +170,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         set(value) {
             field = value
             updateHint()
+            textField.accessibilityHint = value.ifEmpty { null }
         }
     private var _align: Align? = null
     actual var align: Align?

@@ -88,7 +88,8 @@ actual class SizelessRawImageView actual constructor(
     init {
         native.tag = "div"
         native.classes.add("viewDraws")
-        native.attributes.alt = description  // by Claude - accessibility for background-image div
+        native.setAttribute("role", "img")
+        native.setAttribute("aria-label", description)
     }
     actual override val state: Reactive<Unit> = _state
     init {

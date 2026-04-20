@@ -53,11 +53,16 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
     )
 
     init {
+        native.setAttribute("role", "radio")
+        native.setAttribute("aria-checked", "false")
         checked.addListener {
-            if (checked.value)
+            if (checked.value) {
                 native.classes.add("checked")
-            else
+                native.setAttribute("aria-checked", "true")
+            } else {
                 native.classes.remove("checked")
+                native.setAttribute("aria-checked", "false")
+            }
         }
     }
 }
