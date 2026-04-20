@@ -79,6 +79,10 @@ object AiDriver {
 
     object Defaults {
         fun defaultDriverActions(element: Element): Map<String, suspend (List<String>) -> String> = buildMap {
+            put("snapshot") { args -> element.driverSnapshot(parseSnapshotOptions(args.toTypedArray())) }
+            put("screenshot") { element.driverScreenshot() }
+            put("find") { args -> element.driverFind(args.firstOrNull() ?: "", args.contains("--hidden")) }
+            put("findClickable") { args -> element.driverFindClickable(args.firstOrNull() ?: "", args.contains("--hidden")) }
             put("scrollIntoView") {
                 element.scrollIntoView(Align.Center, Align.Center, animate = false)
                 "OK"
@@ -113,10 +117,10 @@ object AiDriver {
         fun defaultDriverDisplay(element: Element, options: Element.DriverSnapshotOptions): String = buildString {
             val name = element.debugName
             if (name != null) {
-                append("$name:")
+                append("$name: ")
             } else {
                 val idx = element.parent?.children?.indexOf(element)?.takeIf { it >= 0 } ?: 0
-                append("$idx:")
+                append("$idx: ")
             }
             if (options.includeThemes) {
                 element.themeChoice.takeUnless { it == ThemeDerivation.None }?.let { append(it); append(' ') }

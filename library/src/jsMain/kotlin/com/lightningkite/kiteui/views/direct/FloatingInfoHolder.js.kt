@@ -64,6 +64,8 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                     native.style.opacity = "0"
                     native.style.zIndex = "998"
                     native.classes.add("active-${Random.nextInt()}")
+                    native.setAttribute("role", "presentation")
+                    native.setAttribute("aria-hidden", "true")
                     blockView = this
                 }
             }
@@ -88,6 +90,9 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                 native.style.width = "unset"
                 native.style.height = "unset"
                 native.classes.add("popover")
+                val menuId = "kiteui-menu-${Random.nextInt().toUInt()}"
+                native.id = menuId
+                source.native.setAttribute("aria-controls", menuId)
                 native.setAttribute("role", "dialog")
                 native.setAttribute("aria-modal", "true")
                 // Update aria-expanded on the source element
@@ -241,6 +246,20 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                 menuGenerator(this)
                 native.create()
 
+                // Focus first focusable child, or container as fallback
+                native.onElement { e ->
+                    e as HTMLElement
+                    val focusable = e.querySelector(
+                        "button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])"
+                    ) as? HTMLElement
+                    if (focusable != null) {
+                        focusable.focus()
+                    } else {
+                        if (e.getAttribute("tabindex") == null) e.setAttribute("tabindex", "-1")
+                        e.focus()
+                    }
+                }
+
                 reposition()
                 val repos = { ev: Event -> reposition() }
                 window.addEventListener("scroll", repos, true)
@@ -289,6 +308,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                     window.removeEventListener("mousemove", mouseMove)
                     document.removeEventListener("keydown", escapeHandler)
                     source.native.setAttribute("aria-expanded", "false")
+                    source.native.setAttribute("aria-controls", null)
                     // Restore focus to the trigger element
                     (source.native.element as? HTMLElement)?.focus()
                     native.onElement { e ->

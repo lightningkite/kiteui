@@ -8,6 +8,8 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
+import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
@@ -39,6 +41,7 @@ actual class MenuButton actual constructor(context: RContext) : RView(context) {
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
 
     init {
+        button.isFocusable = true
         button.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (enabled && requireClick && e.button == MouseEvent.BUTTON1) {
@@ -50,6 +53,15 @@ actual class MenuButton actual constructor(context: RContext) : RView(context) {
                 if (enabled && !requireClick) {
                     showMenu()
                 }
+            }
+        })
+        button.getInputMap(JComponent.WHEN_FOCUSED).apply {
+            put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "openMenu")
+            put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "openMenu")
+        }
+        button.actionMap.put("openMenu", object : AbstractAction() {
+            override fun actionPerformed(e: ActionEvent) {
+                if (enabled) showMenu()
             }
         })
     }

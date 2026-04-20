@@ -8,7 +8,9 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.Reactive
 import platform.UIKit.UIAccessibilityTraitButton
 import platform.UIKit.UIControl
+import platform.UIKit.accessibilityHint
 import platform.UIKit.accessibilityTraits
+import platform.UIKit.setAccessibilityHint
 import platform.UIKit.setAccessibilityTraits
 
 actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
@@ -18,6 +20,7 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
     override val control: UIControl get() = native
     init {
         native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitButton
+        native.accessibilityHint = "Opens menu"
         setupControl()
     }
 
