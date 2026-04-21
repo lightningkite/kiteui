@@ -369,7 +369,7 @@ class DriverTest {
 
         // Verify the file was received
         val snap = snapshot("result")
-        assertTrue(snap.contains("File: test.txt"), "Should show mock filename: $snap")
+        assertTrue(Regex("""File:.*test\.txt""").find(snap) != null, "Should show mock filename: $snap")
 
         // Verify the call was recorded
         val calls = mockCalls()

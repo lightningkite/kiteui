@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.testing
 import com.lightningkite.kiteui.MockExternalServices
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.externalServices
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.Frame
@@ -21,11 +22,11 @@ actual fun uiTest(
     Dispatchers.setMain(Dispatchers.Unconfined)
 
     try {
-        val context = RContext("/")
+        val context = ElementContext("/")
         val root = Frame(context)
-        root.overlayFrame = root
+        context.overlayFrame = root
         if (mockExternalServices != null) {
-            context.addons[ViewWriter::externalServices.name] = mockExternalServices
+            context.addons[ElementContext::externalServices.name] = mockExternalServices
         }
         content(root)
         @OptIn(OverrideOnly::class)

@@ -97,10 +97,6 @@ object ExternalServices {
     fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null) = ctx.openMap(latitude, longitude, label, zoom)
 }
 
-
-// by Claude - convenience extension on RContext for use outside ViewWriter scope.
-// Uses getOrPut so the default is shared across the context tree and picks up mocks.
-// Key must match ViewWriter.externalServices property name used by rContextAddonGenerate.
 val ElementContext.externalServices: ExternalServicesAccess by lazyContextAddon { externalServicesAccessDefault(it) }
 
 // by Claude - rContextAddonGenerate uses property.name as the ChainMap key.
