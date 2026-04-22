@@ -4,6 +4,69 @@ import kotlinx.datetime.format.Padding
 import kotlin.random.Random
 
 /**
+ * Pre-computed neumorphic shadow lists for the palette of semantic states used by
+ * [Theme.Companion.neumorphism]. Construct with the same shadow inputs you pass
+ * to the factory to reference the exact same shadow values from custom semantic
+ * overrides or outside the theme entirely.
+ */
+class NeumorphismShadows(
+    val shadowDistance: Dimension = 8.dp,
+    val shadowBlur: Dimension = 16.dp,
+    val lightShadowColor: Color = Color.white.applyAlpha(0.7f),
+    val darkShadowColor: Color = Color.black.applyAlpha(0.15f),
+) {
+    val convex: List<Shadow> = Shadow.neumorphicConvex(
+        distance = shadowDistance,
+        blur = shadowBlur,
+        lightColor = lightShadowColor,
+        darkColor = darkShadowColor,
+    )
+
+    val concave: List<Shadow> = Shadow.neumorphicConcave(
+        distance = shadowDistance / 2f,
+        blur = shadowBlur / 2f,
+        lightColor = lightShadowColor,
+        darkColor = darkShadowColor,
+    )
+
+    val hover: List<Shadow> = Shadow.neumorphicConvex(
+        distance = shadowDistance * 1.2f,
+        blur = shadowBlur * 1.2f,
+        lightColor = lightShadowColor,
+        darkColor = darkShadowColor,
+    )
+
+    val focus: List<Shadow> get() = hover
+
+    val disabled: List<Shadow> = Shadow.neumorphicConvex(
+        distance = shadowDistance / 2f,
+        blur = shadowBlur / 2f,
+        lightColor = lightShadowColor.applyAlpha(0.3f),
+        darkColor = darkShadowColor.applyAlpha(0.08f),
+    )
+
+    val popover: List<Shadow> = Shadow.neumorphicConvex(
+        distance = shadowDistance * 1.5f,
+        blur = shadowBlur * 1.5f,
+        lightColor = lightShadowColor,
+        darkColor = darkShadowColor,
+    )
+
+    fun dialog(baseColor: Color): List<Shadow> {
+        val isDark = baseColor.perceivedBrightness < 0.5f
+        return Shadow.neumorphicConvex(
+            distance = shadowDistance * 2.5f,
+            blur = shadowBlur * 3f,
+            lightColor = if (isDark)
+                lightShadowColor.copy(alpha = (lightShadowColor.alpha * 2f).coerceAtMost(1f))
+            else lightShadowColor,
+            darkColor = if (isDark) Color.black.applyAlpha(0.5f)
+            else Color.black.applyAlpha(0.25f),
+        )
+    }
+}
+
+/**
  * Creates a neumorphism-style theme with soft, extruded appearance using dual shadows.
  *
  * Neumorphism (new skeuomorphism) creates a soft, 3D appearance using:
@@ -38,25 +101,18 @@ fun Theme.Companion.neumorphism(
     body: FontAndStyle = FontAndStyle(systemDefaultFont),
     cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
     gap: Dimension = 1.rem,
-    semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
+    semanticOverrides: (shadows: NeumorphismShadows) -> SemanticOverrides = { SemanticOverrides.EMPTY },
 ): Theme {
     val foreground = if (baseColor.perceivedBrightness > 0.5f)
         Color.black.applyAlpha(0.8f)
     else
         Color.white.applyAlpha(0.9f)
 
-    val convexShadows = Shadow.neumorphicConvex(
-        distance = shadowDistance,
-        blur = shadowBlur,
-        lightColor = lightShadowColor,
-        darkColor = darkShadowColor
-    )
-
-    val concaveShadows = Shadow.neumorphicConcave(
-        distance = shadowDistance / 2f,
-        blur = shadowBlur / 2f,
-        lightColor = lightShadowColor,
-        darkColor = darkShadowColor
+    val shadows = NeumorphismShadows(
+        shadowDistance = shadowDistance,
+        shadowBlur = shadowBlur,
+        lightShadowColor = lightShadowColor,
+        darkShadowColor = darkShadowColor,
     )
 
     return Theme(
@@ -101,13 +157,13 @@ fun Theme.Companion.neumorphism(
             },
             CardSemantic.override {
                 it.withBack(
-                    shadows = convexShadows,
+                    shadows = shadows.convex,
                 )
             },
             FieldSemantic.override {
                 it.withBack(
                     cascading = false,
-                    shadows = concaveShadows,
+                    shadows = shadows.concave,
                     cornerRadii = when (val base = it.cornerRadii) {
                         is CornerRadii.AdaptiveToSpacing -> CornerRadii.Fixed(base.value)
                         is CornerRadii.Fixed -> base
@@ -119,64 +175,44 @@ fun Theme.Companion.neumorphism(
             },
             ButtonSemantic.override {
                 it.withBack(
-                    shadows = convexShadows,
+                    shadows = shadows.convex,
                 )
             },
             HoverSemantic.override {
-                // Slightly stronger shadows on hover
-                val hoverShadows = Shadow.neumorphicConvex(
-                    distance = shadowDistance * 1.2f,
-                    blur = shadowBlur * 1.2f,
-                    lightColor = lightShadowColor,
-                    darkColor = darkShadowColor
-                )
                 it.withBack(
-                    shadows = hoverShadows,
+                    shadows = shadows.hover,
                     background = it.background.map { c -> c.highlight(0.02f) },
                 )
             },
             DownSemantic.override {
                 it.withBack(
-                    shadows = concaveShadows,
+                    shadows = shadows.concave,
                     background = it.background.map { c -> c.highlight(-0.02f) },
                 )
             },
             SelectedSemantic.override {
                 it.withBack(
-                    shadows = concaveShadows,
+                    shadows = shadows.concave,
                     background = it.background.map { c -> c.highlight(-0.05f) },
                     outlineWidth = 0.px,
                 )
             },
             UnselectedSemantic.override {
                 it.withBack(
-                    shadows = convexShadows,
+                    shadows = shadows.convex,
                     outlineWidth = 0.px,
                 )
             },
             FocusSemantic.override {
-                val focusShadows = Shadow.neumorphicConvex(
-                    distance = shadowDistance * 1.2f,
-                    blur = shadowBlur * 1.2f,
-                    lightColor = lightShadowColor,
-                    darkColor = darkShadowColor
-                )
                 it.withBack(
-                    shadows = focusShadows,
+                    shadows = shadows.focus,
                     outlineWidth = 2.dp,
                     outline = accentColor.applyAlpha(0.5f),
                 )
             },
             DisabledSemantic.override {
-                // Flatter appearance for disabled
-                val disabledShadows = Shadow.neumorphicConvex(
-                    distance = shadowDistance / 2f,
-                    blur = shadowBlur / 2f,
-                    lightColor = lightShadowColor.applyAlpha(0.3f),
-                    darkColor = darkShadowColor.applyAlpha(0.08f)
-                )
                 it.withBack(
-                    shadows = disabledShadows,
+                    shadows = shadows.disabled,
                     foreground = it.foreground.applyAlpha(0.4f),
                     background = it.background.applyAlpha(0.7f),
                 )
@@ -188,22 +224,17 @@ fun Theme.Companion.neumorphism(
                 it.withBack(
                     foreground = foreground,
                     background = tintedBg,
-                    shadows = convexShadows,
+                    shadows = shadows.convex,
                     semanticOverrides = SemanticOverrides(
                         HoverSemantic.override { inner ->
                             inner.withBack(
-                                shadows = Shadow.neumorphicConvex(
-                                    distance = shadowDistance * 1.2f,
-                                    blur = shadowBlur * 1.2f,
-                                    lightColor = lightShadowColor,
-                                    darkColor = darkShadowColor
-                                ),
+                                shadows = shadows.hover,
                                 background = tintedBg.highlight(0.02f),
                             )
                         },
                         DownSemantic.override { inner ->
                             inner.withBack(
-                                shadows = concaveShadows,
+                                shadows = shadows.concave,
                                 background = tintedBg.highlight(-0.02f),
                             )
                         },
@@ -215,22 +246,17 @@ fun Theme.Companion.neumorphism(
                 it.withBack(
                     foreground = foreground,
                     background = tintedBg,
-                    shadows = convexShadows,
+                    shadows = shadows.convex,
                     semanticOverrides = SemanticOverrides(
                         HoverSemantic.override { inner ->
                             inner.withBack(
-                                shadows = Shadow.neumorphicConvex(
-                                    distance = shadowDistance * 1.2f,
-                                    blur = shadowBlur * 1.2f,
-                                    lightColor = lightShadowColor,
-                                    darkColor = darkShadowColor
-                                ),
+                                shadows = shadows.hover,
                                 background = tintedBg.highlight(0.02f),
                             )
                         },
                         DownSemantic.override { inner ->
                             inner.withBack(
-                                shadows = concaveShadows,
+                                shadows = shadows.concave,
                                 background = tintedBg.highlight(-0.02f),
                             )
                         },
@@ -243,22 +269,17 @@ fun Theme.Companion.neumorphism(
                 it.withBack(
                     foreground = foreground,
                     background = tintedBg,
-                    shadows = convexShadows,
+                    shadows = shadows.convex,
                     semanticOverrides = SemanticOverrides(
                         HoverSemantic.override { inner ->
                             inner.withBack(
-                                shadows = Shadow.neumorphicConvex(
-                                    distance = shadowDistance * 1.2f,
-                                    blur = shadowBlur * 1.2f,
-                                    lightColor = lightShadowColor,
-                                    darkColor = darkShadowColor
-                                ),
+                                shadows = shadows.hover,
                                 background = tintedBg.highlight(0.02f),
                             )
                         },
                         DownSemantic.override { inner ->
                             inner.withBack(
-                                shadows = concaveShadows,
+                                shadows = shadows.concave,
                                 background = tintedBg.highlight(-0.02f),
                             )
                         },
@@ -271,22 +292,17 @@ fun Theme.Companion.neumorphism(
                 it.withBack(
                     foreground = foreground,
                     background = tintedBg,
-                    shadows = convexShadows,
+                    shadows = shadows.convex,
                     semanticOverrides = SemanticOverrides(
                         HoverSemantic.override { inner ->
                             inner.withBack(
-                                shadows = Shadow.neumorphicConvex(
-                                    distance = shadowDistance * 1.2f,
-                                    blur = shadowBlur * 1.2f,
-                                    lightColor = lightShadowColor,
-                                    darkColor = darkShadowColor
-                                ),
+                                shadows = shadows.hover,
                                 background = tintedBg.highlight(0.02f),
                             )
                         },
                         DownSemantic.override { inner ->
                             inner.withBack(
-                                shadows = concaveShadows,
+                                shadows = shadows.concave,
                                 background = tintedBg.highlight(-0.02f),
                             )
                         },
@@ -299,22 +315,17 @@ fun Theme.Companion.neumorphism(
                 it.withBack(
                     foreground = foreground,
                     background = tintedBg,
-                    shadows = convexShadows,
+                    shadows = shadows.convex,
                     semanticOverrides = SemanticOverrides(
                         HoverSemantic.override { inner ->
                             inner.withBack(
-                                shadows = Shadow.neumorphicConvex(
-                                    distance = shadowDistance * 1.2f,
-                                    blur = shadowBlur * 1.2f,
-                                    lightColor = lightShadowColor,
-                                    darkColor = darkShadowColor
-                                ),
+                                shadows = shadows.hover,
                                 background = tintedBg.highlight(0.02f),
                             )
                         },
                         DownSemantic.override { inner ->
                             inner.withBack(
-                                shadows = concaveShadows,
+                                shadows = shadows.concave,
                                 background = tintedBg.highlight(-0.02f),
                             )
                         },
@@ -335,12 +346,7 @@ fun Theme.Companion.neumorphism(
             },
             DialogSemantic.override {
                 val isDark = baseColor.perceivedBrightness < 0.5f
-                val dialogShadows = Shadow.neumorphicConvex(
-                    distance = shadowDistance * 2.5f,
-                    blur = shadowBlur * 3f,
-                    lightColor = if (isDark) lightShadowColor.copy(alpha = (lightShadowColor.alpha * 2f).coerceAtMost(1f)) else lightShadowColor,
-                    darkColor = if (isDark) Color.black.applyAlpha(0.5f) else Color.black.applyAlpha(0.25f)
-                )
+                val dialogShadows = shadows.dialog(baseColor)
                 val dialogCornerRadii = CornerRadii.Fixed(gap)
                 it.withBack(
                     cornerRadii = dialogCornerRadii,
@@ -356,7 +362,7 @@ fun Theme.Companion.neumorphism(
                                     // Nested cards inside the dialog card revert to normal convex shadows
                                     CardSemantic.override { nested ->
                                         nested.withBack(
-                                            shadows = convexShadows,
+                                            shadows = shadows.convex,
                                         )
                                     },
                                 )
@@ -367,15 +373,10 @@ fun Theme.Companion.neumorphism(
             },
             PopoverSemantic.override {
                 it.withBack(
-                    shadows = Shadow.neumorphicConvex(
-                        distance = shadowDistance * 1.5f,
-                        blur = shadowBlur * 1.5f,
-                        lightColor = lightShadowColor,
-                        darkColor = darkShadowColor
-                    ),
+                    shadows = shadows.popover,
                 )
             },
-        ) + semanticOverrides,
+        ) + semanticOverrides(shadows),
     )
 }
 
@@ -396,7 +397,7 @@ object NeumorphismTheme {
         body: FontAndStyle = FontAndStyle(systemDefaultFont),
         cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
         gap: Dimension = 1.rem,
-        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
+        semanticOverrides: (shadows: NeumorphismShadows) -> SemanticOverrides = { SemanticOverrides.EMPTY },
     ) = Theme.neumorphism(
         id = id,
         baseColor = baseColor,
@@ -419,7 +420,7 @@ object NeumorphismTheme {
     fun light(
         id: String = "neumorphism-light",
         accentColor: Color = Color.fromHex(0xFF6200EE.toInt()),
-        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
+        semanticOverrides: (shadows: NeumorphismShadows) -> SemanticOverrides = { SemanticOverrides.EMPTY },
         ): Theme {
         val shadowDistance = (1..20).random()
         return this(
@@ -442,7 +443,7 @@ object NeumorphismTheme {
     fun dark(
         id: String = "neumorphism-dark",
         accentColor: Color = Color.fromHex(0xFF03DAC6.toInt()),
-        semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
+        semanticOverrides: (shadows: NeumorphismShadows) -> SemanticOverrides = { SemanticOverrides.EMPTY },
     ) = this(
         id = id,
         baseColor = Color.gray(0.25f),
