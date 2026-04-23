@@ -13,7 +13,7 @@ import com.lightningkite.kiteui.views.animateIn
 import com.lightningkite.kiteui.views.animateOut
 import com.lightningkite.kiteui.views.extensionIgnoreInteraction
 import com.lightningkite.kiteui.views.informParentOfSizeChange
-import com.lightningkite.kiteui.views.produceAtMostOne
+import com.lightningkite.kiteui.views.produceExactlyOneElement
 import com.lightningkite.kiteui.views.produceAtMostOneView
 import com.lightningkite.kiteui.views.withoutAnimation
 

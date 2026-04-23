@@ -126,7 +126,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                     closePanel()
                 }
             }
-            willRemove = split().produceExactlyOne {
+            willRemove = split().produceExactlyOneElement {
                 frame {
                     overlayFrame = this
                     if (ratio == null) {
@@ -167,7 +167,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                     closePanel()
                 }
             }
-            willRemove = split().produceExactlyOne {
+            willRemove = split().produceExactlyOneElement {
                 frame {
                     overlayFrame = this
                     if (ratio == null) {
