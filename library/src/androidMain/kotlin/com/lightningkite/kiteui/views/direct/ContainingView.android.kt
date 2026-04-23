@@ -107,8 +107,8 @@ open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayo
         return null
     }
     override fun dispatchDraw(canvas: Canvas) {
-        drawNeumorphicOuterShadows(canvas)
         super.dispatchDraw(canvas)
+        drawNeumorphicOuterShadows(canvas)
     }
 }
 
@@ -119,8 +119,8 @@ class KiteUIFrameLayout(context: Context) : FrameLayout(context) {
     }
 
     override fun dispatchDraw(canvas: Canvas) {
-        drawNeumorphicOuterShadows(canvas)
         super.dispatchDraw(canvas)
+        drawNeumorphicOuterShadows(canvas)
     }
 }
 

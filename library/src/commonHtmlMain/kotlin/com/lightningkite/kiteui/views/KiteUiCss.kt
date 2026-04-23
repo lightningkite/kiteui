@@ -1051,6 +1051,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 addToCss(backSel, "box-shadow", shadows.toBoxShadow())
                 // Allow neumorphic shadows to paint beyond this container's bounds
                 addToCss(backSel, "overflow", "visible")
+                // Outer shadows must paint above sibling elements (e.g. bar shadow over content area)
+                if (shadows.any { !it.inset }) {
+                    addToCss(backSel, "position", "relative")
+                    addToCss(backSel, "z-index", "1")
+                }
                 // Set shadow room as CSS variable so scroll containers can add padding
                 val maxExtent = shadows.filter { !it.inset }.maxOfOrNull {
                     it.blurRadius.value.roughPx + it.spreadRadius.value.roughPx +

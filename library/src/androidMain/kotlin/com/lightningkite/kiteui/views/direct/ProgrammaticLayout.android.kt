@@ -138,13 +138,13 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
     }
 
     override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
         for (i in 0 until childCount) {
             val child = getChildAt(i) ?: continue
             if (child.visibility == GONE) continue
             val bg = child.background as? NeumorphicDrawable ?: continue
             bg.drawOuterShadowsFromParent(canvas, child.left, child.top)
         }
-        super.dispatchDraw(canvas)
     }
 
     fun silentRequestLayout() {

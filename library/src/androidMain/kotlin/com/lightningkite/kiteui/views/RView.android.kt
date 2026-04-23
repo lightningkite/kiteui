@@ -270,6 +270,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val radii = floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
 
         backgroundBlock?.cornerRadii = radii
+        (background as? NeumorphicDrawable)?.setCornerRadii(radii)
 
         // When a view has corner radii and draws a background, clip children to the
         // rounded outline. This matches web behavior where border-radius + overflow: hidden

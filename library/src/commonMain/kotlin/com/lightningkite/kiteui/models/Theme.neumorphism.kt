@@ -149,7 +149,7 @@ fun Theme.Companion.neumorphism(
                     cascading = false,
                     cornerRadii = CornerRadii.Fixed(0.px),
                     outlineWidth = 0.px,
-                    shadows = null,
+                    shadows = shadows.convex,
                 )
             },
             HeaderSemantic.override {
