@@ -194,6 +194,10 @@ dependencies {
     implementation(libs.ktor.client.okhttp.jvm)
 }
 
-lkLibrary("lightningkite", "kiteui") {
+lkLibrary(
+    "lightningkite",
+    "kiteui",
+    mavenAutomaticRelease = project.findProperty("mavenAutomaticRelease") as? Boolean ?: false
+) {
     description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
 }

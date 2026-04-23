@@ -110,6 +110,10 @@ android {
     }
 }
 
-lkLibrary("lightningkite", "kiteui-camera") {
+lkLibrary(
+    "lightningkite",
+    "kiteui",
+    mavenAutomaticRelease = project.findProperty("mavenAutomaticRelease") as? Boolean ?: false
+) {
     description.set("KiteUI Camera and Barcode Scanning Support")
 }
