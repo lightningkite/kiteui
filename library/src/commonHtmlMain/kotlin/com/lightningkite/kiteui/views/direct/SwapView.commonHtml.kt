@@ -9,8 +9,9 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")
-        native.style.overflowX = "hidden"
-        native.style.overflowY = "hidden"
+        
+        native.setStyleProperty("overflow", "clip")
+        native.setStyleProperty("overflow-clip-margin", "32px")
     }
 
     override fun internalAddChild(index: Int, view: RView) {

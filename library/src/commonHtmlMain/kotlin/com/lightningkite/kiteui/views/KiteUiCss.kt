@@ -292,7 +292,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .kui.scroll-horizontal {
-                overflow: auto hidden;
+                overflow: auto clip;
+                overflow-clip-margin: 32px;
                 padding-top: var(--shadow-room, 0px);
                 padding-bottom: var(--shadow-room, 0px);
                 margin-top: calc(-1 * var(--shadow-room, 0px));
@@ -307,7 +308,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .kui.scroll-vertical {
-                overflow: hidden auto;
+                overflow: clip auto;
+                overflow-clip-margin: 32px;
             }
 
             .kui.scroll-vertical  * {
