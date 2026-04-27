@@ -1062,7 +1062,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         theme.diff(diff) { font.additionalLetterSpacing }
             ?.let {
-                println("Adding to spacing...")
                 addToCss(directSel, "letter-spacing", it.value.toString())
             }
         theme.diff(diff) { outline }?.let { addToCss(directSel, "outline-color", it.closestColor().toWeb()) }

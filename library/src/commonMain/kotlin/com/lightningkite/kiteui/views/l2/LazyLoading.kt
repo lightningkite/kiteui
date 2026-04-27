@@ -8,6 +8,10 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Renders children from a reactive list with lazy loading when scrolled near the end.
@@ -27,11 +31,10 @@ fun <T, ID> RowOrCol.childrenLazyLoading(
     loadMore: suspend () -> Unit,
     render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
 ) {
-    var isLoading = false
-    var exhausted = false
+    var loadJob: Job? = null
     var sizeAtLoadStart = -1
 
-    forEachById(items, id, render = render)
+    forEachByIdWithoutAnimation(items, id, render = render)
 
     val isVertical = this.vertical
     withoutLoadingAnimations {
@@ -39,27 +42,22 @@ fun <T, ID> RowOrCol.childrenLazyLoading(
             val list = items()
             val vp = scroll.viewport()
             val ct = scroll.content()
-
-            // Detect exhaustion: load completed but list didn't grow
-            if (sizeAtLoadStart >= 0 && !isLoading && list.size <= sizeAtLoadStart) {
-                exhausted = true
-            }
+            if(loadJob != null) return@reactive
 
             val contentEnd = if (isVertical) ct.bottom else ct.right
             val viewportEnd = if (isVertical) vp.bottom else vp.right
             val distanceToEnd = contentEnd - viewportEnd
-            println("${distanceToEnd} (${contentEnd} - ${viewportEnd}) < ${threshold.viewUnits}")
-            if (distanceToEnd < threshold.viewUnits && !isLoading && !exhausted) {
+            if (distanceToEnd < threshold.viewUnits) {
                 sizeAtLoadStart = list.size
-                isLoading = true
-                load {
+                loadJob = this@childrenLazyLoading.async {
                     try {
                         loadMore()
+                        delay(0.1.seconds)
                     } catch (e: Throwable) {
                         sizeAtLoadStart = -1  // Allow retry on error
                         throw e
                     } finally {
-                        isLoading = false
+                        loadJob = null
                     }
                 }
             }
