@@ -321,6 +321,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .kui.scroll-vertical:has(.outer-shadow) {
                 padding-left: var(--shadow-room, 32px);
                 padding-right: var(--shadow-room, 32px);
+                padding-top: var(--shadow-room, 32px);
+                padding-bottom: var(--shadow-room, 32px);
             }
 
             .kui.scroll-vertical  * {

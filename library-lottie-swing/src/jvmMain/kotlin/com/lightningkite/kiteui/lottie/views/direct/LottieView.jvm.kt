@@ -1,8 +1,11 @@
 package com.lightningkite.kiteui.lottie.views.direct
 
+import com.lightningkite.kiteui.lottie.LottieColor
+import com.lightningkite.kiteui.lottie.applyColorTransform
 import com.lightningkite.kiteui.lottie.models.LottieRaw
 import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
+import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.reactive.core.*
@@ -242,6 +245,19 @@ actual class LottieView actual constructor(
             webView?.engine?.executeScript("if(window.lottieAnim) window.lottieAnim.goToAndStop($frame, true);")
         }
     }
+    internal var originalJson: String? = null
+
+    private var _colorTransform: ((LottieColor) -> Color)? = null
+    actual var colorTransform: ((LottieColor) -> Color)?
+        get() = _colorTransform
+        set(value) {
+            _colorTransform = value
+            val json = originalJson ?: return
+            val finalJson = if (value != null) applyColorTransform(json, value) else json
+            // TODO
+//            nativeReloadWithJson(finalJson)
+        }
+
 
     actual fun seekToProgress(progress: Float) {
         _progress.value = progress
