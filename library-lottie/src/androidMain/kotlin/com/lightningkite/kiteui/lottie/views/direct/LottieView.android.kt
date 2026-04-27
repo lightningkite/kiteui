@@ -57,7 +57,8 @@ actual class LottieView actual constructor(
                 lottieView.setComposition(composition)
                 _duration.state = ReactiveState(composition.duration.toLong().milliseconds)
                 _state.state = ReactiveState(Unit)
-                if (autoPlay) lottieView.playAnimation()
+
+                if (autoPlay) lottieView.post { lottieView.playAnimation() }
             }
             .addFailureListener { e ->
                 _state.state = ReactiveState.exception(Exception(e))
