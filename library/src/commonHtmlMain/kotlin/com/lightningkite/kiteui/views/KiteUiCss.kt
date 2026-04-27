@@ -250,7 +250,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
             
             .kui.transition {
-                overflow: hidden;
+                overflow: clip;
+                overflow-clip-margin: 32px;
             }
 
             .kui[hidden] {
@@ -300,6 +301,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 margin-bottom: calc(-1 * var(--shadow-room, 0px));
             }
 
+            .kui.scroll-horizontal:has(.outer-shadow) {
+                padding-top: var(--shadow-room, 32px);
+                padding-bottom: var(--shadow-room, 32px);
+            }
+
             .kui.scroll-horizontal  * {
                 max-width: unset;
             }
@@ -310,6 +316,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .kui.scroll-vertical {
                 overflow: clip auto;
                 overflow-clip-margin: 32px;
+            }
+
+            .kui.scroll-vertical:has(.outer-shadow) {
+                padding-left: var(--shadow-room, 32px);
+                padding-right: var(--shadow-room, 32px);
             }
 
             .kui.scroll-vertical  * {

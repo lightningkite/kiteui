@@ -147,6 +147,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         } else {
             native.classes.remove("transition")
         }
+        if (theme.theme.shadows?.any { !it.inset } == true) {
+            native.classes.add("outer-shadow")
+        } else {
+            native.classes.remove("outer-shadow")
+        }
         if (theme.padding) {
             native.classes.add("padded")
         } else {
