@@ -26,13 +26,13 @@ class FlexboxLayout(context: Context) : ViewGroup(context) {
     }
 
     override fun dispatchDraw(canvas: android.graphics.Canvas) {
+        super.dispatchDraw(canvas)
         for (i in 0 until childCount) {
             val child = getChildAt(i) ?: continue
             if (child.visibility == GONE) continue
             val bg = child.background as? com.lightningkite.kiteui.views.NeumorphicDrawable ?: continue
             bg.drawOuterShadowsFromParent(canvas, child.left, child.top)
         }
-        super.dispatchDraw(canvas)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

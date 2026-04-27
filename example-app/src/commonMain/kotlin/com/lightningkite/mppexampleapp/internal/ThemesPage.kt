@@ -168,6 +168,32 @@ object ThemesPage : Page {
                             }
                         }
                     }
+                    // Example: using the theme's own NeumorphismShadows inside a semanticOverride.
+                    // `semanticOverrides` is a lambda that receives the theme's shadows, so you can
+                    // reference shadows.convex / shadows.concave directly — no need to reconstruct.
+                    button {
+                        text("Neumorphism (Custom Nav)")
+                        onClick {
+                            appTheme set NeumorphismTheme(
+                                id = "neumorphism-custom-nav",
+                                baseColor = Color.gray(0.9f),
+                                semanticOverrides = { shadows ->
+                                    SemanticOverrides(
+                                        ImportantSemantic.override {
+                                            it.withBack(
+                                                cascading = false,
+                                                padding = Edges(5.rem),
+//                    shadows =convexShadow
+
+                                                cornerRadii = CornerRadii.Fixed(5.rem),
+                                                shadows = shadows.convex,
+                                            )
+                                        },
+                                    )
+                                }
+                            )
+                        }
+                    }
                     button {
                         text("Clean (iOS like)")
                         onClick {

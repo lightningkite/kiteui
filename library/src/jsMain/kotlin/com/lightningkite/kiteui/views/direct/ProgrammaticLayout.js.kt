@@ -208,9 +208,29 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             val element = native.element as? HTMLElement ?: return@setTimeout
             val parentElement = element.parentElement as? HTMLElement ?: return@setTimeout
 
+            fun readCssPadding() {
+                val computed = window.getComputedStyle(element)
+                paddingTopCurrentPx = computed.paddingTop.removeSuffix("px").toDoubleOrNull() ?: 0.0
+                paddingLeftCurrentPx = computed.paddingLeft.removeSuffix("px").toDoubleOrNull() ?: 0.0
+                paddingRightCurrentPx = computed.paddingRight.removeSuffix("px").toDoubleOrNull() ?: 0.0
+                paddingBottomCurrentPx = computed.paddingBottom.removeSuffix("px").toDoubleOrNull() ?: 0.0
+            }
+
+            // Read CSS-computed padding to handle class-based padding (e.g. :has(.outer-shadow))
+            // Must happen each layout pass since CSS classes can change padding without triggering refreshPadding
+            readCssPadding()
+            val paddingLeftBefore = paddingLeftCurrentPx
+
             // run measure
             currentSize = lastConstraintSize
-            val natSize = delegate.measure(this, inProgress, lastConstraintSize)
+            var natSize = delegate.measure(this, inProgress, lastConstraintSize)
+
+            // Re-read after measure: adding items to DOM may activate :has(.outer-shadow) and change CSS padding.
+            // If padding changed, re-measure so items are placed with the correct offsets.
+            readCssPadding()
+            if (paddingLeftCurrentPx != paddingLeftBefore) {
+                natSize = delegate.measure(this, inProgress, lastConstraintSize)
+            }
 
             // set width and height to result IF layout rules say minimum, revert otherwise to continue taking space
             if (!lastFillWidth) {

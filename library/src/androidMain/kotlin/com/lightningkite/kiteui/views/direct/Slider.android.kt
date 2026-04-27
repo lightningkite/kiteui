@@ -140,6 +140,13 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         return super.applyState(t)
     }
 
+    // Prevent external refreshPadding calls from overriding the slider's 0 padding.
+    // The themeAndBack setter calls refreshPadding() after applyTheme(), which would
+    // re-apply theme padding and cover the inset shadows on the track.
+    override fun refreshPadding() {
+        native.setPadding(0, 0, 0, 0)
+    }
+
     override fun applyTheme(theme: ThemeAndBack) {
         val fieldTheme = theme[FieldSemantic]
         val isNeumorphic = fieldTheme.theme.shadows?.isNotEmpty() == true
@@ -176,8 +183,6 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
             nativeSeekBar.thumbTintMode = null
             nativeSeekBar.progressTintList = null
             nativeSeekBar.progressBackgroundTintList = null
-
-            native.setPadding(0, 0, 0, 0)
         } else {
             super.applyTheme(theme)
             val t = theme.theme

@@ -250,7 +250,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
             
             .kui.transition {
-                overflow: hidden;
+                overflow: clip;
+                overflow-clip-margin: 32px;
             }
 
             .kui[hidden] {
@@ -292,11 +293,17 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .kui.scroll-horizontal {
-                overflow: auto hidden;
+                overflow: auto clip;
+                overflow-clip-margin: 32px;
                 padding-top: var(--shadow-room, 0px);
                 padding-bottom: var(--shadow-room, 0px);
                 margin-top: calc(-1 * var(--shadow-room, 0px));
                 margin-bottom: calc(-1 * var(--shadow-room, 0px));
+            }
+
+            .kui.scroll-horizontal:has(.outer-shadow) {
+                padding-top: var(--shadow-room, 32px);
+                padding-bottom: var(--shadow-room, 32px);
             }
 
             .kui.scroll-horizontal  * {
@@ -307,7 +314,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .kui.scroll-vertical {
-                overflow: hidden auto;
+                overflow: clip auto;
+                overflow-clip-margin: 32px;
+            }
+
+            .kui.scroll-vertical:has(.outer-shadow) {
+                padding-left: var(--shadow-room, 32px);
+                padding-right: var(--shadow-room, 32px);
             }
 
             .kui.scroll-vertical  * {
@@ -1051,6 +1064,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 addToCss(backSel, "box-shadow", shadows.toBoxShadow())
                 // Allow neumorphic shadows to paint beyond this container's bounds
                 addToCss(backSel, "overflow", "visible")
+                // Outer shadows must paint above sibling elements (e.g. bar shadow over content area)
+                if (shadows.any { !it.inset }) {
+                    addToCss(backSel, "position", "relative")
+                    addToCss(backSel, "z-index", "1")
+                }
                 // Set shadow room as CSS variable so scroll containers can add padding
                 val maxExtent = shadows.filter { !it.inset }.maxOfOrNull {
                     it.blurRadius.value.roughPx + it.spreadRadius.value.roughPx +

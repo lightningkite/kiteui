@@ -43,6 +43,8 @@ class NeumorphicDrawable(
     private var insetCacheEntry: ShadowBitmapCache.Entry? = null
     private val bitmapPaint = Paint(Paint.FILTER_BITMAP_FLAG)
     private val drawMatrix = Matrix()
+    private val outerClipPath = Path()
+    private val outerClipRect = RectF()
     private var lastBgWidth = 0
     private var lastBgHeight = 0
 
@@ -215,6 +217,7 @@ class NeumorphicDrawable(
     fun setCornerRadius(radius: Float) {
         this.cornerRadius = radius
         this.cornerRadii = null
+        rebuildBackgroundPath()
         releaseBitmaps()
         recreateBitmapsIfNeeded()
         invalidateSelf()
@@ -222,9 +225,21 @@ class NeumorphicDrawable(
 
     fun setCornerRadii(radii: FloatArray) {
         this.cornerRadii = radii
+        rebuildBackgroundPath()
         releaseBitmaps()
         recreateBitmapsIfNeeded()
         invalidateSelf()
+    }
+
+    private fun rebuildBackgroundPath() {
+        backgroundPath.reset()
+        if (backgroundRect.isEmpty) return
+        val radii = cornerRadii
+        if (radii != null) {
+            backgroundPath.addRoundRect(backgroundRect, radii, Path.Direction.CW)
+        } else {
+            backgroundPath.addRoundRect(backgroundRect, cornerRadius, cornerRadius, Path.Direction.CW)
+        }
     }
 
     private fun recreateBitmapsIfNeeded() {
@@ -256,13 +271,7 @@ class NeumorphicDrawable(
             bounds.bottom.toFloat()
         )
 
-        backgroundPath.reset()
-        val radii = cornerRadii
-        if (radii != null) {
-            backgroundPath.addRoundRect(backgroundRect, radii, Path.Direction.CW)
-        } else {
-            backgroundPath.addRoundRect(backgroundRect, cornerRadius, cornerRadius, Path.Direction.CW)
-        }
+        rebuildBackgroundPath()
 
         val bgWidth = backgroundRect.width().roundToInt()
         val bgHeight = backgroundRect.height().roundToInt()
@@ -298,13 +307,36 @@ class NeumorphicDrawable(
      * Draw outer shadows onto the parent's canvas at the given child view position.
      * Called from parent ViewGroup's dispatchDraw so shadows can extend beyond child bounds.
      * The bitmap is positioned at (viewLeft - shadowExtent, viewTop - shadowExtent).
+     * The view's own bounds are clipped out to match CSS box-shadow behaviour: outer shadows
+     * should only paint outside the element, never on top of the element itself.
      */
     fun drawOuterShadowsFromParent(canvas: Canvas, viewLeft: Int, viewTop: Int) {
         outerCacheEntry?.let { entry ->
             if (!entry.bitmap.isRecycled) {
+                canvas.save()
+                // Clip out the element's own rounded shape (not a rectangle) so the shadow
+                // never tints the element itself, while still filling the corner cutoff
+                // regions — matching CSS box-shadow behavior for rounded elements.
+                val left = viewLeft.toFloat()
+                val top = viewTop.toFloat()
+                outerClipRect.set(left, top, left + backgroundRect.width(), top + backgroundRect.height())
+                outerClipPath.reset()
+                val radii = cornerRadii
+                if (radii != null) {
+                    outerClipPath.addRoundRect(outerClipRect, radii, Path.Direction.CW)
+                } else {
+                    outerClipPath.addRoundRect(outerClipRect, cornerRadius, cornerRadius, Path.Direction.CW)
+                }
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    canvas.clipOutPath(outerClipPath)
+                } else {
+                    @Suppress("DEPRECATION")
+                    canvas.clipPath(outerClipPath, Region.Op.DIFFERENCE)
+                }
                 drawMatrix.setScale(entry.inverseScale, entry.inverseScale)
-                drawMatrix.postTranslate(viewLeft.toFloat() - shadowExtent, viewTop.toFloat() - shadowExtent)
+                drawMatrix.postTranslate(left - shadowExtent, top - shadowExtent)
                 canvas.drawBitmap(entry.bitmap, drawMatrix, bitmapPaint)
+                canvas.restore()
             }
         }
     }

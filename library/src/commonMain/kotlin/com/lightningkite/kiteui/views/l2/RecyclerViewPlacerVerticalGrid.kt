@@ -48,7 +48,7 @@ class RecyclerViewPlacerVerticalGrid(
         )
         // Use DoubleArray to avoid boxing - by Claude
         val cellOffsets = DoubleArray(columns) {
-            paddingTop + it * gap + it * cellSize
+            paddingLeft + it * gap + it * cellSize
         }
 
         val (anchorRowY, anchorRowIndex) = (anchor?.let {
