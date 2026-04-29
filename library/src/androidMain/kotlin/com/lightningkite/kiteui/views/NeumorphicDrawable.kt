@@ -249,6 +249,10 @@ class NeumorphicDrawable(
             updateBitmaps(bgWidth, bgHeight)
             if (outerCacheEntry != null) {
                 ((callback as? View)?.parent as? View)?.postInvalidate()
+//
+//                val parent = (callback as? View)?.parent as? View
+//                parent?.postInvalidate()
+//                (parent?.parent as? View)?.postInvalidate()
             }
         }
     }
@@ -279,9 +283,14 @@ class NeumorphicDrawable(
             updateBitmaps(bgWidth, bgHeight)
             // Outer shadows are drawn by the parent's dispatchDraw, so we need
             // to invalidate the parent whenever new shadow bitmaps are created.
+            // Also invalidate grandparent (scroll view) so its canvas clip extension
+            // is re-recorded with the correct shadowExtentInt — without this,
+            // the scroll view's stale display list clips the first item's top shadow.
             // Use postInvalidate to ensure it runs after the current layout pass.
             if (outerCacheEntry != null) {
-                ((callback as? View)?.parent as? View)?.postInvalidate()
+                val parent = (callback as? View)?.parent as? View
+                parent?.postInvalidate()
+                (parent?.parent as? View)?.postInvalidate()
             }
         }
     }

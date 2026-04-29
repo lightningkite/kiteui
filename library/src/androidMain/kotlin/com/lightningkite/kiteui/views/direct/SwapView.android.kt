@@ -24,7 +24,7 @@ import com.lightningkite.readable.*
 actual class SwapView actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout(context.activity).apply {
         clipChildren = false
-        clipToPadding = false
+//        clipToPadding = false
     }
 
     companion object {
