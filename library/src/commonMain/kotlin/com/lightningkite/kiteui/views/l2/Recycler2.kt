@@ -84,6 +84,11 @@ class Recycler2(
             field = value
             scroll.scrollSnapStop = value
         }
+    var showScrollBars: Boolean = false
+        set(value) {
+            field = value
+            scroll.showScrollBars = value
+        }
 
     init {
         with(viewWriter) {
@@ -109,6 +114,7 @@ class Recycler2(
                 else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem))
                     .scrolling(vertical = vertical, horizontal = !vertical) {
                     fakeScroll = this
+                        showScrollBars = false
                     ignoreInteraction = Platform.current != Platform.Web
                 }.programmatic {
                     fakeScrollContent = this
@@ -116,7 +122,8 @@ class Recycler2(
                     ThemeDerivation {
                         it.copy(
                             id = "scrollindicator",
-                            background = it.foreground.applyAlpha(0.5f)
+                            background = if (showScrollBars) it.foreground.applyAlpha(0.5f) else it.background,
+                            shadows = null
                         ).withBack
                     }.onNext.unpadded.frame {
                         ignoreInteraction = Platform.current != Platform.Web
