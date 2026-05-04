@@ -466,7 +466,7 @@ interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
      * On web, creates a `<label for="id">` association. On Android, sets `labelFor`.
      * On iOS, copies this element's text to the target's `accessibilityLabel`.
      *
-     * Automatically set by [field] and [label] when they contain an interactive element.
+     * Automatically set by [field][com.lightningkite.kiteui.views.l2.field] and [label][com.lightningkite.kiteui.views.l2.label] when they contain an interactive element.
      */
     var labelFor: Element?
 

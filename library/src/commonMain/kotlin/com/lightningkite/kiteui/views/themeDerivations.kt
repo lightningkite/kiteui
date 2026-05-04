@@ -1,3 +1,5 @@
+@file:Suppress("DSL_MARKER_APPLIED_TO_WRONG_TARGET")
+
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
@@ -19,7 +21,6 @@ private class ThemedWriter(
     }
 }
 
-@UnsafeModifier
 /**
  * Apply a dynamic theme directly to an [Element]
  *
@@ -40,32 +41,23 @@ private class ThemedWriter(
  * }
  * ```
  *
- * This change was made to help encourage safety. Dynamic themes require [themeChoice][Element.themeChoice] to be
- * static at the time they are defined. Also, you can only call `applyDynamicTheme` once per element.
- *
- * If you change the `themeChoice` after a call to `applyDynamicTheme` you won't get the result you expect. Similarly,
- * if you call `applyDynamicTheme` twice on an element you'll get weird bugs. The modifier syntax enforces this contract.
- * If you apply a dynamic theme directly _you_ are responsible to uphold this contract.
- *
- * ```kotlin
- * frame {
- *    themeChoice += CardSemantic
- *    applyDynamicTheme { myTheme() } // dynamic theme applied
- *
- *    themeChoice += ImportantSemantic // <- Bug!!
- *    applyDynamicTheme { myTheme2() } // <- Bug!!
- * }
- * ```
+ * This change was made to help encourage safety and keep dynamic theme application
+ * consistent with other modifiers in KiteUI.
  * */
+@UnsafeModifier
 fun Element.applyDynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
-    val e = underlyingNativeElement
+    var choice: ThemeDerivation = ThemeDerivation.None
+    val native = underlyingNativeElement
+
     @OptIn(ExperimentalKiteUi::class)
+    native.themePipeline.add(NativeElementCommonCode.ThemePipeline.Step.dynamicChoice) { choice }
+
     reactive {
-        e.themePipeline.set(
-            NativeElementCommonCode.ThemePipeline.Step.dynamicChoice,
-            calculate()
-        )
-        e.refreshTheming()
+        val newChoice = calculate() ?: ThemeDerivation.None
+        if (newChoice != choice) {
+            choice = newChoice
+            native.refreshTheming()
+        }
     }
 }
 
@@ -73,7 +65,7 @@ fun Element.applyDynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?)
 fun CanAddTheme.themed(theme: ThemeDerivation): CanAddTheme = ThemedWriter(this, theme)
 
 @ViewModifierDsl3
-fun CanAddTheme.dynamicThemed(calculate: ReactiveContext.() -> ThemeDerivation?): ElementWriter.CanAddScrolling {
+fun CanAddTheme.dynamicThemed(calculate: ReactiveContext.() -> ThemeDerivation?): CanAddTheme {
     @OptIn(UnsafeModifier::class)
     return beforeSetup { applyDynamicTheme(calculate) }
 }
