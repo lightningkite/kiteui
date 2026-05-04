@@ -1,19 +1,16 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.SoundEffectPool
+import com.lightningkite.kiteui.backgroundAudio
+import com.lightningkite.kiteui.load
+import com.lightningkite.kiteui.models.AudioRemote
 import com.lightningkite.kiteui.models.AudioSource
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.PersistentProperty
-import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.mppexampleapp.Resources
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.views.expanding
 
 @Routable("audio")
 object AudioPage : Page {
@@ -31,16 +28,28 @@ object AudioPage : Page {
                     expanding.button { text("Direct"); onClick { audioSource.load().play() } }
                 }
             }
-//            withPool("CantinaBand3.wav", "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav")
-//            withPool("StarWars3.wav", "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav")
-            withPool("Taunt", Resources.audioTaunt)
+            withPool("Single Tone", AudioRemote("https://www.audiotars.com/sample_files/sample.mp3"))
+//            withPool("Taunt", Resources.audioTaunt)
 
             toggleButton {
                 checked bind backgroundSoundPlaying
                 text("Background sound")
             }
 
-            backgroundAudio(Resources.audioTaunt, 0.1f) { backgroundSoundPlaying() }
+//            backgroundAudio(Resources.audioTaunt, 0.1f) { backgroundSoundPlaying() }
+
+
+//            media {
+//                ::info {
+//                    MediaView.Info(
+//                        sources = listOf(
+//                            AudioRemote("https://www.audiotars.com/sample_files/sample.mp3")
+//                        ),
+////                        scaleType = TODO(),
+////                        description = TODO()
+//                    )
+//                }
+//            }
         }
     }
 
