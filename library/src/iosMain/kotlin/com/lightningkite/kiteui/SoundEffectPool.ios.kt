@@ -85,6 +85,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
                 override fun audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully: Boolean) {
                     weakSelf.get()?.let { audio ->
                         audio.onCompleteHandler?.invoke()
+                        audio.isPlaying = false
 //                        println("keepAlive.remove($audio)")
                         keepAlive.remove(audio)
                     }

@@ -61,9 +61,9 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
                     if (field == value) return
                     field = value
                     if (value) {
-                        soundPool.pause(streamId)
-                    } else {
                         soundPool.resume(streamId)
+                    } else {
+                        soundPool.pause(streamId)
                     }
                 }
 
