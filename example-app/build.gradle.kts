@@ -20,7 +20,8 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.roborazzi)
-    id("dev.opensavvy.vite.kotlin") version "0.6.0"
+    alias(libs.plugins.kjsplain)
+    alias(libs.plugins.kfc)
 }
 apply<KiteUiPlugin>()
 configure<KiteUiPluginExtension> {
@@ -250,12 +251,4 @@ tasks.register<JavaExec>("ssrPrerender") {
     )
     dependsOn("jvmSsrJar")
 }
-vite {
-    publicDir.set("public")
-    base.set("/")
-    server {
-        port.set(3000)
-    }
-}
-
 

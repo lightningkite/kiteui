@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.identityHashCode
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.reactive.context.*
@@ -36,29 +37,6 @@ class ContextAddon<T>(val init: Init<T>) {
     operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) {
         thisRef.addons[property.name] = value
     }
-
-    class Local<T>(val init: Init<T>) {
-        constructor(value: T) : this(Init.Value(value))
-        constructor(init: (ElementContext) -> T) : this(Init.Lazy(init))
-
-        @Suppress("UNCHECKED_CAST")
-        private fun ElementContext.get(property: KProperty<*>): T =
-            addons.getOrPut(property.name) { init.get(this, property) } as T
-
-        private fun ElementContext.set(property: KProperty<*>, value: T) {
-            addons[property.name] = value
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T = thisRef.get(property)
-        operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) = thisRef.set(property, value)
-
-        operator fun getValue(thisRef: Element, property: KProperty<*>): T = thisRef.context.get(property)
-        operator fun setValue(thisRef: Element, property: KProperty<*>, value: T) { thisRef.context.set(property, value) }
-
-        operator fun getValue(thisRef: ElementWriter, property: KProperty<*>): T = thisRef.context.get(property)
-        operator fun setValue(thisRef: ElementWriter, property: KProperty<*>, value: T) { thisRef.context.set(property, value) }
-    }
 }
 
 fun <T> contextAddon(init: T) = ContextAddon(init)
@@ -67,8 +45,10 @@ fun <T> lazyContextAddon(init: (ElementContext) -> T) = ContextAddon(init)
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("contextAddon(init)"))
 fun <T> rContextAddon(init: T) = contextAddon(init)
+
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("lazyContextAddon(init)"))
 fun <T> rContextAddonGenerate(init: (ElementContext) -> T) = lazyContextAddon(init)
+
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("lateInitContextAddon()"))
 fun <T> rContextAddonInit() = lateInitContextAddon<T>()
 
@@ -83,21 +63,28 @@ fun ElementContext.closePopovers() {
     popoverCloser = null
     popoverParent?.context?.closePopovers()
 }
+
 fun ElementContext.closeThisPopover() {
     popoverCloser?.invoke()
     popoverCloser = null
     popoverParent?.context?.closeSiblingPopovers()
 }
+
 fun ElementContext.closeSiblingPopovers() {
     popoverCloser?.invoke()
     popoverCloser = null
 }
+
 fun ElementContext.keepPopoverOpen(lifecycle: CoroutineScope) {
     popoverKeepOpen++
     lifecycle.onRemove { popoverKeepOpen-- }
 }
 
-fun ElementWriter.popoverWriter(overlay: ElementWriter = this, popoverRoot: Boolean = false, close: () -> Unit): ViewWriter {
+fun ElementWriter.popoverWriter(
+    overlay: ElementWriter = this,
+    popoverRoot: Boolean = false,
+    close: () -> Unit
+): ViewWriter {
     context.popoverCloser?.invoke()
     context.popoverCloser = close
 
@@ -105,7 +92,7 @@ fun ElementWriter.popoverWriter(overlay: ElementWriter = this, popoverRoot: Bool
 
     writer.context.popoverParent = (this@popoverWriter as? ContainerElement)?.takeIf { !popoverRoot }
     writer.context.popoverCloser = null
-    writer.context.popoverKeepOpen = 0  // TODO: Is this right?
+    writer.context.popoverKeepOpen = 0
 
     return writer
 }
@@ -118,11 +105,16 @@ fun Element.popoverWriter(overlay: ElementWriter, popoverRoot: Boolean = false, 
 
     writer.context.popoverParent = (this@popoverWriter as? ContainerElement)?.takeIf { !popoverRoot }
     writer.context.popoverCloser = null
+    writer.context.popoverKeepOpen = 0
 
     return writer
 }
 
-fun ContainerElement.popoverWriter(overlay: ElementWriter = this, popoverRoot: Boolean = false, close: () -> Unit): ViewWriter {
+fun ContainerElement.popoverWriter(
+    overlay: ElementWriter = this,
+    popoverRoot: Boolean = false,
+    close: () -> Unit
+): ViewWriter {
     context.popoverCloser?.invoke()
     context.popoverCloser = close
 
@@ -130,6 +122,7 @@ fun ContainerElement.popoverWriter(overlay: ElementWriter = this, popoverRoot: B
 
     writer.context.popoverParent = this@popoverWriter.takeIf { !popoverRoot }
     writer.context.popoverCloser = null
+    writer.context.popoverKeepOpen = 0
 
     return writer
 }

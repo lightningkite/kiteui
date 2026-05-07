@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.OverrideOnly
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.dom.DOMRect
 import com.lightningkite.kiteui.models.Align
 
@@ -78,9 +80,11 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
         val popoverWriter = source.popoverWriter(source.context.overlayFrame!!) {
             removeElementFromOverlay()
         }
+        val startedFocused = source.native.element == document.activeElement
         with(popoverWriter) {
             frame {
                 source.context.keepPopoverOpen(this)
+                if(source.context.addons == this.context.addons) throw Exception("NO NO NO")
                 currentDirection = preferredDirection
                 existingView = this
                 themeChoice = PopoverSemantic
@@ -247,16 +251,20 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                 native.create()
 
                 // Focus first focusable child, or container as fallback
-                native.onElement { e ->
-                    e as HTMLElement
-                    val focusable = e.querySelector(
-                        "button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])"
-                    ) as? HTMLElement
-                    if (focusable != null) {
-                        focusable.focus()
-                    } else {
-                        if (e.getAttribute("tabindex") == null) e.setAttribute("tabindex", "-1")
-                        e.focus()
+                if(startedFocused) {
+                    native.onElement { e ->
+                        e as HTMLElement
+                        afterTimeout(16) {
+                            val focusable = e.querySelector(
+                                "button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])"
+                            ) as? HTMLElement
+                            if (focusable != null) {
+                                focusable.focus()
+                            } else {
+                                if (e.getAttribute("tabindex") == null) e.setAttribute("tabindex", "-1")
+                                e.focus()
+                            }
+                        }
                     }
                 }
 
@@ -274,23 +282,22 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
 
                 val mouseMove = { it: Event ->
                     it as MouseEvent
-                    if (blockView == null && popoverKeepOpen <= 0) {
+                    if (blockView == null && context.popoverKeepOpen <= 0) {
                         val clientRect = (source.native.element as HTMLElement).getBoundingClientRect()
                         val popUpRect = (native.element as HTMLElement).getBoundingClientRect()
-                        if (min(
-                                maxOf(
-                                    it.x - popUpRect.right,
-                                    popUpRect.left - it.x,
-                                    it.y - popUpRect.bottom,
-                                    popUpRect.top - it.y,
-                                ), maxOf(
-                                    it.x - clientRect.right,
-                                    clientRect.left - it.x,
-                                    it.y - clientRect.bottom,
-                                    clientRect.top - it.y,
-                                )
-                            ) > maxDist
-                        ) close()
+                        val popUpDist = maxOf(
+                            it.x - popUpRect.right,
+                            popUpRect.left - it.x,
+                            it.y - popUpRect.bottom,
+                            popUpRect.top - it.y,
+                        )
+                        val clientDist = maxOf(
+                            it.x - clientRect.right,
+                            clientRect.left - it.x,
+                            it.y - clientRect.bottom,
+                            clientRect.top - it.y,
+                        )
+                        if (min(popUpDist, clientDist) > maxDist) close()
                     }
                 }
                 window.addEventListener("mousemove", mouseMove)
@@ -309,8 +316,10 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                     document.removeEventListener("keydown", escapeHandler)
                     source.native.setAttribute("aria-expanded", "false")
                     source.native.setAttribute("aria-controls", null)
-                    // Restore focus to the trigger element
-                    (source.native.element as? HTMLElement)?.focus()
+                    if (startedFocused) {
+                        // Restore focus to the trigger element
+                        (source.native.element as? HTMLElement)?.focus()
+                    }
                     native.onElement { e ->
                         this.onShutdown()
                         (e as HTMLElement)
@@ -318,7 +327,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                             .let { Duration.parseOrNull(it) ?: 0.25.seconds }
                             .let {
                                 window.setTimeout({
-                                    source.overlayFrame!!.removeChild(this)
+                                    source.context.overlayFrame!!.removeChild(this)
                                 }, it.inWholeMilliseconds.toInt())
                             }
                         e.style.opacity = "0"

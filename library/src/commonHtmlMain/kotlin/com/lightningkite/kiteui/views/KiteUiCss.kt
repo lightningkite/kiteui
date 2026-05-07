@@ -1057,9 +1057,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
             ?.let { addToCss(directSel, "text-decoration-line", it) }
         theme.diff(diff) { font.lineSpacingMultiplier }?.let { addToCss(directSel, "line-height", it.toString()) }
-        if(theme.font.additionalLetterSpacing != 0.px) {
-            println("Additional letter spacing triggered (${theme.font.additionalLetterSpacing}), diff: ${ diff?.font?.additionalLetterSpacing}")
-        }
         theme.diff(diff) { font.additionalLetterSpacing }
             ?.let {
                 addToCss(directSel, "letter-spacing", it.value.toString())

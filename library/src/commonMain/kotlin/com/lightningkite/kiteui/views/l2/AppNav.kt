@@ -119,8 +119,8 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
                 wraps = false
                 ellipsis = true
             }
-            space()
-            centered.expanding.navGroupTop(appNav.navItemsProperty)
+            expanding.space()
+            centered.navGroupTop(appNav.navItemsProperty)
             space()
             centered.navGroupActions(appNav.actionsProperty)
             ::shown { appNav.existsProperty() }

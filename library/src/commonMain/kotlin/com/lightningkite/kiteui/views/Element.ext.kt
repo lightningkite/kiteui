@@ -37,11 +37,11 @@ private class FalseWhenSuccessful(val status: Reactive<*>): Reactive<Boolean> {
 }
 @Suppress("UNCHECKED_CAST")
 val NativeElement.working: Reactive<Boolean> get() =
-    context.addons.getOrPutLocal("NativeElement.working") { FalseWhenSuccessful(foregroundProcesses) } as Reactive<Boolean>
+    context.addons.local.getOrPut("NativeElement.working") { FalseWhenSuccessful(foregroundProcesses) } as Reactive<Boolean>
 
 @Suppress("UNCHECKED_CAST")
 val NativeElement.loading: Reactive<Boolean> get() =
-    context.addons.getOrPutLocal("NativeElement.loading") { FalseWhenSuccessful(backgroundProcesses) } as Reactive<Boolean>
+    context.addons.local.getOrPut("NativeElement.loading") { FalseWhenSuccessful(backgroundProcesses) } as Reactive<Boolean>
 
 /**
  * Returns whether animations are currently enabled for this element.

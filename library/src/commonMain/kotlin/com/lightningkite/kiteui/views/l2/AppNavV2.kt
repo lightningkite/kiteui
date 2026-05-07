@@ -48,11 +48,11 @@ fun ElementWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, ma
     coordinatorFrame {
         debugName = "appBase"
         context.mainPageNavigator = main
+        context.pageNavigator = main
         dialog?.let {
             context.dialogPageNavigator = it
         }
         main.bindToPlatform(context)
-        context.pageNavigator = main
         context.overlayFrame = this
         context.coordinatorFrame = this
         mainLayout()

@@ -93,10 +93,10 @@ fun Theme.Companion.y2026(primary: HSPColor = HSPColor(hue = 0.6.turns, saturati
                     it.withoutBack(gap = 0.25.rem, cascading = false)
                 },
                 HeaderSizeSemantic(1).override {
-                    it.withoutBack(font = it.font.copy(size = (HeaderSizeSemantic.lookup[level - 1]).rem, additionalLetterSpacing = (-1.5).dp))
+                    it.withoutBack(font = it.font.copy(size = (HeaderSizeSemantic.lookup[level - 1]).rem, additionalLetterSpacing = (-1).dp))
                 },
                 HeaderSizeSemantic(2).override {
-                    it.withoutBack(font = it.font.copy(size = (HeaderSizeSemantic.lookup[level - 1]).rem, additionalLetterSpacing = (-1).dp))
+                    it.withoutBack(font = it.font.copy(size = (HeaderSizeSemantic.lookup[level - 1]).rem, additionalLetterSpacing = (-0.7).dp))
                 },
             )
         )

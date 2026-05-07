@@ -6,8 +6,12 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.errorText
+import com.lightningkite.kiteui.views.l2.label
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
+import com.lightningkite.reactive.core.remember
+import com.lightningkite.reactive.extensions.nullToZero
 
 @Routable("experiment")
 object ExperimentPage : Page {
@@ -32,31 +36,33 @@ object ExperimentPage : Page {
                 }
             }
 
-            centered.sizeConstraints(height = 5.rem, width = 10.rem).card.frame {
-                val p =  ScreenTransition(
-                    "PushFade",
-                    fade = true,
-                    easing = Easing.Spring,
-                    entryTransform = Transformation(translationX = 1.0),
-                    exitTransform = Transformation(translationX = -1.0),
-                )
-                centered.shownWhen(transition = p) { visible() }.card.text("Hello")
-            }
-
-            separator()
-            h2("Corner Shape: Circular vs Continuous")
-
-            row {
-                expanding.col {
-                    text("Circular (default)")
-                    sizeConstraints(height = 6.rem).card.frame { centered.text("Card") }
-                    important.button { text("Button") }
+            centered.card.row {
+                col {
+                    text("Always")
+                    shownWhen { visible() }.beforeSetup { debugName = "FIELD" }.label("asdf") {
+                        sizeConstraints(width = 3.rem).fieldTheme.numberInput {
+                            hint = "0"
+                        }
+                        errorText()
+                    }
+                    shownWhen { !visible() }.beforeSetup { debugName = "TEXT" }.text("something")
+//                    text("Always")
                 }
-                expanding.themed(squircleSemantic).col {
-                    text("Continuous (squircle)")
-                    sizeConstraints(height = 6.rem).card.frame { centered.text("Card") }
-                    important.button { text("Button") }
-                }
+//                row {
+//                    centered.text("Something")
+//                    centered.text("-")
+//                    centered.text("Free")
+//                    centered.text("-")
+//                    col {
+//                        shownWhen { visible() }.label("asdf") {
+//                            sizeConstraints(width = 3.rem).fieldTheme.numberInput {
+//                                hint = "0"
+//                            }
+//                            errorText()
+//                        }
+//                        shownWhen { !visible() }.text("something")
+//                    }
+//                }
             }
         }
     }

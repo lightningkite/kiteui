@@ -22,6 +22,7 @@ import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.get
+import kotlin.time.Duration.Companion.milliseconds
 
 private data class ShowHideRequest(val goal: Boolean, val transition: ScreenTransition)
 
@@ -291,7 +292,7 @@ private class OngoingWeightAnimation(
     }
 }
 
-private val log: Log? = null
+private val log: Log? = Log.tag("anim")
 
 // by Claude - combined worker processes both show/hide and weight queues in a single batch
 private val combinedAnimationWorker = label@{
@@ -387,6 +388,7 @@ private val combinedAnimationWorker = label@{
             ?.filter { !(it.key.native.element as HTMLElement).hidden }
             ?.associate { it.key to window.getComputedStyle(it.key.native.element as HTMLElement).display }
             ?: emptyMap()
+
         delayLevel?.let { delay(it) }
 
         // === Phase 3: Set goal state for measurement ===
@@ -404,6 +406,19 @@ private val combinedAnimationWorker = label@{
             log?.info("View ${it.key.children.singleOrNull()?.debugName} -> ${it.value.goal}")
             it.key to was
         }
+
+        val isLastVisibleAfterHide = currentShowHideQueue?.asSequence()
+            ?.mapNotNull { (on, _) ->
+                val parentEl = on.parent?.native?.element as? HTMLElement ?: return@mapNotNull null
+                if (!parentEl.classList.contains("optimized")) return@mapNotNull null
+                val myElement = on.native.element as HTMLElement
+                val lastVisible = (parentEl.children.length.minus(1) downTo 0).asSequence()
+                    .mapNotNull { parentEl.children[it] as? HTMLElement }
+                    .find { !it.hidden }
+                if (lastVisible == myElement) on else null
+            }?.toSet() ?: emptySet()
+
+        log?.log("isLastVisibleAfterHide: ${isLastVisibleAfterHide.map { it.children.singleOrNull()?.debugName ?: "?" }}")
 
         // Set goal state for weight queue
         val beforeWeightStyles = currentWeightQueue?.map { (on, weights) ->
@@ -493,25 +508,11 @@ private val combinedAnimationWorker = label@{
 
             // Layout collapse keyframes (automatic based on container type)
             if (x) {
-                if (usingFlexGap) {
-                    val gapX = parentStyle.columnGap
-                    gone.marginLeft = "calc($gapX / -2.0)"
-                    gone.paddingLeft = "0px"
-                    gone.marginRight = "calc($gapX / -2.0)"
-                    gone.paddingRight = "0px"
-                } else {
-                    val gap = parentStyle.columnGap
-                    val doPrevMargin =
-                            parent.classList.contains("optimized") &&
-                            (0..<parent.children.length).asSequence().mapNotNull { parent.children[it] as? HTMLElement }.find { !it.hidden } != myElement &&
-                            (parent.children.length.minus(1) downTo 0).asSequence().mapNotNull { parent.children[it] as? HTMLElement }.find { !it.hidden } == myElement
-                    if(doPrevMargin) {
-                        full.marginLeft = gap
-                        gone.marginLeft = "0px"
-                    }
-                    gone.marginRight = "0px"
-                    gone.paddingRight = "0px"
-                }
+                val gapX = parentStyle.columnGap
+                gone.marginLeft = "calc($gapX / -2.0)"
+                gone.paddingLeft = "0px"
+                gone.marginRight = "calc($gapX / -2.0)"
+                gone.paddingRight = "0px"
                 if (weighted == null) {
                     val fullWidth = childStyle.width
                     gone.width = "0px"
@@ -531,16 +532,11 @@ private val combinedAnimationWorker = label@{
                     gone.paddingBottom = "0px"
                 } else {
                     val gap = parentStyle.columnGap
-                    val doPrevMargin =
-                            parent.classList.contains("optimized") &&
-                            (0..<parent.children.length).asSequence().mapNotNull { parent.children[it] as? HTMLElement }.find { !it.hidden } != myElement &&
-                            (parent.children.length.minus(1) downTo 0).asSequence().mapNotNull { parent.children[it] as? HTMLElement }.find { !it.hidden } == myElement
-                    if(doPrevMargin) {
-                        full.marginTop = gap
-                        gone.marginTop = "0px"
+                    val afterLast = on in isLastVisibleAfterHide
+                    if(afterLast) {
+                        full.marginBottom = "0px"
                     }
                     gone.marginBottom = "0px"
-                    gone.paddingBottom = "0px"
                 }
                 if (weighted == null) {
                     val fullHeight = childStyle.height

@@ -19,17 +19,6 @@ import org.w3c.files.FilePropertyBag
 import kotlin.coroutines.resume
 import kotlin.js.Promise
 
-// External declaration for the barcode-detector polyfill
-@JsModule("barcode-detector")
-@JsNonModule
-external class BarcodeDetector(options: dynamic = definedExternally) {
-    fun detect(image: dynamic): Promise<Array<DetectedBarcode>>
-
-    companion object {
-        fun getSupportedFormats(): Promise<Array<String>>
-    }
-}
-
 external interface DetectedBarcode {
     val rawValue: String
     val format: String

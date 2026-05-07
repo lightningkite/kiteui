@@ -14,7 +14,7 @@ import com.lightningkite.mppexampleapp.internal.RootPage
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration.Companion.seconds
 
-val defaultTheme = Theme.y2026()
+val defaultTheme = Theme.flat2("flat2-default", 0.6.turns)
 //val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
 val appTheme = Signal<Theme>(defaultTheme)
 
@@ -42,6 +42,7 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
 
     Element.Debugger.leakDetect = true
     val rootView = produceExactlyOneElement {
+        context.appNavFactory.value = ViewWriter::appNavTop
         appNav(navigator, dialog) {
             appName = "KiteUI Sample App"
 
@@ -50,6 +51,32 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
                     NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
                     NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
                     NavLink(title = { "Test Pages" }, icon = { Icon.home }) { { RootPage } },
+                    NavGroup(
+                        title = "Learning", Icon.dot, listOf(
+                            NavLink(title = "Pathways", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Endorsements", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Microcredentials", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Courses", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Sections", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Providers", icon = Icon.dot) { HomePage() },
+                        )
+                    ),
+                    NavGroup(
+                        title = "Materials", Icon.dot, listOf(
+                            NavLink(title = "Core Codes", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Collections", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Review Cycles", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Reviews", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Rubrics", icon = Icon.dot) { HomePage() },
+                        )
+                    ),
+                    NavGroup(
+                        title = "Administration", Icon.settings, listOf(
+                            NavLink(title = "Tags", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Organizations", icon = Icon.dot) { HomePage() },
+                            NavLink(title = "Reporting", icon = Icon.dot) { HomePage() },
+                        )
+                    ),
                 )
             }
 
