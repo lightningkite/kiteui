@@ -42,7 +42,6 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
 
     Element.Debugger.leakDetect = true
     val rootView = produceExactlyOneElement {
-        context.appNavFactory.value = ViewWriter::appNavTop
         appNav(navigator, dialog) {
             appName = "KiteUI Sample App"
 
