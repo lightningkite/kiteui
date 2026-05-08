@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
 }
+val isMac = System.getProperty("os.name").startsWith("Mac OS")
 
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -24,8 +25,10 @@ kotlin {
         }
     }
     iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    if (isMac) {
+        iosArm64()
+        iosSimulatorArm64()
+    }
     js(IR) {
         browser()
     }
@@ -38,12 +41,14 @@ kotlin {
         optIn.add("kotlin.time.ExperimentalTime")
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
-
     cocoapods {
+        name = "GradlePlugin"
         summary = "KiteUI Camera and Barcode Scanning Support"
         homepage = "https://github.com/lightningkite/kiteui"
         version = "1.0"
-        ios.deploymentTarget = "14.0"
+        if (isMac) {
+            ios.deploymentTarget = "14.0"
+        }
     }
 
     sourceSets {
@@ -64,8 +69,10 @@ kotlin {
                 api("com.google.mlkit:barcode-scanning:17.3.0")
             }
         }
-
-        val iosMain by getting
+        val isMac = System.getProperty("os.name").startsWith("Mac OS")
+        if (isMac) {
+            val iosMain by getting
+        }
 
         val jsMain by getting {
             dependencies {
@@ -79,7 +86,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.lightningkite.kiteui.camera"
+    namespace = "GradlePlugin"
     compileSdk = 36
 
     defaultConfig {
