@@ -200,7 +200,7 @@ android {
 fun env(name: String, profile: String) {
     tasks.create("deployWeb${name}Init", Exec::class.java) {
         group = "deploy"
-        this.dependsOn("viteBuild")
+        this.dependsOn("jsBundleProduction")
         this.environment("AWS_PROFILE", "$profile")
         val props = Properties()
         props.entries.forEach {
