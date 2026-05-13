@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.docs.DocSearchPage
+import com.lightningkite.mppexampleapp.docs.MaterialIconLibraryPage
 import com.lightningkite.mppexampleapp.internal.RootPage
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration.Companion.seconds
@@ -49,6 +50,7 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
                 listOf(
                     NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
                     NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
+                    NavLink(title = { "Material Icons" }, icon = { Icon.search }) { { MaterialIconLibraryPage } },
                     NavLink(title = { "Test Pages" }, icon = { Icon.home }) { { RootPage } },
                 )
             }
