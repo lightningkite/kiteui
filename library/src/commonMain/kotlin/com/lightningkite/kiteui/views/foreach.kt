@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.views.direct.RowOrCol
+import com.lightningkite.kiteui.views.direct.atIndex
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.shownWhen
 import com.lightningkite.reactive.context.reactive
@@ -294,7 +295,7 @@ fun <T> RowOrCol.forEachAnimated(
                 oldPos = matchIndex + 1
             } else {
                 val shown = Signal(false)
-                val result: Element = this@forEachAnimated.produceExactlyOneView {
+                val result: Element = this@forEachAnimated.atIndex(oldPos).produceExactlyOneView {
                     preHidingModifiers(toRender).shownWhen { shown() }.render(toRender)
                 }
                 old.add(
