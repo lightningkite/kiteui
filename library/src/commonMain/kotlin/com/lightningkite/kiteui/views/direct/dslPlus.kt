@@ -47,13 +47,13 @@ fun <T, ID> ElementWriter.rowWithoutAnimations(
     forEachByIdWithoutAnimation(items, id, render)
 }
 
-fun <T, ID> ElementWriter.col(
+fun <T> ElementWriter.col(
     items: Reactive<List<T>>,
     render: ElementWriter.CanAddTheme.(T) -> Unit
 ) = col {
     forEach(items, render)
 }
-fun <T, ID> ElementWriter.row(
+fun <T> ElementWriter.row(
     items: Reactive<List<T>>,
     render: ElementWriter.CanAddTheme.(T) -> Unit
 ) = row {
