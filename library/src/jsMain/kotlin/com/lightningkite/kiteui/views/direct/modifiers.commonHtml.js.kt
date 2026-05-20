@@ -292,7 +292,7 @@ private class OngoingWeightAnimation(
     }
 }
 
-private val log: Log? = Log.tag("anim")
+private val log: Log? = null//Log.tag("anim")
 
 // by Claude - combined worker processes both show/hide and weight queues in a single batch
 private val combinedAnimationWorker = label@{
