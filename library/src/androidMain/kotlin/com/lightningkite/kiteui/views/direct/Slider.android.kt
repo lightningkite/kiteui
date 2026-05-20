@@ -188,9 +188,10 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
             val t = theme.theme
 
             // Standard slider styling
-            nativeSeekBar.progressTintList = ColorStateList.valueOf(t.foreground.closestColor().colorInt())
-            nativeSeekBar.progressBackgroundTintList = ColorStateList.valueOf(t.background.closestColor().colorInt())
-            nativeSeekBar.thumbTintList = ColorStateList.valueOf(t.foreground.closestColor().colorInt())
+            val foregroundColor = t.foreground.closestColor()
+            nativeSeekBar.progressTintList = ColorStateList.valueOf(foregroundColor.colorInt())
+            nativeSeekBar.progressBackgroundTintList = ColorStateList.valueOf(foregroundColor.applyAlpha(0.2f).colorInt())
+            nativeSeekBar.thumbTintList = ColorStateList.valueOf(foregroundColor.colorInt())
         }
     }
 }
