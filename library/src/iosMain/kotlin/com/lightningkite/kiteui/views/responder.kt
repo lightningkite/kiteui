@@ -54,8 +54,10 @@ fun UIView.scrollToMeCenter(animated: Boolean = false) {
         // goal: centers equal
         val pt = it.convertPoint(center, fromView = superview)
         it.setContentOffset(CGPointMake(
-            pt.useContents { x }.minus(it.bounds.useContents { size.width / 2 }).takeIf { _ -> it.horizontal } ?: 0.0,
-            pt.useContents { y }.minus(it.bounds.useContents { size.height / 2 }).takeIf { _ -> !it.horizontal } ?: 0.0,
+            pt.useContents { x }.minus(it.bounds.useContents { size.width / 2 }).takeIf { _ -> it.horizontal }
+                ?.coerceAtMost(it.contentSize.useContents { width }) ?: 0.0,
+            pt.useContents { y }.minus(it.bounds.useContents { size.height / 2 }).takeIf { _ -> !it.horizontal }
+                ?.coerceAtMost(it.contentSize.useContents { height }) ?: 0.0,
         ), animated = animated)
     }
 }
