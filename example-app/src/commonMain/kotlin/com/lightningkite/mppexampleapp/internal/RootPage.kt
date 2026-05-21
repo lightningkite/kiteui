@@ -122,6 +122,7 @@ object RootPage : Page {
                 sectionLabel("Animation")
                 linkPage { ShownWhenTransitionPage }
                 linkPage { LoadAnimationTestPage }
+                linkPage { ForEachByIdTestPage }
                 linkPage { LottieExamplePage }
                 linkPage { LottieRendererTestPage }
 

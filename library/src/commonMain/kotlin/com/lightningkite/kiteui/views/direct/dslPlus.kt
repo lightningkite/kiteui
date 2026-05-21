@@ -16,7 +16,7 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 
-fun <T, ID> ElementWriter.col(
+fun <T, ID> ElementWriter.colOf(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddShownWhen = { this },
@@ -24,7 +24,7 @@ fun <T, ID> ElementWriter.col(
 ) = col {
     forEachById(items, id, preHidingModifiers, render)
 }
-fun <T, ID> ElementWriter.row(
+fun <T, ID> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddShownWhen = { this },
@@ -33,32 +33,26 @@ fun <T, ID> ElementWriter.row(
     forEachById(items, id, preHidingModifiers, render)
 }
 
-fun <T, ID> ElementWriter.colWithoutAnimations(
+fun <T> ElementWriter.colOf(
     items: Reactive<List<T>>,
-    id: (T) -> ID,
-    render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
+    placeholdersWhileLoading: Int = 5,
+    render: ViewWriter.(Reactive<T>) -> Unit
 ) = col {
-    forEachByIdWithoutAnimation(items, id, render)
+    forEachUpdating(items, placeholdersWhileLoading, render)
 }
-fun <T, ID> ElementWriter.rowWithoutAnimations(
+fun <T> ElementWriter.rowOf(
     items: Reactive<List<T>>,
-    id: (T) -> ID,
-    render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
+    placeholdersWhileLoading: Int = 5,
+    render: ViewWriter.(Reactive<T>) -> Unit
 ) = row {
-    forEachByIdWithoutAnimation(items, id, render)
+    forEachUpdating(items, placeholdersWhileLoading, render)
 }
-
-fun <T> ElementWriter.col(
+fun <T> ElementWriter.rowWrappingOf(
     items: Reactive<List<T>>,
-    render: ElementWriter.CanAddTheme.(T) -> Unit
-) = col {
-    forEach(items, render)
-}
-fun <T> ElementWriter.row(
-    items: Reactive<List<T>>,
-    render: ElementWriter.CanAddTheme.(T) -> Unit
-) = row {
-    forEach(items, render)
+    placeholdersWhileLoading: Int = 5,
+    render: ViewWriter.(Reactive<T>) -> Unit
+) = rowWrapping {
+    forEachUpdating(items, placeholdersWhileLoading, render)
 }
 
 inline fun <T> ElementWriter.swapping(

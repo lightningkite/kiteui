@@ -144,7 +144,7 @@ fun <T, ID> RowOrCol.forEachById(
             } else {
                 val shown = Signal(false)
                 val data = Signal(toRender)
-                val result: Element = this@forEachById.produceExactlyOneView {
+                val result: Element = this@forEachById.atIndex(oldPos).produceExactlyOneView {
                     preHidingModifiers(id(toRender)).shownWhen { shown() }.render(data)
                 }
                 old.add(
@@ -222,7 +222,7 @@ fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
                 } else {
                     val shown = Signal(false)
                     val data = Signal(toRender)
-                    val result: Element = this@forEachByIdWithoutAnimation.produceExactlyOneView {
+                    val result: Element = this@forEachByIdWithoutAnimation.atIndex(oldPos).produceExactlyOneView {
                         render(data)
                     }
                     old.add(
