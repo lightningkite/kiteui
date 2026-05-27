@@ -35,6 +35,7 @@ uriEncoding = "0.0.1-6"
 vannitechPublishing = "0.36.0"
 jsPlainObjects = "2.3.0"
 kfc = "16.5.0"
+jetbrainsMarkdown = "0.7.3"
 
 
 [libraries]
@@ -84,6 +85,7 @@ swingx-all = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingx
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = { ref = "swiperefreshlayout" } }
 timber = { module = "com.jakewharton.timber:timber", version = { ref = "timber" } }
 transition = { module = "androidx.transition:transition", version = { ref = "transition" } }
+jetbrains-markdown = { module = "org.jetbrains:markdown", version.ref = "jetbrainsMarkdown" }
 
 
 [plugins]

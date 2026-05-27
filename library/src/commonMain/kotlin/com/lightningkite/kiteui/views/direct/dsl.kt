@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
+import com.lightningkite.kiteui.views.l2.MarkdownRichTextEditor
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.kiteui.views.write
 import com.lightningkite.reactive.context.invoke
@@ -18,6 +19,11 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
+
+inline fun ElementWriter.markdownRichTextEditor(setup: MarkdownRichTextEditor.() -> Unit = {}): MarkdownRichTextEditor {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(MarkdownRichTextEditor(context), setup)
+}
 
 inline fun ElementWriter.activityIndicator(setup: ActivityIndicator.() -> Unit = {}): ActivityIndicator {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }

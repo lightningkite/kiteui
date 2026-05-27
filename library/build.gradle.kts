@@ -75,6 +75,7 @@ kotlin {
                 api(libs.kotlinx.datetime)
                 api(libs.kotlinx.coroutines.core)
                 api(libs.kotlinx.serialization.uri)
+                api(libs.jetbrains.markdown)
             }
         }
         val commonTest by getting {
@@ -141,6 +142,9 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
+            dependencies {
+                implementation(npm("turndown", "7.2.0"))
+            }
         }
     }
 

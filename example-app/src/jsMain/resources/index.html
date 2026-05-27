@@ -68,7 +68,99 @@
             border-spacing: 0;
         }
 
+
+        div[markdown-container="true"] h1 {
+            font-size: 2em !important;
+            font-weight: bold !important;
+            margin-top: 0.67em !important;
+            margin-bottom: 0.67em !important;
+        }
+
+        div[markdown-container="true"] h2 {
+            font-size: 1.5em !important;
+            font-weight: bold !important;
+            margin-top: 0.83em !important;
+            margin-bottom: 0.83em !important;
+        }
+
+        div[markdown-container="true"] h3 {
+            font-size: 1.17em !important;
+            font-weight: bold !important;
+            margin-top: 1em !important;
+            margin-bottom: 1em !important;
+        }
+
+        div[markdown-container="true"] em {
+            font-style: italic !important;
+        }
+
+        div[markdown-container="true"] strong {
+            font-weight: bold !important;
+        }
+
+        div[markdown-container="true"] sup {
+            vertical-align: super !important;
+            font-size: 75% !important;
+            line-height: 0 !important;
+        }
+
+        div[markdown-container="true"] sub {
+            vertical-align: sub !important;
+            font-size: 75% !important;
+            line-height: 0 !important;
+        }
+
+        div[markdown-container="true"] p[contenteditable="true"]:focus {
+            outline: none;
+        }
+
+        div[markdown-container="true"] p[contenteditable]:empty::before {
+            content: attr(data-placeholder);
+            color: #888;
+            font-style: italic;
+            pointer-events: none;
+            display: block; /* Ensures proper rendering in Firefox */
+        }
+
+        div[markdown-container="true"] p[contenteditable="true"]:focus-visible {
+            outline: none;
+        }
+
+        div[markdown-container="true"] ul {
+            margin-left: 2rem !important;
+            list-style-type: disc;
+        }
+
+        div[markdown-container="true"] ol {
+            margin-left: 2rem !important;
+            list-style-type: decimal;
+        }
+
+        div[markdown-container="true"] li {
+            display: list-item;
+        }
+
+        div[markdown-container="true"] code,
+        div[markdown-container="true"] pre {
+            background: color-mix(in srgb, currentColor 20%, transparent) !important;
+            font-family: "Fira Code", "Courier New", Courier, monospace;
+            padding: 0 !important; /* Adjust if you want padding inside your pre blocks */
+            border: none !important;
+            border-radius: 4px;
+        }
+
+        /* 2. Override the code tag ONLY when it is inside a pre block */
+        div[markdown-container="true"] pre code {
+            background: transparent !important; /* Removes the double-dark effect */
+            padding: 0 !important;
+            border-radius: 0;
+        }
+
+
+
     </style>
+
+
 </head>
 <body>
 <script src="/version.js"></script>

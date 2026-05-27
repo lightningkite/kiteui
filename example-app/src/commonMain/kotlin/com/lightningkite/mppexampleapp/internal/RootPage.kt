@@ -93,6 +93,7 @@ object RootPage : Page {
                 linkPage { FormattedInputTests() }
                 linkPage { RichTextButtonPage }
                 linkPage { SampleLogInPage }
+                linkPage { MarkdownRichTextEditorDemoPage }
 
                 sectionLabel("Scrolling & Visibility")
                 linkPage { SpecialScrollTest }
