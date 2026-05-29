@@ -10,11 +10,14 @@ import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.TypefaceSpan
 import android.text.style.UnderlineSpan
+import android.view.GestureDetector
 import android.view.Gravity
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.LinearLayout
+import com.lightningkite.kiteui.views.direct.SlightlyModifiedLinearLayout
+import com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.SelectedSemantic
 import com.lightningkite.kiteui.models.bold
@@ -43,7 +46,17 @@ import kotlinx.coroutines.launch
 actual class MarkdownRichTextEditor actual constructor(context: ElementContext) :
     NativeContainerElementWithAction(context) {
 
-    override val native = LinearLayout(context.activity)
+    override val native = SlightlyModifiedLinearLayout(context.activity).apply {
+        orientation = SimplifiedLinearLayout.VERTICAL
+    }
+
+    override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+        SimplifiedLinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        )
+
+    private var recursive = false
 
     val currentSelectedRichTextTags = Signal<Set<RichTextTags>>(emptySet())
 
@@ -51,7 +64,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
     // Native Android EditText to handle the typing and spans
     val nativeEditText = EditText(context.activity).apply {
-        layoutParams = LinearLayout.LayoutParams(
+        layoutParams = SimplifiedLinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
             1f
@@ -59,13 +72,51 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         background = null // Remove default underline
         gravity = Gravity.TOP or Gravity.START
         minLines = 3
+
+        // Ensure it takes focus and shows keyboard
+        isFocusable = true
+        isFocusableInTouchMode = true
+
+        val gestureDetector = GestureDetector(context.activity, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+                if (e1 == null) return false
+                val deltaX = e2.x - e1.x
+                val deltaY = e2.y - e1.y
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 100) {
+                    val start = selectionStart
+                    val spannable = text ?: return false
+                    val currentLineStart = if (start > 0) {
+                        val lastNewline = spannable.lastIndexOf('\n', start - 1)
+                        if (lastNewline == -1) 0 else lastNewline + 1
+                    } else 0
+                    val lineText = spannable.substring(currentLineStart, start)
+
+                    if (deltaX > 0) { // Swipe Right - Indent
+                        if (lineText.trimStart().startsWith("* ") || lineText.trimStart()
+                                .matches(Regex("^\\d+\\.\\s+.*"))
+                        ) {
+                            spannable.insert(currentLineStart, "    ")
+                            return true
+                        }
+                    } else { // Swipe Left - Outdent
+                        if (lineText.startsWith("    ")) {
+                            spannable.delete(currentLineStart, currentLineStart + 4)
+                            return true
+                        }
+                    }
+                }
+                return false
+            }
+        })
+
+        setOnTouchListener { v, event ->
+            val gestureResult = gestureDetector.onTouchEvent(event)
+            if (gestureResult) return@setOnTouchListener true
+            v.onTouchEvent(event) // Explicitly call the view's onTouchEvent
+        }
     }
 
     init {
-        // Setup Native Container as Vertical LinearLayout
-        val viewGroup = native as? LinearLayout
-        viewGroup?.orientation = LinearLayout.VERTICAL
-
         // Build the Toolbar exactly as you did in JS
         scrollingHorizontally.row {
             button {
@@ -169,71 +220,78 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
             }
         }
 
-        // Add the editor to the native view
-        viewGroup?.addView(nativeEditText)
+        // Add the editor to the hierarchy properly
+        addChild(object : NativeElement(context) {
+            override val native = this@MarkdownRichTextEditor.nativeEditText
+        })
 
         // Listeners for Cursor and Content updates
         nativeEditText.setOnClickListener { updateSelectedTags() }
 
         nativeEditText.addTextChangedListener(object : TextWatcher {
-            var isEnter = false
-            var enterPos = -1
-            var recursive = false
+            var newlineInsertedPos = -1
             
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (recursive) return
-                // Robust enter detection: was a newline just added?
-                isEnter = count == 1 && s?.get(start) == '\n'
-                enterPos = start
+                if (this@MarkdownRichTextEditor.recursive) return
+                // Check if a newline was part of the change (handles autocorrect + enter)
+                val changedText = s?.substring(start, start + count) ?: ""
+                val newlineIndex = changedText.indexOf('\n')
+                if (newlineIndex != -1) {
+                    newlineInsertedPos = start + newlineIndex
+                } else {
+                    newlineInsertedPos = -1
+                }
                 updateSelectedTags()
             }
             override fun afterTextChanged(s: Editable?) {
-                if (recursive || s == null) return
-                if (isEnter) {
-                    isEnter = false
-                    val pos = enterPos
+                if (this@MarkdownRichTextEditor.recursive || s == null) return
+                val pos = newlineInsertedPos
+                if (pos != -1) {
+                    newlineInsertedPos = -1
                     val currentLineStart = if (pos > 0) {
                         val lastNewline = s.lastIndexOf('\n', pos - 1)
                         if (lastNewline == -1) 0 else lastNewline + 1
                     } else 0
 
                     val lineText = s.substring(currentLineStart, pos)
+                    val indentMatch = Regex("^(\\s*)").find(lineText)
+                    val indent = indentMatch?.groupValues?.get(1) ?: ""
+                    val trimmedLine = lineText.trimStart()
 
-                    if (lineText.startsWith("* ")) {
-                        // Unordered list continuation/exit
-                        if (lineText == "* ") {
-                            // Empty - exit
-                            recursive = true
+                    if (trimmedLine.startsWith("* ")) {
+                        // Unordered list
+                        if (trimmedLine == "* ") {
+                            this@MarkdownRichTextEditor.recursive = true
                             s.delete(currentLineStart, pos + 1)
-                            recursive = false
+                            this@MarkdownRichTextEditor.recursive = false
                         } else {
-                            // Continue
-                            recursive = true
-                            s.insert(pos + 1, "* ")
-                            recursive = false
+                            this@MarkdownRichTextEditor.recursive = true
+                            s.insert(pos + 1, indent + "* ")
+                            this@MarkdownRichTextEditor.recursive = false
+                            nativeEditText.setSelection(pos + 1 + indent.length + 2)
                         }
-                    } else if (lineText.trim().matches(Regex("^\\d+\\.\\s+.*"))) {
-                        // Ordered list continuation/exit
-                        val match = Regex("^(\\d+)\\.\\s+").find(lineText)
+                    } else if (trimmedLine.matches(Regex("^\\d+\\.\\s+.*"))) {
+                        // Ordered list
+                        val match = Regex("^(\\d+)\\.\\s+").find(trimmedLine)
                         if (match != null) {
                             val num = match.groupValues[1].toInt()
-                            if (lineText.trim().length <= match.groupValues[0].length) {
-                                // Empty - exit
-                                recursive = true
+                            val prefixLen = match.groupValues[0].length
+                            if (trimmedLine.length <= prefixLen) {
+                                this@MarkdownRichTextEditor.recursive = true
                                 s.delete(currentLineStart, pos + 1)
-                                recursive = false
+                                this@MarkdownRichTextEditor.recursive = false
                             } else {
-                                // Continue
-                                recursive = true
-                                s.insert(pos + 1, "${num + 1}. ")
-                                recursive = false
+                                this@MarkdownRichTextEditor.recursive = true
+                                val nextPrefix = "${num + 1}. "
+                                s.insert(pos + 1, indent + nextPrefix)
+                                this@MarkdownRichTextEditor.recursive = false
+                                nativeEditText.setSelection(pos + 1 + indent.length + nextPrefix.length)
                             }
                         }
                     } else {
-                        // Not in a list - Reset modifiers for the NEXT line
-                        // To be truly robust, we truncate spans at 'pos' and explicitly
-                        // clear them from 'pos + 1' onwards.
+                        // Modifier reset
                         val activeSpans = s.getSpans(pos, pos, Any::class.java)
                         activeSpans.forEach { span ->
                             if (span is StyleSpan || span is StrikethroughSpan || span is TypefaceSpan || span is RelativeSizeSpan) {
@@ -244,11 +302,11 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                             }
                         }
 
-                        // Also clear any spans that might have expanded to pos + 1
+                        // Explicitly remove any spans starting at pos + 1
                         val nextSpans = s.getSpans(pos + 1, pos + 1, Any::class.java)
                         nextSpans.forEach { span ->
                             if (span is StyleSpan || span is StrikethroughSpan || span is TypefaceSpan || span is RelativeSizeSpan) {
-                                if (s.getSpanStart(span) == pos + 1 && s.getSpanEnd(span) == pos + 1) {
+                                if (s.getSpanStart(span) == pos + 1) {
                                     s.removeSpan(span)
                                 }
                             }
@@ -278,7 +336,9 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                     val isFocused = nativeEditText.hasFocus()
                     val cursor = nativeEditText.selectionStart
 
+                    this@MarkdownRichTextEditor.recursive = true
                     nativeEditText.setText(parseMarkdownToSpannable(value))
+                    this@MarkdownRichTextEditor.recursive = false
 
                     if (isFocused && cursor >= 0 && cursor <= nativeEditText.text.length) {
                         nativeEditText.setSelection(cursor)
@@ -546,7 +606,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         val doc = parser.parse(markdown)
         val builder = SpannableStringBuilder()
         renderNodeToSpannable(doc, builder)
-        return builder.toString().trimEnd()
+        return builder
     }
 
     private fun renderNodeToSpannable(node: MarkdownNode, builder: SpannableStringBuilder) {
