@@ -11,6 +11,7 @@ import android.text.style.StyleSpan
 import android.text.style.TypefaceSpan
 import android.text.style.UnderlineSpan
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -175,13 +176,86 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         nativeEditText.setOnClickListener { updateSelectedTags() }
 
         nativeEditText.addTextChangedListener(object : TextWatcher {
+            var isEnter = false
+            var enterPos = -1
+            var recursive = false
+            
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (recursive) return
+                // Robust enter detection: was a newline just added?
+                isEnter = count == 1 && s?.get(start) == '\n'
+                enterPos = start
                 updateSelectedTags()
             }
             override fun afterTextChanged(s: Editable?) {
-                (content as? ContentValue)?.update()
+                if (recursive || s == null) return
+                if (isEnter) {
+                    isEnter = false
+                    val pos = enterPos
+                    val currentLineStart = if (pos > 0) {
+                        val lastNewline = s.lastIndexOf('\n', pos - 1)
+                        if (lastNewline == -1) 0 else lastNewline + 1
+                    } else 0
 
+                    val lineText = s.substring(currentLineStart, pos)
+
+                    if (lineText.startsWith("* ")) {
+                        // Unordered list continuation/exit
+                        if (lineText == "* ") {
+                            // Empty - exit
+                            recursive = true
+                            s.delete(currentLineStart, pos + 1)
+                            recursive = false
+                        } else {
+                            // Continue
+                            recursive = true
+                            s.insert(pos + 1, "* ")
+                            recursive = false
+                        }
+                    } else if (lineText.trim().matches(Regex("^\\d+\\.\\s+.*"))) {
+                        // Ordered list continuation/exit
+                        val match = Regex("^(\\d+)\\.\\s+").find(lineText)
+                        if (match != null) {
+                            val num = match.groupValues[1].toInt()
+                            if (lineText.trim().length <= match.groupValues[0].length) {
+                                // Empty - exit
+                                recursive = true
+                                s.delete(currentLineStart, pos + 1)
+                                recursive = false
+                            } else {
+                                // Continue
+                                recursive = true
+                                s.insert(pos + 1, "${num + 1}. ")
+                                recursive = false
+                            }
+                        }
+                    } else {
+                        // Not in a list - Reset modifiers for the NEXT line
+                        // To be truly robust, we truncate spans at 'pos' and explicitly
+                        // clear them from 'pos + 1' onwards.
+                        val activeSpans = s.getSpans(pos, pos, Any::class.java)
+                        activeSpans.forEach { span ->
+                            if (span is StyleSpan || span is StrikethroughSpan || span is TypefaceSpan || span is RelativeSizeSpan) {
+                                val startSpan = s.getSpanStart(span)
+                                if (startSpan != -1 && startSpan < pos) {
+                                    s.setSpan(span, startSpan, pos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                }
+                            }
+                        }
+
+                        // Also clear any spans that might have expanded to pos + 1
+                        val nextSpans = s.getSpans(pos + 1, pos + 1, Any::class.java)
+                        nextSpans.forEach { span ->
+                            if (span is StyleSpan || span is StrikethroughSpan || span is TypefaceSpan || span is RelativeSizeSpan) {
+                                if (s.getSpanStart(span) == pos + 1 && s.getSpanEnd(span) == pos + 1) {
+                                    s.removeSpan(span)
+                                }
+                            }
+                        }
+                    }
+                }
+                (content as? ContentValue)?.update()
             }
         })
     }
@@ -336,7 +410,25 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
     }
 
     private fun insertList(ordered: Boolean) {
-        // Todo: Implement BulletSpan for unordered lists and custom numbering logic for ordered lists.
+        val start = nativeEditText.selectionStart
+        val end = nativeEditText.selectionEnd
+        if (start < 0) return
+
+        val spannable = nativeEditText.text ?: return
+
+        val currentLineStart = if (start > 0) {
+            val lastNewline = spannable.lastIndexOf('\n', start - 1)
+            if (lastNewline == -1) 0 else lastNewline + 1
+        } else 0
+
+        if (ordered) {
+            spannable.insert(currentLineStart, "1. ")
+        } else {
+            spannable.insert(currentLineStart, "* ")
+        }
+
+        updateSelectedTags()
+        (content as? ContentValue)?.update()
     }
 
     // --- Tag Detection ---
@@ -517,13 +609,13 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                     renderNodeToSpannable(item, builder)
                 }
             }
-
             is MarkdownNode.UnorderedList -> {
                 node.items.forEach { item ->
-                    builder.append("• ")
+                    builder.append("* ")
                     renderNodeToSpannable(item, builder)
                 }
             }
+
 
             is MarkdownNode.ListItem -> {
                 node.children.forEach { renderNodeToSpannable(it, builder) }
