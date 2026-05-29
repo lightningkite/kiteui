@@ -1,191 +1,373 @@
 package com.lightningkite.kiteui.views.l2
 
-import android.content.Context
+import android.graphics.Typeface
 import android.text.Editable
+import android.text.Spannable
+import android.text.SpannableStringBuilder
 import android.text.TextWatcher
+import android.text.style.RelativeSizeSpan
+import android.text.style.StrikethroughSpan
+import android.text.style.StyleSpan
+import android.text.style.TypefaceSpan
+import android.text.style.UnderlineSpan
+import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
-import androidx.core.text.HtmlCompat
-import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.SelectedSemantic
+import com.lightningkite.kiteui.models.bold
+import com.lightningkite.kiteui.models.code
+import com.lightningkite.kiteui.models.codeBlock
+import com.lightningkite.kiteui.models.header1
+import com.lightningkite.kiteui.models.header2
+import com.lightningkite.kiteui.models.header3
+import com.lightningkite.kiteui.models.italic
+import com.lightningkite.kiteui.models.orderList
+import com.lightningkite.kiteui.models.qoute
+import com.lightningkite.kiteui.models.strikeThrough
+import com.lightningkite.kiteui.models.unorderedList
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.reactive.core.*
-import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
-import org.intellij.markdown.html.HtmlGenerator
-import org.intellij.markdown.parser.MarkdownParser
+import com.lightningkite.kiteui.views.direct.icon
+import com.lightningkite.kiteui.markdown.MarkdownNode
+import com.lightningkite.kiteui.markdown.MarkdownParser
+import com.lightningkite.reactive.core.BaseListenable
+import com.lightningkite.reactive.core.MutableReactiveValue
+import com.lightningkite.reactive.core.Signal
+import kotlinx.coroutines.launch
 
-private class ObservableEditText(context: Context) : androidx.appcompat.widget.AppCompatEditText(context) {
-    var onSelectionChangedListener: ((Int, Int) -> Unit)? = null
-    override fun onSelectionChanged(selStart: Int, selEnd: Int) {
-        super.onSelectionChanged(selStart, selEnd)
-        onSelectionChangedListener?.invoke(selStart, selEnd)
-    }
-}
-
+@OptIn(com.lightningkite.kiteui.UnsafeModifier::class)
 actual class MarkdownRichTextEditor actual constructor(context: ElementContext) :
     NativeContainerElementWithAction(context) {
-    override val native: LinearLayout = LinearLayout(context.activity).apply {
-        orientation = LinearLayout.VERTICAL
-    }
 
-    private val currentSelectedRichTextTags = Signal<Set<RichTextTags>>(emptySet())
+    override val native = LinearLayout(context.activity)
 
-    private val editText = ObservableEditText(context.activity).apply {
+    val currentSelectedRichTextTags = Signal<Set<RichTextTags>>(emptySet())
+
+    actual var suggestionHandler: SuggestionHandler? = null
+
+    // Native Android EditText to handle the typing and spans
+    val nativeEditText = EditText(context.activity).apply {
         layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            weight = 1f
-        }
-        gravity = android.view.Gravity.TOP
-        background = null
-        setPadding(16, 16, 16, 16)
-        onSelectionChangedListener = { _, _ ->
-            updateSelectedRichTextTags()
-        }
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            1f
+        )
+        background = null // Remove default underline
+        gravity = Gravity.TOP or Gravity.START
+        minLines = 3
     }
 
     init {
+        // Setup Native Container as Vertical LinearLayout
+        val viewGroup = native as? LinearLayout
+        viewGroup?.orientation = LinearLayout.VERTICAL
+
+        // Build the Toolbar exactly as you did in JS
         scrollingHorizontally.row {
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.HEADER1)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.header1, "Header 1")
-                onClick { this@MarkdownRichTextEditor.applyHeader(1) }
+                onClick { this@MarkdownRichTextEditor.toggleSpan(RelativeSizeSpan(2.0f), RichTextTags.HEADER1) }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.HEADER2)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.header2, "Header 2")
-                onClick { this@MarkdownRichTextEditor.applyHeader(2) }
+                onClick { this@MarkdownRichTextEditor.toggleSpan(RelativeSizeSpan(1.5f), RichTextTags.HEADER2) }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.HEADER3)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.header3, "Header 3")
-                onClick { this@MarkdownRichTextEditor.applyHeader(3) }
+                onClick { this@MarkdownRichTextEditor.toggleSpan(RelativeSizeSpan(1.17f), RichTextTags.HEADER3) }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.BOLD)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.bold, "Bold")
-                onClick { this@MarkdownRichTextEditor.toggleSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD)) }
+                onClick { this@MarkdownRichTextEditor.toggleStyleSpan(Typeface.BOLD, RichTextTags.BOLD) }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.ITALIC)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.italic, "Italic")
-                onClick { this@MarkdownRichTextEditor.toggleSpan(android.text.style.StyleSpan(android.graphics.Typeface.ITALIC)) }
+                onClick { this@MarkdownRichTextEditor.toggleStyleSpan(Typeface.ITALIC, RichTextTags.ITALIC) }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.STRIKETHROUGH)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.strikeThrough, "Strikethrough")
-                onClick { this@MarkdownRichTextEditor.toggleSpan(android.text.style.StrikethroughSpan()) }
+                onClick { this@MarkdownRichTextEditor.toggleSpan(StrikethroughSpan(), RichTextTags.STRIKETHROUGH) }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.QOUTE)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.qoute, "Quote")
-                onClick { this@MarkdownRichTextEditor.toggleSpan(android.text.style.QuoteSpan()) }
+                onClick { /* Implement Quote Span */ }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.UNORDERED_LIST)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.unorderedList, "Unordered List")
-                onClick { /* Basic list support */ }
+                onClick { this@MarkdownRichTextEditor.insertList(ordered = false) }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.ORDERED_LIST)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.orderList, "Ordered List")
-                onClick { /* Ordered list span */ }
+                onClick { this@MarkdownRichTextEditor.insertList(ordered = true) }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.CODE)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.code, "Code")
-                onClick { this@MarkdownRichTextEditor.toggleSpan(android.text.style.TypefaceSpan("monospace")) }
+                onClick { this@MarkdownRichTextEditor.toggleSpan(TypefaceSpan("monospace"), RichTextTags.CODE) }
             }
             button {
                 applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
                             .contains(RichTextTags.CODE_BLOCK)
                     ) SelectedSemantic else null
                 }
                 icon(Icon.codeBlock, "Code Block")
-                onClick { this@MarkdownRichTextEditor.toggleSpan(android.text.style.TypefaceSpan("monospace")) }
+                onClick { /* Implement Code Block Span */ }
             }
         }
 
-        native.addView(editText)
+        // Add the editor to the native view
+        viewGroup?.addView(nativeEditText)
 
-        editText.addTextChangedListener(object : TextWatcher {
+        // Listeners for Cursor and Content updates
+        nativeEditText.setOnClickListener { updateSelectedTags() }
+
+        nativeEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updateSelectedTags()
+            }
             override fun afterTextChanged(s: Editable?) {
-                (content as Property).update()
-                updateSelectedRichTextTags()
+                (content as? ContentValue)?.update()
+
             }
         })
     }
 
-    private fun updateSelectedRichTextTags() {
-        val start = editText.selectionStart
-        val end = editText.selectionEnd
-        val text = editText.text ?: return
+    actual var hint: String
+        get() = nativeEditText.hint?.toString() ?: ""
+        set(value) {
+            nativeEditText.hint = value
+        }
+
+    actual val content: MutableReactiveValue<String> = ContentValue()
+
+    // BaseListenable Binder to sync string updates
+    inner class ContentValue : MutableReactiveValue<String>, BaseListenable() {
+        fun update() = invokeAllListeners()
+        override var value: String
+            get() = serializeToMarkdown(nativeEditText.text)
+            set(value) {
+                if (serializeToMarkdown(nativeEditText.text) != value) {
+                    val isFocused = nativeEditText.hasFocus()
+                    val cursor = nativeEditText.selectionStart
+
+                    nativeEditText.setText(parseMarkdownToSpannable(value))
+
+                    if (isFocused && cursor >= 0 && cursor <= nativeEditText.text.length) {
+                        nativeEditText.setSelection(cursor)
+                    }
+                    updateSelectedTags()
+                }
+            }
+
+    }
+
+    // --- Format Toggling Logic ---
+
+    private fun createSimilarSpan(existing: Any): Any? {
+        return when (existing) {
+            is RelativeSizeSpan -> RelativeSizeSpan(existing.sizeChange)
+            is StrikethroughSpan -> StrikethroughSpan()
+            is TypefaceSpan -> TypefaceSpan(existing.family)
+            is StyleSpan -> StyleSpan(existing.style)
+            is UnderlineSpan -> UnderlineSpan()
+            else -> null
+        }
+    }
+
+    private fun toggleStyleSpan(style: Int, tag: RichTextTags) {
+        val start = nativeEditText.selectionStart
+        val end = nativeEditText.selectionEnd
+        if (start < 0) return
+
+        val spannable = nativeEditText.text ?: return
+
+        val spans = if (start == end) {
+            spannable.getSpans(start, start, StyleSpan::class.java).filter { it.style == style }
+        } else {
+            spannable.getSpans(start, end, StyleSpan::class.java).filter { it.style == style }
+        }
+
+        if (spans.isNotEmpty()) {
+            // Turning OFF or removing from selection
+            spans.forEach { span ->
+                val s = spannable.getSpanStart(span)
+                val e = spannable.getSpanEnd(span)
+
+                if (s < start) {
+                    // Truncate left side
+                    spannable.setSpan(span, s, start, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    if (e > end) {
+                        // Re-add right side
+                        spannable.setSpan(StyleSpan(style), end, e, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                } else if (e > end) {
+                    // Truncate right side
+                    spannable.setSpan(span, end, e, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                } else {
+                    // Fully within selection
+                    spannable.removeSpan(span)
+                }
+            }
+        } else {
+            // Turning ON
+            if (start == end) {
+                // Use INCLUSIVE_INCLUSIVE so it expands as we type
+                spannable.setSpan(StyleSpan(style), start, start, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+            } else {
+                spannable.setSpan(StyleSpan(style), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
+        updateSelectedTags()
+        (content as? ContentValue)?.update()
+    }
+
+    private fun toggleSpan(span: Any, tag: RichTextTags) {
+        val start = nativeEditText.selectionStart
+        val end = nativeEditText.selectionEnd
+        if (start < 0) return
+
+        val spannable = nativeEditText.text ?: return
+
+        val spans = if (start == end) {
+            spannable.getSpans(start, start, span.javaClass).filter {
+                when {
+                    it is RelativeSizeSpan && span is RelativeSizeSpan -> it.sizeChange == span.sizeChange
+                    it is TypefaceSpan && span is TypefaceSpan -> it.family == span.family
+                    else -> true
+                }
+            }
+        } else {
+            spannable.getSpans(start, end, span.javaClass).filter {
+                when {
+                    it is RelativeSizeSpan && span is RelativeSizeSpan -> it.sizeChange == span.sizeChange
+                    it is TypefaceSpan && span is TypefaceSpan -> it.family == span.family
+                    else -> true
+                }
+            }
+        }
+
+        if (spans.isNotEmpty()) {
+            // Turning OFF or removing from selection
+            spans.forEach { existing ->
+                val s = spannable.getSpanStart(existing)
+                val e = spannable.getSpanEnd(existing)
+
+                if (s < start) {
+                    // Truncate left side
+                    spannable.setSpan(existing, s, start, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    if (e > end) {
+                        // Re-add right side
+                        createSimilarSpan(existing)?.let {
+                            spannable.setSpan(it, end, e, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        }
+                    }
+                } else if (e > end) {
+                    // Truncate right side
+                    spannable.setSpan(existing, end, e, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                } else {
+                    // Fully within selection
+                    spannable.removeSpan(existing)
+                }
+            }
+        } else {
+            // Turning ON
+            if (start == end) {
+                spannable.setSpan(span, start, start, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+            } else {
+                spannable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
+        updateSelectedTags()
+        (content as? ContentValue)?.update()
+    }
+
+    private fun insertList(ordered: Boolean) {
+        // Todo: Implement BulletSpan for unordered lists and custom numbering logic for ordered lists.
+    }
+
+    // --- Tag Detection ---
+
+    private fun updateSelectedTags() {
+        val start = nativeEditText.selectionStart
+        if (start < 0) return
+
+        val spannable = nativeEditText.text ?: return
         val tags = mutableSetOf<RichTextTags>()
 
-        // Find spans in the current selection
-        val spans = text.getSpans(start.coerceAtMost(end), start.coerceAtLeast(end), Any::class.java)
-        for (span in spans) {
+        // Grab spans immediately around the cursor
+        val spans = spannable.getSpans(start, start, Any::class.java)
+
+        spans.forEach { span ->
             when (span) {
-                is android.text.style.StyleSpan -> {
-                    if (span.style == android.graphics.Typeface.BOLD) tags.add(RichTextTags.BOLD)
-                    if (span.style == android.graphics.Typeface.ITALIC) tags.add(RichTextTags.ITALIC)
+                is StyleSpan -> {
+                    if (span.style == Typeface.BOLD) tags.add(RichTextTags.BOLD)
+                    if (span.style == Typeface.ITALIC) tags.add(RichTextTags.ITALIC)
                 }
 
-                is android.text.style.StrikethroughSpan -> tags.add(RichTextTags.STRIKETHROUGH)
-                is android.text.style.UnderlineSpan -> tags.add(RichTextTags.UNDERLINE)
-                is android.text.style.QuoteSpan -> tags.add(RichTextTags.QOUTE)
-                is android.text.style.RelativeSizeSpan -> {
-                    if (span.sizeChange > 1.4f) tags.add(RichTextTags.HEADER1)
-                    else if (span.sizeChange > 1.1f) tags.add(RichTextTags.HEADER2)
+                is StrikethroughSpan -> tags.add(RichTextTags.STRIKETHROUGH)
+                is RelativeSizeSpan -> {
+                    when (span.sizeChange) {
+                        2.0f -> tags.add(RichTextTags.HEADER1)
+                        1.5f -> tags.add(RichTextTags.HEADER2)
+                        1.17f -> tags.add(RichTextTags.HEADER3)
+                    }
                 }
 
-                is android.text.style.TypefaceSpan -> {
+                is TypefaceSpan -> {
                     if (span.family == "monospace") tags.add(RichTextTags.CODE)
                 }
             }
@@ -196,105 +378,165 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         }
     }
 
-    override fun nativeAddChild(index: Int, element: Element) {
-        native.addView(element.native, index)
-    }
+    // --- Markdown Conversion ---
 
-    override fun nativeRemoveChild(index: Int) {
-        native.removeViewAt(index)
-    }
+    private fun serializeToMarkdown(spannable: Editable?): String {
+        if (spannable == null || spannable.isEmpty()) return ""
+        val length = spannable.length
+        val result = StringBuilder()
 
-    override fun nativeClearChildren() {
-        native.removeAllViews()
-    }
+        var currentStyles = emptyList<String>()
+        val styleOrder = listOf("~~", "**", "*", "`")
 
-    private fun applyHeader(level: Int) {
-        val start = editText.selectionStart
-        val end = editText.selectionEnd
-        val span = android.text.style.RelativeSizeSpan(if (level == 1) 1.5f else 1.2f)
-        val flags =
-            if (start == end) android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE else android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        for (i in 0 until length) {
+            val char = spannable[i]
 
-        // Remove existing header spans in this range
-        val text = editText.text ?: return
-        val existing = text.getSpans(start, end, android.text.style.RelativeSizeSpan::class.java)
-        for (s in existing) text.removeSpan(s)
-
-        text.setSpan(span, start, end, flags)
-        updateSelectedRichTextTags()
-    }
-
-    private fun toggleSpan(span: Any) {
-        val start = editText.selectionStart
-        val end = editText.selectionEnd
-        val text = editText.text ?: return
-
-        val existing = text.getSpans(start, end, span::class.java).find {
-            if (it is android.text.style.StyleSpan && span is android.text.style.StyleSpan) {
-                it.style == span.style
-            } else if (it is android.text.style.TypefaceSpan && span is android.text.style.TypefaceSpan) {
-                it.family == span.family
-            } else true
-        }
-
-        if (existing != null) {
-            text.removeSpan(existing)
-        } else {
-            val flags =
-                if (start == end) android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE else android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            text.setSpan(span, start, end, flags)
-        }
-        updateSelectedRichTextTags()
-    }
-
-    actual var hint: String
-        get() = editText.hint?.toString() ?: ""
-        set(value) {
-            editText.hint = value
-        }
-
-    private inner class Property : MutableReactiveValue<String>, BaseListenable() {
-        private var _value: String = ""
-        override var value: String
-            get() = spannableToMarkdown(editText.text ?: android.text.SpannableStringBuilder(""))
-            set(v) {
-                if (_value != v) {
-                    _value = v
-                    val html = markdownToHtml(v)
-                    editText.setText(HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY))
-                    invokeAllListeners()
-                    updateSelectedRichTextTags()
+            // Headings check at start of line
+            if (i == 0 || spannable[i - 1] == '\n') {
+                val lineSpans = spannable.getSpans(i, i + 1, RelativeSizeSpan::class.java)
+                val headingSpan = lineSpans.firstOrNull { it.sizeChange > 1.0f }
+                if (headingSpan != null) {
+                    val level = when {
+                        headingSpan.sizeChange >= 2.0f -> 1
+                        headingSpan.sizeChange >= 1.5f -> 2
+                        headingSpan.sizeChange >= 1.17f -> 3
+                        else -> 0
+                    }
+                    if (level > 0) {
+                        for (l in 0 until level) result.append("#")
+                        result.append(" ")
+                    }
                 }
             }
 
-        fun update() {
-            _value = spannableToMarkdown(editText.text ?: android.text.SpannableStringBuilder(""))
-            invokeAllListeners()
+            val spans = spannable.getSpans(i, i + 1, Any::class.java)
+            val stylesAtI = mutableSetOf<String>()
+            spans.forEach { span ->
+                if (spannable.getSpanStart(span) <= i && spannable.getSpanEnd(span) >= i + 1) {
+                    when (span) {
+                        is StyleSpan -> {
+                            if (span.style == Typeface.BOLD) stylesAtI.add("**")
+                            if (span.style == Typeface.ITALIC) stylesAtI.add("*")
+                        }
+
+                        is StrikethroughSpan -> stylesAtI.add("~~")
+                        is TypefaceSpan -> if (span.family == "monospace") stylesAtI.add("`")
+                    }
+                }
+            }
+
+            // Close styles that are no longer active
+            val activeButShouldBeClosed = currentStyles.filter { it !in stylesAtI }
+            if (activeButShouldBeClosed.isNotEmpty()) {
+                currentStyles.reversed().forEach { result.append(it) }
+                currentStyles = emptyList()
+            }
+
+            // Open styles that should be active
+            styleOrder.forEach { style ->
+                if (style in stylesAtI && style !in currentStyles) {
+                    result.append(style)
+                    currentStyles = currentStyles + style
+                }
+            }
+
+            result.append(char)
         }
+
+        currentStyles.reversed().forEach { result.append(it) }
+
+        return result.toString()
     }
 
-    actual val content: MutableReactiveValue<String> = Property()
-
-    actual var suggestionHandler: SuggestionHandler? = null
-
-    private fun markdownToHtml(markdown: String): String {
-        val flavour = GFMFlavourDescriptor()
-        val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(markdown)
-        return HtmlGenerator(markdown, parsedTree, flavour).generateHtml()
+    private fun parseMarkdownToSpannable(markdown: String): CharSequence {
+        if (markdown.isBlank()) return ""
+        val parser = MarkdownParser()
+        val doc = parser.parse(markdown)
+        val builder = SpannableStringBuilder()
+        renderNodeToSpannable(doc, builder)
+        return builder.toString().trimEnd()
     }
 
-    private fun spannableToMarkdown(editable: Editable): String {
-        val html = HtmlCompat.toHtml(editable, HtmlCompat.FROM_HTML_MODE_LEGACY)
-        // A very basic HTML to Markdown conversion for demonstration.
-        // In a real app, a more robust library or converter would be used.
-        return html.replace(Regex("<br/?>"), "\n")
-            .replace(Regex("<b>|<strong>"), "**")
-            .replace(Regex("</b>|</strong>"), "**")
-            .replace(Regex("<i>|<em>"), "*")
-            .replace(Regex("</i>|</em>"), "*")
-            .replace(Regex("<p>"), "")
-            .replace(Regex("</p>"), "\n")
-            .replace(Regex("<[^>]*>"), "")
-            .trim()
+    private fun renderNodeToSpannable(node: MarkdownNode, builder: SpannableStringBuilder) {
+        when (node) {
+            is MarkdownNode.Document -> node.children.forEach { renderNodeToSpannable(it, builder) }
+            is MarkdownNode.Paragraph -> {
+                node.content.forEach { renderNodeToSpannable(it, builder) }
+                builder.append("\n\n")
+            }
+
+            is MarkdownNode.Heading -> {
+                val start = builder.length
+                node.content.forEach { renderNodeToSpannable(it, builder) }
+                val size = when (node.level) {
+                    1 -> 2.0f
+                    2 -> 1.5f
+                    3 -> 1.17f
+                    else -> 1.0f
+                }
+                builder.setSpan(RelativeSizeSpan(size), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                builder.setSpan(StyleSpan(Typeface.BOLD), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                builder.append("\n\n")
+            }
+
+            is MarkdownNode.Text -> builder.append(node.content)
+            is MarkdownNode.Bold -> {
+                val start = builder.length
+                node.children.forEach { renderNodeToSpannable(it, builder) }
+                builder.setSpan(StyleSpan(Typeface.BOLD), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+
+            is MarkdownNode.Italic -> {
+                val start = builder.length
+                node.children.forEach { renderNodeToSpannable(it, builder) }
+                builder.setSpan(StyleSpan(Typeface.ITALIC), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+
+            is MarkdownNode.Strikethrough -> {
+                val start = builder.length
+                node.children.forEach { renderNodeToSpannable(it, builder) }
+                builder.setSpan(StrikethroughSpan(), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+
+            is MarkdownNode.InlineCode -> {
+                val start = builder.length
+                builder.append(node.content)
+                builder.setSpan(TypefaceSpan("monospace"), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+
+            is MarkdownNode.CodeBlock -> {
+                val start = builder.length
+                builder.append(node.code)
+                builder.setSpan(TypefaceSpan("monospace"), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                builder.append("\n\n")
+            }
+
+            is MarkdownNode.OrderedList -> {
+                node.items.forEachIndexed { index, item ->
+                    builder.append("${index + node.startNumber}. ")
+                    renderNodeToSpannable(item, builder)
+                }
+            }
+
+            is MarkdownNode.UnorderedList -> {
+                node.items.forEach { item ->
+                    builder.append("• ")
+                    renderNodeToSpannable(item, builder)
+                }
+            }
+
+            is MarkdownNode.ListItem -> {
+                node.children.forEach { renderNodeToSpannable(it, builder) }
+                builder.append("\n")
+            }
+
+            is MarkdownNode.TaskListItem -> {
+                builder.append(if (node.checked) "☑ " else "☐ ")
+                node.children.forEach { renderNodeToSpannable(it, builder) }
+                builder.append("\n")
+            }
+
+            else -> {}
+        }
     }
 }
