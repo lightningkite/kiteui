@@ -62,6 +62,25 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
     actual var suggestionHandler: SuggestionHandler? = null
 
+    private fun modifyIndent(increase: Boolean) {
+        val start = nativeEditText.selectionStart
+        val spannable = nativeEditText.text ?: return
+        val currentLineStart = if (start > 0) {
+            val lastNewline = spannable.lastIndexOf('\n', start - 1)
+            if (lastNewline == -1) 0 else lastNewline + 1
+        } else 0
+
+        if (increase) {
+            spannable.insert(currentLineStart, "    ")
+        } else {
+            val lineText = spannable.substring(currentLineStart, spannable.length)
+            if (lineText.startsWith("    ")) {
+                spannable.delete(currentLineStart, currentLineStart + 4)
+            }
+        }
+        (content as? ContentValue)?.update()
+    }
+
     // Native Android EditText to handle the typing and spans
     val nativeEditText = EditText(context.activity).apply {
         layoutParams = SimplifiedLinearLayout.LayoutParams(
@@ -83,26 +102,12 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 val deltaX = e2.x - e1.x
                 val deltaY = e2.y - e1.y
                 if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 100) {
-                    val start = selectionStart
-                    val spannable = text ?: return false
-                    val currentLineStart = if (start > 0) {
-                        val lastNewline = spannable.lastIndexOf('\n', start - 1)
-                        if (lastNewline == -1) 0 else lastNewline + 1
-                    } else 0
-                    val lineText = spannable.substring(currentLineStart, start)
-
                     if (deltaX > 0) { // Swipe Right - Indent
-                        if (lineText.trimStart().startsWith("* ") || lineText.trimStart()
-                                .matches(Regex("^\\d+\\.\\s+.*"))
-                        ) {
-                            spannable.insert(currentLineStart, "    ")
-                            return true
-                        }
+                        modifyIndent(true)
+                        return true
                     } else { // Swipe Left - Outdent
-                        if (lineText.startsWith("    ")) {
-                            spannable.delete(currentLineStart, currentLineStart + 4)
-                            return true
-                        }
+                        modifyIndent(false)
+                        return true
                     }
                 }
                 return false
@@ -110,11 +115,12 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         })
 
         setOnTouchListener { v, event ->
-            val gestureResult = gestureDetector.onTouchEvent(event)
-            if (gestureResult) return@setOnTouchListener true
-            v.onTouchEvent(event) // Explicitly call the view's onTouchEvent
+            val result = gestureDetector.onTouchEvent(event)
+            if (result) return@setOnTouchListener true
+            v.onTouchEvent(event)
         }
     }
+
 
     init {
         // Build the Toolbar exactly as you did in JS
@@ -183,22 +189,24 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 onClick { /* Implement Quote Span */ }
             }
             button {
-                applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
-                            .contains(RichTextTags.UNORDERED_LIST)
-                    ) SelectedSemantic else null
-                }
+                applyDynamicTheme { null }
                 icon(Icon.unorderedList, "Unordered List")
                 onClick { this@MarkdownRichTextEditor.insertList(ordered = false) }
             }
             button {
-                applyDynamicTheme {
-                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
-                            .contains(RichTextTags.ORDERED_LIST)
-                    ) SelectedSemantic else null
-                }
+                applyDynamicTheme { null }
                 icon(Icon.orderList, "Ordered List")
                 onClick { this@MarkdownRichTextEditor.insertList(ordered = true) }
+            }
+            button {
+                applyDynamicTheme { null }
+                icon(Icon.chevronRight, "Indent")
+                onClick { this@MarkdownRichTextEditor.modifyIndent(true) }
+            }
+            button {
+                applyDynamicTheme { null }
+                icon(Icon.chevronLeft, "Outdent")
+                onClick { this@MarkdownRichTextEditor.modifyIndent(false) }
             }
             button {
                 applyDynamicTheme {
