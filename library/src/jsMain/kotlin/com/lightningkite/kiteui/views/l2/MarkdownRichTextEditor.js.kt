@@ -61,6 +61,16 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
     val currentSelectedRichTextTags = Signal<Set<RichTextTags>>(emptySet())
 
+    fun modifyIndent(increase: Boolean) {
+        val doc = window.document.asDynamic()
+        if (increase) {
+            doc.execCommand("indent", false, null)
+        } else {
+            doc.execCommand("outdent", false, null)
+        }
+        notifyContentChanged()
+    }
+
     val htmlToMarkdownProcessor = TurndownService(
         json(
             "headingStyle" to "atx",
@@ -117,6 +127,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         }
         scrollingHorizontally.row {
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke().contains(RichTextTags.HEADER1))
                         SelectedSemantic else null
@@ -127,6 +138,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 }
             }
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.HEADER2)
@@ -138,6 +150,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 }
             }
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.HEADER3)
@@ -149,6 +162,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 }
             }
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.BOLD)
@@ -160,6 +174,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 }
             }
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.ITALIC)
@@ -172,6 +187,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
             }
 
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.STRIKETHROUGH)
@@ -182,6 +198,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
             }
 
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.QOUTE)
@@ -192,6 +209,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
             }
 
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.UNORDERED_LIST)
@@ -203,6 +221,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 }
             }
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.ORDERED_LIST)
@@ -214,6 +233,19 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 }
             }
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
+                applyDynamicTheme { null }
+                icon(Icon.chevronRight, "Indent")
+                onClick { this@MarkdownRichTextEditor.modifyIndent(true) }
+            }
+            button {
+                native.addEventListener("mousedown") { it.preventDefault() }
+                applyDynamicTheme { null }
+                icon(Icon.chevronLeft, "Outdent")
+                onClick { this@MarkdownRichTextEditor.modifyIndent(false) }
+            }
+            button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.CODE)
@@ -226,6 +258,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 }
             }
             button {
+                native.addEventListener("mousedown") { it.preventDefault() }
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
                             .contains(RichTextTags.CODE_BLOCK)
