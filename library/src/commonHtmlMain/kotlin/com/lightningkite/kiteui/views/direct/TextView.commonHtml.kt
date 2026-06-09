@@ -77,6 +77,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
 
     actual fun setBasicHtmlContent(html: String) {
         native.style.whiteSpace = "pre-line"
+        native.classes.add("kui-basic-html-content")
         native.innerHtmlUnsafe = html.parseMPNodes().onEach { it.secure() }.joinToString(" ")
     }
 }

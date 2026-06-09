@@ -8,11 +8,14 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.core.Constant
+import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.extensions.debounce
 import com.lightningkite.readable.Property
 
 @Routable("markdown-demo")
 object MarkdownDemoPage : Page {
+    override val title: Reactive<String> = Constant("Markdown Demo")
 
     private val sampleMarkdown = """
 # Markdown Demo

@@ -83,6 +83,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             article.kui, aside.kui, details.kui, figcaption.kui, figure.kui, footer.kui, header.kui, hgroup.kui, menu.kui, nav.kui, section.kui {
                 display: block;
             }
+
+            .kui-basic-html-content b, .kui-basic-html-content strong { font-weight: bold; }
+            .kui-basic-html-content i, .kui-basic-html-content em { font-style: italic; }
+            .kui-basic-html-content u { text-decoration: underline; }
+            .kui-basic-html-content s, .kui-basic-html-content strike { text-decoration: line-through; }
     
             body {
                 line-height: 1;
