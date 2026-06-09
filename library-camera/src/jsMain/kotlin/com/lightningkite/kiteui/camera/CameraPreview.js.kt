@@ -26,6 +26,38 @@ external interface DetectedBarcode {
     val cornerPoints: Array<dynamic>
 }
 
+/**
+ * Configures where the ZXing WebAssembly binary used for barcode scanning is fetched from at runtime.
+ *
+ * By default the binary is loaded from the jsDelivr CDN, so downstream apps need no setup and bundle
+ * nothing. Override [wasmUrl] (before the first scan) if a CDN is unavailable in your environment —
+ * e.g. blocked by Content Security Policy, browser tracking protection, or when offline. Point it at
+ * any host serving `zxing_reader.wasm`, such as your own static assets:
+ *
+ * ```kotlin
+ * CameraScannerWasm.wasmUrl = "/assets/zxing_reader.wasm"
+ * ```
+ *
+ * The default pins the version shipped with `barcode-detector`; bump it alongside that dependency.
+ */
+object CameraScannerWasm {
+    var wasmUrl: String =
+        "https://cdn.jsdelivr.net/npm/zxing-wasm@2.2.4/dist/reader/zxing_reader.wasm"
+}
+
+private var wasmOverrideApplied = false
+
+private fun applyWasmOverride() {
+    if (wasmOverrideApplied) return
+    wasmOverrideApplied = true
+    val url = CameraScannerWasm.wasmUrl
+    val overrides: dynamic = js("({})")
+    // Assigning a Kotlin lambda captures `url` in a real closure — safe under minification, unlike
+    // referencing the local inside a js("...") string literal.
+    overrides.locateFile = { _: String, _: String -> url }
+    setZXingModuleOverrides(overrides)
+}
+
 actual class CameraPreview actual constructor(context: ElementContext) : NativeElement(context) {
     private var videoElement: HTMLVideoElement? = null
     private var canvasElement: HTMLCanvasElement? = null
@@ -33,6 +65,7 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
     private var scanningJob: Job? = null
     private var barcodeCallback: ((List<BarcodeResult>) -> Unit)? = null
     private var requestedFormats: Set<BarcodeFormat> = setOf()
+    private var loggedScanError = false
 
     private val _hasPermissions = Signal(false)
     actual val hasPermissions: MutableReactive<Boolean> get() = _hasPermissions
@@ -97,7 +130,11 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
         scanningJob?.cancel()
         scanningJob = null
 
-        mediaStream?.let { stream ->
+        // Note: can't use ?.let here — `mediaStream` is `dynamic`, so Kotlin/JS resolves `.let`
+        // as a member call on the JS object rather than the stdlib extension, throwing
+        // "tmp.let is not a function" at runtime. Use an explicit null check instead.
+        val stream = mediaStream
+        if (stream != null) {
             val tracks = stream.getTracks() as Array<dynamic>
             tracks.forEach { track ->
                 track.stop()
@@ -119,31 +156,46 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
     private fun startBarcodeScanning() {
         val video = videoElement ?: return
 
-        val formats = if (requestedFormats.isEmpty()) {
-            arrayOf("qr_code", "code_128", "code_39", "code_93")
-        } else {
-            requestedFormats.mapNotNull { it.toBarcodeDetectorFormat() }.toTypedArray()
-        }
+        try {
+            // Point ZXing at our configured WASM URL before its module first initializes (on first
+            // detect). Without this the default backend CDN host is used, which some environments block.
+            applyWasmOverride()
 
-        // Use the polyfill which works on all browsers
-        val detector = BarcodeDetector(js("({formats: formats})"))
+            val formats = if (requestedFormats.isEmpty()) {
+                arrayOf("qr_code", "code_128", "code_39", "code_93")
+            } else {
+                requestedFormats.mapNotNull { it.toBarcodeDetectorFormat() }.toTypedArray()
+            }
 
-        // Use the RView's coroutine scope which is cancelled on shutdown
-        scanningJob = launch {
-            while (isActive) {
-                delay(100) // Scan every 100ms
+            // Use the polyfill which works on all browsers
+            val detector = BarcodeDetector(js("({formats: formats})"))
 
-                if (video.readyState >= 2) { // HAVE_CURRENT_DATA or higher
-                    try {
-                        val barcodes = detectBarcodes(detector, video)
-                        if (barcodes.isNotEmpty()) {
-                            barcodeCallback?.invoke(barcodes)
+            // Use the RView's coroutine scope which is cancelled on shutdown
+            scanningJob = launch {
+                while (isActive) {
+                    delay(100) // Scan every 100ms
+
+                    if (video.readyState >= 2) { // HAVE_CURRENT_DATA or higher
+                        try {
+                            val barcodes = detectBarcodes(detector, video)
+                            if (barcodes.isNotEmpty()) {
+                                barcodeCallback?.invoke(barcodes)
+                            }
+                        } catch (e: Exception) {
+                            // Log once, not every frame — a persistent failure would otherwise spam
+                            // the console 10x/second.
+                            if (!loggedScanError) {
+                                loggedScanError = true
+                                console.error("Barcode scanning failed:", e)
+                            }
                         }
-                    } catch (e: Exception) {
-                        // Ignore detection errors
                     }
                 }
             }
+        } catch (e: Throwable) {
+            // Setup itself failed (e.g. detector construction or the WASM override). Without this
+            // catch the throw is swallowed by the getUserMedia promise chain and nothing scans.
+            console.error("Barcode scan setup failed:", e)
         }
     }
 
@@ -153,12 +205,20 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
                 .then { results ->
                     val barcodeResults = results.mapNotNull { barcode ->
                         val format = barcode.format.fromBarcodeDetectorFormat() ?: return@mapNotNull null
-                        BarcodeResult(barcode.rawValue, format, js("Date.now()") as Long)
+                        // `js("Date.now()")` is a JS number = Kotlin Double. `as Long` would throw
+                        // ClassCastException because Kotlin/JS Long is a boxed type, not a JS number.
+                        BarcodeResult(barcode.rawValue, format, (js("Date.now()") as Double).toLong())
                     }
                     continuation.resume(barcodeResults)
                     Unit
                 }
-                .catch { _: dynamic ->
+                .catch { error: dynamic ->
+                    // Log once — a failed WASM load throws on every frame otherwise. This is the
+                    // signal that distinguishes "detector broken" from "no barcode in frame".
+                    if (!loggedScanError) {
+                        loggedScanError = true
+                        console.error("Barcode detect() rejected:", error)
+                    }
                     continuation.resume(emptyList())
                     Unit
                 }
