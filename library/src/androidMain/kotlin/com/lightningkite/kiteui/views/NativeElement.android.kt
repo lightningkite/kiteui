@@ -27,7 +27,6 @@ import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.debugPrint
-import com.lightningkite.kiteui.models.AccessibleSemantic
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.DragData
@@ -117,15 +116,6 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         set(value) {
             super.accessibleLabel = value
             native.contentDescription = value
-        }
-
-    override var accessibleSemantic: AccessibleSemantic?
-        get() = super.accessibleSemantic
-        set(value) {
-            super.accessibleSemantic = value
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                native.isAccessibilityHeading = value is AccessibleSemantic.Heading
-            }
         }
 
     override var accessibleLiveRegion: LiveRegionMode

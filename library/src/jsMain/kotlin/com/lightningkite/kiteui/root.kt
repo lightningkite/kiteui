@@ -43,7 +43,7 @@ fun root(theme: Theme, app: ViewWriter.() -> Unit) {
 fun root(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
     Root {
         ::themeChoice {
-            ThemeDerivation.SetAsBase(theme()).also { println("Setting theme base: ${it.theme.id}") }
+            ThemeDerivation.SetAsBase(theme())
         }
     }.run {
         if (debugMode) setupDebugSafeInsets()

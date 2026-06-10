@@ -9,7 +9,6 @@ import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
-import com.lightningkite.kiteui.views.NativeElementCommonCode.ThemePipeline
 
 private var labelForIdCounter = 0
 
@@ -58,22 +57,6 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
             native.setAttribute("aria-label", value)
         }
 
-    override var accessibleSemantic: AccessibleSemantic?
-        get() = super.accessibleSemantic
-        set(value) {
-            super.accessibleSemantic = value
-            when (value) {
-                is AccessibleSemantic.Heading -> native.tag = "h${value.level.coerceIn(1, 6)}"
-                is AccessibleSemantic.Main -> native.tag = "main"
-                is AccessibleSemantic.Navigation -> native.tag = "nav"
-                is AccessibleSemantic.Banner -> native.tag = "header"
-                is AccessibleSemantic.ContentInfo -> native.tag = "footer"
-                is AccessibleSemantic.Complementary -> native.tag = "aside"
-                is AccessibleSemantic.Search -> native.tag = "search"
-                null -> {} // Don't reset tag — we don't know the original
-            }
-        }
-
     override var accessibleLiveRegion: LiveRegionMode
         get() = super.accessibleLiveRegion
         set(value) {
@@ -88,18 +71,22 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     override var labelFor: Element?
         get() = super.labelFor
         set(value) {
+            val previous = super.labelFor
             super.labelFor = value
             if (value != null) {
                 val targetNative = value.underlyingNativeElement.native
                 if (targetNative.id == null) {
                     targetNative.id = "kiteui-a11y-${labelForIdCounter++}"
                 }
-                if (native.tag == "span") {
+                if (native.tag == "span" || native.tag == "p") {
                     native.tag = "label"
+                    native.setAttribute("for", targetNative.id!!)
+                } else {
+                    targetNative.setAttribute("aria-labelledby", targetNative.id!!)
                 }
-                native.setAttribute("for", targetNative.id!!)
             } else {
-                native.setAttribute("for", null)
+                if(native.tag == "label") native.setAttribute("for", null)
+                else previous?.underlyingNativeElement?.native?.setAttribute("aria-labelledby", null)
             }
         }
 
@@ -217,6 +204,8 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
 }
 
+// TODO: transform this to point to the _STYLE PARTICIPATING_ element, not necessarily the direct element
+// That's what we're using it for in every case it's used...
 val Element.native: FutureElement get() = underlyingNativeElement.native
 
 expect class FutureElementStyle

@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.AccessibleSemantic
 import com.lightningkite.kiteui.models.LiveRegionMode
 import com.lightningkite.kiteui.views.*
 
@@ -13,8 +12,7 @@ import com.lightningkite.kiteui.views.*
  * ```
  */
 @ViewModifierDsl3
-fun ElementWriter.CanAddTheme.heading(level: Int): ElementWriter.CanAddTheme =
-    beforeSetup { accessibleSemantic = AccessibleSemantic.Heading(level) }
+fun ElementWriter.CanAddTheme.heading(level: Int): ElementWriter.CanAddTheme = asHeading(level)
 
 /**
  * Marks the next element as a live region so screen readers announce content changes.

@@ -439,16 +439,6 @@ interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
     var accessibleLabel: String?
 
     /**
-     * Semantic role for assistive technologies and HTML semantic elements.
-     *
-     * On web, changes the HTML tag for proper semantics and SEO (e.g., `<h2>`, `<nav>`, `<main>`).
-     * On iOS, sets accessibility traits (header, etc.). On Android, sets heading/landmark properties.
-     *
-     * Use via modifiers like `heading(level)`, or set automatically by theme modifiers like `nav`.
-     */
-    var accessibleSemantic: AccessibleSemantic?
-
-    /**
      * Marks this element as a live region for screen reader announcements of dynamic content.
      *
      * When content inside this element changes, assistive technologies will announce the update.

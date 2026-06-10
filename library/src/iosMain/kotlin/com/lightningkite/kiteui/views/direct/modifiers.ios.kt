@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
@@ -12,10 +13,13 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
 import kotlinx.cinterop.*
+import platform.UIKit.UIAccessibilityTraitHeader
 import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.UIRefreshControl
 import platform.UIKit.UITapGestureRecognizer
+import platform.UIKit.accessibilityElementsHidden
+import platform.UIKit.accessibilityTraits
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
@@ -189,3 +193,25 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition:
         }
     }
 }
+
+@ViewModifierDsl3
+actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
+    beforeSetup { native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitHeader }
+
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
+
+@ViewModifierDsl3
+actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
+    beforeSetup { native.accessibilityElementsHidden = true }
+
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
+
+@ViewModifierDsl3 actual val ElementWriter.CanAddAlignment.asListItem: ElementWriter.CanAddAlignment get() = this
+
+@InternalKiteUi
+internal actual fun ContainerElement.setupAsListContainer() {} // VoiceOver infers list structure from content

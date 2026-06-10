@@ -28,7 +28,6 @@ import platform.QuartzCore.kCAGradientLayerRadial
 import com.lightningkite.kiteui.models.LiveRegionMode
 import platform.UIKit.UIAccessibilityPostNotification
 import platform.UIKit.UIAccessibilityScreenChangedNotification
-import platform.UIKit.UIAccessibilityTraitHeader
 import platform.UIKit.accessibilityHint
 import platform.UIKit.accessibilityLabel
 import platform.UIKit.accessibilityTraits
@@ -72,21 +71,6 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         set(value) {
             super.accessibleLabel = value
             native.accessibilityLabel = value
-        }
-
-    override var accessibleSemantic: AccessibleSemantic?
-        get() = super.accessibleSemantic
-        set(value) {
-            super.accessibleSemantic = value
-            when (value) {
-                is AccessibleSemantic.Heading -> {
-                    native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitHeader
-                }
-                else -> {
-                    // Clear header trait if it was previously set
-                    native.accessibilityTraits = native.accessibilityTraits and UIAccessibilityTraitHeader.inv()
-                }
-            }
         }
 
     override var accessibleLiveRegion: LiveRegionMode
