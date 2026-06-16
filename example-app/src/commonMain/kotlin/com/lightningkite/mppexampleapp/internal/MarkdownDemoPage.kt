@@ -90,12 +90,12 @@ This is a custom block without a link.
         val markdownSource = Property(sampleMarkdown)
         val debouncedSource = markdownSource.debounce(300)
 
-        col {
+        scrolling.col {
             padded.h1("Markdown Editor Demo")
 
-            expanding.rowCollapsingToColumn(60.rem) {
+            rowCollapsingToColumn(60.rem) {
                 // Left side: Editor
-                expanding.card.col {
+                card.col {
                     h3("Editor")
                     expanding.textArea {
                         content bind markdownSource
@@ -103,7 +103,7 @@ This is a custom block without a link.
                 }
 
                 // Right side: Preview
-                expanding.card.scrolling.col {
+                card.scrolling.col {
                     h3("Preview")
                     swapView {
                         swapping(current = { debouncedSource() }) { md ->
