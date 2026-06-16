@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.text.Editable
 import android.text.Spannable
@@ -10,12 +11,14 @@ import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.TypefaceSpan
 import android.text.style.UnderlineSpan
+import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.core.graphics.TypefaceCompat
 import com.lightningkite.kiteui.views.direct.SlightlyModifiedLinearLayout
 import com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout
 import com.lightningkite.kiteui.models.Icon
@@ -37,6 +40,10 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.markdown.MarkdownNode
 import com.lightningkite.kiteui.markdown.MarkdownParser
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.applyAlpha
+import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.BaseListenable
 import com.lightningkite.reactive.core.MutableReactiveValue
 import com.lightningkite.reactive.core.Signal
@@ -49,6 +56,16 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
     override val native = SlightlyModifiedLinearLayout(context.activity).apply {
         orientation = SimplifiedLinearLayout.VERTICAL
     }
+
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        nativeEditText.setTextColor(theme.theme.foreground.colorInt())
+        // Apply a semitransparent foreground color to the hint
+        nativeEditText.setHintTextColor(theme.theme.foreground.applyAlpha(0.5f).colorInt())
+
+    }
+
+
+
 
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
@@ -227,7 +244,6 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 onClick { /* Implement Code Block Span */ }
             }
         }
-
         // Add the editor to the hierarchy properly
         addChild(object : NativeElement(context) {
             override val native = this@MarkdownRichTextEditor.nativeEditText
