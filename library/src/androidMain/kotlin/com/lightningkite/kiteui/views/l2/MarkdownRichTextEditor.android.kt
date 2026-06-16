@@ -23,17 +23,7 @@ import com.lightningkite.kiteui.views.direct.SlightlyModifiedLinearLayout
 import com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.SelectedSemantic
-import com.lightningkite.kiteui.models.bold
-import com.lightningkite.kiteui.models.code
-import com.lightningkite.kiteui.models.codeBlock
-import com.lightningkite.kiteui.models.header1
-import com.lightningkite.kiteui.models.header2
-import com.lightningkite.kiteui.models.header3
-import com.lightningkite.kiteui.models.italic
-import com.lightningkite.kiteui.models.orderList
-import com.lightningkite.kiteui.models.qoute
-import com.lightningkite.kiteui.models.strikeThrough
-import com.lightningkite.kiteui.models.unorderedList
+
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
