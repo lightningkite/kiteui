@@ -9,7 +9,7 @@ import com.lightningkite.reactive.core.*
 import kotlin.time.Duration.Companion.milliseconds
 
 // External declarations for lottie-web
-@JsModule("lottie-web/build/player/lottie_light")
+@JsModule("lottie-web/build/player/lottie_light.js")
 @JsNonModule
 external object lottie {
     fun loadAnimation(params: dynamic): dynamic
