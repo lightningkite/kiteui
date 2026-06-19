@@ -22,6 +22,21 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 
+/**
+ * Displays one or more video sources with optional controls, looping, and scale behavior.
+ *
+ * Set [source] (or [info] for multi-source fallback) to load a video. The element manages
+ * an internal [RawVideoView] per source and fades between them on change.
+ *
+ * Key properties:
+ * - [source] / [info]: what to play
+ * - [scaleType]: how the video fills the available space (default: [ImageScaleType.Fit])
+ * - [description]: accessibility label for the video content
+ * - [showControls]: show/hide platform playback controls (default false)
+ * - [loop]: whether playback loops automatically (default false)
+ * - [time], [playing], [volume]: reactive state mirroring the active player
+ * - [showLoadingIndicator]: whether the built-in spinner is visible while loading
+ */
 class VideoView(private val frame: Frame) : Element by frame {
     constructor(context: ElementContext) : this(Frame(context))
 

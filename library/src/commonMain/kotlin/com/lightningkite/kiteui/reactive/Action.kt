@@ -43,6 +43,25 @@ interface Action: Reactive<Boolean> {
 
 operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
 
+/**
+ * Creates an [Action] that wraps [action] with optional frequency capping.
+ *
+ * The returned type depends on [clearErrorOnDependencyChange]:
+ * - `true` (default): returns a [DependentAction] — the error/loading state is cleared whenever
+ *   a reactive dependency changes. Use this when the action's validity depends on reactive state
+ *   (e.g., a "Save" button whose enabled state tracks a form).
+ * - `false`: returns a [RetryableAction] — the error state persists until the user retries or
+ *   the action succeeds. Use this for idempotent operations where the user should see a persistent
+ *   error and decide whether to retry.
+ *
+ * Both variants are wrapped in a [FrequencyCapAction] when [frequencyCap] is non-null (default 500 ms),
+ * preventing accidental double-submissions from rapid taps.
+ *
+ * @param clearErrorOnDependencyChange whether reactive dependency changes clear the action's error state
+ * @param keepRunningWhile coroutine scope that keeps the action alive; defaults to [AppScope]
+ * @param frequencyCap minimum time between allowed invocations; null disables the cap
+ * @param ignoreRetryWhileRunning if true, additional [startAction] calls are dropped while the action is in progress
+ */
 fun Action(
     title: String,
     icon: Icon = Icon.send,
