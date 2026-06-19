@@ -509,7 +509,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     /** The final computed padding combining theme padding, custom padding, and safe area insets */
     val appliedPadding: Edges get() {
-        if (!fullyStarted) println("WARN: $this attempted to calculate applied padding before fully started.")
+        if (!fullyStarted) Log.warn("$this attempted to calculate applied padding before fully started.")
         return (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding } ?: Edges.ZERO).let { p ->
             safeAreaPadding?.let { p + it } ?: p
         }

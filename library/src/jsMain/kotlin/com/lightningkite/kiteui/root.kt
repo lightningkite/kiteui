@@ -28,7 +28,6 @@ private class Root(val beforeDocumentAppend: Element.() -> Unit) : ViewWriter, C
 
     @OverrideOnly
     override fun addChild(element: Element) {
-        println("Root adding element: $element")
         beforeDocumentAppend(element)
         document.body?.append(element.native.create())
     }
@@ -250,7 +249,6 @@ private fun ElementWriter.setupDebugSafeInsets() {
     var times = 0
     AppState.onUniversalKeyboard {
         if (it.alt && it.code == KeyCodes.letter('e')) {
-            println("Setting edges")
             safe.value = if (times++ % 2 == 0) Edges(100.dp) else Edges.ZERO
             true
         } else false
