@@ -307,26 +307,6 @@ object LayoutPage : DocPage {
                                     }
                                 }
                             }
-                            emphasized.text("However, per-element gap useful in some situations.  Here's how to do it:")
-                            example("""
-                                col {
-                                    card.text("Start")
-                                    card.text("Normal gap above me")
-                                    spacingOverrideBeforeNext(2.px)
-                                    card.text("2.px above me")
-                                    spacingOverrideBeforeNext(5.rem)
-                                    card.text("5.rem above me")
-                                }
-                            """.trimIndent()) {
-                                col {
-                                    card.text("Start")
-                                    card.text("Normal gap above me")
-                                    spacingOverrideBeforeNext(2.px)
-                                    card.text("2.px above me")
-                                    spacingOverrideBeforeNext(5.rem)
-                                    card.text("5.rem above me")
-                                }
-                            }
                         }
                     }
                 }
