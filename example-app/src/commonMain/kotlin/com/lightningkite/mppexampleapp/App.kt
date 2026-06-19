@@ -24,7 +24,7 @@ class ToastException(override val message: String) : Exception()
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
     debugMode = true
-    configureTelemetry(navigator)
+//    configureTelemetry(navigator)
 
     context.exceptionHandlers.installDebugHandlers()
 

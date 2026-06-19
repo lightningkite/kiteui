@@ -8,11 +8,14 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.core.Constant
+import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.extensions.debounce
 import com.lightningkite.readable.Property
 
 @Routable("markdown-demo")
 object MarkdownDemoPage : Page {
+    override val title: Reactive<String> = Constant("Markdown Demo")
 
     private val sampleMarkdown = """
 # Markdown Demo
@@ -87,12 +90,12 @@ This is a custom block without a link.
         val markdownSource = Property(sampleMarkdown)
         val debouncedSource = markdownSource.debounce(300)
 
-        col {
+        scrolling.col {
             padded.h1("Markdown Editor Demo")
 
-            expanding.rowCollapsingToColumn(60.rem) {
+            rowCollapsingToColumn(60.rem) {
                 // Left side: Editor
-                expanding.card.col {
+                card.col {
                     h3("Editor")
                     expanding.textArea {
                         content bind markdownSource
@@ -100,7 +103,7 @@ This is a custom block without a link.
                 }
 
                 // Right side: Preview
-                expanding.card.scrolling.col {
+                card.scrolling.col {
                     h3("Preview")
                     swapView {
                         swapping(current = { debouncedSource() }) { md ->
