@@ -97,7 +97,7 @@ If you want to try another theme, start [here](https://kiteui.cs.lightningkite.c
 
 @Routable("sample/login")
 object SampleLogInPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val email = Signal("")
         val password = Signal("")
         unpadded.frame {
@@ -143,9 +143,9 @@ object SampleLogInPage : Page {
         }
     }
 
-    private suspend fun ViewWriter.fakeLogin(email: Signal<String>) {
+    private suspend fun ElementWriter.fakeLogin(email: Signal<String>) {
         fetch("fake-login/${email()}")
-        pageNavigator.navigate(ControlsPage)
+        context.pageNavigator.navigate(ControlsPage)
     }
 }
 ```

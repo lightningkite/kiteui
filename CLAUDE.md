@@ -62,7 +62,7 @@ This is a multi-module Gradle project:
 
 ### Testing
 
-See **[docs/RUNNING_TESTS.md](docs/RUNNING_TESTS.md)** for the full guide including prerequisites, gotchas, and how to write tests.
+See **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** for the full guide including prerequisites, gotchas, and how to write tests.
 
 ```bash
 # Fastest — no external tools needed
@@ -120,7 +120,7 @@ Pages implement the `Page` interface and are annotated with `@Routable`:
 ```kotlin
 @Routable("your/path")
 object YourPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         // UI code
     }
 }
@@ -130,13 +130,13 @@ For pages with parameters:
 ```kotlin
 @Routable("items/{id}")
 class ItemDetailPage(val id: String) : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         // Access id parameter
     }
 }
 ```
 
-Navigate using `pageNavigator.navigate(SomePage)` or use `link` components.
+Navigate using `context.pageNavigator.navigate(SomePage)` or use `link` components.
 
 ### ViewWriter and Component Creation
 

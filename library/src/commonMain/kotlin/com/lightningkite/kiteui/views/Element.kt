@@ -122,7 +122,7 @@ import com.lightningkite.reactive.context.StatusListener
  * class MyPage : Page {
  *     private lateinit var statusText: TextView
  *
- *     override fun ViewWriter.render() = col {
+ *     override fun ElementWriter.CanAddTheme.render() = col {
  *         text("Status") { statusText = this }
  *         button { text("Update") }.onClick {
  *             statusText.content = "Updated!"
