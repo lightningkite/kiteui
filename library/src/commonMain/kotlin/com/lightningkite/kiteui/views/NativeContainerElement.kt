@@ -510,7 +510,6 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
         if (Element.Debugger.removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
                 removeChild(index)
-                internalChildren.removeAt(index).onShutdown()
             }
         } else {
             internalChildren.forEach { it.onShutdown() }
