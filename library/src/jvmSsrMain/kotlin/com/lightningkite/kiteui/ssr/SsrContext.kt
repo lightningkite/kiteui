@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.views.direct.Frame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 
 /**
@@ -38,8 +39,19 @@ class SsrContext(
     val windowHeight: Int = 1080,
     val userAgent: String? = null,
 ) : SsrResourceRegistry {
-    /** The coroutine scope for SSR operations */
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    /** The coroutine scope for loading SsrResource data */
+    private val loadingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** The coroutine scope for view rendering (unconfined so reactive updates run synchronously) */
+    private val renderScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+
+    /** Cancel all coroutines started during rendering. Call this after serialize() is done. */
+    fun cancel() {
+        // Shut down the element tree first so onRemove callbacks fire before scopes are cancelled
+        renderedFrame?.onShutdown()
+        loadingScope.cancel()
+        renderScope.cancel()
+    }
 
     /** The underlying RContext for KiteUI rendering */
     val elementContext = ElementContext(basePath)
@@ -71,7 +83,7 @@ class SsrContext(
      */
     override fun registerResource(resource: SsrResource<*>) {
         resources[resource.key] = resource
-        resource.startLoading(scope)
+        resource.startLoading(loadingScope)
     }
 
     /**
@@ -130,10 +142,7 @@ class SsrContext(
             elementContext.dynamicCss.flush()
 
             val frame = Frame(elementContext)
-            // Use Unconfined so reactive bindings update synchronously when resources load
-            val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
-
-            val viewWriter = object : ViewWriter, CoroutineScope by appScope {
+            val viewWriter = object : ViewWriter, CoroutineScope by renderScope {
                 override val context: ElementContext = elementContext
 
                 @OverrideOnly
