@@ -55,7 +55,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
     var isSuggestionActive: Boolean = false
     var documentClickListener: ((Event) -> Unit)? = null
 
-    var linkPopup: Element? = null
+    var linkToolbarButton: com.lightningkite.kiteui.views.Element? = null
 
     var isListeningForSuggestions = false
 
@@ -270,6 +270,18 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
                 }
             }
+            this@MarkdownRichTextEditor.linkToolbarButton = (button {
+                native.addEventListener("mousedown") { it.preventDefault() }
+                applyDynamicTheme {
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags()
+                            .contains(RichTextTags.LINK)
+                    ) SelectedSemantic else null
+                }
+                icon(Icon.link, "Insert Link")
+                onClick {
+                    this@MarkdownRichTextEditor.insertLink()
+                }
+            } as com.lightningkite.kiteui.views.Element)
         }
     }
 

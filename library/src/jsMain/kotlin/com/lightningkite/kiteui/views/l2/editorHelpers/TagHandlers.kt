@@ -2,8 +2,15 @@ package com.lightningkite.kiteui.views.l2.editorHelpers
 
 
 import com.lightningkite.reactive.context.invoke
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.views.l2.RichTextTags
 import com.lightningkite.kiteui.views.l2.MarkdownRichTextEditor
+import com.lightningkite.kiteui.views.l2.overlayFrame
+import com.lightningkite.kiteui.models.ImportantSemantic
+import com.lightningkite.kiteui.models.PopoverPreferredDirection
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.models.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.launch
@@ -955,6 +962,90 @@ fun MarkdownRichTextEditor.switchListRoot(toOrdered: Boolean) {
 
     notifyContentChanged()
     launch { updateSelectedRichTextTag() }
+}
+
+fun MarkdownRichTextEditor.insertLink() {
+    val btn: Element = linkToolbarButton ?: return
+    val editorRootElement = textArea.element as? HTMLElement ?: return
+    val selection = getValidSelection() ?: return
+    if (!isNodeInsideEditor(selection.anchorNode, editorRootElement)) return
+    val range = selection.getRangeAt(0)
+    val hasSelection = !range.collapsed
+    val savedRange = range.cloneRange()
+
+    val caretRect = range.getBoundingClientRect()
+    val overlayFrame = context.overlayFrame ?: return
+    var anchorEl: Element? = null
+
+    val anchor: Element = if (caretRect.width > 0.0 || caretRect.height > 0.0) {
+        object : NativeInteractiveContainerElement(context) {
+            init {
+                native.setStyleProperty("position", "fixed")
+                native.setStyleProperty("left", "${caretRect.left}px")
+                native.setStyleProperty("top", "${caretRect.bottom + 4}px")
+                native.setStyleProperty("width", "1px")
+                native.setStyleProperty("height", "1px")
+            }
+        }.also {
+            anchorEl = it
+            @OptIn(OverrideOnly::class)
+            context.overlayFrame?.addChild(it)
+        }
+    } else btn
+
+    val editor = this
+    anchor.openPopover(PopoverPreferredDirection.belowCenter) {
+        card.padded.col {
+            val urlInput = fieldTheme.textInput { hint = "URL" }
+            val textInputWidget: TextInput? = if (!hasSelection) fieldTheme.textInput { hint = "Link text" } else null
+            row {
+                expanding.button {
+                    text("Cancel")
+                    onClick {
+                        anchorEl?.let { context.overlayFrame?.removeChild(it) }
+                        context.closeThisPopover()
+                    }
+                }
+                important.button {
+                    text("Insert")
+                    onClick {
+                        val url = urlInput.content.value.trim()
+                        if (url.isNotEmpty()) {
+                            val text = textInputWidget?.content?.value?.trim()
+                            anchorEl?.let { context.overlayFrame?.removeChild(it) }
+                            context.closeThisPopover()
+
+                            val sel = window.asDynamic().getSelection()
+                            sel?.removeAllRanges()
+                            sel?.addRange(savedRange)
+
+                            val newRange = sel.getRangeAt(0)
+                            val a = document.createElement("a") as HTMLElement
+                            a.setAttribute("href", url)
+                            a.setAttribute("target", "_blank")
+                            if (newRange.collapsed) {
+                                a.textContent = text ?: url
+                                newRange.insertNode(a)
+                                newRange.setStartAfter(a)
+                                newRange.collapse(true)
+                            } else {
+                                a.appendChild(newRange.extractContents())
+                                newRange.insertNode(a)
+                            }
+
+                            sel.removeAllRanges()
+                            val selectRange = document.createRange()
+                            selectRange.selectNodeContents(a)
+                            sel.addRange(selectRange)
+
+                            editor.notifyContentChanged()
+                            editor.launch { editor.updateSelectedRichTextTag() }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 fun MarkdownRichTextEditor.replaceTagWith(element: HTMLElement, newTagName: String) {

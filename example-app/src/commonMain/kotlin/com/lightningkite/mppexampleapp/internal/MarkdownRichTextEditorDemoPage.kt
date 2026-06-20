@@ -31,6 +31,7 @@ This component allows **rich text editing** while maintaining a *Markdown* backi
 2. Lists
 3. **Bold** / *Italic* / ~~Strikethrough~~
 4. `Code` and `Code Blocks`
+5. [Links](https://example.com)
     """.trimIndent()
 
     override val title: Reactive<String> = Constant("Markdown Rich Text Editor")
