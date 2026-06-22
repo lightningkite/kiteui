@@ -12,6 +12,7 @@ import com.lightningkite.reactive.core.BaseListenable
 import com.lightningkite.reactive.core.MutableReactiveValue
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.l2.editorHelpers.*
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -279,7 +280,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 }
                 icon(Icon.link, "Insert Link")
                 onClick {
-                    this@MarkdownRichTextEditor.insertLink()
+                    this@MarkdownRichTextEditor.openLinkEditor()
                 }
             } as com.lightningkite.kiteui.views.Element)
         }
@@ -359,21 +360,159 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
             textArea.addEventListener("paste") { event ->
                 event.preventDefault()
+
                 val clipboardData = event.asDynamic().clipboardData ?: window.asDynamic().clipboardData
-                val pastedText = clipboardData.getData("text/plain") as? String ?: return@addEventListener
+                val plainText = clipboardData.getData("text/plain") as? String ?: ""
+                val htmlData = clipboardData.getData("text/html") as? String ?: ""
 
                 val selection = window.asDynamic().getSelection()
-                if (selection != null && selection.rangeCount > 0) {
-                    val range = selection.getRangeAt(0)
-                    range.deleteContents()
+                if (selection == null || selection.rangeCount == 0) return@addEventListener
+                val range = selection.getRangeAt(0)
 
-                    val lines = pastedText.split(Regex("\\r?\\n"))
+                val cleanText = plainText.trim()
+                val isUrl =
+                    cleanText.matches(Regex("""^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$""", RegexOption.IGNORE_CASE))
+
+                // ==========================================
+                // 1. MAGIC LINKING & AUTO-LINKING
+                // Prioritize this so copying from an address bar always creates a clean link
+                // ==========================================
+                if (isUrl && cleanText.isNotEmpty()) {
+                    val anchorElement = document.createElement("a") as HTMLElement
+                    anchorElement.setAttribute("href", cleanText)
+                    anchorElement.setAttribute("target", "_blank")
+
+                    if (!range.collapsed) {
+                        // Magic Link: User highlighted text, wrap it in the anchor tag
+                        anchorElement.appendChild(range.extractContents())
+                        range.insertNode(anchorElement)
+                    } else {
+                        // Auto-Link: User pasted at a blinking cursor, create text link
+                        anchorElement.textContent = cleanText
+                        range.insertNode(anchorElement)
+                    }
+
+                    // Move cursor to the end of the newly created link
+                    range.setStartAfter(anchorElement)
+                    range.collapse(true)
+                    selection.removeAllRanges()
+                    selection.addRange(range)
+
+                    invokeAllListeners()
+                    launch { updateSelectedRichTextTag() }
+                    return@addEventListener
+                }
+
+                // ==========================================
+                // 2. RICH HTML PRESERVATION
+                // Safely extract links and formatting using your Markdown pipeline
+                // ==========================================
+                if (htmlData.isNotEmpty()) {
+                    try {
+                        if (!range.collapsed) {
+                            range.deleteContents()
+                        }
+
+                        // A. Safely parse clipboard junk WITHOUT executing it (Fixes DOM XSS)
+                        val parser = DOMParser()
+                        val tempDoc = parser.parseFromString(htmlData, "text/html")
+                        val safeBody = tempDoc.body ?: throw Exception("DOMParser returned null body")
+
+                        // B. Convert to Markdown using the sanitized DOM body directly
+                        val markdown = htmlToMarkdownProcessor.turndown(safeBody.asDynamic()) as? String ?: ""
+                        if (markdown.isBlank()) throw Exception("Turndown returned empty markdown")
+
+                        // C. Convert pure Markdown back to Safe HTML native to your editor
+                        val f = GFMFlavourDescriptor()
+                        val parsedTree = MarkdownParser(f).buildMarkdownTreeFromString(markdown)
+                        val generatedHtml = HtmlGenerator(markdown, parsedTree, f, false).generateHtml()
+
+                        // D. Parse the safe HTML into native DOM nodes
+                        val safeDoc = parser.parseFromString(generatedHtml, "text/html")
+                        val fragment = document.createDocumentFragment()
+
+                        // E. Sanitize anchor tags against secondary javascript: URI XSS
+                        val anchorTags = safeDoc.body?.querySelectorAll("a")
+                        if (anchorTags != null) {
+                            for (i in 0 until anchorTags.length) {
+                                val a = anchorTags.item(i) as HTMLElement
+                                val href = a.getAttribute("href") ?: ""
+                                if (href.trim().lowercase().startsWith("javascript:")) {
+                                    a.setAttribute("href", "#") // Neutralize the malicious link
+                                }
+                            }
+                        }
+
+                        // F. Flatten formatting to prevent block-level insertion crashes (Data-Loss Bug Fixed)
+                        val body = safeDoc.body
+                        if (body != null) {
+                            var currentNode = body.firstChild
+                            while (currentNode != null) {
+                                val nextNode = currentNode.nextSibling
+
+                                // If it's a block element, extract its children and append line breaks
+                                if (currentNode is HTMLElement && currentNode.tagName.matches(
+                                        Regex(
+                                            "^(P|DIV|H[1-6]|UL|OL|LI|BLOCKQUOTE)$",
+                                            RegexOption.IGNORE_CASE
+                                        )
+                                    )
+                                ) {
+                                    while (currentNode.firstChild != null) {
+                                        fragment.appendChild(currentNode.firstChild!!)
+                                    }
+                                    // Add spacing after block elements to simulate paragraph breaks
+                                    fragment.appendChild(document.createElement("br"))
+                                    fragment.appendChild(document.createElement("br"))
+                                } else {
+                                    // It's an inline element (like <a>, <strong>) or text node, append it directly
+                                    fragment.appendChild(currentNode)
+                                }
+
+                                currentNode = nextNode
+                            }
+                        }
+
+                        // G. Insert safely into the editor
+                        val lastChild = fragment.lastChild
+                        if (fragment.childNodes.length > 0) {
+                            range.insertNode(fragment)
+                        }
+
+                        // Safely move the cursor to the end of the pasted content
+                        if (lastChild != null) {
+                            range.setStartAfter(lastChild)
+                            range.collapse(true)
+                        } else {
+                            range.collapse(false)
+                        }
+
+                        selection.removeAllRanges()
+                        selection.addRange(range)
+
+                        invokeAllListeners()
+                        launch { updateSelectedRichTextTag() }
+                        return@addEventListener
+
+                    } catch (e: Throwable) {
+                        console.log("HTML Paste failed, safely falling back to plain text. Error: ${e.message}")
+                        // Do not return here. Allow the code to fall through to Step 3 (Plain Text Fallback)
+                    }
+                }
+
+                // ==========================================
+                // 3. STANDARD PLAIN TEXT FALLBACK
+                // ==========================================
+                if (plainText.isNotEmpty()) {
+                    if (!range.collapsed) {
+                        range.deleteContents()
+                    }
+
+                    val lines = plainText.split(Regex("\\r?\\n"))
                     val fragment = document.createDocumentFragment()
                     var lastNode: Node? = null
 
                     lines.forEachIndexed { index, line ->
-                        // If the line is empty, inject a Non-Breaking Space (\u00A0)
-                        // This forces Markdown to respect the empty line and not collapse it on save.
                         val textContent = if (line.isEmpty()) "\u00A0" else line
                         val textNode = document.createTextNode(textContent)
 
@@ -398,8 +537,10 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
                     selection.removeAllRanges()
                     selection.addRange(range)
+
+                    invokeAllListeners()
+                    launch { updateSelectedRichTextTag() }
                 }
-                invokeAllListeners()
             }
 
             document.addEventListener("selectionchange", { _ ->

@@ -42,9 +42,7 @@ This component allows **rich text editing** while maintaining a *Markdown* backi
 
         scrolling.col {
             padded.h1("Markdown Rich Text Editor Demo")
-
-            rowCollapsingToColumn(60.rem) {
-                // Left side: Rich Editor
+            // Left side: Rich Editor
                 card.col {
                     h3("Rich Editor")
                     markdownRichTextEditor {
@@ -60,10 +58,10 @@ This component allows **rich text editing** while maintaining a *Markdown* backi
                         ::content { markdownSource() }
                     }
                 }
-            }
+
 
             // Bottom: Rendered Preview (using the existing markdown component)
-            expanding.card.col {
+            card.col {
                 h3("Rendered Preview (Read-only)")
                 swapView {
                     swapping(current = { debouncedSource() }) { md ->

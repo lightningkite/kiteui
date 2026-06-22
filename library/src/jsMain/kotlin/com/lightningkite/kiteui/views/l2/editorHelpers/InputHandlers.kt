@@ -80,6 +80,13 @@ fun MarkdownRichTextEditor.handleInput(event: Event) {
 }
 
 fun MarkdownRichTextEditor.handleClick(event: Event) {
+    val linkElement = (event.target as? Node)?.let { target ->
+        traverseUpDOM(target, textArea.element) { it.nodeName == "A" } as? HTMLElement
+    }
+    if (linkElement != null) {
+        openLinkEditor(linkElement)
+        return
+    }
     updateCursorPosition()
     updateEditorState()
 }

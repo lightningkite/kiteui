@@ -11,6 +11,9 @@ import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.views.l2.field
+import com.lightningkite.reactive.context.reactive
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.launch
@@ -964,20 +967,45 @@ fun MarkdownRichTextEditor.switchListRoot(toOrdered: Boolean) {
     launch { updateSelectedRichTextTag() }
 }
 
-fun MarkdownRichTextEditor.insertLink() {
+
+fun MarkdownRichTextEditor.openLinkEditor(existingLink: HTMLElement? = null) {
     val btn: Element = linkToolbarButton ?: return
     val editorRootElement = textArea.element as? HTMLElement ?: return
-    val selection = getValidSelection() ?: return
-    if (!isNodeInsideEditor(selection.anchorNode, editorRootElement)) return
-    val range = selection.getRangeAt(0)
-    val hasSelection = !range.collapsed
-    val savedRange = range.cloneRange()
 
-    val caretRect = range.getBoundingClientRect()
-    val overlayFrame = context.overlayFrame ?: return
+    val selection = getValidSelection()
+    val range = if (selection != null && selection.rangeCount > 0) selection.getRangeAt(0) else null
+    val savedRange = range?.cloneRange()
+    val hasSelection = range != null && !range.collapsed
+
+    // Determine where to anchor the popover
+    val caretRect = existingLink?.getBoundingClientRect() ?: run {
+        if (selection == null || selection.anchorNode == null || !isNodeInsideEditor(
+                selection.anchorNode,
+                editorRootElement
+            )
+        ) return@run null
+
+        var rect = range?.getBoundingClientRect()
+
+        // BROWSER QUIRK FIX: On empty lines, getBoundingClientRect() returns all 0s.
+        // We temporarily insert an invisible span to measure the physical cursor location on screen.
+        if (rect != null && rect.width == 0.0 && rect.height == 0.0 && rect.top == 0.0 && rect.left == 0.0) {
+            val tempSpan = document.createElement("span") as HTMLElement
+            tempSpan.textContent = "\u200B" // Zero-width space
+            range?.insertNode(tempSpan)
+            rect = tempSpan.getBoundingClientRect()
+            tempSpan.parentNode?.removeChild(tempSpan)
+
+            // Restore the original range after removing our measurement span
+            selection.removeAllRanges()
+            if (savedRange != null) selection.addRange(savedRange)
+        }
+        rect
+    }
+
     var anchorEl: Element? = null
-
-    val anchor: Element = if (caretRect.width > 0.0 || caretRect.height > 0.0) {
+    val anchor: Element =
+        if (caretRect != null && (caretRect.height > 0.0 || caretRect.top > 0.0 || caretRect.bottom > 0.0)) {
         object : NativeInteractiveContainerElement(context) {
             init {
                 native.setStyleProperty("position", "fixed")
@@ -993,12 +1021,87 @@ fun MarkdownRichTextEditor.insertLink() {
         }
     } else btn
 
+    val isEditMode = existingLink != null
+    val initialUrl = existingLink?.getAttribute("href") ?: ""
+    val highlightedText = if (hasSelection) savedRange?.toString() ?: "" else ""
+    val initialText = if (isEditMode) existingLink.textContent ?: "" else highlightedText
+
     val editor = this
     anchor.openPopover(PopoverPreferredDirection.belowCenter) {
-        card.padded.col {
-            val urlInput = fieldTheme.textInput { hint = "URL" }
-            val textInputWidget: TextInput? = if (!hasSelection) fieldTheme.textInput { hint = "Link text" } else null
+        col {
+            var urlInput: TextInput? = null
+            var textInputWidget: TextInput? = null
+            val insertUpdateAction = Action("insertUpdate") {
+                if (urlInput == null) return@Action
+                val url = urlInput!!.content.value.trim()
+                if (url.isNotEmpty()) {
+                    val text = textInputWidget?.content?.value?.trim()
+                    anchorEl?.let { context.overlayFrame?.removeChild(it) }
+                    context.closeThisPopover()
+
+                    if (isEditMode) {
+                        // --- EDIT MODE: Update existing node ---
+                        existingLink!!.setAttribute("href", url)
+                        if (text != null && text.isNotEmpty()) {
+                            existingLink.textContent = text
+                        }
+                    } else {
+                        // --- INSERT MODE: Create new node ---
+                        val sel = window.asDynamic().getSelection()
+                        sel?.removeAllRanges()
+                        if (savedRange != null) sel?.addRange(savedRange)
+
+                        val newRange = sel?.getRangeAt(0) ?: return@Action
+                        val a = document.createElement("a") as HTMLElement
+                        a.setAttribute("href", url)
+                        a.setAttribute("target", "_blank")
+
+                        if (newRange.collapsed) {
+                            a.textContent = text ?: url
+                            newRange.insertNode(a)
+                            newRange.setStartAfter(a)
+                            newRange.collapse(true)
+                        } else {
+                            a.appendChild(newRange.extractContents())
+                            newRange.insertNode(a)
+                        }
+
+                        sel.removeAllRanges()
+                        val selectRange = document.createRange()
+                        selectRange.selectNodeContents(a)
+                        sel.addRange(selectRange)
+                    }
+
+                    editor.notifyContentChanged()
+                    editor.launch { editor.updateSelectedRichTextTag() }
+                }
+            }
+
+            field("URL") {
+                textInput {
+                    urlInput = this
+                    hint = "URL"
+                    content.value = initialUrl
+                    action = Action("goToNextAction") {
+                        textInputWidget?.requestFocus()
+                    }
+                }
+            }
+            urlInput?.requestFocus()
+
+            // Show text input if we are editing an existing link, or if inserting without highlighting text first
+            field("Link text") {
+                textInput {
+                    hint = "Link text"
+                    textInputWidget = this
+                    content.value = initialText
+                    action = insertUpdateAction
+                }
+            }
+
+
             row {
+                // Cancel Button
                 expanding.button {
                     text("Cancel")
                     onClick {
@@ -1006,42 +1109,36 @@ fun MarkdownRichTextEditor.insertLink() {
                         context.closeThisPopover()
                     }
                 }
-                important.button {
-                    text("Insert")
-                    onClick {
-                        val url = urlInput.content.value.trim()
-                        if (url.isNotEmpty()) {
-                            val text = textInputWidget?.content?.value?.trim()
-                            anchorEl?.let { context.overlayFrame?.removeChild(it) }
-                            context.closeThisPopover()
 
-                            val sel = window.asDynamic().getSelection()
-                            sel?.removeAllRanges()
-                            sel?.addRange(savedRange)
+                val removeAction = Action("remove") {
+                    anchorEl?.let { context.overlayFrame?.removeChild(it) }
+                    context.closeThisPopover()
 
-                            val newRange = sel.getRangeAt(0)
-                            val a = document.createElement("a") as HTMLElement
-                            a.setAttribute("href", url)
-                            a.setAttribute("target", "_blank")
-                            if (newRange.collapsed) {
-                                a.textContent = text ?: url
-                                newRange.insertNode(a)
-                                newRange.setStartAfter(a)
-                                newRange.collapse(true)
-                            } else {
-                                a.appendChild(newRange.extractContents())
-                                newRange.insertNode(a)
-                            }
-
-                            sel.removeAllRanges()
-                            val selectRange = document.createRange()
-                            selectRange.selectNodeContents(a)
-                            sel.addRange(selectRange)
-
-                            editor.notifyContentChanged()
-                            editor.launch { editor.updateSelectedRichTextTag() }
-                        }
+                    // Highlight the link programmatically so unwrapTag targets it
+                    val sel = window.asDynamic().getSelection()
+                    sel?.removeAllRanges()
+                    val selectRange = document.createRange()
+                    if (existingLink != null) {
+                        selectRange.selectNodeContents(existingLink)
                     }
+                    sel?.addRange(selectRange)
+
+                    editor.unwrapTag("A")
+                }
+
+                // Remove Button (Only visible in Edit Mode)
+                if (isEditMode) {
+                    important.button {
+                        text("Remove")
+                        action = removeAction
+                    }
+                }
+
+
+                // Insert / Update Button
+                important.button {
+                    text(if (isEditMode) "Update" else "Insert")
+                    action = insertUpdateAction
                 }
             }
         }
