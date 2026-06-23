@@ -473,10 +473,7 @@ object LayoutPage : DocPage {
                     text("You can provide explicit sizes and size rules to views using the 'sizeConstraints' modifier.")
                     example("""
                         frame {
-                            centered -
-                                    sizeConstraints(width = 10.rem, height = 10.rem) -
-                                    card -
-                                    text("I will always be a 10x10 square.")
+                            centered.sizeConstraints(width = 10.rem, height = 10.rem).card.text("I will always be a 10x10 square.")
                         }
                     """.trimIndent()) {
                         frame {
@@ -487,10 +484,7 @@ object LayoutPage : DocPage {
                     text("Elements are not permitted to overrun their parent's size (except when it's scrollable), so you can use 'width' and 'height' to create elements that work across multiple screen sizes effectively.")
                     example("""
                         frame {
-                            centered.
-                                    sizeConstraints(width = 20.rem) -
-                                    card.
-                                    text("This will be 20rem or less.  Try changing the screen's size to watch its behavior.")
+                            centered.sizeConstraints(width = 20.rem).card.text("This will be 20rem or less.  Try changing the screen's size to watch its behavior.")
                         }
                     """.trimIndent()) {
                         frame {

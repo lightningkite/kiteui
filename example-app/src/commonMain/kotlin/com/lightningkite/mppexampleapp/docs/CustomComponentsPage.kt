@@ -104,12 +104,12 @@ object CustomComponentsPage : DocPage {
                         fun ViewWriter.counter(initialValue: Int = 0): Unit = run {
                             val count = Signal(initialValue)
 
-                            card - row {
+                            card.row {
                                 button {
                                     text("-")
                                     onClick { count.value-- }
                                 }
-                                centered - expanding - text {
+                                centered.expanding.text {
                                     ::content { count().toString() }
                                 }
                                 button {

@@ -47,7 +47,7 @@ object VideoElementPage: DocPage {
             text("You can observe or control the current time via 'time'.")
             example("""
                 col {
-                    text { ::content { "Time: ${'$'}{time.await()}" } }
+                    text { ::content { "Time: ${'$'}{time()}" } }
                     button { 
                         text("Restart")
                         onClick { time set 0.0 }
@@ -65,7 +65,7 @@ object VideoElementPage: DocPage {
             text("You can observe or control the playing state via 'playing'.")
             example("""
                 col {
-                    text { ::content { if(playing.await()) "Playing" else "Paused" } }
+                    text { ::content { if(playing()) "Playing" else "Paused" } }
                     button {
                         text("Play")
                         onClick { playing set true }
@@ -96,6 +96,7 @@ object VideoElementPage: DocPage {
                     this.playing bind playing
                 }
                 """.trimIndent()) {
+                // docs:abridged — displayed shows the bare API; live wraps it in a sizing frame and uses a local asset
                 frame {
                     centered.sizeConstraints(width = 12.rem, height = 12.rem).media {
                         source = Resources.videoBack
@@ -118,6 +119,7 @@ object VideoElementPage: DocPage {
                     scaleType = ImageScaleType.Crop
                 }
                 """.trimIndent()) {
+                // docs:abridged — displayed shows the bare API; live wraps it in a sizing frame
                 frame {
                     centered.sizeConstraints(width = 12.rem, height = 12.rem).media {
                         source = Resources.videoBack

@@ -194,14 +194,14 @@ object GettingStartedPage : DocPage {
                 space()
 
                 titledSection("Using Modifiers") {
-                    text("Modifiers style and position your views. Apply them with the - operator:")
+                    text("Modifiers style and position your views. Chain them onto a view with '.' (the '-' operator also works, e.g. card - col { }):")
 
                     space()
                     example("""
                         col {
-                            card - text("I'm in a card")
-                            important - button { text("Important!") }
-                            centered - text("Centered text")
+                            card.text("I'm in a card")
+                            important.button { text("Important!") }
+                            centered.text("Centered text")
                         }
                     """.trimIndent()) {
                         col {

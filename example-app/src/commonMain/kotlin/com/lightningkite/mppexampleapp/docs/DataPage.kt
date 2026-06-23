@@ -185,8 +185,8 @@ object DataPage : DocPage {
                         example(
                             """
                                 col {
-                                    onlyWhen { secondsElapsed() % 2 == 0 }.text("We're on an even second")
-                                    onlyWhen { secondsElapsed() % 2 != 0 }.text("We're on an odd second")
+                                    shownWhen { secondsElapsed() % 2 == 0 }.text("We're on an even second")
+                                    shownWhen { secondsElapsed() % 2 != 0 }.text("We're on an odd second")
                                 }
                             """.trimIndent()
                         ) {
@@ -218,7 +218,7 @@ object DataPage : DocPage {
                             """
                                 col {
                                     important.button {
-                                        text { ::content { "Increment the other counter, which is at ${'$'}{otherCounter()}" } }
+                                        text { ::content { "Increment the other counter, which is at ${'$'}{counter()}" } }
                                         onClick { counter.value++ }
                                     }
                                     text {

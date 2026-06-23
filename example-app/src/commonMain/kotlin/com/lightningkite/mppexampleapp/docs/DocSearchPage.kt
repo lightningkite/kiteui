@@ -18,26 +18,37 @@ object DocSearchPage : Page {
     @QueryParameter
     val query = Signal<String>("")
 
+    // Every @Routable DocPage should be listed here so it is discoverable via search.
+    // DocPagesRegistryTest enforces this.
     val docsPages = Signal(listOf(
         // TODO: Gradle tasks
         // TODO: Platform-specific views
         // TODO: Custom widgets
+        { GettingStartedPage },
+        { LayoutPage },
+        { ViewModifiersPage },
+        { TextElementPage },
+        { IconsPage },
+        { ThemingPage },
         { ThemeTesterPage },
-        { ResourcesPage },
+        { NavigationPage },
         { DataPage },
         { ReactiveToolsPage },
-        { ThemingPage },
-        { TextElementPage },
-        { NavigationPage },
-        { VideoElementPage },
-        { ViewPagerElementPage },
+        { ViewModelPage },
+        { DataLoadingPatternsPage },
+        { FormsAndValidationPage },
+        { DialogsAndModalsPage },
+        { CustomComponentsPage },
+        { NetworkPage },
+        { MultiplatformPage },
+        { ResourcesPage },
         { ImageElementPage },
         { ImageCompressionPage },
         { ZoomableImageElementPage },
-        { IconsPage },
-        { ViewModifiersPage },
-        { LayoutPage },
+        { VideoElementPage },
+        { ViewPagerElementPage },
         { RecyclerViewPage },
+        { TroubleshootingPage },
         { CheatSheet }
     ))
 

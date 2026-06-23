@@ -144,6 +144,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 border: medium;
                 border-radius: 1rem;
                 padding: 0px !important;
+                /* WebKit/Safari (and older Blink) require the prefixed reset before
+                   ::-webkit-progress-bar/::-webkit-progress-value custom styling applies;
+                   without it they render the native bar and ignore the currentcolor fill.
+                   Firefox uses ::-moz-progress-bar and honors the unprefixed property. */
+                -webkit-appearance: none;
+                -moz-appearance: none;
                 appearance: none;
             }
             
