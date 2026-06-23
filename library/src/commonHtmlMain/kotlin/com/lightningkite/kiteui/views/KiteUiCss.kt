@@ -564,6 +564,31 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 text-align: start;
             }
 
+            /* Safari (WebKit) renders a native-appearance <select> as an OS control and ignores
+               CSS padding entirely. Resetting appearance makes it a styleable box so our themed
+               --padding is honored. Removing the native appearance also drops the native chevron,
+               so we redraw one with two gradients in currentColor (gradients honor currentColor,
+               unlike background-image SVGs) so it always matches the themed text color. */
+            select.kui {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                background-image:
+                    linear-gradient(45deg, transparent 50%, currentColor 50%),
+                    linear-gradient(135deg, currentColor 50%, transparent 50%);
+                background-position:
+                    right 0.9em top 55%,
+                    right 0.5em top 55%;
+                background-size: 0.4em 0.4em, 0.4em 0.4em;
+                background-repeat: no-repeat;
+            }
+
+            /* Reserve room for the redrawn chevron on top of the theme's padding so long
+               values never run under the arrow. */
+            select.kui.padded {
+                padding-right: calc(var(--padding, 0px) + 1.4em);
+            }
+
             a.kui:visited {
                 color: unset;
             }

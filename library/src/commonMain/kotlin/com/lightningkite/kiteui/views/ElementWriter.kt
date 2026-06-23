@@ -202,6 +202,8 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      */
     interface CanAddShownWhen : CanAddSizing
 
+    interface CanAddListElementModifier : CanAddShownWhen
+
     /**
      * Allows weight modifiers to be applied.
      *
@@ -210,7 +212,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * - `dynamicWeight(amount)` - Reactive flex weight
      * - `expanding` - Shorthand for `weight(1f)`
      */
-    interface CanAddWeight : CanAddShownWhen
+    interface CanAddWeight : CanAddListElementModifier
 
     /**
      * Allows alignment modifiers to be applied. Most permissive modifier interface.

@@ -11,9 +11,9 @@ import kotlin.time.Duration.Companion.milliseconds
 expect class Button(context: ElementContext) : NativeContainerElementWithSecondaryAction
 
 fun Button.onClick(label: String? = null, icon: Icon? = null, frequencyCap: Duration? = 500.milliseconds, action: suspend ()->Unit) {
-    this.action = Action(label ?: "Press", icon ?: Icon.send, frequencyCap = frequencyCap) { action() }
+    this.action = Action(label ?: "", icon ?: Icon.send, frequencyCap = frequencyCap) { action() }
 }
 
 fun Button.onLongClick(label: String? = null, icon: Icon? = null, frequencyCap: Duration? = 500.milliseconds, action: suspend () -> Unit) {
-    this.secondaryAction = Action(label ?: "Long Press", icon ?: Icon.info, frequencyCap = frequencyCap) { action() }
+    this.secondaryAction = Action(label ?: "", icon ?: Icon.info, frequencyCap = frequencyCap) { action() }
 }

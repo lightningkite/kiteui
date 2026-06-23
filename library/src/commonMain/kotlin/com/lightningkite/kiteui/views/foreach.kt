@@ -19,13 +19,14 @@ import kotlin.math.min
 @InternalKiteUi
 fun <T> ContainerElement.forEach(
     items: Reactive<List<T>>,
-    render: ViewWriter.(T) -> Unit
+    beforeListModifier: ViewWriter.()->ElementWriter.CanAddListElementModifier = { this },
+    render: ElementWriter.CanAddListElementModifier.(T) -> Unit
 ) {
     setupAsListContainer()
     reactive {
         clearChildren()
         items().forEach {
-            (asListItem as ViewWriter).render(it)
+            beforeListModifier().asListItem.render(it)
         }
     }
 }
@@ -34,7 +35,8 @@ fun <T> ContainerElement.forEach(
 fun <T> ContainerElement.forEachUpdating(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
-    render: ViewWriter.(Reactive<T>) -> Unit
+    beforeListModifier: ViewWriter.()->ElementWriter.CanAddListElementModifier = { this },
+    render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
 ) {
     setupAsListContainer()
     val currentViews = ArrayList<LateInitSignal<T>>()
@@ -45,7 +47,7 @@ fun <T> ContainerElement.forEachUpdating(
             if (currentViews.size < placeholdersWhileLoading) {
                 repeat(placeholdersWhileLoading - currentViews.size) {
                     val newProp = LateInitSignal<T>()
-                    (asListItem as ViewWriter).render(newProp)
+                    beforeListModifier().asListItem.render(newProp)
                     currentViews.add(newProp)
                 }
             }/* else if(currentViews.size > itemList.size) {
@@ -71,7 +73,7 @@ fun <T> ContainerElement.forEachUpdating(
                 repeat(itemList.size - currentViews.size) {
                     val newProp = LateInitSignal<T>()
                     newProp.value = itemList[currentViews.size]
-                    (asListItem as ViewWriter).render(newProp)
+                    beforeListModifier().asListItem.render(newProp)
                     currentViews.add(newProp)
                 }
             }/* else if(currentViews.size > itemList.size) {
@@ -96,7 +98,7 @@ fun <T> ContainerElement.forEachUpdating(
 fun <T, ID> RowOrCol.forEachById(
     items: Reactive<List<T>>,
     id: (T) -> ID,
-    preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddShownWhen = { this },
+    preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
 ) {
     setupAsListContainer()
@@ -152,7 +154,7 @@ fun <T, ID> RowOrCol.forEachById(
                 val shown = Signal(false)
                 val data = Signal(toRender)
                 val result: Element = this@forEachById.atIndex(oldPos).produceExactlyOneView {
-                    (asListItem as ViewWriter).run { preHidingModifiers(id(toRender)) }.shownWhen { shown() }.render(data)
+                    preHidingModifiers(id(toRender)).asListItem.shownWhen { shown() }.render(data)
                 }
                 old.add(
                     oldPos, OldViewInfo(
@@ -175,7 +177,8 @@ fun <T, ID> RowOrCol.forEachById(
 fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
     items: Reactive<List<T>>,
     id: (T) -> ID,
-    render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
+    beforeListModifier: ViewWriter.()->ElementWriter.CanAddListElementModifier = { this },
+    render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
 ) {
     setupAsListContainer()
     val oldEarly = ArrayList<Any>()
@@ -231,7 +234,7 @@ fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
                     val shown = Signal(false)
                     val data = Signal(toRender)
                     val result: Element = this@forEachByIdWithoutAnimation.atIndex(oldPos).produceExactlyOneView {
-                        asListItem.render(data)
+                        beforeListModifier().asListItem.render(data)
                     }
                     old.add(
                         oldPos, OldViewInfo(
@@ -254,7 +257,7 @@ fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
 @InternalKiteUi
 fun <T> RowOrCol.forEachAnimated(
     items: Reactive<List<T>>,
-    preHidingModifiers: ViewWriter.(T) -> ElementWriter.CanAddShownWhen = { this },
+    preHidingModifiers: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddTheme.(T) -> Unit
 ) {
     setupAsListContainer()
@@ -305,7 +308,7 @@ fun <T> RowOrCol.forEachAnimated(
             } else {
                 val shown = Signal(false)
                 val result: Element = this@forEachAnimated.atIndex(oldPos).produceExactlyOneView {
-                    (asListItem as ViewWriter).run { preHidingModifiers(toRender) }.shownWhen { shown() }.render(toRender)
+                    preHidingModifiers(toRender).asListItem.shownWhen { shown() }.render(toRender)
                 }
                 old.add(
                     oldPos, OldViewInfo(

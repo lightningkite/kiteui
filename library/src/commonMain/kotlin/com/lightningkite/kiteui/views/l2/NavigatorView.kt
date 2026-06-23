@@ -15,7 +15,6 @@ import com.lightningkite.reactive.context.reactive
 fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
     return swapView {
         debugName = "navigatorView"
-        accessibleLiveRegion = LiveRegionMode.Polite
         Element.Debugger.debugTarget = this
         var lastStack = navigator.stack.value
         swapping(

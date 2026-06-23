@@ -89,7 +89,6 @@ object RootPage : Page {
                 linkPage { TestingGroundPage }
 
                 sectionLabel("Forms & Input")
-                linkPage { FormsPage }
                 linkPage { FormattedInputTests() }
                 linkPage { RichTextButtonPage }
                 linkPage { SampleLogInPage }

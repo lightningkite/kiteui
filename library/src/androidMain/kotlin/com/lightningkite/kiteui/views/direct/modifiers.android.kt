@@ -25,7 +25,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen {
+actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -43,7 +43,7 @@ actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAd
 
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
+actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -607,7 +607,7 @@ actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme g
 
 @ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddAlignment.asListItem: ElementWriter.CanAddAlignment get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
 
 @InternalKiteUi
 internal actual fun ContainerElement.setupAsListContainer() {} // TalkBack infers list structure from content

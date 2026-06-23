@@ -49,14 +49,14 @@ actual fun ElementWriter.textPopover(message: String): ElementWriter = hintPopov
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen {
+actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         native.extensionWeight = amount
     }
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen {
+actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         native::extensionWeight { amount() }
     }
@@ -211,7 +211,7 @@ actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme g
 
 @ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddAlignment.asListItem: ElementWriter.CanAddAlignment get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
 
 @InternalKiteUi
 internal actual fun ContainerElement.setupAsListContainer() {} // VoiceOver infers list structure from content

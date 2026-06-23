@@ -23,10 +23,10 @@ expect fun ElementWriter.hintPopover(
 expect fun ElementWriter.textPopover(message: String): ElementWriter
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen
+expect fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen
+expect fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier
 
 @ViewModifierDsl3
 expect fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight
@@ -178,6 +178,6 @@ expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, tra
 @ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme
 @ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme
 @ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddAlignment.asListItem: ElementWriter.CanAddAlignment
+@ViewModifierDsl3 expect val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier
 
 internal expect fun ContainerElement.setupAsListContainer()

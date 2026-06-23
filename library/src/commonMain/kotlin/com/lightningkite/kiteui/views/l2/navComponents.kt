@@ -43,7 +43,6 @@ private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElem
                 space(1.0)
             }
         }
-        it.weight?.let { w -> weight(w) }
         when (it) {
             is NavAction -> button {
                 shown = false
@@ -104,7 +103,7 @@ private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElem
     }
 }
 
-fun ElementWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): Unit {
+fun ElementWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainerElement.() -> Unit = {}): Unit {
     row {
         navGroupActionsInner(elements)
         setup()
@@ -116,7 +115,7 @@ private fun ContainerElement.navGroupActionsInner(readable: Reactive<List<NavEle
         frame {
             centered.icon {
                 ::source { navElement.icon() }
-                ::description { navElement.title() }
+                description = ""
             }
         }
         navElement.count?.let { count ->
@@ -155,7 +154,7 @@ private fun ContainerElement.navGroupActionsInner(readable: Reactive<List<NavEle
             is NavCustom -> frame {
                 shown = false
                 ::shown { it.hidden?.invoke() != true }
-                it.square(this@forEach)
+                it.square(this@frame)
             }
 
             is NavLink -> selectedIfRouteMatches(it).link {
@@ -198,7 +197,7 @@ private fun ContainerElement.navGroupTopInner(readable: Reactive<List<NavElement
                 frame {
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
-                    it.square(this@forEach)
+                    it.square(this@frame)
                 }
             }
 
@@ -227,7 +226,7 @@ fun ElementWriter.navElementIconAndCount(navElement: NavElement): Unit {
     frame {
         centered.icon {
             ::source { navElement.icon() }
-            ::description { navElement.title() }
+            description = ""
         }
         navElement.count?.let { count ->
             align(Align.End, Align.Start).compact.critical.frame {
@@ -246,7 +245,7 @@ fun ElementWriter.navElementIconAndCountHorizontal(navElement: NavElement): Unit
     row {
         centered.icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
-            ::description { navElement.title() }
+            description = ""
         }
         navElement.count?.let { count ->
             centered.compact.critical.frame {
@@ -271,23 +270,23 @@ fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: Cont
             }
         }
         themeChoice += ListSemantic
-        forEach(readable) {
+        forEach(readable, beforeListModifier = { expanding }) {
             when (it) {
-                is NavAction -> expanding.button {
+                is NavAction -> button {
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
                     display(it)
                     onClick { it.onSelect() }
                 }
 
-                is NavExternal -> expanding.externalLink {
+                is NavExternal -> externalLink {
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
                     ::to { it.to() }
                     display(it)
                 }
 
-                is NavGroup -> expanding.menuButton {
+                is NavGroup -> menuButton {
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
                     display(it)
@@ -297,14 +296,14 @@ fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: Cont
                     }
                 }
 
-                is NavCustom -> expanding.frame {
+                is NavCustom -> frame {
                     shown = false
                     ::shown { it.hidden?.invoke() != true }
                     it.tall(this)
                 }
 
                 is NavLink -> {
-                    expanding.selectedIfRouteMatches(it).link {
+                    selectedIfRouteMatches(it).link {
                         resetsStack = true
                         shown = false
                         ::shown { it.hidden?.invoke() != true }
