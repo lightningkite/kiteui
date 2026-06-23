@@ -26,7 +26,7 @@ import com.lightningkite.kiteui.navigation.Page
  *         context.description = "Profile page for ${userData?.name}"
  *     }
  *
- *     override fun ViewWriter.render() = col {
+ *     override fun ElementWriter.CanAddTheme.render() = col {
  *         // Use preloaded data - will be populated during SSR
  *         userData?.let { user ->
  *             h1(user.name)

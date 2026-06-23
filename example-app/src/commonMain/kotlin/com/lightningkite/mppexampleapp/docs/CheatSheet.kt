@@ -743,7 +743,7 @@ object CheatSheet : DocPage {
                                     hint = "A phone number"
                                 }
                             }
-                            text { ::content { "Entered Phone Number: ${'$'}{number()}" } }
+                            text { ::content { "Filtered Phone Number: ${'$'}{number()}" } }
                         """.trimIndent(),
                             references = setOf(ExampleEntry("formattedTextInput"))
                         ) {

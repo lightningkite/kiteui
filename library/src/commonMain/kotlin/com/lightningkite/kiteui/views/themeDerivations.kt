@@ -7,6 +7,8 @@ import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.UnsafeModifier
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.ElementWriter.CanAddTheme
+import com.lightningkite.kiteui.views.direct.asBanner
+import com.lightningkite.kiteui.views.direct.asNavigation
 import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.context.reactive
 
@@ -79,9 +81,9 @@ inline val CanAddTheme.fieldTheme: CanAddTheme get() = themed(FieldSemantic)
 @ViewModifierDsl3
 inline val CanAddTheme.buttonTheme: CanAddTheme get() = themed(ButtonSemantic)
 @ViewModifierDsl3
-inline val CanAddTheme.bar: CanAddTheme get() = themed(BarSemantic).beforeSetup { accessibleSemantic = AccessibleSemantic.Banner }
+inline val CanAddTheme.bar: CanAddTheme get() = themed(BarSemantic).asBanner
 @ViewModifierDsl3
-inline val CanAddTheme.nav: CanAddTheme get() = themed(NavSemantic).beforeSetup { accessibleSemantic = AccessibleSemantic.Navigation }
+inline val CanAddTheme.nav: CanAddTheme get() = themed(NavSemantic).asNavigation
 @ViewModifierDsl3
 inline val CanAddTheme.important: CanAddTheme get() = themed(ImportantSemantic)
 @ViewModifierDsl3

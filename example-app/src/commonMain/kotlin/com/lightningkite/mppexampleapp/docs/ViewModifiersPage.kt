@@ -267,18 +267,18 @@ object ViewModifiersPage : DocPage {
 
             }
 
-            h2("Only When")
-            text("The onlyWhen modifier is used to show a view only when a condition is met.")
+            h2("Shown When")
+            text("The shownWhen modifier is used to show a view only when a condition is met.")
             val condition: Signal<Boolean> = Signal(true)
 
             example(
                 """
                 col {
                     important.toggleButton {
-                        text { reactiveScope { content = if(condition.await()) "Hide" else "Show" } }
+                        text { reactiveScope { content = if(condition()) "Hide" else "Show" } }
                         checked bind condition
                     }
-                    onlyWhen(condition = { condition.await() }).text("Show Text Only When Toggled")
+                    shownWhen(condition = { condition() }).text("Show Text Only When Toggled")
                 }
             """.trimIndent()
             ) {

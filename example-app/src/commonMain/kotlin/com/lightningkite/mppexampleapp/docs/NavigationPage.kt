@@ -43,7 +43,7 @@ object NavigationPage: DocPage {
             example(
                 """
             link {
-                to = DocSearchScreen
+                to = { DocSearchPage }
                 centered.row {
                     centered.icon(Icon.arrowBack, "Back")
                     centered.expanding.text("Back to the search screen")
@@ -67,7 +67,7 @@ object NavigationPage: DocPage {
                 """
                 button {
                     onClick { 
-                        navigator.navigate(DocSearchPage)
+                        pageNavigator.navigate(DocSearchPage)
                     }
                     centered.row {
                         centered.icon(Icon.arrowBack, "Back")
@@ -92,7 +92,7 @@ object NavigationPage: DocPage {
                 col {
                     button {
                         onClick {
-                            navigator.goBack()
+                            pageNavigator.goBack()
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -101,7 +101,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            navigator.replace(DocSearchPage)
+                            pageNavigator.replace(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -110,7 +110,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            navigator.reset(DocSearchPage)
+                            pageNavigator.reset(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -158,7 +158,7 @@ object NavigationPage: DocPage {
                 button {
                     text("Open a dialog")
                     onClick {
-                        navigator.dialog.navigate(object: KiteUiPage {
+                        dialogPageNavigator.navigate(object: Page {
                             override fun ElementWriter.CanAddTheme.render(): Unit = run {
                                 frame {
                                     centered.card.col {
@@ -167,7 +167,7 @@ object NavigationPage: DocPage {
                                         button {
                                             centered.text("Dismiss")
                                             onClick {
-                                                navigator.dismiss()
+                                                pageNavigator.dismiss()
                                             }
                                         }
                                     }

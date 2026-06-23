@@ -1,13 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.widget.ImageView
+import androidx.appcompat.widget.AppCompatImageView
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.Path.PathDrawable
 import android.content.Context
 import com.lightningkite.kiteui.views.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NIconView(context: Context) : ImageView(context) {
+actual class NIconView(context: Context) : AppCompatImageView(context) {
     init {
         scaleType = ScaleType.CENTER_INSIDE
     }

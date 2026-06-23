@@ -102,9 +102,9 @@ object RecyclerViewPage : DocPage {
                     expanding.recyclerView {
                         recyclerView = this
                         children(
-                            items = remember { (1..100).toList() },
+                            items = remember { (1..20).toList() },
                             id = { it }
-                        ) { value ->
+                        ) { _ ->
                             card.text("Item")
                         }
                     }
@@ -243,19 +243,19 @@ object RecyclerViewPage : DocPage {
                     // Using expanding modifier
                     expanding.recyclerView {
                         children(
-                            items = remember { (1..100).toList() },
+                            items = remember { (1..20).toList() },
                             id = { it }
-                        ) { value ->
+                        ) { _ ->
                             card.text("Item")
                         }
                     }
 
                     // Using size constraints
-                    sizedBox(SizeConstraints(height = 20.rem)).recyclerView {
+                    sizedBox(SizeConstraints(height = 10.rem)).recyclerView {
                         children(
-                            items = remember { (1..100).toList() },
+                            items = remember { (1..20).toList() },
                             id = { it }
-                        ) { value ->
+                        ) { _ ->
                             card.text("Item")
                         }
                     }

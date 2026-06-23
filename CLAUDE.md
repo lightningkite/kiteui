@@ -2,21 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 🚧 Active Migration - View-Split Branch
+## View architecture (RView → Element split, completed)
 
-**IMPORTANT**: The `view-split` branch contains an ongoing architectural refactoring. The codebase is currently **BROKEN** during migration.
+The RView → Element/NativeElement refactoring has **landed**; the codebase builds. `RView` no
+longer exists. See [MIGRATION.md](MIGRATION.md) for the rationale and historical migration notes.
 
-**See [MIGRATION.md](MIGRATION.md) for complete details** including:
-- What's changing: RView → Element/NativeElement split
-- Why: Type-enforced modifier ordering and better separation of concerns
-- How to migrate code
-- Current implementation status
-
-**Key changes:**
-- `RView` → `Element` (interface) + `NativeElement` (platform implementation)
-- `RContext` → `ElementContext`
-- `ViewWriter` → `ElementWriter` with compile-time modifier ordering enforcement
-- Modifier order now enforced by type system: `alignment → weight → shownWhen → sizing → theme → scrolling → element`
+**The model in effect:**
+- `Element` (interface) + `NativeElement` (platform implementation) replace the old `RView`
+- `ElementContext` replaces `RContext`
+- `ElementWriter` replaces `ViewWriter` and enforces modifier ordering at compile time
+- Modifier order enforced by the type system: `alignment → weight → shownWhen → sizing → theme → scrolling → element`
 
 ## Project Overview
 
@@ -62,7 +57,7 @@ This is a multi-module Gradle project:
 
 ### Testing
 
-See **[docs/RUNNING_TESTS.md](docs/RUNNING_TESTS.md)** for the full guide including prerequisites, gotchas, and how to write tests.
+See **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** for the full guide including prerequisites, gotchas, and how to write tests.
 
 ```bash
 # Fastest — no external tools needed
@@ -120,7 +115,7 @@ Pages implement the `Page` interface and are annotated with `@Routable`:
 ```kotlin
 @Routable("your/path")
 object YourPage : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         // UI code
     }
 }
@@ -130,13 +125,13 @@ For pages with parameters:
 ```kotlin
 @Routable("items/{id}")
 class ItemDetailPage(val id: String) : Page {
-    override fun ViewWriter.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render(): Unit = run {
         // Access id parameter
     }
 }
 ```
 
-Navigate using `pageNavigator.navigate(SomePage)` or use `link` components.
+Navigate using `context.pageNavigator.navigate(SomePage)` or use `link` components.
 
 ### ViewWriter and Component Creation
 
@@ -225,13 +220,13 @@ Theme switches should typically be applied to containers (`col`, `row`, `frame`,
 
 ## Key Files to Reference
 
-- **[MIGRATION.md](MIGRATION.md)** - 🚧 View-split branch migration guide (active refactoring)
+- **[MIGRATION.md](MIGRATION.md)** - RView → Element split rationale and historical migration notes
 - **GoodKiteuiCode.md** - Best practices for creating pages and components
 - **ThemeRules.md** - Rules for semantic theming behavior
 - **example-app/src/commonMain/kotlin/com/lightningkite/mppexampleapp/docs/CheatSheet.kt** - Comprehensive examples of all components and modifiers
 - **library/src/commonMain/kotlin/com/lightningkite/kiteui/navigation/Page.kt** - Page interface
-- **library/src/commonMain/kotlin/com/lightningkite/kiteui/views/ElementWriter.kt** - Core ElementWriter interface (view-split) / ViewWriter (version-7)
-- **library/src/commonMain/kotlin/com/lightningkite/kiteui/views/Element.kt** - Core Element interface (view-split only)
+- **library/src/commonMain/kotlin/com/lightningkite/kiteui/views/ElementWriter.kt** - Core ElementWriter interface
+- **library/src/commonMain/kotlin/com/lightningkite/kiteui/views/Element.kt** - Core Element interface
 
 ## Platform Targets
 
@@ -242,11 +237,7 @@ Theme switches should typically be applied to containers (`col`, `row`, `frame`,
 
 ## Current Branch Strategy
 
-- `version-7` - Main development branch (use for PRs)
-- `version-6` - Previous major version
-- `view-split` - **ACTIVE MIGRATION BRANCH** (currently BROKEN) - Major architectural refactoring. See [MIGRATION.md](MIGRATION.md) for details.
-
-When working on this branch, expect:
-- Compilation errors in migrated but incomplete areas
-- Missing implementations for some platforms
-- Commits marked "BROKEN" are normal during migration
+- `version-8-*` - Current development line (where the RView → Element split landed)
+- `version-6` - Previous major version; current base for PRs
+- The `view-split` migration is complete and merged — the codebase builds. See [MIGRATION.md](MIGRATION.md)
+  for the historical record.

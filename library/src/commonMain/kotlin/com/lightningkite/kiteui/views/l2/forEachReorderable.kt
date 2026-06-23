@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.views.*
@@ -49,8 +50,8 @@ class DragDropReordering(
                 ?.let { source ->
                     index.state.handle(
                         success = { willMove.value = Move(source, it); true },
-                        exception = { println("Exception"); false },
-                        notReady = { println("Not Ready"); false }
+                        exception = { Log.warn("forEachReorderable: exception reading drop target index"); false },
+                        notReady = { Log.warn("forEachReorderable: drop target index not ready"); false }
                     )
                 }
                 ?: false

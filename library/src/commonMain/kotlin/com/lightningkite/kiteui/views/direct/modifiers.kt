@@ -166,3 +166,18 @@ val ElementWriter.CanAddTheme.unpadded: ElementWriter.CanAddTheme get() = before
 
 @ViewModifierDsl3
 expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, transition: ScreenTransition = ScreenTransition.None, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing
+
+
+
+@ViewModifierDsl3 expect fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme
+@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme
+@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme
+@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme
+@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme
+@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme
+@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme
+@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme
+@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme
+@ViewModifierDsl3 expect val ElementWriter.CanAddAlignment.asListItem: ElementWriter.CanAddAlignment
+
+internal expect fun ContainerElement.setupAsListContainer()

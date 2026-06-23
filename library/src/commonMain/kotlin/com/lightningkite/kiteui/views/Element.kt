@@ -122,7 +122,7 @@ import com.lightningkite.reactive.context.StatusListener
  * class MyPage : Page {
  *     private lateinit var statusText: TextView
  *
- *     override fun ViewWriter.render() = col {
+ *     override fun ElementWriter.CanAddTheme.render() = col {
  *         text("Status") { statusText = this }
  *         button { text("Update") }.onClick {
  *             statusText.content = "Updated!"
@@ -437,16 +437,6 @@ interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
      * Set this only when the auto-derived label is insufficient (e.g., a complex custom widget).
      */
     var accessibleLabel: String?
-
-    /**
-     * Semantic role for assistive technologies and HTML semantic elements.
-     *
-     * On web, changes the HTML tag for proper semantics and SEO (e.g., `<h2>`, `<nav>`, `<main>`).
-     * On iOS, sets accessibility traits (header, etc.). On Android, sets heading/landmark properties.
-     *
-     * Use via modifiers like `heading(level)`, or set automatically by theme modifiers like `nav`.
-     */
-    var accessibleSemantic: AccessibleSemantic?
 
     /**
      * Marks this element as a live region for screen reader announcements of dynamic content.

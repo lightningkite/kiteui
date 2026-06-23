@@ -150,13 +150,17 @@ class SsrRouter(
             }
         }
 
-        // Await all discovered resources
-        // Reactive bindings auto-update the FutureElement tree when resources load
-        context.awaitAllResources()
+        try {
+            // Await all discovered resources
+            // Reactive bindings auto-update the FutureElement tree when resources load
+            context.awaitAllResources()
 
-        // Serialize the now-complete tree (with updated reactive values) + resource data
-        val result = context.serialize()
-        return document.render(result, context.exportResourceData())
+            // Serialize the now-complete tree (with updated reactive values) + resource data
+            val result = context.serialize()
+            return document.render(result, context.exportResourceData())
+        } finally {
+            context.cancel()
+        }
     }
 
     // ==================== Non-suspend versions (no preloading) ====================

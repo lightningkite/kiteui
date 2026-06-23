@@ -20,6 +20,7 @@ actual class IconView actual constructor(context: ElementContext) : NativeElemen
                 native.appendChild(FutureElement().apply {
                     tag = "svg"
                     xmlns = "http://www.w3.org/2000/svg"
+                    setAttribute("aria-hidden", "true")
                     style.width = value.width.value.toString()
                     style.height = value.height.value.toString()
                     setStyleProperty("fill", "currentColor")
@@ -50,13 +51,20 @@ actual class IconView actual constructor(context: ElementContext) : NativeElemen
     actual var description: String? = null
         set(value) {
             field = value
-            native.children.firstOrNull()?.let {
-                it.children.find { it.tag == "title" }
-                    ?.let { it.content = value }
-                    ?: it.appendChild(FutureElement().apply {
-                        tag = "title"
-                        content = value
-                    })
+            if (value == "") {
+                accessibleLabel = null
+                native.setAttribute("aria-hidden", "true")
+            } else {
+                accessibleLabel = value
+                native.setAttribute("aria-hidden", null)
             }
+//            native.children.firstOrNull()?.let {
+//                it.children.find { it.tag == "title" }
+//                    ?.let { it.content = value }
+//                    ?: it.appendChild(FutureElement().apply {
+//                        tag = "title"
+//                        content = value
+//                    })
+//            }
         }
 }

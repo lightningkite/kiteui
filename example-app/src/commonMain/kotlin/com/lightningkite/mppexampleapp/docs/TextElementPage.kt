@@ -82,7 +82,7 @@ object TextElementPage : DocPage {
             example(
                 """
                 col {
-                    for(weight in 900 downTo 100) {
+                    for(weight in 900 downTo 100 step 100) {
                         themed(ThemeDerivation { it.copy(id = "weight${'$'}weight", font = it.font.copy(weight = weight)).withoutBack }).text("Weight ${'$'}weight")
                     }
                 }

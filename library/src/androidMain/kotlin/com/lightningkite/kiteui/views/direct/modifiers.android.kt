@@ -587,3 +587,27 @@ internal object TypedValueAnimator {
         }
     }
 }
+
+@ViewModifierDsl3
+actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
+    beforeSetup {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) native.isAccessibilityHeading = true
+    }
+
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
+
+@ViewModifierDsl3
+actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
+    beforeSetup { native.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS }
+
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
+
+@ViewModifierDsl3 actual val ElementWriter.CanAddAlignment.asListItem: ElementWriter.CanAddAlignment get() = this
+
+@InternalKiteUi
+internal actual fun ContainerElement.setupAsListContainer() {} // TalkBack infers list structure from content

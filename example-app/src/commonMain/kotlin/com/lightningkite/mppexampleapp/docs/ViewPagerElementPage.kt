@@ -62,13 +62,13 @@ object ViewPagerElementPage: DocPage {
                         ::content { "Current index; ${'$'}{currentPage()}" }
                     }
                     important.button {
-                        text("Scroll to zero (the first one)")
+                        text("Scroll to index zero (the first one)")
                         onClick {
                             currentPage.value = 0
                         }
                     }
                     important.button {
-                        text("Scroll to twenty nine (the last one)")
+                        text("Scroll to index twenty nine (the last one)")
                         onClick {
                             currentPage.value = 29
                         }

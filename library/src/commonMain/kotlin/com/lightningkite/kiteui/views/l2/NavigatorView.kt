@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.models.AccessibleSemantic
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.MainContentSemantic
 import com.lightningkite.kiteui.navigation.Page
@@ -34,7 +33,7 @@ fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
                 with(split()) {
                     context.pageNavigator = navigator
                     if (screen != null)
-                        with(screen) { themed(MainContentSemantic).beforeSetup { accessibleSemantic = AccessibleSemantic.Main }.padded.render() }
+                        with(screen) { themed(MainContentSemantic).asMain.padded.render() }
                     else null
                 }
                 this@swapView.requestFocusOrDescendant()

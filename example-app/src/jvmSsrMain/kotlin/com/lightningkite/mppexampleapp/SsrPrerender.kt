@@ -190,11 +190,8 @@ fun main(args: Array<String>) {
             println("Starting prerender to: $outputDir")
             val results = SsrPrerender.prerenderAll(File(outputDir))
 
-            // Exit with error code if any failures
             val failures = results.count { it.value.isFailure }
-            if (failures > 0) {
-                System.exit(1)
-            }
+            System.exit(if (failures > 0) 1 else 0)
         }
         args.getOrNull(0) == "server" -> {
             SsrServer.start(port = port, hydrate = hydrate, wait = true)

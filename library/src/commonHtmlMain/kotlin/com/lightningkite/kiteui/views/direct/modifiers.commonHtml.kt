@@ -5,6 +5,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
@@ -241,3 +242,58 @@ internal expect fun ContainerElement.nativeAnimateWeight(fromWeight: Float, toWe
 
 @PublishedApi
 internal expect fun Element.nativeSetupPullToRefresh(refreshAction: Action)
+
+private class ApplyTag(
+    val tag: String,
+    val wraps: ElementWriter,
+) : ViewWriter, ElementWriter by wraps {
+
+    var wrapperElement: NativeContainerElement? = null
+
+    @OverrideOnly
+    override fun willAddChild(element: Element) {
+        if (element.native.tag == "span" || element.native.tag == "div") {
+            wrapperElement = null
+            element.native.tag = tag
+            wraps.willAddChild(element)
+        } else {
+            val we: NativeContainerElement = PassthroughContainer(wraps.context)
+            we.native.tag = tag
+            wraps.willAddChild(we)
+            we.willAddChild(element)
+            wrapperElement = we
+        }
+    }
+
+    @OverrideOnly
+    override fun addChild(element: Element) {
+        wrapperElement?.let {
+            it.addChild(element)
+            it.onStartup()
+            wraps.addChild(it)
+        } ?: wraps.addChild(element)
+    }
+}
+
+internal class PassthroughContainer(context: ElementContext): NativeContainerElement(context) {
+    init {
+        native.tag = "div"
+        native.style.display = "block"
+    }
+}
+
+@ViewModifierDsl3 actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme = ApplyTag("h${level.coerceIn(1, 6)}", this)
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = ApplyTag("main", this)
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = ApplyTag("nav", this)
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = ApplyTag("header", this)
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = ApplyTag("footer", this)
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = ApplyTag("aside", this)
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = ApplyTag("search", this)
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
+    beforeSetup { native.setAttribute("aria-hidden", "true") }
+@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = ApplyTag("ul", this)
+@ViewModifierDsl3 actual val ElementWriter.CanAddAlignment.asListItem: ElementWriter.CanAddAlignment get() = ApplyTag("li", this)
+
+internal actual fun ContainerElement.setupAsListContainer() {
+    if (native.tag == "div" || native.tag == "span") native.tag = "ul"
+}
