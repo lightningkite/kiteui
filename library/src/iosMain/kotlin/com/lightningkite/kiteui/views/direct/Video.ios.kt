@@ -99,47 +99,63 @@ actual class RawVideoView actual constructor(
             updateSourceDurationFromPlayer(controller.player)
             value?.let { player ->
                 val weakPlayer = WeakReference(player)
+                val weakSelf = WeakReference(this)
+
                 playerRateObservationClose = player.observe("rate") {
+                    val self = weakSelf.get() ?: return@observe
                     val player = weakPlayer.get() ?: return@observe
+
                     val value = player.rate > 0f
-                    if (shouldPlay && !value) _completedPlay.invokeAll()
-                    if (!value && loop && shouldPlay) {
-                        controller.player?.seekToTime(CMTimeMake(0.toLong(), 1000))
-                        controller.player?.play()
-                        if (!_playing.value) _playing.value = true
+
+                    if (self.shouldPlay && !value) {
+                        self._completedPlay.invokeAll()
+                    }
+
+                    if (!value && self.loop && self.shouldPlay) {
+                        self.controller.player?.seekToTime(CMTimeMake(0, 1000))
+                        self.controller.player?.play()
+                        if (!self._playing.value) self._playing.value = true
                     } else {
-                        if (_playing.value != value) _playing.value = value
+                        if (self._playing.value != value) {
+                            self._playing.value = value
+                        }
+
                         if (player.rate > 0f) {
-                            animationFrameRateClose = AppState.animationFrame.addListener {
-                                _time.value = CMTimeGetSeconds(player.currentTime()).seconds
+                            self.animationFrameRateClose = AppState.animationFrame.addListener {
+                                val s = weakSelf.get() ?: return@addListener
+                                val p = weakPlayer.get() ?: return@addListener
+                                s._time.value = CMTimeGetSeconds(p.currentTime()).seconds
                             }
                         } else {
-                            animationFrameRateClose?.invoke()
-                            animationFrameRateClose = null
+                            self.animationFrameRateClose?.invoke()
+                            self.animationFrameRateClose = null
                         }
                     }
                 }
+
                 volumeObservationClose = player.observe("volume") {
+                    val self = weakSelf.get() ?: return@observe
                     val player = weakPlayer.get() ?: return@observe
-                    val value = player.volume
-                    _volume.value = value
+
+                    self._volume.value = player.volume
                 }
+
                 playerStatusObservationClose = player.observe("status") {
+                    val self = weakSelf.get() ?: return@observe
                     val p = weakPlayer.get() ?: return@observe
+
                     when (p.status) {
                         AVPlayerStatusReadyToPlay -> {
-                            _state.state = ReactiveState(Unit)
-                            // Duration becomes available when ready
-                            updateSourceDurationFromPlayer(p)
+                            self._state.state = ReactiveState(Unit)
+                            self.updateSourceDurationFromPlayer(p)
                         }
                         AVPlayerStatusFailed -> {
                             val message = p.error?.localizedDescription ?: "Video failed to load"
-                            _state.state = ReactiveState.exception(Exception(message))
+                            self._state.state = ReactiveState.exception(Exception(message))
                         }
                         else -> {}
                     }
                 }
-//                endObservationClose =
             }
         }
 
@@ -207,6 +223,9 @@ actual class RawVideoView actual constructor(
 
         // Clean up observers and resources when view is removed
         onRemove {
+            controller.player?.pause()
+            controller.player?.replaceCurrentItemWithPlayerItem(null)
+
             NSNotificationCenter.defaultCenter.removeObserver(playerCallbackHolder)
             playerRateObservationClose?.invoke()
             volumeObservationClose?.invoke()
@@ -214,6 +233,7 @@ actual class RawVideoView actual constructor(
             playerStatusObservationClose?.invoke()
             animationFrameRateClose?.invoke()
             controller.player = null
+            println("AFTER REMOVE: player = ${controller.player}")
         }
         launch {
             println("AVPlayerStatusUnknown: $AVPlayerStatusUnknown")
