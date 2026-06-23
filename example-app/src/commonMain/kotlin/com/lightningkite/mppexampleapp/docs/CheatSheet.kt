@@ -360,6 +360,30 @@ object CheatSheet : DocPage {
                                 h6("Header 6")
                             }
                         )
+                        example(
+                            name = "graph",
+                            description = "Display a graph",
+                            code = """
+                                graph {
+                                    ::data { listOf(Point(0.0, 0.0), Point(1.0, 100.0), Point(2.0, 350.0), Point(3.0, 200.0), Point(4.0, 500.0), Point(5.0, 750.0), Point(6.0, 700.0)) }
+                                    ::xAxisLabels { listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat") }
+                                    padding = 1.rem
+                                    pointShape = GraphDelegate.PointShape.Circle
+                                    xAxisLabel = "Past Week"
+                                    yAxisLabel = "Value"
+                                }
+                            """.trimIndent(),
+                            result = {
+                                graph {
+                                    ::data { listOf(Point(0.0, 0.0), Point(1.0, 100.0), Point(2.0, 350.0), Point(3.0, 200.0), Point(4.0, 500.0), Point(5.0, 750.0), Point(6.0, 700.0)) }
+                                    ::xAxisLabels { listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat") }
+                                    padding = 1.rem
+                                    pointShape = GraphDelegate.PointShape.Circle
+                                    xAxisLabel = "Past Week"
+                                    yAxisLabel = "Value"
+                                }
+                            }
+                        )
                     }
                     titledSection("Interactive Elements") {
                         example(

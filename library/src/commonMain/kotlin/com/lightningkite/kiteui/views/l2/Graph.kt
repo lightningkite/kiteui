@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
@@ -8,6 +9,7 @@ import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 import com.lightningkite.kiteui.views.canvas.TextAlign
 import com.lightningkite.kiteui.views.canvas.clear
 import com.lightningkite.kiteui.views.canvas.drawText
+import com.lightningkite.kiteui.views.canvas.ellipse
 import com.lightningkite.kiteui.views.canvas.fill
 import com.lightningkite.kiteui.views.canvas.fillPaint
 import com.lightningkite.kiteui.views.canvas.font
@@ -36,6 +38,11 @@ data class Point(val x: Double, val y: Double)
 open class GraphDelegate : CanvasDelegate() {
     // Data to be displayed on the graph
     var data: List<Point> = emptyList()
+
+    enum class PointShape {
+        Square,
+        Circle,
+    }
 
     // Graph appearance properties
     private var _lineColor: Color? = null // Color.blue
@@ -78,10 +85,11 @@ open class GraphDelegate : CanvasDelegate() {
     private var _pointSize: Dimension? = null // 5.0.dp
     var pointSize: Dimension
         get() = _pointSize ?: theme.padding.left
-        set(value) {
-            _pointSize = value
-        }
-
+        set(value) { _pointSize = value }
+    private var _pointShape: PointShape? = null // PointShape.Square
+    var pointShape: PointShape
+        get() = _pointShape ?: PointShape.Square
+        set(value) { _pointShape = value }
     private var _lineWidth: Dimension? = null // 2.0.dp
     var lineWidth: Dimension
         get() = _lineWidth ?: 1.dp
@@ -100,10 +108,44 @@ open class GraphDelegate : CanvasDelegate() {
     var xAxisLabel: String = "X"
     var yAxisLabel: String = "Y"
 
+    var xAxisLabels: List<String>? = null
+    var yAxisLabels: List<String>? = null
+
     // Font sizes
     var axisLabelFontSize: Dimension = 1.rem
     var tickLabelFontSize: Dimension = 0.8.rem
     var noDataMessageFontSize: Dimension = 2.rem
+
+    // Calculate data bounds
+    private val rawMinX get() = min(0.0, data.minOfOrNull { it.x } ?: 0.0)
+    private val rawMaxX get() = max(0.0, data.maxOfOrNull { it.x } ?: 0.0)
+    private val rawMinY get() = min(0.0, data.minOfOrNull { it.y } ?: 0.0)
+    private val rawMaxY get() = max(0.0, data.maxOfOrNull { it.y } ?: 0.0)
+
+    // Add some padding to the bounds
+    private val rawRangeX get() = (rawMaxX - rawMinX).coerceAtLeast(1.0)
+    private val rawRangeY get() = (rawMaxY - rawMinY).coerceAtLeast(1.0)
+    private val minX get() = rawMinX - rawRangeX * 0.05
+    private val maxX get() = rawMaxX + rawRangeX * 0.05
+    private val minY get() = rawMinY - rawRangeY * 0.05
+    private val maxY get() = rawMaxY + rawRangeY * 0.05
+    private val xStep get() = xAxisLabels?.let { rawRangeX / (it.size - 1) } ?: calculateGridStep(maxX - minX)
+    private val yStep get() = yAxisLabels?.let { rawRangeY / (it.size - 1) } ?: calculateGridStep(maxY - minY)
+
+    private val xAxisLabelHeight = 2.5.rem.canvasUnits
+    private val yAxisLabelWidth: Double
+        get() = (2 + (yAxisLabels?.maxOf { it.length } ?: run {
+            var longestLabelSize = 0
+            var y = ceil(minY / yStep) * yStep
+            while (y <= maxY) {
+                val nextLabelSize = formatNumber(y).length
+                if (nextLabelSize > longestLabelSize) {
+                    longestLabelSize = nextLabelSize
+                }
+                y += yStep
+            }
+            longestLabelSize
+        }) / 2.0).rem.canvasUnits
 
     override fun draw(context: DrawingContext2D) {
         if (data.isEmpty()) {
@@ -114,44 +156,46 @@ open class GraphDelegate : CanvasDelegate() {
         val width = context.width
         val height = context.height
 
-        // Calculate data bounds
-        val minX = data.minOfOrNull { it.x } ?: 0.0
-        val maxX = data.maxOfOrNull { it.x } ?: 0.0
-        val minY = data.minOfOrNull { it.y } ?: 0.0
-        val maxY = data.maxOfOrNull { it.y } ?: 0.0
-
-        // Add some padding to the bounds
-        val rangeX = (maxX - minX).coerceAtLeast(1.0)
-        val rangeY = (maxY - minY).coerceAtLeast(1.0)
-        val paddedMinX = minX - rangeX * 0.05
-        val paddedMaxX = maxX + rangeX * 0.05
-        val paddedMinY = minY - rangeY * 0.05
-        val paddedMaxY = maxY + rangeY * 0.05
-
         // Get padding in canvas units
         val paddingCanvas = padding.canvasUnits
 
         // Scale factors to convert data coordinates to canvas coordinates
-        val scaleX = (width - paddingCanvas * 2) / (paddedMaxX - paddedMinX)
-        val scaleY = (height - paddingCanvas * 2) / (paddedMaxY - paddedMinY)
+        val scaleX = (width - paddingCanvas * 2 - yAxisLabelWidth) / (maxX - minX)
+        val scaleY = (height - paddingCanvas * 2 - xAxisLabelHeight) / (maxY - minY)
 
         // Function to convert data X to canvas X
-        val toCanvasX = { x: Double -> (x - paddedMinX) * scaleX + paddingCanvas }
+        val toCanvasX = { x: Double -> (x - minX) * scaleX + paddingCanvas + yAxisLabelWidth }
 
         // Function to convert data Y to canvas Y (note the inversion for Y)
-        val toCanvasY = { y: Double -> height - ((y - paddedMinY) * scaleY + paddingCanvas) }
+        val toCanvasY = { y: Double -> height - ((y - minY) * scaleY + paddingCanvas + xAxisLabelHeight) }
 
         with(context) {
             // Clear the canvas
             clear()
 
+            // draw debug (Padding and Label Blocks)
+            if (debugMode) {
+                fillPaint = Color.fromHexString("#808050")
+                beginPath()
+                rect(0.0, 0.0, paddingCanvas, height)
+                rect(0.0, 0.0, width, paddingCanvas)
+                rect(width - paddingCanvas, 0.0, paddingCanvas, height)
+                rect(0.0, height - paddingCanvas, width, paddingCanvas)
+                fill()
+                fillPaint = Color.fromHexString("#65548a")
+                beginPath()
+                rect(paddingCanvas, paddingCanvas, yAxisLabelWidth, height - 2 * paddingCanvas)
+                rect(paddingCanvas, height - paddingCanvas - xAxisLabelHeight, width - 2 * paddingCanvas, xAxisLabelHeight)
+                fill()
+            }
+
             // Draw grid if enabled
             if (showGrid) {
-                drawGrid(context, paddedMinX, paddedMaxX, paddedMinY, paddedMaxY, toCanvasX, toCanvasY)
+                drawGrid(context, toCanvasX, toCanvasY)
             }
 
             // Draw axes
-            drawAxes(context, paddedMinX, paddedMaxX, paddedMinY, paddedMaxY, toCanvasX, toCanvasY)
+            drawAxes(context, toCanvasX, toCanvasY)
 
             // Draw data line
             strokePaint = lineColor
@@ -174,7 +218,14 @@ open class GraphDelegate : CanvasDelegate() {
                     beginPath()
                     val cx = toCanvasX(point.x)
                     val cy = toCanvasY(point.y)
-                    rect(cx - pointSizeCanvas / 2, cy - pointSizeCanvas / 2, pointSizeCanvas, pointSizeCanvas)
+                    when (pointShape) {
+                        PointShape.Square -> {
+                            rect(cx - pointSizeCanvas / 2, cy - pointSizeCanvas / 2, pointSizeCanvas, pointSizeCanvas)
+                        }
+                        PointShape.Circle -> {
+                            ellipse(cx, cy, pointSizeCanvas / 2, pointSizeCanvas / 2, 0.0, 0.0, 2*PI)
+                        }
+                    }
                     fill()
                 }
             }
@@ -222,35 +273,19 @@ open class GraphDelegate : CanvasDelegate() {
 
     private fun drawGrid(
         context: DrawingContext2D,
-        minX: Double,
-        maxX: Double,
-        minY: Double,
-        maxY: Double,
         toCanvasX: (Double) -> Double,
         toCanvasY: (Double) -> Double
     ) {
-        val width = context.width
-        val height = context.height
-
         with(context) {
             strokePaint = gridColor
             lineWidth = 0.5 * this@GraphDelegate.lineWidth.canvasUnits
-
-            val paddingCanvas = padding.canvasUnits
-
-            // Calculate grid line spacing
-            val rangeX = maxX - minX
-            val rangeY = maxY - minY
-
-            val xStep = calculateGridStep(rangeX)
-            val yStep = calculateGridStep(rangeY)
 
             // Draw vertical grid lines
             var x = ceil(minX / xStep) * xStep
             while (x <= maxX) {
                 beginPath()
-                moveTo(toCanvasX(x), paddingCanvas)
-                lineTo(toCanvasX(x), height - paddingCanvas)
+                moveTo(toCanvasX(x), toCanvasY(minY))
+                lineTo(toCanvasX(x), toCanvasY(maxY))
                 stroke()
                 x += xStep
             }
@@ -259,8 +294,8 @@ open class GraphDelegate : CanvasDelegate() {
             var y = ceil(minY / yStep) * yStep
             while (y <= maxY) {
                 beginPath()
-                moveTo(paddingCanvas, toCanvasY(y))
-                lineTo(width - paddingCanvas, toCanvasY(y))
+                moveTo(toCanvasX(minX), toCanvasY(y))
+                lineTo(toCanvasX(maxX), toCanvasY(y))
                 stroke()
                 y += yStep
             }
@@ -269,10 +304,6 @@ open class GraphDelegate : CanvasDelegate() {
 
     private fun drawAxes(
         context: DrawingContext2D,
-        minX: Double,
-        maxX: Double,
-        minY: Double,
-        maxY: Double,
         toCanvasX: (Double) -> Double,
         toCanvasY: (Double) -> Double
     ) {
@@ -287,26 +318,21 @@ open class GraphDelegate : CanvasDelegate() {
 
             // X-axis
             beginPath()
-            moveTo(paddingCanvas, toCanvasY(0.0).coerceIn(paddingCanvas, height - paddingCanvas))
-            lineTo(width - paddingCanvas, toCanvasY(0.0).coerceIn(paddingCanvas, height - paddingCanvas))
+            println("minX: $minX")
+            println("maxX: $maxX")
+            moveTo(toCanvasX(minX), toCanvasY(0.0))
+            lineTo(toCanvasX(maxX), toCanvasY(0.0))
             stroke()
 
             // Y-axis
             beginPath()
-            moveTo(toCanvasX(0.0).coerceIn(paddingCanvas, width - paddingCanvas), paddingCanvas)
-            lineTo(toCanvasX(0.0).coerceIn(paddingCanvas, width - paddingCanvas), height - paddingCanvas)
+            moveTo(toCanvasX(0.0), toCanvasY(minY))
+            lineTo(toCanvasX(0.0), toCanvasY(maxY))
             stroke()
 
             // Draw tick marks and labels
             fillPaint = axisColor
             font(tickLabelFontSize.canvasUnits, FontAndStyle(systemDefaultFont))
-
-            // Calculate tick spacing
-            val rangeX = maxX - minX
-            val rangeY = maxY - minY
-
-            val xStep = calculateGridStep(rangeX)
-            val yStep = calculateGridStep(rangeY)
 
             // X-axis ticks and labels
             var x = ceil(minX / xStep) * xStep
@@ -315,13 +341,13 @@ open class GraphDelegate : CanvasDelegate() {
 
                 // Draw tick
                 beginPath()
-                moveTo(cx, toCanvasY(0.0).coerceIn(paddingCanvas, height - paddingCanvas))
-                lineTo(cx, toCanvasY(0.0).coerceIn(paddingCanvas, height - paddingCanvas) + 5)
+                moveTo(cx, toCanvasY(0.0))
+                lineTo(cx, toCanvasY(0.0) + (tickLabelFontSize / 3).canvasUnits)
                 stroke()
 
                 // Draw label
                 textAlign(TextAlign.center)
-                drawText(formatNumber(x), cx, height - paddingCanvas + 15)
+                drawText(xAxisLabels?.let { it[(x / xStep).roundToInt()] } ?: formatNumber(x), cx, height - paddingCanvas - xAxisLabelHeight + 1.rem.canvasUnits)
 
                 x += xStep
             }
@@ -333,13 +359,13 @@ open class GraphDelegate : CanvasDelegate() {
 
                 // Draw tick
                 beginPath()
-                moveTo(toCanvasX(0.0).coerceIn(paddingCanvas, width - paddingCanvas), cy)
-                lineTo(toCanvasX(0.0).coerceIn(paddingCanvas, width - paddingCanvas) - 5, cy)
+                moveTo(toCanvasX(0.0), cy)
+                lineTo(toCanvasX(0.0) - (tickLabelFontSize / 3).canvasUnits, cy)
                 stroke()
 
                 // Draw label
                 textAlign(TextAlign.right)
-                drawText(formatNumber(y), paddingCanvas - 8, cy + 4)
+                drawText(yAxisLabels?.let { it[(y / yStep).roundToInt()] } ?: formatNumber(y), paddingCanvas + yAxisLabelWidth - 0.5.rem.canvasUnits, cy + 0.3.rem.canvasUnits)
 
                 y += yStep
             }
@@ -355,12 +381,13 @@ open class GraphDelegate : CanvasDelegate() {
 
             // X-axis label
             textAlign(TextAlign.center)
-            drawText(xAxisLabel, width / 2, height - paddingCanvas / 3)
+            drawText(xAxisLabel, width / 2 + yAxisLabelWidth / 2, height - paddingCanvas - 0.15.rem.canvasUnits)
 
             // Y-axis label
             save()
-            translate(paddingCanvas / 3, height / 2)
+            translate(paddingCanvas + 1.rem.canvasUnits, height / 2 - xAxisLabelHeight / 2)
             rotate(-PI / 2)
+            textAlign(TextAlign.center)
             drawText(yAxisLabel, 0.0, 0.0)
             restore()
         }
