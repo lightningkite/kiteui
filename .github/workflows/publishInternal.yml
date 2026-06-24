@@ -2,6 +2,7 @@ name: snapshot
 
 on:
   push:
+    tags: ['*']
     branches:
       - main
       - version-**
