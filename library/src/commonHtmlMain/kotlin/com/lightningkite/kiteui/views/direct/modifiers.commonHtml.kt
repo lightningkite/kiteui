@@ -275,10 +275,32 @@ private class ApplyTag(
     }
 }
 
+/**
+ * Invisible wrapper that exists only to carry a semantic HTML tag (e.g. `<h1>`, `<nav>`) around an
+ * element whose own tag cannot be rewritten. It must be layout-transparent: the single child must
+ * fill it so that weight/stretch applied by the parent (which lands on this wrapper) flows through
+ * to the content.
+ *
+ * It always holds exactly one child, and — because the modifier order forces alignment/weight/sizing
+ * onto the wrapper rather than the child — that child always wants to fill the wrapper. So instead of
+ * the general stack machinery ([Frame.internalAddChildStack], built for overlapping children) we use
+ * the cheapest layout that fills both axes: a flex box whose single child grows along the main axis
+ * (width) and stretches along the cross axis (height) via flex's default `align-items: stretch`.
+ * `display: contents` is unusable here: with no box, the parent's layout analysis would have nothing
+ * to act on.
+ */
 internal class PassthroughContainer(context: ElementContext): NativeContainerElement(context) {
     init {
         native.tag = "div"
-        native.style.display = "block"
+        native.style.display = "flex"
+    }
+
+    override fun nativeAddChild(index: Int, element: Element) {
+        super.nativeAddChild(index, element)
+        // Purely a semantic label, so don't introduce a new theme/card boundary.
+        element.underlyingNativeElement.themeBase = GetBaseTheme.fromParentNonCascading
+        // Fill the main axis; the cross axis fills automatically via flex's default align-items: stretch.
+        element.underlyingNativeElement.native.style.flexGrow = "1"
     }
 }
 
