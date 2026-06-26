@@ -139,14 +139,10 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
 
     init {
-        // 1. Add the editor to the hierarchy FIRST.
-        // Because its layoutParams have a weight of 1f, it will push everything else to the bottom.
         addChild(object : NativeElement(context) {
             override val native = this@MarkdownRichTextEditor.nativeEditText
         })
 
-        // 2. Build the Toolbar AFTER the editor.
-        // It will sit at the bottom of the container, resting just above the keyboard when it opens.
         themed(ThemeDerivation { it.withBack }).scrollingHorizontally.row {
             button {
                 applyDynamicTheme {
@@ -262,42 +258,29 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
         val toolbarView = native.getChildAt(native.childCount - 1)
 
-
-        // 4. The absolute physical pixel check
+        // 3. Toolbar position: at its natural layout position (bottom of editor) normally,
+        //    sticky above the keyboard when the keyboard overlaps the editor.
+        //    Only translations are used — no padding changes — to avoid layout flicker.
         val decorView = context.activity.window.decorView
 
-        // Create the logic to calculate the keyboard overlap
         val updateToolbarPosition = {
             val r = Rect()
             decorView.getWindowVisibleDisplayFrame(r)
 
-            val screenHeight = decorView.height
-            val keypadHeight = screenHeight - r.bottom
+            val location = IntArray(2)
+            native.getLocationOnScreen(location)
 
-            // If the keyboard is open (takes up more than 15% of the screen)
-            if (keypadHeight > screenHeight * 0.15) {
-                val location = IntArray(2)
-                native.getLocationOnScreen(location)
+            val viewBottom = location[1] + native.height
+            val overlap = viewBottom - r.bottom
 
-                // The absolute physical pixel coordinate of the bottom of our editor component
-                val viewBottom = location[1] + native.height
-
-                // Calculate how much the keyboard overlaps the bottom of our editor
-                val overlap = viewBottom - r.bottom
-
-                if (overlap > 0) {
-                    // Physically translate the toolbar upward so it rests exactly on the keyboard
-                    toolbarView.translationY = -overlap.toFloat()
-                } else {
-                    toolbarView.translationY = 0f
-                }
+            if (overlap > 0) {
+                toolbarView.translationY = -overlap.toFloat()
             } else {
-                // Keyboard is closed
                 toolbarView.translationY = 0f
             }
         }
 
-        // 5. Attach the listeners to fire when the keyboard opens or the user scrolls
+        // 4. Attach the listeners to fire when the keyboard opens or the user scrolls
         decorView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() = updateToolbarPosition()
         })
