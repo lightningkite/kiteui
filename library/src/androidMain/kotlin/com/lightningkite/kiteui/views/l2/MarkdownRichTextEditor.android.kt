@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.l2
 
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.text.Editable
 import android.text.Spannable
@@ -11,16 +12,21 @@ import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.TypefaceSpan
 import android.text.style.UnderlineSpan
+import android.text.style.URLSpan
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.EditText
 import androidx.core.graphics.TypefaceCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.lightningkite.kiteui.views.direct.SlightlyModifiedLinearLayout
 import com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout
+import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.SelectedSemantic
 
@@ -32,6 +38,7 @@ import com.lightningkite.kiteui.markdown.MarkdownNode
 import com.lightningkite.kiteui.markdown.MarkdownParser
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.applyAlpha
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.BaseListenable
@@ -66,6 +73,8 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
     private var recursive = false
 
     val currentSelectedRichTextTags = Signal<Set<RichTextTags>>(emptySet())
+
+    var linkToolbarButton: Element? = null
 
     actual var suggestionHandler: SuggestionHandler? = null
 
@@ -130,8 +139,15 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
 
     init {
-        // Build the Toolbar exactly as you did in JS
-        scrollingHorizontally.row {
+        // 1. Add the editor to the hierarchy FIRST.
+        // Because its layoutParams have a weight of 1f, it will push everything else to the bottom.
+        addChild(object : NativeElement(context) {
+            override val native = this@MarkdownRichTextEditor.nativeEditText
+        })
+
+        // 2. Build the Toolbar AFTER the editor.
+        // It will sit at the bottom of the container, resting just above the keyboard when it opens.
+        themed(ThemeDerivation { it.withBack }).scrollingHorizontally.row {
             button {
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
@@ -224,6 +240,15 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 icon(Icon.code, "Code")
                 onClick { this@MarkdownRichTextEditor.toggleSpan(TypefaceSpan("monospace"), RichTextTags.CODE) }
             }
+            this@MarkdownRichTextEditor.linkToolbarButton = (button {
+                applyDynamicTheme {
+                    if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
+                            .contains(RichTextTags.LINK)
+                    ) SelectedSemantic else null
+                }
+                icon(Icon.link, "Insert Link")
+                onClick { this@MarkdownRichTextEditor.insertLink() }
+            } as Element)
             button {
                 applyDynamicTheme {
                     if (this@MarkdownRichTextEditor.currentSelectedRichTextTags.invoke()
@@ -234,17 +259,70 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 onClick { /* Implement Code Block Span */ }
             }
         }
-        // Add the editor to the hierarchy properly
-        addChild(object : NativeElement(context) {
-            override val native = this@MarkdownRichTextEditor.nativeEditText
-        })
 
-        // Listeners for Cursor and Content updates
-        nativeEditText.setOnClickListener { updateSelectedTags() }
+        val toolbarView = native.getChildAt(native.childCount - 1)
+
+
+        // 4. The absolute physical pixel check
+        val decorView = context.activity.window.decorView
+
+        // Create the logic to calculate the keyboard overlap
+        val updateToolbarPosition = {
+            val r = Rect()
+            decorView.getWindowVisibleDisplayFrame(r)
+
+            val screenHeight = decorView.height
+            val keypadHeight = screenHeight - r.bottom
+
+            // If the keyboard is open (takes up more than 15% of the screen)
+            if (keypadHeight > screenHeight * 0.15) {
+                val location = IntArray(2)
+                native.getLocationOnScreen(location)
+
+                // The absolute physical pixel coordinate of the bottom of our editor component
+                val viewBottom = location[1] + native.height
+
+                // Calculate how much the keyboard overlaps the bottom of our editor
+                val overlap = viewBottom - r.bottom
+
+                if (overlap > 0) {
+                    // Physically translate the toolbar upward so it rests exactly on the keyboard
+                    toolbarView.translationY = -overlap.toFloat()
+                } else {
+                    toolbarView.translationY = 0f
+                }
+            } else {
+                // Keyboard is closed
+                toolbarView.translationY = 0f
+            }
+        }
+
+        // 5. Attach the listeners to fire when the keyboard opens or the user scrolls
+        decorView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() = updateToolbarPosition()
+        })
+        decorView.viewTreeObserver.addOnScrollChangedListener {
+            updateToolbarPosition()
+        }
+
+
+        // Listeners for Cursor and Content updates remain unchanged below
+        nativeEditText.setOnClickListener {
+            val spannable = nativeEditText.text
+            val start = nativeEditText.selectionStart
+            if (spannable != null && start >= 0) {
+                val urlSpans = spannable.getSpans(start, start, URLSpan::class.java)
+                if (urlSpans.isNotEmpty()) {
+                    editLink(urlSpans.first())
+                    return@setOnClickListener
+                }
+            }
+            updateSelectedTags()
+        }
 
         nativeEditText.addTextChangedListener(object : TextWatcher {
             var newlineInsertedPos = -1
-            
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -260,6 +338,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 updateSelectedTags()
             }
             override fun afterTextChanged(s: Editable?) {
+                // ... (Keep the rest of your existing text watcher logic exactly as is)
                 if (this@MarkdownRichTextEditor.recursive || s == null) return
                 val pos = newlineInsertedPos
                 if (pos != -1) {
@@ -330,6 +409,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 (content as? ContentValue)?.update()
             }
         })
+
     }
 
     actual var hint: String
@@ -483,6 +563,174 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         (content as? ContentValue)?.update()
     }
 
+    private fun insertLink() {
+        val spannable = nativeEditText.text ?: return
+        val start = nativeEditText.selectionStart
+        val end = nativeEditText.selectionEnd
+        if (start < 0) return
+
+        val selectedText = if (start != end && start >= 0 && end >= 0 && end <= spannable.length) {
+            spannable.substring(start, end)
+        } else ""
+
+        val existingUrlSpans = spannable.getSpans(start, start, URLSpan::class.java)
+        if (existingUrlSpans.isNotEmpty()) {
+            editLink(existingUrlSpans.first())
+            return
+        }
+
+        val editor = this
+        context.coordinatorFrame?.bottomSheet(
+            partialRatio = 0.5f,
+            blockBehind = true,
+            startState = BottomSheetState.PARTIALLY_EXPANDED
+        ) { control ->
+            themed(DialogSemantic).col {
+                applySafeInsets()
+                centered.coordinatorDragHandle()
+                text("Insert Link")
+                space()
+                val urlInput = fieldTheme.textInput { hint = "URL" }
+                val textInputWidget = fieldTheme.textInput {
+                    hint = "Link text"
+                    if (selectedText.isNotEmpty()) content.value = selectedText
+                }
+                space()
+                row {
+                    expanding.button {
+                        text("Cancel")
+                        onClick { control.close() }
+                    }
+                    important.button {
+                        text("Insert")
+                        onClick {
+                            val url = urlInput.content.value.trim()
+                            val text = textInputWidget.content.value.trim()
+                            if (url.isNotEmpty()) {
+                                control.close()
+                                val sp = editor.nativeEditText.text
+                                if (sp != null) {
+                                    if (start == end) {
+                                        val insertText = text.ifEmpty { url }
+                                        sp.insert(start, insertText)
+                                        sp.setSpan(
+                                            URLSpan(url),
+                                            start,
+                                            start + insertText.length,
+                                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                        )
+                                    } else {
+                                        val s = start
+                                        val e = end
+                                        if (text.isNotEmpty() && text != sp.substring(s, e)) {
+                                            sp.replace(s, e, text)
+                                            sp.setSpan(
+                                                URLSpan(url),
+                                                s,
+                                                s + text.length,
+                                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                            )
+                                        } else {
+                                            sp.setSpan(URLSpan(url), s, e, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                        }
+                                    }
+                                    editor.updateSelectedTags()
+                                    (editor.content as? ContentValue)?.update()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun editLink(span: URLSpan) {
+        val spannable = nativeEditText.text ?: return
+        val existingS = spannable.getSpanStart(span)
+        val existingE = spannable.getSpanEnd(span)
+        val existingText =
+            if (existingS >= 0 && existingE > existingS) spannable.substring(existingS, existingE) else ""
+        val existingUrl = span.url
+        val editor = this
+
+        context.coordinatorFrame?.bottomSheet(
+            partialRatio = 0.5f,
+            blockBehind = true,
+            startState = BottomSheetState.PARTIALLY_EXPANDED
+        ) { control ->
+            themed(DialogSemantic).col {
+                applySafeInsets()
+                centered.coordinatorDragHandle()
+                text("Edit Link")
+                space()
+                val urlInput = fieldTheme.textInput {
+                    hint = "URL"
+                    content.value = existingUrl
+                }
+                val textInputWidget = fieldTheme.textInput {
+                    hint = "Link text"
+                    content.value = existingText
+                }
+                space()
+                row {
+                    expanding.button {
+                        text("Cancel")
+                        onClick { control.close() }
+                    }
+                    important.button {
+                        text("Remove")
+                        onClick {
+                            control.close()
+                            val sp = editor.nativeEditText.text
+                            if (sp != null) {
+                                val ss = sp.getSpanStart(span)
+                                val ee = sp.getSpanEnd(span)
+                                sp.removeSpan(span)
+                                if (ss >= 0 && ee > ss) {
+                                    val linkText = sp.substring(ss, ee)
+                                    sp.replace(ss, ee, linkText)
+                                }
+                                editor.updateSelectedTags()
+                                (editor.content as? ContentValue)?.update()
+                            }
+                        }
+                    }
+                    expanding.space()
+                    important.button {
+                        text("Update")
+                        onClick {
+                            val url = urlInput.content.value.trim()
+                            val text = textInputWidget.content.value.trim()
+                            if (url.isNotEmpty()) {
+                                control.close()
+                                val sp = editor.nativeEditText.text
+                                if (sp != null) {
+                                    val ss = sp.getSpanStart(span)
+                                    val ee = sp.getSpanEnd(span)
+                                    sp.removeSpan(span)
+                                    if (ss >= 0 && ee > ss && text.isNotEmpty()) {
+                                        sp.replace(ss, ee, text)
+                                        sp.setSpan(
+                                            URLSpan(url),
+                                            ss,
+                                            ss + text.length,
+                                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                        )
+                                    } else if (ss >= 0) {
+                                        sp.setSpan(URLSpan(url), ss, ee, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                    }
+                                    editor.updateSelectedTags()
+                                    (editor.content as? ContentValue)?.update()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun insertList(ordered: Boolean) {
         val start = nativeEditText.selectionStart
         val end = nativeEditText.selectionEnd
@@ -536,6 +784,8 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 is TypefaceSpan -> {
                     if (span.family == "monospace") tags.add(RichTextTags.CODE)
                 }
+
+                is URLSpan -> tags.add(RichTextTags.LINK)
             }
         }
 
@@ -551,13 +801,42 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         val length = spannable.length
         val result = StringBuilder()
 
+        data class LinkInfo(val start: Int, val end: Int, val url: String)
+
+        val linkSpans = spannable.getSpans(0, length, URLSpan::class.java)
+            .mapNotNull { span ->
+                val s = spannable.getSpanStart(span)
+                val e = spannable.getSpanEnd(span)
+                if (s >= 0 && e >= 0 && e > s) LinkInfo(s, e, span.url) else null
+            }.sortedBy { it.start }
+
         var currentStyles = emptyList<String>()
         val styleOrder = listOf("~~", "**", "*", "`")
+        var linkIdx = 0
+        var i = 0
 
-        for (i in 0 until length) {
+        while (i < length) {
+            val currentLink = linkSpans.getOrNull(linkIdx)?.takeIf { it.start == i }
+            if (currentLink != null) {
+                currentStyles.reversed().forEach { result.append(it) }
+                currentStyles = emptyList()
+                result.append("[")
+                for (j in currentLink.start until currentLink.end) {
+                    result.append(spannable[j])
+                }
+                result.append("](${currentLink.url})")
+                i = currentLink.end
+                linkIdx++
+                continue
+            }
+
+            if (linkSpans.getOrNull(linkIdx)?.let { i in it.start until it.end } == true) {
+                i++
+                continue
+            }
+
             val char = spannable[i]
 
-            // Headings check at start of line
             if (i == 0 || spannable[i - 1] == '\n') {
                 val lineSpans = spannable.getSpans(i, i + 1, RelativeSizeSpan::class.java)
                 val headingSpan = lineSpans.firstOrNull { it.sizeChange > 1.0f }
@@ -584,21 +863,18 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                             if (span.style == Typeface.BOLD) stylesAtI.add("**")
                             if (span.style == Typeface.ITALIC) stylesAtI.add("*")
                         }
-
                         is StrikethroughSpan -> stylesAtI.add("~~")
                         is TypefaceSpan -> if (span.family == "monospace") stylesAtI.add("`")
                     }
                 }
             }
 
-            // Close styles that are no longer active
             val activeButShouldBeClosed = currentStyles.filter { it !in stylesAtI }
             if (activeButShouldBeClosed.isNotEmpty()) {
                 currentStyles.reversed().forEach { result.append(it) }
                 currentStyles = emptyList()
             }
 
-            // Open styles that should be active
             styleOrder.forEach { style ->
                 if (style in stylesAtI && style !in currentStyles) {
                     result.append(style)
@@ -607,6 +883,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
             }
 
             result.append(char)
+            i++
         }
 
         currentStyles.reversed().forEach { result.append(it) }
@@ -700,6 +977,12 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 builder.append(if (node.checked) "☑ " else "☐ ")
                 node.children.forEach { renderNodeToSpannable(it, builder) }
                 builder.append("\n")
+            }
+
+            is MarkdownNode.Link -> {
+                val startPos = builder.length
+                node.children.forEach { renderNodeToSpannable(it, builder) }
+                builder.setSpan(URLSpan(node.url), startPos, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
 
             else -> {}

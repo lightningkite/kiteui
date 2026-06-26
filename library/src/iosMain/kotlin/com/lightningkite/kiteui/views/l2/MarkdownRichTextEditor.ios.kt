@@ -34,6 +34,9 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
 
     private var recursive = false
     val currentSelectedRichTextTags = Signal<Set<RichTextTags>>(emptySet())
+
+    var linkToolbarButton: Element? = null
+
     actual var suggestionHandler: SuggestionHandler? = null
 
     // Native iOS UITextView
@@ -52,6 +55,14 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
             UISwipeGestureRecognizer(target = this@MarkdownRichTextEditor, action = NSSelectorFromString("swipeLeft:"))
         swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft
         addGestureRecognizer(swipeLeft)
+
+        val linkTap =
+            UITapGestureRecognizer(
+                target = this@MarkdownRichTextEditor,
+                action = NSSelectorFromString("handleLinkTap:")
+            )
+        linkTap.cancelsTouchesInView = false
+        addGestureRecognizer(linkTap)
     }
 
     @ObjCAction
@@ -62,6 +73,41 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
     @ObjCAction
     fun swipeLeft(sender: UISwipeGestureRecognizer) {
         modifyIndent(false)
+    }
+
+    @ObjCAction
+    fun handleLinkTap(sender: UITapGestureRecognizer) {
+        if (sender.state != UIGestureRecognizerStateEnded) return
+        val offset = nativeTextView.offsetFromPosition(
+            nativeTextView.beginningOfDocument,
+            toPosition = nativeTextView.closestPositionToPoint(sender.locationInView(nativeTextView)) ?: return
+        )
+        if (offset < 0L) return
+        val uoffset = offset.toULong()
+        if (uoffset >= nativeTextView.attributedText.length) return
+
+        val text = nativeTextView.attributedText
+        text.enumerateAttribute(
+            NSLinkAttributeName,
+            inRange = NSMakeRange(0u, text.length),
+            options = 0u
+        ) { value, range, _ ->
+            if (value != null) {
+                val inRange = range.useContents { location <= uoffset && uoffset < location + length }
+                if (inRange) {
+                    val url = when (value) {
+                        is NSURL -> value.absoluteString ?: ""
+                        is String -> value
+                        else -> ""
+                    }
+                    if (url.isNotEmpty()) {
+                        val loc = range.useContents { location }
+                        val len = range.useContents { length }
+                        editLink(url, NSMakeRange(loc, len))
+                    }
+                }
+            }
+        }
     }
 
     private fun modifyIndent(increase: Boolean) {
@@ -278,6 +324,13 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                     )
                 }
             }
+            this@MarkdownRichTextEditor.linkToolbarButton = (button {
+                applyDynamicTheme {
+                    if (currentSelectedRichTextTags.invoke().contains(RichTextTags.LINK)) SelectedSemantic else null
+                }
+                icon(Icon.link, "Insert Link")
+                onClick { this@MarkdownRichTextEditor.insertLink() }
+            } as Element)
             button {
                 applyDynamicTheme {
                     if (currentSelectedRichTextTags.invoke()
@@ -377,6 +430,169 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         (content as? ContentValue)?.update()
     }
 
+    private fun insertLink() {
+        val selRange = nativeTextView.selectedRange
+        val attributedText = NSMutableAttributedString.create(attributedString = nativeTextView.attributedText)
+
+        var existingUrl: String? = null
+        var existingRange = NSMakeRange(0u, 0u)
+        attributedText.enumerateAttribute(
+            NSLinkAttributeName,
+            inRange = selRange,
+            options = 0u
+        ) { value, attrRange, _ ->
+            if (value != null) {
+                existingUrl = when (value) {
+                    is NSURL -> value.absoluteString ?: ""
+                    is String -> value
+                    else -> null
+                }
+                existingRange = attrRange
+            }
+        }
+
+        if (existingUrl != null) {
+            editLink(existingUrl!!, existingRange)
+            return
+        }
+
+        val nsText = nativeTextView.text as? NSString ?: return
+        val selectedText = if (selRange.length > 0u) nsText.substringWithRange(selRange) else ""
+        val editor = this
+        context.coordinatorFrame?.bottomSheet(
+            partialRatio = 0.5f,
+            blockBehind = true,
+            startState = BottomSheetState.PARTIALLY_EXPANDED
+        ) { control ->
+            themed(DialogSemantic).col {
+                applySafeInsets()
+                centered.coordinatorDragHandle()
+                text("Insert Link")
+                space()
+                val urlInput = fieldTheme.textInput { hint = "URL" }
+                val textInputWidget = fieldTheme.textInput {
+                    hint = "Link text"
+                    if (selectedText.isNotEmpty()) content.value = selectedText
+                }
+                space()
+                row {
+                    expanding.button {
+                        text("Cancel")
+                        onClick { control.close() }
+                    }
+                    important.button {
+                        text("Insert")
+                        onClick {
+                            val url = urlInput.content.value.trim()
+                            val text = textInputWidget.content.value.trim()
+                            if (url.isNotEmpty()) {
+                                control.close()
+                                val mAttr =
+                                    NSMutableAttributedString.create(attributedString = editor.nativeTextView.attributedText)
+                                val sr = editor.nativeTextView.selectedRange
+                                if (sr.length == 0uL) {
+                                    val insertText = text.ifEmpty { url }
+                                    mAttr.replaceCharactersInRange(sr, insertText)
+                                    mAttr.addAttribute(
+                                        NSLinkAttributeName,
+                                        NSURL.create(string = url),
+                                        NSMakeRange(sr.location, insertText.length.toULong())
+                                    )
+                                } else if (text.isNotEmpty()) {
+                                    mAttr.replaceCharactersInRange(sr, text)
+                                    mAttr.addAttribute(
+                                        NSLinkAttributeName,
+                                        NSURL.create(string = url),
+                                        NSMakeRange(sr.location, text.length.toULong())
+                                    )
+                                } else {
+                                    mAttr.addAttribute(NSLinkAttributeName, NSURL.create(string = url), sr)
+                                }
+                                editor.nativeTextView.attributedText = mAttr
+                                editor.updateSelectedTags()
+                                (editor.content as? ContentValue)?.update()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun editLink(url: String, linkRange: NSRange) {
+        val attributedText = nativeTextView.attributedText
+        val linkText = if (linkRange.length > 0u) {
+            (attributedText.string as NSString).substringWithRange(linkRange)
+        } else ""
+        val editor = this
+        context.coordinatorFrame?.bottomSheet(
+            partialRatio = 0.5f,
+            blockBehind = true,
+            startState = BottomSheetState.PARTIALLY_EXPANDED
+        ) { control ->
+            themed(DialogSemantic).col {
+                applySafeInsets()
+                centered.coordinatorDragHandle()
+                text("Edit Link")
+                space()
+                val urlInput = fieldTheme.textInput {
+                    hint = "URL"
+                    content.value = url
+                }
+                val textInputWidget = fieldTheme.textInput {
+                    hint = "Link text"
+                    content.value = linkText
+                }
+                space()
+                row {
+                    expanding.button {
+                        text("Cancel")
+                        onClick { control.close() }
+                    }
+                    important.button {
+                        text("Remove")
+                        onClick {
+                            control.close()
+                            val mAttr =
+                                NSMutableAttributedString.create(attributedString = editor.nativeTextView.attributedText)
+                            mAttr.removeAttribute(NSLinkAttributeName, linkRange)
+                            editor.nativeTextView.attributedText = mAttr
+                            editor.updateSelectedTags()
+                            (editor.content as? ContentValue)?.update()
+                        }
+                    }
+                    expanding.space()
+                    important.button {
+                        text("Update")
+                        onClick {
+                            val newUrl = urlInput.content.value.trim()
+                            val newText = textInputWidget.content.value.trim()
+                            if (newUrl.isNotEmpty()) {
+                                control.close()
+                                val mAttr =
+                                    NSMutableAttributedString.create(attributedString = editor.nativeTextView.attributedText)
+                                mAttr.removeAttribute(NSLinkAttributeName, linkRange)
+                                if (newText.isNotEmpty()) {
+                                    mAttr.replaceCharactersInRange(linkRange, newText)
+                                    mAttr.addAttribute(
+                                        NSLinkAttributeName,
+                                        NSURL.create(string = newUrl),
+                                        NSMakeRange(linkRange.location, newText.length.toULong())
+                                    )
+                                } else {
+                                    mAttr.addAttribute(NSLinkAttributeName, NSURL.create(string = newUrl), linkRange)
+                                }
+                                editor.nativeTextView.attributedText = mAttr
+                                editor.updateSelectedTags()
+                                (editor.content as? ContentValue)?.update()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun insertList(ordered: Boolean) {
         val range = nativeTextView.selectedRange
         val nsText = nativeTextView.text as NSString
@@ -423,6 +639,10 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
             if (attrs[NSStrikethroughStyleAttributeName] != null) {
                 tags.add(RichTextTags.STRIKETHROUGH)
             }
+
+            if (attrs[NSLinkAttributeName] != null) {
+                tags.add(RichTextTags.LINK)
+            }
         }
 
         if (currentSelectedRichTextTags.value != tags) {
@@ -443,6 +663,17 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
         ) { attrs, range, _ ->
             if (attrs == null) return@enumerateAttributesInRange
             val substring = (plainText as NSString).substringWithRange(range)
+
+            val linkUrl = attrs[NSLinkAttributeName]
+            if (linkUrl != null) {
+                val url = when (linkUrl) {
+                    is NSURL -> linkUrl.absoluteString ?: ""
+                    is String -> linkUrl
+                    else -> ""
+                }
+                result.append("[$substring]($url)")
+                return@enumerateAttributesInRange
+            }
 
             var prefix = ""
             var suffix = ""
@@ -540,6 +771,16 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                 builder.appendAttributedString(NSAttributedString.create(string = node.content))
                 val font = UIFont.monospacedSystemFontOfSize(UIFont.systemFontSize, UIFontWeightRegular)
                 builder.addAttribute(NSFontAttributeName, font, NSMakeRange(start, builder.length - start))
+            }
+
+            is MarkdownNode.Link -> {
+                val start = builder.length
+                node.children.forEach { renderNodeToAttributedString(it, builder) }
+                builder.addAttribute(
+                    NSLinkAttributeName,
+                    NSURL.create(string = node.url),
+                    NSMakeRange(start, builder.length - start)
+                )
             }
 
             is MarkdownNode.CodeBlock -> {

@@ -33,11 +33,11 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
     NativeContainerElementWithAction(context) {
     internal val ZERO_WIDTH_SPACE = "\u200B"
     internal val FORMATTING_TAGS =
-        listOf("STRONG", "EM", "B", "I", "CODE", "H1", "H2", "H3", "BLOCKQUOTE", "PRE", "S", "DEL", "U")
+        listOf("STRONG", "EM", "B", "I", "CODE", "A", "H1", "H2", "H3", "BLOCKQUOTE", "PRE", "S", "DEL", "U")
     internal val BLOCK_ELEMENTS = listOf("P", "H1", "H2", "H3", "LI", "BLOCKQUOTE", "PRE")
     internal val DELETE_INPUT_TYPES = listOf("deleteContentBackward", "deleteContentForward", "deleteByCut")
     internal val EMPTY_FORMATTING_TAGS =
-        listOf("STRONG", "EM", "B", "I", "CODE", "H1", "H2", "H3", "BLOCKQUOTE", "PRE", "S", "DEL", "U")
+        listOf("STRONG", "EM", "B", "I", "CODE", "A", "H1", "H2", "H3", "BLOCKQUOTE", "PRE", "S", "DEL", "U")
 
     internal var isProcessingEnter = false
 
@@ -381,6 +381,7 @@ actual class MarkdownRichTextEditor actual constructor(context: ElementContext) 
                     val anchorElement = document.createElement("a") as HTMLElement
                     anchorElement.setAttribute("href", cleanText)
                     anchorElement.setAttribute("target", "_blank")
+                    anchorElement.setAttribute("rel", "noopener noreferrer")
 
                     if (!range.collapsed) {
                         // Magic Link: User highlighted text, wrap it in the anchor tag

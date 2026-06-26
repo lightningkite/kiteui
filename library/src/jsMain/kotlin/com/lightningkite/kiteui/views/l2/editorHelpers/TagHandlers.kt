@@ -1041,7 +1041,7 @@ fun MarkdownRichTextEditor.openLinkEditor(existingLink: HTMLElement? = null) {
 
                     if (isEditMode) {
                         // --- EDIT MODE: Update existing node ---
-                        existingLink!!.setAttribute("href", url)
+                        existingLink.setAttribute("href", url)
                         if (text != null && text.isNotEmpty()) {
                             existingLink.textContent = text
                         }
@@ -1055,6 +1055,7 @@ fun MarkdownRichTextEditor.openLinkEditor(existingLink: HTMLElement? = null) {
                         val a = document.createElement("a") as HTMLElement
                         a.setAttribute("href", url)
                         a.setAttribute("target", "_blank")
+                        a.setAttribute("rel", "noopener noreferrer")
 
                         if (newRange.collapsed) {
                             a.textContent = text ?: url
