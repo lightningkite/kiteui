@@ -164,7 +164,7 @@ import com.lightningkite.reactive.context.StatusListener
  * @see ElementContext for platform services and configuration
  */
 @ViewDsl
-interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
+interface Element : KiteUiCoroutineScopeHelpers, StatusListener {  // TODO: This is really messed up - this element is effectively both a coroutine context element AND a coroutine context at the same time, which seems like a terrible idea and has lead to at least ONE case of very bad mistake making with the definition of 'element.job'.
     /** Platform services and configuration for this element */
     val context: ElementContext
 
@@ -491,6 +491,31 @@ interface Element : KiteUiCoroutineScopeHelpers, StatusListener {
         var removeBeforeShutdown = false
         var leakDetect = false
         var debugTarget: Element? = null
+
+        /**
+         * When true, every [NativeElement] increments a live-instance counter on creation and
+         * decrements it on shutdown. After navigating away from a page and back, the totals should
+         * return to their baseline; a monotonic climb means elements are being leaked (their
+         * [Element.onShutdown] never ran). This signal is GC-independent, so it is reliable on
+         * platforms where forcing a garbage collection isn't possible (e.g. the browser).
+         */
+        var countInstances = false
+        val liveInstancesByClass: MutableMap<String, Int> = mutableMapOf()
+        var liveInstanceTotal: Int = 0
+            private set
+
+        fun recordCreated(element: Element) {
+            liveInstanceTotal++
+            val k = element::class.simpleName ?: "?"
+            liveInstancesByClass[k] = (liveInstancesByClass[k] ?: 0) + 1
+        }
+
+        fun recordShutdown(element: Element) {
+            liveInstanceTotal--
+            val k = element::class.simpleName ?: "?"
+            val v = (liveInstancesByClass[k] ?: 0) - 1
+            if (v <= 0) liveInstancesByClass.remove(k) else liveInstancesByClass[k] = v
+        }
     }
 }
 
@@ -684,7 +709,7 @@ interface ContainerElement : Element, ElementWithChildren, ViewWriter {
      * All children are shut down and removed from the native view hierarchy.
      * Equivalent to calling [removeChild] for each child, but may be more efficient.
      */
-    fun clearChildren() { for (i in children.indices) removeChild(i) }
+    fun clearChildren() { for (i in children.indices.reversed()) removeChild(i) }
 
 
 

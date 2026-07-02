@@ -5,8 +5,10 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.views.coroutineContextOf
 import com.lightningkite.kiteui.views.native
 import com.lightningkite.kiteui.views.theme
+import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import kotlin.js.Json
@@ -16,12 +18,16 @@ import kotlin.math.sqrt
 import kotlin.time.Duration
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.get
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.milliseconds
 
 private data class ShowHideRequest(val goal: Boolean, val transition: ScreenTransition)
@@ -84,6 +90,12 @@ private data class OngoingAnimation(
     private var heightChildResume: String = ""
     private var maxHeightChildResume: String = ""
     fun animRatio() = animation!!.currentTime.toFloat() / totalTime
+    val job = Job(on.coroutineContext.job)
+    init {
+        job.invokeOnCompletion {
+            showHideAnimating.remove(on)
+        }
+    }
 
     init {
         log?.info(
@@ -125,7 +137,7 @@ private data class OngoingAnimation(
     val done = label@{
         if (closed) return@label
         closed = true
-        showHideAnimating.remove(on)
+        job.cancel()
         log?.log("showHideAnimating: ${showHideAnimating.keys.joinToString { it.children.singleOrNull()?.debugName ?: "?" }}")
         myElement.hidden = !goal
         (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
@@ -188,6 +200,13 @@ private class OngoingWeightAnimation(
     private var savedProgress: Double = startRatio * 1000.0
     fun animRatio() = animation!!.currentTime.toFloat() / totalTime
 
+    // by Claude - child of the element's job. Cancelling it (via done()/cancel()) evicts the map
+    // entry; element shutdown cancels it too, so an interrupted animation can't pin the detached
+    // element. Using a child job (rather than on.onRemove directly) self-cleans on completion, so
+    // repeated weight animations don't accumulate handlers on the element's long-lived job.
+    private val job = Job(on.coroutineContext.job)
+    init { CoroutineScope(job).onRemove { weightAnimating.remove(on) } }
+
     private fun buildKeyframes(): Array<dynamic> = arrayOf(
         json("flexGrow" to "$fromWeight", "flexShrink" to "$fromWeight", "flexBasis" to fromBasis),
         json("flexGrow" to "$toWeight", "flexShrink" to "$toWeight", "flexBasis" to toBasis)
@@ -214,7 +233,7 @@ private class OngoingWeightAnimation(
     val done = label@{
         if (closed) return@label
         closed = true
-        weightAnimating.remove(on)
+        job.cancel()
         myElement.classList.remove("animatingShowHide")
         // Apply final inline styles
         myElement.style.flexGrow = "$toWeight"
@@ -232,7 +251,7 @@ private class OngoingWeightAnimation(
         // Cancel the Web Animation (removes its style override)
         animation?.cancel()
         closed = true
-        weightAnimating.remove(on)
+        job.cancel()
         myElement.classList.remove("animatingShowHide")
         // Unlock child dimensions
         child.style.width = "100%"

@@ -77,6 +77,9 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
     actual fun open() {
         if (existingView != null) return
         var removeElementFromOverlay = {}
+        // Held so it can be disconnected on teardown; a live ResizeObserver retains its target
+        // element and the reposition closure, leaking the popover's DOM subtree otherwise.
+        var resizeObserver: ResizeObserver? = null
         val popoverWriter = source.popoverWriter(source.context.overlayFrame!!) {
             removeElementFromOverlay()
         }
@@ -242,9 +245,9 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                 // Corrective measures: force it back on-screen
                 native.onElement { e ->
                     e as HTMLElement
-                    ResizeObserver { entry, observer ->
+                    resizeObserver = ResizeObserver { entry, observer ->
                         reposition()
-                    }.observe(e)
+                    }.also { it.observe(e) }
                 }
 
                 menuGenerator(this)
@@ -314,6 +317,8 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                     window.removeEventListener("scroll", repos, true)
                     window.removeEventListener("mousemove", mouseMove)
                     document.removeEventListener("keydown", escapeHandler)
+                    resizeObserver?.disconnect()
+                    resizeObserver = null
                     source.native.setAttribute("aria-expanded", "false")
                     source.native.setAttribute("aria-controls", null)
                     if (startedFocused) {

@@ -432,6 +432,10 @@ abstract class NativeElementCommonCode internal constructor(override val context
 
     // ---- LIFECYCLE ---
 
+    init {
+        if (Element.Debugger.countInstances) Element.Debugger.recordCreated(this)
+    }
+
     private val job = SupervisorJob()
 
     override val coroutineContext: CoroutineContext = coroutineContextOf(
@@ -476,6 +480,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
         if (isShutdown) return
         job.cancel()
         isShutdown = true
+        if (Element.Debugger.countInstances) Element.Debugger.recordShutdown(this)
         if (Element.Debugger.leakDetect) leakDetect()
         parent = null
     }

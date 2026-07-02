@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.ResizeObserver
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
+import com.lightningkite.reactive.context.onRemove
 import kotlinx.browser.window
 import org.w3c.dom.*
 import kotlin.math.roundToInt
@@ -26,7 +27,7 @@ actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
 actual fun Canvas.setupResizeListener() {
     native.onElement { htmlNative ->
         htmlNative as HTMLCanvasElement
-        ResizeObserver { _, _ ->
+        val observer = ResizeObserver { _, _ ->
             htmlNative.apply {
                 val sw = (scrollWidth * window.devicePixelRatio).roundToInt()
                 val sh = (scrollHeight * window.devicePixelRatio).roundToInt()
@@ -38,6 +39,10 @@ actual fun Canvas.setupResizeListener() {
                 delegate?.invalidate?.invoke()
             }
 
-        }.observe(htmlNative)
+        }
+        observer.observe(htmlNative)
+        // A live ResizeObserver retains its target (the canvas) and this closure, pinning the
+        // detached canvas + its backing bitmap after the element is removed. Disconnect on shutdown.
+        onRemove { observer.disconnect() }
     }
 }
