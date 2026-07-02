@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.KiteUiActivity
 import com.lightningkite.kiteui.userAgent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
@@ -33,6 +34,11 @@ object AndroidAppContext {
             }
             install(HttpCache) {
                 publicStorage(FileStorage(applicationCtx.cacheDir.resolve("cachehttp")))
+            }
+            install(HttpTimeout) {
+                requestTimeoutMillis = 120_000
+                connectTimeoutMillis = 30_000
+                socketTimeoutMillis = 120_000
             }
         }
     }
