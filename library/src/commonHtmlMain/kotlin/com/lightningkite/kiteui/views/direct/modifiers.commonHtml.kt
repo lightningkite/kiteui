@@ -296,9 +296,9 @@ internal class PassthroughContainer(context: ElementContext): NativeContainerEle
     }
 
     override fun nativeAddChild(index: Int, element: Element) {
-        super.nativeAddChild(index, element)
         // Purely a semantic label, so don't introduce a new theme/card boundary.
         element.underlyingNativeElement.themeBase = GetBaseTheme.fromParentNonCascading
+        super.nativeAddChild(index, element)
         // Fill the main axis; the cross axis fills automatically via flex's default align-items: stretch.
         element.underlyingNativeElement.native.style.flexGrow = "1"
     }

@@ -1011,6 +1011,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         val directSel = sel(".kui")
 
         val backSel = (if (includeMaybeTransition) sel(".kui.clickable") else sel(".kui.transition"))
+        val paddedSel = (if (includeMaybeTransition) sel(".kui.clickable") else sel(".kui.padded"))
 
         theme.diff(diff) { background }?.let {
             if(diff?.background is FadingColor) addToCss(backSel, "animation", "none")
@@ -1110,10 +1111,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 if (theme.cornerShape == CornerShape.Continuous) {
                     // Use CSS variable --corner-shape-scale to boost radius when squircle is supported.
                     // Unsupported browsers get 1x radius; supported browsers get 2x + corner-shape.
-                    addToCss(backSel, "border-radius", radii.toRawCornerRadius(scaleCssVar = "--corner-shape-scale"))
-                    addToCss(backSel, "corner-shape", "squircle")
+                    addToCss(paddedSel, "border-radius", radii.toRawCornerRadius(scaleCssVar = "--corner-shape-scale"))
+                    addToCss(paddedSel, "corner-shape", "squircle")
                 } else {
-                    addToCss(backSel, "border-radius", radii.toRawCornerRadius())
+                    addToCss(paddedSel, "border-radius", radii.toRawCornerRadius())
                 }
             }
         }
