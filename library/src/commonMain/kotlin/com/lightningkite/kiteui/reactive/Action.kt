@@ -192,8 +192,12 @@ class DependentAction(
         val extraContext = instrumentations.fold<ActionInstrumentation, CoroutineContext>(EmptyCoroutineContext) { acc, it -> acc + it.coroutineContext }
         lastJob = (keepRunningWhile ?: scope).let { calculationContext ->
             var done = false
+            // `this` (the DependencyChangeListener) must be in the coroutine context so that
+            // Reactive.await()/state() inside `action` can find it via currentCoroutineContext()
+            // and register dependencies against it; otherwise onDependencyChange never fires and
+            // the error state is never cleared when a dependency changes.
             val job = calculationContext.launch(
-                context = extraContext,
+                context = extraContext + this,
                 start = if (calculationContext.coroutineContext[CoroutineDispatcher]?.isDispatchNeeded(
                         calculationContext.coroutineContext
                     ) == false
