@@ -35,13 +35,13 @@ private class FalseWhenSuccessful(val status: Reactive<*>): Reactive<Boolean> {
 
     override fun addListener(listener: () -> Unit): Release = status.addListener(listener)
 }
-@Suppress("UNCHECKED_CAST")
-val NativeElement.working: Reactive<Boolean> get() =
-    context.addons.local.getOrPut("NativeElement.working") { FalseWhenSuccessful(foregroundProcesses) } as Reactive<Boolean>
+// NB: these must NOT be cached in context.addons, because a single ElementContext is shared
+// across a whole subtree of sibling elements. Caching a per-element wrapper under a constant key
+// would hand every sibling the first element's process status. FalseWhenSuccessful is a trivial
+// delegating wrapper, so constructing it per access is cheap and correct.
+val NativeElement.working: Reactive<Boolean> get() = FalseWhenSuccessful(foregroundProcesses)
 
-@Suppress("UNCHECKED_CAST")
-val NativeElement.loading: Reactive<Boolean> get() =
-    context.addons.local.getOrPut("NativeElement.loading") { FalseWhenSuccessful(backgroundProcesses) } as Reactive<Boolean>
+val NativeElement.loading: Reactive<Boolean> get() = FalseWhenSuccessful(backgroundProcesses)
 
 /**
  * Returns whether animations are currently enabled for this element.

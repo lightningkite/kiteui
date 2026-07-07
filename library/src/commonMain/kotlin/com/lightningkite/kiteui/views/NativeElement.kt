@@ -483,6 +483,10 @@ abstract class NativeElementCommonCode internal constructor(override val context
         if (Element.Debugger.countInstances) Element.Debugger.recordShutdown(this)
         if (Element.Debugger.leakDetect) leakDetect()
         parent = null
+        // Cross-element accessibility associations hold strong references to arbitrary elements;
+        // clearing them on shutdown prevents a dead element from retaining a whole other subtree.
+        labelFor = null
+        describedBy = null
     }
 
 
@@ -727,7 +731,10 @@ abstract class NativeElementCommonCode internal constructor(override val context
     @InternalKiteUi
     fun checkIsShutdown(name: String): Boolean {
         if (isShutdown) {
-            println("WARNING!! $this is shut down, but attempt to call $name was made")
+            // Surface via the logging system rather than a bare println. This still returns true so
+            // callers no-op; a teardown race (a reactive scope firing mid-disposal) can legitimately
+            // reach here, so we warn loudly rather than throw. See viewPath for the offending element.
+            Log.tag("NativeElement").warn("$name called on shut-down element ${viewPath()}")
             return true
         }
         return false
