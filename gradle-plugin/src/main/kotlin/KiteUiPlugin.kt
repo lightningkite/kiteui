@@ -282,6 +282,7 @@ class KiteUiPlugin : Plugin<Project> {
             dependsOn("syncVersionsIos")
             dependsOn("syncVersionsJs")
         })
+        registerAiDriverTasks(project)
         Unit
     }
 
