@@ -267,7 +267,7 @@ private fun <V : ColorSpace, T : ReactiveWithMutableValue<V>> ViewWriter.bindCol
                 abs(parentColor.green - local.green) > tolerance ||
                         abs(parentColor.red - local.red) > tolerance ||
                         abs(parentColor.blue - local.blue) > tolerance ||
-                        abs(parentColor.green - local.green) > tolerance
+                        abs(parentColor.alpha - local.alpha) > tolerance
 
             if (isDifferent) {
                 other.value = fromColor(parentColor)

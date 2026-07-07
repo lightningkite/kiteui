@@ -318,8 +318,6 @@ open class GraphDelegate : CanvasDelegate() {
 
             // X-axis
             beginPath()
-            println("minX: $minX")
-            println("maxX: $maxX")
             moveTo(toCanvasX(minX), toCanvasY(0.0))
             lineTo(toCanvasX(maxX), toCanvasY(0.0))
             stroke()
