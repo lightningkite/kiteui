@@ -62,7 +62,7 @@ fun buttonClickWorks() = kiteUiTest {
 
 `KiteUiTestHarness` creates an isolated testing environment:
 
-- Creates a test `RContext`
+- Creates a test `ElementContext`
 - Manages view lifecycle
 - Handles cleanup
 

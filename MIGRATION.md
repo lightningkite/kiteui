@@ -2,9 +2,7 @@
 
 This document describes the major architectural refactoring happening on the `view-split` branch.
 
-**Status**: 🚧 IN PROGRESS - Branch is currently BROKEN during active migration
-
-**Target**: Merge into `version-7` when complete
+**Status**: ✅ COMPLETE - Migration has landed on `version-8`; the codebase builds.
 
 ## Overview
 
@@ -139,13 +137,13 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
     fun addChild(element: Element)
 
     // Hierarchy of modifier interfaces (least restrictive to most restrictive)
-    interface CanAddAlignment : CanAddWeight      // Most permissive
-    interface CanAddWeight : CanAddShownWhen
+    interface CanAddAlignment : CanAddWeight              // Most permissive
+    interface CanAddWeight : CanAddListElementModifier
+    interface CanAddListElementModifier : CanAddShownWhen
     interface CanAddShownWhen : CanAddSizing
     interface CanAddSizing : CanAddTheme
-    interface CanAddTheme : CanAddDynamicTheme
-    interface CanAddDynamicTheme : CanAddScrolling
-    interface CanAddScrolling : ElementWriter      // Most restrictive
+    interface CanAddTheme : CanAddScrolling
+    interface CanAddScrolling : ElementWriter             // Most restrictive
 }
 
 // ViewWriter is the fully permissive starting point
@@ -159,11 +157,11 @@ Each modifier is defined on the appropriate interface and returns the next inter
 fun ElementWriter.CanAddAlignment.align(h: Align, v: Align): ElementWriter.CanAddWeight
 fun ElementWriter.CanAddAlignment.centered: ElementWriter.CanAddWeight
 
-// Weight modifiers - available after alignment, return CanAddShownWhen
-fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddShownWhen
-fun ElementWriter.CanAddWeight.expanding: ElementWriter.CanAddShownWhen
+// Weight modifiers - available after alignment, return CanAddListElementModifier
+fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier
+fun ElementWriter.CanAddWeight.expanding: ElementWriter.CanAddListElementModifier
 
-// Visibility modifiers - available after weight, return CanAddSizing
+// Visibility modifiers - available after list-element modifiers, return CanAddSizing
 fun ElementWriter.CanAddShownWhen.shownWhen(condition: () -> Boolean): ElementWriter.CanAddSizing
 
 // Sizing modifiers - available after visibility, return CanAddTheme
@@ -194,26 +192,25 @@ alignment → weight → shownWhen → sizing → theme → scrolling → elemen
 
 ```kotlin
 // ✅ Correct - enforced by type system
-centered - weight(1f) - shownWhen { isVisible() } - sizedBox(...) -
-    card - scrolling - col { }
+centered.weight(1f).shownWhen { isVisible() }.sizedBox(...).card.scrolling.col { }
 
 // ✅ Correct - can skip stages
-centered - card - button { }
+centered.card.button { }
 
 // ✅ Correct - theme is repeatable
-card - important - bold - button { }
+card.important.bold.button { }
 
 // ❌ Won't compile - weight comes before alignment
-weight(1f) - centered - col { }
-//           ^^^^^^^^ ERROR: centered not available on CanAddShownWhen
+weight(1f).centered.col { }
+//         ^^^^^^^^ ERROR: centered not available on CanAddListElementModifier
 
 // ❌ Won't compile - scrolling must come after theme
-scrolling - card - col { }
-//          ^^^^ ERROR: card not available on ElementWriter
+scrolling.card.col { }
+//        ^^^^ ERROR: card not available on ElementWriter
 
 // ❌ Won't compile - wrong order
-sizedBox(...) - weight(1f) - col { }
-//              ^^^^^^^^^^^ ERROR: weight not available on CanAddTheme
+sizedBox(...).weight(1f).col { }
+//            ^^^^^^^^^^ ERROR: weight not available on CanAddTheme
 ```
 
 #### Escape Hatch
@@ -221,8 +218,8 @@ sizedBox(...) - weight(1f) - col { }
 In rare cases where you need to break the rules (and accept the risk of bugs), use:
 
 ```kotlin
-@OptIn(UnsafeModifierOrdering::class)
-someModifier.withUnrestrictedModifiers() - anyModifierYouWant - element { }
+@OptIn(UnsafeModifier::class)
+someWriter.withUnsafeModifiers().card.col { }
 ```
 
 This should be avoided in normal code.
@@ -339,18 +336,18 @@ fun ElementWriter.CanAddSizing.myModifier(): ElementWriter.CanAddTheme =
 
 ## Implementation Status
 
-**Branch**: `view-split`
+**Branch**: `version-8` (migration is complete and merged)
 
 **📊 See [MIGRATION_STATUS_ANDROID_HTML.md](MIGRATION_STATUS_ANDROID_HTML.md) for detailed Android and HTML migration status**
 
-Recent work (newest first):
+All work completed:
 - ✅ Android native modifiers
 - ✅ Android views migrated to NativeElement
 - ✅ JS/HTML modifiers migrated
 - ✅ Context addon migration
 - ✅ Modifier DSL migration
 - ✅ Core Element/ElementWriter/NativeElement interfaces
-- ✅ iOS native elements (COMPLETE)
+- ✅ iOS native elements
   - ✅ Core NativeElement.ios.kt refactor
   - ✅ Interactive elements (Button, Checkbox, RadioButton, Switch, etc.)
   - ✅ Text input elements (TextField, TextArea, AutoComplete, etc.)
@@ -362,18 +359,18 @@ Recent work (newest first):
   - ✅ Display elements (ActivityIndicator, TextView, Space, Separator, ProgressBar, CircularProgress)
   - ✅ Media elements (Canvas, RawImageView, Video, WebView)
   - ⏭️ ImageCrop (commented out - not implemented on iOS)
-- 🚧 Platform-specific modifier implementations
-- 🚧 Example app updates
+- ✅ Platform-specific modifier implementations
+- ✅ Example app updates
 
 ## Testing Strategy
 
-Once migration is complete:
+Migration is complete. For ongoing verification:
 
 1. Run full test suite on all platforms
 2. Manual testing of example-app on all platforms
-3. Verify modifier ordering enforcement works
+3. Modifier ordering enforcement is validated at compile time
 4. Performance testing (ensure no regressions)
-5. Migration guide for external users
+5. See application code migration patterns above for external users
 
 ## Questions?
 

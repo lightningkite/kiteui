@@ -94,8 +94,8 @@ Substitute `:library:` for `:example-app:` to run library tests instead.
 # Run Android version
 # Use Android run configuration: "example-app"
 
-# Run JVM version
-./gradlew :example-app:jvmRun
+# Run JVM/SSR version
+./gradlew :example-app:ssrServerRun
 ```
 
 **Note for Claude:** When testing JS/Web changes, always use `./gradlew :example-app:viteRun` to start the dev server. Do NOT use Python HTTP servers or other manual servers - they don't handle SPA routing correctly.
@@ -150,10 +150,10 @@ Common containers: `row`, `col`, `frame`, `rowCollapsingToColumn`
 
 ### Modifiers
 
-Modifiers are applied with the `-` operator. Order matters: Position > Visibility > Scroll > Theme
+Modifiers are applied via dot-chaining on the writer. The type system enforces canonical order: alignment → weight → shownWhen → sizing → theme → scrolling → element.
 
 ```kotlin
-centered - scrolling - card - col {
+centered.card.scrolling.col {
     // content
 }
 ```
@@ -205,8 +205,8 @@ userData.value = fetchedData
 Apply semantic themes via modifiers. Switching themes creates backgrounds/cards. Switching to the same theme does NOT create a card (use explicit `card` modifier).
 
 ```kotlin
-important - button { text("Important") }
-card - col { /* content */ }
+important.button { text("Important") }
+card.col { /* content */ }
 ```
 
 Theme switches should typically be applied to containers (`col`, `row`, `frame`, `button`), not individual elements.
