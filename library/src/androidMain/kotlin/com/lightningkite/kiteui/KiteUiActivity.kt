@@ -180,7 +180,9 @@ abstract class KiteUiActivity : AppCompatActivity() {
             val path = UrlLikePath(
                 segments = it.path?.split('/')?.filter { it.isNotBlank() } ?: listOf(),
                 parameters = it.query?.removePrefix("?")?.split('&')?.associate {
-                    it.decodeURLQueryComponent().substringBefore('=') to it.substringAfter('=', "").decodeURLQueryComponent()
+                    // Split on the raw '=' delimiter first, THEN decode each half; decoding before
+                    // splitting would let an encoded '=' (%3D) inside a value corrupt the key/value split.
+                    it.substringBefore('=').decodeURLQueryComponent() to it.substringAfter('=', "").decodeURLQueryComponent()
                 } ?: mapOf()
             )
             mainNavigator.routes.parse(path)?.let {
