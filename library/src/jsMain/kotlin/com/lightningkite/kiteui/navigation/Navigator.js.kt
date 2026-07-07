@@ -53,15 +53,26 @@ actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     when (PageNavigatorBehavior.current) {
         PageNavigatorBehavior.Separate -> {
             val log: Log? = LogRoot.tag("ScreenStack.bindToPlatform")
-            val lastStackForPath = HashMap<UrlLikePath, List<Page>>()
+            // Remembers the page stack for previously-visited URLs so back/forward can restore it.
+            // Bounded (with oldest-first eviction) so a long session doesn't retain every stack -
+            // and every Page it references - forever. Beyond the cap, an old URL simply reparses
+            // into a fresh single-page stack, which is acceptable graceful degradation.
+            val maxRememberedStacks = 50
+            val lastStackForPath = LinkedHashMap<UrlLikePath, List<Page>>()
+            fun rememberStack(path: UrlLikePath, value: List<Page>) {
+                lastStackForPath.remove(path) // re-insert to refresh recency (insertion-ordered map)
+                lastStackForPath[path] = value
+                while (lastStackForPath.size > maxRememberedStacks) {
+                    lastStackForPath.remove(lastStackForPath.keys.first())
+                }
+            }
 
             val initBar = window.location.urlLike()
 
             // load stack
             fun guessAndImplementFromUrlBar(urlLikePath: UrlLikePath) {
-                stack.value = lastStackForPath.getOrPut(urlLikePath) {
-                    listOf(routes.parseOrFallback(urlLikePath))
-                }
+                stack.value = lastStackForPath[urlLikePath]
+                    ?: listOf(routes.parseOrFallback(urlLikePath)).also { rememberStack(urlLikePath, it) }
             }
             guessAndImplementFromUrlBar(initBar)
 
@@ -112,7 +123,7 @@ actual fun PageNavigator.bindToPlatform(context: ElementContext) {
                             basePath + it.render()
                         )
                     }
-                    lastStackForPath[it.urlLikePath] = s
+                    rememberStack(it.urlLikePath, s)
                 }
             }
 
