@@ -317,6 +317,11 @@ val webSocketClient: HttpClient by lazy {
         install(WebSockets) {
             pingInterval = 20_000.milliseconds
         }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 120_000
+            connectTimeoutMillis = 30_000
+            socketTimeoutMillis = 120_000
+        }
     }
 }
 
