@@ -20,9 +20,16 @@ data class AnnotationMatch(
     }
 }
 
-internal fun generateAutoroutes(sources: File, out: File) {
+/**
+ * Scans [sourceRoots] for Kotlin source files annotated with `@Routable` or `@FallbackRoute`
+ * and writes a generated `AutoRoutes` val to [out].
+ *
+ * Each root is walked recursively; all roots are treated as a single flat source set for the
+ * purpose of computing the common top-level package name.
+ */
+public fun generateAutoroutes(sourceRoots: Iterable<File>, out: File) {
 
-    val allRoutables = sources.walkTopDown()
+    val allRoutables = sourceRoots.asSequence().flatMap { it.walkTopDown() }
         .filter { it.extension == "kt" }
         .flatMap { file ->
             val out = ArrayList<ScreenData>()
@@ -255,6 +262,13 @@ internal fun generateAutoroutes(sources: File, out: File) {
         }
     }
 }
+
+/**
+ * Convenience overload for a single Kotlin source root.
+ * Scans [sources] for `@Routable`/`@FallbackRoute` annotations and writes the generated
+ * `AutoRoutes` val to [out].
+ */
+public fun generateAutoroutes(sources: File, out: File) = generateAutoroutes(listOf(sources), out)
 
 
 internal data class ScreenData(

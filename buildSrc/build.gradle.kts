@@ -17,11 +17,20 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)
     }
 }
-val src = file("../gradle-plugin/src/main/kotlin")
 val dest = file("src/main/kotlin")
 
-src.walkTopDown().filter { it.isFile }.forEach {
-    val out = dest.resolve(it.relativeTo(src))
+// Mirror the plugin sources (KiteUiPlugin.kt, resource codegen, etc.)
+val pluginSrc = file("../gradle-plugin/src/main/kotlin")
+pluginSrc.walkTopDown().filter { it.isFile }.forEach {
+    val out = dest.resolve(it.relativeTo(pluginSrc))
+    out.parentFile.mkdirs()
+    it.copyTo(out, overwrite = true)
+}
+
+// Mirror the companion sources (autoroute codegen helpers)
+val companionSrc = file("../build-companion/src/main/kotlin")
+companionSrc.walkTopDown().filter { it.isFile }.forEach {
+    val out = dest.resolve(it.relativeTo(companionSrc))
     out.parentFile.mkdirs()
     it.copyTo(out, overwrite = true)
 }

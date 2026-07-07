@@ -21,6 +21,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
+    implementation(project(":kiteui-build"))
     implementation(libs.kotlin.gradle.plugin.api)
     implementation(libs.fontbox)
     testImplementation(libs.junit)
