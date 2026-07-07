@@ -63,6 +63,29 @@ internal fun String.afterParens(
 }
 
 /**
+ * Returns the index just past the closing '}' that brace-matches the '{' at [startingAt].
+ *
+ * Uses simple depth counting. String literals containing unbalanced braces are not handled,
+ * matching the existing behaviour of splitParens / afterParens. Block comments and line
+ * comments are already stripped before this helper is called in generateRoutes.kt, so those
+ * edge cases do not arise in practice.
+ *
+ * Throws if the opening character is not '{' or if the opening brace is never closed.
+ */
+internal fun String.afterBraces(startingAt: Int = 0): Int {
+    var index = startingAt
+    require(this[index] == '{') { "Expected '{' at index $index, found '${this[index]}'" }
+    var depth = 1
+    while (++index < length) {
+        when (this[index]) {
+            '{' -> depth++
+            '}' -> if (--depth == 0) return index + 1
+        }
+    }
+    throw IllegalArgumentException("Unmatched '{' at index $startingAt")
+}
+
+/**
  * Checks if a position in the string is inside a string literal.
  * Handles both regular strings ("...") and triple-quoted strings ("""...""").
  */
