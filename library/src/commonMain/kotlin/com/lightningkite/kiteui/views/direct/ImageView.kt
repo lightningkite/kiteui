@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.models.ImageRemote
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.ThemeDerivation
@@ -122,10 +123,22 @@ class ImageView(private val frame: Frame) : Element by frame {
                         },
                         exception = {
                             if (view.lastRendered == info) {
-                                view._shownInfo.state = ReactiveState.exception(it)
-                                view.lastRendered = null
-                                if (view.info !== info) {
+                                val latestInfo = view.info
+                                // If a fresher URL is available for any source (same path, rotated
+                                // signature), retry silently rather than surfacing the error.
+                                val hasFresherUrl = latestInfo != null &&
+                                    latestInfo.sources.size == info.sources.size &&
+                                    latestInfo.sources.zip(info.sources).any { (latest, current) ->
+                                        latest is ImageRemote && current is ImageRemote &&
+                                            latest.url != current.url
+                                    }
+                                if (hasFresherUrl) {
+                                    view.lastRendered = null
                                     view.refresh()
+                                } else {
+                                    view._shownInfo.state = ReactiveState.exception(it)
+                                    view.lastRendered = null
+                                    if (view.info !== info) view.refresh()
                                 }
                             }
                         },
