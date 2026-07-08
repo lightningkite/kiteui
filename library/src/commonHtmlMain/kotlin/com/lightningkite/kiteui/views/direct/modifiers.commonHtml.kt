@@ -196,7 +196,13 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition:
                 native.tag = "div"
                 native.classes.add("noInteraction")
                 native.classes.add("kiteui-stack")
-                native.attributes.hidden = !default
+                // Drive visibility through the `shown` property (not the raw `hidden` attribute) so it
+                // stays in sync with what the property reports. The property setter still writes the
+                // `hidden` attribute, but ALSO updates the backing field the AI test driver filters on
+                // (driverFind/snapshot exclude views via `shown && visible`). Writing the attribute
+                // directly left `shown == true` on a hidden branch, so hidden content — and its inactive
+                // reactive children — leaked into the driver's view.
+                shown = default
                 var currentState = default
 
                 reactive {
@@ -213,7 +219,7 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition:
                     } else {
                         val c = condition()
                         if (c != currentState) {
-                            native.attributes.hidden = !c
+                            shown = c
                         }
                         currentState = c
                     }
