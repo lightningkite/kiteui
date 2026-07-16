@@ -18,6 +18,7 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
@@ -114,7 +115,7 @@ actual class RawImageView actual constructor(
         when (val value = source) {
             is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
             is ImageRaw -> native.setImageRaw(value, _state)
-            is ImageRemote -> Glide.with(native).load(value.url).finish()
+            is ImageRemote -> Glide.with(native).load(glideUrl(value)).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> {
                 native.setImageDrawable(PathDrawable(value))
@@ -256,7 +257,7 @@ actual class SizelessRawImageView actual constructor(
         when (val value = source) {
             is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
             is ImageRaw -> native.setImageRaw(value, _state)
-            is ImageRemote -> Glide.with(native).load(value.url).finish()
+            is ImageRemote -> Glide.with(native).load(glideUrl(value)).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> native.setImageDrawable(PathDrawable(value))
             else -> TODO()
@@ -389,7 +390,7 @@ actual class RawImageViewZoomable actual constructor(
         when (val value = source) {
             is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
             is ImageRaw -> native.setImageRaw(value, _state)
-            is ImageRemote -> Glide.with(native).load(value.url).finish()
+            is ImageRemote -> Glide.with(native).load(glideUrl(value)).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> {
                 native.setImageDrawable(PathDrawable(value))
@@ -401,6 +402,12 @@ actual class RawImageViewZoomable actual constructor(
 }
 
 actual typealias ZoomState = Matrix
+
+// Returns a GlideUrl whose disk-cache key respects the ImageRemote's cacheStrategy.
+// PathOnly strips query parameters so that rotating S3 signatures don't cause cache misses.
+private fun glideUrl(value: ImageRemote): GlideUrl = object : GlideUrl(value.url) {
+    override fun getCacheKey(): String = value.displayKey
+}
 
 // Bypass Glide for ImageRaw to avoid bitmap pooling/recycling issues.
 // Glide manages bitmap lifecycle and may recycle the decoded bitmap after onLoadCleared,

@@ -498,10 +498,26 @@ data class ImageVector(
     )
 }
 
-data class ImageRemote(val url: String) : ImageSource() {
-    //    private val before = url.substringBefore('?')
-    override fun hashCode(): Int = url.hashCode()
-    override fun equals(other: Any?): Boolean = other is ImageRemote && other.url == this.url
+data class ImageRemote(
+    val url: String,
+    val cacheStrategy: UrlCacheStrategy
+) : ImageSource() {
+    // Binary compatibility: preserves the old single-argument constructor
+    constructor(url: String) : this(url, UrlCacheStrategy.Full)
+
+    // Key used for equality/display decisions — controls whether the image view reloads
+    val displayKey: String get() = when (cacheStrategy) {
+        UrlCacheStrategy.PathOnly -> url.substringBefore('?')
+        else -> url
+    }
+    // Binary compatibility: preserves the old data-class-generated copy(String) overload
+    fun copy(url: String): ImageRemote = ImageRemote(url, cacheStrategy)
+
+    override fun hashCode(): Int = displayKey.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (other !is ImageRemote) return false
+        return displayKey == other.displayKey
+    }
     override fun toString(): String = "ImageRemote($url)"
 }
 
