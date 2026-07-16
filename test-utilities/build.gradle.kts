@@ -38,6 +38,7 @@ kotlin {
     if (iosTarget) {
         iosArm64()
         iosSimulatorArm64()
+        iosX64()
     }
     js(IR) {
         browser()
