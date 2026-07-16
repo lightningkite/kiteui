@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.load
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.rem
@@ -15,14 +16,21 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * Renders children from a reactive list with lazy loading when scrolled near the end.
- * Uses [forEachById] for ID-based diffing with animations.
+ * Uses [renderList] for ID-based diffing without animations.
  *
  * Caller owns [items] and [loadMore]. This function renders children, monitors scroll position,
  * and calls [loadMore] when the user scrolls within [threshold] of the end.
  *
  * Stops loading automatically when [loadMore] completes without the list growing.
  * Retries are allowed after errors.
+ *
+ * @deprecated Use [lazyColumn] or [lazyRow] instead, which handle rendering + lazy loading together.
  */
+@OptIn(InternalKiteUi::class)
+@Deprecated(
+    "Use lazyColumn or lazyRow instead",
+    ReplaceWith("lazyColumn(items, id, threshold, loadMore, render)", "com.lightningkite.kiteui.views.l2.lazyColumn")
+)
 fun <T, ID> RowOrCol.childrenLazyLoading(
     scroll: ScrollingBehaviors,
     items: Reactive<List<T>>,
@@ -34,7 +42,7 @@ fun <T, ID> RowOrCol.childrenLazyLoading(
     var loadJob: Job? = null
     var sizeAtLoadStart = -1
 
-    forEachByIdWithoutAnimation(items, id, render = render)
+    renderList(items, id = id, animate = false, render = render)
 
     val isVertical = this.vertical
     withoutLoadingAnimations {
@@ -67,8 +75,10 @@ fun <T, ID> RowOrCol.childrenLazyLoading(
 
 /**
  * Creates a scrolling column that renders children with lazy loading.
- * Convenience wrapper around [childrenLazyLoading] that creates the scrolling container.
+ * Convenience wrapper that creates the scrolling container.
  */
+@Suppress("DEPRECATION")
+@OptIn(InternalKiteUi::class)
 fun <T, ID> ElementWriter.CanAddScrolling.lazyColumn(
     items: Reactive<List<T>>,
     id: (T) -> ID,
@@ -84,8 +94,10 @@ fun <T, ID> ElementWriter.CanAddScrolling.lazyColumn(
 
 /**
  * Creates a scrolling row that renders children with lazy loading.
- * Convenience wrapper around [childrenLazyLoading] that creates the scrolling container.
+ * Convenience wrapper that creates the scrolling container.
  */
+@Suppress("DEPRECATION")
+@OptIn(InternalKiteUi::class)
 fun <T, ID> ElementWriter.CanAddScrolling.lazyRow(
     items: Reactive<List<T>>,
     id: (T) -> ID,

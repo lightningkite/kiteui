@@ -22,7 +22,7 @@ fun <T, ID> ElementWriter.colOf(
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
 ) = col {
-    forEachById(items, id, preHidingModifiers, render)
+    renderList(items, id = id, render = render)
 }
 fun <T, ID> ElementWriter.rowOf(
     items: Reactive<List<T>>,
@@ -30,7 +30,7 @@ fun <T, ID> ElementWriter.rowOf(
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
 ) = row {
-    forEachById(items, id, preHidingModifiers, render)
+    renderList(items, id = id, render = render)
 }
 
 fun <T> ElementWriter.colOf(
@@ -38,21 +38,21 @@ fun <T> ElementWriter.colOf(
     placeholdersWhileLoading: Int = 5,
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
 ) = col {
-    forEachUpdating(items, placeholdersWhileLoading, render = render)
+    renderList(items, placeholders = placeholdersWhileLoading, render = render)
 }
 fun <T> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
 ) = row {
-    forEachUpdating(items, placeholdersWhileLoading, render = render)
+    renderList(items, placeholders = placeholdersWhileLoading, render = render)
 }
 fun <T> ElementWriter.rowWrappingOf(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
 ) = rowWrapping {
-    forEachUpdating(items, placeholdersWhileLoading, render = render)
+    renderList(items, placeholders = placeholdersWhileLoading, render = render)
 }
 
 inline fun <T> ElementWriter.swapping(

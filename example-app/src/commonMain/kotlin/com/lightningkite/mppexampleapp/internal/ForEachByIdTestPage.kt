@@ -26,7 +26,7 @@ object ForEachByIdTestPage : Page {
 
     override fun ElementWriter.CanAddTheme.render(): Unit {
         scrolling.col {
-            h1("forEachById Test")
+            h1("renderList Test")
             text(
                 "Reproduces the bug where filtering down (especially to a single item that wasn't first) " +
                 "and then restoring the full list produced the wrong visual order. " +
@@ -91,9 +91,9 @@ object ForEachByIdTestPage : Page {
 
             row {
                 expanding.card.col {
-                    h2("forEachById (animated)")
+                    h2("renderList (animated)")
                     col {
-                        forEachById(items, id = { it.id }) { item ->
+                        renderList(items, id = { it.id }) { item ->
                             card.text {
                                 ::content { item().name }
                                 ::debugName { item().name }
@@ -102,9 +102,9 @@ object ForEachByIdTestPage : Page {
                     }
                 }
                 expanding.card.col {
-                    h2("forEachByIdWithoutAnimation")
+                    h2("renderList (no animation)")
                     col {
-                        forEachByIdWithoutAnimation(items, id = { it.id }) { item ->
+                        renderList(items, id = { it.id }, animate = false) { item ->
                             card.text {
                                 ::content { item().name }
                                 ::debugName { item().name }
@@ -113,12 +113,12 @@ object ForEachByIdTestPage : Page {
                     }
                 }
                 expanding.card.col {
-                    h2("Reference (forEach)")
+                    h2("Reference (renderList unkeyed)")
                     col {
-                        forEach(items) { item ->
+                        renderList(items) { item ->
                             card.text {
-                                content = item.name
-                                debugName = item.name
+                                ::content { item().name }
+                                ::debugName { item().name }
                             }
                         }
                     }
