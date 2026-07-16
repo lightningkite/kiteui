@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
-import com.lightningkite.reactive.context.StatusListener
 
 /**
  * Base interface for all UI elements in KiteUI.
@@ -164,7 +163,12 @@ import com.lightningkite.reactive.context.StatusListener
  * @see ElementContext for platform services and configuration
  */
 @ViewDsl
-interface Element : KiteUiCoroutineScopeHelpers, StatusListener {  // TODO: This is really messed up - this element is effectively both a coroutine context element AND a coroutine context at the same time, which seems like a terrible idea and has lead to at least ONE case of very bad mistake making with the definition of 'element.job'.
+// Element is a CoroutineScope (via KiteUiCoroutineScopeHelpers) but deliberately NOT a
+// StatusListener/CoroutineContext.Element. Being both at once made an element an entry inside its
+// own coroutineContext, so `element.job` (CoroutineScope.job) was ambiguous with the element's own
+// StatusListener identity and child jobs could be mis-parented. NativeElement supplies a *separate*
+// StatusListener object into its coroutineContext instead (see NativeElementCommonCode).
+interface Element : KiteUiCoroutineScopeHelpers {
     /** Platform services and configuration for this element */
     val context: ElementContext
 

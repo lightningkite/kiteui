@@ -456,7 +456,16 @@ abstract class NativeElementCommonCode internal constructor(override val context
             )
         },
         context.ssrDispatcher ?: Dispatchers.Main.immediate,
-        this as StatusListener,
+        // A *separate* StatusListener object, not `this`: the element must not be the object returned
+        // by coroutineContext[StatusListener], or its CoroutineScope identity and its StatusListener
+        // identity would be the same object, making `element.job` ambiguous (see Element.kt). Element
+        // is no longer a StatusListener; this object delegates to the element's own process watching.
+        object : StatusListener {
+            override fun watchBackgroundProcess(status: Reactive<*>): Release =
+                this@NativeElementCommonCode.watchBackgroundProcess(status)
+            override fun watchForegroundProcess(status: Reactive<*>): Release =
+                this@NativeElementCommonCode.watchForegroundProcess(status)
+        },
         TelemetryContext(element = this as NativeElement)
     )
 
@@ -693,8 +702,10 @@ abstract class NativeElementCommonCode internal constructor(override val context
     private val internalBackgroundProcesses = Processes(foreground = false)
     private val internalForegroundProcesses = Processes(foreground = true)
 
-    override fun watchBackgroundProcess(status: Reactive<*>): Release = internalBackgroundProcesses.watch(status).also(::onRemove)
-    override fun watchForegroundProcess(status: Reactive<*>): Release = internalForegroundProcesses.watch(status).also(::onRemove)
+    // Plain methods now (Element is no longer a StatusListener); the StatusListener object in
+    // coroutineContext delegates here.
+    fun watchBackgroundProcess(status: Reactive<*>): Release = internalBackgroundProcesses.watch(status).also(::onRemove)
+    fun watchForegroundProcess(status: Reactive<*>): Release = internalForegroundProcesses.watch(status).also(::onRemove)
 
     /** Aggregate state of background processes (data loading, etc.) - affects loading semantics */
     val backgroundProcesses: Reactive<*> get() = internalBackgroundProcesses

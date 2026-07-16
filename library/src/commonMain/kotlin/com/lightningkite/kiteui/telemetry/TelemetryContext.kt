@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.kiteui.views.viewPath
 import kotlinx.coroutines.currentCoroutineContext
 import kotlin.coroutines.CoroutineContext
 
