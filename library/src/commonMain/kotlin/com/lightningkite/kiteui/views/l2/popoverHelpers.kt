@@ -41,45 +41,27 @@ fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.
 }
 
 fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddSizing.(close: ()->Unit) -> Unit) {
-    overlay(modal = true) { close -> // TODO: This dismiss functionality should probably be baked into overlay, controlled with a flag
-        // An idempotent dismiss that also unregisters from the back-dismiss stack, so closing via
-        // back, tap-outside, or a programmatic close button all funnel through one code path.
-        var isClosed = false
-        var unregister: (() -> Unit)? = null
-        val dismiss: () -> Unit = {
-            if (!isClosed) {
-                isClosed = true
-                unregister?.invoke()
-                close()
-            }
-        }
-        // Only dismissable dialogs participate in back-to-dismiss; sticky ones require explicit action.
-        if (dismissable) unregister = pushDismissableDialog(dismiss)
+    overlay(modal = true, navClosable = dismissable) { close -> // TODO:
         dismissBackground {
             debugName = "dialog-bg"
-            onClick { if (dismissable) dismiss() }
+            onClick { if (dismissable) close() }
 
             centered.beforeSetup {
                 debugName = "dialog"
                 themeChoice += DialogSemantic
-            }.content(dismiss)
+            }.content(close)
         }
     }
 }
 
-fun ElementContext.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> Unit) {
-    var willRemove: Element? = null
-    overlay {
+fun ElementContext.rawPopover(
+    transition: ScreenTransitions,
+    navClosable: Boolean = true,
+    content: ViewWriter.() -> Unit
+) {
+    overlay(navClosable = navClosable, transition = transition) { close ->
         withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    it.animateOut(transition.reverse) {
-                        this@overlay.removeChild(it)
-                    }
-                }
-            }.run {
-                willRemove = beforeSetup { animateIn(transition.forward) }.produceAtMostOneView(content)
-            }
+            popoverWriter(close = close).produceAtMostOneView(content)
         }
     }
 }

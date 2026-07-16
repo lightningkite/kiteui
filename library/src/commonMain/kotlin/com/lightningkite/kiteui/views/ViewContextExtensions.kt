@@ -65,7 +65,7 @@ var ElementContext.popoverKeepOpen by lazyContextAddon { 0 }
 private var ElementContext.dismissableDialogStack by lazyContextAddon { mutableListOf<() -> Unit>() }
 
 /** Registers [dismiss] as the topmost open dialog; returns a lambda that unregisters it on close. */
-fun ElementContext.pushDismissableDialog(dismiss: () -> Unit): () -> Unit {
+fun ElementContext.pushDismissableDialog(dismiss: () -> Unit): Release {
     val stack = dismissableDialogStack
     stack.add(dismiss)
     return { stack.remove(dismiss) }
@@ -154,15 +154,17 @@ fun ContainerElement.popoverWriter(
  * will appear under bottom sheets on iOS.
  *
  * @param modal `true` if this overlay is intended as a modal, meaning that it covers and _may_ prevent interaction with
- * the UI under the modal.
- *
- * Note that setting this value to true does not enforce modality, but it may opt the layout in
+ * the UI under the modal. Note that setting this value to true does not enforce modality, but it may opt the layout in
  * to a more appropriate presentation strategy used by the native view system. (This behavior could be enforced using
  * `dismissBackground`, for example.) Setting this value to `false` guarantees that the presentation strategy
  * *will not* prevent interaction with views below the overlay.
+ *
+ * @param navClosable if `true` this overlay will be closable with the platform's 'back' action.
  */
+// TODO: Need to implement `navClosable` on ios
 expect fun ElementContext.overlay(
     modal: Boolean = true,
+    navClosable: Boolean = modal,
     transition: ScreenTransitions = ScreenTransitions.Fade,
     body: ContainerElement.(remove: () -> Unit) -> Unit
 )
