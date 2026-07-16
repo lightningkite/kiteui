@@ -163,11 +163,6 @@ import com.lightningkite.kiteui.models.DropTargetDelegate
  * @see ElementContext for platform services and configuration
  */
 @ViewDsl
-// Element is a CoroutineScope (via KiteUiCoroutineScopeHelpers) but deliberately NOT a
-// StatusListener/CoroutineContext.Element. Being both at once made an element an entry inside its
-// own coroutineContext, so `element.job` (CoroutineScope.job) was ambiguous with the element's own
-// StatusListener identity and child jobs could be mis-parented. NativeElement supplies a *separate*
-// StatusListener object into its coroutineContext instead (see NativeElementCommonCode).
 interface Element : KiteUiCoroutineScopeHelpers {
     /** Platform services and configuration for this element */
     val context: ElementContext
