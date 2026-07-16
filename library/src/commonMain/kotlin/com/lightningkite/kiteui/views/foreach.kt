@@ -16,7 +16,7 @@ import kotlin.math.min
 
 
 /** Maximum number of pooled (hidden) views retained beyond the current list size. */
-const val DEFAULT_LIST_POOL_CAP = 32
+private const val DEFAULT_LIST_POOL_CAP = 32
 
 // ---------------------------------------------------------------------------
 // Primary API
@@ -34,7 +34,7 @@ const val DEFAULT_LIST_POOL_CAP = 32
  * The animated path uses [shownWhen] to drive entry/exit transitions, which
  * places a wrapper container around each item.  Because [shownWhen] consumes
  * the [CanAddListElementModifier] stage and returns [CanAddSizing], the render
- * lambda receives [CanAddTheme] as its receiver when animate=true.  When
+ * lambda receives [CanAddSizing] as its receiver when animate=true.  When
  * animate=false, no wrapper is inserted and the render lambda receives
  * [CanAddListElementModifier] directly.
  */
@@ -44,7 +44,7 @@ fun <T, ID> ContainerElement.renderList(
     id: (T) -> ID,
     animate: Boolean = true,
     beforeModifier: ViewWriter.() -> ElementWriter.CanAddListElementModifier = { this },
-    render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
+    render: ElementWriter.CanAddSizing.(Reactive<T>) -> Unit
 ) {
     if (animate) {
         renderListKeyedAnimated(items, id, beforeModifier, render)
@@ -195,7 +195,7 @@ private fun <T, ID> ContainerElement.renderListKeyedAnimated(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     beforeModifier: ViewWriter.() -> ElementWriter.CanAddListElementModifier,
-    render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
+    render: ElementWriter.CanAddSizing.(Reactive<T>) -> Unit
 ) {
     setupAsListContainer()
     val oldEarly = ArrayList<Any>()

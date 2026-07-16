@@ -37,7 +37,7 @@ fun <T, ID> RowOrCol.childrenLazyLoading(
     id: (T) -> ID,
     threshold: Dimension = 20.rem,
     loadMore: suspend () -> Unit,
-    render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
+    render: ElementWriter.CanAddSizing.(Reactive<T>) -> Unit
 ) {
     var loadJob: Job? = null
     var sizeAtLoadStart = -1
@@ -50,7 +50,7 @@ fun <T, ID> RowOrCol.childrenLazyLoading(
             val list = items()
             val vp = scroll.viewport()
             val ct = scroll.content()
-            if(loadJob != null) return@reactive
+            if (loadJob != null) return@reactive
 
             val contentEnd = if (isVertical) ct.bottom else ct.right
             val viewportEnd = if (isVertical) vp.bottom else vp.right

@@ -41,7 +41,7 @@ fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.
 }
 
 fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddSizing.(close: ()->Unit) -> Unit) {
-    overlay(modal = true) { close ->
+    overlay(modal = true) { close -> // TODO: This dismiss functionality should probably be baked into overlay, controlled with a flag
         // An idempotent dismiss that also unregisters from the back-dismiss stack, so closing via
         // back, tap-outside, or a programmatic close button all funnel through one code path.
         var isClosed = false

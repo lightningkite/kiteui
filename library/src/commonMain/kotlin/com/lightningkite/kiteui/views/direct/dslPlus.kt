@@ -20,7 +20,7 @@ fun <T, ID> ElementWriter.colOf(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddListElementModifier = { this },
-    render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
+    render: ElementWriter.CanAddSizing.(Reactive<T>) -> Unit
 ) = col {
     renderList(items, id = id, render = render)
 }
@@ -28,7 +28,7 @@ fun <T, ID> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddListElementModifier = { this },
-    render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
+    render: ElementWriter.CanAddSizing.(Reactive<T>) -> Unit
 ) = row {
     renderList(items, id = id, render = render)
 }
