@@ -47,6 +47,7 @@ class LabeledView(private val container: RowOrCol): LinearLayoutElement by conta
     @OverrideOnly
     override fun onStartup() {
         container.onStartup()
+        container.vertical= true
         val target = findFirstInteractiveDescendant()
         if (target != null) {
             label.labelFor = target
