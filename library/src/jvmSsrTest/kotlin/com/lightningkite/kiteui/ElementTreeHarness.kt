@@ -50,6 +50,14 @@ class ElementTreeHandle(
         allDescendants().firstOrNull { it.debugName == name }
 
     /**
+     * Returns the first descendant whose [debugName] is exactly [name].
+     * Alias for [findByName] with a more explicit contract: matches the full
+     * [Element.debugName] string rather than any substring or display label.
+     */
+    fun findByDebugName(name: String): Element? =
+        allDescendants().firstOrNull { it.debugName == name }
+
+    /**
      * Collects [themeAndBack] from every descendant in breadth-first order.
      * Useful for asserting that a specific pattern of backgrounds is or isn't drawn.
      */

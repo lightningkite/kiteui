@@ -290,4 +290,26 @@ class UiTestScope(val backend: UiTestBackend) {
             throw AssertionError("Expected view '$id' to exist but it was not found", e)
         }
     }
+
+    /**
+     * Asserts that the view matching [query] has at least one clickable ancestor (i.e. is enabled/interactive).
+     * Fails if [findClickable] returns an empty list.
+     */
+    suspend fun assertEnabled(query: String) {
+        val results = findClickable(query)
+        if (results.isEmpty()) {
+            throw AssertionError("Expected '$query' to be enabled (have a clickable ancestor) but findClickable returned empty")
+        }
+    }
+
+    /**
+     * Asserts that the view matching [query] has no clickable ancestor (i.e. is disabled or has no action).
+     * Fails if [findClickable] returns a non-empty list.
+     */
+    suspend fun assertDisabled(query: String) {
+        val results = findClickable(query)
+        if (results.isNotEmpty()) {
+            throw AssertionError("Expected '$query' to be disabled (no clickable ancestor) but findClickable returned: $results")
+        }
+    }
 }
