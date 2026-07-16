@@ -96,6 +96,8 @@ abstract class KiteUiActivity : AppCompatActivity() {
         // Use modern back handling API instead of deprecated onBackPressed()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                // Dismiss the topmost open dismissable dialog before navigating pages.
+                if (viewWriter.context.dismissTopDialog()) return
                 if (!mainNavigator.goBack()) {
                     isEnabled = false
                     onBackPressedDispatcher.onBackPressed()

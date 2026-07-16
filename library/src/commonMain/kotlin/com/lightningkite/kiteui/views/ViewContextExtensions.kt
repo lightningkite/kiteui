@@ -58,6 +58,26 @@ var ElementContext.popoverParent by lazyContextAddon<ContainerElement?> { null }
 var ElementContext.popoverCloser by lazyContextAddon<(() -> Unit)?> { null }
 var ElementContext.popoverKeepOpen by lazyContextAddon { 0 }
 
+// Stack of dismiss lambdas for currently-open dismissable modal dialogs (topmost is last). Shared
+// app-wide because a lazyContextAddon's default is created once and stored on the ROOT context, so
+// every context in the tree resolves to the same list. This lets back handlers (Android system back,
+// browser back) dismiss the top dialog before navigating pages.
+private var ElementContext.dismissableDialogStack by lazyContextAddon { mutableListOf<() -> Unit>() }
+
+/** Registers [dismiss] as the topmost open dialog; returns a lambda that unregisters it on close. */
+fun ElementContext.pushDismissableDialog(dismiss: () -> Unit): () -> Unit {
+    val stack = dismissableDialogStack
+    stack.add(dismiss)
+    return { stack.remove(dismiss) }
+}
+
+/** If a dismissable dialog is open, dismisses the topmost one and returns true; otherwise false. */
+fun ElementContext.dismissTopDialog(): Boolean {
+    val top = dismissableDialogStack.removeLastOrNull() ?: return false
+    top()
+    return true
+}
+
 fun ElementContext.closePopovers() {
     popoverCloser?.invoke()
     popoverCloser = null

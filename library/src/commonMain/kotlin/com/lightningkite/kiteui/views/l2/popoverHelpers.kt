@@ -42,14 +42,27 @@ fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.
 
 fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddSizing.(close: ()->Unit) -> Unit) {
     overlay(modal = true) { close ->
+        // An idempotent dismiss that also unregisters from the back-dismiss stack, so closing via
+        // back, tap-outside, or a programmatic close button all funnel through one code path.
+        var isClosed = false
+        var unregister: (() -> Unit)? = null
+        val dismiss: () -> Unit = {
+            if (!isClosed) {
+                isClosed = true
+                unregister?.invoke()
+                close()
+            }
+        }
+        // Only dismissable dialogs participate in back-to-dismiss; sticky ones require explicit action.
+        if (dismissable) unregister = pushDismissableDialog(dismiss)
         dismissBackground {
             debugName = "dialog-bg"
-            onClick { if (dismissable) close() }
+            onClick { if (dismissable) dismiss() }
 
             centered.beforeSetup {
                 debugName = "dialog"
                 themeChoice += DialogSemantic
-            }.content(close)
+            }.content(dismiss)
         }
     }
 }
