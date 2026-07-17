@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.textInput
-import com.lightningkite.kiteui.views.renderList
+import com.lightningkite.kiteui.views.forEachUpdating
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.core.*
 import kotlin.jvm.JvmInline
@@ -55,7 +55,7 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
             }
             h2 { content = "The list so far" }
             col {
-                renderList(list) {
+                forEachUpdating(list) {
                     text { ::content { it() } }
                 }
             }

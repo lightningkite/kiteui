@@ -331,22 +331,22 @@ fun ElementWriter.overlayWriter(
     modal: Boolean,
     transition: ScreenTransitions,
     content: ContainerElement.(close: ()->Unit) -> Unit
-) = context.overlay(modal, transition, content)
+) = context.overlay(modal = modal, navClosable = modal, transition = transition, body = content)
 
 @Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) fun ElementWriter.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
 @Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) fun ElementWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
 @Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) fun ElementWriter.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
-@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun ElementWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content)
+@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun ElementWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content = content)
 
 @Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) fun Element.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
 @Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) fun Element.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
 @Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) fun Element.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
-@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun Element.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content)
+@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun Element.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content = content)
 
 @Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) fun ContainerElement.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
 @Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) fun ContainerElement.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
 @Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) fun ContainerElement.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
-@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun ContainerElement.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content)
+@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) fun ContainerElement.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content = content)
 
 @Deprecated("use directly through context", ReplaceWith("context.confirmDanger(title, body, actionName, cancelName, action)"))
 fun ElementWriter.confirmDanger(

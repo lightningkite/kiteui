@@ -162,7 +162,7 @@ object LayoutExamplesPage : Page {
                 h2 { content = "Dynamic List" }
                 val countString = Signal("5")
                 scrollsHorizontally.row {
-                    renderList(
+                    forEachUpdating(
                         remember {
                             (1..(countString().toIntOrNull()
                                 ?: 1).coerceAtMost(100)).map { "Item $it" }

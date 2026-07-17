@@ -85,7 +85,7 @@ fun <T> ContainerElement.forEachReorderable(
 
     (this@forEachReorderable as? LinearLayoutElement)?.gap = 0.px
 
-    renderList(
+    forEachUpdating(
         remember { items().mapIndexed { idx, it -> IndexedValue(idx, it) } }
     ) { indexed ->
         val item = indexed.lens { it.value }
