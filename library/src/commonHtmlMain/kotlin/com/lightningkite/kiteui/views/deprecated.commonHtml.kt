@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.direct.FloatingInfoHolder
 
 @Deprecated(message = "Use hintPopover or menuButton depending on your situation.", level = DeprecationLevel.ERROR)
 @ViewModifierDsl3
-actual fun ElementWriter.hasPopover(
+public actual fun ElementWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit

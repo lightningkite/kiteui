@@ -5,14 +5,14 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import platform.UIKit.*
 
-actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
     override val driverActions get() = super.driverActions + sliderDriverActions()
     override val native = UISlider()
     override val control: UIControl get() = native
 
     private val valueProp = Signal(0.5f)
-    actual val value: MutableReactiveValue<Float> = object : MutableReactiveValue<Float> {
+    public actual val value: MutableReactiveValue<Float> = object : MutableReactiveValue<Float> {
         override fun addListener(listener: () -> Unit): Release {
             return native.onEvent(this@Slider, UIControlEventValueChanged) {
                 // Apply step if it's set
@@ -65,7 +65,7 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
             }
     }
 
-    actual var min: Float = 0f
+    public actual var min: Float = 0f
         set(value) {
             field = value
             native.minimumValue = value.toFloat()
@@ -73,7 +73,7 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
             this.value.value = this.value.value
         }
 
-    actual var max: Float = 1f
+    public actual var max: Float = 1f
         set(value) {
             field = value
             native.maximumValue = value.toFloat()
@@ -81,7 +81,7 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
             this.value.value = this.value.value
         }
 
-    actual var step: Float? = null
+    public actual var step: Float? = null
         set(value) {
             field = value
             // iOS UISlider doesn't have a built-in step property

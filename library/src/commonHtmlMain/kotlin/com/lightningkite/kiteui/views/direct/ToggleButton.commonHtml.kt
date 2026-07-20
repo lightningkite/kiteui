@@ -8,10 +8,10 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 
 
-actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
     override val driverActions get() = super.driverActions + toggleDriverActions()
-    val input = FutureElement().apply {
+    public val input = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
         attributes.type = "checkbox"
@@ -47,7 +47,7 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
         Frame.internalAddChildStack(this, index, element)
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = input.vprop(
+    public actual val checked: MutableReactiveValue<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value }

@@ -9,7 +9,7 @@ import com.lightningkite.reactive.core.*
 import kotlin.time.Duration.Companion.milliseconds
 
 
-actual class Select actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Select actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
@@ -21,7 +21,7 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
         native.classes.add("editable")
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
         render: (T) -> String

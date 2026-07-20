@@ -12,7 +12,7 @@ import platform.darwin.NSInteger
 import platform.darwin.NSObject
 
 
-actual class Select actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Select actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
@@ -21,7 +21,7 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
             _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
         }
     override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    public val textField = TextFieldInput(this)
     override val control: UIControl get() = textField
 
     init {
@@ -30,7 +30,7 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
         textField.inputView = UIPickerView()
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
         render: (T) -> String
@@ -88,7 +88,7 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -101,7 +101,7 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)

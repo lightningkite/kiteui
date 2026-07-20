@@ -27,9 +27,9 @@ import platform.UIKit.*
 //class LayoutParams()
 
 
-class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+public class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
-    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()

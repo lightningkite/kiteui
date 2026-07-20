@@ -31,13 +31,13 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(target, source)")
+public inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(target, source)")
 
 
-actual class FutureElement actual constructor() {
-    actual val actualElementForLeakTracking: Any? get() = element
-    val elementToDo = ArrayList<(DOMElement) -> Unit>()
-    var element: DOMElement? = null
+public actual class FutureElement actual constructor() {
+    public actual val actualElementForLeakTracking: Any? get() = element
+    public val elementToDo = ArrayList<(DOMElement) -> Unit>()
+    public var element: DOMElement? = null
         private set(value) {
             field = value
             style.native = (value as? HTMLElement)?.style ?: (value as? SVGElement)?.style
@@ -51,7 +51,7 @@ actual class FutureElement actual constructor() {
      *
      * Updated by Claude to record hydration statistics.
      */
-    fun hydrate(existingElement: DOMElement): Boolean {
+    public fun hydrate(existingElement: DOMElement): Boolean {
         // Validate tag match
         if (tag.lowercase() != existingElement.tagName.lowercase()) {
             console.warn("Hydration mismatch: expected <$tag>, found <${existingElement.tagName}>")
@@ -110,7 +110,7 @@ actual class FutureElement actual constructor() {
      *
      * Updated by Claude to record hydration statistics and handle mismatches gracefully.
      */
-    fun hydrateRecursive(existingElement: DOMElement): Boolean {
+    public fun hydrateRecursive(existingElement: DOMElement): Boolean {
         if (!hydrate(existingElement)) return false
 
         // Hydrate children by position
@@ -163,11 +163,11 @@ actual class FutureElement actual constructor() {
         return true
     }
 
-    inline fun onElement(crossinline action: (DOMElement) -> Unit) {
+    public inline fun onElement(crossinline action: (DOMElement) -> Unit) {
         element?.let(action) ?: elementToDo.add { action(it) }
     }
 
-    fun create(): DOMElement {
+    public fun create(): DOMElement {
         element?.let { return it }
         val e = xmlns?.let { document.createElementNS(it, tag) } ?: document.createElement(tag)
         id?.let { e.id = it }
@@ -198,19 +198,19 @@ actual class FutureElement actual constructor() {
         return e
     }
 
-    actual fun click() {
+    public actual fun click() {
         onElement { (it as HTMLElement).click() }
     }
 
-    actual fun focus() {
+    public actual fun focus() {
         onElement { (it as HTMLElement).focus() }
     }
 
-    actual fun blur() {
+    public actual fun blur() {
         onElement { (it as HTMLElement).blur() }
     }
 
-    actual fun screenRectangle(): Rect? {
+    public actual fun screenRectangle(): Rect? {
         return element?.getBoundingClientRect()?.let {
             Rect(
                 left = it.left,
@@ -220,23 +220,23 @@ actual class FutureElement actual constructor() {
             )
         }
     }
-    actual fun parentRectangle(): Rect? {
+    public actual fun parentRectangle(): Rect? {
         return element?.let {
             it as HTMLElement
             Rect(left = it.offsetLeft.toDouble(), top = it.offsetTop.toDouble(), right = it.offsetLeft.toDouble() + it.scrollWidth.toDouble(), bottom = it.offsetTop.toDouble() + it.scrollHeight.toDouble())
         }
     }
 
-    actual var xmlns: String? = null
-    actual var tag: String = "tag"
-    val attributesBack = json()
-    actual val attributes: FutureElementAttributes = FutureElementAttributes(attributesBack)
-    val styleBack = json()
-    actual val style: FutureElementStyle = FutureElementStyle(styleBack)
-    actual var desiredVerticalGravity: Align? = null
-    actual var desiredHorizontalGravity: Align? = null
-    val eventsBack = json()
-    actual inline fun addEventListener(
+    public actual var xmlns: String? = null
+    public actual var tag: String = "tag"
+    public val attributesBack = json()
+    public actual val attributes: FutureElementAttributes = FutureElementAttributes(attributesBack)
+    public val styleBack = json()
+    public actual val style: FutureElementStyle = FutureElementStyle(styleBack)
+    public actual var desiredVerticalGravity: Align? = null
+    public actual var desiredHorizontalGravity: Align? = null
+    public val eventsBack = json()
+    public actual inline fun addEventListener(
         name: String,
         crossinline listener: (Event) -> Unit
     ) {
@@ -246,7 +246,7 @@ actual class FutureElement actual constructor() {
         }
     }
 
-    actual inline fun replaceEventListener(
+    public actual inline fun replaceEventListener(
         name: String,
         crossinline listener: (Event) -> Unit
     ) {
@@ -255,8 +255,8 @@ actual class FutureElement actual constructor() {
         }
     }
 
-    val futureStyles = json()
-    actual fun setStyleProperty(key: String, value: String?) {
+    public val futureStyles = json()
+    public actual fun setStyleProperty(key: String, value: String?) {
         val element = element
         if (element == null) {
             if (value == null) {
@@ -275,8 +275,8 @@ actual class FutureElement actual constructor() {
         }
     }
 
-    val futureAttributes = json()
-    actual fun setAttribute(key: String, value: String?) {
+    public val futureAttributes = json()
+    public actual fun setAttribute(key: String, value: String?) {
         val element = element
         if (element == null) {
             if (value == null) {
@@ -295,21 +295,21 @@ actual class FutureElement actual constructor() {
     }
 
 
-    actual var classes: MutableSet<String> = ClassSet()
-    actual inline fun flushClasses() {}
-    actual var id: String? = null
+    public actual var classes: MutableSet<String> = ClassSet()
+    public actual inline fun flushClasses() {}
+    public actual var id: String? = null
         set(value) {
             field = value
             element?.id = value ?: Random.nextInt().toString()
         }
-    actual var content: String? = null
+    public actual var content: String? = null
         set(value) {
             field = value
             value?.let {
                 (element as? HTMLElement)?.innerText = value
             }
         }
-    actual var innerHtmlUnsafe: String? = null
+    public actual var innerHtmlUnsafe: String? = null
         set(value) {
             field = value
             value?.let {
@@ -317,7 +317,7 @@ actual class FutureElement actual constructor() {
             }
         }
     private val lastChildren = ArrayList<FutureElement>()
-    actual val children: List<FutureElement>
+    public actual val children: List<FutureElement>
         get() {
             return element?.let {
                 it.children.let {
@@ -330,7 +330,7 @@ actual class FutureElement actual constructor() {
             } ?: lastChildren
         }
 
-    actual fun appendChild(element: FutureElement) {
+    public actual fun appendChild(element: FutureElement) {
         assertSizeMatch()
         lastChildren.add(element)
         this.element?.let {
@@ -339,7 +339,7 @@ actual class FutureElement actual constructor() {
         assertSizeMatch()
     }
 
-    actual fun appendChild(index: Int, element: FutureElement) {
+    public actual fun appendChild(index: Int, element: FutureElement) {
         assertSizeMatch()
         if (index > lastChildren.size) throw IllegalStateException()
         lastChildren.add(index, element)
@@ -351,7 +351,7 @@ actual class FutureElement actual constructor() {
         assertSizeMatch()
     }
 
-    actual fun removeChild(index: Int) {
+    public actual fun removeChild(index: Int) {
         assertSizeMatch()
         lastChildren.removeAt(index)
         element?.let {
@@ -360,7 +360,7 @@ actual class FutureElement actual constructor() {
         assertSizeMatch()
     }
 
-    actual fun clearChildren() {
+    public actual fun clearChildren() {
         assertSizeMatch()
         lastChildren.clear()
         this.element?.innerHTML = ""
@@ -380,8 +380,8 @@ actual class FutureElement actual constructor() {
         // assert order
     }
 
-    inner class ClassSet : MutableSet<String> {
-        val map = HashSet<String>()
+    public inner class ClassSet : MutableSet<String> {
+        public val map = HashSet<String>()
         override fun add(element: String): Boolean = this@FutureElement.element?.addClass(element) ?: map.add(element)
         override fun addAll(elements: Collection<String>): Boolean =
             this@FutureElement.element?.addClass(*elements.toTypedArray()) ?: map.addAll(elements)
@@ -431,11 +431,11 @@ private fun remove(receiver: Json, key: String) {
     js("delete receiver[key]")
 }
 
-actual class FutureElementStyle(var native: dynamic)
-actual class FutureElementAttributes(var native: dynamic)
+public actual class FutureElementStyle(public var native: dynamic)
+public actual class FutureElementAttributes(public var native: dynamic)
 
 
-fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
+public fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
     Align.Start -> ScrollLogicalPosition.START
     Align.Center -> ScrollLogicalPosition.CENTER
     Align.End -> ScrollLogicalPosition.END
@@ -444,7 +444,7 @@ fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
     null -> ScrollLogicalPosition.NEAREST
 }
 
-actual fun NativeElement.nativeScrollIntoView(
+public actual fun NativeElement.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,
     animate: Boolean
@@ -458,7 +458,7 @@ actual fun NativeElement.nativeScrollIntoView(
     )
 }
 
-actual fun NativeElement.nativeSetDragData(data: DragData?) {
+public actual fun NativeElement.nativeSetDragData(data: DragData?) {
     native.onElement { element ->
         if (data != null) {
             (element as HTMLElement).ondragstart = { event ->
@@ -491,7 +491,7 @@ actual fun NativeElement.nativeSetDragData(data: DragData?) {
     }
 }
 
-actual fun NativeElement.nativeOnDrop(listener: DropTargetDelegate?) {
+public actual fun NativeElement.nativeOnDrop(listener: DropTargetDelegate?) {
     fun DragEvent.toDragEvent() = com.lightningkite.kiteui.models.DragEvent(
         data = DragData("", typeToData = dataTransfer!!.types.associate { it to dataTransfer!!.getData(it) }),
         xInView = x,

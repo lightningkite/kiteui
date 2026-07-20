@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class Switch actual constructor(context: ElementContext): NativeInteractiveElement(context) {
+public actual class Switch actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
     override val driverActions get() = super.driverActions + switchDriverActions()
     override val native = android.widget.Switch(context.activity)
@@ -32,7 +32,7 @@ actual class Switch actual constructor(context: ElementContext): NativeInteracti
         )
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
+    public actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 
     init {
         checked.addListener {

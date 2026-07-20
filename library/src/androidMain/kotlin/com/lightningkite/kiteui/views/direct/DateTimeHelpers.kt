@@ -7,7 +7,7 @@ import kotlinx.datetime.*
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-fun View.showDatePicker(
+public fun View.showDatePicker(
     start: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
     min: LocalDate? = null,
     max: LocalDate? = null,
@@ -23,7 +23,7 @@ fun View.showDatePicker(
     }
 }
 
-fun View.showTimePicker(
+public fun View.showTimePicker(
     start: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
     min: LocalTime? = null,
     max: LocalTime? = null,

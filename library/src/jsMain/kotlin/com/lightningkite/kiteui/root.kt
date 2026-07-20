@@ -33,13 +33,13 @@ private class Root(val beforeDocumentAppend: Element.() -> Unit) : ViewWriter, C
     }
 }
 
-fun root(theme: Theme, app: ViewWriter.() -> Unit) {
+public fun root(theme: Theme, app: ViewWriter.() -> Unit) {
     Root {
         themeChoice = ThemeDerivation.SetAsBase(theme)
     }.app()
 }
 
-fun root(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
+public fun root(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
     Root {
         ::themeChoice {
             ThemeDerivation.SetAsBase(theme())
@@ -69,7 +69,7 @@ fun root(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
  * @param theme The application theme
  * @param app The application content builder
  */
-fun hydrateRoot(theme: Theme, app: ViewWriter.() -> Unit) {
+public fun hydrateRoot(theme: Theme, app: ViewWriter.() -> Unit) {
     hydrateRootInternal(
         themeApplicator = { view -> view.themeChoice = ThemeDerivation.SetAsBase(theme) },
         fallback = { root(theme, app) },
@@ -95,7 +95,7 @@ fun hydrateRoot(theme: Theme, app: ViewWriter.() -> Unit) {
  * @param theme The reactive application theme
  * @param app The application content builder
  */
-fun hydrateRoot(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
+public fun hydrateRoot(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
     hydrateRootInternal(
         themeApplicator = { view ->
             with(view) {
@@ -208,7 +208,7 @@ private fun hydrateRootInternal(
  * @param theme The application theme
  * @param app The application content builder
  */
-fun smartRoot(theme: Theme, app: ViewWriter.() -> Unit) {
+public fun smartRoot(theme: Theme, app: ViewWriter.() -> Unit) {
     val ssrDataElement = document.getElementById("__SSR_DATA__")
     if (ssrDataElement != null) {
         console.log("[KiteUI Hydration] SSR data detected, starting hydration...")
@@ -227,7 +227,7 @@ fun smartRoot(theme: Theme, app: ViewWriter.() -> Unit) {
  * @param theme The reactive application theme
  * @param app The application content builder
  */
-fun smartRoot(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
+public fun smartRoot(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
     val ssrDataElement = document.getElementById("__SSR_DATA__")
     if (ssrDataElement != null) {
         console.log("[KiteUI Hydration] SSR data detected, starting hydration...")

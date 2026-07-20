@@ -8,7 +8,7 @@ import platform.Foundation.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGRectZero
 
-actual class WebView actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class WebView actual constructor(context: ElementContext) : NativeElement(context) {
     override val native: WKWebView
 
     private val webViewConfig = WKWebViewConfiguration().apply {
@@ -21,7 +21,7 @@ actual class WebView actual constructor(context: ElementContext) : NativeElement
         native = WKWebView(frame = CGRectZero.readValue(), configuration = webViewConfig)
     }
 
-    actual inline var url: String
+    public actual inline var url: String
         get() = native.URL?.absoluteString ?: ""
         set(value) {
             NSURL.URLWithString(value)?.let {
@@ -30,13 +30,13 @@ actual class WebView actual constructor(context: ElementContext) : NativeElement
             }
         }
 
-    actual inline var permitJs: Boolean
+    public actual inline var permitJs: Boolean
         get() = native.configuration.preferences.javaScriptEnabled
         set(value) {
             native.configuration.preferences.javaScriptEnabled = value
         }
 
-    actual inline var content: String
+    public actual inline var content: String
         get() = ""
         set(value) {
             native.loadHTMLString(value, baseURL = null)

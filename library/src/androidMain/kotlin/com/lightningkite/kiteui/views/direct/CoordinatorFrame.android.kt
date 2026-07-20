@@ -27,7 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val native = CoordinatorLayoutWithGestures(context.activity)
 
     override fun nativeWillAddChild(element: Element) {
@@ -43,7 +43,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
     @OptIn(UnsafeModifier::class)
-    actual fun bottomSheet(
+    public actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
         draggable: Boolean,
@@ -126,7 +126,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }
     }
 
-    actual fun leftSlidingPanel(
+    public actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
@@ -176,7 +176,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }.content(control)
     }
 
-    actual fun rightSlidingPanel(
+    public actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
@@ -226,17 +226,17 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }.content(control)
     }
 
-    actual fun onLeftSwipe(action: suspend () -> Unit) {
+    public actual fun onLeftSwipe(action: suspend () -> Unit) {
         native.onLeftSwipeAction = { launch { action() } }
     }
 
-    actual fun onRightSwipe(action: suspend () -> Unit) {
+    public actual fun onRightSwipe(action: suspend () -> Unit) {
         native.onRightSwipeAction = { launch { action() } }
     }
 }
 
 @OptIn(ExperimentalKiteUi::class)
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeElement(context) {
     actual override val underlyingNativeElement: CoordinatorDragHandle = this
 
     init {

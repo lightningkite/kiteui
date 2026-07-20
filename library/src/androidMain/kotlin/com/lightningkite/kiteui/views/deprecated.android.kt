@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.direct.frame
 
 @Suppress("DEPRECATION")
 @ViewModifierDsl3
-actual fun ElementWriter.hasPopover(
+public actual fun ElementWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,

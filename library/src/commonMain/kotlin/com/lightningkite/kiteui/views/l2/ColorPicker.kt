@@ -20,7 +20,7 @@ import com.lightningkite.reactive.extensions.value
 import kotlin.math.abs
 
 
-fun ElementWriter.colorPicker(color: MutableReactive<Color>) {
+public fun ElementWriter.colorPicker(color: MutableReactive<Color>) {
     col {
         val selectedType = Signal(ColorPickerOptions.RGB)
         val debounced = color.debounce(100)

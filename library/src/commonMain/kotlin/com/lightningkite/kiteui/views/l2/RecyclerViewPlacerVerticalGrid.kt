@@ -9,22 +9,22 @@ import com.lightningkite.kiteui.views.direct.col
 import kotlin.math.abs
 
 @Deprecated("Call directly instead", ReplaceWith("RecyclerViewPlacerVerticalGrid(columns, ratio)"))
-fun RecyclerViewPlacerVerticalTrueGrid(columns: Int, ratio: Double = 1.0) = RecyclerViewPlacerVerticalGrid(columns, ratio)
-class RecyclerViewPlacerVerticalGrid(
-    val columns: Int,
-    val ratio: Double? = null,
-    val sizeDoesNotChange: Boolean = false,
+public fun RecyclerViewPlacerVerticalTrueGrid(columns: Int, ratio: Double = 1.0) = RecyclerViewPlacerVerticalGrid(columns, ratio)
+public class RecyclerViewPlacerVerticalGrid(
+    public val columns: Int,
+    public val ratio: Double? = null,
+    public val sizeDoesNotChange: Boolean = false,
 ) :
     RecyclerViewPlacerGrid {
-    val sizeByType = HashMap<RecyclerViewRenderer<*>, Double>()
-    fun RecyclerViewPlaceable.height(cellSize: Double) = ratio?.let { cellSize * it }
+    public val sizeByType = HashMap<RecyclerViewRenderer<*>, Double>()
+    public fun RecyclerViewPlaceable.height(cellSize: Double) = ratio?.let { cellSize * it }
         ?: sizeByType[type]
         ?: size.height.also { if(sizeDoesNotChange) sizeByType[type] = it }
-    fun RecyclerViewPlaceable.existingHeight(cellSize: Double) = ratio?.let { cellSize * it }
+    public fun RecyclerViewPlaceable.existingHeight(cellSize: Double) = ratio?.let { cellSize * it }
         ?: sizeByType[type]
         ?: (bottom - top).also { if(sizeDoesNotChange) sizeByType[type] = it }
 
-    var log: Log? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
+    public var log: Log? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
     override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid = RecyclerViewPlacerVerticalGrid(count)
 
     override fun place(

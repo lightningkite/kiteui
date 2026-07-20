@@ -7,7 +7,7 @@ import kotlinx.datetime.TimeZone
 // by Claude
 // No-op stubs for SSR: these operations are not available server-side.
 
-class JvmExternalServices : ExternalServicesAccess {
+public class JvmExternalServices : ExternalServicesAccess {
     override fun openLink(url: String, newTab: Boolean) {}
     override fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {}
     override suspend fun requestFile(mimeTypes: List<String>): FileReference? = null
@@ -23,4 +23,4 @@ class JvmExternalServices : ExternalServicesAccess {
     override suspend fun getCurrentPosition(): GeolocationResult = throw UnsupportedOperationException("Geolocation is not available in SSR")
 }
 
-actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = JvmExternalServices()
+public actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = JvmExternalServices()

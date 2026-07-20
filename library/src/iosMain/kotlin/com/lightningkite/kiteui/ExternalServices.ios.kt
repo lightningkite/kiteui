@@ -34,7 +34,7 @@ import platform.posix.int64_t
 // Strong-reference holder for CLLocationManager delegates (weak property) — by Claude
 private val geoKeepAlive = HashSet<Any>()
 
-class IosExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
+public class IosExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
 
     override fun openLink(url: String, newTab: Boolean) {
         UIApplication.sharedApplication.openURL(
@@ -146,7 +146,7 @@ class IosExternalServices(private val ctx: ElementContext) : ExternalServicesAcc
     }
 }
 
-actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = IosExternalServices(context)
+public actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = IosExternalServices(context)
 
 // --- Private RContext extension helpers ---
 
@@ -278,13 +278,13 @@ private fun ElementContext.openMapImpl(latitude: Double, longitude: Double, labe
     }
 }
 
-data class UIAlertActionSuspending<out T>(
+public data class UIAlertActionSuspending<out T>(
     val title: String,
     val style: UIAlertActionStyle = UIAlertActionStyleDefault,
     val handler: suspend () -> T,
 )
 
-suspend fun <T> ElementContext.actionSheet(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T {
+public suspend fun <T> ElementContext.actionSheet(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T {
     return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
         UIAlertController.alertControllerWithTitle(title = title, message = message, preferredStyle = UIAlertControllerStyleActionSheet).apply {
             for (action in actions) {
@@ -294,7 +294,7 @@ suspend fun <T> ElementContext.actionSheet(title: String?, message: String? = nu
     }!!.handler()
 }
 
-suspend fun <T> ElementContext.actionSheetCancellable(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T? {
+public suspend fun <T> ElementContext.actionSheetCancellable(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T? {
     return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
         UIAlertController.alertControllerWithTitle(title = title, message = message, preferredStyle = UIAlertControllerStyleActionSheet).apply {
             for (action in actions) {
@@ -429,7 +429,7 @@ private fun UTType.matchesMimeType(mimeType: String): Boolean {
     return true
 }
 
-suspend fun ElementContext.requestCapture(
+public suspend fun ElementContext.requestCapture(
     camera: UIImagePickerControllerCameraDevice,
     mode: UIImagePickerControllerCameraCaptureMode,
 ): FileReference? {
@@ -482,7 +482,7 @@ suspend fun ElementContext.requestCapture(
     return result
 }
 
-suspend fun ElementContext.downloadMultiple(
+public suspend fun ElementContext.downloadMultiple(
     urlToNames: Map<String, String>,
     preferredDestination: DownloadLocation,
     onDownloadProgress: ((progress: Float) -> Unit)?
@@ -576,7 +576,7 @@ private fun identifyMedia(data: NSData): Pair<Boolean, String> {
     }
 }
 
-fun ElementContext.showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
+public fun ElementContext.showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
     present(UIActivityViewController(messages + items, null).apply {
         val uiView = this@showShareSheet.controller.view
         popoverPresentationController?.sourceView = uiView

@@ -5,12 +5,12 @@ import platform.UIKit.UIApplication
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
-actual class ElementContext(val controller: UIViewController, val parent: ElementContext? = null) : ElementContextCommonCode(parent) {
+public actual class ElementContext(public val controller: UIViewController, public val parent: ElementContext? = null) : ElementContextCommonCode(parent) {
     // by Claude - use addons.child() for lazy parent lookup instead of copying
-    actual fun split(): ElementContext = ElementContext(controller, parent = this)
-    fun split(controller: UIViewController): ElementContext = ElementContext(controller, parent = this)
+    public actual fun split(): ElementContext = ElementContext(controller, parent = this)
+    public fun split(controller: UIViewController): ElementContext = ElementContext(controller, parent = this)
 
-    actual val darkMode: Boolean?
+    public actual val darkMode: Boolean?
         get() = when (controller.traitCollection.userInterfaceStyle) {
             UIUserInterfaceStyle.UIUserInterfaceStyleDark -> true
             UIUserInterfaceStyle.UIUserInterfaceStyleLight -> false
@@ -21,7 +21,7 @@ actual class ElementContext(val controller: UIViewController, val parent: Elemen
     // To enable immersive mode for iOS, you must:
     //    1) set "View controller-based status bar appearance" to YES in your Info.plist
     //    2) override prefersStatusBarHidden in your view controller and point it to this variable
-    actual var immersiveMode: Boolean = false
+    public actual var immersiveMode: Boolean = false
         set(value) {
             if (field != value) {
                 field = value
@@ -29,14 +29,14 @@ actual class ElementContext(val controller: UIViewController, val parent: Elemen
             }
         }
 
-    val controllerForPresenting get() = generateSequence(controller) { it.parentViewController }.firstOrNull { it.definesPresentationContext } as? UIViewController?
+    public val controllerForPresenting get() = generateSequence(controller) { it.parentViewController }.firstOrNull { it.definesPresentationContext } as? UIViewController?
     private var dismissing: Boolean = false
-    fun dismissSelf() {
+    public fun dismissSelf() {
         dismissing = true
         Log.info("Dismissing myself $controller through ${parent?.controller}")
         controller.presentingViewController?.dismissViewControllerAnimated(true) {}
     }
-    fun present(vc: UIViewController) {
+    public fun present(vc: UIViewController) {
         // 1. Try to find a valid controller in the ElementContext hierarchy
         val contextToUse = generateSequence(this) { it.parent }.firstOrNull {
             !it.dismissing && it.controller.view.window != null
@@ -65,5 +65,5 @@ actual class ElementContext(val controller: UIViewController, val parent: Elemen
         }
     }
 
-    actual companion object {}
+    public actual companion object {}
 }

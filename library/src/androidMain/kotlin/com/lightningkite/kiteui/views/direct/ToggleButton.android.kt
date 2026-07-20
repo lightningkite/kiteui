@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 @OptIn(ExperimentalKiteUi::class)
-actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
     override val driverActions get() = super.driverActions + toggleDriverActions()
     override val native = FrameLayout(context.activity).apply {
@@ -16,7 +16,7 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
         setOnClickListener { checkedProp.value = !checkedProp.value }
     }
     private val checkedProp = Signal(false)
-    actual val checked: MutableReactiveValue<Boolean> get() = checkedProp
+    public actual val checked: MutableReactiveValue<Boolean> get() = checkedProp
 
     init {
         checked.addListener {

@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.ssr
 /**
  * Result of SSR rendering containing all parts needed to construct a complete HTML page.
  */
-data class SsrResult(
+public data class SsrResult(
     /** The rendered HTML body content */
     val html: String,
     /** Generated CSS rules */

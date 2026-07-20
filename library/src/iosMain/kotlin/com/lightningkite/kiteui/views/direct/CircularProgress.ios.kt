@@ -6,7 +6,7 @@ import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIView
 
 
-actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
     override val native = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
-    actual var ratio: Float = 0f
+    public actual var ratio: Float = 0f
 }

@@ -56,8 +56,8 @@ import kotlin.contracts.contract
  * @see addChild Adds prepared elements to the hierarchy
  */
 @ViewDsl
-interface ElementWriter : KiteUiCoroutineScopeHelpers {
-    val context: ElementContext
+public interface ElementWriter : KiteUiCoroutineScopeHelpers {
+    public val context: ElementContext
 
     /**
      * Prepares an element before it's added to the view hierarchy - modifiers are applied here.
@@ -101,7 +101,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * 2. [Element.onStartup] is called after this but before [addChild]
      */
     @OverrideOnly
-    fun willAddChild(element: Element)
+    public fun willAddChild(element: Element)
 
     /**
      * Adds an element to the view hierarchy after [willAddChild] has prepared it.
@@ -153,7 +153,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * 3. [Element.onStartup] was called after [willAddChild] but before this
      */
     @OverrideOnly
-    fun addChild(element: Element)
+    public fun addChild(element: Element)
 
 
     // modifier enforcement interfaces to enforce view modifier order
@@ -166,7 +166,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * - `scrolling`, `scrollingHorizontally`, `scrollingBoth` - Add scrolling behavior
      * - `scrollingWithRefresh`, `scrollingHorizontallyWithRefresh`, `scrollingBothWithRefresh` - Scrolling with pull-to-refresh
      */
-    interface CanAddScrolling : ElementWriter
+    public interface CanAddScrolling : ElementWriter
 
     /**
      * Allows static theme modifiers to be applied.
@@ -181,7 +181,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * - Emphasis: `important`, `critical`, `warning`, `danger`, `affirmative`, `emphasized`, `compact`
      * - Text styling: `bold`, `italic`, `allCaps`, `strikethrough`, `underline`, `textSize(size)`, `withSpacing(multiplier)`
      */
-    interface CanAddTheme : CanAddScrolling
+    public interface CanAddTheme : CanAddScrolling
 
     /**
      * Allows sizing modifiers to be applied.
@@ -192,7 +192,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * - `dynamicSizeConstraints(...)` - Reactive size constraints
      * - `maxHeight(height)` - Set maximum height
      */
-    interface CanAddSizing : CanAddTheme
+    public interface CanAddSizing : CanAddTheme
 
     /**
      * Allows visibility modifiers to be applied.
@@ -200,9 +200,9 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * Available modifiers (in addition to [CanAddTheme] modifiers):
      * - `shownWhen(default, condition)` - Conditionally show/hide element
      */
-    interface CanAddShownWhen : CanAddSizing
+    public interface CanAddShownWhen : CanAddSizing
 
-    interface CanAddListElementModifier : CanAddShownWhen
+    public interface CanAddListElementModifier : CanAddShownWhen
 
     /**
      * Allows weight modifiers to be applied.
@@ -212,7 +212,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * - `dynamicWeight(amount)` - Reactive flex weight
      * - `expanding` - Shorthand for `weight(1f)`
      */
-    interface CanAddWeight : CanAddListElementModifier
+    public interface CanAddWeight : CanAddListElementModifier
 
     /**
      * Allows alignment modifiers to be applied. Most permissive modifier interface.
@@ -224,7 +224,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
      * - Corner alignment: `atTopStart`, `atTopCenter`, `atTopEnd`, `atCenterStart`, `atCenterEnd`, `atBottomStart`, `atBottomCenter`, `atBottomEnd`
      * - Special: `maxWidthCentered(width)` - Center with max width constraint
      */
-    interface CanAddAlignment : CanAddWeight
+    public interface CanAddAlignment : CanAddWeight
 }
 
 /**
@@ -242,7 +242,7 @@ interface ElementWriter : KiteUiCoroutineScopeHelpers {
  * - Sizing Modifiers: [ElementWriter.CanAddSizing]
  * - Scrolling Modifiers: [ElementWriter.CanAddScrolling]
  */
-interface ViewWriter : ElementWriter.CanAddAlignment
+public interface ViewWriter : ElementWriter.CanAddAlignment
 
 /**
  * Write an element to the view tree, with an optional [setup].
@@ -254,7 +254,7 @@ interface ViewWriter : ElementWriter.CanAddAlignment
  * 4. Adds the element as a child in the view hierarchy
  */
 @OptIn(ExperimentalContracts::class, InternalKiteUi::class, OverrideOnly::class)
-inline fun <T : Element> ElementWriter.write(element: T, setup: T.() -> Unit = {}): T {
+public inline fun <T : Element> ElementWriter.write(element: T, setup: T.() -> Unit = {}): T {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     element.ensureOutermostElement()
     willAddChild(element)

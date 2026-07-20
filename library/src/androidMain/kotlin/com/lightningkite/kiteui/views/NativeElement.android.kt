@@ -46,10 +46,10 @@ import com.lightningkite.reactive.context.onRemove
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
-    abstract val native: View
+public actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
+    public abstract val native: View
 
-    var removeListener: (() -> Unit)? = null
+    public var removeListener: (() -> Unit)? = null
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
             throw Exception("Cannot create views on any thread but the main thread")
@@ -59,7 +59,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
-    open fun defaultLayoutParams(): LayoutParams =
+    public open fun defaultLayoutParams(): LayoutParams =
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
     actual override var opacity: Double = 1.0
@@ -261,7 +261,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
-    actual fun screenRectangle(): Rect? {
+    public actual fun screenRectangle(): Rect? {
         val r = android.graphics.Rect()
         native.getGlobalVisibleRect(r)
         return Rect(
@@ -271,7 +271,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
             bottom = r.bottom.toDouble(),
         )
     }
-    actual fun parentRectangle(): Rect? {
+    public actual fun parentRectangle(): Rect? {
         return Rect(
             left = native.left.toDouble(),
             top = native.top.toDouble(),
@@ -287,7 +287,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     protected var backgroundBlock: GradientDrawable? = null
 
-    fun updateCorners() {
+    public fun updateCorners() {
         @Suppress("DEPRECATION")
         val cr = when (val it = theme.cornerRadii) {
             is CornerRadii.AdaptiveToSpacing -> min((parent?.spacingForChildCornerRadii ?: 0.px).value, it.value.value)
@@ -334,7 +334,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     }
 
     // Map to track active animators for each view property
-    companion object {
+    public companion object {
         private val activeAnimators = mutableMapOf<String, ValueAnimator>()
         // by Claude - cache reflected Method to avoid repeated getMethod() calls on every clickable element
         private val rippleSetDrawableMethod: java.lang.reflect.Method? by lazy {
@@ -500,4 +500,4 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     actual override var showOnPrint: Boolean = true
 }
 
-val Element.native get() = underlyingNativeElement.native
+public val Element.native get() = underlyingNativeElement.native

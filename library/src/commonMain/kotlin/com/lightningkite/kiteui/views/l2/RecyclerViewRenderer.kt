@@ -9,10 +9,10 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-interface RecyclerViewRenderer<in T> {
-    fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): Unit
+public interface RecyclerViewRenderer<in T> {
+    public fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): Unit
 
-    object Blank : RecyclerViewRenderer<Any?> {
+    public object Blank : RecyclerViewRenderer<Any?> {
         override fun render(viewWriter: ViewWriter, data: Reactive<Any?>, index: Reactive<Int>): Unit {
             return with(viewWriter) { space() }
         }

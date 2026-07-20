@@ -10,14 +10,14 @@ import com.lightningkite.reactive.core.*
 import kotlinx.datetime.*
 import kotlin.time.Clock
 
-actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
     override val driverActions get() = super.driverActions + localTimeDriverActions()
 
     private val property: Signal<LocalTime?> = Signal(null)
-    actual val content: MutableReactiveValue<LocalTime?> = property
+    public actual val content: MutableReactiveValue<LocalTime?> = property
 
-    actual var range: ClosedRange<LocalTime>? = null
+    public actual var range: ClosedRange<LocalTime>? = null
 
     override val native = FrameLayout(context.activity).apply {
         isClickable = true

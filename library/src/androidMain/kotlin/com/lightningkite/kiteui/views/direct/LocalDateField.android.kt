@@ -15,12 +15,12 @@ import kotlinx.datetime.*
 import kotlin.time.Clock
 
 @OptIn(ExperimentalKiteUi::class)
-actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
     override val driverActions get() = super.driverActions + localDateDriverActions()
     private val property: Signal<LocalDate?> = Signal(null)
-    actual val content: MutableReactiveValue<LocalDate?> = property
-    actual var range: ClosedRange<LocalDate>? = null
+    public actual val content: MutableReactiveValue<LocalDate?> = property
+    public actual var range: ClosedRange<LocalDate>? = null
 
     override val native = FrameLayout(context.activity).apply {
         isClickable = true

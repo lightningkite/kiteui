@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.views.FutureElement
 import com.lightningkite.reactive.core.*
 
-fun <V> FutureElement.vprop(
+public fun <V> FutureElement.vprop(
     eventName: String,
     get: FutureElement.() -> V,
     set: FutureElement.(V) -> Unit
@@ -27,7 +27,7 @@ fun <V> FutureElement.vprop(
         }
     }
 }
-fun <V> FutureElement.vread(
+public fun <V> FutureElement.vread(
     eventName: String,
     get: FutureElement.() -> V
 ): Reactive<V> {
@@ -43,7 +43,7 @@ fun <V> FutureElement.vread(
     }
 }
 
-fun FutureElement.vevent(eventName: String): Listenable {
+public fun FutureElement.vevent(eventName: String): Listenable {
     return object: BaseListenable() {
         init {
             addEventListener(eventName) {
@@ -53,5 +53,5 @@ fun FutureElement.vevent(eventName: String): Listenable {
     }
 }
 
-expect fun FutureElement.resizeObserver(): Listenable
-expect fun FutureElement.mutationObserver(recursive: Boolean): Listenable
+public expect fun FutureElement.resizeObserver(): Listenable
+public expect fun FutureElement.mutationObserver(recursive: Boolean): Listenable

@@ -8,12 +8,12 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class AutoCompleteTextField actual constructor(context: ElementContext): NativeElementWithAction(context) {
+public actual class AutoCompleteTextField actual constructor(context: ElementContext): NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
     override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     override val native = AndroidAutocompleteTextView(context.activity)
-    actual val content: MutableReactiveValue<String> = native.contentProperty()
-    actual var keyboardHints: KeyboardHints
+    public actual val content: MutableReactiveValue<String> = native.contentProperty()
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -25,7 +25,7 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext): 
         val items: List<String> = objects
     }
 
-    actual var suggestions: List<String>
+    public actual var suggestions: List<String>
         get() {
             return (native.adapter as KiteUiStringAdapter).items
         }

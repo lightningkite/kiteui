@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.closePopovers
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.themed
 
-actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
+public actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
     override val driverActions get() = super.driverActions + menuDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
@@ -16,7 +16,7 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
 
     private var _openMenu: (() -> Unit)? = null
 
-    actual fun opensMenu(createMenu: Frame.() -> Unit) {
+    public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         val openFn = {
             var willRemove: Element? = null
             popoverWriter(this.overlayFrame!!) {
@@ -76,8 +76,8 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
         _openMenu = openFn
     }
 
-    actual var requireClick: Boolean = true
-    actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
+    public actual var requireClick: Boolean = true
+    public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
 
     override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }

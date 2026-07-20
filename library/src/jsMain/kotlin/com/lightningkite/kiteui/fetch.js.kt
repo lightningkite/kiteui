@@ -32,7 +32,7 @@ import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 
 @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE", "UnsafeCastFromDynamic")
-actual suspend fun fetchRaw(
+public actual suspend fun fetchRaw(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -85,25 +85,25 @@ actual suspend fun fetchRaw(
     }
 }
 
-actual fun httpHeaders(map: Map<String, String>): HttpHeaders = HttpHeaders().apply {
+public actual fun httpHeaders(map: Map<String, String>): HttpHeaders = HttpHeaders().apply {
     for (entry in map) {
         append(entry.key, entry.value)
     }
 }
 
-actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(init = headers)
-actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
+public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(init = headers)
+public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
     for (entry in list) {
         append(entry.first, entry.second)
     }
 }
-actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
+public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
     for (entry in sequence) {
         append(entry.first, entry.second)
     }
 }
-actual typealias HttpHeaders = Headers
-fun HttpHeaders.forEach(action: (String, String) -> Unit) {
+public actual typealias HttpHeaders = Headers
+public fun HttpHeaders.forEach(action: (String, String) -> Unit) {
     val keys = this.asDynamic().keys()
     var nextKey: dynamic
     do {
@@ -122,10 +122,10 @@ fun HttpHeaders.forEach(action: (String, String) -> Unit) {
 //    actual suspend fun blob(): Blob = wraps.blob().await()
 //    actual val headers: HttpHeaders get() = wraps.headers
 //}
-actual class RequestResponse(val wraps: XMLHttpRequest) {
-    actual val status: Short get() = wraps.status
-    actual val ok: Boolean get() = wraps.status / 100 == 2
-    actual suspend fun text(): String {
+public actual class RequestResponse(public val wraps: XMLHttpRequest) {
+    public actual val status: Short get() = wraps.status
+    public actual val ok: Boolean get() = wraps.status / 100 == 2
+    public actual suspend fun text(): String {
         if(wraps.readyState == XMLHttpRequest.DONE)
             return ((wraps.response as Blob).asDynamic().text() as Promise<String>).await()
         else
@@ -143,7 +143,7 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
                 }
             }
     }
-    actual suspend fun blob(): Blob {
+    public actual suspend fun blob(): Blob {
         if(wraps.readyState == XMLHttpRequest.DONE)
             return wraps.response as Blob
         else
@@ -157,7 +157,7 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
                 }
             }
     }
-    actual val headers: HttpHeaders by lazy {
+    public actual val headers: HttpHeaders by lazy {
         httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.map {
             val s = it.split(":", limit = 2)
             s[0].trim() to s[1].trim()
@@ -165,23 +165,23 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
     }
 }
 
-actual typealias Blob = org.w3c.files.Blob
-actual typealias FileReference = File
+public actual typealias Blob = org.w3c.files.Blob
+public actual typealias FileReference = File
 
-actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+public actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
     // ByteArray in Kotlin/JS is backed by Int8Array; wrap in a Blob first, then File
     val blob = Blob(arrayOf(bytes.asDynamic()), BlobPropertyBag(type = mimeType))
     return File(arrayOf(blob), fileName, FilePropertyBag(type = mimeType))
 }
 
-actual fun Blob.mimeType(): String {
+public actual fun Blob.mimeType(): String {
     return this.type
 }
-actual fun FileReference.mimeType(): String {
+public actual fun FileReference.mimeType(): String {
     return this.type
 }
 
-actual fun FileReference.fileName(): String {
+public actual fun FileReference.fileName(): String {
     return this.name
 }
 
@@ -191,11 +191,11 @@ private val killAllSockets = BasicListenable().also {
         it.invokeAll()
     }
 }
-actual fun websocket(url: String): WebSocket {
+public actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(org.w3c.dom.WebSocket(url))
 }
 
-class WebSocketWrapper(val native: org.w3c.dom.WebSocket, val log: Log? = Log.tag("WS to ${native.url}").infoOrAbove()) : WebSocket {
+public class WebSocketWrapper(public val native: org.w3c.dom.WebSocket, public val log: Log? = Log.tag("WS to ${native.url}").infoOrAbove()) : WebSocket {
     private val opened = Clock.System.now()
     private val stopListeningToDebugKill = killAllSockets.addListener {
         println("Killing websocket to ${native.url} opened at $opened")
@@ -231,15 +231,15 @@ class WebSocketWrapper(val native: org.w3c.dom.WebSocket, val log: Log? = Log.ta
     }
 }
 
-actual fun Blob.bytes(): Long = size.toLong()
-actual fun FileReference.bytes(): Long = size.toLong()
+public actual fun Blob.bytes(): Long = size.toLong()
+public actual fun FileReference.bytes(): Long = size.toLong()
 
-fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
-actual suspend fun Blob.text(): String = jsTextBlob(this).await()
-actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
-actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
-actual fun ByteArray.toBlob(contentType: String): Blob = Blob(arrayOf(this), options = BlobPropertyBag(type = contentType))
-actual suspend fun Blob.toByteArray(): ByteArray = Int8Array((asDynamic().arrayBuffer() as Promise<ArrayBuffer>).await()).toByteArray()
+public fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
+public actual suspend fun Blob.text(): String = jsTextBlob(this).await()
+public actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
+public actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
+public actual fun ByteArray.toBlob(contentType: String): Blob = Blob(arrayOf(this), options = BlobPropertyBag(type = contentType))
+public actual suspend fun Blob.toByteArray(): ByteArray = Int8Array((asDynamic().arrayBuffer() as Promise<ArrayBuffer>).await()).toByteArray()
 
     /** Returns a new [ByteArray] containing all the elements of this [Int8Array]. */
 private fun Int8Array.toByteArray(): ByteArray =

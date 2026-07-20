@@ -6,15 +6,15 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
     override val driverActions get() = super.driverActions + textInputDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: MutableReactiveValue<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual val content: MutableReactiveValue<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             native.applyKeyboardHints(value)
@@ -28,7 +28,7 @@ actual class TextInput actual constructor(context: ElementContext) : NativeEleme
             }
         }
     }
-    actual inline var hint: String
+    public actual inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
@@ -36,7 +36,7 @@ actual class TextInput actual constructor(context: ElementContext) : NativeEleme
 
     private var _align: Align? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value

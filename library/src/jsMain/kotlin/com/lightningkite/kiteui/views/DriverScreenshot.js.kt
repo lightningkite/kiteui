@@ -4,7 +4,7 @@ import kotlinx.coroutines.await
 import kotlin.js.Promise
 
 @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
-actual suspend fun Element.driverScreenshot(): String {
+public actual suspend fun Element.driverScreenshot(): String {
     val element = this.native.element ?: throw DriverActionException("Element not yet attached to DOM")
 
     // modern-screenshot renders DOM to PNG via SVG foreignObject.  Two workarounds are needed:

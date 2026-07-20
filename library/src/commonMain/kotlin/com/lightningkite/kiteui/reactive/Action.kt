@@ -21,27 +21,27 @@ import kotlin.coroutines.EmptyCoroutineContext
  * @param onStart called at the start of the action coroutine (e.g. to set active span globals)
  * @param onEnd called in `finally` when the action completes or is cancelled
  */
-class ActionInstrumentation(
-    val coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    val onStart: () -> Unit = {},
-    val onEnd: () -> Unit = {},
+public class ActionInstrumentation(
+    public val coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    public val onStart: () -> Unit = {},
+    public val onEnd: () -> Unit = {},
 )
 
 /** Interceptors called on every [Action.startAction]. Each may return an [ActionInstrumentation] to wrap the action. */
-val actionInstrumentors: MutableList<(scope: CoroutineScope, title: String) -> ActionInstrumentation?> = mutableListOf()
+public val actionInstrumentors: MutableList<(scope: CoroutineScope, title: String) -> ActionInstrumentation?> = mutableListOf()
 
-interface Action: Reactive<Boolean> {
-    val title: String
-    val icon: Icon
-    fun startAction(scope: CoroutineScope)
-    operator fun plus(other: Action): Action
+public interface Action: Reactive<Boolean> {
+    public val title: String
+    public val icon: Icon
+    public fun startAction(scope: CoroutineScope)
+    public operator fun plus(other: Action): Action
 
-    companion object {
-        var defaultClearErrorOnDependencyChange: Boolean = true
+    public companion object {
+        public var defaultClearErrorOnDependencyChange: Boolean = true
     }
 }
 
-operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
+public operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
 
 /**
  * Creates an [Action] that wraps [action] with optional frequency capping.
@@ -62,7 +62,7 @@ operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
  * @param frequencyCap minimum time between allowed invocations; null disables the cap
  * @param ignoreRetryWhileRunning if true, additional [startAction] calls are dropped while the action is in progress
  */
-fun Action(
+public fun Action(
     title: String,
     icon: Icon = Icon.send,
     clearErrorOnDependencyChange: Boolean = Action.defaultClearErrorOnDependencyChange,
@@ -80,7 +80,7 @@ fun Action(
     } ?: it
 }
 
-class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.milliseconds) : Action by wraps {
+public class FrequencyCapAction(public val wraps: Action, public val frequencyCap: Duration = 500.milliseconds) : Action by wraps {
     // initialize in the past so the first invocation is never suppressed
     private var lastInvoked = TimeSource.Monotonic.markNow() - frequencyCap - 1.milliseconds
 
@@ -96,13 +96,13 @@ class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.mil
     override fun toString(): String = "FrequencyCapAction($wraps)"
 }
 
-class RetryableAction(
+public class RetryableAction(
     override val title: String,
     override val icon: Icon,
-    val keepRunningWhile: CoroutineScope? = AppScope,
-    val ignoreRetryWhileRunning: Boolean = false,
+    public val keepRunningWhile: CoroutineScope? = AppScope,
+    public val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
-    val action: suspend CoroutineScope.() -> Unit,
+    public val action: suspend CoroutineScope.() -> Unit,
 ) : Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
@@ -144,7 +144,7 @@ class RetryableAction(
         }
     }
 
-    fun cancel() {
+    public fun cancel() {
         lastJob?.let {
             lastJob = null
             it.cancel()
@@ -165,13 +165,13 @@ class RetryableAction(
     override fun toString(): String = "RetryableAction($title)"
 }
 
-class DependentAction(
+public class DependentAction(
     override val title: String,
     override val icon: Icon,
-    val keepRunningWhile: CoroutineScope? = AppScope,
-    val ignoreRetryWhileRunning: Boolean = false,
+    public val keepRunningWhile: CoroutineScope? = AppScope,
+    public val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReactive<Boolean> = RawReactive(ReactiveState(false)),
-    val action: suspend CoroutineScope.() -> Unit,
+    public val action: suspend CoroutineScope.() -> Unit,
 ) : DependencyChangeListener(), Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 

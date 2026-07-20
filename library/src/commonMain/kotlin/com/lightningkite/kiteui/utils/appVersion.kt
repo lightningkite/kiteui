@@ -1,3 +1,3 @@
 package com.lightningkite.kiteui.utils
 
-expect fun getAppVersion(): String
+public expect fun getAppVersion(): String

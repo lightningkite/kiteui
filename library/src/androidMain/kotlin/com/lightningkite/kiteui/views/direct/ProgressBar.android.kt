@@ -16,11 +16,11 @@ import com.lightningkite.kiteui.views.NativeElement
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
-    val shapeDrawable = ShapeDrawable().apply {
+public actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
+    public val shapeDrawable = ShapeDrawable().apply {
         shape = RoundRectShape(floatArrayOf(999f, 999f, 999f, 999f, 999f, 999f, 999f, 999f), null, null)
     }
-    val clipDrawable = ClipDrawable(shapeDrawable, Gravity.START, ClipDrawable.HORIZONTAL)
+    public val clipDrawable = ClipDrawable(shapeDrawable, Gravity.START, ClipDrawable.HORIZONTAL)
     override val native =
         android.widget.ProgressBar(context.activity, null, android.R.attr.progressBarStyleHorizontal).apply {
 //        min = 0
@@ -71,7 +71,7 @@ actual class ProgressBar actual constructor(context: ElementContext) : NativeEle
         }
     }
 
-    actual var ratio: Float
+    public actual var ratio: Float
         get() = native.progress / 10000f
         set(value) {
             native.progress = (value * 10000).roundToInt()

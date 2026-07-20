@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views
 import platform.UIKit.UIView
 import kotlin.math.max
 
-actual abstract class NativeContainerElement actual constructor(context: ElementContext) : ContainerElement, NativeContainerElementCommonCode(context) {
+public actual abstract class NativeContainerElement actual constructor(context: ElementContext) : ContainerElement, NativeContainerElementCommonCode(context) {
     actual override fun nativeAddChild(index: Int, element: Element) {
         val existingView = children.getOrNull(index)
         val existingIndex = addChildTarget.subviews.indexOfFirst { it == existingView?.native }

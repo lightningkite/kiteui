@@ -5,10 +5,10 @@ import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.*
 
 
-actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
+public actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
     private var _openMenu: (() -> Unit)? = null
     override val driverActions get() = super.driverActions + menuDriverActions(click = _openMenu)
-    val floating = FloatingInfoHolder(this)
+    public val floating = FloatingInfoHolder(this)
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"
@@ -31,9 +31,9 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
         Frame.internalAddChildStack(this, index, element)
     }
 
-    actual var requireClick: Boolean = false
-    actual var preferredDirection: PopoverPreferredDirection by floating::preferredDirection
-    actual fun opensMenu(createMenu: Frame.() -> Unit) {
+    public actual var requireClick: Boolean = false
+    public actual var preferredDirection: PopoverPreferredDirection by floating::preferredDirection
+    public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         floating.menuGenerator = createMenu
         _openMenu = { floating.open(); floating.block() }
     }

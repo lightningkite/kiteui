@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
-actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
+public actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + externalLinkDriverActions()
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
@@ -25,9 +25,9 @@ actual class ExternalLink actual constructor(context: ElementContext) : NativeCo
         }
     }
 
-    actual var to: String? = null
+    public actual var to: String? = null
 
-    actual var newTab: Boolean = false
+    public actual var newTab: Boolean = false
 
     override fun nativeSetAction(action: Action?) {
         native.contentDescription = accessibleLabel ?: action?.title

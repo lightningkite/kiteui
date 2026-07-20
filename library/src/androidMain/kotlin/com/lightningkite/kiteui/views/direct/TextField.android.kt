@@ -20,7 +20,7 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual open class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual open class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
     override val driverActions get() = super.driverActions + textInputDriverActions()
     override val native = EditText(context.activity).focusIsKeyboard().apply {
@@ -49,7 +49,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
         applyAlign(_align ?: theme.font.align)
     }
 
-    actual val content: MutableReactiveValue<String> = native.contentProperty()
+    public actual val content: MutableReactiveValue<String> = native.contentProperty()
 
     private var useSensitiveDotMask = false
         set(value) {
@@ -72,7 +72,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
         }
     }
 
-    actual var keyboardHints: KeyboardHints
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -90,7 +90,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
         }
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
@@ -100,7 +100,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
     private var _align: Align? = null
     private var _fontAndStyle: FontAndStyle? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value
@@ -127,12 +127,12 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
 }
 
 
-abstract class EquatableByRef(val key: String, val ref: Any) {
+public abstract class EquatableByRef(public val key: String, public val ref: Any) {
     override fun hashCode(): Int = key.hashCode() + ref.hashCode()
     override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
 }
 
-var EditText.keyboardHints: KeyboardHints
+public var EditText.keyboardHints: KeyboardHints
     get() {
         return when (inputType) {
             InputType.TYPE_CLASS_NUMBER -> KeyboardHints(KeyboardCase.None, KeyboardType.Integer)

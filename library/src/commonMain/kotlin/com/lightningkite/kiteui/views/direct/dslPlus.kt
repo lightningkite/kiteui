@@ -16,7 +16,7 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 
-fun <T, ID> ElementWriter.colOf(
+public fun <T, ID> ElementWriter.colOf(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddListElementModifier = { this },
@@ -24,7 +24,7 @@ fun <T, ID> ElementWriter.colOf(
 ) = col {
     forEachById(items, id, preHidingModifiers, render = render)
 }
-fun <T, ID> ElementWriter.rowOf(
+public fun <T, ID> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddListElementModifier = { this },
@@ -33,21 +33,21 @@ fun <T, ID> ElementWriter.rowOf(
     forEachById(items, id, preHidingModifiers, render = render)
 }
 
-fun <T> ElementWriter.colOf(
+public fun <T> ElementWriter.colOf(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
 ) = col {
     forEachUpdating(items, placeholdersWhileLoading, render = render)
 }
-fun <T> ElementWriter.rowOf(
+public fun <T> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
 ) = row {
     forEachUpdating(items, placeholdersWhileLoading, render = render)
 }
-fun <T> ElementWriter.rowWrappingOf(
+public fun <T> ElementWriter.rowWrappingOf(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
@@ -55,7 +55,7 @@ fun <T> ElementWriter.rowWrappingOf(
     forEachUpdating(items, placeholdersWhileLoading, render = render)
 }
 
-inline fun <T> ElementWriter.swapping(
+public inline fun <T> ElementWriter.swapping(
     crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
     crossinline current: ReactiveContext.() -> T,
     crossinline views: ViewWriter.(T) -> Unit
@@ -66,7 +66,7 @@ inline fun <T> ElementWriter.swapping(
 }
 
 
-fun ContainerElement.atIndex(index: Int): ViewWriter {
+public fun ContainerElement.atIndex(index: Int): ViewWriter {
     val writer = object : ViewWriter by this {
         override val context: ElementContext
             get() = this@atIndex.context

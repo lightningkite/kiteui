@@ -9,7 +9,7 @@ import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIView
 
 
-actual class Separator actual constructor(context: ElementContext): NativeElement(context) {
+public actual class Separator actual constructor(context: ElementContext): NativeElement(context) {
     override val native = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
 
     init {

@@ -18,23 +18,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
-class DragDropReordering(
+public class DragDropReordering(
     private val scope: CoroutineScope,
-    val mimeType: String = "application/kiteui-index",
-    val reorder: suspend (Move) -> Unit
+    public val mimeType: String = "application/kiteui-index",
+    public val reorder: suspend (Move) -> Unit
 ) {
-    object HalfGap : Semantic("halfgap") {
+    public object HalfGap : Semantic("halfgap") {
         override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
             cascading = false,
             gap = theme.gap / 2,
         )
     }
 
-    fun encode(index: Int) = DragData("Source Index", mimeType, index.toString())
-    fun decode(data: DragData) = data[mimeType]?.toInt()
+    public fun encode(index: Int) = DragData("Source Index", mimeType, index.toString())
+    public fun decode(data: DragData) = data[mimeType]?.toInt()
 
-    data class Move(val start: Int, val end: Int) {
-        fun <T> reorder(list: List<T>) =
+    public data class Move(val start: Int, val end: Int) {
+        public fun <T> reorder(list: List<T>) =
             if (start == end) list
             else list
                 .toMutableList()
@@ -42,9 +42,9 @@ class DragDropReordering(
                 .toList()
     }
 
-    val willMove = Signal<Move?>(null)
+    public val willMove = Signal<Move?>(null)
 
-    inner class Delegate(val index: Reactive<Int>) : DropTargetDelegate {
+    public inner class Delegate(public val index: Reactive<Int>) : DropTargetDelegate {
         override fun enter(event: DragEvent): Boolean =
             decode(event.data)
                 ?.let { source ->
@@ -74,7 +74,7 @@ class DragDropReordering(
     }
 }
 
-fun <T> ContainerElement.forEachReorderable(
+public fun <T> ContainerElement.forEachReorderable(
     items: Reactive<List<T>>,
     reorder: suspend (DragDropReordering.Move) -> Unit,
     separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
@@ -120,13 +120,13 @@ fun <T> ContainerElement.forEachReorderable(
     }
 }
 
-class RecyclerReorderable<T, ID>(
-    val wraps: RecyclerViewRendererSet<T, ID>,
-    val view: Recycler2,
-    val separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
+public class RecyclerReorderable<T, ID>(
+    public val wraps: RecyclerViewRendererSet<T, ID>,
+    public val view: Recycler2,
+    public val separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
     reorder: suspend (DragDropReordering.Move) -> Unit
 ) : RecyclerViewRendererSet<T, ID> {
-    val handler = DragDropReordering(view, reorder = reorder)
+    public val handler = DragDropReordering(view, reorder = reorder)
 
     override fun id(item: T): ID = wraps.id(item)
 
@@ -134,8 +134,8 @@ class RecyclerReorderable<T, ID>(
         view.gap = 0.px
     }
 
-    inner class ReorderWrapper(
-        val renderer: RecyclerViewRenderer<T>
+    public inner class ReorderWrapper(
+        public val renderer: RecyclerViewRenderer<T>
     ) : RecyclerViewRenderer<T> {
         @OptIn(ExperimentalKiteUi::class)
         override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): Unit = with(viewWriter) {
@@ -172,7 +172,7 @@ class RecyclerReorderable<T, ID>(
     override fun renderer(item: T): RecyclerViewRenderer<T> = ReorderWrapper(wraps.renderer(item))
 }
 
-fun <T, ID> Recycler2.childrenReorderable(
+public fun <T, ID> Recycler2.childrenReorderable(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     reorder: suspend (DragDropReordering.Move) -> Unit,

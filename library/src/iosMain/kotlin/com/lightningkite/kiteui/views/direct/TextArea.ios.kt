@@ -16,13 +16,13 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 @OptIn(ExperimentalKiteUi::class)
-actual class TextArea actual constructor(context: ElementContext) : NativeElement(context), ElementWithAction {
+public actual class TextArea actual constructor(context: ElementContext) : NativeElement(context), ElementWithAction {
     override val driverValue: String? get() = textAreaDriverValue()
     override val driverActions get() = super<NativeElement>.driverActions + textAreaDriverActions()
     override val native = WrapperView()
     private val delegate = TextAreaDelegate()
 
-    val trigger: NSObject = object : NSObject() {
+    public val trigger: NSObject = object : NSObject() {
         @ObjCAction
         fun done() {
             action?.let {
@@ -33,7 +33,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         }
     }
 
-    val textField = UITextView().apply {
+    public val textField = UITextView().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -72,7 +72,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val textSize = textSize
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
@@ -81,26 +81,26 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         textField.textAlignment = alignment
     }
 
-    fun updateHint() {
+    public fun updateHint() {
         // TODO: Hint
 //        textField.attributedPlaceholder = hint
     }
 
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
+    public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = textField.text
             set(value) {
@@ -120,7 +120,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         }
     }
 
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = value.case.ios
@@ -129,14 +129,14 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
 
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             updateHint()
             textField.accessibilityHint = value.ifEmpty { null }
         }
 
-    inline var align: Align
+    public inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center

@@ -29,92 +29,92 @@ import kotlin.math.*
 /**
  * Data point for the graph.
  */
-data class Point(val x: Double, val y: Double)
+public data class Point(val x: Double, val y: Double)
 
 /**
  * Delegate class for drawing graphs on a Canvas.
  * This provides basic graphing functionality with customizable appearance.
  */
-open class GraphDelegate : CanvasDelegate() {
+public open class GraphDelegate : CanvasDelegate() {
     // Data to be displayed on the graph
-    var data: List<Point> = emptyList()
+    public var data: List<Point> = emptyList()
 
-    enum class PointShape {
+    public enum class PointShape {
         Square,
         Circle,
     }
 
     // Graph appearance properties
     private var _lineColor: Color? = null // Color.blue
-    var lineColor: Color
+    public var lineColor: Color
         get() = _lineColor ?: theme.foreground.closestColor()
         set(value) {
             _lineColor = value
         }
 
     private var _pointColor: Color? = null // Color.red
-    var pointColor: Color
+    public var pointColor: Color
         get() = _pointColor ?: theme.foreground.closestColor()
         set(value) {
             _pointColor = value
         }
 
     private var _gridColor: Color? = null // Color(0.8f, 0.8f, 0.8f, 1.0f)
-    var gridColor: Color
+    public var gridColor: Color
         get() = _gridColor ?: theme.background.closestColor().highlight(0.1f)
         set(value) {
             _gridColor = value
         }
 
     private var _axisColor: Color? = null // Color.black
-    var axisColor: Color
+    public var axisColor: Color
         get() = _axisColor ?: theme.foreground.closestColor()
         set(value) {
             _axisColor = value
         }
 
     private var _textColor: Color? = null // Color.black
-    var textColor: Color
+    public var textColor: Color
         get() = _textColor ?: theme.foreground.closestColor()
         set(value) {
             _textColor = value
         }
-    var showGrid: Boolean = true
-    var showPoints: Boolean = true
+    public var showGrid: Boolean = true
+    public var showPoints: Boolean = true
 
     private var _pointSize: Dimension? = null // 5.0.dp
-    var pointSize: Dimension
+    public var pointSize: Dimension
         get() = _pointSize ?: theme.padding.left
         set(value) { _pointSize = value }
     private var _pointShape: PointShape? = null // PointShape.Square
-    var pointShape: PointShape
+    public var pointShape: PointShape
         get() = _pointShape ?: PointShape.Square
         set(value) { _pointShape = value }
     private var _lineWidth: Dimension? = null // 2.0.dp
-    var lineWidth: Dimension
+    public var lineWidth: Dimension
         get() = _lineWidth ?: 1.dp
         set(value) {
             _lineWidth = value
         }
 
     private var _padding: Dimension? = null // 0.dp
-    var padding: Dimension
+    public var padding: Dimension
         get() = _padding ?: (theme.font.size * 4)
         set(value) {
             _padding = value
         }
 
     // Axis labels
-    var xAxisLabel: String = "X"
-    var yAxisLabel: String = "Y"
+    public var xAxisLabel: String = "X"
+    public var yAxisLabel: String = "Y"
 
-    var xAxisLabels: List<String>? = null
-    var yAxisLabels: List<String>? = null
+    public var xAxisLabels: List<String>? = null
+    public var yAxisLabels: List<String>? = null
 
     // Font sizes
-    var axisLabelFontSize: Dimension = 1.rem
-    var tickLabelFontSize: Dimension = 0.8.rem
-    var noDataMessageFontSize: Dimension = 2.rem
+    public var axisLabelFontSize: Dimension = 1.rem
+    public var tickLabelFontSize: Dimension = 0.8.rem
+    public var noDataMessageFontSize: Dimension = 2.rem
 
     // Calculate data bounds
     private val rawMinX get() = min(0.0, data.minOfOrNull { it.x } ?: 0.0)
@@ -416,8 +416,8 @@ open class GraphDelegate : CanvasDelegate() {
     }
 }
 
-class GraphCanvas(private val canvas: Canvas) : Element by canvas, GraphDelegate() {
-    constructor(context: ElementContext) : this(Canvas(context))
+public class GraphCanvas(private val canvas: Canvas) : Element by canvas, GraphDelegate() {
+    public constructor(context: ElementContext) : this(Canvas(context))
 
     init {
         canvas.delegate = this as GraphDelegate
@@ -428,7 +428,7 @@ class GraphCanvas(private val canvas: Canvas) : Element by canvas, GraphDelegate
  * Create a [GraphCanvas] with the given setup.
  */
 @OptIn(ExperimentalContracts::class)
-inline fun ElementWriter.graph(setup: GraphCanvas.() -> Unit = {}): GraphCanvas {
+public inline fun ElementWriter.graph(setup: GraphCanvas.() -> Unit = {}): GraphCanvas {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(GraphCanvas(context), setup)
 }
@@ -436,7 +436,7 @@ inline fun ElementWriter.graph(setup: GraphCanvas.() -> Unit = {}): GraphCanvas 
 /**
  * Extension function to create a line graph with the given data.
  */
-inline fun ElementWriter.lineGraph(
+public inline fun ElementWriter.lineGraph(
     data: List<Point>,
     setup: GraphCanvas.() -> Unit = {}
 ): GraphCanvas {
@@ -452,7 +452,7 @@ inline fun ElementWriter.lineGraph(
  */
 @JvmName("lineGraphFromYValues")
 @JsName("lineGraphFromYValues")
-inline fun ElementWriter.lineGraph(
+public inline fun ElementWriter.lineGraph(
     yValues: List<Double>,
     setup: GraphCanvas.() -> Unit = {}
 ): GraphCanvas {
@@ -465,7 +465,7 @@ inline fun ElementWriter.lineGraph(
  */
 @JvmName("lineGraphFromPairs")
 @JsName("lineGraphFromPairs")
-inline fun ElementWriter.lineGraph(
+public inline fun ElementWriter.lineGraph(
     points: List<Pair<Double, Double>>,
     setup: GraphCanvas.() -> Unit = {}
 ): GraphCanvas {

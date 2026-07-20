@@ -15,7 +15,7 @@ import org.w3c.dom.*
  * Only [Separate] is active; [Link] and [Deprecated] are retained for source
  * compatibility but no longer change behavior.
  */
-enum class PageNavigatorBehavior {
+public enum class PageNavigatorBehavior {
     /**
      * Each navigate() call creates one browser history entry.  Browser back /
      * forward move through the app stack accordingly.  This is the only active
@@ -35,20 +35,20 @@ enum class PageNavigatorBehavior {
     @Deprecated("No longer has any effect; PageNavigatorBehavior.Separate is always used.", level = DeprecationLevel.WARNING)
     Deprecated;
 
-    companion object {
+    public companion object {
         /** Setting this is a no-op; [Separate] is always used. */
         @Deprecated("PageNavigatorBehavior is no longer configurable; Separate is always used.", level = DeprecationLevel.WARNING)
-        var current: PageNavigatorBehavior = PageNavigatorBehavior.Separate
+        public var current: PageNavigatorBehavior = PageNavigatorBehavior.Separate
     }
 }
 
 /** Setting this is a no-op; [PageNavigatorBehavior.Separate] is always used. */
 @Deprecated("PageNavigatorBehavior is no longer configurable; Separate is always used.", level = DeprecationLevel.WARNING)
-var PageNavigatorUseExperimentalBehavior: Boolean
+public var PageNavigatorUseExperimentalBehavior: Boolean
     get() = false
     set(@Suppress("UNUSED_PARAMETER") value) { /* no-op */ }
 
-actual fun PageNavigator.bindToPlatform(context: ElementContext) {
+public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     val beforeUnload = { event: Event ->
         val canLeave = this.currentPage.state.raw?.let { it as? CanBlockBack }?.onNavigateAwayAttempt() ?: true
         if (!canLeave) {
@@ -191,11 +191,11 @@ actual fun PageNavigator.bindToPlatform(context: ElementContext) {
 // From URL Bar
 // From Stack / Last Update
 
-external interface BaseUrlScript {
-    val baseUrl: String
+public external interface BaseUrlScript {
+    public val baseUrl: String
 }
 
-var basePath = ((document.getElementById("baseUrlLocation") as? HTMLScriptElement)
+public var basePath = ((document.getElementById("baseUrlLocation") as? HTMLScriptElement)
     ?.innerText
     ?.let { JSON.parse<BaseUrlScript>(it).baseUrl }
     ?: document.baseURI.takeIf { document.getElementsByTagName("base").length != 0 }
@@ -209,7 +209,7 @@ private fun Location.urlLike() = UrlLikePath(
         .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
 )
 
-actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
+public actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
     return window.confirm(
         "Are you sure you want to leave this page?\nChanges will not be saved."
     )

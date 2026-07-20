@@ -7,14 +7,14 @@ import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
     override val driverActions get() = super.driverActions + numberInputDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: MutableReactiveValue<Double?> = object : MutableReactiveValue<Double?>, BaseListenable() {
+    public actual val content: MutableReactiveValue<Double?> = object : MutableReactiveValue<Double?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 numberAutocommaRepair(
@@ -41,7 +41,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
             }
     }
 
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             native.attributes.type = when (value.type) {
@@ -97,7 +97,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
             }
         }
     }
-    actual inline var hint: String
+    public actual inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
@@ -105,7 +105,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
 
     private var _align: Align? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value
@@ -126,7 +126,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         applyAlign(_align ?: theme.theme.font.align)
     }
 
-    actual var range: ClosedRange<Double>? = null
+    public actual var range: ClosedRange<Double>? = null
         set(value) {
             field = value
             value?.let {
@@ -139,8 +139,8 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         }
 }
 
-expect val NumberInput.selectionStart: Int?
-expect val NumberInput.selectionEnd: Int?
-expect fun NumberInput.setSelectionRange(start: Int, end: Int)
+public expect val NumberInput.selectionStart: Int?
+public expect val NumberInput.selectionEnd: Int?
+public expect fun NumberInput.setSelectionRange(start: Int, end: Int)
 
-expect fun usingWebOnMobile(): Boolean
+public expect fun usingWebOnMobile(): Boolean

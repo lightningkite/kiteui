@@ -12,7 +12,7 @@ import platform.UIKit.UIControl
 import platform.UIKit.accessibilityTraits
 import platform.UIKit.setAccessibilityTraits
 
-actual class ExternalLink actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
+public actual class ExternalLink actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + externalLinkDriverActions()
     override val native = FrameLayoutButton()
     override val control: UIControl get() = native
@@ -29,8 +29,8 @@ actual class ExternalLink actual constructor(context: ElementContext): NativeCon
         })
     }
 
-    actual var to: String? = null
-    actual var newTab: Boolean = false
+    public actual var to: String? = null
+    public actual var newTab: Boolean = false
 
     init {
         native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitLink

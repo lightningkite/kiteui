@@ -13,7 +13,7 @@ import platform.UIKit.accessibilityTraits
 import platform.UIKit.setAccessibilityHint
 import platform.UIKit.setAccessibilityTraits
 
-actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
+public actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
     private var _openMenu: (() -> Unit)? = null
     override val driverActions get() = super.driverActions + menuDriverActions()
     override val native = FrameLayoutButton()
@@ -24,7 +24,7 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
         setupControl()
     }
 
-    actual fun opensMenu(createMenu: Frame.() -> Unit) {
+    public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         val openFn: () -> Unit = {
             var willRemove: Element? = null
             val f = overlayFrame!!
@@ -63,6 +63,6 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
         _openMenu = openFn
     }
 
-    actual var requireClick: Boolean = true
-    actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
+    public actual var requireClick: Boolean = true
+    public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
 }

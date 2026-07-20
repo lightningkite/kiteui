@@ -19,37 +19,37 @@ import com.lightningkite.kiteui.views.themed
  * Provides access to markdown parsing capabilities for custom block handlers.
  * This allows custom handlers to parse parts of their content as standard markdown.
  */
-interface MarkdownParseContext {
+public interface MarkdownParseContext {
     /**
      * Parse text as block-level markdown content.
      * @param content The markdown text to parse
      * @return List of parsed block nodes
      */
-    fun parseBlocks(content: String): List<MarkdownNode>
+    public fun parseBlocks(content: String): List<MarkdownNode>
 
     /**
      * Parse text as inline markdown content.
      * @param content The markdown text to parse
      * @return List of parsed inline nodes
      */
-    fun parseInline(content: String): List<MarkdownNode.InlineNode>
+    public fun parseInline(content: String): List<MarkdownNode.InlineNode>
 }
 
 /**
  * Provides access to markdown rendering capabilities for custom block handlers.
  * This allows custom handlers to render child nodes and access configuration.
  */
-interface MarkdownRenderContext {
+public interface MarkdownRenderContext {
     /**
      * The markdown configuration, useful for resolving internal links.
      */
-    val config: MarkdownConfig
+    public val config: MarkdownConfig
 
     /**
      * Render a markdown node.
      * Use this to render child nodes within your custom block.
      */
-    fun ViewWriter.renderNode(node: MarkdownNode)
+    public fun ViewWriter.renderNode(node: MarkdownNode)
 }
 
 /**
@@ -58,7 +58,7 @@ interface MarkdownRenderContext {
  * Implement this interface to define both parsing and rendering behavior
  * for custom block types in markdown.
  */
-interface CustomBlockHandler {
+public interface CustomBlockHandler {
     /**
      * Transform the raw block content into a node during parsing.
      * The default implementation creates a CustomBlock with the content parsed as markdown children.
@@ -69,7 +69,7 @@ interface CustomBlockHandler {
      * @param context Provides parsing capabilities to parse parts of content as markdown
      * @return The parsed node (typically a CustomBlock, but can be any MarkdownNode)
      */
-    fun parse(
+    public fun parse(
         blockType: String,
         attributes: Map<String, String>,
         content: String,
@@ -83,16 +83,16 @@ interface CustomBlockHandler {
      * @param attributes The block's attributes (e.g., href from `::: card href="/path"`)
      * @param context Provides config and node rendering capability
      */
-    fun ViewWriter.render(
+    public fun ViewWriter.render(
         children: List<MarkdownNode>,
         attributes: Map<String, String>,
         context: MarkdownRenderContext
     )
 
-    object Default : JustSemantic(CardSemantic)
+    public object Default : JustSemantic(CardSemantic)
 
-    companion object {
-        val default = mapOf(
+    public companion object {
+        public val default = mapOf(
             "card" to CardSemantic,
             "important" to ImportantSemantic,
             "warning" to WarningSemantic,
@@ -100,7 +100,7 @@ interface CustomBlockHandler {
         ).mapValues { JustSemantic(it.value) }
     }
 
-    open class JustSemantic(val semantic: Semantic) : CustomBlockHandler {
+    public open class JustSemantic(public val semantic: Semantic) : CustomBlockHandler {
 
         override fun ViewWriter.render(
             children: List<MarkdownNode>,
@@ -149,16 +149,16 @@ interface CustomBlockHandler {
  * @param onInternalLink Function to resolve internal URLs to Page instances.
  *        If this returns null, the link will be treated as external.
  */
-data class MarkdownConfig(
+public data class MarkdownConfig(
     val customBlocks: Map<String, CustomBlockHandler> = CustomBlockHandler.default,
     val internalLinkPattern: Regex? = null,
     val onInternalLink: ((String) -> Page?)? = null,
 ) {
-    companion object {
+    public companion object {
         /**
          * Default configuration with no custom handlers or internal link support.
          */
-        val Default = MarkdownConfig()
+        public val Default = MarkdownConfig()
 
         /**
          * Creates a configuration that uses the provided Routes to handle internal links.
@@ -185,7 +185,7 @@ data class MarkdownConfig(
          * // The "/about" link will use SPA navigation
          * ```
          */
-        fun forRoutes(
+        public fun forRoutes(
             routes: Routes,
             baseUrl: String = "/"
         ): MarkdownConfig {
@@ -216,7 +216,7 @@ data class MarkdownConfig(
          * @param pattern Regex pattern for internal URLs (e.g., Regex("^/.*") for all paths)
          * @param resolver Function to convert URL to Page instance
          */
-        fun withInternalLinks(
+        public fun withInternalLinks(
             pattern: Regex,
             resolver: (String) -> Page?
         ): MarkdownConfig = MarkdownConfig(
@@ -228,7 +228,7 @@ data class MarkdownConfig(
     /**
      * Combines this config with additional custom block handlers.
      */
-    fun withCustomBlocks(
+    public fun withCustomBlocks(
         blocks: Map<String, CustomBlockHandler>
     ): MarkdownConfig = copy(
         customBlocks = customBlocks + blocks
@@ -237,7 +237,7 @@ data class MarkdownConfig(
     /**
      * Creates a new config with internal link handling.
      */
-    fun withInternalLinks(
+    public fun withInternalLinks(
         pattern: Regex,
         resolver: (String) -> Page?
     ): MarkdownConfig = copy(
@@ -252,7 +252,7 @@ data class MarkdownConfig(
      * @param baseUrl Optional base URL for internal links. Defaults to "/" which matches
      *        all absolute paths.
      */
-    fun forRoutes(
+    public fun forRoutes(
         routes: Routes,
         baseUrl: String = "/"
     ): MarkdownConfig {
@@ -277,7 +277,7 @@ data class MarkdownConfig(
     /**
      * Determines if a URL should be treated as an internal link.
      */
-    fun isInternalLink(url: String): Boolean {
+    public fun isInternalLink(url: String): Boolean {
         val pattern = internalLinkPattern ?: return false
         return pattern.matches(url)
     }
@@ -286,7 +286,7 @@ data class MarkdownConfig(
      * Attempts to resolve an internal URL to a Page.
      * Returns null if the URL is not internal or cannot be resolved.
      */
-    fun resolveInternalLink(url: String): Page? {
+    public fun resolveInternalLink(url: String): Page? {
         if (!isInternalLink(url)) return null
         return onInternalLink?.invoke(url)
     }

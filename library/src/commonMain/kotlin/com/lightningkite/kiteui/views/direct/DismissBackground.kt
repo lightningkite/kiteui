@@ -4,6 +4,6 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElement
 
 
-expect class DismissBackground(context: ElementContext) : NativeContainerElement {
-    fun onClick(action: suspend () -> Unit)
+public expect class DismissBackground(context: ElementContext) : NativeContainerElement {
+    public fun onClick(action: suspend () -> Unit)
 }

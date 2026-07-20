@@ -7,10 +7,10 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = radioToggleDriverValue()
     override val driverActions get() = super.driverActions + radioToggleDriverActions()
-    val input = FutureElement().apply {
+    public val input = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
         attributes.type = "radio"
@@ -46,7 +46,7 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
         Frame.internalAddChildStack(this, index, element)
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = input.vprop(
+    public actual val checked: MutableReactiveValue<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value }

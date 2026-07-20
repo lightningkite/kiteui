@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.rawPopover
 import com.lightningkite.kiteui.views.themed
 
-actual fun ElementWriter.openBottomSheet(
+public actual fun ElementWriter.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,
     view: ElementWriter.CanAddTheme.() -> Unit

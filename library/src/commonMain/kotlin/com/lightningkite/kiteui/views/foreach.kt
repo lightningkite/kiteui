@@ -17,7 +17,7 @@ import kotlin.math.min
 
 
 @InternalKiteUi
-fun <T> ContainerElement.forEach(
+public fun <T> ContainerElement.forEach(
     items: Reactive<List<T>>,
     beforeListModifier: ViewWriter.()->ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddListElementModifier.(T) -> Unit
@@ -32,7 +32,7 @@ fun <T> ContainerElement.forEach(
 }
 
 @InternalKiteUi
-fun <T> ContainerElement.forEachUpdating(
+public fun <T> ContainerElement.forEachUpdating(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     beforeListModifier: ViewWriter.()->ElementWriter.CanAddListElementModifier = { this },
@@ -95,7 +95,7 @@ fun <T> ContainerElement.forEachUpdating(
 }
 
 @InternalKiteUi
-fun <T, ID> RowOrCol.forEachById(
+public fun <T, ID> RowOrCol.forEachById(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddListElementModifier = { this },
@@ -174,7 +174,7 @@ fun <T, ID> RowOrCol.forEachById(
 }
 
 @InternalKiteUi
-fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
+public fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     beforeListModifier: ViewWriter.()->ElementWriter.CanAddListElementModifier = { this },
@@ -255,7 +255,7 @@ fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
 }
 
 @InternalKiteUi
-fun <T> RowOrCol.forEachAnimated(
+public fun <T> RowOrCol.forEachAnimated(
     items: Reactive<List<T>>,
     preHidingModifiers: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddTheme.(T) -> Unit

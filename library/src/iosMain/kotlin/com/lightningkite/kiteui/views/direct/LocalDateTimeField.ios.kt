@@ -17,18 +17,18 @@ import platform.Foundation.localTimeZone
 import platform.UIKit.*
 
 
-actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
     override val driverActions get() = super.driverActions + localDateDriverActions()
     override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    public val textField = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalDate?>(null)
-    actual val content: MutableReactiveValue<LocalDate?> get() = _content
+    public actual val content: MutableReactiveValue<LocalDate?> get() = _content
 
-    actual var range: ClosedRange<LocalDate>? = null
+    public actual var range: ClosedRange<LocalDate>? = null
         set(value) {
             field = value
             val picker = textField.inputView as? UIDatePicker ?: return
@@ -62,7 +62,7 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -75,7 +75,7 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -84,22 +84,22 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
     }
 }
 
-actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
     override val driverActions get() = super.driverActions + localTimeDriverActions()
     override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    public val textField = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalTime?>(null)
-    actual val content: MutableReactiveValue<LocalTime?> get() = _content
+    public actual val content: MutableReactiveValue<LocalTime?> get() = _content
 
     override fun nativeSetAction(action: Action?) {
         textField.action = action
     }
 
-    actual var range: ClosedRange<LocalTime>? = null
+    public actual var range: ClosedRange<LocalTime>? = null
         set(value) {
             field = value
             val picker = textField.inputView as? UIDatePicker ?: return
@@ -129,7 +129,7 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -142,7 +142,7 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -151,20 +151,20 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
     }
 }
 
-actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
     override val driverActions get() = super.driverActions + localDateTimeDriverActions()
     override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    public val textField = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalDateTime?>(null)
-    actual val content: MutableReactiveValue<LocalDateTime?> get() = _content
+    public actual val content: MutableReactiveValue<LocalDateTime?> get() = _content
     override fun nativeSetAction(action: Action?) {
         textField.action = action
     }
-    actual var range: ClosedRange<LocalDateTime>? = null
+    public actual var range: ClosedRange<LocalDateTime>? = null
         set(value) {
             field = value
             val picker = textField.inputView as? UIDatePicker ?: return
@@ -195,7 +195,7 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : Na
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -208,7 +208,7 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : Na
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)

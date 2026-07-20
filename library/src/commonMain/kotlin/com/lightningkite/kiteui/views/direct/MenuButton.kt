@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.views.NativeContainerElement
 import com.lightningkite.kiteui.views.NativeInteractiveContainerElement
 
 
-expect class MenuButton(context: ElementContext) : NativeInteractiveContainerElement {
-    fun opensMenu(createMenu: Frame.() -> Unit)
-    var requireClick: Boolean
-    var preferredDirection: PopoverPreferredDirection
+public expect class MenuButton(context: ElementContext) : NativeInteractiveContainerElement {
+    public fun opensMenu(createMenu: Frame.() -> Unit)
+    public var requireClick: Boolean
+    public var preferredDirection: PopoverPreferredDirection
 }

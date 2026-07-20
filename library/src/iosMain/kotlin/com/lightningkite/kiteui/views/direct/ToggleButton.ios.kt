@@ -14,14 +14,14 @@ import platform.UIKit.setAccessibilityTraits
 import platform.UIKit.setAccessibilityValue
 
 
-actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
     override val driverActions get() = super.driverActions + toggleDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
 
     private val _checked = Signal(false)
-    actual val checked: MutableReactiveValue<Boolean> get() = _checked
+    public actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
         native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitButton

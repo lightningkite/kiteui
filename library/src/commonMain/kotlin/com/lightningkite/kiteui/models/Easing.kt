@@ -6,13 +6,13 @@ package com.lightningkite.kiteui.models
  *
  * Control points define the curve shape: P0=(0,0), P1=(x1,y1), P2=(x2,y2), P3=(1,1).
  */
-data class Easing(val x1: Float, val y1: Float, val x2: Float, val y2: Float) {
+public data class Easing(val x1: Float, val y1: Float, val x2: Float, val y2: Float) {
 
     /**
      * Evaluate the easing curve at parameter [t] (0..1), returning the eased value (0..1).
      * Used by platforms that don't have native cubic bezier support (e.g. Swing).
      */
-    fun evaluate(t: Float): Float {
+    public fun evaluate(t: Float): Float {
         // Newton-Raphson iteration to find the bezier parameter for a given x value,
         // then evaluate the y component at that parameter.
         val bezierT = solveCurveX(t.toDouble())
@@ -60,11 +60,11 @@ data class Easing(val x1: Float, val y1: Float, val x2: Float, val y2: Float) {
         return t
     }
 
-    companion object {
-        val Linear = Easing(0f, 0f, 1f, 1f)
-        val EaseOut = Easing(0f, 0f, 0.58f, 1f)
-        val EaseIn = Easing(0.42f, 0f, 1f, 1f)
-        val EaseInOut = Easing(0.42f, 0f, 0.58f, 1f)
-        val Spring = Easing(0.175f, 0.885f, 0.32f, 1.275f)
+    public companion object {
+        public val Linear = Easing(0f, 0f, 1f, 1f)
+        public val EaseOut = Easing(0f, 0f, 0.58f, 1f)
+        public val EaseIn = Easing(0.42f, 0f, 1f, 1f)
+        public val EaseInOut = Easing(0.42f, 0f, 0.58f, 1f)
+        public val Spring = Easing(0.175f, 0.885f, 0.32f, 1.275f)
     }
 }

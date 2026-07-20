@@ -11,17 +11,17 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 
 
-actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
     actual override val underlyingNativeElement: SwapView get() = this
 
     override val native = FrameLayout(context.activity)
 
-    companion object {
-        val swapTimeMakeViewPerformance = PerformanceInfo("swapTimeMakeView")
-        val swapTimeAddViewsPerformance = PerformanceInfo("swapTimeAddViews")
+    public companion object {
+        public val swapTimeMakeViewPerformance = PerformanceInfo("swapTimeMakeView")
+        public val swapTimeAddViewsPerformance = PerformanceInfo("swapTimeAddViews")
     }
 
-    actual fun swap(
+    public actual fun swap(
         transition: ScreenTransition,
         createNewView: ViewWriter.() -> Unit,
     ) {

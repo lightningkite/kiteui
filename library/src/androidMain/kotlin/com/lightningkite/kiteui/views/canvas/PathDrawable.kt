@@ -12,11 +12,11 @@ import com.lightningkite.kiteui.views.direct.colorInt
 import kotlin.math.*
 
 
-fun <E> MutableList<E>.unshift(): E {
+public fun <E> MutableList<E>.unshift(): E {
     return removeAt(0)
 }
 
-val pathLetters = charArrayOf(
+public val pathLetters = charArrayOf(
     'M',
     'L',
     'Z',
@@ -28,9 +28,9 @@ val pathLetters = charArrayOf(
     'S',
     'A'
 )
-val spaceOrComma = Regex("[ ,]+")
+public val spaceOrComma = Regex("[ ,]+")
 
-fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Float, parentWidth: Float, parentOffsetY: Float, parentHeight: Float) {
+public fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Float, parentWidth: Float, parentOffsetY: Float, parentHeight: Float) {
     when (val it = kiteui) {
         is Color -> this.color = it.colorInt()
         is FadingColor -> match(it.base, parentOffsetX, parentWidth, parentOffsetY, parentHeight)
@@ -66,16 +66,16 @@ fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Fl
     }
 }
 
-class PathDrawable(val vector: ImageVector) : Drawable() {
-    val drawingResources = DrawingResources()
+public class PathDrawable(public val vector: ImageVector) : Drawable() {
+    public val drawingResources = DrawingResources()
 
-    class PathInfo(
-        val path: Path,
-        val outline: Paint? = null,
-        val fill: Paint? = null,
+    public class PathInfo(
+        public val path: Path,
+        public val outline: Paint? = null,
+        public val fill: Paint? = null,
     )
 
-    val paths = run {
+    public val paths = run {
         val scaleX = vector.width.value / vector.viewBoxWidth
         val scaleY = vector.height.value / vector.viewBoxHeight
         val translateX = -vector.viewBoxMinX.toFloat()
@@ -375,13 +375,13 @@ private fun Path.render(
     }
 }
 
-class DrawingResources() {
-    val arcRectf = RectF()
-    val arcMatrix: Matrix = Matrix()
-    val arcMatrix2: Matrix = Matrix()
+public class DrawingResources() {
+    public val arcRectf = RectF()
+    public val arcMatrix: Matrix = Matrix()
+    public val arcMatrix2: Matrix = Matrix()
 }
 
-fun DrawingResources.drawArc(
+public fun DrawingResources.drawArc(
     path: Path, lastX: Float, lastY: Float, x: Float, y: Float, radiusX: Float, radiusY: Float, theta: Float,
     largeArcFlag: Boolean, sweepFlag: Boolean
 ) {

@@ -13,44 +13,44 @@ import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.core.*
 
-data class UserInfo(
+public data class UserInfo(
     val name: String,
     val profileImage: ImageVector? = null,
     val defaultIcon: Icon,
 )
 
-interface AppNav {
-    var appName: String
-    var appIcon: Icon
-    var appLogo: ImageSource
-    var navItems: List<NavElement>
-    var actions: List<NavElement>
-    var exists: Boolean
+public interface AppNav {
+    public var appName: String
+    public var appIcon: Icon
+    public var appLogo: ImageSource
+    public var navItems: List<NavElement>
+    public var actions: List<NavElement>
+    public var exists: Boolean
 
-    class ByProperty : AppNav {
-        val appNameProperty = Signal("My App")
+    public class ByProperty : AppNav {
+        public val appNameProperty = Signal("My App")
         override var appName: String by appNameProperty
-        val appIconProperty = Signal<Icon>(Icon.home)
+        public val appIconProperty = Signal<Icon>(Icon.home)
         override var appIcon: Icon by appIconProperty
-        val appLogoProperty = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
+        public val appLogoProperty = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
         override var appLogo: ImageSource by appLogoProperty
-        val navItemsProperty = Signal(listOf<NavElement>())
+        public val navItemsProperty = Signal(listOf<NavElement>())
         override var navItems: List<NavElement> by navItemsProperty
-        val actionsProperty = Signal<List<NavElement>>(listOf())
+        public val actionsProperty = Signal<List<NavElement>>(listOf())
         override var actions: List<NavElement> by actionsProperty
-        val existsProperty = Signal(true)
+        public val existsProperty = Signal(true)
         override var exists: Boolean by existsProperty
     }
 }
 
 
-val ElementContext.appNavFactory by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
+public val ElementContext.appNavFactory by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
     Signal(
         ViewWriter::appNavBottomTabs
     )
 )
 
-fun ElementWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit) {
+public fun ElementWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit) {
     return appBase(main, dialog) {
         swapView {
             debugName = "swap-appNavFactory"
@@ -62,7 +62,7 @@ fun ElementWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, set
     }
 }
 
-fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
+public fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     val showMenu = Signal(false)
     themed(OuterSemantic).col {
@@ -101,7 +101,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
 }
 
 
-fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
+public fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
     themed(OuterSemantic).col {
@@ -129,7 +129,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     }
 }
 
-fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
+public fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     themed(OuterSemantic).col {
         debugName = "outer nav"
@@ -204,7 +204,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     }
 }
 
-fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
+public fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     themed(OuterSemantic).col {
 // Nav 4 left and top - add dropdown for user info

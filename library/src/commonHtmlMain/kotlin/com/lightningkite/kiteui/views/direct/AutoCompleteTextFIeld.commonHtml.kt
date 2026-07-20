@@ -6,15 +6,15 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
     override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: MutableReactiveValue<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual val content: MutableReactiveValue<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             native.applyKeyboardHints(value)
@@ -27,12 +27,12 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
             }
         }
     }
-    inline var hint: String
+    public inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    var align: Align = Align.Start
+    public var align: Align = Align.Start
         set(value) {
             native.style.textAlign = when (value) {
                 Align.Start -> "start"
@@ -41,13 +41,13 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
                 Align.Stretch -> "justify"
             }
         }
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()
         }
 
-    actual var suggestions: List<String> = listOf()
+    public actual var suggestions: List<String> = listOf()
         set(value) {
             field = value
             // TODO

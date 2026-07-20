@@ -6,18 +6,18 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import kotlinx.datetime.*
 
-actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
     override val driverActions get() = super.driverActions + localDateTimeDriverActions()
-    companion object {
-        val charCount = "2024-06-01T08:30".length
+    public companion object {
+        public val charCount = "2024-06-01T08:30".length
     }
     init {
         native.tag = "input"
         native.attributes.type = "datetime-local"
         native.classes.add("editable")
     }
-    actual val content: MutableReactiveValue<LocalDateTime?> = object : MutableReactiveValue<LocalDateTime?>, BaseListenable() {
+    public actual val content: MutableReactiveValue<LocalDateTime?> = object : MutableReactiveValue<LocalDateTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -36,12 +36,12 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : Na
             }
         }
     }
-    inline var hint: String
+    public inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    var align: Align = Align.Start
+    public var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -51,12 +51,12 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : Na
                 Align.Stretch -> "justify"
             }
         }
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()
         }
-    actual var range: ClosedRange<LocalDateTime>? = null
+    public actual var range: ClosedRange<LocalDateTime>? = null
         set(value) {
             field = value
             value?.let {
@@ -70,18 +70,18 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : Na
 }
 
 
-actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
     override val driverActions get() = super.driverActions + localDateDriverActions()
-    companion object {
-        val charCount = "2024-06-01".length
+    public companion object {
+        public val charCount = "2024-06-01".length
     }
     init {
         native.tag = "input"
         native.attributes.type = "date"
         native.classes.add("editable")
     }
-    actual val content: MutableReactiveValue<LocalDate?> = object : MutableReactiveValue<LocalDate?>, BaseListenable() {
+    public actual val content: MutableReactiveValue<LocalDate?> = object : MutableReactiveValue<LocalDate?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -102,12 +102,12 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
             }
         }
     }
-    inline var hint: String
+    public inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    var align: Align = Align.Start
+    public var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -117,12 +117,12 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
                 Align.Stretch -> "justify"
             }
         }
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()
         }
-    actual var range: ClosedRange<LocalDate>? = null
+    public actual var range: ClosedRange<LocalDate>? = null
         set(value) {
             field = value
             value?.let {
@@ -135,11 +135,11 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
         }
 }
 
-actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
     override val driverActions get() = super.driverActions + localTimeDriverActions()
-    companion object {
-        val charCount = "08:30".length
+    public companion object {
+        public val charCount = "08:30".length
     }
     init {
         native.tag = "input"
@@ -147,7 +147,7 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
         native.classes.add("editable")
     }
 
-    actual val content: MutableReactiveValue<LocalTime?> = object : MutableReactiveValue<LocalTime?>, BaseListenable() {
+    public actual val content: MutableReactiveValue<LocalTime?> = object : MutableReactiveValue<LocalTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -167,12 +167,12 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
             }
         }
     }
-    inline var hint: String
+    public inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    var align: Align = Align.Start
+    public var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -182,12 +182,12 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
                 Align.Stretch -> "justify"
             }
         }
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()
         }
-    actual var range: ClosedRange<LocalTime>? = null
+    public actual var range: ClosedRange<LocalTime>? = null
         set(value) {
             field = value
             value?.let {

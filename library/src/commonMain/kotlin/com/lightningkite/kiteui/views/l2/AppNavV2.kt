@@ -9,27 +9,27 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 
-fun ViewWriter.navBottomBar(show: Reactive<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
+public fun ViewWriter.navBottomBar(show: Reactive<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
     nav.row {
         ::shown { show() && !AppState.softInputOpen() }
         navGroupTabs(remember { navElements() }) {}
     }
 }
 
-var ElementContext.overlayFrame by contextAddon<ContainerElement?>(null)
-var ElementContext.coordinatorFrame by contextAddon<CoordinatorFrame?>(null)
+public var ElementContext.overlayFrame by contextAddon<ContainerElement?>(null)
+public var ElementContext.coordinatorFrame by contextAddon<CoordinatorFrame?>(null)
 
 @Deprecated("Use directly through context", ReplaceWith("context.overlayFrame"))
-var Element.overlayFrame
+public var Element.overlayFrame
     get() = context.overlayFrame
     set(value) { context.overlayFrame = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.coordinatorFrame"))
-var Element.coordinatorFrame
+public var Element.coordinatorFrame
     get() = context.coordinatorFrame
     set(value) { context.coordinatorFrame = value }
 
-fun ElementWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainerElement.() -> Unit) {
+public fun ElementWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainerElement.() -> Unit) {
     coordinatorFrame {
         debugName = "appBase"
         context.mainPageNavigator = main

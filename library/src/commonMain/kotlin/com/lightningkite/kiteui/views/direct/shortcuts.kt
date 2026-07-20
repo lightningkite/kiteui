@@ -13,7 +13,7 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 @ViewDsl
-inline fun ElementWriter.subtext(crossinline setup: TextView.() -> Unit = {}): TextView {
+public inline fun ElementWriter.subtext(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += SubtextSemantic
@@ -22,7 +22,7 @@ inline fun ElementWriter.subtext(crossinline setup: TextView.() -> Unit = {}): T
 }
 
 @ViewDsl
-inline fun ElementWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextView {
+public inline fun ElementWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H1Semantic
@@ -31,7 +31,7 @@ inline fun ElementWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-inline fun ElementWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextView {
+public inline fun ElementWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H2Semantic
@@ -40,7 +40,7 @@ inline fun ElementWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-inline fun ElementWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextView {
+public inline fun ElementWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H3Semantic
@@ -49,7 +49,7 @@ inline fun ElementWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-inline fun ElementWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextView {
+public inline fun ElementWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H4Semantic
@@ -58,7 +58,7 @@ inline fun ElementWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-inline fun ElementWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextView {
+public inline fun ElementWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H5Semantic
@@ -67,7 +67,7 @@ inline fun ElementWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-inline fun ElementWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextView {
+public inline fun ElementWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H6Semantic
@@ -76,64 +76,64 @@ inline fun ElementWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextVi
 }
 
 @ViewDsl
-fun ElementWriter.h1(text: String, align: Align? = null) = h1 {
+public fun ElementWriter.h1(text: String, align: Align? = null) = h1 {
     content = text
     this.align = align
 }
 
 @ViewDsl
-fun ElementWriter.h2(text: String, align: Align? = null) = h2 {
+public fun ElementWriter.h2(text: String, align: Align? = null) = h2 {
     content = text
     this.align = align
 }
 
 @ViewDsl
-fun ElementWriter.h3(text: String, align: Align? = null) = h3 {
+public fun ElementWriter.h3(text: String, align: Align? = null) = h3 {
     content = text
     this.align = align
 }
 
 @ViewDsl
-fun ElementWriter.h4(text: String, align: Align? = null) = h4 {
+public fun ElementWriter.h4(text: String, align: Align? = null) = h4 {
     content = text
     this.align = align
 }
 
 @ViewDsl
-fun ElementWriter.h5(text: String, align: Align? = null) = h5 {
+public fun ElementWriter.h5(text: String, align: Align? = null) = h5 {
     content = text
     this.align = align
 }
 
 @ViewDsl
-fun ElementWriter.h6(text: String, align: Align? = null) = h6 {
+public fun ElementWriter.h6(text: String, align: Align? = null) = h6 {
     content = text
     this.align = align
 }
 
 @ViewDsl
-fun ElementWriter.text(text: String, align: Align? = null) = text {
+public fun ElementWriter.text(text: String, align: Align? = null) = text {
     content = text
     this.align = align
 }
 
 @ViewDsl
-fun ElementWriter.subtext(text: String, align: Align? = null) = subtext {
+public fun ElementWriter.subtext(text: String, align: Align? = null) = subtext {
     content = text
     this.align = align
 }
 
 @ViewDsl
-fun ElementWriter.checkbox(checked: MutableReactive<Boolean>) = checkbox { this.checked bind checked }
+public fun ElementWriter.checkbox(checked: MutableReactive<Boolean>) = checkbox { this.checked bind checked }
 
 @ViewDsl
-fun ElementWriter.radioButton(checked: MutableReactive<Boolean>) = radioButton { this.checked bind checked }
+public fun ElementWriter.radioButton(checked: MutableReactive<Boolean>) = radioButton { this.checked bind checked }
 
 @ViewDsl
-fun ElementWriter.progressBar(ratio: Reactive<Float>) = progressBar { ::ratio bind ratio }
+public fun ElementWriter.progressBar(ratio: Reactive<Float>) = progressBar { ::ratio bind ratio }
 
 @ViewDsl
-inline fun ElementWriter.icon(icon: Icon, description: String, setup: IconView.() -> Unit = {}): IconView {
+public inline fun ElementWriter.icon(icon: Icon, description: String, setup: IconView.() -> Unit = {}): IconView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return icon {
         source = icon
@@ -145,7 +145,7 @@ inline fun ElementWriter.icon(icon: Icon, description: String, setup: IconView.(
 
 // TODO: Button with working indicator
 
-fun ElementContext.confirmDanger(
+public fun ElementContext.confirmDanger(
     title: String,
     body: String,
     actionName: String = "OK",
@@ -175,7 +175,7 @@ fun ElementContext.confirmDanger(
     }
 }
 
-fun ElementContext.alert(
+public fun ElementContext.alert(
     title: String,
     body: String,
 ) {
@@ -197,7 +197,7 @@ fun ElementContext.alert(
 
 
 @Deprecated("Use a shared action instead")
-fun Button.onClickAssociatedField(
+public fun Button.onClickAssociatedField(
     field: TextInput,
     title: String = "Submit",
     icon: Icon = Icon.done,
@@ -212,7 +212,7 @@ fun Button.onClickAssociatedField(
 }
 
 @Deprecated("Use a shared action instead")
-fun Button.onClickAssociatedField(
+public fun Button.onClickAssociatedField(
     field: NumberInput,
     title: String = "Submit",
     icon: Icon = Icon.done,

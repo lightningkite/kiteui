@@ -21,8 +21,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.dom.events.Event
 
-actual object AppState {
-    actual val animationFrame: Listenable
+public actual object AppState {
+    public actual val animationFrame: Listenable
         get() = _AnimationFrame
     internal val _windowInfo = Signal(
         WindowStatistics(
@@ -43,17 +43,17 @@ actual object AppState {
             }
         })
     }
-    actual val windowInfo: ReactiveValue<WindowStatistics>
+    public actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo
-    actual val inForeground: ReactiveValue<Boolean>
+    public actual val inForeground: ReactiveValue<Boolean>
         get() = _InForeground
     internal val _softInputOpen = Signal(false)
-    actual val softInputOpen: ReactiveValue<Boolean>
+    public actual val softInputOpen: ReactiveValue<Boolean>
         get() = _softInputOpen
 
     private var currentLock: WakeLockSentinel? = null
     private var currentLockCount = 0
-    actual fun keepScreenOn(scope: CoroutineScope) {
+    public actual fun keepScreenOn(scope: CoroutineScope) {
         if (currentLockCount++ == 0) {
             AppScope.launch {
                 try {
@@ -74,7 +74,7 @@ actual object AppState {
         }
     }
 
-    val _lastUniversalKeyboardInput = reactiveProcess<KeyCodeWithModifiers> {
+    public val _lastUniversalKeyboardInput = reactiveProcess<KeyCodeWithModifiers> {
         val l = { ev: Event ->
             ev as KeyboardEvent
             emit(
@@ -94,7 +94,7 @@ actual object AppState {
             window.removeEventListener("keydown", l)
         }
     }
-    actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): () -> Unit {
+    public actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): () -> Unit {
         val l = { ev: Event ->
             ev as KeyboardEvent
             if (handler(
@@ -117,9 +117,9 @@ actual object AppState {
     }
 }
 
-external interface WakeLockSentinel {
-    val released: Boolean
-    fun release(): Promise<Unit>
+public external interface WakeLockSentinel {
+    public val released: Boolean
+    public fun release(): Promise<Unit>
 }
 
 private object _AnimationFrame : Listenable {

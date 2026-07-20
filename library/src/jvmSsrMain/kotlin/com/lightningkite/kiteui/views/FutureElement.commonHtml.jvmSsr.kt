@@ -6,73 +6,73 @@ import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.models.Rect
 
-actual class FutureElementStyle(val underlyingMap: MutableMap<String, String>) {
-    operator fun get(key: String): String? = underlyingMap.get(key)
-    operator fun set(key: String, value: String?) {
+public actual class FutureElementStyle(public val underlyingMap: MutableMap<String, String>) {
+    public operator fun get(key: String): String? = underlyingMap.get(key)
+    public operator fun set(key: String, value: String?) {
         if (value == null) underlyingMap.remove(key)
         else underlyingMap.set(key, value)
     }
 }
 
-actual class FutureElementAttributes(val underlyingMap: MutableMap<String, String>) {
-    operator fun get(key: String): String? = underlyingMap.get(key)
-    operator fun set(key: String, value: String?) {
+public actual class FutureElementAttributes(public val underlyingMap: MutableMap<String, String>) {
+    public operator fun get(key: String): String? = underlyingMap.get(key)
+    public operator fun set(key: String, value: String?) {
         if (value == null) underlyingMap.remove(key)
         else underlyingMap.set(key, value)
     }
 }
 
-actual class FutureElement actual constructor() {
-    actual val actualElementForLeakTracking: Any? get() = null
-    actual var xmlns: String? = null
-    actual var tag: String = "tag"
-    actual var classes: MutableSet<String> = HashSet()
-    actual var id: String? = null
-    actual var content: String? = null
-    actual var innerHtmlUnsafe: String? = null
-    val childrenBack = ArrayList<FutureElement>()
-    actual val children: List<FutureElement> = childrenBack
-    actual fun appendChild(element: FutureElement) {
+public actual class FutureElement actual constructor() {
+    public actual val actualElementForLeakTracking: Any? get() = null
+    public actual var xmlns: String? = null
+    public actual var tag: String = "tag"
+    public actual var classes: MutableSet<String> = HashSet()
+    public actual var id: String? = null
+    public actual var content: String? = null
+    public actual var innerHtmlUnsafe: String? = null
+    public val childrenBack = ArrayList<FutureElement>()
+    public actual val children: List<FutureElement> = childrenBack
+    public actual fun appendChild(element: FutureElement) {
         childrenBack.add(element)
     }
 
-    actual fun appendChild(index: Int, element: FutureElement) {
+    public actual fun appendChild(index: Int, element: FutureElement) {
         childrenBack.add(index, element)
     }
 
-    actual fun removeChild(index: Int) {
+    public actual fun removeChild(index: Int) {
         childrenBack.removeAt(index)
     }
 
-    actual fun clearChildren() {
+    public actual fun clearChildren() {
         childrenBack.clear()
     }
 
-    actual fun click() {}
-    actual fun focus() {}
-    actual fun blur() {}
-    actual fun screenRectangle(): Rect? = null
-    actual fun parentRectangle(): Rect? = null
+    public actual fun click() {}
+    public actual fun focus() {}
+    public actual fun blur() {}
+    public actual fun screenRectangle(): Rect? = null
+    public actual fun parentRectangle(): Rect? = null
 
-    actual inline fun flushClasses() {}
+    public actual inline fun flushClasses() {}
 
-    actual val attributes: FutureElementAttributes = FutureElementAttributes(HashMap())
-    actual val style: FutureElementStyle = FutureElementStyle(HashMap())
-    actual var desiredVerticalGravity: Align? = null
-    actual var desiredHorizontalGravity: Align? = null
-    actual fun setAttribute(key: String, value: String?) {
+    public actual val attributes: FutureElementAttributes = FutureElementAttributes(HashMap())
+    public actual val style: FutureElementStyle = FutureElementStyle(HashMap())
+    public actual var desiredVerticalGravity: Align? = null
+    public actual var desiredHorizontalGravity: Align? = null
+    public actual fun setAttribute(key: String, value: String?) {
         if (value == null) attributes.underlyingMap.remove(key)
         else attributes.underlyingMap[key] = value
     }
-    actual fun setStyleProperty(key: String, value: String?) {
+    public actual fun setStyleProperty(key: String, value: String?) {
         if (value == null) style.underlyingMap.remove(key)
         else style.underlyingMap[key] = value
     }
 
-    actual inline fun addEventListener(name: String, listener: (Event) -> Unit) {}
-    actual inline fun replaceEventListener(name: String, listener: (Event) -> Unit) {}
+    public actual inline fun addEventListener(name: String, listener: (Event) -> Unit) {}
+    public actual inline fun replaceEventListener(name: String, listener: (Event) -> Unit) {}
 
-    fun render(out: Appendable) {
+    public fun render(out: Appendable) {
         out.append('<')
         out.append(tag)
         attributes.underlyingMap.forEach { (key, value) ->
@@ -129,7 +129,7 @@ actual class FutureElement actual constructor() {
         }
     }
 
-    companion object {
+    public companion object {
         // HTML5 void elements that can self-close
         private val voidElements = setOf(
             "area", "base", "br", "col", "embed", "hr", "img", "input",
@@ -138,7 +138,7 @@ actual class FutureElement actual constructor() {
     }
 }
 
-fun Appendable.appendSafe(html: String) {
+public fun Appendable.appendSafe(html: String) {
     for(char in html) {
         when(char) {
                 '&' -> append("&amp;")

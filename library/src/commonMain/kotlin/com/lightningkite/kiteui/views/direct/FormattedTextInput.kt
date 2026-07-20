@@ -6,13 +6,13 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.reactive.core.*
 
-expect class FormattedTextInput(context: ElementContext) : NativeElementWithAction {
-    val content: MutableReactiveValue<String>
-    var hint: String
-    var align: Align?
-    var keyboardHints: KeyboardHints
+public expect class FormattedTextInput(context: ElementContext) : NativeElementWithAction {
+    public val content: MutableReactiveValue<String>
+    public var hint: String
+    public var align: Align?
+    public var keyboardHints: KeyboardHints
 
-    fun format(
+    public fun format(
         isRawData: (Char) -> Boolean,
         formatter: (clean: String) -> String,
     )

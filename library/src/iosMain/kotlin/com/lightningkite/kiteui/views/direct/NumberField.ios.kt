@@ -16,11 +16,11 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 
-actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
     override val driverActions get() = super.driverActions + numberInputDriverActions()
     override val native = WrapperView()
-    val trigger: NSObject = object : NSObject() {
+    public val trigger: NSObject = object : NSObject() {
         @ObjCAction
         fun done() {
             action?.let {
@@ -29,7 +29,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
             } ?: NextFocusDelegateShared.textFieldShouldReturn(textField)
         }
     }
-    val textField = UITextField().apply {
+    public val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -90,7 +90,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         applyAlign(_align ?: theme.theme.font.align)
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -98,20 +98,20 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         textField.textAlignment = alignment
     }
 
-    fun updateHint() {
+    public fun updateHint() {
         textField.placeholder = hint
         // TODO: Colored hint
 //        textField.attributedPlaceholder = hint
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    actual val content: MutableReactiveValue<Double?> = object : MutableReactiveValue<Double?> {
+    public actual val content: MutableReactiveValue<Double?> = object : MutableReactiveValue<Double?> {
         override var value: Double?
             get() = (textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull()
             set(value) {
@@ -126,7 +126,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
             return textField.onEvent(this@NumberInput, UIControlEventEditingChanged, listener)
         }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = value.case.ios
@@ -166,14 +166,14 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         }
     }
 
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             updateHint()
             textField.accessibilityHint = value.ifEmpty { null }
         }
     private var _align: Align? = null
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value
@@ -195,5 +195,5 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         }
     }
 
-    actual var range: ClosedRange<Double>? = null
+    public actual var range: ClosedRange<Double>? = null
 }

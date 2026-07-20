@@ -1,15 +1,15 @@
 package com.lightningkite.kiteui.views
 
-fun Element.driverChildren(): List<Element> =
+public fun Element.driverChildren(): List<Element> =
     (this as? ElementWithChildren)?.children ?: emptyList()
 
-fun Element.driverChildrenOrNull(): List<Element>? =
+public fun Element.driverChildrenOrNull(): List<Element>? =
     (this as? ElementWithChildren)?.children
 
 /**
  * Renders a text snapshot of this view's subtree for AI driver / testing inspection.
  */
-fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Element.DriverSnapshotOptions()): String = buildString {
+public fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Element.DriverSnapshotOptions()): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
 
     fun walk(view: Element, depth: Int) {
@@ -37,7 +37,7 @@ fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Element.Driv
  * widget type (class name), or action names.
  * Returns a compact listing of matches with their display line.
  */
-fun Element.driverFind(query: String, includeHidden: Boolean = false): String = buildString {
+public fun Element.driverFind(query: String, includeHidden: Boolean = false): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
     val results = mutableListOf<Pair<String, Element>>()
     fun walk(view: Element, pathPrefix: String) {
@@ -73,7 +73,7 @@ fun Element.driverFind(query: String, includeHidden: Boolean = false): String = 
  * the nearest ancestor with a "click" action. Returns deduplicated clickable ancestors
  * in the same format as [driverFind].
  */
-fun Element.driverFindClickable(query: String, includeHidden: Boolean = false): String = buildString {
+public fun Element.driverFindClickable(query: String, includeHidden: Boolean = false): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
     val viewPaths = mutableMapOf<Element, String>()
     val matches = mutableListOf<Element>()
@@ -133,7 +133,7 @@ fun Element.driverFindClickable(query: String, includeHidden: Boolean = false): 
  * - Unnamed at index 1 under named "form": "form/1"
  * - Root element: "" (empty string)
  */
-fun Element.driverPath(options: Element.DriverSnapshotOptions): String =
+public fun Element.driverPath(options: Element.DriverSnapshotOptions): String =
     generateSequence(this) { it.parent }
         .map { current ->
             current.debugName
@@ -150,7 +150,7 @@ fun Element.driverPath(options: Element.DriverSnapshotOptions): String =
  * The first segment is deep-searched if no direct child matches.
  * Use `..` to navigate to the parent view.
  */
-fun Element.resolveDriverPath(path: String): Element? {
+public fun Element.resolveDriverPath(path: String): Element? {
     val segments = path.split("/").filter { it.isNotEmpty() }
     if (segments.isEmpty()) return this
 
@@ -194,7 +194,7 @@ private fun Element.findByName(name: String): Element? {
 /**
  * Parses snapshot option flags from command args.
  */
-fun parseSnapshotOptions(args: Array<out String>): Element.DriverSnapshotOptions {
+public fun parseSnapshotOptions(args: Array<out String>): Element.DriverSnapshotOptions {
     return Element.DriverSnapshotOptions(
         includeHidden = "--hidden" in args,
         interactiveOnly = "--interactive" in args,

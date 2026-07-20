@@ -8,27 +8,27 @@ import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 
 
-expect class Canvas(context: ElementContext) : NativeElement {
-    var delegate: CanvasDelegate?
+public expect class Canvas(context: ElementContext) : NativeElement {
+    public var delegate: CanvasDelegate?
 }
 
-abstract class CanvasDelegate {
-    open fun onResize(width: Double, height: Double) {}
-    open fun draw(context: DrawingContext2D) {}
-    open fun onPointerDown(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean = false
-    open fun onPointerMove(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean = false
-    open fun onPointerCancel(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean = false
-    open fun onPointerUp(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean = false
-    open fun onKeyDown(key: KeyCode): Boolean = false
-    open fun onKeyUp(key: KeyCode): Boolean = false
-    open fun onWheel(x: Double, y: Double, z: Double): Boolean = false
+public abstract class CanvasDelegate {
+    public open fun onResize(width: Double, height: Double) {}
+    public open fun draw(context: DrawingContext2D) {}
+    public open fun onPointerDown(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean = false
+    public open fun onPointerMove(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean = false
+    public open fun onPointerCancel(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean = false
+    public open fun onPointerUp(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean = false
+    public open fun onKeyDown(key: KeyCode): Boolean = false
+    public open fun onKeyUp(key: KeyCode): Boolean = false
+    public open fun onWheel(x: Double, y: Double, z: Double): Boolean = false
 
     //    open fun onAccelerometer(x: Double, y: Double, z: Double): Boolean = false
-    open fun sizeThatFitsWidth(width: Double, height: Double): Double = width
-    open fun sizeThatFitsHeight(width: Double, height: Double): Double = height
+    public open fun sizeThatFitsWidth(width: Double, height: Double): Double = width
+    public open fun sizeThatFitsHeight(width: Double, height: Double): Double = height
 
-    var invalidate: () -> Unit = {}
-    var theme: Theme = Theme.placeholder
+    public var invalidate: () -> Unit = {}
+    public var theme: Theme = Theme.placeholder
 
-    open fun NativeContainerElement.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
+    public open fun NativeContainerElement.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
 }

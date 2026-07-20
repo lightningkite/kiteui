@@ -5,8 +5,8 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 
 
-expect class WebView(context: ElementContext) : NativeElement {
-    var url: String
-    var permitJs: Boolean
-    var content: String
+public expect class WebView(context: ElementContext) : NativeElement {
+    public var url: String
+    public var permitJs: Boolean
+    public var content: String
 }

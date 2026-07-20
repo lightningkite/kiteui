@@ -28,11 +28,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-val client: HttpClient by lazy { webSocketClient }
+public val client: HttpClient by lazy { webSocketClient }
 
 private val fetchLog = LogRoot.tag("fetch")
 
-actual suspend fun fetchRaw(
+public actual suspend fun fetchRaw(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -91,36 +91,36 @@ actual suspend fun fetchRaw(
     }
 }
 
-actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
+public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
-actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
-    actual fun append(name: String, value: String): Unit {
+public actual class HttpHeaders(public val map: MutableMap<String, List<String>>) {
+    public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
 
-    actual fun delete(name: String): Unit {
+    public actual fun delete(name: String): Unit {
         map.remove(name.lowercase())
     }
 
-    actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
-    actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
-    actual fun set(name: String, value: String): Unit {
+    public actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
+    public actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
+    public actual fun set(name: String, value: String): Unit {
         map[name.lowercase()] = listOf(value)
     }
 }
 
-actual class RequestResponse(val wraps: HttpResponse) {
-    actual val status: Short get() = wraps.status.value.toShort()
-    actual val ok: Boolean get() = wraps.status.isSuccess()
-    actual suspend fun text(): String {
+public actual class RequestResponse(public val wraps: HttpResponse) {
+    public actual val status: Short get() = wraps.status.value.toShort()
+    public actual val ok: Boolean get() = wraps.status.isSuccess()
+    public actual suspend fun text(): String {
         try {
             val result = wraps.bodyAsText()
             return result
@@ -131,7 +131,7 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual suspend fun blob(): Blob {
+    public actual suspend fun blob(): Blob {
         try {
             val result = wraps.body<ByteArray>()
                 .let { Blob(it, wraps.contentType()?.toString() ?: "application/octet-stream") }
@@ -143,39 +143,39 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual val headers: HttpHeaders
+    public actual val headers: HttpHeaders
         get() = HttpHeaders(
             wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
-actual fun websocket(url: String): WebSocket {
+public actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(url)
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-class WebSocketWrapper(val url: String) : WebSocket {
-    val closeReason = Channel<CloseReason>()
-    val sending = Channel<Frame>(10)
-    var stayOn = true
-    val onOpen = ArrayList<() -> Unit>()
+public class WebSocketWrapper(public val url: String) : WebSocket {
+    public val closeReason = Channel<CloseReason>()
+    public val sending = Channel<Frame>(10)
+    public var stayOn = true
+    public val onOpen = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    val onClose = ArrayList<(Short) -> Unit>()
+    public val onClose = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    val onMessage = ArrayList<(String) -> Unit>()
+    public val onMessage = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    val onBinaryMessage = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }
@@ -290,10 +290,10 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 }
 
-actual class FileReference(val file: File)
+public actual class FileReference(public val file: File)
 
 // by Claude - create FileReference from raw bytes for testing/mocking
-actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+public actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
     // by Claude - use a subdirectory so the original fileName is preserved for fileName()
     val dir = File(System.getProperty("java.io.tmpdir"), "kiteui-mock-${System.nanoTime()}")
     dir.mkdirs()
@@ -304,13 +304,13 @@ actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, file
     return FileReference(tempFile)
 }
 
-actual fun Blob.mimeType() = type
-actual fun FileReference.mimeType() = Files.probeContentType(file.toPath()) ?: "application/octet-stream"
+public actual fun Blob.mimeType() = type
+public actual fun FileReference.mimeType() = Files.probeContentType(file.toPath()) ?: "application/octet-stream"
 
-actual fun FileReference.fileName(): String = file.toString().substringAfterLast('/')
-actual class Blob(val data: ByteArray, val type: String)
+public actual fun FileReference.fileName(): String = file.toString().substringAfterLast('/')
+public actual class Blob(public val data: ByteArray, public val type: String)
 
-val webSocketClient: HttpClient by lazy {
+public val webSocketClient: HttpClient by lazy {
     HttpClient(OkHttp) {
         engine {
             config {
@@ -323,8 +323,8 @@ val webSocketClient: HttpClient by lazy {
     }
 }
 
-actual fun Blob.bytes(): Long = data.size.toLong()
-actual fun FileReference.bytes(): Long = file.length()
+public actual fun Blob.bytes(): Long = data.size.toLong()
+public actual fun FileReference.bytes(): Long = file.length()
 //actual suspend fun Blob.byteArray(): ByteArray = data
 //actual suspend fun FileReference.byteArray(): ByteArray = withContext(Dispatchers.Main) {
 //    withContext(Dispatchers.IO) {
@@ -332,11 +332,11 @@ actual fun FileReference.bytes(): Long = file.length()
 //    }
 //}
 
-actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
-actual suspend fun FileReference.text(): String = file.readText()
+public actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
+public actual suspend fun FileReference.text(): String = file.readText()
 
-actual fun String.toBlob(contentType: String) = toByteArray(Charsets.UTF_8).toBlob(contentType)
-actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this, contentType)
+public actual fun String.toBlob(contentType: String) = toByteArray(Charsets.UTF_8).toBlob(contentType)
+public actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this, contentType)
 
-actual suspend fun Blob.toByteArray(): ByteArray = data
+public actual suspend fun Blob.toByteArray(): ByteArray = data
 

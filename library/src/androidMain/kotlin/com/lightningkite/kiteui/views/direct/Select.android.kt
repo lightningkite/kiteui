@@ -23,7 +23,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.CoroutineScope
 
-actual class Select actual constructor(context: ElementContext): NativeInteractiveElement(context) {
+public actual class Select actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
@@ -69,7 +69,7 @@ actual class Select actual constructor(context: ElementContext): NativeInteracti
         background = layerDrawable
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
         render: (T) -> String

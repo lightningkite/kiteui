@@ -11,7 +11,7 @@ import com.lightningkite.reactive.core.MutableReactiveValue
 import android.widget.CheckBox as AndroidCheckBox
 
 
-actual class Checkbox actual constructor(context: ElementContext): NativeInteractiveElement(context) {
+public actual class Checkbox actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     actual override val underlyingNativeElement: Checkbox get() = this
 
     override val driverValue: String? get() = checkboxDriverValue()
@@ -31,7 +31,7 @@ actual class Checkbox actual constructor(context: ElementContext): NativeInterac
         )
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
+    public actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 
     init {
         checked.addListener {

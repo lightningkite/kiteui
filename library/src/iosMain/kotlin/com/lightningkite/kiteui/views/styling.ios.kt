@@ -16,7 +16,7 @@ import platform.UIKit.UIRectCornerBottomRight
 import platform.UIKit.UIRectCornerTopLeft
 import platform.UIKit.UIRectCornerTopRight
 
-fun Color.toUiColor(): UIColor = UIColor(
+public fun Color.toUiColor(): UIColor = UIColor(
     red = red.toDouble().coerceIn(0.0, 1.0),
     green = green.toDouble().coerceIn(0.0, 1.0),
     blue = blue.toDouble().coerceIn(0.0, 1.0),
@@ -34,7 +34,7 @@ internal inline fun UIView.layoutSubviewsAndLayers() {
     }
 }
 
-fun UIView.roundCorners(corners: UIRectCorner, radius: CGFloat) {
+public fun UIView.roundCorners(corners: UIRectCorner, radius: CGFloat) {
 //    val path = UIBezierPath.bezierPathWithRoundedRect(this.bounds, byRoundingCorners = UIRectCornerTopRight, cornerRadii = CGSizeMake(radius, radius))
 //    this.layer.maskedCorners
 //    val mask = CAShapeLayer()
@@ -77,16 +77,16 @@ internal fun UIView.layoutLayers(parentSpacing: Double) {
 }
 
 
-class CAGradientLayerResizing : CAGradientLayer {
+public class CAGradientLayerResizing : CAGradientLayer {
 
     @OverrideInit
-    constructor() : super()
+    public constructor() : super()
 
     @OverrideInit
-    constructor(coder: platform.Foundation.NSCoder) : super(coder)
+    public constructor(coder: platform.Foundation.NSCoder) : super(coder)
 
     @OverrideInit
-    constructor(layer: kotlin.Any) : super(layer)
+    public constructor(layer: kotlin.Any) : super(layer)
 
     private var backgroundMask: CALayer? = null
 
@@ -99,7 +99,7 @@ class CAGradientLayerResizing : CAGradientLayer {
      * In some cases, we need a separate layer to mask views. The actual CAGradientLayerResizing layer cannot be used
      * because it has a superlayer and the CALayer mask property does not work with layers that have superlayers
      */
-    fun getOrInitBackgroundMask(): CALayer {
+    public fun getOrInitBackgroundMask(): CALayer {
         if (backgroundMask == null) {
             val whiteLayer = CALayer().apply {
                 backgroundColor = UIColor.whiteColor.CGColor
@@ -111,19 +111,19 @@ class CAGradientLayerResizing : CAGradientLayer {
         return backgroundMask!!
     }
 
-    var desiredCornerRadius: CornerRadii = CornerRadii.Fixed(0.px)
+    public var desiredCornerRadius: CornerRadii = CornerRadii.Fixed(0.px)
         set(value) {
             if (this == null) return //stupid iOS issue prevention
             field = value
             refreshCorners()
         }
-    var desiredCornerShape: CornerShape = CornerShape.Circular
+    public var desiredCornerShape: CornerShape = CornerShape.Circular
         set(value) {
             if (this == null) return //stupid iOS issue prevention
             field = value
             refreshCorners()
         }
-    var parentSpacing: CGFloat = 0.0
+    public var parentSpacing: CGFloat = 0.0
         set(value) {
             if (this == null) return //stupid iOS issue prevention
             field = value
@@ -180,7 +180,7 @@ class CAGradientLayerResizing : CAGradientLayer {
 
 
 
-    fun refreshCorners() {
+    public fun refreshCorners() {
         if (this == null) return //stupid iOS issue prevention
 
         fun valueOfRadii(d: CornerRadii): Double {
@@ -240,6 +240,6 @@ class CAGradientLayerResizing : CAGradientLayer {
 //UIFontWeight regular UIFontWeight(rawValue: 0.0)
 //UIFontWeight semibold UIFontWeight(rawValue: 0.30000001192092896)
 //UIFontWeight bold UIFontWeight(rawValue: 0.4000000059604645)
-fun Int.toUIFontWeight(): Double {
+public fun Int.toUIFontWeight(): Double {
     return (this - 400) * (0.4 / 300)
 }

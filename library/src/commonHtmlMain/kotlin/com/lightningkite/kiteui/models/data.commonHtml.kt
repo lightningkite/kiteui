@@ -4,7 +4,7 @@ package com.lightningkite.kiteui.models
 
 import com.lightningkite.kotlinx.serialization.uri.encodeURIComponent
 
-actual data class DimensionRaw(
+public actual data class DimensionRaw(
     val px: Double = 0.0,
     val rem: Double = 0.0,
 ) : Comparable<DimensionRaw> {
@@ -19,55 +19,55 @@ actual data class DimensionRaw(
 
     override fun compareTo(other: DimensionRaw): Int = roughPx.compareTo(other.roughPx)
 
-    companion object {
-        val zero = DimensionRaw()
+    public companion object {
+        public val zero = DimensionRaw()
     }
 }
 
-fun Dimension(
+public fun Dimension(
     px: Double = 0.0,
     rem: Double = 0.0,
 ) = Dimension(DimensionRaw(px, rem))
 
-actual val Int.px: Dimension
+public actual val Int.px: Dimension
     get() = Dimension(px = this.toDouble())
 
-actual val Int.rem: Dimension
+public actual val Int.rem: Dimension
     get() = Dimension(rem = this.toDouble())
 
-actual val Double.rem: Dimension
+public actual val Double.rem: Dimension
     get() = Dimension(rem = this)
 
-actual val Int.dp: Dimension
+public actual val Int.dp: Dimension
     get() = Dimension(px = this.toDouble())
 
-actual val Double.dp: Dimension
+public actual val Double.dp: Dimension
     get() = Dimension(px = this)
 
-actual operator fun Dimension.plus(other: Dimension): Dimension = Dimension(
+public actual operator fun Dimension.plus(other: Dimension): Dimension = Dimension(
     px = this.value.px + other.value.px,
     rem = this.value.rem + other.value.rem,
 )
 
-actual operator fun Dimension.minus(other: Dimension): Dimension = Dimension(
+public actual operator fun Dimension.minus(other: Dimension): Dimension = Dimension(
     px = this.value.px - other.value.px,
     rem = this.value.rem - other.value.rem,
 )
 
-actual operator fun Dimension.times(other: Float): Dimension = Dimension(
+public actual operator fun Dimension.times(other: Float): Dimension = Dimension(
     px = this.value.px * other,
     rem = this.value.rem * other,
 )
 
-actual operator fun Dimension.div(other: Float): Dimension = Dimension(
+public actual operator fun Dimension.div(other: Float): Dimension = Dimension(
     px = this.value.px / other,
     rem = this.value.rem / other,
 )
 
-actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(this, other)
-actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
+public actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(this, other)
+public actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
 
-fun CornerRadii.toRawCornerRadius(scaleCssVar: String? = null): String {
+public fun CornerRadii.toRawCornerRadius(scaleCssVar: String? = null): String {
     fun String.scaled(): String = if (scaleCssVar == null) this else "calc(($this) * var($scaleCssVar))"
     return when (this) {
         is CornerRadii.AdaptiveToSpacing -> "calc(min(var(--parentSpacing, 0px), ${value.value}))".scaled()
@@ -80,31 +80,31 @@ fun CornerRadii.toRawCornerRadius(scaleCssVar: String? = null): String {
     }
 }
 
-actual data class Font(
+public actual data class Font(
     val cssFontFamilyName: String,
     val url: String? = null,
     val fallback: String = "Helvetica",
     val direct: FontDirect? = null,
 )
 
-data class FontDirect(
+public data class FontDirect(
     val normal: Map<Int, String>,
     val italics: Map<Int, String>,
 )
 
-actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
-actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
+public actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
+public actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
 
-actual sealed class ImageSource actual constructor() : VisualMediaSource
-actual data class ImageResource(val relativeUrl: String) : ImageSource()
+public actual sealed class ImageSource actual constructor() : VisualMediaSource
+public actual data class ImageResource(val relativeUrl: String) : ImageSource()
 
-actual sealed class VideoSource actual constructor() : VisualMediaSource
-actual data class VideoResource(val relativeUrl: String) : VideoSource()
+public actual sealed class VideoSource actual constructor() : VisualMediaSource
+public actual data class VideoResource(val relativeUrl: String) : VideoSource()
 
-actual sealed class AudioSource actual constructor()
-actual data class AudioResource(val relativeUrl: String) : AudioSource()
+public actual sealed class AudioSource actual constructor()
+public actual data class AudioResource(val relativeUrl: String) : AudioSource()
 
-fun Dimension.toBoxShadow(): String {
+public fun Dimension.toBoxShadow(): String {
     if (value.roughPx == 0.0)
         return "none"
     val offsetX = 0.px.value
@@ -115,7 +115,7 @@ fun Dimension.toBoxShadow(): String {
 }
 
 
-fun ImageVector.vectorToSvgDataUrl(): String {
+public fun ImageVector.vectorToSvgDataUrl(): String {
     return "data:image/svg+xml;utf8," + encodeURIComponent(buildString {
         append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width.value}\" height=\"${height.value}\" viewBox=\"$viewBoxMinX $viewBoxMinY $viewBoxWidth $viewBoxHeight\">")

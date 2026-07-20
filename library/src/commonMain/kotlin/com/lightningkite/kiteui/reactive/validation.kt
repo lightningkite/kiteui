@@ -23,7 +23,7 @@ import com.lightningkite.reactive.lensing.validation.issues
 private val ValidationTheming = NativeElementCommonCode.ThemePipeline.Step(0.5f) // between dynamicTheme and elementStatus
 
 @UnsafeModifier
-fun Element.applyValidationTheming(validates: Array<out IssueTracking>, appliedWhen: ReactiveContext.() -> Boolean = { true }) {
+public fun Element.applyValidationTheming(validates: Array<out IssueTracking>, appliedWhen: ReactiveContext.() -> Boolean = { true }) {
     var invalid = false
     val e = underlyingNativeElement
 
@@ -43,16 +43,16 @@ fun Element.applyValidationTheming(validates: Array<out IssueTracking>, appliedW
 
 @UnsafeModifier
 @Deprecated("Use new modifier syntax")
-fun Element.validates(vararg validates: Validated<*>, validatesWhen: ReactiveContext.() -> Boolean = { true }) = applyValidationTheming(validates, validatesWhen)
+public fun Element.validates(vararg validates: Validated<*>, validatesWhen: ReactiveContext.() -> Boolean = { true }) = applyValidationTheming(validates, validatesWhen)
 
-fun ElementWriter.CanAddTheme.validate(vararg validates: IssueTracking, appliedWhen: ReactiveContext.() -> Boolean = { true }): ElementWriter.CanAddTheme =
+public fun ElementWriter.CanAddTheme.validate(vararg validates: IssueTracking, appliedWhen: ReactiveContext.() -> Boolean = { true }): ElementWriter.CanAddTheme =
     beforeSetup {
         @OptIn(UnsafeModifier::class)
         applyValidationTheming(validates, appliedWhen)
     }
 
 @ViewDsl
-fun ElementWriter.CanAddShownWhen.issueText(
+public fun ElementWriter.CanAddShownWhen.issueText(
     issues: Reactive<List<Issue>>,
     transform: (Issue) -> String = { it.summary },
     shownWhen: ReactiveContext.() -> Boolean = { true }

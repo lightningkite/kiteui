@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
-actual fun Element.openPopover(
+public actual fun Element.openPopover(
     preferredDirection: PopoverPreferredDirection,
     createMenu: Frame.() -> Unit
 ) {

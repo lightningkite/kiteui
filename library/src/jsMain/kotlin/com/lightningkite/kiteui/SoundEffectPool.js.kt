@@ -24,13 +24,13 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
-actual class SoundEffectPool actual constructor(concurrency: Int) {
+public actual class SoundEffectPool actual constructor(concurrency: Int) {
 
     // Web doesn't need the provided limit from [concurrency], so we ignore it.
 
     private val context = AudioContext()
 
-    actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
+    public actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
         // An AudioBufferSourceNode can only be played once so we must create a new instance every time we want to play
         // a sound
         val bufferSource = context.createBufferSource()
@@ -85,43 +85,43 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
         }.await()
     }
 
-    actual suspend fun preload(sound: AudioSource) {
+    public actual suspend fun preload(sound: AudioSource) {
         preloadInternal(sound)
     }
 
-    actual fun unload(sound: AudioSource) {
+    public actual fun unload(sound: AudioSource) {
         // Not necessary for JS implementation; UIAudioPool holds no references to UIAudioSegment so they are unloaded
         // when garbage collected
     }
 }
 
-external class AudioContext() {
-    fun createChannelMerger(numberOfInputs: Int): ChannelMergerNode
-    fun createBufferSource(): AudioBufferSourceNode
-    fun decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer>
-    val destination: AudioDestinationNode
+public external class AudioContext() {
+    public fun createChannelMerger(numberOfInputs: Int): ChannelMergerNode
+    public fun createBufferSource(): AudioBufferSourceNode
+    public fun decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer>
+    public val destination: AudioDestinationNode
 }
 
-open external class AudioNode {
-    fun connect(node: AudioNode)
-    fun connect(node: AudioNode, outputIndex: Int, inputIndex: Int)
+public open external class AudioNode {
+    public fun connect(node: AudioNode)
+    public fun connect(node: AudioNode, outputIndex: Int, inputIndex: Int)
 }
 
-external class ChannelMergerNode : AudioNode
+public external class ChannelMergerNode : AudioNode
 
-external class AudioBufferSourceNode : AudioNode {
-    var buffer: AudioBuffer
-    fun start()
-    fun stop()
+public external class AudioBufferSourceNode : AudioNode {
+    public var buffer: AudioBuffer
+    public fun start()
+    public fun stop()
 }
 
-external class AudioBuffer {
-    val duration: Double
+public external class AudioBuffer {
+    public val duration: Double
 }
 
-external class AudioDestinationNode : AudioNode
+public external class AudioDestinationNode : AudioNode
 
-actual suspend fun AudioSource.load(): PlayableAudio {
+public actual suspend fun AudioSource.load(): PlayableAudio {
     return suspendCancellableCoroutine { cont ->
         val native = document.createElement("audio") as HTMLAudioElement
         native.hidden = true

@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.core.Release
 
-actual fun ElementContext.overlay(
+public actual fun ElementContext.overlay(
     modal: Boolean,
     navClosable: Boolean,
     transition: ScreenTransitions,

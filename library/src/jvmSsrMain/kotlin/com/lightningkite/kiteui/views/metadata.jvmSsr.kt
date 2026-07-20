@@ -1,3 +1,3 @@
 package com.lightningkite.kiteui.views
 
-actual fun ElementContext.bestGuessAtAppName(): String? = null
+public actual fun ElementContext.bestGuessAtAppName(): String? = null

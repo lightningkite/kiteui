@@ -17,9 +17,9 @@ private val measuringDiv = (document.createElement("div") as HTMLDivElement).app
     style.maxHeight = "unset"
     document.body!!.appendChild(this)
 }
-actual val Dimension.px: Double get() = value.roughPx
-actual val Dimension.canvasUnits: Double get() = value.roughPx * AppState.windowInfo.value.density
-actual val Dimension.viewUnits: Double get() = value.roughPx
+public actual val Dimension.px: Double get() = value.roughPx
+public actual val Dimension.canvasUnits: Double get() = value.roughPx * AppState.windowInfo.value.density
+public actual val Dimension.viewUnits: Double get() = value.roughPx
 
 private fun String.cssCalc(): Int {
     measuringDiv.style.height = this

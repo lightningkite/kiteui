@@ -14,7 +14,7 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
 
-actual fun HtmlElementLike.resizeObserver(): Listenable {
+public actual fun HtmlElementLike.resizeObserver(): Listenable {
     return object: BaseListenable() {
         var observer: ResizeObserver? = null
         override fun activate() {
@@ -34,12 +34,12 @@ actual fun HtmlElementLike.resizeObserver(): Listenable {
     }
 }
 
-inline fun HtmlElementLike.suppressMutationObserverForStyle(change: ()->Unit) {
+public inline fun HtmlElementLike.suppressMutationObserverForStyle(change: ()->Unit) {
     (this.element as? HTMLElement)?.let {
         it.suppressMutationObserverForStyle { change() }
     } ?: change()
 }
-inline fun HTMLElement.suppressMutationObserverForStyle(change: ()->Unit) {
+public inline fun HTMLElement.suppressMutationObserverForStyle(change: ()->Unit) {
     val e = this.asDynamic().__suppressMutationObserverStyle as? ArrayList<String> ?: run {
         val n = ArrayList<String>()
         this.asDynamic().__suppressMutationObserverStyle = n
@@ -48,7 +48,7 @@ inline fun HTMLElement.suppressMutationObserverForStyle(change: ()->Unit) {
     change()
     e.add(this.getAttribute("style") ?: "")
 }
-inline fun HTMLElement.suppressMutationObserverForClass(change: ()->Unit) {
+public inline fun HTMLElement.suppressMutationObserverForClass(change: ()->Unit) {
     val e = this.asDynamic().__suppressMutationObserverClass as? ArrayList<String> ?: run {
         val n = ArrayList<String>()
         this.asDynamic().__suppressMutationObserverClass = n
@@ -58,7 +58,7 @@ inline fun HTMLElement.suppressMutationObserverForClass(change: ()->Unit) {
     e.add(this.getAttribute("class") ?: "")
 }
 
-fun HTMLElement.measureByTempEdit(max: Size): Size {
+public fun HTMLElement.measureByTempEdit(max: Size): Size {
     val tempchildwidth = this.style.width
     val tempchildheight = this.style.height
     val tempchildmaxWidth = this.style.maxWidth
@@ -81,7 +81,7 @@ fun HTMLElement.measureByTempEdit(max: Size): Size {
     return out
 }
 
-fun HTMLElement.measureByDuplicate(max: Size): Size {
+public fun HTMLElement.measureByDuplicate(max: Size): Size {
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement
@@ -98,7 +98,7 @@ fun HTMLElement.measureByDuplicate(max: Size): Size {
     return out
 }
 
-fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
+public fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement
@@ -117,7 +117,7 @@ fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
     return out
 }
 
-actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable {
+public actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable {
     return object: BaseListenable() {
         var observer: MutationObserver? = null
         override fun activate() {

@@ -6,6 +6,6 @@ import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.*
 
 
-expect class Switch(context: ElementContext) : NativeInteractiveElement {
-    val checked: MutableReactiveValue<Boolean>
+public expect class Switch(context: ElementContext) : NativeInteractiveElement {
+    public val checked: MutableReactiveValue<Boolean>
 }

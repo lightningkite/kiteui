@@ -19,8 +19,8 @@ import kotlinx.serialization.serializer
  * Interface for SSR resource registration.
  * Implemented by SsrContext in jvmSsrMain.
  */
-interface SsrResourceRegistry {
-    fun registerResource(resource: SsrResource<*>)
+public interface SsrResourceRegistry {
+    public fun registerResource(resource: SsrResource<*>)
 }
 
 private const val SSR_REGISTRY_KEY = "ssrResourceRegistry"
@@ -29,7 +29,7 @@ private const val SSR_REGISTRY_KEY = "ssrResourceRegistry"
  * Get the SSR resource registry from the context, if available.
  * Only non-null when rendering on the server side.
  */
-var ElementContext.ssrResourceRegistry: SsrResourceRegistry?
+public var ElementContext.ssrResourceRegistry: SsrResourceRegistry?
     get() = addons[SSR_REGISTRY_KEY] as? SsrResourceRegistry
     set(value) { addons[SSR_REGISTRY_KEY] = value }
 
@@ -43,7 +43,7 @@ var ElementContext.ssrResourceRegistry: SsrResourceRegistry?
  * @param loader Suspending function that fetches the data.
  * @return An SsrResource that can be used reactively in your UI.
  */
-inline fun <reified T : Any> ViewWriter.ssrResource(
+public inline fun <reified T : Any> ViewWriter.ssrResource(
     key: String,
     noinline loader: suspend () -> T
 ): SsrResource<T> {
@@ -96,8 +96,8 @@ inline fun <reified T : Any> ViewWriter.ssrResource(
  * @param serializer The Kotlin serializer for type T.
  * @param loader Suspending function that fetches the data.
  */
-class SsrResource<T : Any>(
-    val key: String,
+public class SsrResource<T : Any>(
+    public val key: String,
     private val serializer: KSerializer<T>,
     private val loader: suspend () -> T
 ) : Reactive<ReactiveState<T>> {
@@ -115,18 +115,18 @@ class SsrResource<T : Any>(
     /**
      * Get the inner ReactiveState directly (for non-reactive contexts).
      */
-    val innerState: ReactiveState<T>
+    public val innerState: ReactiveState<T>
         get() = _state.state.getOrNull() ?: ReactiveState.notReady
 
     override fun addListener(listener: () -> Unit): () -> Unit = _state.addListener(listener)
 
-    val isLoaded: Boolean get() = innerState.ready
+    public val isLoaded: Boolean get() = innerState.ready
 
     /**
      * Start loading (non-blocking).
      * Called automatically during SSR registration.
      */
-    fun startLoading(scope: CoroutineScope) {
+    public fun startLoading(scope: CoroutineScope) {
         if (loadJob != null) return
         loadJob = scope.launch {
             try {
@@ -142,7 +142,7 @@ class SsrResource<T : Any>(
      * Initialize from serialized SSR data (hydration).
      * Called on client-side when __SSR_DATA__ is available.
      */
-    fun hydrateFrom(json: String) {
+    public fun hydrateFrom(json: String) {
         val value = Json.decodeFromString(serializer, json)
         _state.value = ReactiveState(value)
     }
@@ -151,7 +151,7 @@ class SsrResource<T : Any>(
      * Suspend until the resource is loaded (success or exception).
      * Throws if the resource loading failed with an exception.
      */
-    suspend fun awaitLoaded(): T {
+    public suspend fun awaitLoaded(): T {
         return suspendCancellableCoroutine { cont ->
             var resolved = false
             var removeListener: (() -> Unit)? = null
@@ -187,7 +187,7 @@ class SsrResource<T : Any>(
      * Serialize current value. Throws if not loaded.
      * Called during SSR to export data for client hydration.
      */
-    fun serialize(): String {
+    public fun serialize(): String {
         val value = innerState.getOrNull()
             ?: throw IllegalStateException("Cannot serialize unloaded resource '$key'")
         return Json.encodeToString(serializer, value)
