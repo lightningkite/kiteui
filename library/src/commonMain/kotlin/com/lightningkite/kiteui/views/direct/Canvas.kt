@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.KeyCode
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElement
 import com.lightningkite.kiteui.views.NativeElement
@@ -30,5 +31,5 @@ public abstract class CanvasDelegate {
     public var invalidate: () -> Unit = {}
     public var theme: Theme = Theme.placeholder
 
-    public open fun NativeContainerElement.fallbackView(): () -> TextView = { text("Rich content here that doesn't support accessibility.") }
+    public open fun NativeContainerElement.fallbackView(): () -> Element = { text("Rich content here that doesn't support accessibility.") }
 }

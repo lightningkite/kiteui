@@ -41,7 +41,7 @@ public class PerformanceInfo(public val key: String, public val immediate: Boole
 
     public companion object {
         public var display: Boolean = true
-        public val all: HashMap<String, PerformanceInfo> = HashMap<String, PerformanceInfo>()
+        public val all: MutableMap<String, PerformanceInfo> = HashMap<String, PerformanceInfo>()
         public var lastReport: Double = clockMillis()
         public fun reportIfNeeded() {
             if(!display) return

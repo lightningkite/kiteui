@@ -17,7 +17,7 @@ public expect class WeakReference<T : Any>(referred: T) {
     public fun get(): T?
 }
 
-public val leaks: ArrayList<WeakReference<*>> = ArrayList<WeakReference<*>>()
+public val leaks: MutableList<WeakReference<*>> = ArrayList<WeakReference<*>>()
 private var lastGc = clockMillis()
 private var lastGcReport = clockMillis()
 private val leakLog = LogRoot.tag("ElementLeaks")

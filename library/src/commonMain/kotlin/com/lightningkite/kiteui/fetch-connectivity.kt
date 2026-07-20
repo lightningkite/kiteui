@@ -33,7 +33,7 @@ public class WaitGate(permit: Boolean = false) {
         permit = true
         permit = false
     }
-    public val continuations: ArrayList<Continuation<Unit>> = ArrayList<Continuation<Unit>>()
+    public val continuations: MutableList<Continuation<Unit>> = ArrayList<Continuation<Unit>>()
     public suspend fun await(): Unit {
         if (permit) return
         else return suspendCancellableCoroutine {

@@ -9,7 +9,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * This is *much* faster than the standard `kotlinx-coroutines` implementation, which uses a linked list.
  * */
 public class MutableCoroutineContext: CoroutineContext {
-    public val list: ArrayList<CoroutineContext.Element> = ArrayList<CoroutineContext.Element>()
+    public val list: MutableList<CoroutineContext.Element> = ArrayList<CoroutineContext.Element>()
 
     public fun add(context: CoroutineContext) {
         context.fold(Unit) { _, element -> add(element) }

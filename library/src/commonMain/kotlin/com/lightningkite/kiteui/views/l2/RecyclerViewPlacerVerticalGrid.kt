@@ -16,7 +16,7 @@ public class RecyclerViewPlacerVerticalGrid(
     public val sizeDoesNotChange: Boolean = false,
 ) :
     RecyclerViewPlacerGrid {
-    public val sizeByType: HashMap<RecyclerViewRenderer<*>, Double> = HashMap<RecyclerViewRenderer<*>, Double>()
+    public val sizeByType: MutableMap<RecyclerViewRenderer<*>, Double> = HashMap<RecyclerViewRenderer<*>, Double>()
     public fun RecyclerViewPlaceable.height(cellSize: Double): Double = ratio?.let { cellSize * it }
         ?: sizeByType[type]
         ?: size.height.also { if(sizeDoesNotChange) sizeByType[type] = it }

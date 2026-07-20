@@ -9,8 +9,8 @@ import com.lightningkite.reactive.core.remember
 public class PageNavigator(private val routesGetter: ()->Routes) {
     public val routes: Routes by lazy { routesGetter() }
 
-    public fun navigateUrlLikePath(path: String): Unit? = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
-    public fun resetUrlLikePath(path: String): Unit? = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
+    public fun navigateUrlLikePath(path: String) { routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) } }
+    public fun resetUrlLikePath(path: String) { routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) } }
 
     public val stack: Signal<List<Page>> = Signal(listOf())
 
