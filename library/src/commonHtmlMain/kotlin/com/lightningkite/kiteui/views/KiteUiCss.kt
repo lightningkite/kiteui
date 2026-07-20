@@ -1211,7 +1211,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
 
     public fun Edges.css(): String = "${top.value} ${right.value} ${bottom.value} ${left.value}"
 
-    public val rowCollapsingToColumnHandled: HashSet<String> = HashSet<String>()
+    public val rowCollapsingToColumnHandled: MutableSet<String> = HashSet<String>()
     public fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
         val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.roughPx.roundToInt().toString() }}"
         if (rowCollapsingToColumnHandled.add(name)) {

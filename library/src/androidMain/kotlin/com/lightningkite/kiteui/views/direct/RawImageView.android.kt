@@ -158,7 +158,7 @@ public actual class RawImageView actual constructor(
             if(ignoreNaturalSize) setMeasuredDimension(0, 0)
         }
 
-        public val callbacks: ArrayList<SizeReadyCallback> = ArrayList<SizeReadyCallback>()
+        public val callbacks: MutableList<SizeReadyCallback> = ArrayList<SizeReadyCallback>()
 
         public val target: ImageViewTarget<Drawable> = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {
@@ -302,7 +302,7 @@ public actual class SizelessRawImageView actual constructor(
             )
         }
 
-        public val callbacks: ArrayList<SizeReadyCallback> = ArrayList<SizeReadyCallback>()
+        public val callbacks: MutableList<SizeReadyCallback> = ArrayList<SizeReadyCallback>()
 
         public val target: ImageViewTarget<Drawable> = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {

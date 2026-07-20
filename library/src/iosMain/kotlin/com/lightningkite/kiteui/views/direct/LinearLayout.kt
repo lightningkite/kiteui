@@ -125,7 +125,7 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
         return measuredSize.objc
     }
 
-    public val arrangedSubviews: ArrayList<UIView> = ArrayList<UIView>()
+    public val arrangedSubviews: MutableList<UIView> = ArrayList<UIView>()
     public fun addArrangedSubview(view: UIView) {
         childSizeCache.add(arrangedSubviews.size, HashMap())
         arrangedSubviews.add(view)
@@ -156,7 +156,7 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
         super.willRemoveSubview(subview)
     }
 
-    public val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList<HashMap<Size, Size>>()
+    public val childSizeCache: MutableList<HashMap<Size, Size>> = ArrayList<HashMap<Size, Size>>()
 
     public fun calcSizes(size: Size, includeWeighted: Boolean): Array<Size> {
         var t = PerformanceInfo.trace("calcSizeLinear")

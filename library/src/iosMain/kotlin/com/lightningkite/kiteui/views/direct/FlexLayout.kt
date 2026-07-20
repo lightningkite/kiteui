@@ -72,7 +72,7 @@ public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverride
     public val CGSize.local: Size get() = Size(width, height)
     public val CValue<CGSize>.local: Size get() = useContents { local }
 
-    public val arrangedSubviews: ArrayList<UIView> = ArrayList<UIView>()
+    public val arrangedSubviews: MutableList<UIView> = ArrayList<UIView>()
     public fun addArrangedSubview(view: UIView) {
         childSizeCache.add(arrangedSubviews.size, HashMap())
         arrangedSubviews.add(view)
@@ -103,7 +103,7 @@ public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverride
         super.willRemoveSubview(subview)
     }
 
-    public val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList<HashMap<Size, Size>>()
+    public val childSizeCache: MutableList<HashMap<Size, Size>> = ArrayList<HashMap<Size, Size>>()
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val sizeLocal = size.local

@@ -157,25 +157,25 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
     public val closeReason: Channel<CloseReason> = Channel<CloseReason>()
     public val sending: Channel<Frame> = Channel<Frame>(10)
     public var stayOn: Boolean = true
-    public val onOpen: ArrayList<() -> Unit> = ArrayList<() -> Unit>()
+    public val onOpen: MutableList<() -> Unit> = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    public val onClose: ArrayList<(Short) -> Unit> = ArrayList<(Short) -> Unit>()
+    public val onClose: MutableList<(Short) -> Unit> = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    public val onMessage: ArrayList<(String) -> Unit> = ArrayList<(String) -> Unit>()
+    public val onMessage: MutableList<(String) -> Unit> = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    public val onBinaryMessage: ArrayList<(Blob) -> Unit> = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage: MutableList<(Blob) -> Unit> = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }

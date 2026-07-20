@@ -30,7 +30,7 @@ public actual class FutureElement actual constructor() {
     public actual var id: String? = null
     public actual var content: String? = null
     public actual var innerHtmlUnsafe: String? = null
-    public val childrenBack: ArrayList<FutureElement> = ArrayList<FutureElement>()
+    public val childrenBack: MutableList<FutureElement> = ArrayList<FutureElement>()
     public actual val children: List<FutureElement> = childrenBack
     public actual fun appendChild(element: FutureElement) {
         childrenBack.add(element)

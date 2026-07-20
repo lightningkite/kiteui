@@ -36,7 +36,7 @@ public inline fun objectAssign(target: dynamic, source: dynamic): dynamic = js("
 
 public actual class FutureElement actual constructor() {
     public actual val actualElementForLeakTracking: Any? get() = element
-    public val elementToDo: ArrayList<(DOMElement) -> Unit> = ArrayList<(DOMElement) -> Unit>()
+    public val elementToDo: MutableList<(DOMElement) -> Unit> = ArrayList<(DOMElement) -> Unit>()
     public var element: DOMElement? = null
         private set(value) {
             field = value
@@ -381,7 +381,7 @@ public actual class FutureElement actual constructor() {
     }
 
     public inner class ClassSet : MutableSet<String> {
-        public val map: HashSet<String> = HashSet<String>()
+        public val map: MutableSet<String> = HashSet<String>()
         override fun add(element: String): Boolean = this@FutureElement.element?.addClass(element) ?: map.add(element)
         override fun addAll(elements: Collection<String>): Boolean =
             this@FutureElement.element?.addClass(*elements.toTypedArray()) ?: map.addAll(elements)
