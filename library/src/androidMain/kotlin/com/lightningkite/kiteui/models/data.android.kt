@@ -3,13 +3,13 @@ package com.lightningkite.kiteui.models
 
 import android.graphics.Typeface
 import com.lightningkite.kiteui.views.AndroidAppContext
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlin.math.min
 
-actual typealias Font = Typeface
+actual class Font(val getter: () -> Typeface) {
+    fun toTypeface(): Typeface = getter()
+}
 
-actual val systemDefaultFont: Font  get() = Typeface.DEFAULT
-actual val systemDefaultFixedWidthFont: Font  get() = Typeface.MONOSPACE
+actual val systemDefaultFont: Font  get() = Font { Typeface.DEFAULT }
+actual val systemDefaultFixedWidthFont: Font  get() = Font { Typeface.MONOSPACE }
 
 //actual sealed class ImageSource actual constructor()
 actual typealias DimensionRaw = Float

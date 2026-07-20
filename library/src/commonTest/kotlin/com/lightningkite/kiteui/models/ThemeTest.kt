@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.models
 
+import com.lightningkite.kiteui.testing.BaseUiTest
 import kotlin.test.*
 import kotlinx.coroutines.test.runTest
 
@@ -15,7 +16,7 @@ import kotlinx.coroutines.test.runTest
  * ordering, or themeAndBack deduplication on the element tree) are NOT tested
  * here — they need an ElementWriter / NativeElement test harness.
  */
-class ThemeTest {
+class ThemeTest: BaseUiTest() {
 
     // -------------------------------------------------------------------------
     // Fixtures

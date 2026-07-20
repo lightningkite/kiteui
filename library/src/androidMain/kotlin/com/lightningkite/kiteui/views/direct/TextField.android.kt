@@ -36,7 +36,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.font.font,
+                theme.font.font.toTypeface(),
                 theme.font.weight,
                 theme.font.italic
             )
