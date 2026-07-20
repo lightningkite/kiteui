@@ -996,7 +996,7 @@ internal fun rectOverlaps(
     b2: Double,
 ): Boolean = l1 < r2 && r1 > l2 && t1 < b2 && b1 > t2
 
-public fun estimateJumpAnchor(
+internal fun estimateJumpAnchor(
     activeCells: List<RecyclerViewPlaceable>,
     vertical: Boolean,
     viewport: Rect
