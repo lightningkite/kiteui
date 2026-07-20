@@ -44,28 +44,28 @@ public expect object KeyCodes {
 public object KeyCodeBuilder {
 
     public class Modifier(public val applyOn: (KeyCodeWithModifiers) -> KeyCodeWithModifiers) {
-        public operator fun invoke(on: KeyCodeWithModifiers) = applyOn(on)
-        public operator fun plus(code: KeyCode) = invoke(KeyCodeWithModifiers(code))
+        public operator fun invoke(on: KeyCodeWithModifiers): KeyCodeWithModifiers = applyOn(on)
+        public operator fun plus(code: KeyCode): KeyCodeWithModifiers = invoke(KeyCodeWithModifiers(code))
     }
 
-    public val Ctrl = Modifier { it.copy(ctrl = true) }
-    public val Alt = Modifier { it.copy(alt = true) }
-    public val Shift = Modifier { it.copy(shift = true) }
-    public val Meta = Modifier { it.copy(meta = true) }
+    public val Ctrl: Modifier = Modifier { it.copy(ctrl = true) }
+    public val Alt: Modifier = Modifier { it.copy(alt = true) }
+    public val Shift: Modifier = Modifier { it.copy(shift = true) }
+    public val Meta: Modifier = Modifier { it.copy(meta = true) }
 
     // This is needed to prevent the Set<Modifier>.plus(element) overload from shadowing desired behavior
     public class Modifiers(public val elements: MutableSet<Modifier>) {
-        public operator fun plus(modifier: Modifier) = apply { elements.add(modifier) }
-        public operator fun invoke(keyCode: KeyCodeWithModifiers) = elements.fold(keyCode) { code, modifier -> modifier(code) }
-        public operator fun plus(code: KeyCode) = invoke(KeyCodeWithModifiers(code))
+        public operator fun plus(modifier: Modifier): Modifiers = apply { elements.add(modifier) }
+        public operator fun invoke(keyCode: KeyCodeWithModifiers): KeyCodeWithModifiers = elements.fold(keyCode) { code, modifier -> modifier(code) }
+        public operator fun plus(code: KeyCode): KeyCodeWithModifiers = invoke(KeyCodeWithModifiers(code))
     }
 
-    public operator fun Modifier.plus(other: Modifier) = Modifiers(mutableSetOf(this, other))
+    public operator fun Modifier.plus(other: Modifier): Modifiers = Modifiers(mutableSetOf(this, other))
 }
 
-public fun keyCode(builder: KeyCodeBuilder.(codes: KeyCodes) -> KeyCodeWithModifiers) = builder(KeyCodeBuilder, KeyCodes)
+public fun keyCode(builder: KeyCodeBuilder.(codes: KeyCodes) -> KeyCodeWithModifiers): KeyCodeWithModifiers = builder(KeyCodeBuilder, KeyCodes)
 
-public fun ViewWriter.onKeyCode(keyCode: KeyCodeWithModifiers, action: () -> Unit) =
+public fun ViewWriter.onKeyCode(keyCode: KeyCodeWithModifiers, action: () -> Unit): () -> Unit =
     AppState.onUniversalKeyboard {
         if (it == keyCode) {
             action()

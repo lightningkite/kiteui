@@ -30,12 +30,12 @@ public data class AudioFormat(
 
     public companion object {
         /** Standard format for voice applications: 24kHz mono PCM16 */
-        public val VOICE = AudioFormat(sampleRate = 24000, channels = 1, bitsPerSample = 16)
+        public val VOICE: AudioFormat = AudioFormat(sampleRate = 24000, channels = 1, bitsPerSample = 16)
 
         /** CD quality audio: 44.1kHz stereo PCM16 */
-        public val CD_QUALITY = AudioFormat(sampleRate = 44100, channels = 2, bitsPerSample = 16)
+        public val CD_QUALITY: AudioFormat = AudioFormat(sampleRate = 44100, channels = 2, bitsPerSample = 16)
 
         /** Standard telephony format: 8kHz mono PCM16 */
-        public val TELEPHONY = AudioFormat(sampleRate = 8000, channels = 1, bitsPerSample = 16)
+        public val TELEPHONY: AudioFormat = AudioFormat(sampleRate = 8000, channels = 1, bitsPerSample = 16)
     }
 }

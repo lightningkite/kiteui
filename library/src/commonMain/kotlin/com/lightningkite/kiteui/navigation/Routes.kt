@@ -21,9 +21,9 @@ public class Routes(
         }
     }
 ) {
-    public fun render(screen: Page) = renderers.get(screen::class)?.invoke(screen)
+    public fun render(screen: Page): RouteRendered? = renderers.get(screen::class)?.invoke(screen)
     public fun parse(path: UrlLikePath): Page? = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
-    public fun parseOrFallback(path: UrlLikePath) =
+    public fun parseOrFallback(path: UrlLikePath): Page =
         try {
             parse(path) ?: fallback
         } catch(e: Exception) {
@@ -42,9 +42,9 @@ public data class UrlLikePath(
     val parameters: Map<String, String>
 ) {
     public companion object {
-        public val EMPTY = UrlLikePath(listOf(), mapOf())
+        public val EMPTY: UrlLikePath = UrlLikePath(listOf(), mapOf())
 
-        public fun fromParts(pathname: String, search: String) = UrlLikePath(
+        public fun fromParts(pathname: String, search: String): UrlLikePath = UrlLikePath(
             segments = pathname.split('/').filter { it.isNotBlank() },
             parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
                 .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
@@ -57,7 +57,7 @@ public data class UrlLikePath(
     }
 
     // by Claude - removed debug println that fired on every route render
-    public fun render() = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
+    public fun render(): String = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
         "&",
         "?"
     ) { "${it.key}=${encodeURIComponent(it.value)}" } ?: "")

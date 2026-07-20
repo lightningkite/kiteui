@@ -61,10 +61,10 @@ public data class Easing(val x1: Float, val y1: Float, val x2: Float, val y2: Fl
     }
 
     public companion object {
-        public val Linear = Easing(0f, 0f, 1f, 1f)
-        public val EaseOut = Easing(0f, 0f, 0.58f, 1f)
-        public val EaseIn = Easing(0.42f, 0f, 1f, 1f)
-        public val EaseInOut = Easing(0.42f, 0f, 0.58f, 1f)
-        public val Spring = Easing(0.175f, 0.885f, 0.32f, 1.275f)
+        public val Linear: Easing = Easing(0f, 0f, 1f, 1f)
+        public val EaseOut: Easing = Easing(0f, 0f, 0.58f, 1f)
+        public val EaseIn: Easing = Easing(0.42f, 0f, 1f, 1f)
+        public val EaseInOut: Easing = Easing(0.42f, 0f, 0.58f, 1f)
+        public val Spring: Easing = Easing(0.175f, 0.885f, 0.32f, 1.275f)
     }
 }

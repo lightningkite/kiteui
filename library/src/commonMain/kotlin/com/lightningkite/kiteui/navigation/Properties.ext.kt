@@ -55,7 +55,7 @@ public inline fun <reified T> Properties.decodeFromStringMap(
 }
 
 @Deprecated("Properties cannot serialize value classes.")
-public inline fun <reified T> Properties.encodeToStringMap(value: T, key: String, out: MutableMap<String, String>) =
+public inline fun <reified T> Properties.encodeToStringMap(value: T, key: String, out: MutableMap<String, String>): Unit =
     encodeToStringMap(UrlProperties.serializersModule.serializer<T>(), value, key, out)
 
 @Deprecated("Properties cannot serialize value classes.")

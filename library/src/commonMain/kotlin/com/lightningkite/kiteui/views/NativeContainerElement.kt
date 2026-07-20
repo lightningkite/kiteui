@@ -475,7 +475,7 @@ public abstract class NativeContainerElementCommonCode internal constructor(cont
     }
 
     /** Convenience wrapper - adds child at the end. See [addChild(Int, Element)][addChild]. */
-    final override fun addChild(element: Element) = addChild(children.size, element)
+    final override fun addChild(element: Element): Unit = addChild(children.size, element)
 
     final override fun removeChild(index: Int) {
         if (checkIsShutdown("removeChild")) return

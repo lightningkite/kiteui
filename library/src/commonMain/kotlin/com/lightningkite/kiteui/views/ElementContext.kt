@@ -42,7 +42,7 @@ public fun ElementContext.exceptionMessage(exception: Exception, metadata: Excep
 public class ChainMap<K, V>(
     public val parent: ChainMap<K, V>? = null
 ) {
-    public val local = HashMap<K, V>()
+    public val local: HashMap<K, V> = HashMap<K, V>()
     public val root: ChainMap<K, V> = parent?.root ?: this
 
     public fun containsKey(key: K): Boolean = local.containsKey(key) || (parent?.containsKey(key) == true)

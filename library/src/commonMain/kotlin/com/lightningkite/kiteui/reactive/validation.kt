@@ -43,7 +43,7 @@ public fun Element.applyValidationTheming(validates: Array<out IssueTracking>, a
 
 @UnsafeModifier
 @Deprecated("Use new modifier syntax")
-public fun Element.validates(vararg validates: Validated<*>, validatesWhen: ReactiveContext.() -> Boolean = { true }) = applyValidationTheming(validates, validatesWhen)
+public fun Element.validates(vararg validates: Validated<*>, validatesWhen: ReactiveContext.() -> Boolean = { true }): Unit = applyValidationTheming(validates, validatesWhen)
 
 public fun ElementWriter.CanAddTheme.validate(vararg validates: IssueTracking, appliedWhen: ReactiveContext.() -> Boolean = { true }): ElementWriter.CanAddTheme =
     beforeSetup {

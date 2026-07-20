@@ -37,7 +37,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
         val description: String?
     )
 
-    public val currentRawMediaView = Signal<Element?>(null)
+    public val currentRawMediaView: Signal<Element?> = Signal<Element?>(null)
 
     init {
         val removeListener = currentRawMediaView.addListener {
@@ -86,7 +86,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
     public val volume: MutableReactive<Float> = currentRawMediaView.lens { (it as? RawVideoView)?.volume ?: Signal(0f) }.flatten()
 
 
-    public var ready = false
+    public var ready: Boolean = false
 
     @OverrideOnly
     override fun onStartup() {
@@ -100,8 +100,8 @@ public class MediaView(private val frame: Frame) : Element by frame {
 
     public val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
 
-    public val shownInfo = RawReactive<Info?>(ReactiveState(null))
-    public var cannotBeCovered = false
+    public val shownInfo: RawReactive<Info?> = RawReactive<Info?>(ReactiveState(null))
+    public var cannotBeCovered: Boolean = false
 
     @OptIn(ExperimentalKiteUi::class)
     public fun refresh() {

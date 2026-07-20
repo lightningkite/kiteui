@@ -28,23 +28,23 @@ public interface AppNav {
     public var exists: Boolean
 
     public class ByProperty : AppNav {
-        public val appNameProperty = Signal("My App")
+        public val appNameProperty: Signal<String> = Signal("My App")
         override var appName: String by appNameProperty
-        public val appIconProperty = Signal<Icon>(Icon.home)
+        public val appIconProperty: Signal<Icon> = Signal<Icon>(Icon.home)
         override var appIcon: Icon by appIconProperty
-        public val appLogoProperty = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
+        public val appLogoProperty: Signal<ImageSource> = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
         override var appLogo: ImageSource by appLogoProperty
-        public val navItemsProperty = Signal(listOf<NavElement>())
+        public val navItemsProperty: Signal<List<NavElement>> = Signal(listOf<NavElement>())
         override var navItems: List<NavElement> by navItemsProperty
-        public val actionsProperty = Signal<List<NavElement>>(listOf())
+        public val actionsProperty: Signal<List<NavElement>> = Signal<List<NavElement>>(listOf())
         override var actions: List<NavElement> by actionsProperty
-        public val existsProperty = Signal(true)
+        public val existsProperty: Signal<Boolean> = Signal(true)
         override var exists: Boolean by existsProperty
     }
 }
 
 
-public val ElementContext.appNavFactory by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
+public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> Unit> by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
     Signal(
         ViewWriter::appNavBottomTabs
     )

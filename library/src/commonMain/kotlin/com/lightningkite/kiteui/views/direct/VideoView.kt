@@ -106,8 +106,8 @@ public class VideoView(private val frame: Frame) : Element by frame {
 
     public val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
 
-    public val shownInfo = RawReactive<Info?>(ReactiveState(null))
-    public var cannotBeCovered = false
+    public val shownInfo: RawReactive<Info?> = RawReactive<Info?>(ReactiveState(null))
+    public var cannotBeCovered: Boolean = false
 
     @OptIn(ExperimentalKiteUi::class)
     public fun refresh() {

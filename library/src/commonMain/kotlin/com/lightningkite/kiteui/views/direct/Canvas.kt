@@ -30,5 +30,5 @@ public abstract class CanvasDelegate {
     public var invalidate: () -> Unit = {}
     public var theme: Theme = Theme.placeholder
 
-    public open fun NativeContainerElement.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
+    public open fun NativeContainerElement.fallbackView(): () -> TextView = { text("Rich content here that doesn't support accessibility.") }
 }

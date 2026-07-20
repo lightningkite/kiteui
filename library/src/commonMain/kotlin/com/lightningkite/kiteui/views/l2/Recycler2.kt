@@ -138,7 +138,7 @@ public class Recycler2(
         }
     }
 
-    public var overdraw = AppState.windowInfo.value.height.viewUnits / 3.0
+    public var overdraw: Double = AppState.windowInfo.value.height.viewUnits / 3.0
 
     private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor.SpecificElement(0, Align.Start)
 

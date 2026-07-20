@@ -17,7 +17,7 @@ public expect class WeakReference<T : Any>(referred: T) {
     public fun get(): T?
 }
 
-public val leaks = ArrayList<WeakReference<*>>()
+public val leaks: ArrayList<WeakReference<*>> = ArrayList<WeakReference<*>>()
 private var lastGc = clockMillis()
 private var lastGcReport = clockMillis()
 private val leakLog = LogRoot.tag("ElementLeaks")
@@ -85,7 +85,7 @@ public expect fun assertMainThread()
 
 public expect fun Throwable.printStackTrace2()
 public var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
-public fun Throwable.report(context: String = "") = Throwable_report(this, context)
+public fun Throwable.report(context: String = ""): Unit = Throwable_report(this, context)
 
 public expect fun Any?.identityHashCode(): Int
 

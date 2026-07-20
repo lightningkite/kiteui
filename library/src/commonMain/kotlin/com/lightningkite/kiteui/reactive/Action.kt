@@ -41,7 +41,7 @@ public interface Action: Reactive<Boolean> {
     }
 }
 
-public operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
+public operator fun Action.invoke(scope: CoroutineScope): Unit = startAction(scope)
 
 /**
  * Creates an [Action] that wraps [action] with optional frequency capping.
@@ -70,7 +70,7 @@ public fun Action(
     frequencyCap: Duration? = 500.milliseconds,
     ignoreRetryWhileRunning: Boolean = true,
     action: suspend CoroutineScope.() -> Unit
-) = if (clearErrorOnDependencyChange) {
+): Action = if (clearErrorOnDependencyChange) {
     DependentAction(title, icon, keepRunningWhile, ignoreRetryWhileRunning, action = action)
 } else {
     RetryableAction(title, icon, keepRunningWhile, ignoreRetryWhileRunning, action = action)
@@ -151,7 +151,7 @@ public class RetryableAction(
         }
     }
 
-    override fun plus(other: Action) = RetryableAction(
+    override fun plus(other: Action): Action = RetryableAction(
         title,
         icon,
         keepRunningWhile,

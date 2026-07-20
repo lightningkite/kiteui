@@ -469,7 +469,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
         TelemetryContext(element = this as NativeElement)
     )
 
-    public var fullyStarted = false
+    public var fullyStarted: Boolean = false
         private set
 
     @OverrideOnly
@@ -481,7 +481,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
         debug { "new theme: ${theme.id}" }
     }
 
-    public var isShutdown = false
+    public var isShutdown: Boolean = false
         private set
 
     @OverrideOnly
@@ -543,10 +543,10 @@ public abstract class NativeElementCommonCode internal constructor(override val 
         public fun get(element: Element): Theme
 
         public companion object {
-            public val fromParent = GetBaseTheme { element ->
+            public val fromParent: GetBaseTheme = GetBaseTheme { element ->
                 element.parent?.theme?.let { it.revert ?: it } ?: Theme.placeholder
             }
-            public val fromParentNonCascading = GetBaseTheme { element -> element.parent?.theme ?: Theme.placeholder }
+            public val fromParentNonCascading: GetBaseTheme = GetBaseTheme { element -> element.parent?.theme ?: Theme.placeholder }
         }
     }
 
@@ -840,7 +840,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
 
             public companion object {
                 /** Element's default styling - what the element chooses for itself */
-                public val elementStyling = Step(0f)
+                public val elementStyling: Step = Step(0f)
 
                 /**
                  * User's static theme choice via modifiers like `card`, `important`
@@ -857,10 +857,10 @@ public abstract class NativeElementCommonCode internal constructor(override val 
                 internal val dynamicChoice = Step(0.4f)
 
                 /** Themes from element's internal state (checked, selected, disabled, etc.) */
-                public val elementStatus = Step(0.6f)
+                public val elementStatus: Step = Step(0.6f)
 
                 /** Automatic theming from loading/working/error states */
-                public val processingStatus = Step(0.8f)
+                public val processingStatus: Step = Step(0.8f)
             }
         }
 
@@ -883,7 +883,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
                  *
                  * This gives automatic visual feedback for loading states and button clicks.
                  */
-                public val processingTheming = ThemeForElement { element ->
+                public val processingTheming: ThemeForElement = ThemeForElement { element ->
                     val element = element.underlyingNativeElement
                     val t = element.foregroundProcesses.state.handle(
                         success = { ThemeDerivation.None },
@@ -916,10 +916,10 @@ public abstract class NativeElementCommonCode internal constructor(override val 
             } ?: theme.withoutBack
 
 
-        public fun add(step: Step, op: ThemeForElement) = operations.add(step, op)
-        public fun add(step: Step, theme: ThemeDerivation) = operations.add(step, ThemeForElement.Constant(theme))
+        public fun add(step: Step, op: ThemeForElement): Unit = operations.add(step, op)
+        public fun add(step: Step, theme: ThemeDerivation): Unit = operations.add(step, ThemeForElement.Constant(theme))
 
-        public fun set(step: Step, op: ThemeForElement) = operations.set(step, op)
+        public fun set(step: Step, op: ThemeForElement): Unit = operations.set(step, op)
 
         public fun set(step: Step, theme: ThemeDerivation?) {
             if (theme == null) operations.remove(step)

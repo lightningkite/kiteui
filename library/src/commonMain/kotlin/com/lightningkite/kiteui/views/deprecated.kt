@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.DownSemantic
+import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.EmphasizedSemantic
 import com.lightningkite.kiteui.models.HoverSemantic
 import com.lightningkite.kiteui.models.MainContentSemantic
@@ -39,6 +40,7 @@ import com.lightningkite.kiteui.views.l2.rawPopover
 import com.lightningkite.kiteui.views.l2.toast
 import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.context.onRemove
+import com.lightningkite.reactive.core.Reactive
 import kotlinx.coroutines.CoroutineScope
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -49,8 +51,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 
-@Deprecated("Wrong import; this has moved", ReplaceWith("launch", "com.lightningkite.reactive.launch"), DeprecationLevel.ERROR) public val launch = Unit
-@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope", "com.lightningkite.reactive.context.reactiveScope"), DeprecationLevel.ERROR) public val reactiveScope = Unit
+@Deprecated("Wrong import; this has moved", ReplaceWith("launch", "com.lightningkite.reactive.launch"), DeprecationLevel.ERROR) public val launch: Unit = Unit
+@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope", "com.lightningkite.reactive.context.reactiveScope"), DeprecationLevel.ERROR) public val reactiveScope: Unit = Unit
 
 @Deprecated("Wrong import; this has moved", ReplaceWith("DropTargetDelegate", "com.lightningkite.kiteui.models.DropTargetDelegate")) public typealias DropTargetDelegate = com.lightningkite.kiteui.models.DropTargetDelegate
 
@@ -133,7 +135,7 @@ public operator fun String.minus(writer: ViewWriter): ViewWriter = writer.also {
  * }
  * ```
  * */
-public fun Element.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) = applyDynamicTheme(calculate)
+public fun Element.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?): Unit = applyDynamicTheme(calculate)
 
 @Deprecated("Just bind to themeChoice directly", level = DeprecationLevel.ERROR)
 @ViewModifierDsl3
@@ -267,25 +269,25 @@ public inline fun ElementWriter.numberField(setup: NumberInput.() -> Unit = {}):
     ReplaceWith("this.pageNavigator", "com.lightningkite.kiteui.navigator.pageNavigator"),
     DeprecationLevel.ERROR
 )
-public val ViewWriter.navigator by ViewWriter::pageNavigator
+public val ViewWriter.navigator: PageNavigator by ViewWriter::pageNavigator
 
 @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
 public val PlatformNavigator: PageNavigator get() = throw NotImplementedError()
 
 @Deprecated("Use directly through context", ReplaceWith("context.safeInsets()"))
-public var Element.safeInsets
+public var Element.safeInsets: Reactive<Edges>
     get() = context.safeInsets
     set(value) { context.safeInsets = value }
 @Deprecated("Use directly through context", ReplaceWith("context.popoverParent()"))
-public var Element.popoverParent
+public var Element.popoverParent: ContainerElement?
     get() = context.popoverParent
     set(value) { context.popoverParent = value }
 @Deprecated("Use directly through context", ReplaceWith("context.popoverCloser()"))
-public var Element.popoverCloser
+public var Element.popoverCloser: (() -> Unit)?
     get() = context.popoverCloser
     set(value) { context.popoverCloser = value }
 @Deprecated("Use directly through context", ReplaceWith("context.popoverKeepOpen()"))
-public var Element.popoverKeepOpen
+public var Element.popoverKeepOpen: Int
     get() = context.popoverKeepOpen
     set(value) { context.popoverKeepOpen = value }
 
@@ -331,22 +333,22 @@ public fun ElementWriter.overlayWriter(
     modal: Boolean,
     transition: ScreenTransitions,
     content: ContainerElement.(close: ()->Unit) -> Unit
-) = context.overlay(modal = modal, navClosable = modal, transition = transition, body = content)
+): Unit = context.overlay(modal = modal, navClosable = modal, transition = transition, body = content)
 
-@Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) public fun ElementWriter.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
-@Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) public fun ElementWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
-@Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) public fun ElementWriter.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
-@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) public fun ElementWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content = content)
+@Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) public fun ElementWriter.toast(text: String, duration: Duration = 3.seconds): Unit = context.toast(text, duration)
+@Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) public fun ElementWriter.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit): Unit = context.toast(duration, content)
+@Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) public fun ElementWriter.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit): Unit = context.dialog(dismissable, content)
+@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) public fun ElementWriter.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit): Unit = context.rawPopover(transition, content = content)
 
-@Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) public fun Element.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
-@Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) public fun Element.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
-@Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) public fun Element.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
-@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) public fun Element.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content = content)
+@Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) public fun Element.toast(text: String, duration: Duration = 3.seconds): Unit = context.toast(text, duration)
+@Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) public fun Element.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit): Unit = context.toast(duration, content)
+@Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) public fun Element.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit): Unit = context.dialog(dismissable, content)
+@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) public fun Element.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit): Unit = context.rawPopover(transition, content = content)
 
-@Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) public fun ContainerElement.toast(text: String, duration: Duration = 3.seconds) = context.toast(text, duration)
-@Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) public fun ContainerElement.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) = context.toast(duration, content)
-@Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) public fun ContainerElement.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit) = context.dialog(dismissable, content)
-@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) public fun ContainerElement.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit) = context.rawPopover(transition, content = content)
+@Deprecated("use directly through context", ReplaceWith("context.toast(text, duration)")) public fun ContainerElement.toast(text: String, duration: Duration = 3.seconds): Unit = context.toast(text, duration)
+@Deprecated("use directly through context", ReplaceWith("context.toast(duration, content)")) public fun ContainerElement.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit): Unit = context.toast(duration, content)
+@Deprecated("use directly through context", ReplaceWith("context.dialog(dismissable, content)")) public fun ContainerElement.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddTheme.(close: ()->Unit) -> Unit): Unit = context.dialog(dismissable, content)
+@Deprecated("use directly through context", ReplaceWith("context.rawPopover(transition, content)")) public fun ContainerElement.rawPopover(transition: ScreenTransitions, content: ElementWriter.() -> Unit): Unit = context.rawPopover(transition, content = content)
 
 @Deprecated("use directly through context", ReplaceWith("context.confirmDanger(title, body, actionName, cancelName, action)"))
 public fun ElementWriter.confirmDanger(
@@ -355,10 +357,10 @@ public fun ElementWriter.confirmDanger(
     actionName: String = "OK",
     cancelName: String = "Cancel",
     action: suspend () -> Unit
-) = context.confirmDanger(title, body, actionName, cancelName, action)
+): Unit = context.confirmDanger(title, body, actionName, cancelName, action)
 
 @Deprecated("use directly through context", ReplaceWith("context.alert(title, body)"))
 public fun ElementWriter.alert(
     title: String,
     body: String,
-) = context.alert(title, body)
+): Unit = context.alert(title, body)

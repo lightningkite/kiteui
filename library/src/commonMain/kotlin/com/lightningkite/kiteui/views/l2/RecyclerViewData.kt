@@ -18,6 +18,6 @@ public interface RecyclerViewData<T, ID> {
     }
 
     public companion object {
-        public fun <T> fromList(list: List<T>) = FromList(list)
+        public fun <T> fromList(list: List<T>): FromList<T> = FromList(list)
     }
 }

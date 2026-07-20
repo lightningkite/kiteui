@@ -10,14 +10,14 @@ import com.lightningkite.kiteui.views.contextAddon
 public var ElementContext.titleDepth: Int by contextAddon(0)
 
 @Deprecated("Use directly through context", ReplaceWith("context.titleDepth"))
-public var ElementWriter.titleDepth
+public var ElementWriter.titleDepth: Int
     get() = context.titleDepth
     set(value) { context.titleDepth = value }
 
 public fun ElementWriter.titledSection(
     title: String,
     content: RowOrCol.() -> Unit,
-) = titledSection({ this.content = title }, content)
+): Unit = titledSection({ this.content = title }, content)
 
 public inline fun ElementWriter.titledSection(
     crossinline titleSetup: TextView.() -> Unit = {},

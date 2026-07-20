@@ -63,7 +63,7 @@ public data class GamepadState(
     val timestamp: Long
 ) {
     public companion object {
-        public val DISCONNECTED = GamepadState(
+        public val DISCONNECTED: GamepadState = GamepadState(
             id = "",
             name = "Disconnected",
             connected = false,

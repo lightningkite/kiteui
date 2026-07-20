@@ -18,7 +18,7 @@ public interface RecyclerViewRendererSet<in T, out ID> {
     }
 
     public companion object {
-        public fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Reactive<T>) -> Unit) =
+        public fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Reactive<T>) -> Unit): RecyclerViewRendererSet<T, ID> =
             object : RecyclerViewRendererSet<T, ID> {
                 override fun id(item: T): ID = id(item)
                 val r = object : RecyclerViewRenderer<T> {
@@ -57,6 +57,6 @@ public interface RecyclerViewRendererSet<in T, out ID> {
         public fun <T, ID> multi(
             id: (T) -> ID,
             builder: MultiBuilder<T, ID>.() -> Unit
-        ) = MultiBuilder(id).also(builder).build()
+        ): RecyclerViewRendererSet<T, ID> = MultiBuilder(id).also(builder).build()
     }
 }

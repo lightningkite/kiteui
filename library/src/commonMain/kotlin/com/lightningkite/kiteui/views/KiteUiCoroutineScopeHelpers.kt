@@ -9,5 +9,5 @@ import kotlinx.coroutines.CoroutineScope
  * This will eventually be removed in favor of context parameters.
  * */
 public interface KiteUiCoroutineScopeHelpers : CoroutineScopeHelpers {
-    public operator fun Action.invoke() = startAction(this@KiteUiCoroutineScopeHelpers)
+    public operator fun Action.invoke(): Unit = startAction(this@KiteUiCoroutineScopeHelpers)
 }

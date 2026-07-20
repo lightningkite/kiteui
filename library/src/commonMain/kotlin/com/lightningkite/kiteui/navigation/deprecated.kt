@@ -45,56 +45,56 @@ public typealias ScreenNavigator = PageNavigator
 
 
 @Deprecated("Use the new popover system instead")
-public var ElementContext.dialogPageNavigator by lateInitContextAddon<PageNavigator>()
+public var ElementContext.dialogPageNavigator: PageNavigator by lateInitContextAddon<PageNavigator>()
 
 @Deprecated("Use directly through context", ReplaceWith("context.pageNavigator"))
-public var ElementWriter.pageNavigator
+public var ElementWriter.pageNavigator: PageNavigator
     get() = context.pageNavigator
     set(value) { context.pageNavigator = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.mainPageNavigator"))
-public var ElementWriter.mainPageNavigator
+public var ElementWriter.mainPageNavigator: PageNavigator
     get() = context.mainPageNavigator
     set(value) { context.mainPageNavigator = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.dialogPageNavigator"))
-public var ElementWriter.dialogPageNavigator
+public var ElementWriter.dialogPageNavigator: PageNavigator
     get() = context.dialogPageNavigator
     set(value) { context.dialogPageNavigator = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.pageNavigator"))
-public var Element.pageNavigator
+public var Element.pageNavigator: PageNavigator
     get() = context.pageNavigator
     set(value) { context.pageNavigator = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.mainPageNavigator"))
-public var Element.mainPageNavigator
+public var Element.mainPageNavigator: PageNavigator
     get() = context.mainPageNavigator
     set(value) { context.mainPageNavigator = value }
 
 @Deprecated("Use new popover system, or at least directly through context", ReplaceWith("context.dialogPageNavigator"))
-public var Element.dialogPageNavigator
+public var Element.dialogPageNavigator: PageNavigator
     get() = context.dialogPageNavigator
     set(value) { context.dialogPageNavigator = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.pageNavigator"))
-public var ContainerElement.pageNavigator
+public var ContainerElement.pageNavigator: PageNavigator
     get() = context.pageNavigator
     set(value) { context.pageNavigator = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.mainPageNavigator"))
-public var ContainerElement.mainPageNavigator
+public var ContainerElement.mainPageNavigator: PageNavigator
     get() = context.mainPageNavigator
     set(value) { context.mainPageNavigator = value }
 
 @Deprecated("Use new popover system, or at least directly through context", ReplaceWith("context.dialogPageNavigator"))
-public var ContainerElement.dialogPageNavigator
+public var ContainerElement.dialogPageNavigator: PageNavigator
     get() = context.dialogPageNavigator
     set(value) { context.dialogPageNavigator = value }
 
-@Deprecated("Renamed to pageNavigator", ReplaceWith("context.pageNavigator")) public var ViewWriter.screenNavigator by ViewWriter::pageNavigator
-@Deprecated("Renamed to mainPageNavigator", ReplaceWith("context.mainPageNavigator")) public var ViewWriter.mainScreenNavigator by ViewWriter::mainPageNavigator
-@Deprecated("Renamed to dialogPageNavigator", ReplaceWith("context.dialogPageNavigator")) public var ViewWriter.dialogScreenNavigator by ViewWriter::dialogPageNavigator
+@Deprecated("Renamed to pageNavigator", ReplaceWith("context.pageNavigator")) public var ViewWriter.screenNavigator: PageNavigator by ViewWriter::pageNavigator
+@Deprecated("Renamed to mainPageNavigator", ReplaceWith("context.mainPageNavigator")) public var ViewWriter.mainScreenNavigator: PageNavigator by ViewWriter::mainPageNavigator
+@Deprecated("Renamed to dialogPageNavigator", ReplaceWith("context.dialogPageNavigator")) public var ViewWriter.dialogScreenNavigator: PageNavigator by ViewWriter::dialogPageNavigator
 
 @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator.routes", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.HIDDEN)
 public val PageNavigator.Companion.mainRoutes: Routes get() = TODO()

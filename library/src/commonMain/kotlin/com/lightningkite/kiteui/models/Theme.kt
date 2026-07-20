@@ -79,7 +79,7 @@ public interface ThemeDerivation {
         /**
          * A no-op derivation that returns the theme unchanged without background.
          */
-        @Deprecated("Just use 'None' object directly", ReplaceWith("None")) public val none get() = None
+        @Deprecated("Just use 'None' object directly", ReplaceWith("None")) public val none: None get() = None
     }
 
     /**
@@ -236,7 +236,7 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
         semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
-    ) = copy(
+    ): ThemeAndBack = copy(
         id = key,
         cascading = cascading,
         font = font,
@@ -302,7 +302,7 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
         semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
-    ) = copy(
+    ): ThemeAndBack = copy(
         id = key,
         cascading = cascading,
         font = font,
@@ -371,7 +371,7 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
         semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
-    ) = copy(
+    ): Theme = copy(
         id = key,
         cascading = cascading,
         font = font,
@@ -460,7 +460,7 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
  * @param derivation The transformation function to apply.
  * @return A new semantic override.
  */
-public fun <T : Semantic> T.override(derivation: T.(Theme) -> ThemeAndBack) = Semantic.Override(this, derivation)
+public fun <T : Semantic> T.override(derivation: T.(Theme) -> ThemeAndBack): Semantic.Override<T> = Semantic.Override(this, derivation)
 
 /**
  * Creates a semantic override for all semantics of the specified type.
@@ -469,7 +469,7 @@ public fun <T : Semantic> T.override(derivation: T.(Theme) -> ThemeAndBack) = Se
  * @param derivation The transformation function to apply.
  * @return A new semantic override.
  */
-public inline fun <reified T : Semantic> override(noinline derivation: T.(Theme) -> ThemeAndBack) = Semantic.Override(T::class, derivation)
+public inline fun <reified T : Semantic> override(noinline derivation: T.(Theme) -> ThemeAndBack): Semantic.Override<T> = Semantic.Override(T::class, derivation)
 
 
 /**
@@ -559,7 +559,7 @@ public value class SemanticOverrides private constructor(
      * @param other The other override set to combine with.
      * @return A new override set containing both sets of overrides.
      */
-    public operator fun plus(other: SemanticOverrides) = SemanticOverrides(overrides + other.overrides)
+    public operator fun plus(other: SemanticOverrides): SemanticOverrides = SemanticOverrides(overrides + other.overrides)
 
     public companion object {
         /**
@@ -977,7 +977,7 @@ public data class HeaderSizeSemantic(val level: Int) : Semantic("h$level") {
         /**
          * Font size multipliers for each header level (H1-H8).
          */
-        public val lookup = arrayOf(
+        public val lookup: Array<Double> = arrayOf(
             2.0,
             1.6,
             1.4,
@@ -1069,32 +1069,32 @@ public data object PrintSemantic : Semantic("print") {
 /**
  * H1 header semantic (largest header, 2.0rem).
  */
-public val H1Semantic = HeaderSizeSemantic(1)
+public val H1Semantic: HeaderSizeSemantic = HeaderSizeSemantic(1)
 
 /**
  * H2 header semantic (1.6rem).
  */
-public val H2Semantic = HeaderSizeSemantic(2)
+public val H2Semantic: HeaderSizeSemantic = HeaderSizeSemantic(2)
 
 /**
  * H3 header semantic (1.4rem).
  */
-public val H3Semantic = HeaderSizeSemantic(3)
+public val H3Semantic: HeaderSizeSemantic = HeaderSizeSemantic(3)
 
 /**
  * H4 header semantic (1.3rem).
  */
-public val H4Semantic = HeaderSizeSemantic(4)
+public val H4Semantic: HeaderSizeSemantic = HeaderSizeSemantic(4)
 
 /**
  * H5 header semantic (1.2rem).
  */
-public val H5Semantic = HeaderSizeSemantic(5)
+public val H5Semantic: HeaderSizeSemantic = HeaderSizeSemantic(5)
 
 /**
  * H6 header semantic (smallest header, 1.1rem).
  */
-public val H6Semantic = HeaderSizeSemantic(6)
+public val H6Semantic: HeaderSizeSemantic = HeaderSizeSemantic(6)
 
 // ================================
 // Markdown-specific semantics (by Claude)
@@ -1321,7 +1321,7 @@ public class Theme(
      * @param padding Whether to apply padding.
      * @return A new [ThemeAndBack] instance.
      */
-    public fun with(back: Boolean, padding: Boolean) = if (back) {
+    public fun with(back: Boolean, padding: Boolean): ThemeAndBack = if (back) {
         if (padding) withBack
         else withBackNoPadding
     } else {
@@ -1332,22 +1332,22 @@ public class Theme(
     /**
      * This theme with background drawn and padding applied.
      */
-    public val withBack = ThemeAndBack(this, drawBackground = true, padding = true)
+    public val withBack: ThemeAndBack = ThemeAndBack(this, drawBackground = true, padding = true)
 
     /**
      * This theme with background drawn but no padding.
      */
-    public val withBackNoPadding = ThemeAndBack(this, drawBackground = true, padding = false)
+    public val withBackNoPadding: ThemeAndBack = ThemeAndBack(this, drawBackground = true, padding = false)
 
     /**
      * This theme without background and no padding.
      */
-    public val withoutBack = ThemeAndBack(this, drawBackground = false, padding = false)
+    public val withoutBack: ThemeAndBack = ThemeAndBack(this, drawBackground = false, padding = false)
 
     /**
      * This theme without background but with padding applied.
      */
-    public val withoutBackButPadding = ThemeAndBack(this, drawBackground = false, padding = true)
+    public val withoutBackButPadding: ThemeAndBack = ThemeAndBack(this, drawBackground = false, padding = true)
 
     private val themeCache = HashMap<Semantic, ThemeAndBack>()
 
@@ -1540,7 +1540,7 @@ public class Theme(
         /**
          * A placeholder theme used during initialization or when no theme is available.
          */
-        public val placeholder = Theme("placeholder")
+        public val placeholder: Theme = Theme("placeholder")
 
         private var randomGenId: Int = 0
 
