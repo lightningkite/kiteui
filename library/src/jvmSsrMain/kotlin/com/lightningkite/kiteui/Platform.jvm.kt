@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.models.Color
  */
 public object SsrUserAgentContext {
     @PublishedApi
-    internal val threadLocal = ThreadLocal<String?>()
+    internal val threadLocal: ThreadLocal<String?> = ThreadLocal<String?>()
 
     /**
      * Set the user agent for the current SSR request.

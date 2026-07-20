@@ -154,28 +154,28 @@ public actual fun websocket(url: String): WebSocket {
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 public class WebSocketWrapper(public val url: String) : WebSocket {
-    public val closeReason = Channel<CloseReason>()
-    public val sending = Channel<Frame>(10)
-    public var stayOn = true
-    public val onOpen = ArrayList<() -> Unit>()
+    public val closeReason: Channel<CloseReason> = Channel<CloseReason>()
+    public val sending: Channel<Frame> = Channel<Frame>(10)
+    public var stayOn: Boolean = true
+    public val onOpen: ArrayList<() -> Unit> = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    public val onClose = ArrayList<(Short) -> Unit>()
+    public val onClose: ArrayList<(Short) -> Unit> = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    public val onMessage = ArrayList<(String) -> Unit>()
+    public val onMessage: ArrayList<(String) -> Unit> = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    public val onBinaryMessage = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage: ArrayList<(Blob) -> Unit> = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }
@@ -304,8 +304,8 @@ public actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: Strin
     return FileReference(tempFile)
 }
 
-public actual fun Blob.mimeType() = type
-public actual fun FileReference.mimeType() = Files.probeContentType(file.toPath()) ?: "application/octet-stream"
+public actual fun Blob.mimeType(): String = type
+public actual fun FileReference.mimeType(): String = Files.probeContentType(file.toPath()) ?: "application/octet-stream"
 
 public actual fun FileReference.fileName(): String = file.toString().substringAfterLast('/')
 public actual class Blob(public val data: ByteArray, public val type: String)
@@ -335,7 +335,7 @@ public actual fun FileReference.bytes(): Long = file.length()
 public actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
 public actual suspend fun FileReference.text(): String = file.readText()
 
-public actual fun String.toBlob(contentType: String) = toByteArray(Charsets.UTF_8).toBlob(contentType)
+public actual fun String.toBlob(contentType: String): Blob = toByteArray(Charsets.UTF_8).toBlob(contentType)
 public actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this, contentType)
 
 public actual suspend fun Blob.toByteArray(): ByteArray = data

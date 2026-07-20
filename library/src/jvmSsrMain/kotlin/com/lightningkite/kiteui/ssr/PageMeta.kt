@@ -149,7 +149,7 @@ public data class OpenGraph(
             tags: List<String> = emptyList(),
             image: String? = null,
             siteName: String? = null
-        ) = OpenGraph(
+        ): OpenGraph = OpenGraph(
             type = Type.ARTICLE,
             image = image,
             siteName = siteName,
@@ -171,7 +171,7 @@ public data class OpenGraph(
             availability: String? = null,
             image: String? = null,
             siteName: String? = null
-        ) = OpenGraph(
+        ): OpenGraph = OpenGraph(
             type = Type.PRODUCT,
             image = image,
             siteName = siteName,
@@ -221,7 +221,7 @@ public data class TwitterCard(
         public fun summary(
             site: String? = null,
             creator: String? = null
-        ) = TwitterCard(
+        ): TwitterCard = TwitterCard(
             card = Card.SUMMARY,
             site = site,
             creator = creator
@@ -234,7 +234,7 @@ public data class TwitterCard(
             site: String? = null,
             creator: String? = null,
             image: String? = null
-        ) = TwitterCard(
+        ): TwitterCard = TwitterCard(
             card = Card.SUMMARY_LARGE_IMAGE,
             site = site,
             creator = creator,
@@ -313,7 +313,7 @@ public class PageMetaBuilder {
         robots = "noindex, nofollow"
     }
 
-    public fun build() = PageMeta(
+    public fun build(): PageMeta = PageMeta(
         title = title,
         description = description,
         canonicalUrl = canonicalUrl,
@@ -343,7 +343,7 @@ public class OpenGraphBuilder {
         additionalTags[property] = content
     }
 
-    public fun build() = OpenGraph(
+    public fun build(): OpenGraph = OpenGraph(
         type = type,
         title = title,
         description = description,
@@ -372,7 +372,7 @@ public class TwitterCardBuilder {
         additionalTags[name] = content
     }
 
-    public fun build() = TwitterCard(
+    public fun build(): TwitterCard = TwitterCard(
         card = card,
         title = title,
         description = description,

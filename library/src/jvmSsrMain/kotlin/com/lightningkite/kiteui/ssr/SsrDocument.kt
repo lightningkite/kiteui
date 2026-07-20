@@ -142,7 +142,7 @@ public class SsrDocument(
         /**
          * Minimal CSS reset based on Eric Meyer's reset.
          */
-        public val RESET_CSS = """
+        public val RESET_CSS: String = """
             /* CSS Reset */
             html, body, div, span, applet, object, iframe,
             h1, h2, h3, h4, h5, h6, p, blockquote, pre,

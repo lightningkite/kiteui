@@ -54,7 +54,7 @@ public class SsrContext(
     }
 
     /** The underlying RContext for KiteUI rendering */
-    public val elementContext = ElementContext(basePath)
+    public val elementContext: ElementContext = ElementContext(basePath)
 
     /** The default theme to use for rendering */
     public var theme: Theme? = null
