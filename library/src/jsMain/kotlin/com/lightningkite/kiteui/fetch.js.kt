@@ -201,9 +201,9 @@ public class WebSocketWrapper(public val native: org.w3c.dom.WebSocket, public v
         println("Killing websocket to ${native.url} opened at $opened")
         native.close(3008)
     }
-    override fun close(code: Short, reason: String) = native.close(code, reason)
-    override fun send(data: String) = native.send(data)
-    override fun send(data: Blob) = native.send(data)
+    override fun close(code: Short, reason: String): Unit = native.close(code, reason)
+    override fun send(data: String): Unit = native.send(data)
+    override fun send(data: Blob): Unit = native.send(data)
     override fun onOpen(action: () -> Unit) {
         native.addEventListener("open", { action() })
     }
@@ -234,7 +234,7 @@ public class WebSocketWrapper(public val native: org.w3c.dom.WebSocket, public v
 public actual fun Blob.bytes(): Long = size.toLong()
 public actual fun FileReference.bytes(): Long = size.toLong()
 
-public fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
+public fun jsTextBlob(blob: Blob): Promise<String> = js("blob.text()") as Promise<String>
 public actual suspend fun Blob.text(): String = jsTextBlob(this).await()
 public actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
 public actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))

@@ -31,7 +31,7 @@ public actual abstract class RawImageViewLike(
     public actual val scaleType: ImageScaleType,
 ) : NativeElement(context) {
     public actual abstract val state: Reactive<Unit>
-    public val _state = RawReactive<Unit>()
+    public val _state: RawReactive<Unit> = RawReactive<Unit>()
 
     // by Claude - track blob URLs created by createObjectURL so we can revoke them to prevent memory leaks
     private var currentBlobUrl: String? = null

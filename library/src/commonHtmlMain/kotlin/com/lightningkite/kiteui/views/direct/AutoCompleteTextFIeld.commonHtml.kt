@@ -8,7 +8,7 @@ import com.lightningkite.reactive.core.*
 
 public actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
-    override val driverActions get() = super.driverActions + autoCompleteDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + autoCompleteDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")

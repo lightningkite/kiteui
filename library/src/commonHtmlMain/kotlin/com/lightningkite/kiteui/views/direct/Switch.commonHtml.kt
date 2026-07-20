@@ -6,7 +6,7 @@ import com.lightningkite.reactive.core.*
 
 public actual class Switch actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
-    override val driverActions get() = super.driverActions + switchDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + switchDriverActions()
 
     init {
         native.tag = "input"

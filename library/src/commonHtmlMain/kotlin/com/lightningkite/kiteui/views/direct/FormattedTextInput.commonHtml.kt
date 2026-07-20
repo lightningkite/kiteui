@@ -8,7 +8,7 @@ import com.lightningkite.reactive.core.*
 
 public actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
-    override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + formattedTextInputDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")

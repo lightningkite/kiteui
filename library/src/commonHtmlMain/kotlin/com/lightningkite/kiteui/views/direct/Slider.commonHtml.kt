@@ -5,7 +5,7 @@ import com.lightningkite.reactive.core.*
 
 public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
-    override val driverActions get() = super.driverActions + sliderDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + sliderDriverActions()
     init {
         native.tag = "input"
         native.attributes.type = "range"

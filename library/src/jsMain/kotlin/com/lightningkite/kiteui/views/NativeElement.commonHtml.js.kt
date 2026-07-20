@@ -31,12 +31,12 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 @Suppress("NOTHING_TO_INLINE")
-public inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(target, source)")
+public inline fun objectAssign(target: dynamic, source: dynamic): dynamic = js("Object.assign(target, source)")
 
 
 public actual class FutureElement actual constructor() {
     public actual val actualElementForLeakTracking: Any? get() = element
-    public val elementToDo = ArrayList<(DOMElement) -> Unit>()
+    public val elementToDo: ArrayList<(DOMElement) -> Unit> = ArrayList<(DOMElement) -> Unit>()
     public var element: DOMElement? = null
         private set(value) {
             field = value
@@ -229,13 +229,13 @@ public actual class FutureElement actual constructor() {
 
     public actual var xmlns: String? = null
     public actual var tag: String = "tag"
-    public val attributesBack = json()
+    public val attributesBack: Json = json()
     public actual val attributes: FutureElementAttributes = FutureElementAttributes(attributesBack)
-    public val styleBack = json()
+    public val styleBack: Json = json()
     public actual val style: FutureElementStyle = FutureElementStyle(styleBack)
     public actual var desiredVerticalGravity: Align? = null
     public actual var desiredHorizontalGravity: Align? = null
-    public val eventsBack = json()
+    public val eventsBack: Json = json()
     public actual inline fun addEventListener(
         name: String,
         crossinline listener: (Event) -> Unit
@@ -255,7 +255,7 @@ public actual class FutureElement actual constructor() {
         }
     }
 
-    public val futureStyles = json()
+    public val futureStyles: Json = json()
     public actual fun setStyleProperty(key: String, value: String?) {
         val element = element
         if (element == null) {
@@ -275,7 +275,7 @@ public actual class FutureElement actual constructor() {
         }
     }
 
-    public val futureAttributes = json()
+    public val futureAttributes: Json = json()
     public actual fun setAttribute(key: String, value: String?) {
         val element = element
         if (element == null) {
@@ -381,13 +381,13 @@ public actual class FutureElement actual constructor() {
     }
 
     public inner class ClassSet : MutableSet<String> {
-        public val map = HashSet<String>()
+        public val map: HashSet<String> = HashSet<String>()
         override fun add(element: String): Boolean = this@FutureElement.element?.addClass(element) ?: map.add(element)
         override fun addAll(elements: Collection<String>): Boolean =
             this@FutureElement.element?.addClass(*elements.toTypedArray()) ?: map.addAll(elements)
 
         override val size: Int get() = this@FutureElement.element?.classList?.length ?: map.size
-        override fun clear() = element?.let { it.className = "" } ?: map.clear()
+        override fun clear(): Unit = element?.let { it.className = "" } ?: map.clear()
         override fun isEmpty(): Boolean = element?.className?.isBlank() ?: map.isEmpty()
         override fun containsAll(elements: Collection<String>): Boolean = elements.all { contains(it) }
         override fun contains(element: String): Boolean =

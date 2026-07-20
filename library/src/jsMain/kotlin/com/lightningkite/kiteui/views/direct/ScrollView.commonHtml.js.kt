@@ -24,7 +24,7 @@ public actual class ScrollingBehaviorImpl actual constructor(
     actual override val horizontal: Boolean,
     actual override val vertical: Boolean
 ) : ScrollingBehaviors {
-    public val native = on.native
+    public val native: FutureElement = on.native
 
     init {
 //        native.style.lineHeight = "0px"
@@ -95,7 +95,7 @@ public actual class ScrollingBehaviorImpl actual constructor(
             )
         }
     }
-    public val _directlyInteractingWithScroller = Signal(false)
+    public val _directlyInteractingWithScroller: Signal<Boolean> = Signal(false)
     actual override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     init {

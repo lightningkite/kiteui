@@ -88,7 +88,7 @@ public actual class DynamicCss actual constructor(public actual val basePath: St
     }
 
     public var flushTotal: Duration = 0.seconds
-    public var ruleTotal = 0
+    public var ruleTotal: Int = 0
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     public actual fun flush() {
         measureTime {

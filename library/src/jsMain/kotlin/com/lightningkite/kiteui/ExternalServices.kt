@@ -28,11 +28,11 @@ public class JsExternalServices(private val ctx: ElementContext) : ExternalServi
         openTab("https://www.google.com/maps/@${latitude},${longitude},${zoom ?: 16}")
     }
 
-    override suspend fun requestFile(mimeTypes: List<String>) = ctx.requestFileInput(mimeTypes, {}).firstOrNull()
-    override suspend fun requestFiles(mimeTypes: List<String>) = ctx.requestFileInput(mimeTypes, { multiple = true })
-    override suspend fun requestCaptureSelf(mimeTypes: List<String>) =
+    override suspend fun requestFile(mimeTypes: List<String>): FileReference? = ctx.requestFileInput(mimeTypes, {}).firstOrNull()
+    override suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> = ctx.requestFileInput(mimeTypes, { multiple = true })
+    override suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? =
         ctx.requestFileInput(mimeTypes, { setAttribute("capture", "user") }).firstOrNull()
-    override suspend fun requestCaptureEnvironment(mimeTypes: List<String>) =
+    override suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? =
         ctx.requestFileInput(mimeTypes, { setAttribute("capture", "environment") }).firstOrNull()
 
     override fun setClipboardText(value: String) {

@@ -195,7 +195,7 @@ public external interface BaseUrlScript {
     public val baseUrl: String
 }
 
-public var basePath = ((document.getElementById("baseUrlLocation") as? HTMLScriptElement)
+public var basePath: String = ((document.getElementById("baseUrlLocation") as? HTMLScriptElement)
     ?.innerText
     ?.let { JSON.parse<BaseUrlScript>(it).baseUrl }
     ?: document.baseURI.takeIf { document.getElementsByTagName("base").length != 0 }

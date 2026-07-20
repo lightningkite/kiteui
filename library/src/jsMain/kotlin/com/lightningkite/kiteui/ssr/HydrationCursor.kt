@@ -21,7 +21,7 @@ public class HydrationCursor(public val element: Element) {
     /**
      * Create a sub-cursor for the given element's children.
      */
-    public fun forElement(element: Element) = HydrationCursor(element)
+    public fun forElement(element: Element): HydrationCursor = HydrationCursor(element)
 
     /**
      * Check if all children were consumed (for mismatch detection).

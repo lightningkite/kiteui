@@ -8,7 +8,7 @@ public actual class ElementContext(
     public val kiteUiCss: KiteUiCss = KiteUiCss(dynamicCss),
     parent: ElementContext? = null
 ) : ElementContextCommonCode(parent) {
-    public val id = Random.nextInt()
+    public val id: Int = Random.nextInt()
 
     public actual fun split(): ElementContext = ElementContext(basePath, dynamicCss, kiteUiCss, this)
 

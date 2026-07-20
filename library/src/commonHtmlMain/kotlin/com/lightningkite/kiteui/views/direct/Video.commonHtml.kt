@@ -14,7 +14,7 @@ public actual class RawVideoView actual constructor(
     public actual val scaleType: ImageScaleType,
     public actual val preloadHint: PreloadHint,
 ) : NativeElement(context) {
-    public val _state = RawReactive<Unit>()
+    public val _state: RawReactive<Unit> = RawReactive<Unit>()
     public actual val state: Reactive<Unit> = _state
 
     init {

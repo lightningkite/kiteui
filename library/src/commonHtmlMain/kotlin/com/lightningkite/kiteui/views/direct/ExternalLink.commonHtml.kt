@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 
 
 public actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + externalLinkDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + externalLinkDriverActions()
     init {
         themeChoice += ClickableSemantic
         native.tag = "a"

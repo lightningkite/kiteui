@@ -4,7 +4,7 @@ public sealed interface MPNode {
     public fun secure()
 
     public companion object {
-        public val okTags = setOf(
+        public val okTags: Set<String> = setOf(
             "p",
             "ul",
             "li",
@@ -36,7 +36,7 @@ public sealed interface MPNode {
             "h6",
             "br",
         )
-        public val okAttrs = setOf(
+        public val okAttrs: Set<String> = setOf(
             "href",
             "target",
         )

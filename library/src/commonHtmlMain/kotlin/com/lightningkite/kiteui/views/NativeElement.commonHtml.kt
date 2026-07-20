@@ -13,7 +13,7 @@ import com.lightningkite.kiteui.models.DropTargetDelegate
 private var labelForIdCounter = 0
 
 public actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
-    public var native = FutureElement().also { it.classes.add("kui") }
+    public var native: FutureElement = FutureElement().also { it.classes.add("kui") }
 
     actual override var opacity: Double = 1.0
         set(value) {
@@ -142,7 +142,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         horizontal: Align?,
         vertical: Align?,
         animate: Boolean
-    ) = nativeScrollIntoView(horizontal, vertical, animate)
+    ): Unit = nativeScrollIntoView(horizontal, vertical, animate)
 
     actual override fun requestFocus() {
         native.setAttribute("autofocus", "true")

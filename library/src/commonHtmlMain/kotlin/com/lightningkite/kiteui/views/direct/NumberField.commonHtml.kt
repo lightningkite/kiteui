@@ -9,7 +9,7 @@ import com.lightningkite.reactive.core.*
 
 public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
-    override val driverActions get() = super.driverActions + numberInputDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + numberInputDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")
