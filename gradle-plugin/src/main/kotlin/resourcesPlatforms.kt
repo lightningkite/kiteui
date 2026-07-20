@@ -319,7 +319,7 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
     val lines = resources
         .joinToString("\n    ") {
             when (val r = it.value) {
-                is Resource.Font -> "actual val ${r.name}: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.${it.key.snakeCase()})"
+                is Resource.Font -> "actual val ${r.name}: Font = Font { AndroidAppContext.applicationCtx.resources.getFont(R.font.${it.key.snakeCase()}) }"
                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(R.drawable.${it.key.snakeCase()})"
                 is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(R.raw.${it.key.snakeCase()})"
                 is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(R.raw.${it.key.snakeCase()})"

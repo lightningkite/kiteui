@@ -57,7 +57,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.font.font,
+                theme.font.font.toTypeface(),
                 theme.font.weight,
                 theme.font.italic
             )

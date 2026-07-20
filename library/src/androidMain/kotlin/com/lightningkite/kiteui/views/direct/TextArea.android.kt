@@ -42,7 +42,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.font.font,
+                theme.font.font.toTypeface(),
                 theme.font.weight,
                 theme.font.italic
             )

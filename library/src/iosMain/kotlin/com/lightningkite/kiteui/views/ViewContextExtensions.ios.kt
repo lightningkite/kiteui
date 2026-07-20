@@ -19,6 +19,7 @@ import platform.UIKit.UIViewController
 
 actual fun ElementContext.overlay(
     modal: Boolean,
+    navClosable: Boolean,
     transition: ScreenTransitions,
     body: ContainerElement.(remove: () -> Unit) -> Unit
 ) {

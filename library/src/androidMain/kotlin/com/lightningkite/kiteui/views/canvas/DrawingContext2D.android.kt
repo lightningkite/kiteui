@@ -438,7 +438,7 @@ actual fun DrawingContext2D.font(
     size: Double,
     value: FontAndStyle
 ) {
-    fillPaintObj.setTypeface(value.font)
+    fillPaintObj.setTypeface(value.font.toTypeface())
     fillPaintObj.textSize = size.toFloat()
 }
 

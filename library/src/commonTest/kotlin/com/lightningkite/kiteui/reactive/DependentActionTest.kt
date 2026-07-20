@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.testing.BaseUiTest
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.context.invoke
 import kotlinx.coroutines.CoroutineScope
@@ -11,7 +12,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class DependentActionTest {
+class DependentActionTest: BaseUiTest() {
 
     /**
      * Regression test: a [DependentAction]'s error state must be cleared when one of the reactive

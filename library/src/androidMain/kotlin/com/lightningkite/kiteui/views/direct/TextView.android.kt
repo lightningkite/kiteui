@@ -124,7 +124,7 @@ private val typefaceCache = HashMap<FontAndStyle, Typeface>()
 fun FontAndStyle.typeface(context: Context) = typefaceCache.getOrPut(this) {
     TypefaceCompat.create(
         context,
-        this.font,
+        this.font.toTypeface(),
         this.weight,
         this.italic
     )

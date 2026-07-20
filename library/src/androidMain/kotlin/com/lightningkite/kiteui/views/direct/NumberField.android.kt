@@ -58,7 +58,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.font.font,
+                theme.font.font.toTypeface(),
                 theme.font.weight,
                 theme.font.italic
             )
