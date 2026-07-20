@@ -44,7 +44,7 @@ public class IosExternalServices(private val ctx: ElementContext) : ExternalServ
         )
     }
 
-    override fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) =
+    override fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?): Unit =
         ctx.openMapImpl(latitude, longitude, label, zoom)
 
     override suspend fun requestFile(mimeTypes: List<String>): FileReference? = ctx.requestFileImpl(mimeTypes)
@@ -56,7 +56,7 @@ public class IosExternalServices(private val ctx: ElementContext) : ExternalServ
         UIPasteboard.generalPasteboard.string = value
     }
 
-    override suspend fun download(name: String, url: String, preferredDestination: DownloadLocation, onDownloadProgress: ((progress: Float) -> Unit)?) =
+    override suspend fun download(name: String, url: String, preferredDestination: DownloadLocation, onDownloadProgress: ((progress: Float) -> Unit)?): Unit =
         ctx.downloadMultiple(mapOf(url to name), preferredDestination, onDownloadProgress)
 
     override suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
@@ -67,13 +67,13 @@ public class IosExternalServices(private val ctx: ElementContext) : ExternalServ
         }
     }
 
-    override suspend fun share(namesToBlobs: List<Pair<String, Blob>>) =
+    override suspend fun share(namesToBlobs: List<Pair<String, Blob>>): Unit =
         ctx.showShareSheet(items = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) })
 
-    override fun share(title: String, message: String?, url: String?) =
+    override fun share(title: String, message: String?, url: String?): Unit =
         ctx.showShareSheet(messages = listOf(message), items = listOf(url?.let { NSURL(string = it) }))
 
-    override fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) =
+    override fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone): Unit =
         ctx.openEventImpl(title, description, location, start, end, zone)
 
     // by Claude — geolocation via CLLocationManager

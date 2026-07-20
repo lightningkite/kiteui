@@ -12,7 +12,7 @@ import platform.UIKit.UIView
 
 
 public actual class Space actual constructor(context: ElementContext, private val multiplier: Double): NativeElement(context) {
-    override val native = NSpace()
+    override val native: NSpace = NSpace()
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)

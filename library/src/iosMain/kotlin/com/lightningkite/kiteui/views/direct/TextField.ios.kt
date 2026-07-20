@@ -17,10 +17,10 @@ import platform.objc.sel_registerName
 
 public actual class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
-    override val driverActions get() = super.driverActions + textInputDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + textInputDriverActions()
 
     public companion object {
-        public var alwaysToolbar = false
+        public var alwaysToolbar: Boolean = false
     }
 
     public val trigger: NSObject = object : NSObject() {
@@ -32,8 +32,8 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
             } ?: NextFocusDelegateShared.textFieldShouldReturn(textField)
         }
     }
-    override val native = WrapperView()
-    public val textField = UITextField().apply {
+    override val native: WrapperView = WrapperView()
+    public val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor

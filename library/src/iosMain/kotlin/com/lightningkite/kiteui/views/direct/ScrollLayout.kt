@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
@@ -18,7 +19,7 @@ import platform.UIKit.*
 
 
 public object ScrollLayoutMeta {
-    public val unboundSize = 10_000.0
+    public val unboundSize: Double = 10_000.0
 }
 
 
@@ -40,24 +41,24 @@ public class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSize
     public data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {
     }
 
-    public val Size.objc get() = CGSizeMake(if (horizontal) primary else secondary, if (horizontal) secondary else primary)
-    public val CGSize.local get() = Size(if (horizontal) width else height, if (horizontal) height else width)
-    public val CValue<CGSize>.local get() = useContents { local }
-    public val SizeConstraints.primaryMax get() = if (horizontal) maxWidth else maxHeight
-    public val SizeConstraints.secondaryMax get() = if (horizontal) maxHeight else maxWidth
-    public val SizeConstraints.primaryMin get() = if (horizontal) minWidth else minHeight
-    public val SizeConstraints.secondaryMin get() = if (horizontal) minHeight else minWidth
-    public val SizeConstraints.primary get() = if (horizontal) width else height
-    public val SizeConstraints.secondary get() = if (horizontal) height else width
-    public val UIView.secondaryAlign get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
-    public val Edges.primarySum get() = if (horizontal) horizontalSum.value else verticalSum.value
-    public val Edges.secondarySum get() = if (!horizontal) horizontalSum.value else verticalSum.value
-    public val Edges.primaryStart get() = if (horizontal) left.value else top.value
-    public val Edges.primaryEnd get() = if (horizontal) right.value else bottom.value
-    public val Edges.secondaryStart get() = if (!horizontal) left.value else top.value
-    public val Edges.secondaryEnd get() = if (!horizontal) right.value else bottom.value
+    public val Size.objc: CValue<CGSize> get() = CGSizeMake(if (horizontal) primary else secondary, if (horizontal) secondary else primary)
+    public val CGSize.local: Size get() = Size(if (horizontal) width else height, if (horizontal) height else width)
+    public val CValue<CGSize>.local: Size get() = useContents { local }
+    public val SizeConstraints.primaryMax: Dimension? get() = if (horizontal) maxWidth else maxHeight
+    public val SizeConstraints.secondaryMax: Dimension? get() = if (horizontal) maxHeight else maxWidth
+    public val SizeConstraints.primaryMin: Dimension? get() = if (horizontal) minWidth else minHeight
+    public val SizeConstraints.secondaryMin: Dimension? get() = if (horizontal) minHeight else minWidth
+    public val SizeConstraints.primary: Dimension? get() = if (horizontal) width else height
+    public val SizeConstraints.secondary: Dimension? get() = if (horizontal) height else width
+    public val UIView.secondaryAlign: Align? get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
+    public val Edges.primarySum: Double get() = if (horizontal) horizontalSum.value else verticalSum.value
+    public val Edges.secondarySum: Double get() = if (!horizontal) horizontalSum.value else verticalSum.value
+    public val Edges.primaryStart: Double get() = if (horizontal) left.value else top.value
+    public val Edges.primaryEnd: Double get() = if (horizontal) right.value else bottom.value
+    public val Edges.secondaryStart: Double get() = if (!horizontal) left.value else top.value
+    public val Edges.secondaryEnd: Double get() = if (!horizontal) right.value else bottom.value
 
-    public val mainSubview get() = subviews.filterIsInstance<UIView>().firstOrNull { !it.hidden && it !is UIRefreshControl }
+    public val mainSubview: UIView? get() = subviews.filterIsInstance<UIView>().firstOrNull { !it.hidden && it !is UIRefreshControl }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val mySizeWithoutPadding = bounds.useContents { size.local }

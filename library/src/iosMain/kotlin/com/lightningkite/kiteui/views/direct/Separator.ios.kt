@@ -10,7 +10,7 @@ import platform.UIKit.UIView
 
 
 public actual class Separator actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
+    override val native: UIView = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
 
     init {
         sizeConstraints = SizeConstraints(minWidth = 1.px, minHeight = 1.px)

@@ -48,7 +48,7 @@ public actual abstract class RawImageViewLike constructor(
         applyBackgroundChanges(theme)
     }
 
-    override val disableBackground = true
+    override val disableBackground: Boolean = true
 }
 
 // Helper function to create an animated UIImage from data (supports GIF)
@@ -172,7 +172,7 @@ public actual class RawImageView actual constructor(
     private val _state = RawReactive<Unit>()
     actual override val state: Reactive<Unit> = _state
 
-    override val native = UIImageViewFixedSizing()
+    override val native: UIImageViewFixedSizing = UIImageViewFixedSizing()
 
     init {
         native.contentMode =
@@ -212,7 +212,7 @@ public actual class SizelessRawImageView actual constructor(
     private val _state = RawReactive<Unit>()
     actual override val state: Reactive<Unit> = _state
 
-    override val native = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
+    override val native: UIImageViewFixedSizing = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
 
     init {
         native.contentMode =
@@ -306,11 +306,11 @@ public actual class RawImageViewZoomable actual constructor(
                     }
                 }
             }
-    public val doubleTapRecognizer =
+    public val doubleTapRecognizer: UITapGestureRecognizer =
             UITapGestureRecognizer(doubleTapTarget, sel_registerName("handleDoubleTap:")).apply {
                 numberOfTapsRequired = 2UL
             }
-    override val native =
+    override val native: UIScrollView =
             UIScrollView(CGRectZero.readValue()).apply {
                 addGestureRecognizer(doubleTapRecognizer)
                 showsHorizontalScrollIndicator = false
@@ -321,7 +321,7 @@ public actual class RawImageViewZoomable actual constructor(
                 showsHorizontalScrollIndicator = false
                 showsVerticalScrollIndicator = false
             }
-    public val imageView =
+    public val imageView: UIImageView =
             UIImageView(CGRectZero.readValue()).apply {
                 contentMode =
                         when (scaleType) {
@@ -394,7 +394,7 @@ public actual class RawImageViewZoomable actual constructor(
 public actual data class ZoomState(val offset: CValue<CGPoint>, val zoom: Double)
 
 public object ImageCache {
-    public val imageCache = NSCache()
+    public val imageCache: NSCache = NSCache()
     public fun get(key: String): UIImage? = imageCache.objectForKey(key) as? UIImage
     public fun set(key: String, value: UIImage) {
         imageCache.setObject(value, key, value.size.useContents { width * height * 4 }.toULong())
@@ -409,7 +409,7 @@ public object ImageCache {
         return loaded
     }
 
-    public val imageCacheSized = NSCache()
+    public val imageCacheSized: NSCache = NSCache()
     public suspend fun get(key: String, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
         val sizeKey = "$key//$minWidth//$minHeight"
         (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let {

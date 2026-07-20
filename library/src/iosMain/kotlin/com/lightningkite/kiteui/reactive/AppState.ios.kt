@@ -45,7 +45,7 @@ public actual object AppState {
     ))
     public actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo
-    public val _inForeground = Signal(true)
+    public val _inForeground: Signal<Boolean> = Signal(true)
     public actual val inForeground: ReactiveValue<Boolean>
         get() = _inForeground
     public actual val softInputOpen: ReactiveValue<Boolean> get() = _SoftInputOpen

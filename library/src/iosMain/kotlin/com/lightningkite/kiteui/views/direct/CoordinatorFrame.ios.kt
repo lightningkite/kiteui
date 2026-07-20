@@ -21,7 +21,7 @@ import platform.objc.sel_registerName
 private var ElementContext.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon(null)
 
 public actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
-    override val native = FrameLayout()
+    override val native: FrameLayout = FrameLayout()
 
     // The system only keeps weak references to the following objects, so we must keep our own references for the
     // lifetime of the view
@@ -218,7 +218,7 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
 
 public actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     actual override val underlyingNativeElement: CoordinatorDragHandle get() = this
-    override val native = FrameLayoutButton()
+    override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
     init { setupControl() }
 

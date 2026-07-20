@@ -16,7 +16,7 @@ public fun <E> MutableList<E>.unshift(): E {
     return removeAt(0)
 }
 
-public val pathLetters = charArrayOf(
+public val pathLetters: CharArray = charArrayOf(
     'M',
     'L',
     'Z',
@@ -28,12 +28,12 @@ public val pathLetters = charArrayOf(
     'S',
     'A'
 )
-public val spaceOrComma = Regex("[ ,]+")
+public val spaceOrComma: Regex = Regex("[ ,]+")
 
- public inline fun CGMutablePathRef.move(x: CGFloat, y: CGFloat) = CGPathMoveToPoint(this, null, x, y)
- public inline fun CGMutablePathRef.addLine(x: CGFloat, y: CGFloat) = CGPathAddLineToPoint(this, null, x, y)
- public inline fun CGMutablePathRef.addQuadCurve(cx: CGFloat, cy: CGFloat, x: CGFloat, y: CGFloat) = CGPathAddQuadCurveToPoint(this, null, cx, cy, x, y)
- public inline fun CGMutablePathRef.addCurve(c1x: CGFloat, c1y: CGFloat, c2x: CGFloat, c2y: CGFloat, x: CGFloat, y: CGFloat) = CGPathAddCurveToPoint(this, null, c1x, c1y, c2x, c2y, x, y)
+ public inline fun CGMutablePathRef.move(x: CGFloat, y: CGFloat): Unit = CGPathMoveToPoint(this, null, x, y)
+ public inline fun CGMutablePathRef.addLine(x: CGFloat, y: CGFloat): Unit = CGPathAddLineToPoint(this, null, x, y)
+ public inline fun CGMutablePathRef.addQuadCurve(cx: CGFloat, cy: CGFloat, x: CGFloat, y: CGFloat): Unit = CGPathAddQuadCurveToPoint(this, null, cx, cy, x, y)
+ public inline fun CGMutablePathRef.addCurve(c1x: CGFloat, c1y: CGFloat, c2x: CGFloat, c2y: CGFloat, x: CGFloat, y: CGFloat): Unit = CGPathAddCurveToPoint(this, null, c1x, c1y, c2x, c2y, x, y)
  public fun CGMutablePathRef.arcTo(lastX: CGFloat, lastY: CGFloat, x: CGFloat, y: CGFloat, radiusX: CGFloat, radiusY: CGFloat, rotation: CGFloat, largeArcFlag: Boolean, sweepFlag: Boolean) {
 //    println("x: $x, y: $y, radiusX: $radiusX, radiusY: $radiusY, theta: $rotation, largeArcFlag: $largeArcFlag, sweepFlag: $sweepFlag")
     if (radiusX == 0.0 || radiusY == 0.0) {
@@ -90,7 +90,7 @@ public val spaceOrComma = Regex("[ ,]+")
 public fun angle(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat): CGFloat {
     return (atan2(x1, y1) - atan2(x2, y2)) % (PI * 2)
 }
- public inline fun CGMutablePathRef.close() = CGPathCloseSubpath(this)
+ public inline fun CGMutablePathRef.close(): Unit = CGPathCloseSubpath(this)
 
 
 private fun CGMutablePathRef.render(pathData: String, translateX: CGFloat = 0.0, translateY: CGFloat = 0.0, scaleX: CGFloat = 1.0, scaleY: CGFloat = 1.0) {

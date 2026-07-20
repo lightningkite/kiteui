@@ -113,12 +113,12 @@ public actual abstract class DrawingContext2D {
 
 
 public class DrawingContext2DImpl(public val wraps: CGContextRef, public val width: Double, public val height: Double) : DrawingContext2D() {
-    override fun save() = CGContextSaveGState(wraps)
-    override fun restore() = CGContextRestoreGState(wraps)
-    override fun scale(x: Double, y: Double) = CGContextScaleCTM(wraps, x, y)
-    override fun rotate(angle: Double) = CGContextRotateCTM(wraps, angle)
-    override fun translate(x: Double, y: Double) = CGContextTranslateCTM(wraps, x, y)
-    override fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) = CGContextConcatCTM(
+    override fun save(): Unit = CGContextSaveGState(wraps)
+    override fun restore(): Unit = CGContextRestoreGState(wraps)
+    override fun scale(x: Double, y: Double): Unit = CGContextScaleCTM(wraps, x, y)
+    override fun rotate(angle: Double): Unit = CGContextRotateCTM(wraps, angle)
+    override fun translate(x: Double, y: Double): Unit = CGContextTranslateCTM(wraps, x, y)
+    override fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double): Unit = CGContextConcatCTM(
         wraps, CGAffineTransformMake(
             a, b, c, d, e, f
         )
@@ -158,7 +158,7 @@ public class DrawingContext2DImpl(public val wraps: CGContextRef, public val wid
             CGContextSetAllowsAntialiasing(wraps, value)
         }
 
-    override fun clearRect(x: Double, y: Double, w: Double, h: Double) =
+    override fun clearRect(x: Double, y: Double, w: Double, h: Double): Unit =
         CGContextClearRect(wraps, CGRectMake(x, y, w, h))
 
     override fun fillRect(x: Double, y: Double, w: Double, h: Double) {
@@ -178,11 +178,11 @@ public class DrawingContext2DImpl(public val wraps: CGContextRef, public val wid
             else -> CGContextFillRect(wraps, CGRectMake(x, y, w, h))
         }
     }
-    override fun strokeRect(x: Double, y: Double, w: Double, h: Double) =
+    override fun strokeRect(x: Double, y: Double, w: Double, h: Double): Unit =
         CGContextStrokeRect(wraps, CGRectMake(x, y, w, h))
 
-    override fun beginPath() = CGContextBeginPath(wraps)
-    override fun stroke() = CGContextStrokePath(wraps)
+    override fun beginPath(): Unit = CGContextBeginPath(wraps)
+    override fun stroke(): Unit = CGContextStrokePath(wraps)
     private var lastLineWidth = 0.0
     override var lineWidth: Double
         get() = lastLineWidth
@@ -225,13 +225,13 @@ public class DrawingContext2DImpl(public val wraps: CGContextRef, public val wid
             }
         }
     }
-    override fun closePath() = CGContextClosePath(wraps)
-    override fun moveTo(x: Double, y: Double) = CGContextMoveToPoint(wraps, x, y)
-    override fun lineTo(x: Double, y: Double) = CGContextAddLineToPoint(wraps, x, y)
-    override fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double) =
+    override fun closePath(): Unit = CGContextClosePath(wraps)
+    override fun moveTo(x: Double, y: Double): Unit = CGContextMoveToPoint(wraps, x, y)
+    override fun lineTo(x: Double, y: Double): Unit = CGContextAddLineToPoint(wraps, x, y)
+    override fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double): Unit =
         CGContextAddQuadCurveToPoint(wraps, cpx, cpy, x, y)
 
-    override fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double) =
+    override fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double): Unit =
         CGContextAddCurveToPoint(wraps, cp1x, cp1y, cp2x, cp2y, x, y)
 
 //    override fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double) = arcTo(
@@ -248,7 +248,7 @@ public class DrawingContext2DImpl(public val wraps: CGContextRef, public val wid
 //        rotation: Double
 //    ) = TODO()
 
-    override fun rect(x: Double, y: Double, w: Double, h: Double) = CGContextAddRect(wraps, CGRectMake(x, y, w, h))
+    override fun rect(x: Double, y: Double, w: Double, h: Double): Unit = CGContextAddRect(wraps, CGRectMake(x, y, w, h))
 
     internal var textAlign: TextAlign = TextAlign.start
     internal var font: UIFont = UIFont.systemFontOfSize(12.0)

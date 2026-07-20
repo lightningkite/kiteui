@@ -24,7 +24,7 @@ import platform.darwin.sel_registerName
 
 
 public actual class DismissBackground actual constructor(context: ElementContext) : NativeContainerElement(context) {
-    override val native = NDismissBackground()
+    override val native: NDismissBackground = NDismissBackground()
     public actual fun onClick(action: suspend () -> Unit) {
         native.onClick = {
             launch { action() }
@@ -58,7 +58,7 @@ public actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
     public var onClick: () -> Unit = {}
     public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
     public var anchor: Pair<PopoverPreferredDirection, UIView>? = null
-    override fun getSpacingOverrideProperty() = spacingOverride
+    override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
     override fun layoutSubviews() {
@@ -69,8 +69,8 @@ public actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
             frameLayoutLayoutAnchoredSubviews(childSizeCache, anchor)
         }
     }
-    override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
-    override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+    override fun forceRemeasures(): Unit = childSizeCache.forEach { it.clear() }
+    override fun subviewDidChangeSizing(view: UIView?): Unit = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
     override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)

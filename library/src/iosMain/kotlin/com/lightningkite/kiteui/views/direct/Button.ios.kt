@@ -15,8 +15,8 @@ import platform.UIKit.setAccessibilityTraits
 
 @OptIn(ExperimentalKiteUi::class)
 public actual class Button actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + buttonDriverActions()
-    override val native = FrameLayoutButton()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + buttonDriverActions()
+    override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
 
     init {

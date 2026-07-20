@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.reactive
 
 public abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
-    override val native = LinearLayout()
+    override val native: LinearLayout = LinearLayout()
 
     override var gap: Dimension? = null
         set(value) {
@@ -76,7 +76,7 @@ public actual class RowCollapsingToColumn actual constructor(context: ElementCon
 }
 
 public actual class RowWrapping actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
-    override val native = FlexLayout()
+    override val native: FlexLayout = FlexLayout()
 
     actual override var gap: Dimension? = null
         set(value) {

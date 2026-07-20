@@ -10,7 +10,7 @@ import platform.UIKit.*
 
 
 public actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
-    override val native = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
+    override val native: ResizeableProgressView = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
@@ -18,16 +18,16 @@ public actual class ProgressBar actual constructor(context: ElementContext) : Na
         native.progressLayer.tintColor = theme[CardSemantic].theme.foreground.closestColor().toUiColor()
     }
 
-    public actual var ratio by native::progress
+    public actual var ratio: Float by native::progress
 }
 
 @OptIn(ExperimentalForeignApi::class)
 public class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 
-    public val progressLayer = ProgressCALayer().also {
+    public val progressLayer: ProgressCALayer = ProgressCALayer().also {
         layer.insertSublayer(it, 0u)
     }
-    public var progress by progressLayer::progress
+    public var progress: Float by progressLayer::progress
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return size.useContents { CGSizeMake(width, 5.0) }

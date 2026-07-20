@@ -7,8 +7,8 @@ import platform.UIKit.*
 
 public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
-    override val driverActions get() = super.driverActions + sliderDriverActions()
-    override val native = UISlider()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + sliderDriverActions()
+    override val native: UISlider = UISlider()
     override val control: UIControl get() = native
 
     private val valueProp = Signal(0.5f)

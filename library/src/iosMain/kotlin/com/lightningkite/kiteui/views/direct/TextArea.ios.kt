@@ -18,8 +18,8 @@ import platform.objc.sel_registerName
 @OptIn(ExperimentalKiteUi::class)
 public actual class TextArea actual constructor(context: ElementContext) : NativeElement(context), ElementWithAction {
     override val driverValue: String? get() = textAreaDriverValue()
-    override val driverActions get() = super<NativeElement>.driverActions + textAreaDriverActions()
-    override val native = WrapperView()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super<NativeElement>.driverActions + textAreaDriverActions()
+    override val native: WrapperView = WrapperView()
     private val delegate = TextAreaDelegate()
 
     public val trigger: NSObject = object : NSObject() {
@@ -33,7 +33,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         }
     }
 
-    public val textField = UITextView().apply {
+    public val textField: UITextView = UITextView().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor

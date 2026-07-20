@@ -15,8 +15,8 @@ import platform.UIKit.setAccessibilityTraits
 
 public actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
     private var _openMenu: (() -> Unit)? = null
-    override val driverActions get() = super.driverActions + menuDriverActions()
-    override val native = FrameLayoutButton()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + menuDriverActions()
+    override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
     init {
         native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitButton

@@ -42,7 +42,7 @@ public fun fontFromFamilyInfo(
     italic: String?,
     bold: String?,
     boldItalic: String?
-) = Font { size, weight, getItalic ->
+): Font = Font { size, weight, getItalic ->
     val fn = if(getItalic) {
         if(weight >= UIFontWeightBold) boldItalic ?: bold ?: italic ?: normal
         else italic ?: normal
@@ -55,7 +55,7 @@ public fun fontFromFamilyInfo(
 public fun fontFromFamilyInfo(
     normal: Map<Int, String>,
     italics: Map<Int, String>,
-) = Font { size, weight, getItalic ->
+): Font = Font { size, weight, getItalic ->
     val fn = if(getItalic) {
         italics.entries.minByOrNull { abs(weight - it.key.toUIFontWeight()) }?.value
             ?: normal.entries.minBy { abs(weight - it.key.toUIFontWeight()) }.value

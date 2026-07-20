@@ -232,7 +232,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
      * for subclasses of Element. In this way, themes with a back may be applied so that corner radius is respected
      * without drawing anything that would cover the content of the view.
      */
-    protected open val disableBackground = false
+    protected open val disableBackground: Boolean = false
 
     public class BlurBackgroundView : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
 

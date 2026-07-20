@@ -238,8 +238,8 @@ public data class Size(var width: Double = 0.0, var height: Double = 0.0) {
 }
 
 
-public val Size.objc get() = CGSizeMake(width, height)
-public val CGSize.local get() = Size(width, height)
+public val Size.objc: CValue<CGSize> get() = CGSizeMake(width, height)
+public val CGSize.local: Size get() = Size(width, height)
 
 
-public val CValue<CGSize>.local get() = useContents { local }
+public val CValue<CGSize>.local: Size get() = useContents { local }

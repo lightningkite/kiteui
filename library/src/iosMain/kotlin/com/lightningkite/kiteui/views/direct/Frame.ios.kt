@@ -4,5 +4,5 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElement
 
 public actual class Frame actual constructor(context: ElementContext) : NativeContainerElement(context) {
-    override val native = FrameLayout()
+    override val native: FrameLayout = FrameLayout()
 }

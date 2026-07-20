@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.models.Dimension
 import platform.UIKit.UIView
 import kotlin.math.max
 
@@ -26,7 +27,7 @@ public actual abstract class NativeContainerElement actual constructor(context: 
         }
     }
 
-    protected open val mySpacing get() = theme.gap
+    protected open val mySpacing: Dimension get() = theme.gap
 
     override fun refreshPadding() {
         super.refreshPadding()

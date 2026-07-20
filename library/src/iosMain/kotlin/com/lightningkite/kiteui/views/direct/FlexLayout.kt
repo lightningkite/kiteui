@@ -44,11 +44,11 @@ public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverride
             informParentOfSizeChange()
         }
 
-    public val spacingOverride = Signal<Dimension?>(null).also {
+    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null).also {
         it.addListener { it.value?.let { gap = it.value } }
     }
 
-    override fun getSpacingOverrideProperty() = spacingOverride
+    override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
     override fun forceRemeasures() {
         lastLaidOutSize = null
@@ -68,11 +68,11 @@ public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverride
 
     public data class Size(var width: Double = 0.0, var height: Double = 0.0)
 
-    public val Size.objc get() = CGSizeMake(width, height)
-    public val CGSize.local get() = Size(width, height)
-    public val CValue<CGSize>.local get() = useContents { local }
+    public val Size.objc: CValue<CGSize> get() = CGSizeMake(width, height)
+    public val CGSize.local: Size get() = Size(width, height)
+    public val CValue<CGSize>.local: Size get() = useContents { local }
 
-    public val arrangedSubviews = ArrayList<UIView>()
+    public val arrangedSubviews: ArrayList<UIView> = ArrayList<UIView>()
     public fun addArrangedSubview(view: UIView) {
         childSizeCache.add(arrangedSubviews.size, HashMap())
         arrangedSubviews.add(view)
@@ -103,7 +103,7 @@ public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverride
         super.willRemoveSubview(subview)
     }
 
-    public val childSizeCache = ArrayList<HashMap<Size, Size>>()
+    public val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList<HashMap<Size, Size>>()
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val sizeLocal = size.local

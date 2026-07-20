@@ -18,8 +18,8 @@ import platform.objc.sel_registerName
 
 public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
-    override val driverActions get() = super.driverActions + numberInputDriverActions()
-    override val native = WrapperView()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + numberInputDriverActions()
+    override val native: WrapperView = WrapperView()
     public val trigger: NSObject = object : NSObject() {
         @ObjCAction
         fun done() {
@@ -29,7 +29,7 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
             } ?: NextFocusDelegateShared.textFieldShouldReturn(textField)
         }
     }
-    public val textField = UITextField().apply {
+    public val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor

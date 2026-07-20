@@ -19,9 +19,9 @@ import platform.UIKit.*
 
 public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
-    override val driverActions get() = super.driverActions + localDateDriverActions()
-    override val native = WrapperView()
-    public val textField = TextFieldInput(this)
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateDriverActions()
+    override val native: WrapperView = WrapperView()
+    public val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
@@ -86,9 +86,9 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
 
 public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
-    override val driverActions get() = super.driverActions + localTimeDriverActions()
-    override val native = WrapperView()
-    public val textField = TextFieldInput(this)
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localTimeDriverActions()
+    override val native: WrapperView = WrapperView()
+    public val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
@@ -153,9 +153,9 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
 
 public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
-    override val driverActions get() = super.driverActions + localDateTimeDriverActions()
-    override val native = WrapperView()
-    public val textField = TextFieldInput(this)
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateTimeDriverActions()
+    override val native: WrapperView = WrapperView()
+    public val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 

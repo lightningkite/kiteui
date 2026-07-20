@@ -28,12 +28,12 @@ public class UILabelWithGradient(public val context: WeakReference<RContext>) : 
         userInteractionEnabled = false
     }
 
-    public val uiViewWithLabelMask = UIView(bounds).apply {
+    public val uiViewWithLabelMask: UIView = UIView(bounds).apply {
         backgroundColor = UIColor.grayColor
         userInteractionEnabled = false
     }.also(::addSubview)
 
-    public val label = UILabel().also {
+    public val label: UILabel = UILabel().also {
         userInteractionEnabled = false
         uiViewWithLabelMask.addSubview(it)
         uiViewWithLabelMask.maskView = it
@@ -161,7 +161,7 @@ public class UILabelWithGradient(public val context: WeakReference<RContext>) : 
 
     }
 
-    public val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
+    public val recognizer: UITapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
     internal fun linkSetup(active: Boolean) {
         userInteractionEnabled = active
         uiViewWithLabelMask.userInteractionEnabled = active
