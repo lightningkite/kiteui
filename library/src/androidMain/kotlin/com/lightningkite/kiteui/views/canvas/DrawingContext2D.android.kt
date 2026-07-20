@@ -25,14 +25,14 @@ public abstract class DrawingView : View {
 }
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 public actual abstract class DrawingContext2D(public val canvas: Canvas) {
-    public val currentPath = Path()
-    public val clearPaint = android.graphics.Paint().apply {
+    public val currentPath: Path = Path()
+    public val clearPaint: android.graphics.Paint = android.graphics.Paint().apply {
         color = android.graphics.Color.TRANSPARENT
         setXfermode(PorterDuffXfermode(PorterDuff.Mode.DST_OUT))
     }
-    public var fillPaintObj = android.graphics.Paint().apply { style = android.graphics.Paint.Style.FILL }
-    public var strokePaintObj = android.graphics.Paint().apply { style = android.graphics.Paint.Style.STROKE }
-    public val drawingResource = DrawingResources()
+    public var fillPaintObj: android.graphics.Paint = android.graphics.Paint().apply { style = android.graphics.Paint.Style.FILL }
+    public var strokePaintObj: android.graphics.Paint = android.graphics.Paint().apply { style = android.graphics.Paint.Style.STROKE }
+    public val drawingResource: DrawingResources = DrawingResources()
     public actual abstract fun save()
     public actual abstract fun restore()
     public actual abstract fun scale(x: Double, y: Double)

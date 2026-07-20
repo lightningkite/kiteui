@@ -10,8 +10,8 @@ import com.lightningkite.reactive.core.*
 @OptIn(ExperimentalKiteUi::class)
 public actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = radioToggleDriverValue()
-    override val driverActions get() = super.driverActions + radioToggleDriverActions()
-    override val native = FrameLayout(context.activity).apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + radioToggleDriverActions()
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener { checkedProp.value = true }
     }
@@ -30,5 +30,5 @@ public actual class RadioToggleButton actual constructor(context: ElementContext
         }
     }
 
-    override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack): Unit = applyThemeWithRipple(theme)
 }

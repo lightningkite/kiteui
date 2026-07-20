@@ -14,7 +14,7 @@ public typealias SimplifiedLinearLayoutLayoutParams = SimplifiedLinearLayout.Lay
  * A drastically simplified variant of LinearLayout.
  */
 public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : ViewGroup(context, attrs, defStyleAttr, defStyleRes) {
-    public var isBaselineAligned = true
+    public var isBaselineAligned: Boolean = true
     private var mBaselineAlignedChildIndex = -1
     private var mBaselineChildTop = 0
     private var mOrientation = 0
@@ -1342,7 +1342,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
          * will be pro-rated among all views whose weight is greater than 0.
          */
         @ViewDebug.ExportedProperty(category = "layout")
-        public var weight = 0f
+        public var weight: Float = 0f
         /**
          * Indicates how much of the extra space in the LinearLayout will be
          * allocated to the view associated with these LayoutParams. Specify
@@ -1350,7 +1350,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
          * will be pro-rated among all views whose weight is greater than 0.
          */
         @ViewDebug.ExportedProperty(category = "layout")
-        public var gapRatio = 1f
+        public var gapRatio: Float = 1f
 
         @ViewDebug.ExportedProperty(category = "layout")
         public var gapBeforeOverride: Int? = null
@@ -1391,7 +1391,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                 to = "FILL"
             )]
         )
-        public var gravity = -1
+        public var gravity: Int = -1
 
         /**
          * {@inheritDoc}
@@ -1432,8 +1432,8 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
     }
 
     public companion object {
-        public const val HORIZONTAL = 0
-        public const val VERTICAL = 1
+        public const val HORIZONTAL: Int = 0
+        public const val VERTICAL: Int = 1
         private const val VERTICAL_GRAVITY_COUNT = 4
 
         private const val INDEX_CENTER_VERTICAL = 0

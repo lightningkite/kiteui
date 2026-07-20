@@ -8,8 +8,8 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 public actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + externalLinkDriverActions()
-    override val native = FrameLayout(context.activity).apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + externalLinkDriverActions()
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
@@ -33,5 +33,5 @@ public actual class ExternalLink actual constructor(context: ElementContext) : N
         native.contentDescription = accessibleLabel ?: action?.title
     }
 
-    override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack): Unit = applyThemeWithRipple(theme)
 }

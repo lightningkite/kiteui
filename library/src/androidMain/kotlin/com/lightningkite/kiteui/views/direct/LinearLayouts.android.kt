@@ -16,7 +16,7 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 public abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
-    override val native = SlightlyModifiedLinearLayout(context.activity)
+    override val native: SlightlyModifiedLinearLayout = SlightlyModifiedLinearLayout(context.activity)
 
     override var gap: Dimension? = null
         set(value) {
@@ -78,7 +78,7 @@ public actual class RowCollapsingToColumn actual constructor(context: ElementCon
 }
 
 public actual class RowWrapping actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
-    override val native = FlexboxLayout(context.activity)
+    override val native: FlexboxLayout = FlexboxLayout(context.activity)
 
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         ViewGroup.LayoutParams(

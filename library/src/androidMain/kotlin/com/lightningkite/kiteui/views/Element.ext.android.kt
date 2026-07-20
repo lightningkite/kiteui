@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.Element
 
 public var animationsEnabled: Boolean = true
 public actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled
-public actual inline fun Element.withoutAnimation(action: () -> Unit) = native.withoutAnimation(action)
+public actual inline fun Element.withoutAnimation(action: () -> Unit): Unit = native.withoutAnimation(action)
 
 public inline fun View.withoutAnimation(action: () -> Unit) {
     if (!animationsEnabled) {

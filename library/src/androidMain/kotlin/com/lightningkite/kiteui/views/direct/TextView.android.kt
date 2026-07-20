@@ -121,7 +121,7 @@ public actual class TextView actual constructor(context: ElementContext) : Nativ
 
 
 private val typefaceCache = HashMap<FontAndStyle, Typeface>()
-public fun FontAndStyle.typeface(context: Context) = typefaceCache.getOrPut(this) {
+public fun FontAndStyle.typeface(context: Context): Typeface = typefaceCache.getOrPut(this) {
     TypefaceCompat.create(
         context,
         this.font.toTypeface(),

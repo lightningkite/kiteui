@@ -189,28 +189,28 @@ public actual fun websocket(url: String): WebSocket {
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 public class WebSocketWrapper(public val url: String) : WebSocket {
-    public val closeReason = Channel<CloseReason>()
-    public val sending = Channel<Frame>(10)
-    public var stayOn = true
-    public val onOpen = ArrayList<() -> Unit>()
+    public val closeReason: Channel<CloseReason> = Channel<CloseReason>()
+    public val sending: Channel<Frame> = Channel<Frame>(10)
+    public var stayOn: Boolean = true
+    public val onOpen: ArrayList<() -> Unit> = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    public val onClose = ArrayList<(Short) -> Unit>()
+    public val onClose: ArrayList<(Short) -> Unit> = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    public val onMessage = ArrayList<(String) -> Unit>()
+    public val onMessage: ArrayList<(String) -> Unit> = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    public val onBinaryMessage = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage: ArrayList<(Blob) -> Unit> = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }
@@ -356,8 +356,8 @@ public actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: Strin
     return FileReference(Uri.fromFile(tempFile))
 }
 
-public actual fun Blob.mimeType() = type
-public actual fun FileReference.mimeType() = when (uri.scheme) {
+public actual fun Blob.mimeType(): String = type
+public actual fun FileReference.mimeType(): String = when (uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
         ?: MimeTypeMap.getSingleton()
             .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))         // if it is null with the content resolver check if it is an app scope file

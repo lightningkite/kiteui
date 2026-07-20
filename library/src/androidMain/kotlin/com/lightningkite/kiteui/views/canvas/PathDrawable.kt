@@ -16,7 +16,7 @@ public fun <E> MutableList<E>.unshift(): E {
     return removeAt(0)
 }
 
-public val pathLetters = charArrayOf(
+public val pathLetters: CharArray = charArrayOf(
     'M',
     'L',
     'Z',
@@ -28,7 +28,7 @@ public val pathLetters = charArrayOf(
     'S',
     'A'
 )
-public val spaceOrComma = Regex("[ ,]+")
+public val spaceOrComma: Regex = Regex("[ ,]+")
 
 public fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Float, parentWidth: Float, parentOffsetY: Float, parentHeight: Float) {
     when (val it = kiteui) {
@@ -67,7 +67,7 @@ public fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffs
 }
 
 public class PathDrawable(public val vector: ImageVector) : Drawable() {
-    public val drawingResources = DrawingResources()
+    public val drawingResources: DrawingResources = DrawingResources()
 
     public class PathInfo(
         public val path: Path,
@@ -75,7 +75,7 @@ public class PathDrawable(public val vector: ImageVector) : Drawable() {
         public val fill: Paint? = null,
     )
 
-    public val paths = run {
+    public val paths: List<PathInfo> = run {
         val scaleX = vector.width.value / vector.viewBoxWidth
         val scaleY = vector.height.value / vector.viewBoxHeight
         val translateX = -vector.viewBoxMinX.toFloat()
@@ -376,7 +376,7 @@ private fun Path.render(
 }
 
 public class DrawingResources() {
-    public val arcRectf = RectF()
+    public val arcRectf: RectF = RectF()
     public val arcMatrix: Matrix = Matrix()
     public val arcMatrix2: Matrix = Matrix()
 }

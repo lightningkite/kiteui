@@ -500,4 +500,4 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     actual override var showOnPrint: Boolean = true
 }
 
-public val Element.native get() = underlyingNativeElement.native
+public val Element.native: View get() = underlyingNativeElement.native

@@ -12,7 +12,7 @@ import kotlin.math.min
 
 
 public actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = NCanvas(context.activity)
+    override val native: NCanvas = NCanvas(context.activity)
 
     public actual var delegate: CanvasDelegate?
         get() = native.delegate

@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 
 public actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
-    override val native = CoordinatorLayoutWithGestures(context.activity)
+    override val native: CoordinatorLayoutWithGestures = CoordinatorLayoutWithGestures(context.activity)
 
     override fun nativeWillAddChild(element: Element) {
         element.underlyingNativeElement.native.layoutParams = defaultLayoutParams()

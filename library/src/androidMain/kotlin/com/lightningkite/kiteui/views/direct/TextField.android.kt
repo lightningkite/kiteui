@@ -22,8 +22,8 @@ import com.lightningkite.reactive.core.*
 
 public actual open class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
-    override val driverActions get() = super.driverActions + textInputDriverActions()
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + textInputDriverActions()
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         inputType = EditorInfo.TYPE_CLASS_TEXT
     }
 

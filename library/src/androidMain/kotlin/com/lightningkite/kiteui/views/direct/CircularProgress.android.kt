@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.views.NativeElement
 
 public actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
 
-    override val native = NCircularProgress(context.activity).apply {
+    override val native: NCircularProgress = NCircularProgress(context.activity).apply {
         contentDescription = "Progress"
         accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }

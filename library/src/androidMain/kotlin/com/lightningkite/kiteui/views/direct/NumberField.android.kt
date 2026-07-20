@@ -18,9 +18,9 @@ import com.lightningkite.reactive.extensions.*
 
 public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
-    override val driverActions get() = super.driverActions + numberInputDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + numberInputDriverActions()
 
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
             if(block) return@doAfterTextChanged

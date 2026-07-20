@@ -264,8 +264,8 @@ public class DesiredSizeView(context: Context) : ViewGroup(context) {
         getChildAt(0).layout(paddingLeft, paddingTop, r - l - paddingRight, b - t - paddingBottom)
     }
 
-    public val Int.measureSpecMode get() = MeasureSpec.getMode(this)
-    public val Int.measureSpecSize get() = MeasureSpec.getSize(this)
+    public val Int.measureSpecMode: Int get() = MeasureSpec.getMode(this)
+    public val Int.measureSpecSize: Int get() = MeasureSpec.getSize(this)
     public fun Int.measureSpecConstrainMax(value: Int): Int = MeasureSpec.makeMeasureSpec(
         if (measureSpecMode != MeasureSpec.UNSPECIFIED) measureSpecSize.coerceAtMost(value) else value,
         when (measureSpecMode) {

@@ -106,7 +106,7 @@ public class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         val r = delegate.measure(rview, inProgress, s)
         setMeasuredDimension(r.width.roundToInt(), r.height.roundToInt())
     }
-    public val placed = HashSet<View>()
+    public val placed: HashSet<View> = HashSet<View>()
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if(r - l == 0 || b - t == 0) return

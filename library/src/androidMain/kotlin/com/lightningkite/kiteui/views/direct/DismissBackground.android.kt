@@ -16,7 +16,7 @@ public actual class DismissBackground actual constructor(context: ElementContext
         themePipeline.add(ThemePipeline.Step.elementStyling, DismissSemantic)
     }
 
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         setOnClickListener {
             @Suppress("DEPRECATION")
             this@DismissBackground.context.dialogPageNavigator.clear()

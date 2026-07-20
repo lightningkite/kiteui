@@ -137,8 +137,8 @@ public actual class RawImageView actual constructor(
             this.clipToOutline = true
         }
 
-        public var widthMeasureSpecLast = 0
-        public var heightMeasureSpecLast = 0
+        public var widthMeasureSpecLast: Int = 0
+        public var heightMeasureSpecLast: Int = 0
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             if (this !in animatingSize) {
                 widthMeasureSpecLast = widthMeasureSpec
@@ -158,9 +158,9 @@ public actual class RawImageView actual constructor(
             if(ignoreNaturalSize) setMeasuredDimension(0, 0)
         }
 
-        public val callbacks = ArrayList<SizeReadyCallback>()
+        public val callbacks: ArrayList<SizeReadyCallback> = ArrayList<SizeReadyCallback>()
 
-        public val target = object : ImageViewTarget<Drawable>(this) {
+        public val target: ImageViewTarget<Drawable> = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {
                 this@GlideImageView.setImageDrawable(resource)
             }
@@ -272,8 +272,8 @@ public actual class SizelessRawImageView actual constructor(
         }
 
 
-        public var widthMeasureSpecLast = 0
-        public var heightMeasureSpecLast = 0
+        public var widthMeasureSpecLast: Int = 0
+        public var heightMeasureSpecLast: Int = 0
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             if (this !in animatingSize) {
                 widthMeasureSpecLast = widthMeasureSpec
@@ -302,9 +302,9 @@ public actual class SizelessRawImageView actual constructor(
             )
         }
 
-        public val callbacks = ArrayList<SizeReadyCallback>()
+        public val callbacks: ArrayList<SizeReadyCallback> = ArrayList<SizeReadyCallback>()
 
-        public val target = object : ImageViewTarget<Drawable>(this) {
+        public val target: ImageViewTarget<Drawable> = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {
                 this@GlideImageView.setImageDrawable(resource)
             }

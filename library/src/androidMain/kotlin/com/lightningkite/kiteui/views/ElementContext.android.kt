@@ -31,7 +31,7 @@ public actual class ElementContext(activity: KiteUiActivity, parent: ElementCont
         }
 
     // by Claude - use addons.child() for lazy parent lookup instead of copying
-    public actual fun split() = activityOrNull?.let { ElementContext(it, parent = this) }
+    public actual fun split(): ElementContext = activityOrNull?.let { ElementContext(it, parent = this) }
         ?: throw IllegalStateException("Cannot split RContext: Activity has been destroyed")
 
     public actual var immersiveMode: Boolean = false

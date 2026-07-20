@@ -27,7 +27,7 @@ public actual class NIconView(context: Context) : AppCompatImageView(context) {
 }
 
 public actual class IconView actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = NIconView(context.activity)
+    override val native: NIconView = NIconView(context.activity)
     public actual var source: Icon?
         get() = native.icon
         set(value) {

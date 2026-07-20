@@ -9,8 +9,8 @@ import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.themed
 
 public actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
-    override val driverActions get() = super.driverActions + menuDriverActions()
-    override val native = FrameLayout(context.activity).apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + menuDriverActions()
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
@@ -79,5 +79,5 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
     public actual var requireClick: Boolean = true
     public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
 
-    override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack): Unit = applyThemeWithRipple(theme)
 }

@@ -14,13 +14,13 @@ import kotlin.time.Clock
 
 public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
-    override val driverActions get() = super.driverActions + localDateTimeDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateTimeDriverActions()
     private val property: Signal<LocalDateTime?> = Signal(null)
     public actual val content: MutableReactiveValue<LocalDateTime?> = property
     
     public actual var range: ClosedRange<LocalDateTime>? = null
 
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener {
             showDatePicker(
@@ -52,5 +52,5 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
         )
     }
 
-    override fun nativeApplyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack): Unit = super.applyThemeWithRipple(theme)
 }

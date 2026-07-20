@@ -46,7 +46,7 @@ public object AndroidAppContext {
     public var activityCtx: KiteUiActivity?
         get() = activityCtxRef?.get()
         set(value) { activityCtxRef = WeakReference(value) }
-    public val executor by lazy {
+    public val executor: ThreadPoolExecutor by lazy {
         ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, ArrayBlockingQueue(10))
     }
 
@@ -57,8 +57,8 @@ public object AndroidAppContext {
      */
     public val fileProviderAuthority: String get() = applicationCtx.packageName + ".fileprovider"
 
-    public fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
-    public fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
+    public fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit): Int? = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
+    public fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit): Int? = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
     public suspend fun requestPermissions(vararg permissions: String): KiteUiActivity.PermissionResult = suspendCancellableCoroutine { continuation ->
         val code = requestPermissions(*permissions) {
             continuation.resume(it)
