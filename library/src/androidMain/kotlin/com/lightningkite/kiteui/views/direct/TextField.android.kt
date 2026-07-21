@@ -46,7 +46,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         useAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
-        applyAlign(_align ?: theme.font.align)
+        applyAlign(_align ?: Align.Stretch)
     }
 
     actual val content: MutableReactiveValue<String> = native.contentProperty()
