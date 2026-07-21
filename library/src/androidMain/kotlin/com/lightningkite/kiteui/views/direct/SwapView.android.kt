@@ -17,8 +17,8 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
     override val native: FrameLayout = FrameLayout(context.activity)
 
     public companion object {
-        public val swapTimeMakeViewPerformance: PerformanceInfo = PerformanceInfo("swapTimeMakeView")
-        public val swapTimeAddViewsPerformance: PerformanceInfo = PerformanceInfo("swapTimeAddViews")
+        internal val swapTimeMakeViewPerformance: PerformanceInfo = PerformanceInfo("swapTimeMakeView")
+        internal val swapTimeAddViewsPerformance: PerformanceInfo = PerformanceInfo("swapTimeAddViews")
     }
 
     public actual fun swap(

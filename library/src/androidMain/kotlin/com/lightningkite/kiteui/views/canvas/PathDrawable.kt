@@ -12,11 +12,11 @@ import com.lightningkite.kiteui.views.direct.colorInt
 import kotlin.math.*
 
 
-public fun <E> MutableList<E>.unshift(): E {
+internal fun <E> MutableList<E>.unshift(): E {
     return removeAt(0)
 }
 
-public val pathLetters: CharArray = charArrayOf(
+internal val pathLetters: CharArray = charArrayOf(
     'M',
     'L',
     'Z',
@@ -28,9 +28,9 @@ public val pathLetters: CharArray = charArrayOf(
     'S',
     'A'
 )
-public val spaceOrComma: Regex = Regex("[ ,]+")
+internal val spaceOrComma: Regex = Regex("[ ,]+")
 
-public fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Float, parentWidth: Float, parentOffsetY: Float, parentHeight: Float) {
+internal fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Float, parentWidth: Float, parentOffsetY: Float, parentHeight: Float) {
     when (val it = kiteui) {
         is Color -> this.color = it.colorInt()
         is FadingColor -> match(it.base, parentOffsetX, parentWidth, parentOffsetY, parentHeight)
@@ -66,7 +66,7 @@ public fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffs
     }
 }
 
-public class PathDrawable(public val vector: ImageVector) : Drawable() {
+internal class PathDrawable(public val vector: ImageVector) : Drawable() {
     public val drawingResources: DrawingResources = DrawingResources()
 
     public class PathInfo(
@@ -376,12 +376,12 @@ private fun Path.render(
 }
 
 public class DrawingResources() {
-    public val arcRectf: RectF = RectF()
-    public val arcMatrix: Matrix = Matrix()
-    public val arcMatrix2: Matrix = Matrix()
+    internal val arcRectf: RectF = RectF()
+    internal val arcMatrix: Matrix = Matrix()
+    internal val arcMatrix2: Matrix = Matrix()
 }
 
-public fun DrawingResources.drawArc(
+internal fun DrawingResources.drawArc(
     path: Path, lastX: Float, lastY: Float, x: Float, y: Float, radiusX: Float, radiusY: Float, theta: Float,
     largeArcFlag: Boolean, sweepFlag: Boolean
 ) {

@@ -48,7 +48,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      *
      * @see .setOnScrollChangeListener
      */
-    public interface OnScrollChangeListener {
+    internal interface OnScrollChangeListener {
         /**
          * Called when the scroll position of a view changes.
          *
@@ -67,7 +67,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
     private var mLastScroll: Long = 0
 
     private val mTempRect = Rect()
-    public var mScroller: OverScroller? = null
+    internal var mScroller: OverScroller? = null
     private var mEdgeGlowLeft: EdgeEffect? = null
     private var mEdgeGlowTop: EdgeEffect? = null
     private var mEdgeGlowRight: EdgeEffect? = null
@@ -122,7 +122,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
     /**
      * Whether arrow scrolling is animated.
      */
-    public var isSmoothScrollingEnabled: Boolean = true
+    internal var isSmoothScrollingEnabled: Boolean = true
 
     private var mTouchSlop = 0
     private var mMinimumVelocity = 0
@@ -155,7 +155,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
 
     private var mOnScrollChangeListener: OnScrollChangeListener? = null
 
-    public var isFillViewport: Boolean
+    internal var isFillViewport: Boolean
         /**
          * Indicates whether this ScrollView's content is stretched to fill the viewport.
          *
@@ -455,14 +455,14 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         return 1.0f
     }
 
-    public val maxScrollAmountX: Int
+    internal val maxScrollAmountX: Int
         /**
          * @return The maximum amount this scroll view will scroll in response to
          * an arrow event.
          */
         get() = (MAX_SCROLL_FACTOR * width).toInt()
 
-    public val maxScrollAmountY: Int
+    internal val maxScrollAmountY: Int
         /**
          * @return The maximum amount this scroll view will scroll in response to
          * an arrow event.
@@ -514,7 +514,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * @see android.view.View.getScrollX
      * @see android.view.View.getScrollY
      */
-    public fun setOnScrollChangeListener(l: OnScrollChangeListener?) {
+    internal fun setOnScrollChangeListener(l: OnScrollChangeListener?) {
         mOnScrollChangeListener = l
     }
 
@@ -554,8 +554,8 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         }
     }
 
-    public var lockX: Boolean = false
-    public var lockY: Boolean = false
+    internal var lockX: Boolean = false
+    internal var lockY: Boolean = false
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -620,7 +620,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param event The key event to execute.
      * @return Return true if the event was handled, else false.
      */
-    public fun executeKeyEvent(event: KeyEvent): Boolean {
+    internal fun executeKeyEvent(event: KeyEvent): Boolean {
         mTempRect.setEmpty()
 
         if (!canScrollX() && !canScrollY()) {
@@ -1159,7 +1159,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         super.scrollTo(scrollX, scrollY)
     }
 
-    public fun overScrollByCompat(
+    internal fun overScrollByCompat(
         deltaX: Int, deltaY: Int,
         scrollX: Int, scrollY: Int,
         scrollRangeX: Int, scrollRangeY: Int,
@@ -1221,7 +1221,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         return clampedX && clampedY
     }
 
-    public val scrollRangeX: Int
+    internal val scrollRangeX: Int
         get() {
             var scrollRange = 0
             if (childCount > 0) {
@@ -1234,7 +1234,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
             return scrollRange
         }
 
-    public val scrollRangeY: Int
+    internal val scrollRangeY: Int
         get() {
             var scrollRange = 0
             if (childCount > 0) {
@@ -1341,7 +1341,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * [android.view.View.FOCUS_DOWN] to go one page down
      * @return true if the key event is consumed by this method, false otherwise
      */
-    public fun pageScroll(direction: Int): Boolean {
+    internal fun pageScroll(direction: Int): Boolean {
         val down = direction == FOCUS_DOWN
         val height = height
 
@@ -1380,7 +1380,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * [android.view.View.FOCUS_DOWN] to go the bottom
      * @return true if the key event is consumed by this method, false otherwise
      */
-    public fun fullScroll(direction: Int): Boolean {
+    internal fun fullScroll(direction: Int): Boolean {
         val down = direction == FOCUS_DOWN
         val height = height
 
@@ -1445,7 +1445,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * pressed
      * @return True if we consumed the event, false otherwise
      */
-    public fun arrowScroll(direction: Int): Boolean {
+    internal fun arrowScroll(direction: Int): Boolean {
         var currentFocused = findFocus()
         if (currentFocused === this) currentFocused = null
 
@@ -1560,7 +1560,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param dx the number of pixels to scroll by on the X axis
      * @param dy the number of pixels to scroll by on the Y axis
      */
-    public fun smoothScrollBy(dx: Int, dy: Int) {
+    internal fun smoothScrollBy(dx: Int, dy: Int) {
         smoothScrollBy(dx, dy, DEFAULT_SMOOTH_SCROLL_DURATION, false)
     }
 
@@ -1571,7 +1571,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param dy the number of pixels to scroll by on the Y axis
      * @param scrollDurationMs the duration of the smooth scroll operation in milliseconds
      */
-    public fun smoothScrollBy(dx: Int, dy: Int, scrollDurationMs: Int) {
+    internal fun smoothScrollBy(dx: Int, dy: Int, scrollDurationMs: Int) {
         smoothScrollBy(dx, dy, scrollDurationMs, false)
     }
 
@@ -1621,7 +1621,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param x the position where to scroll on the X axis
      * @param y the position where to scroll on the Y axis
      */
-    public fun smoothScrollTo(x: Int, y: Int) {
+    internal fun smoothScrollTo(x: Int, y: Int) {
         smoothScrollTo(x, y, DEFAULT_SMOOTH_SCROLL_DURATION, false)
     }
 
@@ -1632,7 +1632,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param y the position where to scroll on the Y axis
      * @param scrollDurationMs the duration of the smooth scroll operation in milliseconds
      */
-    public fun smoothScrollTo(x: Int, y: Int, scrollDurationMs: Int) {
+    internal fun smoothScrollTo(x: Int, y: Int, scrollDurationMs: Int) {
         smoothScrollTo(x, y, scrollDurationMs, false)
     }
 
@@ -1644,7 +1644,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param withNestedScrolling whether to include nested scrolling operations.
      */
     // This should be considered private, it is package private to avoid a synthetic ancestor.
-    public fun smoothScrollTo(x: Int, y: Int, withNestedScrolling: Boolean) {
+    internal fun smoothScrollTo(x: Int, y: Int, withNestedScrolling: Boolean) {
         smoothScrollTo(x, y, DEFAULT_SMOOTH_SCROLL_DURATION, withNestedScrolling)
     }
 
@@ -1657,7 +1657,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param withNestedScrolling whether to include nested scrolling operations.
      */
     // This should be considered private, it is package private to avoid a synthetic ancestor.
-    public fun smoothScrollTo(x: Int, y: Int, scrollDurationMs: Int, withNestedScrolling: Boolean) {
+    internal fun smoothScrollTo(x: Int, y: Int, scrollDurationMs: Int, withNestedScrolling: Boolean) {
         smoothScrollBy(x - scrollX, y - scrollY, scrollDurationMs, withNestedScrolling)
     }
 
@@ -2214,7 +2214,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
      * numbers mean that the finger/cursor is moving down the screen,
      * which means we want to scroll towards the top.
      */
-    public fun fling(velocityX: Int, velocityY: Int) {
+    internal fun fling(velocityX: Int, velocityY: Int) {
         if (childCount > 0) {
             mScroller!!.fling(
                 scrollX, scrollY,  // start
@@ -2266,7 +2266,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
             }
         }
     }
-    public fun scrollToIgnoringClamp(x: Int, y: Int) {
+    internal fun scrollToIgnoringClamp(x: Int, y: Int) {
         super.scrollTo(x, y)
         mScroller?.finalX
     }
@@ -2527,9 +2527,9 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
     }
 
     public companion object {
-        public const val ANIMATED_SCROLL_GAP: Int = 250
+        internal const val ANIMATED_SCROLL_GAP: Int = 250
 
-        public const val MAX_SCROLL_FACTOR: Float = 0.5f
+        internal const val MAX_SCROLL_FACTOR: Float = 0.5f
 
         private const val TAG = "TwoWayNestedScrollView"
         private const val DEFAULT_SMOOTH_SCROLL_DURATION = 250

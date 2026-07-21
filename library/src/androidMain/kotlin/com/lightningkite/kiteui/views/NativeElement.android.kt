@@ -49,7 +49,7 @@ import kotlin.math.roundToInt
 public actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
     public abstract val native: View
 
-    public var removeListener: (() -> Unit)? = null
+    internal var removeListener: (() -> Unit)? = null
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
             throw Exception("Cannot create views on any thread but the main thread")
@@ -334,7 +334,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     }
 
     // Map to track active animators for each view property
-    public companion object {
+    internal companion object {
         private val activeAnimators = mutableMapOf<String, ValueAnimator>()
         // by Claude - cache reflected Method to avoid repeated getMethod() calls on every clickable element
         private val rippleSetDrawableMethod: java.lang.reflect.Method? by lazy {

@@ -17,10 +17,10 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 public actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
-    public val shapeDrawable: ShapeDrawable = ShapeDrawable().apply {
+    internal val shapeDrawable: ShapeDrawable = ShapeDrawable().apply {
         shape = RoundRectShape(floatArrayOf(999f, 999f, 999f, 999f, 999f, 999f, 999f, 999f), null, null)
     }
-    public val clipDrawable: ClipDrawable = ClipDrawable(shapeDrawable, Gravity.START, ClipDrawable.HORIZONTAL)
+    internal val clipDrawable: ClipDrawable = ClipDrawable(shapeDrawable, Gravity.START, ClipDrawable.HORIZONTAL)
     override val native: android.widget.ProgressBar =
         android.widget.ProgressBar(context.activity, null, android.R.attr.progressBarStyleHorizontal).apply {
 //        min = 0

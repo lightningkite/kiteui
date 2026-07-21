@@ -70,7 +70,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         set(value) {
             native.hint = value
         }
-    public var align: Align
+    internal var align: Align
         get() {
             return when (native.gravity) {
                 Gravity.START -> Align.Start
@@ -94,7 +94,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
                 }
             }
         }
-    public var textSize: Dimension
+    internal var textSize: Dimension
         get() {
             return Dimension(native.textSize)
         }

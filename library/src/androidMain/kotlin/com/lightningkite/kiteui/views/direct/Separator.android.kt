@@ -38,7 +38,7 @@ public actual class Separator actual constructor(context: ElementContext): Nativ
 }
 
 public class NSeparator(context: Context) : View(context) {
-    public var thickness: Int = 1
+    internal var thickness: Int = 1
         set(value) {
             field = value
             requestLayout()

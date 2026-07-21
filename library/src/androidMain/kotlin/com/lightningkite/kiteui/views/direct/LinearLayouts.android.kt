@@ -124,8 +124,8 @@ public open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLin
  * This is similar to the FlexLayout used in the iOS implementation.
  */
 public class FlexboxLayout(context: Context) : ViewGroup(context) {
-    public var gap: Int = 0
-    public var lineGap: Int = 0
+    internal var gap: Int = 0
+    internal var lineGap: Int = 0
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)

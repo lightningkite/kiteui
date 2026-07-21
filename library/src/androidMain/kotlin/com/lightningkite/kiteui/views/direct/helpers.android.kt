@@ -15,7 +15,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-public fun EditText.contentProperty(): MutableReactiveValue<String> = object : MutableReactiveValue<String>, BaseListenable(), TextWatcher {
+internal fun EditText.contentProperty(): MutableReactiveValue<String> = object : MutableReactiveValue<String>, BaseListenable(), TextWatcher {
     override fun afterTextChanged(s: Editable?) { invokeAllListeners() }
     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -25,7 +25,7 @@ public fun EditText.contentProperty(): MutableReactiveValue<String> = object : M
     override suspend fun set(value: String) { this.value = value }
     init { addTextChangedListener(this) }
 }
-public fun CompoundButton.contentProperty(): MutableReactiveValue<Boolean> = object : MutableReactiveValue<Boolean>, BaseListenable(), CompoundButton.OnCheckedChangeListener {
+internal fun CompoundButton.contentProperty(): MutableReactiveValue<Boolean> = object : MutableReactiveValue<Boolean>, BaseListenable(), CompoundButton.OnCheckedChangeListener {
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) { invokeAllListeners() }
     override var value: Boolean
         get() = isChecked
@@ -33,7 +33,7 @@ public fun CompoundButton.contentProperty(): MutableReactiveValue<Boolean> = obj
     override suspend fun set(value: Boolean) { isChecked = value }
     init { setOnCheckedChangeListener(this) }
 }
-public fun EditText.focusIsKeyboard(): EditText {
+internal fun EditText.focusIsKeyboard(): EditText {
     onFocusChangeListener = object: View.OnFocusChangeListener {
         override fun onFocusChange(v: View, hasFocus: Boolean) {
             if (hasFocus)

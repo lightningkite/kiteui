@@ -31,7 +31,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 
-public fun View.setPaddingAll(padding: Int): Unit = setPadding(padding, padding, padding, padding)
+internal fun View.setPaddingAll(padding: Int): Unit = setPadding(padding, padding, padding, padding)
 public fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
 //val NView.selected: MutableReactive<Boolean>
 //    get() = object : MutableReactive<Boolean> {

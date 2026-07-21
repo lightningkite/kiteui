@@ -19,12 +19,12 @@ public actual class Space actual constructor(context: ElementContext, public val
 }
 
 public class NSpace(context: Context): View(context) {
-    public var mySuggestedMinimumWidth: Int = 1
+    internal var mySuggestedMinimumWidth: Int = 1
     override fun getSuggestedMinimumWidth(): Int {
         return mySuggestedMinimumWidth
     }
 
-    public var mySuggestedMinimumHeight: Int = 1
+    internal var mySuggestedMinimumHeight: Int = 1
     override fun getSuggestedMinimumHeight(): Int {
         return mySuggestedMinimumHeight
     }

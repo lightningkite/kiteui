@@ -9,8 +9,8 @@ import kotlin.math.atan
 
 public class CoordinatorLayoutWithGestures(context: Context) : CoordinatorLayout(context) {
 
-    public var onLeftSwipeAction: (() -> Unit)? = null
-    public var onRightSwipeAction: (() -> Unit)? = null
+    internal var onLeftSwipeAction: (() -> Unit)? = null
+    internal var onRightSwipeAction: (() -> Unit)? = null
 
     private val gesturesEnabled: Boolean
         get() = onLeftSwipeAction != null || onRightSwipeAction != null

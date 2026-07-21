@@ -22,11 +22,11 @@ import kotlin.coroutines.resume
 
 public object AndroidAppContext {
     public lateinit var applicationCtx: Context
-    public val res: Resources by lazy { applicationCtx.resources }
+    internal val res: Resources by lazy { applicationCtx.resources }
     public val density: Float by lazy { res.displayMetrics.density }
     public val oneRem: Float by lazy { density * 14 }
     public var autoCompleteLayoutResource: Int = android.R.layout.simple_list_item_1
-    public val ktorClient: HttpClient by lazy {
+    internal val ktorClient: HttpClient by lazy {
         HttpClient(OkHttp) {
             install(WebSockets)
             install(UserAgent) {
@@ -42,7 +42,7 @@ public object AndroidAppContext {
             }
         }
     }
-    public var activityCtxRef: WeakReference<KiteUiActivity>? = null
+    internal var activityCtxRef: WeakReference<KiteUiActivity>? = null
     public var activityCtx: KiteUiActivity?
         get() = activityCtxRef?.get()
         set(value) { activityCtxRef = WeakReference(value) }

@@ -127,12 +127,12 @@ public actual open class TextInput actual constructor(context: ElementContext) :
 }
 
 
-public abstract class EquatableByRef(public val key: String, public val ref: Any) {
+internal abstract class EquatableByRef(public val key: String, public val ref: Any) {
     override fun hashCode(): Int = key.hashCode() + ref.hashCode()
     override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
 }
 
-public var EditText.keyboardHints: KeyboardHints
+internal var EditText.keyboardHints: KeyboardHints
     get() {
         return when (inputType) {
             InputType.TYPE_CLASS_NUMBER -> KeyboardHints(KeyboardCase.None, KeyboardType.Integer)

@@ -302,8 +302,8 @@ public class ScrollView(
         }
     }
 
-    public var queuedJumpX: Double = -1.0
-    public var queuedJumpY: Double = -1.0
+    internal var queuedJumpX: Double = -1.0
+    internal var queuedJumpY: Double = -1.0
     override fun scrollToKeepAnimations(x: Double, y: Double) {
 //        native.mScroller?.abortAnimation()
         queuedJumpX = x
