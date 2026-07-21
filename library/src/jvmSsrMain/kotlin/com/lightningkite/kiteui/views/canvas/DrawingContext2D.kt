@@ -35,7 +35,7 @@ public actual abstract class DrawingContext2D {
  * SSR stub implementation of DrawingContext2D.
  * Since SSR doesn't render graphics, this provides no-op implementations.
  */
-public class DrawingContext2DStub(
+internal class DrawingContext2DStub(
     private val _width: Double = 0.0,
     private val _height: Double = 0.0
 ) : DrawingContext2D() {

@@ -30,7 +30,7 @@ public actual class FutureElement actual constructor() {
     public actual var id: String? = null
     public actual var content: String? = null
     public actual var innerHtmlUnsafe: String? = null
-    public val childrenBack: MutableList<FutureElement> = ArrayList<FutureElement>()
+    internal val childrenBack: MutableList<FutureElement> = ArrayList<FutureElement>()
     public actual val children: List<FutureElement> = childrenBack
     public actual fun appendChild(element: FutureElement) {
         childrenBack.add(element)
@@ -72,7 +72,7 @@ public actual class FutureElement actual constructor() {
     public actual inline fun addEventListener(name: String, listener: (Event) -> Unit) {}
     public actual inline fun replaceEventListener(name: String, listener: (Event) -> Unit) {}
 
-    public fun render(out: Appendable) {
+    internal fun render(out: Appendable) {
         out.append('<')
         out.append(tag)
         attributes.underlyingMap.forEach { (key, value) ->
@@ -138,7 +138,7 @@ public actual class FutureElement actual constructor() {
     }
 }
 
-public fun Appendable.appendSafe(html: String) {
+internal fun Appendable.appendSafe(html: String) {
     for(char in html) {
         when(char) {
                 '&' -> append("&amp;")
