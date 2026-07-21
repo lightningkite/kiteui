@@ -143,6 +143,12 @@ internal fun generateAutoroutes(sources: File, out: File) {
         }
         .toList()
 
+    val duplicates = allRoutables.groupingBy { it.url }.eachCount().filterValues { it > 1 }
+
+    if (duplicates.isNotEmpty()) {
+        error("All routables must be distinct. Duplicate route: ${duplicates.keys.first().joinToString("/")}")
+    }
+
     val topPackage = allRoutables
         .takeIf { it.isNotEmpty() }
         ?.map { it.packageName }
