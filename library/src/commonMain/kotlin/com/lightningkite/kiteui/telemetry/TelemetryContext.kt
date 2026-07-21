@@ -13,7 +13,7 @@ import kotlin.coroutines.CoroutineContext
  * Also read by `instrumentFetch` to set `traceparent` headers and `parentSpanId`
  * on HTTP spans.
  */
-public class TelemetryContext(
+internal class TelemetryContext(
     public val traceId: String = "",
     public val spanId: String = "",
     public val element: NativeElement? = null,

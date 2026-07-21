@@ -40,19 +40,19 @@ public class Telemetry(public val config: TelemetryConfig) {
 
     // ===== Instance state =====
 
-    public val sessionId: String = spanId()
-    public var currentTraceId: String = traceId()
+    internal val sessionId: String = spanId()
+    internal var currentTraceId: String = traceId()
         internal set
-    public var currentSpanId: String = ""
+    internal var currentSpanId: String = ""
         internal set
 
     internal val exporter: TelemetryExporter = TelemetryExporter(config)
 
     /** Sampling decision made once per session (app launch). All traces in this session share the same decision. */
-    public val currentTraceIsSampled: Boolean = Random.nextDouble() < config.traceSamplingRate
+    internal val currentTraceIsSampled: Boolean = Random.nextDouble() < config.traceSamplingRate
 
     /** Effective log severity — mutable to support [setVerboseLogging]. */
-    public var logMinSeverity: OtlpSeverity = config.logMinSeverity
+    internal var logMinSeverity: OtlpSeverity = config.logMinSeverity
         private set
 
     private val log = LogRoot.tag("Telemetry")
@@ -229,7 +229,7 @@ public class Telemetry(public val config: TelemetryConfig) {
      * Removes all hooks installed by [install] and stops the flush loop.
      * Buffered data is NOT flushed — call [flush] first if you need to drain.
      */
-    public fun shutdown() {
+    internal fun shutdown() {
         if (!installed) return
         installed = false
         fetchInterceptors.remove(installedFetchInterceptor)
@@ -430,22 +430,22 @@ public class Telemetry(public val config: TelemetryConfig) {
      * Temporarily enable verbose (DEBUG+) log shipping for investigation.
      * Call with `false` to restore the configured [TelemetryConfig.logMinSeverity].
      */
-    public fun setVerboseLogging(enabled: Boolean) {
+    internal fun setVerboseLogging(enabled: Boolean) {
         logMinSeverity = if (enabled) OtlpSeverity.DEBUG else config.logMinSeverity
     }
 
     /** Record a custom counter metric. */
-    public fun counter(name: String, value: Long = 1, attributes: List<OtlpKeyValue> = emptyList()) {
+    internal fun counter(name: String, value: Long = 1, attributes: List<OtlpKeyValue> = emptyList()) {
         exporter.incrementCounter(name, value, attributes)
     }
 
     /** Record a custom histogram metric value. */
-    public fun histogram(name: String, value: Double, unit: String = "ms", attributes: List<OtlpKeyValue> = emptyList()) {
+    internal fun histogram(name: String, value: Double, unit: String = "ms", attributes: List<OtlpKeyValue> = emptyList()) {
         exporter.recordHistogram(name, value, unit, attributes)
     }
 
     /** Flush all buffered data immediately. Call before app termination or on background. */
-    public suspend fun flush() {
+    internal suspend fun flush() {
         exporter.flushAll()
     }
 
@@ -540,7 +540,7 @@ public class Telemetry(public val config: TelemetryConfig) {
 
     // ===== ID Generation (companion — pure functions, no instance state) =====
 
-    public companion object {
+    internal companion object {
         private const val hexChars = "0123456789abcdef"
 
         /** 32 hex chars (16 bytes) — W3C trace ID */
