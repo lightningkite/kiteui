@@ -58,7 +58,7 @@ public inline fun HTMLElement.suppressMutationObserverForClass(change: ()->Unit)
     e.add(this.getAttribute("class") ?: "")
 }
 
-public fun HTMLElement.measureByTempEdit(max: Size): Size {
+internal fun HTMLElement.measureByTempEdit(max: Size): Size {
     val tempchildwidth = this.style.width
     val tempchildheight = this.style.height
     val tempchildmaxWidth = this.style.maxWidth
@@ -81,7 +81,7 @@ public fun HTMLElement.measureByTempEdit(max: Size): Size {
     return out
 }
 
-public fun HTMLElement.measureByDuplicate(max: Size): Size {
+internal fun HTMLElement.measureByDuplicate(max: Size): Size {
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement
@@ -98,7 +98,7 @@ public fun HTMLElement.measureByDuplicate(max: Size): Size {
     return out
 }
 
-public fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
+internal fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement

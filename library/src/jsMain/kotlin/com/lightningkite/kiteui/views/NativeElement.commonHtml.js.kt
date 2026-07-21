@@ -31,7 +31,7 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 @Suppress("NOTHING_TO_INLINE")
-public inline fun objectAssign(target: dynamic, source: dynamic): dynamic = js("Object.assign(target, source)")
+internal inline fun objectAssign(target: dynamic, source: dynamic): dynamic = js("Object.assign(target, source)")
 
 
 public actual class FutureElement actual constructor() {
@@ -51,7 +51,7 @@ public actual class FutureElement actual constructor() {
      *
      * Updated by Claude to record hydration statistics.
      */
-    public fun hydrate(existingElement: DOMElement): Boolean {
+    internal fun hydrate(existingElement: DOMElement): Boolean {
         // Validate tag match
         if (tag.lowercase() != existingElement.tagName.lowercase()) {
             console.warn("Hydration mismatch: expected <$tag>, found <${existingElement.tagName}>")
@@ -110,7 +110,7 @@ public actual class FutureElement actual constructor() {
      *
      * Updated by Claude to record hydration statistics and handle mismatches gracefully.
      */
-    public fun hydrateRecursive(existingElement: DOMElement): Boolean {
+    internal fun hydrateRecursive(existingElement: DOMElement): Boolean {
         if (!hydrate(existingElement)) return false
 
         // Hydrate children by position
@@ -229,9 +229,9 @@ public actual class FutureElement actual constructor() {
 
     public actual var xmlns: String? = null
     public actual var tag: String = "tag"
-    public val attributesBack: Json = json()
+    internal val attributesBack: Json = json()
     public actual val attributes: FutureElementAttributes = FutureElementAttributes(attributesBack)
-    public val styleBack: Json = json()
+    internal val styleBack: Json = json()
     public actual val style: FutureElementStyle = FutureElementStyle(styleBack)
     public actual var desiredVerticalGravity: Align? = null
     public actual var desiredHorizontalGravity: Align? = null
@@ -255,7 +255,7 @@ public actual class FutureElement actual constructor() {
         }
     }
 
-    public val futureStyles: Json = json()
+    internal val futureStyles: Json = json()
     public actual fun setStyleProperty(key: String, value: String?) {
         val element = element
         if (element == null) {
@@ -275,7 +275,7 @@ public actual class FutureElement actual constructor() {
         }
     }
 
-    public val futureAttributes: Json = json()
+    internal val futureAttributes: Json = json()
     public actual fun setAttribute(key: String, value: String?) {
         val element = element
         if (element == null) {
@@ -380,8 +380,8 @@ public actual class FutureElement actual constructor() {
         // assert order
     }
 
-    public inner class ClassSet : MutableSet<String> {
-        public val map: MutableSet<String> = HashSet<String>()
+    internal inner class ClassSet : MutableSet<String> {
+        internal val map: MutableSet<String> = HashSet<String>()
         override fun add(element: String): Boolean = this@FutureElement.element?.addClass(element) ?: map.add(element)
         override fun addAll(elements: Collection<String>): Boolean =
             this@FutureElement.element?.addClass(*elements.toTypedArray()) ?: map.addAll(elements)
@@ -435,7 +435,7 @@ public actual class FutureElementStyle(public var native: dynamic)
 public actual class FutureElementAttributes(public var native: dynamic)
 
 
-public fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
+internal fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
     Align.Start -> ScrollLogicalPosition.START
     Align.Center -> ScrollLogicalPosition.CENTER
     Align.End -> ScrollLogicalPosition.END

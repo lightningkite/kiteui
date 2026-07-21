@@ -19,7 +19,7 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
         Frame.internalAddChildStack(this, index, element)
     }
 
-    public var previousLast: Element? = null
+    internal var previousLast: Element? = null
     public actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit) {
         nativeSwap(transition, createNewView)
     }

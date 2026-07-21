@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 public actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
     private var _openMenu: (() -> Unit)? = null
     override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + menuDriverActions(click = _openMenu)
-    public val floating: FloatingInfoHolder = FloatingInfoHolder(this)
+    internal val floating: FloatingInfoHolder = FloatingInfoHolder(this)
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"

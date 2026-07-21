@@ -14,7 +14,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         native.tag = "div"
         native.classes.add("textarea-container")
     }
-    public val textarea: FutureElement = FutureElement().apply {
+    internal val textarea: FutureElement = FutureElement().apply {
         tag = "textarea"
         classes.add("editable")
         classes.add("kui")

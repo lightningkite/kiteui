@@ -991,7 +991,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
     private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
         getter().takeUnless { diff?.getter() == it }
 
-    public fun theme(
+    internal fun theme(
         theme: Theme,
         diff: Theme? = null,
         asSelectors: List<String> = listOf(theme.classSelector),
@@ -1209,9 +1209,9 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
         return classes
     }
 
-    public fun Edges.css(): String = "${top.value} ${right.value} ${bottom.value} ${left.value}"
+    internal fun Edges.css(): String = "${top.value} ${right.value} ${bottom.value} ${left.value}"
 
-    public val rowCollapsingToColumnHandled: MutableSet<String> = HashSet<String>()
+    internal val rowCollapsingToColumnHandled: MutableSet<String> = HashSet<String>()
     public fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
         val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.roughPx.roundToInt().toString() }}"
         if (rowCollapsingToColumnHandled.add(name)) {
@@ -1284,7 +1284,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
         return name
     }
 
-    public inline fun apply(theme: Theme, out: (prop: String, value: String) -> Unit) {
+    internal inline fun apply(theme: Theme, out: (prop: String, value: String) -> Unit) {
 
     }
 }

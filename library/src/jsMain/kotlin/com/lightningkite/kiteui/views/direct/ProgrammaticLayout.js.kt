@@ -22,7 +22,7 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
         set(value) {
             field = value; invalidateLayout()
         }
-    public var log: Log? = null// ConsoleRoot.tag("ProgrammaticLayout")
+    internal var log: Log? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
     @OverrideOnly
     override fun onStartup() {

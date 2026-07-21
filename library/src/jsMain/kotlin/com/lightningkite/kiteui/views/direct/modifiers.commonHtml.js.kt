@@ -670,12 +670,12 @@ private val combinedAnimationWorker = label@{
 }
 
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-public inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
+internal inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
     asDynamic().animate(keyframes, options) as Animation
 
 @Suppress("NOTHING_TO_INLINE")
-public inline fun HTMLElement.getAnimations(): Array<Animation> = asDynamic().getAnimations as Array<Animation>
-public external interface Animation {
+internal inline fun HTMLElement.getAnimations(): Array<Animation> = asDynamic().getAnimations as Array<Animation>
+internal external interface Animation {
     public var oncancel: ((Event) -> Unit)?
     public var onfinish: ((Event) -> Unit)?
     public var onremove: ((Event) -> Unit)?

@@ -15,7 +15,7 @@ public actual class Frame actual constructor(context: ElementContext) : NativeCo
     }
 
     public companion object {
-        public fun internalAddChildStack(on: NativeContainerElement, index: Int, element: Element) {
+        internal fun internalAddChildStack(on: NativeContainerElement, index: Int, element: Element) {
             val elementNative = element.underlyingNativeElement.native
 
             if (index == 0) {

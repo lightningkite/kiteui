@@ -11,7 +11,7 @@ import com.lightningkite.reactive.core.*
 public actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
     override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + toggleDriverActions()
-    public val input: FutureElement = FutureElement().apply {
+    internal val input: FutureElement = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
         attributes.type = "checkbox"
