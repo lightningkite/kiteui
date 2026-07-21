@@ -30,7 +30,7 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
         fontAndStyle = theme.theme.font
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val textSize = textSize
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
@@ -39,7 +39,7 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
         textField.textAlignment = alignment
     }
 
-    public fun updateHint() {
+    internal fun updateHint() {
         textField.placeholder = hint
         // TODO: Colored hint
 //        textField.attributedPlaceholder = hint

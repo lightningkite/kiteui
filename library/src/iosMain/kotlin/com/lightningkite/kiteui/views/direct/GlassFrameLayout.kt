@@ -20,7 +20,7 @@ import platform.UIKit.*
  * A UIVisualEffectView that mimics the functionality of FrameLayout.
  * This allows us to have a blur effect and frame layout capabilities in a single view.
  */
-public class GlassFrameLayout : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleLight)), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+internal class GlassFrameLayout : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleLight)), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
     public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
     override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride

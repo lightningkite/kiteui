@@ -24,10 +24,10 @@ public actual class ProgressBar actual constructor(context: ElementContext) : Na
 @OptIn(ExperimentalForeignApi::class)
 public class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 
-    public val progressLayer: ProgressCALayer = ProgressCALayer().also {
+    internal val progressLayer: ProgressCALayer = ProgressCALayer().also {
         layer.insertSublayer(it, 0u)
     }
-    public var progress: Float by progressLayer::progress
+    internal var progress: Float by progressLayer::progress
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return size.useContents { CGSizeMake(width, 5.0) }
@@ -50,8 +50,8 @@ public class ProgressCALayer : CALayer {
     @OverrideInit
     public constructor(layer: kotlin.Any) : super(layer)
 
-    public var tintColor: UIColor = UIColor.whiteColor
-    public var progress: Float = 0f
+    internal var tintColor: UIColor = UIColor.whiteColor
+    internal var progress: Float = 0f
         set(value) {
             field = value
             setNeedsDisplay()

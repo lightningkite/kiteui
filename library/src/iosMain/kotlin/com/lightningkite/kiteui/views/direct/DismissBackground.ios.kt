@@ -55,9 +55,9 @@ public actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
     UIViewWithSizeOverridesProtocol,
     UIViewWithSpacingRulesProtocol {
 
-    public var onClick: () -> Unit = {}
-    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
-    public var anchor: Pair<PopoverPreferredDirection, UIView>? = null
+    internal var onClick: () -> Unit = {}
+    internal val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    internal var anchor: Pair<PopoverPreferredDirection, UIView>? = null
     override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)

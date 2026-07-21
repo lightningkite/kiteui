@@ -21,7 +21,7 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
             _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
         }
     override val native: WrapperView = WrapperView()
-    public val textField: TextFieldInput = TextFieldInput(this)
+    internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
 
     init {
@@ -88,7 +88,7 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
         }
     }
 
-    public var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -101,7 +101,7 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
         fontAndStyle = theme.theme.font
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)

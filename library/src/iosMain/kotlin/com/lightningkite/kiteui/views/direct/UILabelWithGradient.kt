@@ -22,7 +22,7 @@ import kotlin.experimental.ExperimentalNativeApi
 
 
 @OptIn(ExperimentalNativeApi::class)
-public class UILabelWithGradient(public val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
+internal class UILabelWithGradient(public val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false

@@ -23,7 +23,7 @@ public actual class Checkbox actual constructor(context: ElementContext) : Nativ
     override val driverValue: String? get() = checkboxDriverValue()
     override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + checkboxDriverActions()
     override val native: WrapperView = WrapperView()
-    public val button: FrameLayoutButton = FrameLayoutButton()
+    internal val button: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = button
     override val addChildTarget: FrameLayoutButton get() = button
 

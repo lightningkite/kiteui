@@ -244,7 +244,7 @@ public actual class SizelessRawImageView actual constructor(
 }
 
 public class UIImageViewFixedSizing() : UIImageView(CGRectZero.readValue()) {
-    public var ignoreNaturalSize: Boolean = false
+    internal var ignoreNaturalSize: Boolean = false
         set(value) {
             field = value
             informParentOfSizeChange()
@@ -268,7 +268,7 @@ public class UIImageViewFixedSizing() : UIImageView(CGRectZero.readValue()) {
                 ?: CGSizeMake(0.0, 0.0)
     }
 
-    public var naturalSize: Boolean = false
+    internal var naturalSize: Boolean = false
 }
 
 public actual class RawImageViewZoomable actual constructor(
@@ -278,7 +278,7 @@ public actual class RawImageViewZoomable actual constructor(
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
 
-    public val doubleTapTarget: NSObject =
+    internal val doubleTapTarget: NSObject =
             object : NSObject() {
                 @ObjCAction
                 fun handleDoubleTap(sender: UITapGestureRecognizer) {
@@ -306,7 +306,7 @@ public actual class RawImageViewZoomable actual constructor(
                     }
                 }
             }
-    public val doubleTapRecognizer: UITapGestureRecognizer =
+    internal val doubleTapRecognizer: UITapGestureRecognizer =
             UITapGestureRecognizer(doubleTapTarget, sel_registerName("handleDoubleTap:")).apply {
                 numberOfTapsRequired = 2UL
             }
@@ -321,7 +321,7 @@ public actual class RawImageViewZoomable actual constructor(
                 showsHorizontalScrollIndicator = false
                 showsVerticalScrollIndicator = false
             }
-    public val imageView: UIImageView =
+    internal val imageView: UIImageView =
             UIImageView(CGRectZero.readValue()).apply {
                 contentMode =
                         when (scaleType) {
@@ -333,7 +333,7 @@ public actual class RawImageViewZoomable actual constructor(
                         }
             }
     @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
-    public val dg: UIScrollViewDelegateProtocol = run {
+    internal val dg: UIScrollViewDelegateProtocol = run {
         // Use weak reference to avoid retain cycle
         val weakSelf = kotlin.native.ref.WeakReference(this)
         object : NSObject(), UIScrollViewDelegateProtocol {

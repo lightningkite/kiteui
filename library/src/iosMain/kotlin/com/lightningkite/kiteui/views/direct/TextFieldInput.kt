@@ -12,7 +12,7 @@ import platform.UIKit.*
 import platform.objc.sel_registerName
 
 @OptIn(ExperimentalNativeApi::class)
-public class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
+internal class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
     public val calculationContextWeak: WeakReference<CalculationContext> = WeakReference(calculationContext)
 
     // Explicit frame prevents UnsatisfiableConstraints error when automatic constraints are set by the system

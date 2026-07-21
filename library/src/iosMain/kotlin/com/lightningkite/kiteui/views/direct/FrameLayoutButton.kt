@@ -27,7 +27,7 @@ public class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSi
     private val tapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("onclick"))
     private val longPressGestureRecognizer = UILongPressGestureRecognizer(this, sel_registerName("onLongPress"))
 
-    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    internal val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
     override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
@@ -57,12 +57,12 @@ public class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSi
         addGestureRecognizer(longPressGestureRecognizer)
     }
 
-    public fun setOnClick(action: ()->Unit): ()->Unit {
+    internal fun setOnClick(action: ()->Unit): ()->Unit {
         onClick = action
         return { onClick = null }
     }
 
-    public fun setOnLongPress(action: ()->Unit): ()->Unit {
+    internal fun setOnLongPress(action: ()->Unit): ()->Unit {
         onLongPress = action
         return { onLongPress = null }
     }

@@ -33,7 +33,7 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
         }
     }
     override val native: WrapperView = WrapperView()
-    public val textField: UITextField = UITextField().apply {
+    internal val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -103,7 +103,7 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
         applyAlign(_align ?: theme.theme.font.align)
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -111,14 +111,14 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
         textField.textAlignment = alignment
     }
 
-    public fun updateHint() {
+    internal fun updateHint() {
         textField.attributedPlaceholder = NSAttributedString.create(
             hint,
             mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor())
         )
     }
 
-    public var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()

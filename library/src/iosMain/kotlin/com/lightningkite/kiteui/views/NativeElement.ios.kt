@@ -234,9 +234,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
      */
     protected open val disableBackground: Boolean = false
 
-    public class BlurBackgroundView : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
+    internal class BlurBackgroundView : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
 
-    public var effectBackground: BlurBackgroundView? = null
+    internal var effectBackground: BlurBackgroundView? = null
 
     actual override fun nativeApplyTheme(theme: ThemeAndBack) {
         native.clipsToBounds = theme.drawBackground
@@ -512,9 +512,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     }
 
 
-    public var dropInteraction: UIDropInteraction? = null
-    public var dropInteractionDelegate: DropInteractionDelegate? = null
-    public var scrollViewDropInteraction: UIDropInteraction? = null
+    internal var dropInteraction: UIDropInteraction? = null
+    internal var dropInteractionDelegate: DropInteractionDelegate? = null
+    internal var scrollViewDropInteraction: UIDropInteraction? = null
 
     actual override var dropTargetDelegate: DropTargetDelegate? = null
         set(value) {
@@ -536,7 +536,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         }
 
     // A private delegate class to handle drop events
-    public class DropInteractionDelegate(view: Element) : NSObject(), UIDropInteractionDelegateProtocol {
+    internal class DropInteractionDelegate(view: Element) : NSObject(), UIDropInteractionDelegateProtocol {
         @OptIn(ExperimentalNativeApi::class)
         private val owner = WeakReference(view)
 

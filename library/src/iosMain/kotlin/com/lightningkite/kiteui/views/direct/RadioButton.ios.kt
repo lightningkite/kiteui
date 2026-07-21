@@ -22,7 +22,7 @@ public actual class RadioButton actual constructor(context: ElementContext) : Na
     override val driverValue: String? get() = radioDriverValue()
     override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + radioDriverActions()
     override val native: WrapperView = WrapperView()    // Todo: Unneeded wrapper?
-    public val button: FrameLayoutButton = FrameLayoutButton()
+    internal val button: FrameLayoutButton = FrameLayoutButton()
     override val addChildTarget: FrameLayoutButton get() = button
     override val control: UIControl get() = button
 
