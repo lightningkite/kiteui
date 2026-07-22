@@ -64,8 +64,11 @@ public fun fontFromFamilyInfo(
     }
     UIFont.fontWithName(fn, size) ?: systemDefaultFont.get(size, weight, getItalic)
 }
-public actual val systemDefaultFont: Font get() = Font { size, weight, italic -> if(italic) UIFont.italicSystemFontOfSize(size) else UIFont.systemFontOfSize(size, weight) }
-public actual val systemDefaultFixedWidthFont: Font get() = Font { size, weight, italic -> UIFont.systemFontOfSize(size, weight) }
+// Stable singletons: Font has identity equality, so a fresh instance per access would make two
+// themes built from the system default font compare unequal (breaking Theme.Debugger's structural
+// check). The lambda defers UIFont access, so `val` init is pure.
+public actual val systemDefaultFont: Font = Font { size, weight, italic -> if(italic) UIFont.italicSystemFontOfSize(size) else UIFont.systemFontOfSize(size, weight) }
+public actual val systemDefaultFixedWidthFont: Font = Font { size, weight, italic -> UIFont.systemFontOfSize(size, weight) }
 
 public actual sealed class ImageSource actual constructor(): VisualMediaSource
 public actual data class ImageResource(val name: String) : ImageSource()
