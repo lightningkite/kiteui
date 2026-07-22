@@ -45,9 +45,9 @@ public data class UrlLikePath(
         public val EMPTY: UrlLikePath = UrlLikePath(listOf(), mapOf())
 
         public fun fromParts(pathname: String, search: String): UrlLikePath = UrlLikePath(
-            segments = pathname.split('/').filter { it.isNotBlank() },
+            segments = pathname.split('/').filter { it.isNotBlank() }.map { decodeURIComponent(it) },
             parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
-                .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
+                .associate { decodeURIComponent(it.substringBefore('=')) to decodeURIComponent(it.substringAfter('=')) }
         )
 
         public fun fromUrlString(url: String): UrlLikePath {
@@ -57,10 +57,10 @@ public data class UrlLikePath(
     }
 
     // by Claude - removed debug println that fired on every route render
-    public fun render(): String = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
+    public fun render(): String = segments.joinToString("/") { encodeURIComponent(it) } + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
         "&",
         "?"
-    ) { "${it.key}=${encodeURIComponent(it.value)}" } ?: "")
+    ) { "${encodeURIComponent(it.key)}=${encodeURIComponent(it.value)}" } ?: "")
 
 }
 

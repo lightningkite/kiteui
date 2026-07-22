@@ -204,9 +204,9 @@ public var basePath: String = ((document.getElementById("baseUrlLocation") as? H
 
 private fun Location.urlLike() = UrlLikePath(
     segments = pathname.removePrefix("/" + basePath.substringAfter("://").substringAfter('/')).split('/')
-        .filter { it.isNotBlank() },
+        .filter { it.isNotBlank() }.map { decodeURIComponent(it) },
     parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
-        .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
+        .associate { decodeURIComponent(it.substringBefore('=')) to decodeURIComponent(it.substringAfter('=')) }
 )
 
 public actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
