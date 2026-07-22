@@ -50,8 +50,8 @@ public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -
     )
 )
 
-public fun ElementWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit) {
-    return appBase(main, dialog) {
+public fun ElementWriter.appNav(main: PageNavigator, setup: AppNav.() -> Unit) {
+    return appBase(main) {
         swapView {
             debugName = "swap-appNavFactory"
             swapping(

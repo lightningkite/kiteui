@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 
@@ -16,12 +15,7 @@ public actual class DismissBackground actual constructor(context: ElementContext
         themePipeline.add(ThemePipeline.Step.elementStyling, DismissSemantic)
     }
 
-    override val native: FrameLayout = FrameLayout(context.activity).apply {
-        setOnClickListener {
-            @Suppress("DEPRECATION")
-            this@DismissBackground.context.dialogPageNavigator.clear()
-        }
-    }
+    override val native: FrameLayout = FrameLayout(context.activity)
     public actual fun onClick(action: suspend () -> Unit) {
         val action = Action("Dismiss", Icon.close) { action() }
         native.setOnClickListener { _ ->

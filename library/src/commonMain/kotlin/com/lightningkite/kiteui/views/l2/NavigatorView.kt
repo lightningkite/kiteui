@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.MainContentSemantic
-import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.models.LiveRegionMode
 import com.lightningkite.kiteui.views.*
@@ -36,35 +33,6 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
                     else null
                 }
                 this@swapView.requestFocusOrDescendant()
-            }
-        )
-    }
-}
-
-public fun ViewWriter.navigatorViewDialog(): SwapView {
-    val n = dialogPageNavigator
-    return this.swapView {
-        debugName = "navigatorViewDialog"
-        ignoreInteraction = true
-        var lastStack = n.stack.value
-        this@swapView.swapping(
-            transition = {
-                val newStack = n.stack.value
-                val transitionSet = theme.dialogTransitions
-                when {
-                    newStack.size - lastStack.size > 0 -> transitionSet.forward
-                    newStack.size - lastStack.size < 0 && newStack.firstOrNull() == lastStack.firstOrNull() -> transitionSet.reverse
-                    else -> transitionSet.neutral
-                }.also { lastStack = newStack }
-            },
-            current = { n.currentPage<Page?>() },
-            views = { screen ->
-                with(split()) {
-                    context.pageNavigator = n
-                    if (screen != null)
-                        with(screen) { themed(DialogSemantic).render() }
-                    else null
-                }
             }
         )
     }

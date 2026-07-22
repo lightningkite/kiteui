@@ -277,7 +277,6 @@ listOf(
     impl("actual fun <T> RecyclerView.children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>)->Unit): Unit", " = TODO()")
 }
 
-modifier("hasPopover", "requireClick" ofType "Boolean" default "false", "preferredDirection" ofType "PopoverPreferredDirection" default "PopoverPreferredDirection.belowRight", "setup" ofType "ViewWriter.()->Unit")
 modifier("weight", "amount" ofType "Float")
 modifier("gravity", "horizontal" ofType "Align", "vertical" ofType "Align")
 modifierVal("scrolls", )

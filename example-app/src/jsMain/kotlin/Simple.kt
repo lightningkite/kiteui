@@ -40,7 +40,7 @@ fun main() {
     }
 
     smartRoot(appTheme) {
-        app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
+        app(PageNavigator { AutoRoutes })
 
         document.addEventListener("keydown", { e ->
             e as KeyboardEvent

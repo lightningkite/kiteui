@@ -29,21 +29,15 @@ public var Element.coordinatorFrame: CoordinatorFrame?
     get() = context.coordinatorFrame
     set(value) { context.coordinatorFrame = value }
 
-public fun ElementWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainerElement.() -> Unit) {
+public fun ElementWriter.appBase(main: PageNavigator, mainLayout: ContainerElement.() -> Unit) {
     coordinatorFrame {
         debugName = "appBase"
         context.mainPageNavigator = main
         context.pageNavigator = main
-        dialog?.let {
-            context.dialogPageNavigator = it
-        }
         main.bindToPlatform(context)
         context.overlayFrame = this
         context.coordinatorFrame = this
         mainLayout()
-        dialog?.let {
-            navigatorViewDialog()
-        }
 //        baseStack = this
 //        baseStackWriter = split()
     }

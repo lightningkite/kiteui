@@ -13,7 +13,6 @@ import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.EmphasizedSemantic
 import com.lightningkite.kiteui.models.HoverSemantic
 import com.lightningkite.kiteui.models.MainContentSemantic
-import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.SelectedSemantic
 import com.lightningkite.kiteui.models.Semantic
@@ -154,14 +153,6 @@ public inline fun ElementWriter.CanAddTheme.maybeThemeFromLast(crossinline calcu
 public inline fun ElementWriter.CanAddTheme.tweakTheme(crossinline calculate: (Theme) -> Theme): ElementWriter {
     return beforeSetup { themeChoice += ThemeDerivation { calculate(it).withoutBack } }
 }
-
-@Deprecated("Use hintPopover or menuButton depending on your situation.", level = DeprecationLevel.ERROR)
-@ViewModifierDsl3
-public expect fun ElementWriter.hasPopover(
-    requiresClick: Boolean = false,
-    preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight,
-    setup: ViewWriter.() -> Unit
-): ElementWriter
 
 @ViewModifierDsl3
 @Deprecated("No longer needed - just tell the parent what its spacing value should be.", ReplaceWith("this"), DeprecationLevel.ERROR)

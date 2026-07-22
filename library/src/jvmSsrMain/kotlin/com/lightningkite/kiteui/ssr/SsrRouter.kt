@@ -6,16 +6,15 @@ import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.navigation.mainPageNavigator
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 
 /**
  * Function type for custom app wrappers.
- * Receives the ViewWriter, main navigator, dialog navigator, and current page.
+ * Receives the ViewWriter and main navigator.
  */
-public typealias AppWrapper = ViewWriter.(navigator: PageNavigator, dialog: PageNavigator) -> Unit
+public typealias AppWrapper = ViewWriter.(navigator: PageNavigator) -> Unit
 
 /**
  * Router for server-side rendering that integrates with KiteUI's Routes system.
@@ -32,7 +31,7 @@ public typealias AppWrapper = ViewWriter.(navigator: PageNavigator, dialog: Page
  * val router = SsrRouter(
  *     routes = AutoRoutes,
  *     theme = defaultTheme,
- *     appWrapper = { navigator, dialog -> app(navigator, dialog) }
+ *     appWrapper = { navigator -> app(navigator) }
  * )
  *
  * // In your HTTP handler:
@@ -123,9 +122,8 @@ public class SsrRouter(
         // Single render - creates reactive structure with bindings
         // ssrResource() calls during render will register resources and start loading
         context.render {
-            // Create navigators for SSR
+            // Create the navigator for SSR
             val navigator = PageNavigator { routes }
-            val dialog = PageNavigator { routes }
 
             // Set the current page in the navigator stack
             navigator.reset(page)
@@ -133,13 +131,12 @@ public class SsrRouter(
             // Set navigators on the ViewWriter context
             this.pageNavigator = navigator
             this.mainPageNavigator = navigator
-            this.dialogPageNavigator = dialog
 
             if (appWrapper != null) {
                 // Use the app wrapper for full navigation shell
                 // Don't use theme.onNext here - SsrContext's willAddChild sets SetAsBase(theme)
                 // which correctly uses withBackNoPadding (background but no padding on root)
-                appWrapper(navigator, dialog)
+                appWrapper(navigator)
             } else {
                 // Render page directly without navigation
                 col {

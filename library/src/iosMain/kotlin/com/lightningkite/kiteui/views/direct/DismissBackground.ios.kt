@@ -4,7 +4,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.reactive.*
@@ -38,7 +37,6 @@ public actual class DismissBackground actual constructor(context: ElementContext
     }
 
     init {
-        onClick { this.context.dialogPageNavigator.clear() }
         onRemove { native.onClick = {} }
     }
 

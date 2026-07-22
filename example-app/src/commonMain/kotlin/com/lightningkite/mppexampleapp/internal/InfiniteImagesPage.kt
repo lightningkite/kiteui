@@ -3,7 +3,6 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -65,7 +64,7 @@ object InfiniteImagesPage : Page {
                         ::source { ImageRemote("https://picsum.photos/seed/${it()}/100/100") }
                     }
                     onClick {
-                        dialogPageNavigator.navigate(ImageViewPager(it.await()))
+                        pageNavigator.navigate(ImageViewPager(it.await()))
                     }
                 }
             }

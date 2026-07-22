@@ -3,7 +3,6 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.confirmDanger
@@ -32,7 +31,18 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch Test Dialog" }
                 onClick {
-                    dialogPageNavigator.navigate(DialogSampleScreen1)
+                    context.dialog { close ->
+                        card.col {
+                            h2 { content = "Sample Dialog" }
+                            text { content = "This is a sample dialog." }
+                            row {
+                                card.button {
+                                    text { content = "OK" }
+                                    onClick { close() }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             button {
@@ -107,23 +117,6 @@ object DialogSamplesPage : Page {
                             h2("Bottom sheet")
                             text("bottom text")
                         }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Routable("sample/dialog/1") object DialogSampleScreen1: Page {
-    override fun ElementWriter.CanAddTheme.render(): Unit = run {
-        dismissBackground {
-            centered.card.col {
-                h2 { content = "Sample Dialog" }
-                text { content = "This is a sample dialog." }
-                row {
-                    card.button {
-                        text { content = "OK" }
-                        onClick { dialogPageNavigator.dismiss() }
                     }
                 }
             }
