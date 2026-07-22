@@ -88,34 +88,28 @@ object ForEachByIdTestPage : Page {
             row {
                 expanding.card.col {
                     h2("renderList (animated)")
-                    col {
-                        renderListKeyed(items, id = { it.id }) { item ->
-                            card.text {
-                                ::content { item().name }
-                                ::debugName { item().name }
-                            }
+                    colOf(items, id = { it.id }) { item ->
+                        card.text {
+                            ::content { item().name }
+                            ::debugName { item().name }
                         }
                     }
                 }
                 expanding.card.col {
                     h2("renderList (no animation)")
-                    col {
-                        renderListKeyed(items, id = { it.id }, animate = false) { item ->
-                            card.text {
-                                ::content { item().name }
-                                ::debugName { item().name }
-                            }
+                    colOf(items, id = { it.id }, animate = false) { item ->
+                        card.text {
+                            ::content { item().name }
+                            ::debugName { item().name }
                         }
                     }
                 }
                 expanding.card.col {
                     h2("Reference (renderList unkeyed)")
-                    col {
-                        renderListKeyed(items) { item ->
-                            card.text {
-                                ::content { item().name }
-                                ::debugName { item().name }
-                            }
+                    colOf(items) { item ->
+                        card.text {
+                            ::content { item().name }
+                            ::debugName { item().name }
                         }
                     }
                 }

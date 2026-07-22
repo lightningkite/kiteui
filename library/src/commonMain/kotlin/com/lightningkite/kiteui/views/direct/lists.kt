@@ -1,4 +1,5 @@
 @file:OptIn(InternalKiteUi::class)
+@file:Suppress("DSL_MARKER_APPLIED_TO_WRONG_TARGET")
 
 package com.lightningkite.kiteui.views.direct
 
@@ -136,6 +137,7 @@ inline fun <T, C : ContainerElement> ElementWriter.renderListIn(
  * @see colOf for a col-specific convenience wrapper
  * @see rowOf for a row-specific convenience wrapper
  */
+@ViewDsl
 inline fun <T, ID : Any, C : ContainerElement> ElementWriter.renderListIn(
     container: ElementWriter.(C.() -> Unit) -> C,
     items: Reactive<List<T>>,
@@ -374,6 +376,7 @@ fun <T> ElementWriter.colOfExpensive(
  * @param placeholdersWhileLoading Renderers to show while data loads
  * @return The created RowOrCol container
  */
+@ViewDsl
 fun <T, ID : Any> ElementWriter.colOf(
     items: Reactive<List<T>>,
     rendererSet: RecyclerViewRendererSet<T, ID>,
@@ -512,6 +515,7 @@ fun <T> ElementWriter.rowOfExpensive(
  * @param placeholdersWhileLoading Renderers to show while data loads
  * @return The created RowOrCol container
  */
+@ViewDsl
 fun <T, ID : Any> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     rendererSet: RecyclerViewRendererSet<T, ID>,

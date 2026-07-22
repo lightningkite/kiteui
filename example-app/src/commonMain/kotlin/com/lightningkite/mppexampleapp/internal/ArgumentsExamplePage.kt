@@ -8,7 +8,6 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.textInput
-import com.lightningkite.kiteui.views.renderListKeyed
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.core.*
 import kotlin.jvm.JvmInline
@@ -53,10 +52,8 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
                 }
             }
             h2 { content = "The list so far" }
-            col {
-                renderListKeyed(list) {
-                    text { ::content { it() } }
-                }
+            colOf(list) {
+                text { ::content { it() } }
             }
             h2 { content = "Add more" }
             textInput { content bind toAdd }

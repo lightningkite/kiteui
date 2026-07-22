@@ -41,7 +41,7 @@ fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.
 }
 
 fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddSizing.(close: ()->Unit) -> Unit) {
-    overlay(modal = true, navClosable = dismissable) { close -> // TODO:
+    overlay(modal = true, navClosable = dismissable) { close ->
         dismissBackground {
             debugName = "dialog-bg"
             onClick { if (dismissable) close() }

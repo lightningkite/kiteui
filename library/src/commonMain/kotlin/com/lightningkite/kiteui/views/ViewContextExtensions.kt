@@ -161,7 +161,6 @@ fun ContainerElement.popoverWriter(
  *
  * @param navClosable if `true` this overlay will be closable with the platform's 'back' action.
  */
-// TODO: Need to implement `navClosable` on ios
 expect fun ElementContext.overlay(
     modal: Boolean = true,
     navClosable: Boolean = modal,

@@ -101,6 +101,7 @@ object RootPage : Page {
                 linkPage { NestedPopoverTestPage }
 
                 sectionLabel("Recycler / Lists")
+                linkPage { ListTestPage }
                 linkPage { RecyclerViewTestPage }
                 linkPage { Recycler2TestPage }
                 linkPage { RecyclerFilterTestPage }

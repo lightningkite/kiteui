@@ -155,15 +155,13 @@ object LayoutExamplesPage : Page {
             card.col {
                 h2 { content = "Dynamic List" }
                 val countString = Signal("5")
-                scrollsHorizontally.row {
-                    renderListKeyed(
-                        remember {
-                            (1..(countString().toIntOrNull()
-                                ?: 1).coerceAtMost(100)).map { "Item $it" }
-                        }
-                    ) {
-                        text { ::content.invoke { it() } }
+                scrollingHorizontally.rowOf(
+                    remember {
+                        (1..(countString().toIntOrNull()
+                            ?: 1).coerceAtMost(100)).map { "Item $it" }
                     }
+                ) {
+                    text { ::content.invoke { it() } }
                 }
                 label {
                     content = "Element count:"
