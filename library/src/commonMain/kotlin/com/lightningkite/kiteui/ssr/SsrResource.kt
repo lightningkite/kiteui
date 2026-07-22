@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.ssr
 
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.reactive.context.QuiescenceTracker
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.reactive.core.Signal
@@ -129,12 +128,7 @@ public class SsrResource<T : Any>(
      */
     public fun startLoading(scope: CoroutineScope) {
         if (loadJob != null) return
-        // Register with the scope's QuiescenceTracker (if any) BEFORE launching: the state write
-        // and its synchronous listener cascade run inside the job body, so the tracker only counts
-        // down after all downstream reactive updates have propagated. This is what lets SSR await
-        // a deterministic settle point instead of sleeping.
-        val endWork = scope.coroutineContext[QuiescenceTracker]?.beginWork()
-        val job = scope.launch {
+        loadJob = scope.launch {
             try {
                 val result = loader()
                 _state.value = ReactiveState(result)
@@ -142,8 +136,6 @@ public class SsrResource<T : Any>(
                 _state.value = ReactiveState.exception<T>(e)
             }
         }
-        if (endWork != null) job.invokeOnCompletion { endWork() }
-        loadJob = job
     }
 
     /**

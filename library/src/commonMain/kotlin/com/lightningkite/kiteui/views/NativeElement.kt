@@ -16,7 +16,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmInline
 
 /**
@@ -469,10 +468,6 @@ public abstract class NativeElementCommonCode internal constructor(override val 
             )
         },
         context.ssrDispatcher ?: Dispatchers.Main.immediate,
-        // During SSR, reactive work started by this element must count toward the request's
-        // quiescence tracker so serialization can deterministically wait for it. Elements build
-        // their contexts fresh (no scope inheritance), so the tracker rides on ElementContext.
-        context.ssrQuiescence ?: EmptyCoroutineContext,
         // A *separate* StatusListener object, not `this`: the element must not be the object returned
         // by coroutineContext[StatusListener], or its CoroutineScope identity and its StatusListener
         // identity would be the same object, making `element.job` ambiguous (see Element.kt). Element

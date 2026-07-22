@@ -28,23 +28,34 @@ Most of this document has now been implemented on branch `api-cleanup` (kiteui) 
 **Landed — kiteui (`api-cleanup`):** N3 dialog-navigator removal · B10/N5 URL encoding · T2
 `themeAndBack` unification + V4 view cleanups · V2 AOSP prune + V1/B2 weight-align capability
 interfaces · B3/B4/B5 CSS+Color · TH1 theme-id collision debugger · N2 SSR viewport guardrail +
-N1 hydration golden test/counter · N6 SSR quiescence consumption (+ settle timeout) · R1 thread
-guard activation (Android/iOS debug) · R4 docs vocabulary · N7 part-1 deprecation caller-migration.
+N1 hydration golden test/counter · R1 thread guard activation (Android/iOS debug) · R4 docs
+vocabulary · N7 part-1 deprecation caller-migration.
 Plus a bug caught during the work: system-default `Font` singletons (a `Theme.Debugger` false
 positive on Android/iOS).
 
 **Landed — reactive (`reactive-bugfixes`):** B1/R4 DependencyTracker · B6 async cache/cancel · B7
-CancellationException rethrow · B8 doc fix · R1 thread-confinement guard · N6 `QuiescenceTracker`
-(published `5.1.3-reactivebugfixes-53`, consumed via mavenLocal).
+CancellationException rethrow · B8 doc fix · R1 thread-confinement guard (consumed via mavenLocal
+`6.0.0-prerelease-52-local`).
+
+**Reverted (N6 — SSR quiescence signal):** implemented and verified, then reverted on request. It
+replaced SSR's `delay(1)` settle with a `QuiescenceTracker` counting in-flight reactive work, but
+review found it *duplicated instrumentation* with the existing `StatusListener` (both are
+`CoroutineContext.Element` begin/end trackers of reactive activity, wired at adjacent/identical call
+sites — e.g. `load{}` announced to both). They answer subtly different questions (work-in-flight vs
+value-readiness; the never-ready case is the one that genuinely differs), so a proper fix would
+*extend* `StatusListener` rather than run parallel to it. Since SSR is not yet in production (Q19),
+this was deferred rather than kept. If revisited: build the quiescence counter as a `StatusListener`
+consumer so reactive activity is announced once, and add explicit tracking only at the genuine gaps
+(debounce timers, `bind` syncs). SSR is back on `delay(1)`.
 
 **Deliberately not done (maintainer):** R2, R3 (reserved for co-design), V3, N4.
 
 **Deferred follow-ups:** TH2-iOS interactive-state parity (needs a simulator for visual
 verification) · N7 part-2 (delete now-dead deprecated shims: `PageNavigatorBehavior`,
-`encodeToStringMap`) · reactive: give the branch a real release version/tag (the current
-`5.1.3-reactivebugfixes-53` sorts below `6.0.0-prerelease` and must be re-pinned before shipping),
-the `remember{}`-internal-async quiescence hole, and fix `LateInitProperty`'s @Deprecated message
-(points at a nonexistent `LateInitReactiveValue`) · SSR preload-mechanism consolidation
+`encodeToStringMap`) · reactive: cut a real release of the `reactive-bugfixes` branch and re-pin
+kiteui off the temporary mavenLocal `6.0.0-prerelease-52-local` build before shipping, and fix
+`LateInitProperty`'s @Deprecated message (points at a nonexistent `LateInitReactiveValue`) · SSR
+preload-mechanism consolidation
 (`SsrPreloadable` is public API) · remaining `reactiveScope` uses in some example-app pages · the
 `// by Claude` authorship comments · browser-only JS hydration unit tests (couldn't run headless).
 

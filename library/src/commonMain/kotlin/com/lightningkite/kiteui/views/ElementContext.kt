@@ -3,12 +3,10 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.exceptions.ExceptionHandlersTree
 import com.lightningkite.kiteui.exceptions.ExceptionMessage
-import com.lightningkite.reactive.context.QuiescenceTracker
 import com.lightningkite.reactive.core.Release
 import kotlinx.coroutines.CoroutineDispatcher
 
 private const val DISPATCHER_KEY = "ssrDispatcher"
-private const val QUIESCENCE_KEY = "ssrQuiescence"
 
 /**
  * Custom CoroutineDispatcher to use for Elements created with this context.
@@ -18,18 +16,6 @@ private const val QUIESCENCE_KEY = "ssrQuiescence"
 public var ElementContext.ssrDispatcher: CoroutineDispatcher?
     get() = addons[DISPATCHER_KEY] as? CoroutineDispatcher
     set(value) { addons[DISPATCHER_KEY] = value }
-
-/**
- * [QuiescenceTracker] to install in the coroutine context of Elements created with this context.
- * If set, reactive work started by those Elements (bindings, async blocks, etc.) counts toward
- * the tracker, letting SSR deterministically await the moment the page's reactive graph has
- * settled instead of guessing with a delay. Elements build their scopes fresh rather than
- * inheriting from a parent scope, which is why this rides on the ElementContext like
- * [ssrDispatcher] does.
- */
-public var ElementContext.ssrQuiescence: QuiescenceTracker?
-    get() = addons[QUIESCENCE_KEY] as? QuiescenceTracker
-    set(value) { addons[QUIESCENCE_KEY] = value }
 
 public expect class ElementContext: ElementContextCommonCode {
     public fun split(): ElementContext
