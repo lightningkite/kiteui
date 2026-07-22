@@ -18,6 +18,38 @@ divergence, half-finished migrations, and a handful of concrete bugs — not the
 
 ---
 
+## 0. Implementation status (2026-07-22)
+
+Most of this document has now been implemented on branch `api-cleanup` (kiteui) and
+`reactive-bugfixes` (reactive), each finding as its own reviewable commit, all verified green
+(jvmSsr + Robolectric + JS/iOS compile) and the web target spot-checked live in a browser
+(render, navigation, dialogs/popovers, zero console errors).
+
+**Landed — kiteui (`api-cleanup`):** N3 dialog-navigator removal · B10/N5 URL encoding · T2
+`themeAndBack` unification + V4 view cleanups · V2 AOSP prune + V1/B2 weight-align capability
+interfaces · B3/B4/B5 CSS+Color · TH1 theme-id collision debugger · N2 SSR viewport guardrail +
+N1 hydration golden test/counter · N6 SSR quiescence consumption (+ settle timeout) · R1 thread
+guard activation (Android/iOS debug) · R4 docs vocabulary · N7 part-1 deprecation caller-migration.
+Plus a bug caught during the work: system-default `Font` singletons (a `Theme.Debugger` false
+positive on Android/iOS).
+
+**Landed — reactive (`reactive-bugfixes`):** B1/R4 DependencyTracker · B6 async cache/cancel · B7
+CancellationException rethrow · B8 doc fix · R1 thread-confinement guard · N6 `QuiescenceTracker`
+(published `5.1.3-reactivebugfixes-53`, consumed via mavenLocal).
+
+**Deliberately not done (maintainer):** R2, R3 (reserved for co-design), V3, N4.
+
+**Deferred follow-ups:** TH2-iOS interactive-state parity (needs a simulator for visual
+verification) · N7 part-2 (delete now-dead deprecated shims: `PageNavigatorBehavior`,
+`encodeToStringMap`) · reactive: give the branch a real release version/tag (the current
+`5.1.3-reactivebugfixes-53` sorts below `6.0.0-prerelease` and must be re-pinned before shipping),
+the `remember{}`-internal-async quiescence hole, and fix `LateInitProperty`'s @Deprecated message
+(points at a nonexistent `LateInitReactiveValue`) · SSR preload-mechanism consolidation
+(`SsrPreloadable` is public API) · remaining `reactiveScope` uses in some example-app pages · the
+`// by Claude` authorship comments · browser-only JS hydration unit tests (couldn't run headless).
+
+---
+
 ## 1. Executive summary — cross-cutting themes
 
 Five themes recur across subsystems. Findings that appear independently in two reviews are
@@ -112,6 +144,11 @@ High-confidence, concrete defects worth fixing now. Each is small and self-conta
 | B10 | Query-param parsing decodes the value but uses the key raw (`substringBefore('=')`) — an encoded `=`/`&` in a key corrupts parsing. | `navigation/Routes.kt:49-50` | Decode the key symmetrically. Low risk, one-liner. |
 
 ---
+
+> **Read §7 alongside the sections below.** The maintainer answered the open questions, and
+> several findings here were adjusted as a result — some are deliberate designs (R1, R2, TH1,
+> TH2, TH3, TH5, TH6, V3) and one suggestion was reversed (N4/KSP). §7 records each adjustment;
+> the original reviewer framing is preserved below for context.
 
 ## 3. Reactivity (`~/Projects/reactive` + KiteUI bridge)
 
@@ -353,94 +390,127 @@ consolidate onto `ssrResource` and the preload render variants.
 
 ---
 
-## 7. Open questions for the maintainer
+## 7. Maintainer answers & resulting adjustments
 
-These need domain knowledge or runtime verification the reviewers didn't have.
+The maintainer answered all 19 open questions. Several flagged findings turned out to be
+*deliberate* designs — recorded here so nobody "fixes" them later. Format: **Q → answer →
+adjustment to the finding.**
 
 **Reactivity**
-1. Is `Dispatchers.Unconfined` the *deliberate* default for `remember`/`shared`? What
-   convention (if any) guarantees background loads hop to main before writing signals? (R1)
-2. Does anything ever call `DependentAction.cancel()`? A navigate-away leak test would settle
-   R2's severity.
-3. SSR dispatcher semantics: does `ssrDispatcher` satisfy the `isDispatchNeeded == false`
-   fast paths, or does SSR silently take the dispatched path everywhere?
-4. Was the hashed `DependencyTracker` (commented-out harness in `DependencyTrackerTest.kt`)
-   benchmarked and rejected, or parked? Decides whether B1 is a one-liner or a swap.
+1. *Unconfined default (R1)* → **Deliberate — swapping threads has a real cost that is almost
+   never necessary.** Adjustment: R1 downgraded — the default is intended. Residual value is
+   only the debug-time `ReactiveThreadCheck` to catch *accidental* off-main writes; keep
+   `Unconfined`.
+2. *DependentAction.cancel leak (R2)* → **Not a bug — `cancel()` exists but is generally unused;
+   most people prefer actions to complete even after navigating away.** Adjustment: R2 is
+   intended behavior, not a leak. Reclassify as "documented lifecycle choice," remove from
+   defect list. (A doc note that actions outlive their element would help newcomers.)
+3. *SSR dispatcher fast-path* → **Don't know; SSR was mostly agent-written and isn't in
+   production.** Adjustment: leave as-is; low priority (see Q19).
+4. *Hashed DependencyTracker parked or rejected (B1)* → **Don't know.** Adjustment: B1 stays the
+   safe **one-line off-by-one fix** (`[size-1]`); the hashed variant remains parked, not needed
+   to land B1.
 
 **Theming**
-5. Are theme ids actually globally unique in practice today — is there any known collision
-   (two `customize("x")` calls; `bold`/`textSize` literals)? (TH1)
-6. Do production apps generate unbounded theme ids (per-item colors, `Theme.random`)? Decides
-   whether TH3 is live or theoretical.
-7. Which theme variants (`material3`, `flat`, `clean`) have external consumers? Confirms the
-   TH6 deletion set.
-8. Is the web pseudo-class approach a deliberate perf choice to formalize, or an accident to
-   converge on the pipeline? (TH2)
-9. Is `INVALID`-means-keep for `iconOverride`/`separatorOverride` ever actually needed, or
-   can it collapse into null-means-inherit? (TH5)
+5. *Theme id uniqueness (TH1)* → **Deliberate, with a MASSIVE performance advantage. Derivations
+   that don't go through semantics are considered bad practice and have been deprecated by word
+   of mouth — though the code may need updating to enforce it.** Adjustment: TH1 is **not a
+   hazard by design** — reframe from "correctness bug" to "make the semantics-only-derivation
+   convention explicit in code (annotation/lint/deprecation) so ids provably can't collide."
+   That enforcement is the real todo, not changing the identity model.
+6. *Unbounded theme ids in production (TH3)* → **Theoretical; in practice very bounded.**
+   Adjustment: TH3 downgraded to LOW/theoretical. No action unless an app starts minting
+   per-item themes.
+7. *Which variants have consumers (TH6)* → **flat2 is heavily consumed; the others (material3,
+   flat, clean) mostly aren't and need additional work — which I'd rather do than throw away.**
+   Adjustment: **reverse the deletion suggestion.** Keep the variants; treat them as unfinished,
+   not dead. Only the near-empty stubs (F11: empty `apply()`) are cleanup.
+8. *Web pseudo-class interactive states (TH2)* → **Very purposeful — it's what makes SSR great**
+   (static CSS renders correct interactive states server-side). Adjustment: the web/pipeline
+   split is intended; do NOT converge web onto the runtime pipeline. TH2's real residual is
+   **iOS parity** (iOS does ~nothing for interactive states) and a single documented semantic
+   contract, not unifying the mechanisms.
+9. *INVALID-vs-null sentinel (TH5)* → **Needed — `null` is itself a valid settable value** (an
+   explicit "no override," distinct from "inherit"). Adjustment: keep the sentinel; drop the
+   "collapse to null" suggestion. The only residual is the 5-site hand-repeated property list.
 
-**Views** (plus the shared #1 unknown: **why does `super.themeAndBack = value` break
-everything?** — T2)
-10. Was a runtime order-validating builder considered instead of the N-interface modifier
-    ladder — is the compile-time guarantee worth the per-platform duplication tax? And is
-    `CanAddListElementModifier` a permanent tier or transitional? (V3)
-11. Is `SimplifiedLinearLayout`'s AOSP feature set (baseline, largest-child, RTL) reachable
-    from any KiteUI API, or deletable? (V2)
-12. What is the intended replacement for `spacingOverrideBeforeNext`, deprecated to ERROR
-    with its mechanism still live underneath?
-13. Does the iOS `childSizeCache` go stale on theme/font changes that alter intrinsic size
-    without changing the measure input?
+**Views** (shared unknown: **why does `super.themeAndBack` break?** — still open, top priority)
+10. *Modifier ladder worth it? `CanAddListElementModifier` permanent? (V3)* → **Compile-time
+    enforcement is very deliberate and worth it. CanAddListElementModifier still used?** →
+    **Verified: yes, 27 live uses** (it's `weight()`'s return type and `CanAddWeight`'s
+    supertype). Adjustment: V3 resolved — the ladder is intentional; action is docs-only
+    (document the tiers, incl. why `CanAddListElementModifier` exists). No rework.
+11. *AOSP feature set reachable? (V2)* → **No — deletable.** Adjustment: **confirmed cleanup.**
+    Strip the unreachable baseline/largest-child/RTL machinery and `if(false)` blocks from the
+    Android `SimplifiedLinearLayout` fork.
+12. *spacingOverrideBeforeNext replacement* → **No designed replacement yet; would be good to
+    put something like it back.** Adjustment: do NOT just rip out the mechanism — it's a *wanted*
+    capability pending a design. Track as a feature-design item, not dead code.
+13. *iOS childSizeCache staleness* → **Believe so, worth checking.** → **Checked:** invalidation
+    hooks exist (`forceRemeasures()`, `subviewDidChangeSizing` clears the changed index). So it
+    only goes stale if a theme/font change alters a child's intrinsic size *without* firing
+    `subviewDidChangeSizing`. Adjustment: narrow to a **targeted test** — assert a font/theme
+    change that changes intrinsic size triggers re-measure. Not an obvious bug.
 
 **Navigation/SSR**
-14. Does `UriFormat.encodeToString` percent-encode path segments, and where is the decode?
-    One round-trip test answers N5.
-15. Is the dialog `PageNavigator` slated for deletion or permanent? Current state
-    (deprecated annotation + active core wiring) is contradictory. (N3)
-16. Is structural responsiveness meant to be SSR-safe at all, or is "server renders desktop,
-    client reconciles" the accepted contract with a target mismatch rate? (N2)
-17. Can the reactive runtime expose a "no pending updates" signal to replace `delay(1)` /
-    `queueMicrotask`? (N6, ties to reactivity)
-18. Is KSP already in the toolchain? Changes N4's cost materially.
-19. Are the non-preload SSR entry points (`render`/`renderPage`) still used by any consumer?
+14. *URL segment encoding round-trip (N5)* → **Just go look.** Adjustment: unchanged — a
+    one-line round-trip property test (`render(parse(x)) == x` with `/`, space, non-ASCII)
+    settles it. Left as a concrete todo.
+15. *Dialog PageNavigator delete or permanent (N3)* → **Probably ready for deletion — deprecated
+    a long time.** Adjustment: **confirmed — delete the dialog `PageNavigator` path.**
+16. *SSR structural-responsiveness contract (N2)* → **Mismatch is meant to be recoverable, just
+    infrequent.** Adjustment: N1/N2 downgraded — recover-on-mismatch is the intended contract,
+    not a bug; the todo is a rate-monitoring test for when SSR productionizes.
+17. *Reactive "no pending updates" quiescence signal (N6)* → **"Huh? That sounds interesting."**
+    Adjustment: **elevated as a promising new idea.** A real idle/quiescence signal from the
+    reactive runtime would replace the `delay(1)` / `queueMicrotask` timing hacks *and* give SSR
+    a deterministic settle point. Worth a prototype (see §8).
+18. *KSP available (N4)* → **KSP was tried and deliberately abandoned for route-gen — WAY too
+    expensive at compile time; text parsing was a conscious compile-perf choice.** (KSP *is* in
+    the toolchain, used elsewhere — verified.) Adjustment: **reversed** — do not move route-gen
+    to KSP; harden the text parser with tests instead (see revised N4).
+19. *Non-preload SSR entry points used externally* → **No — SSR is unused outside this repo so
+    far.** Adjustment: SSR findings (N1, N2, N6) are all future-facing, not current defects.
 
 ---
 
-## 8. If you only do five things
+## 8. If you only do five things (revised after maintainer answers)
+
+Reordered given the answers — the SSR/hydration item dropped (SSR isn't production and mismatch
+is recoverable by design), the KSP suggestion was reversed, and several "bugs" turned out to be
+deliberate.
 
 1. **Root-cause the `themeAndBack` "do not call super" workaround and unify the setter**
-   (`NativeContainerElement.kt:524-535`). Cheapest item on this list relative to its value:
-   two reviews independently flagged it, it sits in the hottest styling path, and the answer
-   either dissolves a duplication or exposes a real cascade-ordering bug that currently hides
-   behind a copy-paste. Everything else in theming performance (TH4) is easier to touch once
-   this path is understood.
+   (`NativeContainerElement.kt:524-535`). Unchanged as #1: two reviews independently flagged it,
+   it sits in the hottest styling path, and the maintainer doesn't know why `super` breaks
+   either. The answer either dissolves a duplication or exposes a real cascade-ordering bug
+   hiding behind copy-paste. Everything else in theming perf (TH4) is easier once understood.
 
-2. **Land the confirmed-bugs batch (§2), especially B1, B2, B6/B7.** These are small,
-   high-confidence, architecture-independent fixes: B1 restores an O(n)-intended hot path
-   that currently runs O(n²) on every recalculation; B2 turns a silent mis-layout into a
-   fail-fast error, per the project's own rules; B6/B7 close real correctness traps in the
-   suspend/async reactive paths before more code depends on them.
+2. **Land the confirmed-bugs batch (§2), especially B1, B2, B6/B7.** Small, high-confidence,
+   architecture-independent: B1 is a one-line fix (maintainer confirmed the hashed variant isn't
+   needed) restoring an O(n)-intended hot path that runs O(n²); B2 turns a silent mis-layout into
+   a fail-fast error per the project's own rules; B6/B7 close real suspend/async correctness traps.
 
-3. **Put a contract under hydration: golden-tree server/client test + strict mismatch mode**
-   (N1, first slice of N2). SSR is the subsystem where silent divergence is both most likely
-   (two hand-written renderers in different languages) and most invisible (mismatch = warn +
-   replace + report success). A representative-page tree-equality test plus a dev mode that
-   throws on mismatch converts every future drift from a shipped FOUC into a red CI run —
-   without committing yet to the larger shared-serialization refactor.
+3. **Delete the two confirmed-dead paths — a cheap trust-restoring sweep.** The maintainer
+   greenlit both: the dialog `PageNavigator` path (Q15 — still constructed on every app boot and
+   SSR request, replacement shipped) and the unreachable AOSP feature machinery in
+   `SimplifiedLinearLayout` (Q11). Finishing these re-establishes that `@Deprecated`/dead code in
+   this codebase is actually safe to remove, making every future sweep cheaper.
 
-4. **Enforce the reactive single-thread invariant in debug builds and decide the `Unconfined`
-   default** (R1). The data structures are unsynchronized by design; today the invariant is
-   held by convention only, and the failure mode is silent corruption. Turning on
-   `ReactiveThreadCheck` in debug is nearly free and converts the whole class of bug into an
-   immediate, attributable exception. Answer Q1 while you're there.
+4. **Make the theming conventions the code already assumes *enforceable*** (TH1 + TH2-iOS). The
+   id-based identity is deliberate and fast (Q5) — so add the guardrail that makes it safe: an
+   annotation/lint/deprecation that flags derivations not going through semantics, so ids can't
+   collide in the first place. While there, close the one real cross-platform gap the web-CSS
+   design exposes: iOS interactive-state parity (Q8).
 
-5. **Finish one flagship deprecation: delete the dialog `PageNavigator` path** (N3). Of all
-   the T3 half-migrations, this is the one still constructed on every app boot and SSR
-   request with its replacement already shipped. Finishing it removes a parallel navigator
-   system, a near-duplicate `navigatorView`, and — more importantly — re-establishes that
-   `@Deprecated` in this codebase means "safe to ignore," which makes every future sweep
-   (nav 3.9, views 3.8, AGENT-TODO P4) cheaper.
+5. **Prototype the reactive quiescence signal** (Q17 — the idea that intrigued you). A real
+   "no pending updates" signal from the reactive runtime replaces the `delay(1)` and
+   `queueMicrotask` timing hacks, and hands SSR a deterministic settle point for when it
+   productionizes. Small, self-contained, and it retires two acknowledged hacks at once.
 
-Honorable mentions that just missed the cut: theme identity (TH1 — do it before any app
-ships dynamic per-item theming), the interactive-state contract (TH2 — biggest cross-platform
-correctness gap but genuinely large), and the KSP route generator (N4 — high leverage,
-check Q18 first).
+Also cheap and greenlit: enable `ReactiveThreadCheck` in debug builds (Q1 — keep `Unconfined`,
+just catch accidental off-main writes), and harden the text-based route generator with a fixture
+test suite (Q18 — *not* KSP).
+
+Deferred until SSR productionizes (Q19): the golden-tree hydration test + mismatch-rate monitor
+(N1/N2), and the width-hint / CSS-only-structural-responsiveness rule.
