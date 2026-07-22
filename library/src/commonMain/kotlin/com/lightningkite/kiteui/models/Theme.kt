@@ -1304,6 +1304,10 @@ public class Theme(
 
     public val semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
 ) {
+    init {
+        if (Debugger.checkIdCollisions) Debugger.checkAndRegister(this)
+    }
+
     /**
      * The icon color, using [iconOverride] if set, otherwise [foreground].
      */
@@ -1367,11 +1371,45 @@ public class Theme(
     }
 
     /**
+     * Field-by-field comparison of the properties that affect rendered output, ignoring [id],
+     * provenance ([derivedFrom]/[derivationId]/[revert]), and [semanticOverrides] (a map of
+     * closures, which aren't meaningfully comparable). Used only by [Debugger]'s id-collision
+     * check - [equals] intentionally stays id-only for lookup performance; this is the
+     * "would these two themes render the same?" check that backs it.
+     */
+    internal fun structurallyEquals(other: Theme): Boolean =
+        font == other.font &&
+        elevation == other.elevation &&
+        cornerRadii == other.cornerRadii &&
+        cornerShape == other.cornerShape &&
+        gap == other.gap &&
+        padding == other.padding &&
+        foreground == other.foreground &&
+        iconOverride == other.iconOverride &&
+        outline == other.outline &&
+        outlineWidth == other.outlineWidth &&
+        separatorOverride == other.separatorOverride &&
+        background == other.background &&
+        blurBackground == other.blurBackground &&
+        transform == other.transform &&
+        bodyTransitions == other.bodyTransitions &&
+        dialogTransitions == other.dialogTransitions &&
+        transitionDuration == other.transitionDuration
+
+    /**
      * Creates a customized copy of this theme with all specified properties.
      *
      * Unlike [copy], this creates a completely new theme that doesn't inherit
      * unspecified properties from the original. All parameters default to this
      * theme's values, and semantic overrides are merged.
+     *
+     * Unlike [copy], [newId] is used exactly as given - it is **not** chained onto this theme's
+     * id. That makes `customize` the right tool for minting an independent, fully-named theme
+     * variant (e.g. a branded reskin), but it also means the caller is responsible for [newId]
+     * being unique across the app: a colliding id will silently alias with whatever theme
+     * registered it first (see [Theme.Debugger] for a way to catch that in testing). When you're
+     * deriving a variant of a theme rather than authoring a new one, prefer [copy] or a
+     * [Semantic], which chain ids for you and can't collide with unrelated themes.
      *
      * @param newId The unique identifier for the new theme.
      * @param font The font styling.
@@ -1616,4 +1654,46 @@ public class Theme(
      * @return The theme's unique identifier.
      */
     override fun toString(): String = id
+
+    /**
+     * Debug-only tooling for catching id collisions between [Theme]s.
+     *
+     * [Theme.equals]/[Theme.hashCode] are id-only by design (see [Theme] KDoc) - this is a
+     * deliberate performance tradeoff, not something to work around. It relies on every theme's
+     * id being unique, which [themeCache], the web `t-{id}` CSS class registry, and CSS sub-theme
+     * diffing all assume too: if two structurally different themes ever share an id, one silently
+     * aliases onto the other's cached styling. Uniqueness is normally guaranteed by deriving
+     * themes through semantics ([copy], the `Semantic.withBack`/`withoutBack`/`alter` helpers),
+     * which chain the parent id into the child id. [customize] is the one common way to opt out
+     * of that chaining (see its KDoc) - it's where a collision is most likely to originate.
+     */
+    public object Debugger {
+        /**
+         * When true, every constructed [Theme] is checked against previously constructed themes
+         * that share its [id]; a colliding id whose visual properties differ throws immediately,
+         * naming the id. Off by default: the check holds a strong reference to one [Theme] per
+         * distinct id ever constructed for the life of the process, which is fine for a debugging
+         * session but not something to leave on in production.
+         */
+        public var checkIdCollisions: Boolean = false
+
+        private val seen = HashMap<String, Theme>()
+
+        internal fun checkAndRegister(theme: Theme) {
+            val prior = seen[theme.id]
+            if (prior == null) {
+                seen[theme.id] = theme
+            } else check(prior.structurallyEquals(theme)) {
+                "Theme id collision: two structurally different Themes both use id '${theme.id}'. " +
+                    "Themes must be derived through semantic derivation (Theme.copy, semantics, " +
+                    "the withBack/withoutBack/alter helpers) so ids stay unique - look for a " +
+                    "manually-assigned or non-chained id, e.g. from Theme.customize."
+            }
+        }
+
+        /** Clears the collision registry, e.g. between test cases. */
+        public fun reset() {
+            seen.clear()
+        }
+    }
 }
