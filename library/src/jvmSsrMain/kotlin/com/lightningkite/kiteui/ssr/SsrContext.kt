@@ -11,7 +11,17 @@ import com.lightningkite.reactive.context.QuiescenceTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.withTimeout
+
+/**
+ * Upper bound on how long [SsrContext.awaitAllResources] will wait for the reactive graph to go
+ * quiescent before failing the request. The settle should normally be sub-second; this only guards
+ * against a page whose binding starts async work that never completes (which would otherwise hang
+ * the request forever). Generous so slow-but-legitimate chained loads still finish.
+ */
+private const val SSR_SETTLE_TIMEOUT_MS = 30_000L
 
 /**
  * Context for a single SSR request. Each request should create its own SsrContext
@@ -127,7 +137,17 @@ public class SsrContext(
         // of a resource's propagation on the loading thread) remains in flight. Note this waits on
         // WORK, not readiness - a binding stuck on a never-ready source doesn't hang us, but an
         // async block that never completes would; that's a page bug and shows up loudly here.
-        quiescence.awaitQuiescence()
+        try {
+            withTimeout(SSR_SETTLE_TIMEOUT_MS) { quiescence.awaitQuiescence() }
+        } catch (e: TimeoutCancellationException) {
+            throw IllegalStateException(
+                "SSR did not settle within ${SSR_SETTLE_TIMEOUT_MS}ms: ${quiescence.pendingWorkCount} " +
+                    "reactive work item(s) still in flight. This usually means a page binding started " +
+                    "an async block that never completes; fix the page or reduce the work it kicks off " +
+                    "during SSR.",
+                e
+            )
+        }
     }
 
     /**
