@@ -31,7 +31,7 @@ public fun Theme.Companion.flat2(
             if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
                 val b = existing.copy(brightness = 0.5f).toRGB()
                 it.withBack(
-                    foreground = b.highlight(1f),
+                    foreground = b.maximallyContrastingForeground,
                     background = b,
                     outline = b,
                 )
@@ -39,7 +39,7 @@ public fun Theme.Companion.flat2(
                 val closerToAccent = (existing.hue angleTo hue).turns.absoluteValue > (existing.hue angleTo accentHue).turns.absoluteValue
                 val b = HSPColor(hue = if(closerToAccent) hue else accentHue, saturation = saturation, brightness = 0.5f).toRGB()
                 it.withBack(
-                    foreground = b.highlight(1f),
+                    foreground = b.maximallyContrastingForeground,
                     background = b,
                     outline = b,
                 )
@@ -83,6 +83,14 @@ public fun Theme.Companion.flat2(
                 it.copy(brightness = it.brightness + brightnessStep * 3)
             }.toRGB(), outlineWidth = it.outlineWidth * 2)
         },
+        UnselectedSemantic.override { it.alter(foreground = Color.mutedButLegible(it.foreground.closestColor(), it.background.closestColor())).withoutBackButPadding },
+        SelectedSemantic.override {
+            val b = it.background.closestColor().toHSP().let {
+                it.copy(brightness = it.brightness + brightnessStep)
+            }.toRGB()
+            it.withBack(background = b, iconOverride = it.foreground, foreground = b.closestColor().maximallyContrastingForeground)
+        },
+//        DisabledSemantic.override { it.withoutBack(foreground = Color.interpolate(it.foreground.closestColor(), it.background.closestColor(), 0.5f)) },
 
         FieldSemantic.override {
             it.withBack(

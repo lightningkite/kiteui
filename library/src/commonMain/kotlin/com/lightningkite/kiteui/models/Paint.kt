@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.time.Duration
 
@@ -157,6 +158,8 @@ public data class Color(
     )
 
     public companion object {
+        /** Minimum WCAG 2.1 AA contrast ratio for normal-size body text. */
+        public const val WCAG_AA_NORMAL_TEXT_CONTRAST_RATIO: Float = 4.5f
 
         public val transparent: Color = Color()
         public val white: Color = Color(1f, 1f, 1f, 1f)
@@ -227,6 +230,18 @@ public data class Color(
 
         public fun hsvInterpolate(left: Color, right: Color, ratio: Float): Color =
             HSVColor.interpolate(left.toHSV(), right.toHSV(), ratio).toRGB()
+
+        public fun mutedButLegible(foreground: Color, background: Color): Color {
+            // Binary-search the largest interpolation toward the background that still clears the ratio.
+            var lo = 0f
+            var hi = 0.6f
+            repeat(10) {
+                val mid = (lo + hi) / 2f
+                if (interpolate(foreground, background, mid) contrastAgainst background >= WCAG_AA_NORMAL_TEXT_CONTRAST_RATIO) lo = mid
+                else hi = mid
+            }
+            return interpolate(foreground, background, lo)
+        }
     }
 
     val average: Float get() = (red + green + blue) / 3f
@@ -327,6 +342,23 @@ public data class Color(
     public fun toAlphalessWeb(): String {
         @Suppress("EXPERIMENTAL_API_USAGE") return "#" + this.toInt().toUInt().toString(16).padStart(8, '0').drop(2)
     }
+
+    public infix fun contrastAgainst(against: Color): Float {
+        val la = this.relativeLuminance()
+        val lb = against.relativeLuminance()
+        val lighter = maxOf(la, lb)
+        val darker = minOf(la, lb)
+        return (lighter + 0.05f) / (darker + 0.05f)
+    }
+
+    /** WCAG 2.1 relative luminance: gamma-linearized channels weighted by human luminance sensitivity. */
+    public fun relativeLuminance(): Float {
+        fun linearize(channel: Float) =
+            if (channel <= 0.03928f) channel / 12.92f else ((channel + 0.055f) / 1.055f).pow(2.4f)
+        return 0.2126f * linearize(red) + 0.7152f * linearize(green) + 0.0722f * linearize(blue)
+    }
+
+    public val maximallyContrastingForeground: Color get() = if(relativeLuminance() > 0.5f) Color.black else Color.white
 }
 
 public interface ColorSpace {

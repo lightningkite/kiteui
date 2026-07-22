@@ -897,12 +897,12 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             theme.derivedFrom?.let { themeInteractive(it) }
             theme(theme)
             val cs = theme.classSelector
-            fun sub(subthemeGen: Semantic?, asSelectors: List<String>) {
+            fun sub(subthemeGen: Semantic?, asSelectors: List<String>, diff: Theme = theme) {
                 val subtheme = subthemeGen?.let { s -> theme[s] } ?: theme.withoutBack
                 if (theme != subtheme.theme) {
                     theme(
                         subtheme.theme,
-                        diff = theme,
+                        diff,
                         asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs") },
                         includeMaybeTransition = subtheme.drawBackground
                     )
@@ -910,7 +910,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val hov = subtheme[HoverSemantic]
                 theme(
                     hov.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:hover$it $cs",
@@ -923,7 +923,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val foc = subtheme[FocusSemantic]
                 theme(
                     foc.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:focus-visible$it $cs",
@@ -939,7 +939,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val dwn = subtheme[DownSemantic]
                 theme(
                     dwn.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:active$it $cs",
@@ -951,7 +951,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val dis = subtheme[DisabledSemantic]
                 theme(
                     dis.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:disabled$it $cs",
@@ -963,7 +963,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val print = subtheme[PrintSemantic]
                 theme(
                     print.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.map { "$it$cs$cs" },
                     includeMaybeTransition = print.drawBackground,
                     mediaQuery = "print"
@@ -972,6 +972,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             sub(null, asSelectors = listOf(""))
             sub(
                 SelectedSemantic,
+                diff = theme[UnselectedSemantic].theme,
                 asSelectors = listOf(".checked.checkResponsive"),
             )
             sub(
