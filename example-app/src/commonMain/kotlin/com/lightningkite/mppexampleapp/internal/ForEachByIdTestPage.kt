@@ -1,15 +1,11 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
 
 @Routable("foreach-by-id-test")
 object ForEachByIdTestPage : Page {
@@ -93,7 +89,7 @@ object ForEachByIdTestPage : Page {
                 expanding.card.col {
                     h2("renderList (animated)")
                     col {
-                        renderList(items, id = { it.id }) { item ->
+                        renderListKeyed(items, id = { it.id }) { item ->
                             card.text {
                                 ::content { item().name }
                                 ::debugName { item().name }
@@ -104,7 +100,7 @@ object ForEachByIdTestPage : Page {
                 expanding.card.col {
                     h2("renderList (no animation)")
                     col {
-                        renderList(items, id = { it.id }, animate = false) { item ->
+                        renderListKeyed(items, id = { it.id }, animate = false) { item ->
                             card.text {
                                 ::content { item().name }
                                 ::debugName { item().name }
@@ -115,7 +111,7 @@ object ForEachByIdTestPage : Page {
                 expanding.card.col {
                     h2("Reference (renderList unkeyed)")
                     col {
-                        renderList(items) { item ->
+                        renderListKeyed(items) { item ->
                             card.text {
                                 ::content { item().name }
                                 ::debugName { item().name }

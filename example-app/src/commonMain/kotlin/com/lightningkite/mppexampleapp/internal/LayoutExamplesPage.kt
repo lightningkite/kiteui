@@ -3,18 +3,12 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.l2.label
 import com.lightningkite.mppexampleapp.Resources
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 @Routable("layout-examples")
 object LayoutExamplesPage : Page {
@@ -162,7 +156,7 @@ object LayoutExamplesPage : Page {
                 h2 { content = "Dynamic List" }
                 val countString = Signal("5")
                 scrollsHorizontally.row {
-                    renderList(
+                    renderListKeyed(
                         remember {
                             (1..(countString().toIntOrNull()
                                 ?: 1).coerceAtMost(100)).map { "Item $it" }

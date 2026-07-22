@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Focused tests for the [renderList] API.
+ * Focused tests for the [renderListKeyed] API.
  *
  * Note: JVM SSR implements [com.lightningkite.kiteui.afterTimeout] as a no-op — it discards
  * the callback without ever calling it.  The keyed path schedules both the "show" (afterTimeout 1ms)
@@ -63,7 +63,7 @@ class RenderListTest {
         val tree = elementTree {
             col {
                 debugName = "list"
-                renderList(items) { text { ::content { it() } } }
+                renderListKeyed(items) { text { ::content { it() } } }
             }
         }
         try {
@@ -81,7 +81,7 @@ class RenderListTest {
         val tree = elementTree {
             col {
                 debugName = "list"
-                renderList(items) { text { ::content { it() } } }
+                renderListKeyed(items) { text { ::content { it() } } }
             }
         }
         try {
@@ -101,7 +101,7 @@ class RenderListTest {
             content = {
                 col {
                     debugName = "list"
-                    renderList(items) { text { ::content { it() } } }
+                    renderListKeyed(items) { text { ::content { it() } } }
                 }
             }
         ) { tree ->
@@ -134,7 +134,7 @@ class RenderListTest {
             content = {
                 col {
                     debugName = "list"
-                    renderList(items, placeholders = 3) { text { ::content { it() } } }
+                    renderListKeyed(items, placeholders = 3) { text { ::content { it() } } }
                 }
             }
         ) { tree ->
@@ -172,7 +172,7 @@ class RenderListTest {
             content = {
                 col {
                     debugName = "list"
-                    renderList(items, placeholders = 5, poolCap = cap) {
+                    renderListKeyed(items, placeholders = 5, poolCap = cap) {
                         text { ::content { it() } }
                     }
                 }
@@ -213,7 +213,7 @@ class RenderListTest {
         val tree = elementTree {
             col {
                 debugName = "list"
-                renderList(items, id = { it.id }, animate = false) { reactive ->
+                renderListKeyed(items, id = { it.id }, animate = false) { reactive ->
                     text { ::content { reactive().name } }
                 }
             }
@@ -234,7 +234,7 @@ class RenderListTest {
             content = {
                 col {
                     debugName = "list"
-                    renderList(items, id = { it.id }, animate = false) { reactive ->
+                    renderListKeyed(items, id = { it.id }, animate = false) { reactive ->
                         text { ::content { reactive().name } }
                     }
                 }
@@ -263,7 +263,7 @@ class RenderListTest {
             content = {
                 col {
                     debugName = "list"
-                    renderList(items, id = { it.id }, animate = false) { reactive ->
+                    renderListKeyed(items, id = { it.id }, animate = false) { reactive ->
                         text { ::content { reactive().name } }
                     }
                 }

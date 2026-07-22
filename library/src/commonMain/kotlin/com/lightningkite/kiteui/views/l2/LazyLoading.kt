@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.InternalKiteUi
-import com.lightningkite.kiteui.load
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.models.viewUnits
@@ -42,7 +41,7 @@ fun <T, ID> RowOrCol.childrenLazyLoading(
     var loadJob: Job? = null
     var sizeAtLoadStart = -1
 
-    renderList(items, id = id, animate = false, render = render)
+    renderListKeyed(items, id = id, animate = false, render = render)
 
     val isVertical = this.vertical
     withoutLoadingAnimations {

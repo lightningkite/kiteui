@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Reactive
 import kotlin.contracts.ExperimentalContracts
@@ -131,6 +132,17 @@ fun ElementWriter.radioButton(checked: MutableReactive<Boolean>) = radioButton {
 
 @ViewDsl
 fun ElementWriter.progressBar(ratio: Reactive<Float>) = progressBar { ::ratio bind ratio }
+
+inline fun <T> ElementWriter.swapping(
+    crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
+    crossinline current: ReactiveContext.() -> T,
+    crossinline views: ViewWriter.(T) -> Unit
+): SwapView {
+    return swapView {
+        swapping(transition, current, views)
+    }
+}
+
 
 @ViewDsl
 inline fun ElementWriter.icon(icon: Icon, description: String, setup: IconView.() -> Unit = {}): IconView {
