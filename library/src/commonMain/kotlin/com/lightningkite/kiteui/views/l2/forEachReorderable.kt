@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Log
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.views.*
@@ -74,7 +75,8 @@ class DragDropReordering(
     }
 }
 
-fun <T> ContainerElement.forEachReorderable(
+@PublishedApi
+internal fun <T> ContainerElement.renderReorderableList(
     items: Reactive<List<T>>,
     reorder: suspend (DragDropReordering.Move) -> Unit,
     separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
@@ -83,7 +85,7 @@ fun <T> ContainerElement.forEachReorderable(
 ) {
     val handler = DragDropReordering(this, reorder = reorder)
 
-    (this@forEachReorderable as? LinearLayoutElement)?.gap = 0.px
+    (this@renderReorderableList as? LinearLayoutElement)?.gap = 0.px
 
     renderList(
         remember { items().mapIndexed { idx, it -> IndexedValue(idx, it) } },
@@ -121,6 +123,43 @@ fun <T> ContainerElement.forEachReorderable(
         }
     }
 }
+
+inline fun <T, C : ContainerElement> ElementWriter.renderReorderableListIn(
+    container: ElementWriter.(C.() -> Unit) -> C,
+    items: Reactive<List<T>>,
+    noinline reorder: suspend (DragDropReordering.Move) -> Unit,
+    noinline separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
+    noinline dataTransform: (DragData) -> DragData = { it },
+    noinline render: ViewWriter.(Reactive<T>) -> Unit
+): C {
+    var setupCalled = false
+    val result = container {
+        setupCalled = true
+        renderReorderableList(items, reorder, separator, dataTransform, render)
+    }
+    if (!setupCalled) context.handleException(
+        Exception("renderListIn: container lambda did not call the setup lambda. Use a DSL function reference like ElementWriter::col or ElementWriter::row, or ensure your custom lambda invokes the passed setup function, e.g., { setup -> col { setup() } }"),
+        ExceptionHandler.Metadata(
+            source = result,
+            process = null,
+            foregroundProcess = null,
+            context = mapOf(
+                "container type" to result::class.toString(),
+                "items" to (items.state.getOrNull()?.toString() ?: "NotReady"),
+            )
+        )
+    )
+    return result
+}
+
+@Deprecated("Use renderReorderableListIn")
+fun <T> ContainerElement.forEachReorderable(
+    items: Reactive<List<T>>,
+    reorder: suspend (DragDropReordering.Move) -> Unit,
+    separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
+    dataTransform: (DragData) -> DragData = { it },
+    render: ViewWriter.(Reactive<T>) -> Unit
+) = renderReorderableList(items, reorder, separator, dataTransform, render)
 
 class RecyclerReorderable<T, ID>(
     val wraps: RecyclerViewRendererSet<T, ID>,
