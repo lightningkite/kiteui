@@ -7,11 +7,11 @@ import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.Frame
+import com.lightningkite.reactive.context.QuiescenceTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 
 /**
  * Context for a single SSR request. Each request should create its own SsrContext
@@ -53,11 +53,19 @@ public class SsrContext(
         "Viewport height is unavailable during SSR; structural (DOM-shape) responsiveness must be " +
             "CSS-only - use CSS media queries or the coarse Platform hint instead."
     )
+    /**
+     * Tracks all in-flight reactive work for this request (resource loads, queued recalculations,
+     * async blocks in bindings). [awaitAllResources] awaits its quiescence to get a deterministic
+     * "everything has propagated" point before serialization. Per-request, so concurrent SSR
+     * requests don't wait on each other's work. - by Claude
+     */
+    private val quiescence = QuiescenceTracker()
+
     /** The coroutine scope for loading SsrResource data */
-    private val loadingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val loadingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + quiescence)
 
     /** The coroutine scope for view rendering (unconfined so reactive updates run synchronously) */
-    private val renderScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+    private val renderScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined + quiescence)
 
     /** Cancel all coroutines started during rendering. Call this after serialize() is done. */
     internal fun cancel() {
@@ -90,6 +98,9 @@ public class SsrContext(
         elementContext.ssrResourceRegistry = this
         // Use Unconfined dispatcher for synchronous reactive scope execution in SSR
         elementContext.ssrDispatcher = Dispatchers.Unconfined
+        // Elements build their coroutine scopes from the ElementContext, so the tracker must be
+        // installed here (not just on the scopes above) for element bindings to count. - by Claude
+        elementContext.ssrQuiescence = quiescence
     }
 
     /**
@@ -105,12 +116,18 @@ public class SsrContext(
      * Throws if any resource fails to load.
      */
     internal suspend fun awaitAllResources() {
+        // Await each resource first so a load failure surfaces as its exception rather than a
+        // generic unsettled-graph condition.
         resources.values.forEach { resource ->
             resource.awaitLoaded()
         }
-        // Brief delay to ensure all reactive bindings have propagated
-        // This gives the Unconfined dispatcher time to process queued updates
-        delay(1)
+        // Deterministic settle point, replacing the old `delay(1)` guess: resource loads and
+        // the listener cascades they trigger run inside quiescence-tracked jobs, so this resumes
+        // exactly when no reactive work (queued recalculations, async blocks in bindings, the tail
+        // of a resource's propagation on the loading thread) remains in flight. Note this waits on
+        // WORK, not readiness - a binding stuck on a never-ready source doesn't hang us, but an
+        // async block that never completes would; that's a page bug and shows up loudly here.
+        quiescence.awaitQuiescence()
     }
 
     /**

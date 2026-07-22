@@ -171,6 +171,13 @@ private fun hydrateRootInternal(
     // Perform deferred hydration using queueMicrotask for faster execution
     // Falls back to setTimeout(0) if queueMicrotask is unavailable
     // Mismatches are handled gracefully by creating fresh elements when tags don't match
+    //
+    // NOTE: deliberately NOT replaced with reactive QuiescenceTracker.awaitQuiescence() (the
+    // mechanism SSR now uses server-side). Quiescence waits for ALL in-flight reactive work,
+    // including slow async fetches a binding may have started - hydration must run promptly so
+    // the DOM is matched before user interaction, and only needs already-scheduled microtasks
+    // (promise-resumed coroutine continuations from __SSR_DATA__ hydration) to flush first.
+    // One microtask is exactly that; full quiescence could stall hydration for seconds.
     // by Claude
     if (pendingHydrations.isNotEmpty()) {
         val hydrationStartTime = kotlin.js.Date.now()
