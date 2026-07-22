@@ -144,11 +144,11 @@ internal fun <T> ContainerElement.renderListExpensive(
     }
 }
 
-private data class OldViewInfo<ID, DATA>(
+private data class Cell<ID, DATA>(
     var oldIndex: Int,
     val id: ID,
     val data: DATA,
-    val old: ArrayList<OldViewInfo<ID, DATA>>,
+    val cells: ArrayList<Cell<ID, DATA>>,
     val container: ContainerElement,
     val view: Element,
     val shown: Signal<Boolean>
@@ -166,7 +166,7 @@ private data class OldViewInfo<ID, DATA>(
         container.afterTimeout(view.theme.transitionDuration.inWholeMilliseconds + 100) {
             if (n == livenessIter) {
                 container.removeChild(view)
-                old.remove(this)
+                cells.remove(this)
             }
         }
     }
@@ -186,7 +186,7 @@ private fun <T> ContainerElement.renderListExpensiveAnimating(
 ) {
     setupAsListContainer()
 
-    val old = ArrayList<OldViewInfo<Nothing?, T>>()
+    val old = ArrayList<Cell<Nothing?, T>>()
 
     reactive {
         val new = items()
@@ -211,12 +211,12 @@ private fun <T> ContainerElement.renderListExpensiveAnimating(
                     beforeModifier(toRender).asListItem.shownWhen { shown() }.render(toRender)
                 }
                 old.add(
-                    oldPos, OldViewInfo(
+                    oldPos, Cell(
                         oldIndex = index,
                         id = null,
                         data = toRender,
                         container = this@renderListExpensiveAnimating,
-                        old = old,
+                        cells = old,
                         view = result,
                         shown = shown
                     )
@@ -325,7 +325,7 @@ private fun <T, ID> ContainerElement.renderListKeyedAnimated(
 ) {
     setupAsListContainer()
 
-    val old = ArrayList<OldViewInfo<ID, Signal<T>>>()
+    val old = ArrayList<Cell<ID, Signal<T>>>()
 
     reactive {
         val new = items()
@@ -354,14 +354,14 @@ private fun <T, ID> ContainerElement.renderListKeyedAnimated(
                     beforeModifier().asListItem.shownWhen { shown() }.render(data)
                 }
                 old.add(
-                    oldPos, OldViewInfo(
+                    oldPos, Cell(
                         oldIndex = index,
                         id = id(toRender),
                         data = data,
                         view = result,
                         shown = shown,
                         container = this@renderListKeyedAnimated,
-                        old = old
+                        cells = old
                     )
                 )
                 afterTimeout(1) { shown.value = true }
@@ -389,7 +389,7 @@ private fun <T, ID> ContainerElement.renderListKeyedNoAnimation(
 ) {
     setupAsListContainer()
 
-    val old = ArrayList<OldViewInfo<ID, Signal<T>>>()
+    val old = ArrayList<Cell<ID, Signal<T>>>()
 
     reactive {
         withoutAnimation {
@@ -419,14 +419,14 @@ private fun <T, ID> ContainerElement.renderListKeyedNoAnimation(
                         beforeModifier().asListItem.render(data)
                     }
                     old.add(
-                        oldPos, OldViewInfo(
+                        oldPos, Cell(
                             oldIndex = index,
                             id = id(toRender),
                             data = data,
                             view = result,
                             shown = shown,
                             container = this@renderListKeyedNoAnimation,
-                            old = old
+                            cells = old
                         )
                     )
                     afterTimeout(1) { shown.value = true }
@@ -438,9 +438,140 @@ private fun <T, ID> ContainerElement.renderListKeyedNoAnimation(
     }
 }
 
+/**
+ * Renders [items] using keyed ID diffing with multiple renderers and animated transitions.
+ *
+ * Similar to [renderListKeyedAnimated] but supports different renderer types per item.
+ * Uses a three-tier matching strategy:
+ * 1. **Exact ID match**: Reuses cell with matching ID (preserves state during reorders)
+ * 2. **Renderer change**: If renderer changed for matched ID, hides old cell and creates new
+ * 3. **Create new**: Creates new cell when no existing cell matches
+ *
+ * Hidden cells are removed after their exit animation completes. Loading placeholders
+ * are shown before data arrives and automatically hidden when real data is available.
+ * Uses [shownWhen] for animated entry/exit transitions.
+ *
+ * @param items Reactive list of items to render
+ * @param rendererSet Provides ID and renderer for each item
+ * @param loadingRenderers Renderers to show as placeholders while [items] is loading
+ */
+private fun <T, ID : Any> ContainerElement.renderHeterogeneousListAnimated(
+    items: Reactive<List<T>>,
+    rendererSet: RecyclerViewRendererSet<T, ID>,
+    loadingRenderers: List<RecyclerViewRenderer<T>> = emptyList()
+) {
+    setupAsListContainer()
 
-private class Cell<T, ID : Any>(
-    private val container: ContainerElement,
+    data class RendererData(
+        val renderer: RecyclerViewRenderer<T>,
+        val indexSignal: Signal<Int>,
+        val data: LateInitSignal<T>
+    )
+
+    // Use nullable ID to allow placeholder cells with null IDs
+    val cells = ArrayList<Cell<ID?, RendererData>>()
+
+    /** Creates a cell with shownWhen animation support */
+    fun createCell(
+        index: Int,
+        itemId: ID?,
+        item: T?,
+        renderer: RecyclerViewRenderer<T>,
+        insertAt: Int
+    ): Cell<ID?, RendererData> {
+        val data = LateInitSignal<T>()
+        if (item != null) data.value = item
+        val indexSignal = Signal(index)
+        val shown = Signal(false)
+        val view = this@renderHeterogeneousListAnimated.atIndex(insertAt).produceExactlyOneView {
+            // Wrap renderer output in a frame with shownWhen for animation
+            asListItem.shownWhen { shown() }.frame {
+                renderer.render(this, data, indexSignal)
+            }
+        }
+        return Cell(
+            oldIndex = index,
+            id = itemId,
+            data = RendererData(renderer, indexSignal, data),
+            view = view,
+            shown = shown,
+            container = this@renderHeterogeneousListAnimated,
+            cells = cells
+        )
+    }
+
+    reactive(onLoad = {
+        // Show loading placeholders before data arrives
+        if (loadingRenderers.isEmpty()) return@reactive
+        this@renderHeterogeneousListAnimated.withoutAnimation {
+            loadingRenderers.forEachIndexed { idx, renderer ->
+                val cell = createCell(idx, null, null, renderer, idx)
+                cells.add(cell)
+                // Show placeholder immediately (no animation on initial load)
+                cell.shown.value = true
+            }
+        }
+    }) {
+        val newList = items()
+        var cellPos = 0
+
+        // Process each item in the new list
+        newList.forEachIndexed { newIndex, item ->
+            val itemId = rendererSet.id(item)
+            val itemRenderer = rendererSet.renderer(item)
+
+            // Search for existing cell with matching ID (only non-null IDs match)
+            var matchIndex = -1
+            for (checkIndex in cellPos until cells.size) {
+                val cellId = cells[checkIndex].id
+                if (cellId != null && cellId == itemId) {
+                    matchIndex = checkIndex
+                    break
+                }
+            }
+
+            if (matchIndex != -1) {
+                // Found exact ID match - hide cells before it (including any placeholders)
+                for (i in cellPos until matchIndex) {
+                    cells[i].hide()
+                }
+                cellPos = matchIndex + 1
+
+                val cell = cells[matchIndex]
+
+                // Check if renderer changed
+                if (cell.data.renderer != itemRenderer) {
+                    // Renderer changed - hide old cell and create new at same position
+                    cell.hide()
+                    // Insert new view at the matched position (old view animates out in place)
+                    val newCell = createCell(newIndex, itemId, item, itemRenderer, matchIndex)
+                    cells[matchIndex] = newCell
+                    afterTimeout(1) { newCell.show() }
+                } else {
+                    // Same renderer - update data in place
+                    cell.data.data.value = item
+                    cell.data.indexSignal.value = newIndex
+                    cell.oldIndex = newIndex
+                    cell.show()
+                }
+            } else {
+                // No ID match - create new cell at correct position
+                val newCell = createCell(newIndex, itemId, item, itemRenderer, cellPos)
+                cells.add(cellPos, newCell)
+                afterTimeout(1) { newCell.show() }
+                cellPos++
+            }
+        }
+
+        // Hide remaining cells that weren't matched (including any remaining placeholders)
+        for (i in cellPos until cells.size) {
+            cells[i].hide()
+        }
+    }
+}
+
+private class PositionalCell<T, ID : Any>(
+    container: ContainerElement,
     private val rendererSet: RecyclerViewRendererSet<T, ID>,
     val data: LateInitSignal<T>,
     id: ID?,
@@ -469,8 +600,8 @@ private class Cell<T, ID : Any>(
 
     val index: Constant<Int> = Constant(index)
 
-    var view = container.atIndex(index).produceExactlyOneView {
-        renderer.render(this, this@Cell.data, this@Cell.index)
+    val view = container.asListItem.frame {
+        renderer.render(this, this@PositionalCell.data, this@PositionalCell.index)
     }
 
     private var watchingLoad = false
@@ -484,59 +615,120 @@ private class Cell<T, ID : Any>(
         view.withoutAnimation {
             view.shown = false
         }
+        data.unset()
     }
 
+    fun show() {
+        view.shown = true
+    }
+
+    /**
+     * Updates this cell with new data, recreating the view only if the renderer changes.
+     */
     fun newData(value: T) {
         view.shown = true
-        if (rendererSet.id(value) == id) data.value = value
-        else {
-            val r = rendererSet.renderer(value)
-            if (r == renderer) data.value = value
-            else {
-                renderer = r
-                container.withoutAnimation {
-                    container.removeChild(index.value)
-                    data.value = value
-                    view = container.atIndex(index.value).produceExactlyOneView {
-                        r.render(this, this@Cell.data, this@Cell.index)
-                    }
-                }
+        val newId = rendererSet.id(value)
+        val newRenderer = rendererSet.renderer(value)
+
+        if (newRenderer == renderer) {
+            // Same renderer - just update data and ID
+            data.value = value
+            id = newId
+        } else {
+            // Renderer changed - must recreate view
+            renderer = newRenderer
+            id = newId
+            view.withoutAnimation {
+                view.clearChildren()
+                data.value = value
+                newRenderer.render(view, this@PositionalCell.data, this@PositionalCell.index)
             }
         }
     }
 }
 
-private fun <T, ID : Any> ContainerElement.forEachWithRenderer(
+/**
+ * Renders [items] using positional slot reuse with multiple renderers.
+ *
+ * **Most efficient variant** - reuses cells by position rather than by ID.
+ * Each position in the list has a dedicated cell that updates its data in place.
+ * Views are only recreated when the renderer type changes for a position.
+ *
+ * **Trade-offs:**
+ * - Pro: Maximum efficiency - no DOM reordering, minimal view recreation
+ * - Pro: Simple pooling - excess cells are hidden and reused when list grows
+ * - Con: No support for item reordering animations (items at position N always use cell N)
+ * - Con: State in cells (e.g., scroll position) doesn't follow items when they move
+ *
+ * **Best for:**
+ * - Lists where items change frequently but order is stable
+ * - Server-driven lists where the whole list is replaced
+ * - Situations where you need maximum rendering performance
+ *
+ * @param items Reactive list of items to render
+ * @param rendererSet Provides ID and renderer for each item
+ * @param poolCap Maximum hidden cells to retain beyond current list size (default 32)
+ * @param loadingRenderers Renderers to show as placeholders while [items] is loading
+ */
+private fun <T, ID : Any> ContainerElement.renderHeterogeneousListPositional(
     items: Reactive<List<T>>,
     rendererSet: RecyclerViewRendererSet<T, ID>,
     poolCap: Int = 32,
     loadingRenderers: List<RecyclerViewRenderer<T>> = emptyList()
 ) {
-    val currentViews = ArrayList(
-        loadingRenderers.mapIndexed { idx, it ->
-            Cell(this@forEachWithRenderer, rendererSet, LateInitSignal(), null, it, idx)
-        }
-    )
+    setupAsListContainer()
 
-    reactive {
-        val list = items()
-        for ((idx, item) in list.withIndex()) {
-            currentViews.getOrNull(idx)?.newData(item)
-                ?: currentViews.add(
-                    Cell(this@forEachWithRenderer, rendererSet, item, idx)
+    val cells = ArrayList<PositionalCell<T, ID>>()
+
+    reactive(onLoad = {
+        // Show loading placeholders before data arrives
+        if (loadingRenderers.isEmpty()) return@reactive
+        this@renderHeterogeneousListPositional.withoutAnimation {
+            loadingRenderers.forEachIndexed { idx, renderer ->
+                val cell = PositionalCell(
+                    this@renderHeterogeneousListPositional,
+                    rendererSet,
+                    LateInitSignal(),
+                    null,
+                    renderer,
+                    idx
                 )
+                cells.add(cell)
+                cell.show()
+            }
         }
+    }) {
+        val list = items()
 
-        currentViews.forEach { it.watchBackgroundProcess(this) }
-
-        if (currentViews.size > list.size) {
-            for (i in list.size..<poolCap) currentViews[i].hide()
-            if (currentViews.size > poolCap) withoutAnimation {
-                for (i in poolCap..currentViews.size) {
-                    removeChild(i)
-                    currentViews.removeAt(i)
+        this@renderHeterogeneousListPositional.withoutAnimation {
+            // Update existing cells or create new ones as needed
+            for ((idx, item) in list.withIndex()) {
+                val existingCell = cells.getOrNull(idx)
+                if (existingCell != null) {
+                    existingCell.newData(item)
+                } else {
+                    cells.add(PositionalCell(this@renderHeterogeneousListPositional, rendererSet, item, idx))
                 }
             }
+
+            // Hide excess cells beyond current list size
+            for (i in list.size until cells.size) {
+                cells[i].hide()
+            }
+
+            // Evict cells beyond poolCap (iterate in reverse to maintain stable indices)
+            val maxCells = list.size + poolCap
+            if (cells.size > maxCells) {
+                for (i in cells.lastIndex downTo maxCells) {
+                    removeChild(i)
+                    cells.removeAt(i)
+                }
+            }
+        }
+
+        // Watch background processes for visible cells
+        for (i in 0 until min(list.size, cells.size)) {
+            cells[i].watchBackgroundProcess(this)
         }
     }
 }
