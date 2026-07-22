@@ -129,6 +129,9 @@ class RetryableAction(
                     }
                     done = true
                     reportTo.state = result
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    reportTo.state = ReactiveState.exception(e)
                 } finally {
                     instrumentations.forEach { it.onEnd() }
                 }
@@ -205,10 +208,13 @@ class DependentAction(
                         action()
                         true
                     }
-                    dependencyBlockEnd()
                     done = true
                     reportTo.state = result
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    reportTo.state = ReactiveState.exception(e)
                 } finally {
+                    dependencyBlockEnd()
                     instrumentations.forEach { it.onEnd() }
                 }
             }
