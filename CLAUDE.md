@@ -168,9 +168,9 @@ Common modifiers:
 
 KiteUI uses fine-grained reactivity, not recomposition:
 
-**Property** - Basic reactive container:
+**Signal** - Basic reactive container:
 ```kotlin
-val email = Property("")
+val email = Signal("")
 textInput { content bind email }
 ```
 
@@ -181,21 +181,21 @@ text {
 }
 ```
 
-**shared** - Cached computed value:
+**remember** - Cached computed value:
 ```kotlin
-val fullName = shared { "${firstName()} ${lastName()}" }
+val fullName = remember { "${firstName()} ${lastName()}" }
 ```
 
-**LazyProperty** - Computed value that can be overridden:
+**MutableRemember** - Computed value that can be overridden:
 ```kotlin
-val calculated = LazyProperty { base() * multiplier() }
+val calculated = MutableRemember { base() * multiplier() }
 calculated.value = 100.0  // Override
 calculated.reset()        // Back to calculation
 ```
 
-**LateInitProperty** - For values not available at declaration:
+**LateInitSignal** - For values not available at declaration:
 ```kotlin
-val userData = LateInitProperty<UserData>()
+val userData = LateInitSignal<UserData>()
 // Components show loading until value is set
 userData.value = fetchedData
 ```

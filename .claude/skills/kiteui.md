@@ -404,9 +404,10 @@ val fullName = remember { "${firstName()} ${lastName()}" }
 text { ::content { fullName() } }
 ```
 
-### LazyProperty - Computed with Override
+### MutableRemember - Computed with Override
+`LazyProperty` is an older name for `MutableRemember`. They are the same thing.
 ```kotlin
-val calculatedValue = LazyProperty { baseValue() * 2 }
+val calculatedValue = MutableRemember { baseValue() * 2 }
 
 // Can override
 calculatedValue.value = 100
@@ -415,9 +416,10 @@ calculatedValue.value = 100
 calculatedValue.reset()
 ```
 
-### LateInitProperty - Initially Unset
+### LateInitSignal - Initially Unset
+`LateInitProperty` is an older name for `LateInitSignal`. They are the same thing.
 ```kotlin
-val userData = LateInitProperty<UserData>()
+val userData = LateInitSignal<UserData>()
 
 // Components show loading until set
 userData.value = fetchedUserData
@@ -670,7 +672,7 @@ onClick {
 
 ### Loading States
 ```kotlin
-val data = LateInitProperty<MyData>()
+val data = LateInitSignal<MyData>()
 
 col {
     // Automatically shows loading indicator while data is unset
@@ -741,7 +743,7 @@ col {
 ### Component that Loads its Own Data
 ```kotlin
 fun ViewWriter.userDetails(userId: String) = col {
-    val userData = LateInitProperty<UserData>()
+    val userData = LateInitSignal<UserData>()
 
     // Load data when component is created
     launch {
@@ -795,7 +797,7 @@ expanding.scrolling.card.col {
 ### State Management
 1. Use `Signal` for mutable state
 2. Use `remember` for computed values (older code may use `shared`)
-3. Use `LateInitProperty` for async-loaded data
+3. Use `LateInitSignal` for async-loaded data
 4. Prefer reactive functions (`::content { }`) over manual updates
 
 ### Theming
@@ -917,7 +919,7 @@ object UsersPage : Page {
 @Routable("product/{id}")
 class ProductPage(val id: String) : Page {
     override fun ViewWriter.render() {
-        val product = LateInitProperty<Product>()
+        val product = LateInitSignal<Product>()
 
         launch {
             product.value = api.fetchProduct(id)

@@ -17,18 +17,18 @@
 
 ## Reactivity
 
-### Accessing Property Values
-- Use direct invocation syntax `property()` instead of `property.await()` (deprecated)
-- Example: `text { reactiveScope { content = "Value: " + myProperty() } }`
+### Accessing Signal Values
+- Use direct invocation syntax `signal()` instead of `signal.await()` (deprecated)
+- Example: `text { reactive { content = "Value: " + mySignal() } }`
 
 ### Reactive Binding
 - Two ways to handle reactivity:
-  1. Using `reactiveScope { content = "property = ${property()}" }`
-  2. Using `::content { "property = ${property()}" }`
+  1. Using `reactive { content = "signal = ${signal()}" }`
+  2. Using `::content { "signal = ${signal()}" }`
 
-### Creating Derived Properties
-- Use `shared { ... }` for creating derived properties
-- Example: `val derived = shared { propertyA() + propertyB() }`
+### Creating Derived Signals
+- Use `remember { ... }` for creating derived signals (`shared` is the deprecated older name)
+- Example: `val derived = remember { signalA() + signalB() }`
 
 ## View Construction
 

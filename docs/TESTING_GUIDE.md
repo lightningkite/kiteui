@@ -98,8 +98,8 @@ Test individual components in isolation:
 
 ```kotlin
 @Test
-fun textInputBindsToProperty() = kiteUiTest {
-    val inputValue = Property("")
+fun textInputBindsToSignal() = kiteUiTest {
+    val inputValue = Signal("")
 
     val scope = render {
         "test-input".testId.textInput {
@@ -259,12 +259,12 @@ scope.findByTestId("image").assertProperty<ImageView>("scaleType", ImageScaleTyp
 
 ## Testing Reactive State
 
-### Property Changes
+### Signal Changes
 
 ```kotlin
 @Test
-fun propertyChangeUpdatesUI() = kiteUiTest {
-    val message = Property("Initial")
+fun signalChangeUpdatesUI() = kiteUiTest {
+    val message = Signal("Initial")
 
     val scope = render {
         "label".testId.text {
@@ -281,14 +281,14 @@ fun propertyChangeUpdatesUI() = kiteUiTest {
 }
 ```
 
-### Shared Calculations
+### Remembered Calculations
 
 ```kotlin
 @Test
-fun sharedCalculationCaches() = kiteUiTest {
+fun rememberedCalculationCaches() = kiteUiTest {
     var count = 0
-    val base = Property(5)
-    val calculated = shared {
+    val base = Signal(5)
+    val calculated = remember {
         count++
         base() * 2
     }
@@ -310,7 +310,7 @@ fun sharedCalculationCaches() = kiteUiTest {
 ```kotlin
 @Test
 fun conditionalRendering() = kiteUiTest {
-    val show = Property(false)
+    val show = Signal(false)
 
     val scope = render {
         col {
