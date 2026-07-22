@@ -76,6 +76,41 @@ internal fun <T, ID> ContainerElement.renderListKeyed(
 }
 
 /**
+ * **INTERNAL API:** Renders [items] using keyed ID diffing with support for multiple renderer types per item.
+ *
+ * Similar to [renderListKeyed] but allows different items to use different renderers. Each item's
+ * renderer and ID are provided by [rendererSet]. When animated, items matched by ID are shown/hidden
+ * with transitions. When not animated, uses positional slot reuse for maximum efficiency.
+ *
+ * **Do not call directly.** Use the public API instead:
+ * ```kotlin
+ * renderListIn(ElementWriter::yourContainer, items, rendererSet, animate, poolCap, placeholders)
+ * ```
+ *
+ * @param items Reactive list of items to render
+ * @param rendererSet Provides ID and renderer for each item
+ * @param animate If true (default), uses keyed diffing with animated transitions.
+ *                If false, uses positional slot reuse (no reorder support).
+ * @param poolCap Maximum hidden views to retain beyond list size (positional mode only)
+ * @param placeHoldersWhileLoading Renderers to show as placeholders while loading
+ */
+@PublishedApi
+internal fun <T, ID : Any> ContainerElement.renderHeterogeneousList(
+    items: Reactive<List<T>>,
+    rendererSet: RecyclerViewRendererSet<T, ID>,
+    animate: Boolean = true,
+    poolCap: Int = 32,
+    placeHoldersWhileLoading: List<RecyclerViewRenderer<T>> = emptyList(),
+) {
+    if (animate) {
+        renderHeterogeneousListAnimated(items, rendererSet, placeHoldersWhileLoading)
+    }
+    else {
+        renderHeterogeneousListPositional(items, rendererSet, poolCap, placeHoldersWhileLoading)
+    }
+}
+
+/**
  * **INTERNAL API:** Renders [items] with full rebuild on every change, optionally animated.
  *
  * **PERFORMANCE WARNING:** This clears and recreates all views whenever the list changes.

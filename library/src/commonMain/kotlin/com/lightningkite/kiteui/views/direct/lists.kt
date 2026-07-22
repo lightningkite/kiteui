@@ -7,6 +7,8 @@ import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.l2.RecyclerViewRenderer
+import com.lightningkite.kiteui.views.l2.RecyclerViewRendererSet
 import com.lightningkite.reactive.core.Reactive
 
 /**
@@ -90,6 +92,75 @@ inline fun <T, C : ContainerElement> ElementWriter.renderListIn(
                 "items" to (items.state.getOrNull()?.toString() ?: "NotReady"),
                 "placeholders" to placeholdersWhileLoading.toString(),
                 "poolCap" to poolCap.toString()
+            )
+        )
+    )
+    return result
+}
+
+/**
+ * Renders [items] in a container using keyed ID diffing with support for multiple renderer types.
+ *
+ * **HETEROGENEOUS LISTS:** Use this when different items in your list need different renderers
+ * (e.g., a feed with posts, ads, and comments each having different layouts). The [rendererSet]
+ * determines which renderer to use for each item based on its type/properties.
+ *
+ * **Performance modes:**
+ * - `animate = true` (default): Uses keyed diffing with animated transitions. Best for user-facing
+ *   lists where items can be reordered, inserted, or removed.
+ * - `animate = false`: Uses positional slot reuse. Maximum efficiency but no support for reordering.
+ *   Best for server-driven lists where the entire list is replaced.
+ *
+ * **Example:**
+ * ```kotlin
+ * val feedRendererSet = RecyclerViewRendererSet(
+ *     id = { it.id },
+ *     renderer = { item ->
+ *         when (item.type) {
+ *             "post" -> postRenderer
+ *             "ad" -> adRenderer
+ *             "comment" -> commentRenderer
+ *         }
+ *     }
+ * )
+ * renderListIn(ElementWriter::col, feedItems, feedRendererSet)
+ * ```
+ *
+ * @param container The container factory. Use a DSL function reference like `ElementWriter::col`
+ *                  or `ElementWriter::row`. If using a lambda, it MUST call the passed setup
+ *                  lambda, e.g., `{ setup -> col { setup() } }`.
+ * @param rendererSet Provides ID and renderer for each item
+ * @param animate If true (default), uses keyed diffing with animations. If false, uses positional reuse.
+ * @param poolCap Maximum hidden views to retain (positional mode only, default 32)
+ * @param placeholdersWhileLoading Renderers to show while data loads
+ * @see colOf for a col-specific convenience wrapper
+ * @see rowOf for a row-specific convenience wrapper
+ */
+inline fun <T, ID : Any, C : ContainerElement> ElementWriter.renderListIn(
+    container: ElementWriter.(C.() -> Unit) -> C,
+    items: Reactive<List<T>>,
+    rendererSet: RecyclerViewRendererSet<T, ID>,
+    animate: Boolean = true,
+    poolCap: Int = 32,
+    placeholdersWhileLoading: List<RecyclerViewRenderer<T>> = emptyList(),
+): C {
+    var setupCalled = false
+    val result = container {
+        setupCalled = true
+        renderHeterogeneousList(items, rendererSet, animate, poolCap, placeholdersWhileLoading)
+    }
+    if (!setupCalled) context.handleException(
+        Exception("renderListIn: container lambda did not call the setup lambda. Use a DSL function reference like ElementWriter::col or ElementWriter::row, or ensure your custom lambda invokes the passed setup function, e.g., { setup -> col { setup() } }"),
+        ExceptionHandler.Metadata(
+            source = result,
+            process = null,
+            foregroundProcess = null,
+            context = mapOf(
+                "container type" to result::class.toString(),
+                "items" to (items.state.getOrNull()?.toString() ?: "NotReady"),
+                "placeholders" to placeholdersWhileLoading.toString(),
+                "poolCap" to poolCap.toString(),
+                "animate" to animate.toString()
             )
         )
     )
@@ -275,6 +346,46 @@ fun <T> ElementWriter.colOfExpensive(
     renderListExpensive(items, beforeModifier, render)
 }
 
+/**
+ * Creates a column ([col]) and renders [items] with support for multiple renderer types.
+ *
+ * **HETEROGENEOUS LISTS:** Use this when different items need different renderers
+ * (e.g., a feed with posts, ads, and comments). The [rendererSet] determines which
+ * renderer to use for each item.
+ *
+ * **Example:**
+ * ```kotlin
+ * val feedRendererSet = RecyclerViewRendererSet(
+ *     id = { it.id },
+ *     renderer = { item ->
+ *         when (item) {
+ *             is Post -> postRenderer
+ *             is Ad -> adRenderer
+ *             is Comment -> commentRenderer
+ *         }
+ *     }
+ * )
+ * colOf(feedItems, feedRendererSet)
+ * ```
+ *
+ * @param rendererSet Provides ID and renderer for each item
+ * @param animate If true (default), uses keyed diffing with animations. If false, uses positional reuse.
+ * @param poolCap Maximum hidden views to retain (positional mode only, default 32)
+ * @param placeholdersWhileLoading Renderers to show while data loads
+ * @return The created RowOrCol container
+ */
+fun <T, ID : Any> ElementWriter.colOf(
+    items: Reactive<List<T>>,
+    rendererSet: RecyclerViewRendererSet<T, ID>,
+    animate: Boolean = true,
+    poolCap: Int = 32,
+    placeholdersWhileLoading: List<RecyclerViewRenderer<T>> = emptyList()
+): RowOrCol = col {
+    // Optimized: directly calls renderHeterogeneousList. For custom containers, use:
+    // renderListIn(ElementWriter::yourContainer, items, rendererSet, animate, poolCap, placeholdersWhileLoading)
+    renderHeterogeneousList(items, rendererSet, animate, poolCap, placeholdersWhileLoading)
+}
+
 
 /**
  * Creates a row ([row]) and renders [items] using keyed ID diffing with optional animation.
@@ -371,4 +482,44 @@ fun <T> ElementWriter.rowOfExpensive(
     // Optimized: directly calls renderListExpensive. For custom containers, use:
     // renderListInExpensive(ElementWriter::yourContainer, items, beforeModifier, render)
     renderListExpensive(items, beforeModifier, render)
+}
+
+/**
+ * Creates a row ([row]) and renders [items] with support for multiple renderer types.
+ *
+ * **HETEROGENEOUS LISTS:** Use this when different items need different renderers
+ * (e.g., a horizontal feed with different card types). The [rendererSet] determines
+ * which renderer to use for each item.
+ *
+ * **Example:**
+ * ```kotlin
+ * val cardRendererSet = RecyclerViewRendererSet(
+ *     id = { it.id },
+ *     renderer = { card ->
+ *         when (card.type) {
+ *             "image" -> imageCardRenderer
+ *             "video" -> videoCardRenderer
+ *             "text" -> textCardRenderer
+ *         }
+ *     }
+ * )
+ * rowOf(cards, cardRendererSet)
+ * ```
+ *
+ * @param rendererSet Provides ID and renderer for each item
+ * @param animate If true (default), uses keyed diffing with animations. If false, uses positional reuse.
+ * @param poolCap Maximum hidden views to retain (positional mode only, default 32)
+ * @param placeholdersWhileLoading Renderers to show while data loads
+ * @return The created RowOrCol container
+ */
+fun <T, ID : Any> ElementWriter.rowOf(
+    items: Reactive<List<T>>,
+    rendererSet: RecyclerViewRendererSet<T, ID>,
+    animate: Boolean = true,
+    poolCap: Int = 32,
+    placeholdersWhileLoading: List<RecyclerViewRenderer<T>> = emptyList()
+): RowOrCol = row {
+    // Optimized: directly calls renderHeterogeneousList. For custom containers, use:
+    // renderListIn(ElementWriter::yourContainer, items, rendererSet, animate, poolCap, placeholdersWhileLoading)
+    renderHeterogeneousList(items, rendererSet, animate, poolCap, placeholdersWhileLoading)
 }
