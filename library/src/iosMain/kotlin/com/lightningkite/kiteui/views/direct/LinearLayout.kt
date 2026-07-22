@@ -142,7 +142,13 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
     }
 
     override fun willRemoveSubview(subview: UIView) {
-        // Fixes a really cursed crash where "this" is null due to GC interactions
+        // Cursed workaround: `this` can observably be null here even though the Kotlin type system
+        // guarantees a non-null receiver. Best understanding so far: UIKit can invoke
+        // willRemoveSubview() from within the superview's own ARC deallocation, and Kotlin/Native's
+        // GC<->ARC interop can dispatch that call into an override on a Kotlin object whose backing
+        // memory has already been freed — leaving `this` pointing at nothing. The null-check below
+        // is the only known guard; removing it reintroduces the crash.
+        // TODO(tracked-issue): file a real issue for this — no root-cause fix exists yet, only this guard.
         @Suppress("SENSELESS_COMPARISON")
         if (this != null) {
             lastLaidOutSize = null

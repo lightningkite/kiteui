@@ -153,7 +153,104 @@ class ElementThemeCascadeTest {
     }
 
     // -----------------------------------------------------------------------
-    // 6. Element.Debugger.countInstances tracks element creation / shutdown:
+    // 6. Changing the root theme after the tree is built must cascade through
+    //    every container level (root → parent → child), updating each
+    //    descendant's theme.  This is the container themeAndBackChanged hook
+    //    in action: a real theme change triggers refreshTheming on children.
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun rootThemeSwitch_cascadesToAllDescendants() {
+        val tree = elementTree {
+            col {
+                debugName = "parent"
+                col {
+                    debugName = "child"
+                }
+            }
+        }
+        try {
+            val parent = tree.findByName("parent")!!
+            val child = tree.findByName("child")!!
+            assertEquals("test", parent.themeId, "Sanity: plain col inherits the root test theme")
+            assertEquals("test", child.themeId, "Sanity: nested plain col inherits the root test theme")
+
+            tree.root.themeChoice = ThemeDerivation.SetAsBase(Theme(id = "test2"))
+
+            assertEquals("test2", parent.themeId,
+                "Root theme switch must cascade to the first-level container")
+            assertEquals("test2", child.themeId,
+                "Root theme switch must cascade through containers to grandchildren")
+        } finally {
+            tree.shutdown()
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // 7. Root theme switch also cascades through a theme-switching container
+    //    (card): the card re-derives its theme from the new base and its plain
+    //    child follows.
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun rootThemeSwitch_cascadesThroughCard() {
+        val tree = elementTree {
+            card.col {
+                debugName = "cardParent"
+                col {
+                    debugName = "inner"
+                }
+            }
+        }
+        try {
+            val cardParent = tree.findByName("cardParent")!!
+            val inner = tree.findByName("inner")!!
+            val cardBefore = cardParent.themeAndBack
+            val innerBefore = inner.themeAndBack
+
+            tree.root.themeChoice = ThemeDerivation.SetAsBase(Theme(id = "test2"))
+
+            assertNotEquals(cardBefore, cardParent.themeAndBack,
+                "card container must re-derive its theme from the new base")
+            assertNotEquals(innerBefore, inner.themeAndBack,
+                "Root theme switch must cascade through the card container to its plain child")
+            assertTrue(cardParent.drawsBackground, "card still draws its background after the switch")
+            assertFalse(inner.drawsBackground, "plain child still draws no background after the switch")
+        } finally {
+            tree.shutdown()
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // 8. Re-setting the SAME root theme is a no-op for the whole tree: the
+    //    themeAndBack setter's dedup check short-circuits before the cascade
+    //    hook, so descendants keep their exact ThemeAndBack values.
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun sameRootThemeReset_leavesDescendantsUntouched() {
+        val tree = elementTree {
+            card.col {
+                debugName = "cardParent"
+                col {
+                    debugName = "inner"
+                }
+            }
+        }
+        try {
+            val before = tree.allThemeAndBacks()
+
+            tree.root.themeChoice = ThemeDerivation.SetAsBase(ElementTestTheme)
+
+            assertEquals(before, tree.allThemeAndBacks(),
+                "Re-applying the identical root theme must not change any descendant's themeAndBack")
+        } finally {
+            tree.shutdown()
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // 9. Element.Debugger.countInstances tracks element creation / shutdown:
     //    after teardown, the live-instance count must return to its baseline.
     // -----------------------------------------------------------------------
 

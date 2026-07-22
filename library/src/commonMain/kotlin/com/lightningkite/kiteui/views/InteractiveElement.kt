@@ -33,6 +33,15 @@ public interface ElementWithSecondaryAction : ElementWithAction {
 }
 
 
+/**
+ * Rewatches an [Action] as a foreground process, releasing whatever was previously watched first.
+ * Shared by the `action`/`secondaryAction` setters below (container and non-container variants
+ * alike) so the stop-old/start-new logic exists in exactly one place.
+ */
+private fun NativeElement.rewatchAction(previousRelease: Release?, action: Action?): Release? {
+    previousRelease?.invoke()
+    return action?.let { watchForegroundProcess(it) }
+}
 
 // Native helpers
 
@@ -67,8 +76,7 @@ public abstract class NativeElementWithAction(context: ElementContext) : Element
     final override var action: Action? = null
         set(value) {
             field = value
-            stopWatchingAction?.invoke()
-            stopWatchingAction = value?.let { watchForegroundProcess(it) }
+            stopWatchingAction = rewatchAction(stopWatchingAction, value)
             nativeSetAction(value)
         }
 }
@@ -85,8 +93,7 @@ public abstract class NativeElementWithSecondaryAction(context: ElementContext) 
     final override var secondaryAction: Action? = null
         set(value) {
             field = value
-            stopWatchingSecondaryAction?.invoke()
-            stopWatchingSecondaryAction = value?.let { watchForegroundProcess(it) }
+            stopWatchingSecondaryAction = rewatchAction(stopWatchingSecondaryAction, value)
             nativeSetSecondaryAction(value)
         }
 }
@@ -106,8 +113,7 @@ public abstract class NativeContainerElementWithAction(context: ElementContext) 
     final override var action: Action? = null
         set(value) {
             field = value
-            stopWatchingAction?.invoke()
-            stopWatchingAction = value?.let { watchForegroundProcess(it) }
+            stopWatchingAction = rewatchAction(stopWatchingAction, value)
             nativeSetAction(value)
         }
 }
@@ -124,8 +130,7 @@ public abstract class NativeContainerElementWithSecondaryAction(context: Element
     final override var secondaryAction: Action? = null
         set(value) {
             field = value
-            stopWatchingSecondaryAction?.invoke()
-            stopWatchingSecondaryAction = value?.let { watchForegroundProcess(it) }
+            stopWatchingSecondaryAction = rewatchAction(stopWatchingSecondaryAction, value)
             nativeSetSecondaryAction(value)
         }
 }

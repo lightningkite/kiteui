@@ -229,6 +229,18 @@ public expect abstract class NativeElement(context: ElementContext) : Element, N
 }
 
 /**
+ * Casts a [NativeElementCommonCode] to [NativeElement], relying on the invariant documented on
+ * [NativeElementCommonCode] that it is only ever extended (via expect/actual) by [NativeElement].
+ *
+ * A plain `this as NativeElement` cast already fails fast (it's a `checkcast` on the JVM and
+ * equivalent on other backends), so this costs no more than that — it just replaces the bare
+ * `ClassCastException` with a message naming the actual invariant, in case it's ever violated.
+ */
+private fun NativeElementCommonCode.asNativeElementOrFail(): NativeElement =
+    this as? NativeElement
+        ?: error("$this is a NativeElementCommonCode but not a NativeElement — this violates the invariant that NativeElement is the only subclass of NativeElementCommonCode")
+
+/**
  * Shared platform-independent code for all native elements.
  *
  * This is only directly inherited by [NativeElement]. Any instance of this class is also a [NativeElement].
@@ -341,7 +353,7 @@ public expect abstract class NativeElement(context: ElementContext) : Element, N
 public abstract class NativeElementCommonCode internal constructor(override val context: ElementContext) : Element {
     // This code is duplicated in every element throughout the entire view tree, so performance actually kinda matters.
 
-    override val underlyingNativeElement: NativeElement get() = this as NativeElement
+    override val underlyingNativeElement: NativeElement get() = asNativeElementOrFail()
 
     /**
      * The outermost wrapper element when using delegation, or `this` if not wrapped.
@@ -466,7 +478,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
             override fun watchForegroundProcess(status: Reactive<*>): Release =
                 this@NativeElementCommonCode.watchForegroundProcess(status)
         },
-        TelemetryContext(element = this as NativeElement)
+        TelemetryContext(element = asNativeElementOrFail())
     )
 
     public var fullyStarted: Boolean = false
@@ -504,13 +516,29 @@ public abstract class NativeElementCommonCode internal constructor(override val 
     protected abstract fun nativeApplyTheme(theme: ThemeAndBack)
     public abstract fun refreshPadding()
 
-    override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
+    final override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
         protected set(value) {
             if (value == field) return
+            val previous = field
             field = value
             nativeApplyTheme(value)
             refreshPadding()
+            themeAndBackChanged(previous, value)
         }
+
+    /**
+     * Called after [themeAndBack] actually changes (the setter's dedup check passed and the new
+     * value has been applied natively).  Containers override this to cascade the change to their
+     * children.
+     *
+     * This hook exists so subclasses never override the [themeAndBack] property itself: a Kotlin
+     * `override var` with its own accessor introduces a *second* backing field, and writing
+     * `super.themeAndBack = value` from such an override updates only the superclass's hidden
+     * field while the virtual getter keeps reading the subclass's never-written one — silently
+     * freezing the element's observed theme at [Theme.placeholder]. The property is `final` to
+     * keep that trap closed.
+     */
+    protected open fun themeAndBackChanged(previous: ThemeAndBack, current: ThemeAndBack) {}
 
     final override var paddingByEdge: Edges? = null
         set(value) {
@@ -582,7 +610,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
             debug { "abandoning refreshTheming because parent $parent not started" }
             return
         }
-        val base = themeBase.get(this as NativeElement)
+        val base = themeBase.get(asNativeElementOrFail())
         debug {
             val source = when (themeBase) {
                 GetBaseTheme.fromParent -> ""
@@ -631,7 +659,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
                     releaseExceptionHandler = context.handleException(
                         exception,
                         ExceptionHandler.Metadata(
-                            source = this@NativeElementCommonCode,  // TODO: Get wrapper element somehow
+                            source = outermostElement,  // attribute to the wrapper, not the inner element (see outermostElement doc above)
                             process = process,
                             foregroundProcess = foreground
                         )
