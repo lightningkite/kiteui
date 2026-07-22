@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views
 
 
+import com.lightningkite.kiteui.Build
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
@@ -24,6 +25,7 @@ import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSNumber
+import platform.Foundation.NSThread
 import platform.Foundation.NSValue
 import platform.UIKit.*
 import platform.darwin.*
@@ -31,6 +33,18 @@ import platform.darwin.sel_registerName
 import platform.objc.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.experimental.ExperimentalNativeApi
+
+// Installs the reactive graph's thread-confinement guard once per process, debug builds only.
+// Guarded by a top-level flag since `setup` runs once per root view controller, but an app could
+// in principle create more than one over its lifetime.
+private var reactiveThreadCheckInstalled = false
+private fun installReactiveThreadCheckOnce() {
+    if (reactiveThreadCheckInstalled) return
+    reactiveThreadCheckInstalled = true
+    if (Build.debug) {
+        ReactiveThreadCheck.currentThread = { NSThread.currentThread }
+    }
+}
 
 public fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> Unit) {
     setup({ theme }, app)
@@ -171,6 +185,7 @@ private class RemoveView(var onRemove: (() -> Boolean)? = null) : UIView(CGRectM
 }
 
 public fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
+    installReactiveThreadCheckOnce()
     val systemBarBackground = UIView()
 
     view.addSubview(systemBarBackground)
