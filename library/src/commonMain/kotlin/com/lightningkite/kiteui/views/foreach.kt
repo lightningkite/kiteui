@@ -14,6 +14,20 @@ import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.value
 import kotlin.math.min
 
+/**
+ * **INTERNAL API:** Renders [items] using positional slot reuse with optional placeholder loading states.
+ *
+ * Views are created once and reused by position as the list changes. This is efficient
+ * for lists where items can change but order/count is relatively stable.
+ *
+ * **Do not call directly.** Use [colOf]/[rowOf] for common cases, or [renderListIn] for custom containers:
+ * ```kotlin
+ * renderListIn(ElementWriter::yourContainer, items, placeholders, poolCap, beforeModifier, render)
+ * ```
+ *
+ * @param placeholders Number of placeholder items to show while data loads (0 = no placeholders)
+ * @param poolCap Maximum number of hidden views to retain beyond current list size (default 32)
+ */
 @PublishedApi
 internal fun <T> ContainerElement.renderList(
     items: Reactive<List<T>>,
@@ -25,6 +39,23 @@ internal fun <T> ContainerElement.renderList(
     renderListPositional(items, placeholders, poolCap, beforeModifier, render)
 }
 
+/**
+ * **INTERNAL API:** Renders [items] using keyed ID diffing with optional animation.
+ *
+ * Each item is tracked by [id]. When the list changes, items are matched by ID:
+ * matched views have their data updated in-place; new IDs trigger insertion;
+ * removed IDs trigger deletion. This is the most efficient strategy when items
+ * have stable identities and can be reordered, inserted, or removed.
+ *
+ * **Do not call directly.** Use [colOf]/[rowOf] for common cases, or [renderListIn] for custom containers:
+ * ```kotlin
+ * renderListIn(ElementWriter::yourContainer, items, id, animate, beforeModifier, render)
+ * ```
+ *
+ * @param animate If true, uses [shownWhen] for enter/exit transitions (default).
+ *                When animated, render receives [CanAddSizing]. When not animated,
+ *                render receives [CanAddListElementModifier] directly.
+ */
 @PublishedApi
 internal fun <T, ID> ContainerElement.renderListKeyed(
     items: Reactive<List<T>>,
@@ -40,6 +71,22 @@ internal fun <T, ID> ContainerElement.renderListKeyed(
     }
 }
 
+/**
+ * **INTERNAL API:** Renders [items] with full rebuild on every change, optionally animated.
+ *
+ * **PERFORMANCE WARNING:** This clears and recreates all views whenever the list changes.
+ * Use this only as a last resort when keyed or positional strategies don't apply.
+ *
+ * **Do not call directly.** Use [colOfExpensive]/[rowOfExpensive] for common cases, or [renderListInExpensive] for custom containers:
+ * ```kotlin
+ * renderListInExpensive(ElementWriter::yourContainer, items, animate, beforeModifier, render)
+ * ```
+ *
+ * When animated, uses object equality (==) to match items for enter/exit transitions.
+ * Works best with data classes. Note that [beforeModifier] receives the item value T.
+ *
+ * @param animate If true, animates entry/exit using object equality matching
+ */
 @PublishedApi
 internal fun <T> ContainerElement.renderListExpensive(
     items: Reactive<List<T>>,
@@ -57,6 +104,7 @@ internal fun <T> ContainerElement.renderListExpensive(
 // Internal implementations (factored bodies of the old functions)
 // ---------------------------------------------------------------------------
 
+/** ViewWriter wrapper that inserts children at a specific index instead of appending. */
 private fun ContainerElement.atIndex(index: Int): ViewWriter =
     object : ViewWriter by this {
         @OverrideOnly
@@ -65,6 +113,19 @@ private fun ContainerElement.atIndex(index: Int): ViewWriter =
         }
     }
 
+/**
+ * **INTERNAL API:** Renders [items] with full rebuild on every change, no animation.
+ *
+ * **PERFORMANCE WARNING:** This clears and recreates all views whenever the list changes.
+ * Use this only as a last resort when keyed or positional strategies don't apply.
+ *
+ * **Do not call directly.** Use [colOfExpensive]/[rowOfExpensive] for common cases, or [renderListInExpensive] for custom containers:
+ * ```kotlin
+ * renderListInExpensive(ElementWriter::yourContainer, items, beforeModifier, render)
+ * ```
+ *
+ * Note that [beforeModifier] receives the item value T, allowing item-specific modifiers.
+ */
 @PublishedApi
 internal fun <T> ContainerElement.renderListExpensive(
     items: Reactive<List<T>>,
@@ -80,13 +141,18 @@ internal fun <T> ContainerElement.renderListExpensive(
     }
 }
 
+/**
+ * Full rebuild with animated entry/exit using object equality for item matching.
+ *
+ * Clears and recreates views on each change. Uses object equality (==) to match items
+ * between old and new lists to animate removals. Items are identified by their value;
+ * works best with data classes. Uses [shownWhen] for transitions.
+ */
 private fun <T> ContainerElement.renderListExpensiveAnimating(
     items: Reactive<List<T>>,
     beforeModifier: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddSizing.(T) -> Unit
 ) {
-    // The preHidingModifiers parameter takes T but renderList's beforeModifier does not,
-    // so we keep the original body here to preserve full behavior.
     setupAsListContainer()
     val oldEarly = ArrayList<Any>()
 
@@ -153,7 +219,13 @@ private fun <T> ContainerElement.renderListExpensiveAnimating(
     }
 }
 
-/** Positional slot-reuse path with poolCap eviction (old forEachUpdating body + eviction). */
+/**
+ * Positional slot reuse with view pooling and placeholder support.
+ *
+ * Creates view slots once and updates them in-place as items change. Efficient when
+ * list order is stable and items change by position. Shows [placeholders] slots as
+ * loading state. Evicts hidden slots beyond [poolCap] to limit memory usage.
+ */
 private fun <T> ContainerElement.renderListPositional(
     items: Reactive<List<T>>,
     placeholders: Int,
@@ -225,9 +297,14 @@ private fun <T> ContainerElement.renderListPositional(
     }
 }
 
-/** Keyed diffing with animated entry/exit (old forEachById body).
+/**
+ * Keyed diffing with animated entry/exit transitions.
  *
- * Uses [shownWhen] to drive CSS transitions, so render receives [CanAddTheme]
+ * Tracks items by [id] and diffs the list on each change. Matched IDs update their
+ * views in-place; new IDs animate in; removed IDs animate out. Most efficient for
+ * lists with stable item identities that reorder, insert, or remove items.
+ *
+ * Uses [shownWhen] to drive transitions, so render receives [CanAddSizing]
  * (the type returned after shownWhen consumes the CanAddShownWhen stage).
  */
 private fun <T, ID> ContainerElement.renderListKeyedAnimated(
@@ -308,7 +385,15 @@ private fun <T, ID> ContainerElement.renderListKeyedAnimated(
     }
 }
 
-/** Keyed diffing without animation (old forEachByIdWithoutAnimation body). */
+/**
+ * Keyed diffing without animation.
+ *
+ * Tracks items by [id] and diffs the list on each change. Matched IDs update their
+ * views in-place; new IDs insert instantly; removed IDs remove instantly. Most efficient
+ * for lists with stable item identities that reorder, insert, or remove items.
+ *
+ * No wrapper elements are added. Render receives [CanAddListElementModifier] directly.
+ */
 private fun <T, ID> ContainerElement.renderListKeyedNoAnimation(
     items: Reactive<List<T>>,
     id: (T) -> ID,
