@@ -24,20 +24,34 @@ import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
 
+/**
+ * Capability of a native container that can host weighted/aligned children along a linear axis
+ * (i.e. a row or column). Implemented by [SimplifiedLinearLayout]. The `weight`/`align` modifiers
+ * check for this via `parent?.native as? LinearChildHost` instead of casting to the concrete
+ * container class, and silently no-op when the parent doesn't implement it - using weight/align
+ * outside a row or col is not a runtime error; enforcing that at compile time is a separate,
+ * deliberately deferred effort.
+ */
+public interface LinearChildHost {
+    public val isHorizontal: Boolean
+}
+
+/**
+ * Capability of layout params that can carry a weight for [LinearChildHost] distribution.
+ * Implemented by [SimplifiedLinearLayout.LayoutParams]. Mirrors [MaxSizeLayoutParams].
+ */
+public interface WeightedLayoutParams {
+    public var weight: Float
+}
+
 @ViewModifierDsl3
 public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
-        try {
-            val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-            lp.weight = amount
-            if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                lp.width = 0
-            } else {
-                lp.height = 0
-            }
-        } catch (ex: Throwable) {
-            RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
-        }
+        val host = parent?.native as? LinearChildHost ?: return@beforeSetup
+        val lp = lparams
+        if (lp !is WeightedLayoutParams) return@beforeSetup
+        lp.weight = amount
+        if (host.isHorizontal) lp.width = 0 else lp.height = 0
     }
 }
 
@@ -45,30 +59,17 @@ public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWrite
 @ViewModifierDsl3
 public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
-        val originalSize = try {
-            val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-            if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                lp.width
-            } else {
-                lp.height
-            }
-        } catch (ex: Throwable) {
-            RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
-            WRAP_CONTENT
-        }
+        val host = parent?.native as? LinearChildHost ?: return@beforeSetup
+        val lp = lparams
+        if (lp !is WeightedLayoutParams) return@beforeSetup
+        val originalSize = if (host.isHorizontal) lp.width else lp.height
 
         reactive {
-            try {
-                val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-                val amount = amount()
-                lp.weight = amount
-                if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                    lp.width = if (lp.weight != 0f) 0 else originalSize
-                } else {
-                    lp.height = if (lp.weight != 0f) 0 else originalSize
-                }
-            } catch (ex: Throwable) {
-                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
+            lp.weight = amount()
+            if (host.isHorizontal) {
+                lp.width = if (lp.weight != 0f) 0 else originalSize
+            } else {
+                lp.height = if (lp.weight != 0f) 0 else originalSize
             }
         }
     }
@@ -109,15 +110,16 @@ public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertica
             params.gravity = horizontalGravity or verticalGravity
         else
             Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
-        if (horizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
+        val host = parent?.native as? LinearChildHost
+        if (horizontal == Align.Stretch && host?.isHorizontal != true) {
             params.width = MATCH_PARENT
-        } else if (params.width == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+        } else if (params.width == MATCH_PARENT && host?.isHorizontal == true) {
             // In a horizontal row, MATCH_PARENT width conflicts with weighted siblings - use WRAP_CONTENT instead
             params.width = WRAP_CONTENT
         }
-        if (vertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
+        if (vertical == Align.Stretch && host?.isHorizontal != false) {
             params.height = MATCH_PARENT
-        } else if (params.height == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.VERTICAL) {
+        } else if (params.height == MATCH_PARENT && host?.isHorizontal == false) {
             // In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead
             params.height = WRAP_CONTENT
         }
