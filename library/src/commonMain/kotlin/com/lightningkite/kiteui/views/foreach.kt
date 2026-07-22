@@ -5,9 +5,13 @@ import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.views.direct.RowOrCol
 import com.lightningkite.kiteui.views.direct.asListItem
+import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.setupAsListContainer
 import com.lightningkite.kiteui.views.direct.shownWhen
+import com.lightningkite.kiteui.views.l2.RecyclerViewRenderer
+import com.lightningkite.kiteui.views.l2.RecyclerViewRendererSet
 import com.lightningkite.reactive.context.reactive
+import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.LateInitSignal
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
@@ -104,7 +108,6 @@ internal fun <T> ContainerElement.renderListExpensive(
 // Internal implementations (factored bodies of the old functions)
 // ---------------------------------------------------------------------------
 
-/** ViewWriter wrapper that inserts children at a specific index instead of appending. */
 private fun ContainerElement.atIndex(index: Int): ViewWriter =
     object : ViewWriter by this {
         @OverrideOnly
@@ -141,6 +144,34 @@ internal fun <T> ContainerElement.renderListExpensive(
     }
 }
 
+private data class OldViewInfo<ID, DATA>(
+    var oldIndex: Int,
+    val id: ID,
+    val data: DATA,
+    val old: ArrayList<OldViewInfo<ID, DATA>>,
+    val container: ContainerElement,
+    val view: Element,
+    val shown: Signal<Boolean>
+) {
+    var livenessIter = 0
+
+    fun show() {
+        livenessIter++
+        shown.value = true
+    }
+
+    fun hide() {
+        val n = ++livenessIter
+        shown.value = false
+        container.afterTimeout(view.theme.transitionDuration.inWholeMilliseconds + 100) {
+            if (n == livenessIter) {
+                container.removeChild(view)
+                old.remove(this)
+            }
+        }
+    }
+}
+
 /**
  * Full rebuild with animated entry/exit using object equality for item matching.
  *
@@ -154,33 +185,9 @@ private fun <T> ContainerElement.renderListExpensiveAnimating(
     render: ElementWriter.CanAddSizing.(T) -> Unit
 ) {
     setupAsListContainer()
-    val oldEarly = ArrayList<Any>()
 
-    data class OldViewInfo(
-        var oldIndex: Int,
-        val data: T,
-        val view: Element,
-        val shown: Signal<Boolean>
-    ) {
-        var livenessIter = 0
-        fun show() {
-            livenessIter++
-            shown.value = true
-        }
-        fun hide() {
-            val n = ++livenessIter
-            shown.value = false
-            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds + 100) {
-                if (n == livenessIter) {
-                    removeChild(view)
-                    oldEarly.remove(this)
-                }
-            }
-        }
-    }
+    val old = ArrayList<OldViewInfo<Nothing?, T>>()
 
-    @Suppress("UNCHECKED_CAST")
-    val old = oldEarly as ArrayList<OldViewInfo>
     reactive {
         val new = items()
         var oldPos = 0
@@ -206,7 +213,10 @@ private fun <T> ContainerElement.renderListExpensiveAnimating(
                 old.add(
                     oldPos, OldViewInfo(
                         oldIndex = index,
+                        id = null,
                         data = toRender,
+                        container = this@renderListExpensiveAnimating,
+                        old = old,
                         view = result,
                         shown = shown
                     )
@@ -314,41 +324,16 @@ private fun <T, ID> ContainerElement.renderListKeyedAnimated(
     render: ElementWriter.CanAddSizing.(Reactive<T>) -> Unit
 ) {
     setupAsListContainer()
-    val oldEarly = ArrayList<Any>()
 
-    data class OldViewInfo(
-        var oldIndex: Int,
-        val oldId: ID,
-        val data: Signal<T>,
-        val view: Element,
-        val shown: Signal<Boolean>
-    ) {
-        var livenessIter = 0
-        fun show() {
-            livenessIter++
-            shown.value = true
-        }
-        fun hide() {
-            val n = ++livenessIter
-            shown.value = false
-            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds + 100) {
-                if (n == livenessIter) {
-                    removeChild(view)
-                    oldEarly.remove(this)
-                }
-            }
-        }
-    }
+    val old = ArrayList<OldViewInfo<ID, Signal<T>>>()
 
-    @Suppress("UNCHECKED_CAST")
-    val old = oldEarly as ArrayList<OldViewInfo>
     reactive {
         val new = items()
         var oldPos = 0
         new.forEachIndexed { index, toRender ->
             var matchIndex = -1
             for (checkIndex in oldPos..<old.size) {
-                if (old[checkIndex].oldId == id(toRender)) {
+                if (old[checkIndex].id == id(toRender)) {
                     matchIndex = checkIndex
                     break
                 }
@@ -371,10 +356,12 @@ private fun <T, ID> ContainerElement.renderListKeyedAnimated(
                 old.add(
                     oldPos, OldViewInfo(
                         oldIndex = index,
-                        oldId = id(toRender),
+                        id = id(toRender),
                         data = data,
                         view = result,
-                        shown = shown
+                        shown = shown,
+                        container = this@renderListKeyedAnimated,
+                        old = old
                     )
                 )
                 afterTimeout(1) { shown.value = true }
@@ -401,34 +388,9 @@ private fun <T, ID> ContainerElement.renderListKeyedNoAnimation(
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
 ) {
     setupAsListContainer()
-    val oldEarly = ArrayList<Any>()
 
-    data class OldViewInfo(
-        var oldIndex: Int,
-        val oldId: ID,
-        val data: Signal<T>,
-        val view: Element,
-        val shown: Signal<Boolean>
-    ) {
-        var livenessIter = 0
-        fun show() {
-            livenessIter++
-            shown.value = true
-        }
-        fun hide() {
-            val n = ++livenessIter
-            shown.value = false
-            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds + 100) {
-                if (n == livenessIter) {
-                    removeChild(view)
-                    oldEarly.remove(this)
-                }
-            }
-        }
-    }
+    val old = ArrayList<OldViewInfo<ID, Signal<T>>>()
 
-    @Suppress("UNCHECKED_CAST")
-    val old = oldEarly as ArrayList<OldViewInfo>
     reactive {
         withoutAnimation {
             val new = items()
@@ -436,7 +398,7 @@ private fun <T, ID> ContainerElement.renderListKeyedNoAnimation(
             new.forEachIndexed { index, toRender ->
                 var matchIndex = -1
                 for (checkIndex in oldPos..<old.size) {
-                    if (old[checkIndex].oldId == id(toRender)) {
+                    if (old[checkIndex].id == id(toRender)) {
                         matchIndex = checkIndex
                         break
                     }
@@ -459,10 +421,12 @@ private fun <T, ID> ContainerElement.renderListKeyedNoAnimation(
                     old.add(
                         oldPos, OldViewInfo(
                             oldIndex = index,
-                            oldId = id(toRender),
+                            id = id(toRender),
                             data = data,
                             view = result,
-                            shown = shown
+                            shown = shown,
+                            container = this@renderListKeyedNoAnimation,
+                            old = old
                         )
                     )
                     afterTimeout(1) { shown.value = true }
@@ -470,6 +434,109 @@ private fun <T, ID> ContainerElement.renderListKeyedNoAnimation(
                 }
             }
             old.subList(oldPos, old.size).forEach { it.hide() }
+        }
+    }
+}
+
+
+private class Cell<T, ID : Any>(
+    private val container: ContainerElement,
+    private val rendererSet: RecyclerViewRendererSet<T, ID>,
+    val data: LateInitSignal<T>,
+    id: ID?,
+    renderer: RecyclerViewRenderer<T>,
+    index: Int
+) {
+    constructor(
+        container: ContainerElement,
+        set: RecyclerViewRendererSet<T, ID>,
+        data: T,
+        index: Int
+    ) : this(
+        container,
+        set,
+        LateInitSignal<T>().apply { value = data },
+        set.id(data),
+        set.renderer(data),
+        index
+    )
+
+    var id: ID? = id
+        private set
+
+    var renderer: RecyclerViewRenderer<T> = renderer
+        private set
+
+    val index: Constant<Int> = Constant(index)
+
+    var view = container.atIndex(index).produceExactlyOneView {
+        renderer.render(this, this@Cell.data, this@Cell.index)
+    }
+
+    private var watchingLoad = false
+    fun watchBackgroundProcess(readable: Reactive<*>) {
+        if (watchingLoad) return
+        watchingLoad = true
+        view.underlyingNativeElement.watchBackgroundProcess(readable)
+    }
+
+    fun hide() {
+        view.withoutAnimation {
+            view.shown = false
+        }
+    }
+
+    fun newData(value: T) {
+        view.shown = true
+        if (rendererSet.id(value) == id) data.value = value
+        else {
+            val r = rendererSet.renderer(value)
+            if (r == renderer) data.value = value
+            else {
+                renderer = r
+                container.withoutAnimation {
+                    container.removeChild(index.value)
+                    data.value = value
+                    view = container.atIndex(index.value).produceExactlyOneView {
+                        r.render(this, this@Cell.data, this@Cell.index)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun <T, ID : Any> ContainerElement.forEachWithRenderer(
+    items: Reactive<List<T>>,
+    rendererSet: RecyclerViewRendererSet<T, ID>,
+    poolCap: Int = 32,
+    loadingRenderers: List<RecyclerViewRenderer<T>> = emptyList()
+) {
+    val currentViews = ArrayList(
+        loadingRenderers.mapIndexed { idx, it ->
+            Cell(this@forEachWithRenderer, rendererSet, LateInitSignal(), null, it, idx)
+        }
+    )
+
+    reactive {
+        val list = items()
+        for ((idx, item) in list.withIndex()) {
+            currentViews.getOrNull(idx)?.newData(item)
+                ?: currentViews.add(
+                    Cell(this@forEachWithRenderer, rendererSet, item, idx)
+                )
+        }
+
+        currentViews.forEach { it.watchBackgroundProcess(this) }
+
+        if (currentViews.size > list.size) {
+            for (i in list.size..<poolCap) currentViews[i].hide()
+            if (currentViews.size > poolCap) withoutAnimation {
+                for (i in poolCap..currentViews.size) {
+                    removeChild(i)
+                    currentViews.removeAt(i)
+                }
+            }
         }
     }
 }
