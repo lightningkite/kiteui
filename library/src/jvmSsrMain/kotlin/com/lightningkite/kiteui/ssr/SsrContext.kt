@@ -26,8 +26,6 @@ import kotlinx.coroutines.delay
  * ```
  *
  * @param basePath The base path for URL resolution
- * @param windowWidth The assumed window width for responsive calculations
- * @param windowHeight The assumed window height for responsive calculations
  * @param userAgent The client's User-Agent string from the HTTP request.
  *                  This is used to determine Platform.probablyAppleUser and other
  *                  platform-specific rendering decisions to match client-side hydration.
@@ -35,10 +33,26 @@ import kotlinx.coroutines.delay
  */
 public class SsrContext(
     internal val basePath: String = "/",
-    internal val windowWidth: Int = 1920,
-    internal val windowHeight: Int = 1080,
     internal val userAgent: String? = null,
 ) : SsrResourceRegistry {
+    /**
+     * The viewport (window width/height) is unavailable during SSR: the server never learns the
+     * client's actual screen size, so any value here would be a guess that can silently mismatch
+     * real devices - e.g. a phone hydrating a tree that was structured for a hard-coded desktop
+     * width. These accessors throw instead of returning a guessed value, so that any code that
+     * needs viewport-dependent DOM *structure* fails loudly during SSR rather than shipping a
+     * layout that's subtly wrong on hydration. Structural (DOM-shape) responsiveness must be
+     * CSS-only (media queries) or use the coarse [com.lightningkite.kiteui.Platform] hint instead.
+     * - by Claude
+     */
+    internal val windowWidth: Int get() = throw UnsupportedOperationException(
+        "Viewport width is unavailable during SSR; structural (DOM-shape) responsiveness must be " +
+            "CSS-only - use CSS media queries or the coarse Platform hint instead."
+    )
+    internal val windowHeight: Int get() = throw UnsupportedOperationException(
+        "Viewport height is unavailable during SSR; structural (DOM-shape) responsiveness must be " +
+            "CSS-only - use CSS media queries or the coarse Platform hint instead."
+    )
     /** The coroutine scope for loading SsrResource data */
     private val loadingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
