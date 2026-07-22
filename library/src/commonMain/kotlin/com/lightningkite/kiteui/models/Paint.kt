@@ -121,7 +121,7 @@ public data class RadialGradient(
 
 @Serializable
 public data class Color(
-    val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
+    val alpha: Float = 1f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
 ) : Paint {
 
     override fun map(mapper: (Color) -> Color): Paint = let(mapper)
@@ -161,7 +161,7 @@ public data class Color(
         /** Minimum WCAG 2.1 AA contrast ratio for normal-size body text. */
         public const val WCAG_AA_NORMAL_TEXT_CONTRAST_RATIO: Float = 4.5f
 
-        public val transparent: Color = Color()
+        public val transparent: Color = Color(alpha = 0f)
         public val white: Color = Color(1f, 1f, 1f, 1f)
         public val gray: Color = Color(1f, .5f, .5f, .5f)
         public fun gray(amount: Float): Color = Color(1f, amount, amount, amount)

@@ -172,7 +172,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
 
             .circle-progress-background {
                           fill: none;
-                          stroke: var(--nearest-background-color); !important;
+                          stroke: var(--nearest-background-color);
                           stroke-width: 3;
             }
             
@@ -335,9 +335,6 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
 
             .kui.scroll-horizontal  * {
                 max-width: unset;
-            }
-            .kui.scroll-horizontal * {
-                max-width: 100;
             }
 
             .kui.scroll-vertical {
@@ -1283,9 +1280,5 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             }
         }
         return name
-    }
-
-    internal inline fun apply(theme: Theme, out: (prop: String, value: String) -> Unit) {
-
     }
 }
