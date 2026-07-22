@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.dismissTopDialog
+import com.lightningkite.kotlinx.serialization.uri.decodeURIComponent
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.browser.document
@@ -122,9 +123,9 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     })
 
     var lastStack = stack.value
-    AppScope.reactiveScope {
+    AppScope.reactive {
         val s = stack()
-        if (suppressNav) return@reactiveScope
+        if (suppressNav) return@reactive
         try {
             suppressNav = true
 
@@ -144,14 +145,14 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
                     // go() is async; replaceState is safe to call synchronously right
                     // after because the popstate fires on the next event-loop tick.
                 }
-                val new = s.lastOrNull() ?: return@reactiveScope
+                val new = s.lastOrNull() ?: return@reactive
                 routes.render(new)?.urlLikePath?.let { url ->
                     log?.log("reset: replaceState '${url.render()}'")
                     window.history.replaceState(null, "", basePath + url.render())
                     rememberStack(url, s)
                 }
             } else if (s.lastOrNull() != lastStack.lastOrNull()) {
-                val new = s.lastOrNull() ?: return@reactiveScope
+                val new = s.lastOrNull() ?: return@reactive
                 routes.render(new)?.urlLikePath?.let { url ->
                     log?.log("pushState '${url.render()}'...")
                     window.history.pushState(null, "", basePath + url.render())
@@ -166,7 +167,7 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
         lastStack = s
     }
 
-    AppScope.reactiveScope {
+    AppScope.reactive {
         // Whenever the stack's top page changes its own URL (e.g. a query-param
         // update), keep the address bar in sync without creating a new history entry.
         val s = stack()

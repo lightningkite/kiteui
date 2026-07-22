@@ -129,8 +129,9 @@ public class SsrRouter(
             navigator.reset(page)
 
             // Set navigators on the ViewWriter context
-            this.pageNavigator = navigator
-            this.mainPageNavigator = navigator
+            // (qualified with `this.` because the outer `context: SsrContext` local shadows the receiver's `context` property)
+            this.context.pageNavigator = navigator
+            this.context.mainPageNavigator = navigator
 
             if (appWrapper != null) {
                 // Use the app wrapper for full navigation shell

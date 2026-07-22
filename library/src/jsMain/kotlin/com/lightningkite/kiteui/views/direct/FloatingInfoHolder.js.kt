@@ -307,11 +307,11 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
 
                 removeElementFromOverlay = {
                     blockView?.let {
-                        source.overlayFrame!!.removeChild(it)
+                        source.context.overlayFrame!!.removeChild(it)
                     }
                     blockView = null
                     closeView?.let {
-                        source.overlayFrame!!.removeChild(it)
+                        source.context.overlayFrame!!.removeChild(it)
                     }
                     closeView = null
                     window.removeEventListener("scroll", repos, true)

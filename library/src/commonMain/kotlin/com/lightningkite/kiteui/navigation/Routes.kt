@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.LogRoot
-import com.lightningkite.kiteui.decodeURIComponent
-import com.lightningkite.kiteui.encodeURIComponent
+import com.lightningkite.kotlinx.serialization.uri.decodeURIComponent
+import com.lightningkite.kotlinx.serialization.uri.encodeURIComponent
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*

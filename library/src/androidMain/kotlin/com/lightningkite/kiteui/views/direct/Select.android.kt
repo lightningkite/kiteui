@@ -130,7 +130,7 @@ public actual class Select actual constructor(context: ElementContext): NativeIn
                 }
             }
         }
-        reactiveScope {
+        reactive {
             list = data()
             adapter.notifyDataSetChanged()
             val currentlySelected = edits.once()
@@ -141,7 +141,7 @@ public actual class Select actual constructor(context: ElementContext): NativeIn
                 suppressChange = false
             }
         }
-        reactiveScope {
+        reactive {
             val currentlySelected = edits()
             val index = list.indexOf(currentlySelected)
             if (index != -1 && !suppressChange) {
@@ -151,7 +151,7 @@ public actual class Select actual constructor(context: ElementContext): NativeIn
             }
         }
         // Driver support: track selected display and allow setValue
-        reactiveScope {
+        reactive {
             _driverSelectedDisplay = render(edits())
         }
         _driverSelectSetValue = { displayText ->

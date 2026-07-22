@@ -36,7 +36,7 @@ public interface PlayableAudio {
     public val currentTime: MutableReactive<Duration>
 }
 
-public fun CalculationContext.backgroundAudio(
+public fun CoroutineScope.backgroundAudio(
     audio: AudioResource,
     backgroundVolume: Float,
     playBackgroundAudio: suspend () -> Boolean
