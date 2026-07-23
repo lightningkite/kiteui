@@ -248,7 +248,6 @@ private suspend fun requestImageCamera(
         if (!it.accepted) return@requestPermissions cont.resume(null)
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, file)
-
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
         if (front) {
