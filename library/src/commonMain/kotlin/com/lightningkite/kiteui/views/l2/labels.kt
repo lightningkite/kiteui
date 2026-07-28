@@ -42,12 +42,12 @@ public class LabeledView(private val container: RowOrCol): LinearLayoutElement b
 
     init {
         themeChoice += LabelGapSemantic
+        container.vertical = true
     }
 
     @OverrideOnly
     override fun onStartup() {
         container.onStartup()
-        container.vertical= true
         val target = findFirstInteractiveDescendant()
         if (target != null) {
             label.labelFor = target
