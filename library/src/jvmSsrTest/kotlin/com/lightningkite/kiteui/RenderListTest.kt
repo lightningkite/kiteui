@@ -63,7 +63,7 @@ class RenderListTest {
         val tree = elementTree {
             col {
                 debugName = "list"
-                renderListKeyed(items) { text { ::content { it() } } }
+                renderList(items, placeholders = 1, beforeModifier = { this }) { text { ::content { it() } } }
             }
         }
         try {
@@ -81,7 +81,7 @@ class RenderListTest {
         val tree = elementTree {
             col {
                 debugName = "list"
-                renderListKeyed(items) { text { ::content { it() } } }
+                renderList(items, placeholders = 1, beforeModifier = { this }) { text { ::content { it() } } }
             }
         }
         try {
@@ -101,7 +101,7 @@ class RenderListTest {
             content = {
                 col {
                     debugName = "list"
-                    renderListKeyed(items) { text { ::content { it() } } }
+                    renderList(items, placeholders = 1, poolCap = 0, beforeModifier = { this }) { text { ::content { it() } } }
                 }
             }
         ) { tree ->
@@ -134,7 +134,7 @@ class RenderListTest {
             content = {
                 col {
                     debugName = "list"
-                    renderListKeyed(items, placeholders = 3) { text { ::content { it() } } }
+                    renderList(items, placeholders = 3, beforeModifier = { this }) { text { ::content { it() } } }
                 }
             }
         ) { tree ->
@@ -172,7 +172,7 @@ class RenderListTest {
             content = {
                 col {
                     debugName = "list"
-                    renderListKeyed(items, placeholders = 5, poolCap = cap) {
+                    renderList(items, placeholders = 5, beforeModifier = { this }, poolCap = cap) {
                         text { ::content { it() } }
                     }
                 }
