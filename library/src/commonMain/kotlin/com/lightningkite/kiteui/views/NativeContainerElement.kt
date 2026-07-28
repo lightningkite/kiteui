@@ -448,7 +448,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
      *
      * @see ElementWriter.willAddChild for general documentation
      */
-    final override fun willAddChild(element: Element) {
+    override fun willAddChild(element: Element) {
         if (checkIsShutdown("willAddChild")) return
         element.underlyingNativeElement.parent = parentElement
         nativeWillAddChild(element)
@@ -465,7 +465,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
      *
      * @see ContainerElement.addChild for complete documentation and warnings
      */
-    final override fun addChild(index: Int, element: Element) {
+    override fun addChild(index: Int, element: Element) {
         if (checkIsShutdown("addChild")) return
         internalChildren.add(index, element)
         nativeAddChild(index, element)
@@ -475,16 +475,16 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
     }
 
     /** Convenience wrapper - adds child at the end. See [addChild(Int, Element)][addChild]. */
-    final override fun addChild(element: Element) = addChild(children.size, element)
+    override fun addChild(element: Element) = addChild(children.size, element)
 
-    final override fun removeChild(index: Int) {
+    override fun removeChild(index: Int) {
         if (checkIsShutdown("removeChild")) return
         if (index !in children.indices) throw IndexOutOfBoundsException("$index not in range ${children.indices}")
         nativeRemoveChild(index)
         internalChildren.removeAt(index).onShutdown()
     }
 
-    final override fun removeChild(element: Element) {
+    override fun removeChild(element: Element) {
         if (checkIsShutdown("removeChild")) return
         val i = children.indexOf(element)
         if (i != -1) {
@@ -494,10 +494,10 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
         else throw IllegalArgumentException("$element is not a child of $this!")
     }
 
-    final override fun clearChildren() {
+    override fun clearChildren() {
         if (checkIsShutdown("clearChildren")) return
         nativeClearChildren()
-        for (e in children) e.onShutdown()
+        for (e in internalChildren) e.onShutdown()
         internalChildren.clear()
     }
 
