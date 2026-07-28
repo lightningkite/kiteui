@@ -9,6 +9,8 @@ import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
+import com.lightningkite.kiteui.views.direct.PassthroughContainer
+import com.lightningkite.kiteui.views.direct.RowOrCol
 
 private var labelForIdCounter = 0
 
@@ -25,7 +27,10 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         set(value) {
             field = value
             native.attributes.hidden = !value
-            // TODO (parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            (parent as? PassthroughContainer)?.apply {
+                native.attributes.hidden = !value
+                (parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            } ?: (parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         }
 
     actual override var visible: Boolean = true
@@ -197,6 +202,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
 
     actual override var showOnPrint: Boolean = true
         set(value) {
+            field = value
             if (value)
                 native.classes.remove("do-not-print")
             else
