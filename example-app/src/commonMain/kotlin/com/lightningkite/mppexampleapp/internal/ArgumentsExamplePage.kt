@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.textInput
+import com.lightningkite.kiteui.views.forEachUpdating
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.core.*
 import kotlin.jvm.JvmInline

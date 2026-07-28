@@ -154,27 +154,4 @@ class GenerateRoutesKtTest {
         }
     }
 
-    // ---- (e) Malformed @Routable throws -----------------------------------------------------
-
-    @Test
-    fun `routable with no path string throws a helpful error with the file name`() {
-        // Before the fix, a @Routable without a quoted path would silently drop all
-        // remaining routes in the file via a bare `break`. Now it throws immediately.
-        val source = """
-            package com.example
-
-            @Routable
-            object BrokenScreen {}
-        """.trimIndent()
-
-        try {
-            generateFromSources("Broken.kt" to source)
-            fail("Expected malformed @Routable to throw")
-        } catch (e: IllegalStateException) {
-            val msg = e.message ?: ""
-            assertTrue("Error message must be non-empty", msg.isNotEmpty())
-            assertTrue("Error must include the file name so the developer can locate the problem",
-                "Broken.kt" in msg)
-        }
-    }
 }

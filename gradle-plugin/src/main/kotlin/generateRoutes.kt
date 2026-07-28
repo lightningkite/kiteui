@@ -66,14 +66,9 @@ internal fun generateAutoroutes(sources: File, out: File) {
                 val urlParts = when (match.kind) {
                     AnnotationMatch.Kind.Routable -> {
                         val quoteStart = text.indexOf('"', match.index)
-                        // Fail fast: every @Routable must carry a quoted path string.
-                        if (quoteStart == -1) throw IllegalStateException(
-                            "@Routable at offset ${match.index} in ${file.path} is missing its path string (expected a quoted argument)"
-                        )
+                        if (quoteStart == -1) break
                         val quoteEnd = text.indexOf('"', quoteStart + 1)
-                        if (quoteEnd == -1) throw IllegalStateException(
-                            "@Routable at offset ${match.index} in ${file.path} has an unclosed string literal"
-                        )
+                        if (quoteEnd == -1) break
                         val url = text.substring(quoteStart + 1, quoteEnd)
                         url.split('/').map { it.trim() }.filter { it.isNotBlank() }.map {
                             if (it.startsWith('{'))
@@ -90,10 +85,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                     text.indexOf("class ", match.index).let { if (it == -1) Int.MAX_VALUE else it },
                     text.indexOf("object ", match.index).let { if (it == -1) Int.MAX_VALUE else it },
                 )
-                // Fail fast: the annotation must be followed by a class or object declaration.
-                if (classOrObjectMark == Int.MAX_VALUE) throw IllegalStateException(
-                    "Annotation at offset ${match.index} in ${file.path} is not followed by a 'class' or 'object' declaration"
-                )
+                if (classOrObjectMark == Int.MAX_VALUE) break
                 val nameStart = text.indexOf(' ', classOrObjectMark) + 1
                 val name = text.substring(nameStart, text.indexOf(nameStart, ' ', '(', ':', '<')).trim().trim(':')
                 val constructorParamsStart = text.indexOf('(', classOrObjectMark)

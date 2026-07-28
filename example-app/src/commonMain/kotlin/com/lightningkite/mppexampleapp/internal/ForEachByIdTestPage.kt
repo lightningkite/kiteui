@@ -22,7 +22,7 @@ object ForEachByIdTestPage : Page {
 
     override fun ElementWriter.CanAddTheme.render(): Unit {
         scrolling.col {
-            h1("renderList Test")
+            h1("forEachById Test")
             text(
                 "Reproduces the bug where filtering down (especially to a single item that wasn't first) " +
                 "and then restoring the full list produced the wrong visual order. " +
