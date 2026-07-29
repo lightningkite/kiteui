@@ -4,8 +4,8 @@ import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.views.ViewWriter
 
-interface RecyclerViewPlacer {
-    fun place(
+public interface RecyclerViewPlacer {
+    public fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,
         previousViewport: Rect,
@@ -20,7 +20,7 @@ interface RecyclerViewPlacer {
         gap: Double,
     )
 
-    fun prebake(
+    public fun prebake(
         prebakeRange: IntRange,
         dataRange: IntRange,
         writer: ViewWriter,

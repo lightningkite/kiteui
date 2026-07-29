@@ -23,7 +23,7 @@ import com.lightningkite.kiteui.views.native
 import com.lightningkite.kiteui.views.theme
 import com.lightningkite.kiteui.views.width
 
-abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+public abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
     override var gap: Dimension? = null
         set(value) {
             field = value
@@ -35,7 +35,7 @@ abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContai
         get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 }
 
-actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
+public actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
     init {
         native.tag = "div"
         native.style.flexDirection = "column"
@@ -51,7 +51,7 @@ actual class RowOrCol actual constructor(context: ElementContext) : NativeLinear
             else native.classes.remove("optimized")
         }
 
-    actual var vertical: Boolean = true
+    public actual var vertical: Boolean = true
         set(value) {
             field = value
             native.style.flexDirection = if (value) "column" else "row"
@@ -130,7 +130,7 @@ actual class RowOrCol actual constructor(context: ElementContext) : NativeLinear
         rerunOptimizedBottomMarginCalc()
     }
 
-    fun rerunOptimizedBottomMarginCalc() {
+    public fun rerunOptimizedBottomMarginCalc() {
         if (complex) return
 
         val newLastShownElement = children.lastOrNull { it.native.attributes.hidden != true }
@@ -141,7 +141,7 @@ actual class RowOrCol actual constructor(context: ElementContext) : NativeLinear
         newLastShownElement?.native?.style?.marginBottom = "0"
     }
 
-    actual fun spacingOverrideBeforeNext(amount: Dimension) {}
+    public actual fun spacingOverrideBeforeNext(amount: Dimension) {}
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
@@ -159,7 +159,7 @@ actual class RowOrCol actual constructor(context: ElementContext) : NativeLinear
     }
 }
 
-actual class RowWrapping actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
+public actual class RowWrapping actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
     init {
         native.tag = "div"
         native.setStyleProperty("display", "flex")
@@ -216,7 +216,7 @@ actual class RowWrapping actual constructor(context: ElementContext) : NativeLin
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : NativeLinearLayoutElement(context) {
+public actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : NativeLinearLayoutElement(context) {
     init {
         native.tag = "div"
         native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoints))

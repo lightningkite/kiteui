@@ -25,7 +25,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
+public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -43,7 +43,7 @@ actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAd
 
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
+public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -75,7 +75,7 @@ actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
+public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
     return this@align.beforeSetup {
         val params = lparams
 
@@ -126,7 +126,7 @@ actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Alig
 
 @OptIn(InternalKiteUi::class)
 @ViewModifierDsl3
-actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
+public actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return lazyInjectModifierWriter(setup) {
         ScrollView(context, horizontal = horizontal, vertical = vertical)
     }
@@ -134,7 +134,7 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: 
 
 @OptIn(InternalKiteUi::class)
 @ViewModifierDsl3
-actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
+public actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
@@ -190,7 +190,7 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
 
 @OptIn(InternalKiteUi::class)
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
+public actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
         return lazyInjectModifierWriter {
             object : NativeContainerElement(context) {
@@ -217,7 +217,7 @@ actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): El
 
 @OptIn(InternalKiteUi::class)
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
+public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
     return lazyInjectModifierWriter {
         object : NativeContainerElement(context) {
             override val native: ViewGroup = DesiredSizeView(context.activity).apply {
@@ -229,13 +229,13 @@ actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: Reacti
     }
 }
 
-interface MaxSizeLayoutParams {
-    var maxWidth: Int
-    var maxHeight: Int
+public interface MaxSizeLayoutParams {
+    public var maxWidth: Int
+    public var maxHeight: Int
 }
 
-class DesiredSizeView(context: Context) : ViewGroup(context) {
-    var constraints: SizeConstraints = SizeConstraints()
+public class DesiredSizeView(context: Context) : ViewGroup(context) {
+    public var constraints: SizeConstraints = SizeConstraints()
         set(value) {
             field = value
             requestLayout()
@@ -264,9 +264,9 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
         getChildAt(0).layout(paddingLeft, paddingTop, r - l - paddingRight, b - t - paddingBottom)
     }
 
-    val Int.measureSpecMode get() = MeasureSpec.getMode(this)
-    val Int.measureSpecSize get() = MeasureSpec.getSize(this)
-    fun Int.measureSpecConstrainMax(value: Int): Int = MeasureSpec.makeMeasureSpec(
+    public val Int.measureSpecMode get() = MeasureSpec.getMode(this)
+    public val Int.measureSpecSize get() = MeasureSpec.getSize(this)
+    public fun Int.measureSpecConstrainMax(value: Int): Int = MeasureSpec.makeMeasureSpec(
         if (measureSpecMode != MeasureSpec.UNSPECIFIED) measureSpecSize.coerceAtMost(value) else value,
         when (measureSpecMode) {
             MeasureSpec.UNSPECIFIED -> MeasureSpec.AT_MOST
@@ -276,26 +276,26 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
         }
     )
 
-    fun Int.measureSpecConstrainSet(value: Int): Int = MeasureSpec.makeMeasureSpec(
+    public fun Int.measureSpecConstrainSet(value: Int): Int = MeasureSpec.makeMeasureSpec(
         if (measureSpecMode == MeasureSpec.UNSPECIFIED) value
         else value.coerceAtMost(this.measureSpecSize),
 //        value,
         MeasureSpec.EXACTLY
     )
 
-    fun Int.measureSpecConstrain(min: Int?, max: Int?, set: Int?): Int {
+    public fun Int.measureSpecConstrain(min: Int?, max: Int?, set: Int?): Int {
         var out = this
         set?.let { out = out.measureSpecConstrainSet(it) }
         max?.let { out = out.measureSpecConstrainMax(it) }
         return out
     }
 
-    infix fun Int.measureSpecPlus(value: Int): Int = MeasureSpec.makeMeasureSpec(
+    public infix fun Int.measureSpecPlus(value: Int): Int = MeasureSpec.makeMeasureSpec(
         MeasureSpec.getSize(this) + value,
         MeasureSpec.getMode(this)
     )
 
-    val Int.measureSpecString: String
+    public val Int.measureSpecString: String
         get() = when (measureSpecMode) {
             MeasureSpec.UNSPECIFIED -> "UNSPECIFIED $measureSpecSize"
             MeasureSpec.EXACTLY -> "EXACTLY $measureSpecSize"
@@ -364,7 +364,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.hintPopover(
+public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ElementWriter {
@@ -378,7 +378,7 @@ actual fun ElementWriter.hintPopover(
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.textPopover(message: String): ElementWriter {
+public actual fun ElementWriter.textPopover(message: String): ElementWriter {
     return beforeSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             native.tooltipText = message
@@ -388,7 +388,7 @@ actual fun ElementWriter.textPopover(message: String): ElementWriter {
 
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
+public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return beforeSetup {
         shown = default
         var existingAnimator: ValueAnimator? = null
@@ -589,25 +589,25 @@ internal object TypedValueAnimator {
 }
 
 @ViewModifierDsl3
-actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
+public actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
     beforeSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) native.isAccessibilityHeading = true
     }
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
 
 @ViewModifierDsl3
-actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
+public actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
     beforeSetup { native.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS }
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
+@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
+@ViewModifierDsl3 public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
 
 @InternalKiteUi
 internal actual fun ContainerElement.setupAsListContainer() {} // TalkBack infers list structure from content

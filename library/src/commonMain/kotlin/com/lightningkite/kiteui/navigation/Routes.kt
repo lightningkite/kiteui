@@ -9,10 +9,10 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.*
 import kotlin.reflect.KClass
 
-class Routes(
-    val parsers: List<(UrlLikePath) -> Page?>,
-    val renderers: Map<KClass<out Page>, (Page) -> RouteRendered?>,
-    val fallback: Page = Page.Direct("Not Found") {
+public class Routes(
+    public val parsers: List<(UrlLikePath) -> Page?>,
+    public val renderers: Map<KClass<out Page>, (Page) -> RouteRendered?>,
+    public val fallback: Page = Page.Direct("Not Found") {
         frame {
             centered.col {
                 h1("Not Found")
@@ -21,9 +21,9 @@ class Routes(
         }
     }
 ) {
-    fun render(screen: Page) = renderers.get(screen::class)?.invoke(screen)
-    fun parse(path: UrlLikePath): Page? = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
-    fun parseOrFallback(path: UrlLikePath) =
+    public fun render(screen: Page) = renderers.get(screen::class)?.invoke(screen)
+    public fun parse(path: UrlLikePath): Page? = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
+    public fun parseOrFallback(path: UrlLikePath) =
         try {
             parse(path) ?: fallback
         } catch(e: Exception) {
@@ -32,32 +32,32 @@ class Routes(
         }
 }
 
-data class RouteRendered(
+public data class RouteRendered(
     val urlLikePath: UrlLikePath,
     val listenables: List<Listenable>
 )
 
-data class UrlLikePath(
+public data class UrlLikePath(
     val segments: List<String>,
     val parameters: Map<String, String>
 ) {
-    companion object {
-        val EMPTY = UrlLikePath(listOf(), mapOf())
+    public companion object {
+        public val EMPTY = UrlLikePath(listOf(), mapOf())
 
-        fun fromParts(pathname: String, search: String) = UrlLikePath(
+        public fun fromParts(pathname: String, search: String) = UrlLikePath(
             segments = pathname.split('/').filter { it.isNotBlank() },
             parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
                 .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
         )
 
-        fun fromUrlString(url: String): UrlLikePath {
+        public fun fromUrlString(url: String): UrlLikePath {
             val parts = url.split("?")
             return fromParts(parts.getOrNull(0) ?: "", parts.getOrNull(1) ?: "")
         }
     }
 
     // by Claude - removed debug println that fired on every route render
-    fun render() = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
+    public fun render() = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
         "&",
         "?"
     ) { "${it.key}=${encodeURIComponent(it.value)}" } ?: "")

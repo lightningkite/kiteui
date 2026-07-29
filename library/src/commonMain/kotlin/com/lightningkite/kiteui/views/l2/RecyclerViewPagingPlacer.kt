@@ -7,8 +7,8 @@ import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
-    var log: Log? = null
+public class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
+    public var log: Log? = null
     override fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,

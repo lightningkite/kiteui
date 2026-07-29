@@ -163,9 +163,9 @@ import com.lightningkite.kiteui.models.DropTargetDelegate
  * @see ElementContext for platform services and configuration
  */
 @ViewDsl
-interface Element : KiteUiCoroutineScopeHelpers {
+public interface Element : KiteUiCoroutineScopeHelpers {
     /** Platform services and configuration for this element */
-    val context: ElementContext
+    public val context: ElementContext
 
     /**
      * The underlying [NativeElement] that provides the actual platform-specific implementation.
@@ -177,7 +177,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * Then `underlyingNativeElement` will point to the actual `TextView`, not the wrapper.
      * The framework uses this to access the native view even when elements are wrapped.
      */
-    val underlyingNativeElement: NativeElement
+    public val underlyingNativeElement: NativeElement
 
     /**
      * The container element that holds this element, or null if this is a root element.
@@ -187,7 +187,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      *
      * **Do not set this manually** - it's managed by [ContainerElement.addChild].
      */
-    val parent: ContainerElement?
+    public val parent: ContainerElement?
 
     /**
      * Called when the element's lifecycle starts.
@@ -209,7 +209,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * ```
      */
     @OverrideOnly
-    fun onStartup()
+    public fun onStartup()
 
     /**
      * Called when the element is removed from the view tree and its lifecycle ends.
@@ -236,7 +236,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * ```
      */
     @OverrideOnly
-    fun onShutdown()
+    public fun onShutdown()
 
     /**
      * Visual opacity of the element (0.0 = fully transparent, 1.0 = fully opaque).
@@ -246,7 +246,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * element.opacity = 0.5  // 50% transparent
      * ```
      */
-    var opacity: Double
+    public var opacity: Double
 
     /**
      * Whether the element is shown (present in the layout).
@@ -261,7 +261,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * element.shown = false  // Removes from layout
      * ```
      */
-    var shown: Boolean
+    public var shown: Boolean
 
     /**
      * Whether the element is visible (but still in the layout).
@@ -271,7 +271,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      *
      * Use [shown] instead if you want to remove the element from the layout entirely.
      */
-    var visible: Boolean
+    public var visible: Boolean
 
     /**
      * Whether the element ignores user interaction (touch, click, focus, etc.).
@@ -283,7 +283,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * button.ignoreInteraction = true  // Button can't be clicked
      * ```
      */
-    var ignoreInteraction: Boolean
+    public var ignoreInteraction: Boolean
 
     /**
      * Custom padding override for this element, or null to use theme padding.
@@ -297,7 +297,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      *
      * @see safeAreaPadding
      */
-    var paddingByEdge: Edges?
+    public var paddingByEdge: Edges?
 
     /**
      * Additional padding for device safe areas (notches, home indicators, etc.).
@@ -309,7 +309,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * element.safeAreaPadding = Edges(top = 44.px)  // iPhone notch
      * ```
      */
-    var safeAreaPadding: Edges?
+    public var safeAreaPadding: Edges?
 
     /**
      * The semantic theme derivations applied to this element by modifiers.
@@ -330,7 +330,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      *
      * @see themeAndBack for the final computed theme
      */
-    var themeChoice: ThemeDerivation
+    public var themeChoice: ThemeDerivation
 
     /**
      * The final computed theme for this element.
@@ -349,7 +349,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * val bgColor = element.themeAndBack.theme.background
      * ```
      */
-    val themeAndBack: ThemeAndBack
+    public val themeAndBack: ThemeAndBack
 
     /**
      * Data that can be dragged from this element, or null if not draggable.
@@ -362,7 +362,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * )
      * ```
      */
-    var dragData: DragData?
+    public var dragData: DragData?
 
     /**
      * Delegate that handles drag-and-drop operations when items are dragged over this element.
@@ -377,7 +377,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * }
      * ```
      */
-    var dropTargetDelegate: DropTargetDelegate?
+    public var dropTargetDelegate: DropTargetDelegate?
 
     /**
      * Scrolls this element into view within its scrollable ancestor.
@@ -394,7 +394,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * )
      * ```
      */
-    fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
+    public fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
 
     /**
      * Requests keyboard focus for this element.
@@ -404,7 +404,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * textInput.requestFocus()  // Keyboard appears
      * ```
      */
-    fun requestFocus()
+    public fun requestFocus()
 
     /**
      * Human-readable name for debugging and logging.
@@ -414,14 +414,14 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * text("Welcome") { debugName = "welcome-message" }
      * ```
      */
-    var debugName: String?
+    public var debugName: String?
 
     /**
      * Whether this element should be visible when printing (web platform).
      *
      * Currently only affects web. When false, the element is hidden in print media.
      */
-    var showOnPrint: Boolean
+    public var showOnPrint: Boolean
 
     // --- ACCESSIBILITY ---
 
@@ -435,7 +435,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      *
      * Set this only when the auto-derived label is insufficient (e.g., a complex custom widget).
      */
-    var accessibleLabel: String?
+    public var accessibleLabel: String?
 
     /**
      * Marks this element as a live region for screen reader announcements of dynamic content.
@@ -447,7 +447,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * liveRegion() - col { text { ::content { statusMessage() } } }
      * ```
      */
-    var accessibleLiveRegion: LiveRegionMode
+    public var accessibleLiveRegion: LiveRegionMode
 
     /**
      * Associates this element as the accessible label for another element.
@@ -457,7 +457,7 @@ interface Element : KiteUiCoroutineScopeHelpers {
      *
      * Automatically set by [field][com.lightningkite.kiteui.views.l2.field] and [label][com.lightningkite.kiteui.views.l2.label] when they contain an interactive element.
      */
-    var labelFor: Element?
+    public var labelFor: Element?
 
     /**
      * Associates this element with a description element (e.g., error text, help text).
@@ -469,27 +469,27 @@ interface Element : KiteUiCoroutineScopeHelpers {
      * Automatically set by [errorText][com.lightningkite.kiteui.views.l2.errorText] and
      * [issueText][com.lightningkite.kiteui.reactive.issueText] for form validation.
      */
-    var describedBy: Element?
+    public var describedBy: Element?
 
-    val driverValue: String? get() = null
-    val driverActions: Map<String, suspend (List<String>) -> String> get() = AiDriver.Defaults.defaultDriverActions(this)
-    fun driverDisplay(options: DriverSnapshotOptions): String = AiDriver.Defaults.defaultDriverDisplay(this, options)
+    public val driverValue: String? get() = null
+    public val driverActions: Map<String, suspend (List<String>) -> String> get() = AiDriver.Defaults.defaultDriverActions(this)
+    public fun driverDisplay(options: DriverSnapshotOptions): String = AiDriver.Defaults.defaultDriverDisplay(this, options)
 
     override fun toString(): String
 
-    companion object;
+    public companion object;
 
-    data class DriverSnapshotOptions(
+    public data class DriverSnapshotOptions(
         val includeHidden: Boolean = false,
         val interactiveOnly: Boolean = false,
         val includeThemes: Boolean = false,
         val includeActions: Boolean = true,
     )
 
-    object Debugger {
-        var removeBeforeShutdown = false
-        var leakDetect = false
-        var debugTarget: Element? = null
+    public object Debugger {
+        public var removeBeforeShutdown = false
+        public var leakDetect = false
+        public var debugTarget: Element? = null
 
         /**
          * When true, every [NativeElement] increments a live-instance counter on creation and
@@ -498,18 +498,18 @@ interface Element : KiteUiCoroutineScopeHelpers {
          * [Element.onShutdown] never ran). This signal is GC-independent, so it is reliable on
          * platforms where forcing a garbage collection isn't possible (e.g. the browser).
          */
-        var countInstances = false
-        val liveInstancesByClass: MutableMap<String, Int> = mutableMapOf()
-        var liveInstanceTotal: Int = 0
+        public var countInstances = false
+        public val liveInstancesByClass: MutableMap<String, Int> = mutableMapOf()
+        public var liveInstanceTotal: Int = 0
             private set
 
-        fun recordCreated(element: Element) {
+        public fun recordCreated(element: Element) {
             liveInstanceTotal++
             val k = element::class.simpleName ?: "?"
             liveInstancesByClass[k] = (liveInstancesByClass[k] ?: 0) + 1
         }
 
-        fun recordShutdown(element: Element) {
+        public fun recordShutdown(element: Element) {
             liveInstanceTotal--
             val k = element::class.simpleName ?: "?"
             val v = (liveInstancesByClass[k] ?: 0) - 1
@@ -545,9 +545,9 @@ interface Element : KiteUiCoroutineScopeHelpers {
  *
  * @see ContainerElement for elements that allow external child management
  */
-interface ElementWithChildren : Element {
+public interface ElementWithChildren : Element {
     /** List of child elements. Read-only - children cannot be added or removed. */
-    val children: List<Element>
+    public val children: List<Element>
 }
 
 /**
@@ -612,7 +612,7 @@ interface ElementWithChildren : Element {
  * @see ViewWriter for the DSL interface containers provide
  * @see Element for the base element interface
  */
-interface ContainerElement : Element, ElementWithChildren, ViewWriter {
+public interface ContainerElement : Element, ElementWithChildren, ViewWriter {
     /**
      * The underlying platform-specific container implementation.
      *
@@ -657,7 +657,7 @@ interface ContainerElement : Element, ElementWithChildren, ViewWriter {
      * @see ElementWriter.addChild for complete lifecycle documentation
      */
     @OverrideOnly
-    fun addChild(index: Int, element: Element)
+    public fun addChild(index: Int, element: Element)
 
     /**
      * Removes the child element at the specified index.
@@ -673,7 +673,7 @@ interface ContainerElement : Element, ElementWithChildren, ViewWriter {
      * @param index The index of the child to remove
      * @throws IndexOutOfBoundsException if index is invalid
      */
-    fun removeChild(index: Int)
+    public fun removeChild(index: Int)
 
     /**
      * Adds a child element at the end of the children list.
@@ -696,7 +696,7 @@ interface ContainerElement : Element, ElementWithChildren, ViewWriter {
      * @param element The child element to remove
      * @throws IllegalArgumentException if the element is not a child of this container
      */
-    fun removeChild(element: Element) {
+    public fun removeChild(element: Element) {
         val i = children.indexOf(element)
         if (i != -1) removeChild(i)
         else throw IllegalArgumentException("$element is not a child of $this!")
@@ -708,13 +708,13 @@ interface ContainerElement : Element, ElementWithChildren, ViewWriter {
      * All children are shut down and removed from the native view hierarchy.
      * Equivalent to calling [removeChild] for each child, but may be more efficient.
      */
-    fun clearChildren() { for (i in children.indices.reversed()) removeChild(i) }
+    public fun clearChildren() { for (i in children.indices.reversed()) removeChild(i) }
 
 
 
     /** Spacing used for child [CornerRadii.RatioOfSpacing] and [CornerRadii.AdaptiveToSpacing] calculations. */
     @Deprecated("Will probably be removed in the future.")
-    val spacingForChildCornerRadii: Dimension get() {
+    public val spacingForChildCornerRadii: Dimension get() {
         val pad = padding ?: themeAndBack.theme.padding.top
         val gap = themeAndBack.theme.gap
         return minOf(pad, gap)

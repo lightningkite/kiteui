@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.context.reactive
 
-fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
+public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
     return swapView {
         debugName = "navigatorView"
         Element.Debugger.debugTarget = this
@@ -41,7 +41,7 @@ fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
     }
 }
 
-fun ViewWriter.navigatorViewDialog(): SwapView {
+public fun ViewWriter.navigatorViewDialog(): SwapView {
     val n = dialogPageNavigator
     return this.swapView {
         debugName = "navigatorViewDialog"

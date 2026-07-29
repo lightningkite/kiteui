@@ -11,49 +11,49 @@ import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.ReactiveContext
 
 @UnsafeModifier
-fun ElementWriter.withUnsafeModifiers(): ViewWriter = object : ViewWriter, ElementWriter by this {}
+public fun ElementWriter.withUnsafeModifiers(): ViewWriter = object : ViewWriter, ElementWriter by this {}
 
 @ViewModifierDsl3
-expect fun ElementWriter.hintPopover(
+public expect fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight,
     setup: ViewWriter.() -> Unit
 ): ElementWriter
 
 @ViewModifierDsl3
-expect fun ElementWriter.textPopover(message: String): ElementWriter
+public expect fun ElementWriter.textPopover(message: String): ElementWriter
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier
+public expect fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier
+public expect fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight
+public expect fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight
 
 @ViewModifierDsl3
-val ElementWriter.CanAddScrolling.scrolling: ElementWriter get() = __scrollsUncontracted(vertical = true, horizontal = false)
+public val ElementWriter.CanAddScrolling.scrolling: ElementWriter get() = __scrollsUncontracted(vertical = true, horizontal = false)
 
 @ViewModifierDsl3
-val ElementWriter.CanAddScrolling.scrollingHorizontally: ElementWriter get() = __scrollsUncontracted(vertical = false, horizontal = true)
+public val ElementWriter.CanAddScrolling.scrollingHorizontally: ElementWriter get() = __scrollsUncontracted(vertical = false, horizontal = true)
 
 @ViewModifierDsl3
-inline fun ElementWriter.CanAddScrolling.scrolling(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
+public inline fun ElementWriter.CanAddScrolling.scrolling(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return __scrollsUncontracted(vertical = true, horizontal = false, setup)
 }
 
 @ViewModifierDsl3
-inline fun ElementWriter.CanAddScrolling.scrollingHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
+public inline fun ElementWriter.CanAddScrolling.scrollingHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return __scrollsUncontracted(vertical = false, horizontal = true, setup)
 }
 
 @ViewModifierDsl3
-inline fun ElementWriter.CanAddScrolling.scrollingBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
+public inline fun ElementWriter.CanAddScrolling.scrollingBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return __scrollsUncontracted(vertical = true, horizontal = true, setup)
 }
 
 @ViewModifierDsl3
-inline fun ElementWriter.CanAddScrolling.scrolling(
+public inline fun ElementWriter.CanAddScrolling.scrolling(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
@@ -62,14 +62,14 @@ inline fun ElementWriter.CanAddScrolling.scrolling(
 }
 
 @InternalKiteUi
-expect inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
+public expect inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
 ): ElementWriter
 
 @ViewModifierDsl3
-inline fun ElementWriter.CanAddScrolling.scrollingWithRefresh(
+public inline fun ElementWriter.CanAddScrolling.scrollingWithRefresh(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
 ): ElementWriter {
@@ -77,7 +77,7 @@ inline fun ElementWriter.CanAddScrolling.scrollingWithRefresh(
 }
 
 @ViewModifierDsl3
-inline fun ElementWriter.CanAddScrolling.scrollingHorizontallyWithRefresh(
+public inline fun ElementWriter.CanAddScrolling.scrollingHorizontallyWithRefresh(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
 ): ElementWriter {
@@ -85,7 +85,7 @@ inline fun ElementWriter.CanAddScrolling.scrollingHorizontallyWithRefresh(
 }
 
 @ViewModifierDsl3
-inline fun ElementWriter.CanAddScrolling.scrollingBothWithRefresh(
+public inline fun ElementWriter.CanAddScrolling.scrollingBothWithRefresh(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
 ): ElementWriter {
@@ -93,7 +93,7 @@ inline fun ElementWriter.CanAddScrolling.scrollingBothWithRefresh(
 }
 
 @ViewModifierDsl3
-inline fun ElementWriter.CanAddScrolling.scrollingWithRefresh(
+public inline fun ElementWriter.CanAddScrolling.scrollingWithRefresh(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
@@ -103,7 +103,7 @@ inline fun ElementWriter.CanAddScrolling.scrollingWithRefresh(
 }
 
 @InternalKiteUi
-expect inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
+public expect inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
@@ -111,10 +111,10 @@ expect inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
 ): ElementWriter
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme
+public expect fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme
 
 @ViewModifierDsl3
-fun ElementWriter.CanAddSizing.sizeConstraints(
+public fun ElementWriter.CanAddSizing.sizeConstraints(
     minWidth: Dimension? = null,
     maxWidth: Dimension? = null,
     minHeight: Dimension? = null,
@@ -135,7 +135,7 @@ fun ElementWriter.CanAddSizing.sizeConstraints(
 )
 
 @ViewModifierDsl3
-fun ElementWriter.CanAddSizing.sizeConstraints(
+public fun ElementWriter.CanAddSizing.sizeConstraints(
     minWidth: Dimension? = null,
     maxWidth: Dimension? = null,
     minHeight: Dimension? = null,
@@ -156,28 +156,28 @@ fun ElementWriter.CanAddSizing.sizeConstraints(
 )
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme
+public expect fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme
 
 @ViewModifierDsl3
-inline val ElementWriter.CanAddTheme.padded: ElementWriter.CanAddTheme get() = themed(ForcePaddingSemantic)
+public inline val ElementWriter.CanAddTheme.padded: ElementWriter.CanAddTheme get() = themed(ForcePaddingSemantic)
 
 @ViewModifierDsl3
-val ElementWriter.CanAddTheme.unpadded: ElementWriter.CanAddTheme get() = beforeSetup { padding = 0.px }
+public val ElementWriter.CanAddTheme.unpadded: ElementWriter.CanAddTheme get() = beforeSetup { padding = 0.px }
 
 @ViewModifierDsl3
-expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, transition: ScreenTransition = ScreenTransition.None, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing
+public expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, transition: ScreenTransition = ScreenTransition.None, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing
 
 
 
-@ViewModifierDsl3 expect fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme
-@ViewModifierDsl3 expect val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier
+@ViewModifierDsl3 public expect fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme
+@ViewModifierDsl3 public expect val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme
+@ViewModifierDsl3 public expect val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme
+@ViewModifierDsl3 public expect val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme
+@ViewModifierDsl3 public expect val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme
+@ViewModifierDsl3 public expect val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme
+@ViewModifierDsl3 public expect val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme
+@ViewModifierDsl3 public expect val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme
+@ViewModifierDsl3 public expect val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme
+@ViewModifierDsl3 public expect val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier
 
 internal expect fun ContainerElement.setupAsListContainer()

@@ -41,18 +41,18 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-actual abstract class RawImageViewLike constructor(
+public actual abstract class RawImageViewLike constructor(
     context: RContext,
-    actual val source: ImageSource,
-    actual val description: String,
-    actual val scaleType: ImageScaleType,
+    public actual val source: ImageSource,
+    public actual val description: String,
+    public actual val scaleType: ImageScaleType,
 ) : NativeElement(context){
-    actual abstract val state: Reactive<Unit>
+    public actual abstract val state: Reactive<Unit>
 }
 
 
 
-actual class RawImageView actual constructor(
+public actual class RawImageView actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -126,8 +126,8 @@ actual class RawImageView actual constructor(
     }
 
 
-    class GlideImageView(context: Context) : AppCompatImageView(context) {
-        var ignoreNaturalSize: Boolean = false
+    public class GlideImageView(context: Context) : AppCompatImageView(context) {
+        public var ignoreNaturalSize: Boolean = false
             set(value) {
                 field = value
                 requestLayout()
@@ -137,8 +137,8 @@ actual class RawImageView actual constructor(
             this.clipToOutline = true
         }
 
-        var widthMeasureSpecLast = 0
-        var heightMeasureSpecLast = 0
+        public var widthMeasureSpecLast = 0
+        public var heightMeasureSpecLast = 0
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             if (this !in animatingSize) {
                 widthMeasureSpecLast = widthMeasureSpec
@@ -158,9 +158,9 @@ actual class RawImageView actual constructor(
             if(ignoreNaturalSize) setMeasuredDimension(0, 0)
         }
 
-        val callbacks = ArrayList<SizeReadyCallback>()
+        public val callbacks = ArrayList<SizeReadyCallback>()
 
-        val target = object : ImageViewTarget<Drawable>(this) {
+        public val target = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {
                 this@GlideImageView.setImageDrawable(resource)
             }
@@ -194,7 +194,7 @@ actual class RawImageView actual constructor(
 }
 
 
-actual class SizelessRawImageView actual constructor(
+public actual class SizelessRawImageView actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -265,15 +265,15 @@ actual class SizelessRawImageView actual constructor(
     }
 
 
-    class GlideImageView(context: Context) : AppCompatImageView(context) {
+    public class GlideImageView(context: Context) : AppCompatImageView(context) {
         init {
             this.adjustViewBounds = true
             this.clipToOutline = true
         }
 
 
-        var widthMeasureSpecLast = 0
-        var heightMeasureSpecLast = 0
+        public var widthMeasureSpecLast = 0
+        public var heightMeasureSpecLast = 0
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             if (this !in animatingSize) {
                 widthMeasureSpecLast = widthMeasureSpec
@@ -302,9 +302,9 @@ actual class SizelessRawImageView actual constructor(
             )
         }
 
-        val callbacks = ArrayList<SizeReadyCallback>()
+        public val callbacks = ArrayList<SizeReadyCallback>()
 
-        val target = object : ImageViewTarget<Drawable>(this) {
+        public val target = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {
                 this@GlideImageView.setImageDrawable(resource)
             }
@@ -338,7 +338,7 @@ actual class SizelessRawImageView actual constructor(
 }
 
 
-actual class RawImageViewZoomable actual constructor(
+public actual class RawImageViewZoomable actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -348,7 +348,7 @@ actual class RawImageViewZoomable actual constructor(
     actual override val state: Reactive<Unit> = _state
     override val native: PhotoView = PhotoView(context.activity)
     private val _zoomState = Signal<ZoomState>(native.imageMatrix)
-    actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
+    public actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
     init {
         native.setOnScaleChangeListener { _, _, _ -> zoomState.value = native.imageMatrix }
         native.setOnViewDragListener { _, _ -> zoomState.value = native.imageMatrix }
@@ -401,7 +401,7 @@ actual class RawImageViewZoomable actual constructor(
     }
 }
 
-actual typealias ZoomState = Matrix
+public actual typealias ZoomState = Matrix
 
 // Returns a GlideUrl whose disk-cache key respects the ImageRemote's cacheStrategy.
 // PathOnly strips query parameters so that rotating S3 signatures don't cause cache misses.

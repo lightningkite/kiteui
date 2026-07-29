@@ -13,7 +13,7 @@ import com.lightningkite.kiteui.models.px
  *
  * @param customBlocks Optional handlers for custom block types
  */
-class MarkdownParser(
+public class MarkdownParser(
     private val customBlocks: Map<String, CustomBlockHandler> = emptyMap()
 ) : MarkdownParseContext {
 
@@ -24,7 +24,7 @@ class MarkdownParser(
     /**
      * Parse markdown text into a Document AST.
      */
-    fun parse(markdown: String): MarkdownNode.Document {
+    public fun parse(markdown: String): MarkdownNode.Document {
         val lines = markdown.lines()
         val blocks = parseBlocksInternal(lines)
         return MarkdownNode.Document(blocks)

@@ -7,22 +7,22 @@ import org.w3c.dom.CanvasLineJoin
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.CanvasTextAlign
 
-actual typealias DrawingContext2D = CanvasRenderingContext2D
+public actual typealias DrawingContext2D = CanvasRenderingContext2D
 //actual typealias TextAlign = CanvasTextAlign
 
-actual fun DrawingContext2D.appendArc(x: Double, y: Double, radius: Double, startAngle: Angle, endAngle: Angle, anticlockwise: Boolean) = arc(x, y, radius, startAngle.radians.toDouble(), endAngle.radians.toDouble(), anticlockwise)
-actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double):Unit = strokeText(text, x, y)
-actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double):Unit = fillText(text, x, y)
-actual fun DrawingContext2D.font(size: Double, value: FontAndStyle) {
+public actual fun DrawingContext2D.appendArc(x: Double, y: Double, radius: Double, startAngle: Angle, endAngle: Angle, anticlockwise: Boolean) = arc(x, y, radius, startAngle.radians.toDouble(), endAngle.radians.toDouble(), anticlockwise)
+public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double):Unit = strokeText(text, x, y)
+public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double):Unit = fillText(text, x, y)
+public actual fun DrawingContext2D.font(size: Double, value: FontAndStyle) {
     font = "${value.weight} ${if(value.italic) "italic " else ""}${size}px ${value.font.cssFontFamilyName}"
 }
-actual fun DrawingContext2D.textAlign(alignment: TextAlign){
+public actual fun DrawingContext2D.textAlign(alignment: TextAlign){
     textAlign = alignment.toString().asDynamic().unsafeCast<CanvasTextAlign>()
 }
-actual fun DrawingContext2D.fill() = fill("nonzero".asDynamic().unsafeCast<CanvasFillRule>())
-actual fun DrawingContext2D.fillEvenOdd() = fill("evenodd".asDynamic().unsafeCast<CanvasFillRule>())
+public actual fun DrawingContext2D.fill() = fill("nonzero".asDynamic().unsafeCast<CanvasFillRule>())
+public actual fun DrawingContext2D.fillEvenOdd() = fill("evenodd".asDynamic().unsafeCast<CanvasFillRule>())
 
-actual var DrawingContext2D.strokePaint: Paint
+public actual var DrawingContext2D.strokePaint: Paint
     get() = when(val it = strokeStyle) {
         is String -> Color.fromHexString(it)
         else -> Color.black
@@ -30,7 +30,7 @@ actual var DrawingContext2D.strokePaint: Paint
     set(value) {
         strokeStyle = value.toCanvasStyle(this)
     }
-actual var DrawingContext2D.fillPaint: Paint
+public actual var DrawingContext2D.fillPaint: Paint
     get() = when(val it = fillStyle) {
         is String -> Color.fromHexString(it)
         else -> Color.black
@@ -95,10 +95,10 @@ private fun Paint.toCanvasStyle(ctx: DrawingContext2D): dynamic = when(this) {
     is FadingColor -> base.toWeb()
     else -> closestColor().toWeb()
 }
-actual val DrawingContext2D.width: Double get() = canvas.width.toDouble()
-actual val DrawingContext2D.height: Double get() = canvas.height.toDouble()
+public actual val DrawingContext2D.width: Double get() = canvas.width.toDouble()
+public actual val DrawingContext2D.height: Double get() = canvas.height.toDouble()
 
-actual var DrawingContext2D.lineCapStyle: LineCap
+public actual var DrawingContext2D.lineCapStyle: LineCap
     get() = when (asDynamic().lineCap.unsafeCast<String>()) {
         "butt" -> LineCap.butt
         "round" -> LineCap.round
@@ -113,7 +113,7 @@ actual var DrawingContext2D.lineCapStyle: LineCap
         }
     }
 
-actual var DrawingContext2D.lineJoinStyle: LineJoin
+public actual var DrawingContext2D.lineJoinStyle: LineJoin
     get() = when (asDynamic().lineJoin.unsafeCast<String>()) {
         "miter" -> LineJoin.miter
         "round" -> LineJoin.round
@@ -128,7 +128,7 @@ actual var DrawingContext2D.lineJoinStyle: LineJoin
         }
     }
 
-actual fun DrawingContext2D.clear() {
+public actual fun DrawingContext2D.clear() {
     clearRect(0.0, 0.0, width, height)
 }
 
@@ -136,15 +136,15 @@ actual fun DrawingContext2D.clear() {
 // Clipping
 // ============================================================================
 
-actual fun DrawingContext2D.clip() {
+public actual fun DrawingContext2D.clip() {
     asDynamic().clip()
 }
 
-actual fun DrawingContext2D.clip(fillRule: FillRule) {
+public actual fun DrawingContext2D.clip(fillRule: FillRule) {
     asDynamic().clip(fillRule.toCanvasFillRule())
 }
 
-actual fun DrawingContext2D.resetClip() {
+public actual fun DrawingContext2D.resetClip() {
     // Canvas API doesn't have a direct resetClip. The typical approach is to use save/restore.
     // Since we can't reset clip without affecting other state, we clip to a huge rect as a workaround.
     // Note: This implementation has limitations - ideally callers should use save/restore around clip operations.
@@ -160,11 +160,11 @@ actual fun DrawingContext2D.resetClip() {
 // Line Dash
 // ============================================================================
 
-actual fun DrawingContext2D.setLineDash(segments: List<Double>) {
+public actual fun DrawingContext2D.setLineDash(segments: List<Double>) {
     asDynamic().setLineDash(segments.toTypedArray())
 }
 
-actual fun DrawingContext2D.getLineDash(): List<Double> {
+public actual fun DrawingContext2D.getLineDash(): List<Double> {
     return (asDynamic().getLineDash() as Array<Double>).toList()
 }
 
@@ -172,7 +172,7 @@ actual fun DrawingContext2D.getLineDash(): List<Double> {
 // Text Metrics
 // ============================================================================
 
-actual fun DrawingContext2D.measureText(text: String): TextMetrics {
+public actual fun DrawingContext2D.measureText(text: String): TextMetrics {
     val jsMetrics = asDynamic().measureText(text)
     return TextMetrics(
         width = jsMetrics.width as Double,
@@ -186,11 +186,11 @@ actual fun DrawingContext2D.measureText(text: String): TextMetrics {
 // Shapes
 // ============================================================================
 
-actual fun DrawingContext2D.roundRect(x: Double, y: Double, width: Double, height: Double, radius: Double) {
+public actual fun DrawingContext2D.roundRect(x: Double, y: Double, width: Double, height: Double, radius: Double) {
     asDynamic().roundRect(x, y, width, height, radius)
 }
 
-actual fun DrawingContext2D.roundRect(
+public actual fun DrawingContext2D.roundRect(
     x: Double, y: Double, width: Double, height: Double,
     topLeftRadius: Double, topRightRadius: Double,
     bottomRightRadius: Double, bottomLeftRadius: Double
@@ -199,7 +199,7 @@ actual fun DrawingContext2D.roundRect(
     asDynamic().roundRect(x, y, width, height, arrayOf(topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius))
 }
 
-actual fun DrawingContext2D.ellipse(
+public actual fun DrawingContext2D.ellipse(
     x: Double, y: Double,
     radiusX: Double, radiusY: Double,
     rotation: Double,
@@ -213,11 +213,11 @@ actual fun DrawingContext2D.ellipse(
 // Hit Testing
 // ============================================================================
 
-actual fun DrawingContext2D.isPointInPath(x: Double, y: Double): Boolean {
+public actual fun DrawingContext2D.isPointInPath(x: Double, y: Double): Boolean {
     return asDynamic().isPointInPath(x, y) as Boolean
 }
 
-actual fun DrawingContext2D.isPointInPath(x: Double, y: Double, fillRule: FillRule): Boolean {
+public actual fun DrawingContext2D.isPointInPath(x: Double, y: Double, fillRule: FillRule): Boolean {
     return asDynamic().isPointInPath(x, y, fillRule.toCanvasFillRule()) as Boolean
 }
 
@@ -225,19 +225,19 @@ actual fun DrawingContext2D.isPointInPath(x: Double, y: Double, fillRule: FillRu
 // Shadows
 // ============================================================================
 
-actual var DrawingContext2D.shadowBlur: Double
+public actual var DrawingContext2D.shadowBlur: Double
     get() = asDynamic().shadowBlur as Double
     set(value) { asDynamic().shadowBlur = value }
 
-actual var DrawingContext2D.shadowColorValue: Color
+public actual var DrawingContext2D.shadowColorValue: Color
     get() = Color.fromHexString(asDynamic().shadowColor as String)
     set(value) { asDynamic().shadowColor = value.toWeb() }
 
-actual var DrawingContext2D.shadowOffsetX: Double
+public actual var DrawingContext2D.shadowOffsetX: Double
     get() = asDynamic().shadowOffsetX as Double
     set(value) { asDynamic().shadowOffsetX = value }
 
-actual var DrawingContext2D.shadowOffsetY: Double
+public actual var DrawingContext2D.shadowOffsetY: Double
     get() = asDynamic().shadowOffsetY as Double
     set(value) { asDynamic().shadowOffsetY = value }
 
@@ -245,7 +245,7 @@ actual var DrawingContext2D.shadowOffsetY: Double
 // Transform
 // ============================================================================
 
-actual fun DrawingContext2D.getTransform(): TransformMatrix {
+public actual fun DrawingContext2D.getTransform(): TransformMatrix {
     val matrix = asDynamic().getTransform()
     return TransformMatrix(
         a = matrix.a as Double,
@@ -257,7 +257,7 @@ actual fun DrawingContext2D.getTransform(): TransformMatrix {
     )
 }
 
-actual fun DrawingContext2D.setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) {
+public actual fun DrawingContext2D.setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) {
     asDynamic().setTransform(a, b, c, d, e, f)
 }
 

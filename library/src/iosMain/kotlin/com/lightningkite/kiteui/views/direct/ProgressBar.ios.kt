@@ -9,7 +9,7 @@ import platform.QuartzCore.CALayer
 import platform.UIKit.*
 
 
-actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
     override val native = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
@@ -18,16 +18,16 @@ actual class ProgressBar actual constructor(context: ElementContext) : NativeEle
         native.progressLayer.tintColor = theme[CardSemantic].theme.foreground.closestColor().toUiColor()
     }
 
-    actual var ratio by native::progress
+    public actual var ratio by native::progress
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
+public class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 
-    val progressLayer = ProgressCALayer().also {
+    public val progressLayer = ProgressCALayer().also {
         layer.insertSublayer(it, 0u)
     }
-    var progress by progressLayer::progress
+    public var progress by progressLayer::progress
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return size.useContents { CGSizeMake(width, 5.0) }
@@ -40,18 +40,18 @@ class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class ProgressCALayer : CALayer {
+public class ProgressCALayer : CALayer {
     @OverrideInit
-    constructor() : super()
+    public constructor() : super()
 
     @OverrideInit
-    constructor(coder: platform.Foundation.NSCoder) : super(coder)
+    public constructor(coder: platform.Foundation.NSCoder) : super(coder)
 
     @OverrideInit
-    constructor(layer: kotlin.Any) : super(layer)
+    public constructor(layer: kotlin.Any) : super(layer)
 
-    var tintColor: UIColor = UIColor.whiteColor
-    var progress: Float = 0f
+    public var tintColor: UIColor = UIColor.whiteColor
+    public var progress: Float = 0f
         set(value) {
             field = value
             setNeedsDisplay()

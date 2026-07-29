@@ -11,9 +11,9 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 
 @OptIn(ExperimentalKiteUi::class)
-actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
+public actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + buttonDriverActions()
-    val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
+    public val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0
         visibility = View.GONE

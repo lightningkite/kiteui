@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views
 
-actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
+public actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
     actual override var enabled: Boolean
         get() = native.attributes.disabled != true
         set(value) {
@@ -9,7 +9,7 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
         }
 }
 
-actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
+public actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
     actual override var enabled: Boolean
         get() = native.attributes.disabled != true
         set(value) {

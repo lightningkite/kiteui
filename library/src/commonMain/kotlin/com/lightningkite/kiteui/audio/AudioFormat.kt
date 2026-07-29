@@ -10,7 +10,7 @@ package com.lightningkite.kiteui.audio
  * @param bitsPerSample Bits per sample (typically 16 for PCM16)
  * @param signed Whether samples are signed (true for PCM16)
  */
-data class AudioFormat(
+public data class AudioFormat(
     val sampleRate: Int = 24000,
     val channels: Int = 1,
     val bitsPerSample: Int = 16,
@@ -23,19 +23,19 @@ data class AudioFormat(
     val bytesPerSecond: Int get() = sampleRate * bytesPerSample
 
     /** Duration in milliseconds for a given number of bytes */
-    fun bytesToMs(bytes: Int): Long = (bytes * 1000L) / bytesPerSecond
+    public fun bytesToMs(bytes: Int): Long = (bytes * 1000L) / bytesPerSecond
 
     /** Number of bytes for a given duration in milliseconds */
-    fun msToBytes(ms: Long): Int = ((ms * bytesPerSecond) / 1000).toInt()
+    public fun msToBytes(ms: Long): Int = ((ms * bytesPerSecond) / 1000).toInt()
 
-    companion object {
+    public companion object {
         /** Standard format for voice applications: 24kHz mono PCM16 */
-        val VOICE = AudioFormat(sampleRate = 24000, channels = 1, bitsPerSample = 16)
+        public val VOICE = AudioFormat(sampleRate = 24000, channels = 1, bitsPerSample = 16)
 
         /** CD quality audio: 44.1kHz stereo PCM16 */
-        val CD_QUALITY = AudioFormat(sampleRate = 44100, channels = 2, bitsPerSample = 16)
+        public val CD_QUALITY = AudioFormat(sampleRate = 44100, channels = 2, bitsPerSample = 16)
 
         /** Standard telephony format: 8kHz mono PCM16 */
-        val TELEPHONY = AudioFormat(sampleRate = 8000, channels = 1, bitsPerSample = 16)
+        public val TELEPHONY = AudioFormat(sampleRate = 8000, channels = 1, bitsPerSample = 16)
     }
 }

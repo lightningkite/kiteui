@@ -16,13 +16,13 @@ import platform.UIKit.setAccessibilityValue
 import platform.UIKit.setIsAccessibilityElement
 
 
-actual class RadioButton actual constructor(context: ElementContext) : NativeContainerElementWithAction(context) {
+public actual class RadioButton actual constructor(context: ElementContext) : NativeContainerElementWithAction(context) {
     actual override val underlyingNativeElement: RadioButton get() = this
 
     override val driverValue: String? get() = radioDriverValue()
     override val driverActions get() = super.driverActions + radioDriverActions()
     override val native: WrapperView = WrapperView()    // Todo: Unneeded wrapper?
-    val button = FrameLayoutButton()
+    public val button = FrameLayoutButton()
     override val addChildTarget get() = button
     override val control: UIControl get() = button
 
@@ -35,7 +35,7 @@ actual class RadioButton actual constructor(context: ElementContext) : NativeCon
     }
 
     private val _checked = Signal(false)
-    actual val checked: MutableReactiveValue<Boolean> get() = _checked
+    public actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
         _checked.addListener {

@@ -18,41 +18,41 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.addAndRunStateListener
 
-class ImageView(private val frame: Frame) : Element by frame {
-    constructor(context: ElementContext) : this(Frame(context))
+public class ImageView(private val frame: Frame) : Element by frame {
+    public constructor(context: ElementContext) : this(Frame(context))
 
-    data class Info(
+    public data class Info(
         val sources: List<ImageSource>,
         val scaleType: ImageScaleType,
         val description: String?
     )
 
-    var info: Info? = null
+    public var info: Info? = null
         set(value) {
             field = value
             refresh()
         }
 
-    var source: ImageSource?
+    public var source: ImageSource?
         get() = info?.sources?.firstOrNull()
         set(value) {
             info = info?.copy(sources = listOfNotNull(value)) ?: Info(listOfNotNull(value), ImageScaleType.Fit, null)
         }
 
-    var scaleType: ImageScaleType
+    public var scaleType: ImageScaleType
         get() = info?.scaleType ?: ImageScaleType.Fit
         set(value) {
             info = info?.copy(scaleType = value) ?: Info(listOf(), value, null)
         }
 
-    var description: String?
+    public var description: String?
         get() = info?.description
         set(value) {
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
         }
 
     private val _shownInfo = RawReactive<Info?>(ReactiveState(null))
-    val shownInfo: Reactive<Info?> get() = _shownInfo
+    public val shownInfo: Reactive<Info?> get() = _shownInfo
 
     private val spinner = frame.centered.activityIndicator {
         this@ImageView.shownInfo
@@ -62,7 +62,7 @@ class ImageView(private val frame: Frame) : Element by frame {
             .also(::onRemove)
     }
 
-    var showLoadingIndicator: Boolean by spinner::shown
+    public var showLoadingIndicator: Boolean by spinner::shown
 
     private var ready = false
 
@@ -77,7 +77,7 @@ class ImageView(private val frame: Frame) : Element by frame {
     private var lastRender: List<RawImageView>? = null
 
     @OptIn(ExperimentalKiteUi::class)
-    fun refresh() {
+    public fun refresh() {
         if (!ready) return
 
         val info = info
@@ -149,5 +149,5 @@ class ImageView(private val frame: Frame) : Element by frame {
         }
     }
 
-    @Deprecated("No longer needed", ReplaceWith("this")) val rView: Element get() = this
+    @Deprecated("No longer needed", ReplaceWith("this")) public val rView: Element get() = this
 }

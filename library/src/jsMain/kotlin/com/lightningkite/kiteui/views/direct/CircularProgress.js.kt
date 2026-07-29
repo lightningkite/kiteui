@@ -7,7 +7,7 @@ import org.w3c.dom.svg.SVGCircleElement
 import org.w3c.dom.svg.SVGSVGElement
 import kotlin.math.PI
 
-actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
 
     private val circle: SVGCircleElement
     private val circumference: Double
@@ -54,7 +54,7 @@ actual class CircularProgress actual constructor(context: ElementContext) : Nati
         }
     }
 
-    actual var ratio: Float
+    public actual var ratio: Float
         get() {
             val offset = circle.getAttribute("stroke-dashoffset")?.toDoubleOrNull() ?: circumference
             return ((circumference - offset) / circumference).toFloat()

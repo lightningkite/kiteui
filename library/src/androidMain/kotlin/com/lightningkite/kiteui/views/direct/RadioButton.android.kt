@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class RadioButton actual constructor(context: ElementContext): NativeInteractiveElement(context) {
+public actual class RadioButton actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     actual override val underlyingNativeElement: RadioButton get() = this
 
     override val driverValue: String? get() = radioDriverValue()
@@ -28,7 +28,7 @@ actual class RadioButton actual constructor(context: ElementContext): NativeInte
         )
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
+    public actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 
     init {
         checked.addListener {

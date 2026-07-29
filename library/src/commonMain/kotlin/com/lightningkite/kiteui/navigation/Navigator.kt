@@ -6,41 +6,41 @@ import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
 
-class PageNavigator(private val routesGetter: ()->Routes) {
-    val routes: Routes by lazy { routesGetter() }
+public class PageNavigator(private val routesGetter: ()->Routes) {
+    public val routes: Routes by lazy { routesGetter() }
 
-    fun navigateUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
-    fun resetUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
+    public fun navigateUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
+    public fun resetUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
 
-    val stack: Signal<List<Page>> = Signal(listOf())
+    public val stack: Signal<List<Page>> = Signal(listOf())
 
-    val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
-    val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
+    public val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
+    public val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
 
     private val allowNavigate get(): Boolean {
         val notBlocked = (stack.value.lastOrNull() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true
         return if (notBlocked) true else askForConfirmNavigateAway()
     }
 
-    fun navigate(screen: Page) {
+    public fun navigate(screen: Page) {
         if (allowNavigate) {
             stack.value += screen
         }
     }
 
-    fun replace(screen: Page) {
+    public fun replace(screen: Page) {
         if (allowNavigate) {
             stack.value = stack.value.dropLast(1) + screen
         }
     }
 
-    fun reset(screen: Page) {
+    public fun reset(screen: Page) {
         if (allowNavigate) {
             stack.value = listOf(screen)
         }
     }
 
-    fun goBack(): Boolean {
+    public fun goBack(): Boolean {
         if(stack.value.size <= 1 || !allowNavigate) {
             return false
         }
@@ -48,26 +48,26 @@ class PageNavigator(private val routesGetter: ()->Routes) {
         return true
     }
 
-    fun dismiss(): Boolean {
+    public fun dismiss(): Boolean {
         if(stack.value.isEmpty() || !allowNavigate) {
             return false
         }
         stack.value = stack.value.dropLast(1)
         return true
     }
-    fun clear() {
+    public fun clear() {
         if (allowNavigate) {
             stack.value = listOf()
         }
     }
-    fun isStackEmpty(): Boolean = stack.value.isEmpty()
+    public fun isStackEmpty(): Boolean = stack.value.isEmpty()
 
-    companion object;
+    public companion object;
 }
 
-expect fun PageNavigator.bindToPlatform(context: ElementContext)
+public expect fun PageNavigator.bindToPlatform(context: ElementContext)
 
 internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 
-var ElementContext.pageNavigator by lateInitContextAddon<PageNavigator>()
-var ElementContext.mainPageNavigator by lateInitContextAddon<PageNavigator>()
+public var ElementContext.pageNavigator by lateInitContextAddon<PageNavigator>()
+public var ElementContext.mainPageNavigator by lateInitContextAddon<PageNavigator>()

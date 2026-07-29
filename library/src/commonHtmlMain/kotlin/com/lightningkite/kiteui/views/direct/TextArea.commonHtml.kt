@@ -7,14 +7,14 @@ import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textAreaDriverValue()
     override val driverActions get() = super.driverActions + textAreaDriverActions()
     init {
         native.tag = "div"
         native.classes.add("textarea-container")
     }
-    val textarea = FutureElement().apply {
+    public val textarea = FutureElement().apply {
         tag = "textarea"
         classes.add("editable")
         classes.add("kui")
@@ -30,7 +30,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         native.appendChild(this)
     }
 
-    actual val content: MutableReactiveValue<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    public actual val content: MutableReactiveValue<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
 
     init {
         content.addListener {
@@ -38,7 +38,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         }
     }
 
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             when (value.autocomplete) {
@@ -64,7 +64,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
             }
         }
 
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             textarea.attributes.placeholder = value

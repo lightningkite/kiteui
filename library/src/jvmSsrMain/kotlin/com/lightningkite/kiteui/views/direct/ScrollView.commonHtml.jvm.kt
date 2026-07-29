@@ -11,12 +11,12 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlin.UnsupportedOperationException
 
-actual class ScrollingBehaviorImpl actual constructor(
-    val on: Element,
+public actual class ScrollingBehaviorImpl actual constructor(
+    public val on: Element,
     actual override val horizontal: Boolean,
     actual override val vertical: Boolean
 ) : ScrollingBehaviors {
-    val native = on.native
+    public val native = on.native
     init {
         if(horizontal) {
             native.classes += "scroll-horizontal"

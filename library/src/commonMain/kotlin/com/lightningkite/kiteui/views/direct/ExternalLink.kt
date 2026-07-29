@@ -12,9 +12,9 @@ import com.lightningkite.kiteui.views.NativeInteractiveContainerElement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-expect class ExternalLink(context: ElementContext) : ElementWithSecondaryAction, NativeContainerElement {
-    var to: String?
-    var newTab: Boolean
+public expect class ExternalLink(context: ElementContext) : ElementWithSecondaryAction, NativeContainerElement {
+    public var to: String?
+    public var newTab: Boolean
 
     override var enabled: Boolean
 
@@ -25,7 +25,7 @@ expect class ExternalLink(context: ElementContext) : ElementWithSecondaryAction,
     override var secondaryAction: Action?
 }
 
-fun ExternalLink.onClick(
+public fun ExternalLink.onClick(
     label: String = "onClick",
     icon: Icon = Icon.send,
     frequencyCap: Duration? = 500.milliseconds,
@@ -35,9 +35,9 @@ fun ExternalLink.onClick(
 }
 
 /** Action that is triggered only when the link actually navigates (alias for [secondaryAction][ExternalLink.secondaryAction])*/
-var ExternalLink.onNavigateAction: Action? by ExternalLink::secondaryAction
+public var ExternalLink.onNavigateAction: Action? by ExternalLink::secondaryAction
 
-fun ExternalLink.onNavigate(
+public fun ExternalLink.onNavigate(
     label: String = "onNavigate",
     icon: Icon = Icon.send,
     frequencyCap: Duration? = 500.milliseconds,

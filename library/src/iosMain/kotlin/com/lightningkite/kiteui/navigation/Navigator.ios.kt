@@ -8,11 +8,11 @@ private var postedLandingUrl: UrlLikePath? = null
 private var lastBoundPageNavigator: PageNavigator? = null
 
 
-actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
+public actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
     return true
 }
 
-actual fun PageNavigator.bindToPlatform(context: ElementContext) {
+public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     lastBoundPageNavigator = this
     val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
     stack.value = listOf(landing ?: routes.fallback)
@@ -22,13 +22,13 @@ actual fun PageNavigator.bindToPlatform(context: ElementContext) {
 // the lateinit ScreenStack.mainRoutes has been initialized, thus the need for postUserActivity() AND handleUserActivity()
 
 // To be called from scene(_:willConnectTo:options:)
-fun postUserActivity(activity: NSUserActivity) {
+public fun postUserActivity(activity: NSUserActivity) {
     postedLandingUrl = activity.webpageUrlLikePath()
     ConsoleRoot.info("postUserActivity: $postedLandingUrl")
 }
 
 // To be called from scene(_:continue:)
-fun handleUserActivity(activity: NSUserActivity) {
+public fun handleUserActivity(activity: NSUserActivity) {
     activity.webpageUrlLikePath()?.let { path ->
         ConsoleRoot.info("handleUserActivity: $path")
         lastBoundPageNavigator?.let { pageNavigator ->

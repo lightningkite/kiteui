@@ -11,7 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
+public actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
     override val driverActions get() = super.driverActions + buttonDriverActions()
     override fun nativeSetAction(action: Action?) {
         native.setAttribute("aria-label", accessibleLabel ?: action?.title)

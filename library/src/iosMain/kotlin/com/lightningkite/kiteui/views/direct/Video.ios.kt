@@ -39,21 +39,21 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
 
-actual class RawVideoView actual constructor(
+public actual class RawVideoView actual constructor(
     context: ElementContext,
-    actual val source: VideoSource,
-    actual val description: String,
-    actual val scaleType: ImageScaleType,
-    actual val preloadHint: PreloadHint,
+    public actual val source: VideoSource,
+    public actual val description: String,
+    public actual val scaleType: ImageScaleType,
+    public actual val preloadHint: PreloadHint,
 ) : NativeElement(context) {
 
     // Delegate is a regular class (not inner) to avoid retain cycle
-    class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
+    public class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
         // Empty delegate - no weak reference needed as it doesn't capture owner
     }
-    val ios = IosDelegate()
+    public val ios = IosDelegate()
 
-    val controller = AVPlayerViewController().apply {
+    public val controller = AVPlayerViewController().apply {
         delegate = ios
 
         // Most UIViews use UIViewAutoresizingNone by default, but AVPlayerViewController does not and causes
@@ -67,7 +67,7 @@ actual class RawVideoView actual constructor(
     override val native = controller.view
 
         private val _state = RawReactive<Unit>()
-        actual val state: Reactive<Unit> = _state
+        public actual val state: Reactive<Unit> = _state
 
     private val _playing = Signal(false)
     private val _volume = Signal(0f)
@@ -160,7 +160,7 @@ actual class RawVideoView actual constructor(
         }
 
     
-    val playerCallbackHolder: AVAssetResourceLoaderDelegateProtocol = object: NSObject(), AVAssetResourceLoaderDelegateProtocol {
+    public val playerCallbackHolder: AVAssetResourceLoaderDelegateProtocol = object: NSObject(), AVAssetResourceLoaderDelegateProtocol {
         @ObjCAction
         fun playerItemDidReachEnd(notification: NSNotification?) {
             if (player?.rate == 0f) {
@@ -324,20 +324,20 @@ actual class RawVideoView actual constructor(
         _sourceDuration.value = if (secs.isFinite()) secs else null
     }
 
-    actual val time: MutableReactive<Double>
+    public actual val time: MutableReactive<Double>
         get() = _time
             .lens({it.toDouble(DurationUnit.SECONDS)}, {it.seconds})
             .withWrite {
                 controller.player?.seekToTime(CMTimeMake((it * 1000.0).toLong(), 1000))
             }
 
-    actual val currentTime: MutableReactive<Duration>
+    public actual val currentTime: MutableReactive<Duration>
         get() = _time
             .withWrite {
                 controller.player?.seekToTime(CMTimeMake(it.inWholeMilliseconds, 1000))
             }
 
-    actual val playing: MutableReactive<Boolean>
+    public actual val playing: MutableReactive<Boolean>
         get() = _playing
             .withWrite {
                 shouldPlay = it
@@ -347,23 +347,23 @@ actual class RawVideoView actual constructor(
                     controller.player?.pause()
             }
 
-    actual val volume: MutableReactive<Float>
+    public actual val volume: MutableReactive<Float>
         get() = _volume
             .withWrite {
                 controller.player?.volume = it
             }
 
-    actual val sourceDuration: Reactive<Double?>
+    public actual val sourceDuration: Reactive<Double?>
         get() = _sourceDuration
 
-    actual var showControls: Boolean
+    public actual var showControls: Boolean
         get() = controller.showsPlaybackControls
         set(value) {
             controller.showsPlaybackControls = value
             controller.updatesNowPlayingInfoCenter = value
         }
-    actual var loop: Boolean = false
+    public actual var loop: Boolean = false
     private val _completedPlay = BasicListenable()
-    actual val completedPlay: Listenable get() = _completedPlay
-    actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = listOf()
+    public actual val completedPlay: Listenable get() = _completedPlay
+    public actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = listOf()
 }

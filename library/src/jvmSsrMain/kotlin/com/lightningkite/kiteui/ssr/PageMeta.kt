@@ -33,7 +33,7 @@ package com.lightningkite.kiteui.ssr
  * }
  * ```
  */
-data class PageMeta(
+public data class PageMeta(
     /** Page title for <title> and og:title */
     val title: String? = null,
     /** Meta description for SEO and og:description */
@@ -56,7 +56,7 @@ data class PageMeta(
     /**
      * Convert to flat map of meta tags for rendering.
      */
-    fun toMetaTags(): Map<String, String> = buildMap {
+    public fun toMetaTags(): Map<String, String> = buildMap {
         // Standard meta tags
         robots?.let { put("robots", it) }
         author?.let { put("author", it) }
@@ -100,7 +100,7 @@ data class PageMeta(
  *
  * @see https://ogp.me/
  */
-data class OpenGraph(
+public data class OpenGraph(
     /** The type of content (website, article, product, etc.) */
     val type: Type = Type.WEBSITE,
     /** Title override (defaults to PageMeta.title) */
@@ -124,7 +124,7 @@ data class OpenGraph(
     /** Additional OG tags not covered by standard properties */
     val additionalTags: Map<String, String> = emptyMap()
 ) {
-    enum class Type(val value: String) {
+    public enum class Type(public val value: String) {
         WEBSITE("website"),
         ARTICLE("article"),
         PRODUCT("product"),
@@ -137,11 +137,11 @@ data class OpenGraph(
         VIDEO_OTHER("video.other")
     }
 
-    companion object {
+    public companion object {
         /**
          * Create OpenGraph metadata for an article/blog post.
          */
-        fun article(
+        public fun article(
             publishedTime: String? = null,
             modifiedTime: String? = null,
             author: String? = null,
@@ -165,7 +165,7 @@ data class OpenGraph(
         /**
          * Create OpenGraph metadata for a product.
          */
-        fun product(
+        public fun product(
             price: String? = null,
             currency: String? = null,
             availability: String? = null,
@@ -189,7 +189,7 @@ data class OpenGraph(
  *
  * @see https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/abouts-cards
  */
-data class TwitterCard(
+public data class TwitterCard(
     /** Card type */
     val card: Card = Card.SUMMARY,
     /** Title override (defaults to PageMeta.title) */
@@ -207,18 +207,18 @@ data class TwitterCard(
     /** Additional Twitter tags */
     val additionalTags: Map<String, String> = emptyMap()
 ) {
-    enum class Card(val value: String) {
+    public enum class Card(public val value: String) {
         SUMMARY("summary"),
         SUMMARY_LARGE_IMAGE("summary_large_image"),
         APP("app"),
         PLAYER("player")
     }
 
-    companion object {
+    public companion object {
         /**
          * Create a summary card (small square image).
          */
-        fun summary(
+        public fun summary(
             site: String? = null,
             creator: String? = null
         ) = TwitterCard(
@@ -230,7 +230,7 @@ data class TwitterCard(
         /**
          * Create a summary card with large image.
          */
-        fun summaryLargeImage(
+        public fun summaryLargeImage(
             site: String? = null,
             creator: String? = null,
             image: String? = null
@@ -249,7 +249,7 @@ data class TwitterCard(
  * This sets the title, description, canonical URL, and all meta tags
  * from the PageMeta structure.
  */
-fun SsrContext.applyMeta(meta: PageMeta) {
+public fun SsrContext.applyMeta(meta: PageMeta) {
     meta.title?.let { title = it }
     meta.description?.let { description = it }
     meta.canonicalUrl?.let { canonicalUrl = it }
@@ -259,20 +259,20 @@ fun SsrContext.applyMeta(meta: PageMeta) {
 /**
  * DSL builder for PageMeta.
  */
-fun pageMeta(block: PageMetaBuilder.() -> Unit): PageMeta {
+public fun pageMeta(block: PageMetaBuilder.() -> Unit): PageMeta {
     return PageMetaBuilder().apply(block).build()
 }
 
 /**
  * Builder for creating PageMeta with DSL syntax.
  */
-class PageMetaBuilder {
-    var title: String? = null
-    var description: String? = null
-    var canonicalUrl: String? = null
-    var robots: String? = null
-    var author: String? = null
-    var keywords: String? = null
+public class PageMetaBuilder {
+    public var title: String? = null
+    public var description: String? = null
+    public var canonicalUrl: String? = null
+    public var robots: String? = null
+    public var author: String? = null
+    public var keywords: String? = null
 
     private var openGraph: OpenGraph? = null
     private var twitter: TwitterCard? = null
@@ -281,39 +281,39 @@ class PageMetaBuilder {
     /**
      * Configure OpenGraph metadata.
      */
-    fun openGraph(block: OpenGraphBuilder.() -> Unit) {
+    public fun openGraph(block: OpenGraphBuilder.() -> Unit) {
         openGraph = OpenGraphBuilder().apply(block).build()
     }
 
     /**
      * Configure Twitter Card metadata.
      */
-    fun twitter(block: TwitterCardBuilder.() -> Unit) {
+    public fun twitter(block: TwitterCardBuilder.() -> Unit) {
         twitter = TwitterCardBuilder().apply(block).build()
     }
 
     /**
      * Add a custom meta tag.
      */
-    fun meta(name: String, content: String) {
+    public fun meta(name: String, content: String) {
         customTags[name] = content
     }
 
     /**
      * Mark page as noindex (not indexed by search engines).
      */
-    fun noindex() {
+    public fun noindex() {
         robots = "noindex"
     }
 
     /**
      * Mark page as noindex and nofollow.
      */
-    fun noindexNofollow() {
+    public fun noindexNofollow() {
         robots = "noindex, nofollow"
     }
 
-    fun build() = PageMeta(
+    public fun build() = PageMeta(
         title = title,
         description = description,
         canonicalUrl = canonicalUrl,
@@ -326,24 +326,24 @@ class PageMetaBuilder {
     )
 }
 
-class OpenGraphBuilder {
-    var type: OpenGraph.Type = OpenGraph.Type.WEBSITE
-    var title: String? = null
-    var description: String? = null
-    var url: String? = null
-    var image: String? = null
-    var imageAlt: String? = null
-    var imageWidth: Int? = null
-    var imageHeight: Int? = null
-    var siteName: String? = null
-    var locale: String? = null
+public class OpenGraphBuilder {
+    public var type: OpenGraph.Type = OpenGraph.Type.WEBSITE
+    public var title: String? = null
+    public var description: String? = null
+    public var url: String? = null
+    public var image: String? = null
+    public var imageAlt: String? = null
+    public var imageWidth: Int? = null
+    public var imageHeight: Int? = null
+    public var siteName: String? = null
+    public var locale: String? = null
     private val additionalTags = mutableMapOf<String, String>()
 
-    fun tag(property: String, content: String) {
+    public fun tag(property: String, content: String) {
         additionalTags[property] = content
     }
 
-    fun build() = OpenGraph(
+    public fun build() = OpenGraph(
         type = type,
         title = title,
         description = description,
@@ -358,21 +358,21 @@ class OpenGraphBuilder {
     )
 }
 
-class TwitterCardBuilder {
-    var card: TwitterCard.Card = TwitterCard.Card.SUMMARY
-    var title: String? = null
-    var description: String? = null
-    var image: String? = null
-    var imageAlt: String? = null
-    var site: String? = null
-    var creator: String? = null
+public class TwitterCardBuilder {
+    public var card: TwitterCard.Card = TwitterCard.Card.SUMMARY
+    public var title: String? = null
+    public var description: String? = null
+    public var image: String? = null
+    public var imageAlt: String? = null
+    public var site: String? = null
+    public var creator: String? = null
     private val additionalTags = mutableMapOf<String, String>()
 
-    fun tag(name: String, content: String) {
+    public fun tag(name: String, content: String) {
         additionalTags[name] = content
     }
 
-    fun build() = TwitterCard(
+    public fun build() = TwitterCard(
         card = card,
         title = title,
         description = description,

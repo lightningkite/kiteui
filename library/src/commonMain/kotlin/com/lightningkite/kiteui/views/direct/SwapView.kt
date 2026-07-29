@@ -10,17 +10,17 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Reactive
 
-expect class SwapView(context: ElementContext) : ElementWithChildren, NativeElement {
+public expect class SwapView(context: ElementContext) : ElementWithChildren, NativeElement {
     override val underlyingNativeElement: SwapView
     override val children: List<Element>
 
-    fun swap(
+    public fun swap(
         transition: ScreenTransition = ScreenTransition.Fade,
         createNewView: ViewWriter.() -> Unit
     )
 }
 
-inline fun <T> SwapView.swapping(
+public inline fun <T> SwapView.swapping(
     crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
     crossinline current: ReactiveContext.() -> T,
     crossinline views: ViewWriter.(T) -> Unit

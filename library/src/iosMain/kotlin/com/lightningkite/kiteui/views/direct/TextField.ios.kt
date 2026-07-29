@@ -15,15 +15,15 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 
-actual class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
     override val driverActions get() = super.driverActions + textInputDriverActions()
 
-    companion object {
-        var alwaysToolbar = false
+    public companion object {
+        public var alwaysToolbar = false
     }
 
-    val trigger: NSObject = object : NSObject() {
+    public val trigger: NSObject = object : NSObject() {
         @ObjCAction
         fun done() {
             action?.let {
@@ -33,7 +33,7 @@ actual class TextInput actual constructor(context: ElementContext) : NativeEleme
         }
     }
     override val native = WrapperView()
-    val textField = UITextField().apply {
+    public val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -103,7 +103,7 @@ actual class TextInput actual constructor(context: ElementContext) : NativeEleme
         applyAlign(_align ?: theme.theme.font.align)
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -111,21 +111,21 @@ actual class TextInput actual constructor(context: ElementContext) : NativeEleme
         textField.textAlignment = alignment
     }
 
-    fun updateHint() {
+    public fun updateHint() {
         textField.attributedPlaceholder = NSAttributedString.create(
             hint,
             mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor())
         )
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
+    public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override fun addListener(listener: () -> Unit): () -> Unit {
             var lastValue = value
             return textField.onEvent(this@TextInput, UIControlEventEditingChanged, listener)
@@ -140,7 +140,7 @@ actual class TextInput actual constructor(context: ElementContext) : NativeEleme
                 textField.sendActionsForControlEvents(UIControlEventEditingChanged)
             }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = value.case.ios
@@ -185,14 +185,14 @@ actual class TextInput actual constructor(context: ElementContext) : NativeEleme
         }
     }
 
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             updateHint()
             textField.accessibilityHint = value.ifEmpty { null }
         }
     private var _align: Align? = null
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value

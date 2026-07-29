@@ -11,10 +11,10 @@ import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import kotlin.math.min
 
 
-actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
+public actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
     override val native = NCanvas(context.activity)
 
-    actual var delegate: CanvasDelegate?
+    public actual var delegate: CanvasDelegate?
         get() = native.delegate
         set(value) {
             native.delegate = value
@@ -30,13 +30,13 @@ actual class Canvas actual constructor(context: ElementContext): NativeElement(c
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NCanvas @JvmOverloads constructor(
+public actual class NCanvas @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
-    var delegate: CanvasDelegate? = null
+    public var delegate: CanvasDelegate? = null
         set(value) {
             field?.invalidate = {}
             field = value

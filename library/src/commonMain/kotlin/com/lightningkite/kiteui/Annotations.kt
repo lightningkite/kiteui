@@ -2,16 +2,16 @@ package com.lightningkite.kiteui
 
 @Repeatable
 @Target(AnnotationTarget.CLASS)
-annotation class Routable(val path: String)
+public annotation class Routable(val path: String)
 
 @Target(AnnotationTarget.CLASS)
-annotation class FallbackRoute
+public annotation class FallbackRoute
 
 @Target(AnnotationTarget.PROPERTY)
-annotation class QueryParameter(val name: String = "")
+public annotation class QueryParameter(val name: String = "")
 
 @Target(AnnotationTarget.PROPERTY)
-annotation class Hash
+public annotation class Hash
 
 @Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
@@ -20,7 +20,7 @@ annotation class Hash
     level = RequiresOptIn.Level.WARNING,
     message = "This may change, use it at your own risk"
 )
-annotation class InternalKiteUi
+public annotation class InternalKiteUi
 
 @Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.FUNCTION)
@@ -37,7 +37,7 @@ annotation class InternalKiteUi
  * components so they can control and bind resources to their own lifetime, but should _not_ be
  * called outside internal code as it could cause lifecycle bugs.
  * */
-annotation class OverrideOnly
+public annotation class OverrideOnly
 
 @Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
@@ -46,7 +46,7 @@ annotation class OverrideOnly
     level = RequiresOptIn.Level.WARNING,
     message = "This may change, use it at your own risk"
 )
-annotation class ExperimentalKiteUi
+public annotation class ExperimentalKiteUi
 
 @Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
@@ -55,7 +55,7 @@ annotation class ExperimentalKiteUi
     level = RequiresOptIn.Level.WARNING,
     message = "This hasn't been tested thoroughly enough to recommend use.  Use at your own risk."
 )
-annotation class Untested
+public annotation class Untested
 
 
 /**
@@ -109,4 +109,4 @@ annotation class Untested
 @Suppress("ExperimentalAnnotationRetention")
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn("Applying modifiers in the wrong order can lead to subtle bugs.", RequiresOptIn.Level.WARNING)
-annotation class UnsafeModifier
+public annotation class UnsafeModifier

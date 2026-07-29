@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.views.*
 
-actual class Frame actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class Frame actual constructor(context: ElementContext) : NativeContainerElement(context) {
     init {
         native.tag = "div"
         native.style.lineHeight = "0px !important"
@@ -14,8 +14,8 @@ actual class Frame actual constructor(context: ElementContext) : NativeContainer
         Frame.internalAddChildStack(this, index, element)
     }
 
-    companion object {
-        fun internalAddChildStack(on: NativeContainerElement, index: Int, element: Element) {
+    public companion object {
+        public fun internalAddChildStack(on: NativeContainerElement, index: Int, element: Element) {
             val elementNative = element.underlyingNativeElement.native
 
             if (index == 0) {

@@ -19,13 +19,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class Recycler2(
-    val outerFrame: Frame,
-    val vertical: Boolean,
-    val refreshAction: Action?,
-    var log: Log?
+public class Recycler2(
+    public val outerFrame: Frame,
+    public val vertical: Boolean,
+    public val refreshAction: Action?,
+    public var log: Log?
 ) : ElementWithChildren, Element by outerFrame {
-    constructor(
+    public constructor(
         context: ElementContext,
         vertical: Boolean = true,
         refreshAction: Action? = null,
@@ -44,7 +44,7 @@ class Recycler2(
 
     override val children: List<Element> get() = cells.children
 
-    var gap: Dimension?
+    public var gap: Dimension?
         get() = cells.gap
         set(value) {
             cells.gap = value
@@ -56,30 +56,30 @@ class Recycler2(
             cells.paddingByEdge = value
         }
 
-    var recycling: Boolean = true
+    public var recycling: Boolean = true
 
     private val _centerIndex = Signal(0)
     private val _displayedRangeFirst = Signal(0)
-    val firstIndex: Reactive<Int> = _displayedRangeFirst.withWrite {
+    public val firstIndex: Reactive<Int> = _displayedRangeFirst.withWrite {
         if (it != _displayedRangeFirst.value)
             scrollToIndex(it, Align.Start)
     }
     private val _displayedRangeLast = Signal(0)
-    val lastIndex: Reactive<Int> = _displayedRangeLast.withWrite {
+    public val lastIndex: Reactive<Int> = _displayedRangeLast.withWrite {
         if (it != _displayedRangeLast.value)
             scrollToIndex(it, Align.End)
     }
-    val centerIndex: MutableReactive<Int> = _centerIndex.withWrite {
+    public val centerIndex: MutableReactive<Int> = _centerIndex.withWrite {
         if (it != _centerIndex.value)
             scrollToIndex(it, Align.Center)
     }
 
-    var snapToElements: Align? = null
+    public var snapToElements: Align? = null
         set(value) {
             field = value
             scroll.snapToElements = if (vertical) null to value else value to null
         }
-    var scrollSnapStop: Boolean = false
+    public var scrollSnapStop: Boolean = false
         set(value) {
             field = value
             scroll.scrollSnapStop = value
@@ -138,23 +138,23 @@ class Recycler2(
         }
     }
 
-    var overdraw = AppState.windowInfo.value.height.viewUnits / 3.0
+    public var overdraw = AppState.windowInfo.value.height.viewUnits / 3.0
 
     private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor.SpecificElement(0, Align.Start)
 
-    var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1)
+    public var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1)
         set(value) {
             field = value
             log?.log("placer set calls invalidateLayout()")
             cells.invalidateLayout()
         }
-    var data: RecyclerViewData<*, *>? = RecyclerViewData.Empty
+    public var data: RecyclerViewData<*, *>? = RecyclerViewData.Empty
         set(value) {
             field = value
             log?.log("data set calls invalidateLayout()")
             cells.invalidateLayout()
         }
-    var rendererSet: RecyclerViewRendererSet<*, *>? = RecyclerViewRendererSet.Empty
+    public var rendererSet: RecyclerViewRendererSet<*, *>? = RecyclerViewRendererSet.Empty
         set(value) {
             field = value
             (cells.children.lastIndex downTo 1).forEach { cells.removeChild(it) }
@@ -168,7 +168,7 @@ class Recycler2(
     private var reuseableCells = ArrayList<MyCell<*>>()
     private val usedCells = HashSet<MyCell<*>>() // by Claude - reused across layout passes to avoid allocation
 
-    fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
+    public fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
         activeCells.find { it.index == toIndex }?.let {
             // Nice!  Just scroll away!
             scroll.scrollTo(
@@ -996,7 +996,7 @@ internal fun rectOverlaps(
     b2: Double,
 ): Boolean = l1 < r2 && r1 > l2 && t1 < b2 && b1 > t2
 
-fun estimateJumpAnchor(
+public fun estimateJumpAnchor(
     activeCells: List<RecyclerViewPlaceable>,
     vertical: Boolean,
     viewport: Rect

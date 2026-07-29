@@ -9,14 +9,14 @@ import kotlinx.serialization.json.Json
  *
  * Updated by Claude to add hydration statistics.
  */
-actual object HydrationContext {
+public actual object HydrationContext {
     private var data: Map<String, String>? = null
 
     /**
      * True when the app is in hydration mode (reusing server-rendered DOM).
      * Set to true by initFromDom() if SSR data is found, false by clear().
      */
-    actual var isHydrating: Boolean = false
+    public actual var isHydrating: Boolean = false
 
     // Hydration statistics - by Claude
     private var hydratedElements: Int = 0
@@ -29,7 +29,7 @@ actual object HydrationContext {
      * Initialize from __SSR_DATA__ script element in the DOM.
      * Call this on page load before rendering components.
      */
-    actual fun initFromDom() {
+    public actual fun initFromDom() {
         // Reset stats - by Claude
         hydratedElements = 0
         createdElements = 0
@@ -62,47 +62,47 @@ actual object HydrationContext {
      * Get serialized resource data by key.
      * @return JSON string if data was pre-loaded during SSR, null otherwise.
      */
-    actual fun getData(key: String): String? = data?.get(key)
+    public actual fun getData(key: String): String? = data?.get(key)
 
     /**
      * Record a successful element hydration. by Claude
      */
-    fun recordHydrated() {
+    public fun recordHydrated() {
         hydratedElements++
     }
 
     /**
      * Record a new element creation (hydration not possible). by Claude
      */
-    fun recordCreated() {
+    public fun recordCreated() {
         createdElements++
     }
 
     /**
      * Record a hydration mismatch. by Claude
      */
-    fun recordMismatch() {
+    public fun recordMismatch() {
         mismatchedElements++
     }
 
     /**
      * Record the time hydration took in milliseconds. by Claude
      */
-    fun recordHydrationTime(timeMs: Double) {
+    public fun recordHydrationTime(timeMs: Double) {
         hydrationTimeMs = timeMs
     }
 
     /**
      * Mark when hydration starts for internal timing. by Claude
      */
-    fun markHydrationStart() {
+    public fun markHydrationStart() {
         hydrationStartTimeMs = kotlin.js.Date.now()
     }
 
     /**
      * Clear cached hydration data after hydration is complete.
      */
-    actual fun clear() {
+    public actual fun clear() {
         // Log detailed stats before clearing - by Claude
         val total = hydratedElements + createdElements
         if (total > 0) {

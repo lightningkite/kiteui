@@ -15,7 +15,7 @@ import com.lightningkite.kiteui.views.direct.col
  * Function type for custom app wrappers.
  * Receives the ViewWriter, main navigator, dialog navigator, and current page.
  */
-typealias AppWrapper = ViewWriter.(navigator: PageNavigator, dialog: PageNavigator) -> Unit
+public typealias AppWrapper = ViewWriter.(navigator: PageNavigator, dialog: PageNavigator) -> Unit
 
 /**
  * Router for server-side rendering that integrates with KiteUI's Routes system.
@@ -47,16 +47,16 @@ typealias AppWrapper = ViewWriter.(navigator: PageNavigator, dialog: PageNavigat
  * }
  * ```
  */
-class SsrRouter(
-    val routes: Routes,
-    val theme: Theme,
-    val basePath: String = "/",
-    val document: SsrDocument = SsrDocument(baseHref = basePath),
+public class SsrRouter(
+    public val routes: Routes,
+    public val theme: Theme,
+    public val basePath: String = "/",
+    public val document: SsrDocument = SsrDocument(baseHref = basePath),
     /**
      * Optional app wrapper function that provides the full app shell (navigation, etc).
      * If null, pages are rendered directly without navigation wrapper.
      */
-    val appWrapper: AppWrapper? = null
+    public val appWrapper: AppWrapper? = null
 ) {
     // ==================== Suspend versions with preloading ====================
 
@@ -70,7 +70,7 @@ class SsrRouter(
      * @param userAgent Optional User-Agent string for platform detection - by Claude
      * @return Complete HTML document string, or null if the URL doesn't match any route
      */
-    suspend fun renderWithPreload(url: String, userAgent: String? = null): String? {
+    public suspend fun renderWithPreload(url: String, userAgent: String? = null): String? {
         val path = UrlLikePath.fromUrlString(url)
         val page = routes.parse(path) ?: return null
         return renderPageWithPreload(page, userAgent)
@@ -83,7 +83,7 @@ class SsrRouter(
      * @param userAgent Optional User-Agent string for platform detection - by Claude
      * @return Complete HTML document string (never null - uses fallback for 404)
      */
-    suspend fun renderOrFallbackWithPreload(url: String, userAgent: String? = null): String {
+    public suspend fun renderOrFallbackWithPreload(url: String, userAgent: String? = null): String {
         val path = UrlLikePath.fromUrlString(url)
         val page = routes.parseOrFallback(path)
         return renderPageWithPreload(page, userAgent)
@@ -112,7 +112,7 @@ class SsrRouter(
      *                  - by Claude
      * @return Complete HTML document string
      */
-    suspend fun renderPageWithPreload(page: Page, userAgent: String? = null): String {
+    public suspend fun renderPageWithPreload(page: Page, userAgent: String? = null): String {
         val context = SsrContext(basePath, userAgent = userAgent)
         context.theme = theme  // Set theme on context - willAddChild applies SetAsBase (no padding on root)
         context.title = page.title.state.getOrNull()
@@ -174,7 +174,7 @@ class SsrRouter(
      * @param url The URL path (e.g., "/docs/getting-started" or "/users/123?tab=profile")
      * @return Complete HTML document string, or null if the URL doesn't match any route
      */
-    fun render(url: String): String? {
+    public fun render(url: String): String? {
         val path = UrlLikePath.fromUrlString(url)
         val page = routes.parse(path) ?: return null
         return renderPage(page)
@@ -189,7 +189,7 @@ class SsrRouter(
      * @param url The URL path
      * @return Complete HTML document string (never null - uses fallback for 404)
      */
-    fun renderOrFallback(url: String): String {
+    public fun renderOrFallback(url: String): String {
         val path = UrlLikePath.fromUrlString(url)
         val page = routes.parseOrFallback(path)
         return renderPage(page)
@@ -204,7 +204,7 @@ class SsrRouter(
      * @param page The Page to render
      * @return Complete HTML document string
      */
-    fun renderPage(page: Page): String {
+    public fun renderPage(page: Page): String {
         val context = SsrContext(basePath)
         context.theme = theme  // Set theme on context - willAddChild applies SetAsBase (no padding on root)
         context.title = page.title.state.getOrNull()
@@ -229,7 +229,7 @@ class SsrRouter(
      * @param wrapper Function that receives the page and ViewWriter to customize rendering
      * @return Complete HTML document string
      */
-    fun renderPage(page: Page, wrapper: ViewWriter.(Page) -> Unit): String {
+    public fun renderPage(page: Page, wrapper: ViewWriter.(Page) -> Unit): String {
         val context = SsrContext(basePath)
         context.title = page.title.state.getOrNull()
 
@@ -248,7 +248,7 @@ class SsrRouter(
      * @param url The URL path
      * @return The Page instance, or null if not found
      */
-    fun getPage(url: String): Page? {
+    public fun getPage(url: String): Page? {
         val path = UrlLikePath.fromUrlString(url)
         return routes.parse(path)
     }
@@ -259,7 +259,7 @@ class SsrRouter(
      * @param url The URL path
      * @return The Page instance (never null - uses fallback for 404)
      */
-    fun getPageOrFallback(url: String): Page {
+    public fun getPageOrFallback(url: String): Page {
         val path = UrlLikePath.fromUrlString(url)
         return routes.parseOrFallback(path)
     }

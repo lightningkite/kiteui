@@ -19,12 +19,12 @@ import kotlinx.dom.addClass
 import org.w3c.dom.*
 
 
-actual class ScrollingBehaviorImpl actual constructor(
-    val on: Element,
+public actual class ScrollingBehaviorImpl actual constructor(
+    public val on: Element,
     actual override val horizontal: Boolean,
     actual override val vertical: Boolean
 ) : ScrollingBehaviors {
-    val native = on.native
+    public val native = on.native
 
     init {
 //        native.style.lineHeight = "0px"
@@ -95,7 +95,7 @@ actual class ScrollingBehaviorImpl actual constructor(
             )
         }
     }
-    val _directlyInteractingWithScroller = Signal(false)
+    public val _directlyInteractingWithScroller = Signal(false)
     actual override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     init {
@@ -175,7 +175,7 @@ actual class ScrollingBehaviorImpl actual constructor(
     }
 
     private var scrollToInstance = 0
-    fun disableSnapTemporarily() {
+    public fun disableSnapTemporarily() {
         native.classes.removeAll { it.startsWith("snapTo-") }
         native.setStyleProperty("scroll-snap-type", "unset")
     }

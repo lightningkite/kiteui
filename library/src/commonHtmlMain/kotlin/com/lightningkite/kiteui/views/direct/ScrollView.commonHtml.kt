@@ -11,7 +11,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-expect class ScrollingBehaviorImpl constructor(
+public expect class ScrollingBehaviorImpl constructor(
     on: Element,
     horizontal: Boolean,
     vertical: Boolean

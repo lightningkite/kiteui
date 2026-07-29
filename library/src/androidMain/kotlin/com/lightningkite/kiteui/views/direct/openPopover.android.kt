@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.views.native
 import com.lightningkite.kiteui.views.popoverWriter
 import com.lightningkite.kiteui.views.themed
 
-actual fun Element.openPopover(
+public actual fun Element.openPopover(
     preferredDirection: PopoverPreferredDirection,
     createMenu: Frame.() -> Unit
 ) {

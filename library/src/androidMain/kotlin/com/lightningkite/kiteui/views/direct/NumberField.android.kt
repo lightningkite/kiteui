@@ -16,7 +16,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 
-actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
     override val driverActions get() = super.driverActions + numberInputDriverActions()
 
@@ -69,8 +69,8 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         native.isAllCaps = theme.font.allCaps
         applyAlign(_align ?: theme.font.align)
     }
-    actual val content: MutableReactiveValue<Double?> = native.contentProperty().asDouble()
-    actual var keyboardHints: KeyboardHints
+    public actual val content: MutableReactiveValue<Double?> = native.contentProperty().asDouble()
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -87,7 +87,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         }
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
@@ -96,7 +96,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         }
 
     @Suppress("UNCHECKED_CAST")
-    actual var range: ClosedRange<Double>?
+    public actual var range: ClosedRange<Double>?
         get() {
             return native.tag as? ClosedRange<Double>
         }
@@ -123,7 +123,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
     private var _align: Align? = null
     private var _fontAndStyle: FontAndStyle? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value

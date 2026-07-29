@@ -6,14 +6,14 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
     override val driverActions get() = super.driverActions + sliderDriverActions()
     private val nativeSeekBar = SeekBar(context.activity)
     override val native = nativeSeekBar
 
     private val valueProp = Signal(0.5f)
-    actual val value: MutableReactiveValue<Float>
+    public actual val value: MutableReactiveValue<Float>
         get() {
             return object : MutableReactiveValue<Float> {
                 override fun addListener(listener: () -> Unit): () -> Unit {
@@ -78,21 +78,21 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
             }
         }
 
-    actual var min: Float = 0f
+    public actual var min: Float = 0f
         set(value) {
             field = value
             // Update current value to ensure it's within new range
             this.value.value = this.value.value
         }
 
-    actual var max: Float = 1f
+    public actual var max: Float = 1f
         set(value) {
             field = value
             // Update current value to ensure it's within new range
             this.value.value = this.value.value
         }
 
-    actual var step: Float? = null
+    public actual var step: Float? = null
         set(value) {
             field = value
             // Android SeekBar doesn't have a built-in step property

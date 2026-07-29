@@ -6,8 +6,8 @@ import com.lightningkite.reactive.core.Release
 /**
  * An element that is meant to be interacted with. Can be enabled or disabled.
  */
-interface InteractiveElement : Element {
-    var enabled: Boolean
+public interface InteractiveElement : Element {
+    public var enabled: Boolean
 }
 
 /**
@@ -17,8 +17,8 @@ interface InteractiveElement : Element {
  * action is in progress (e.g. manage [StatusListener.watchForegroundProcess][com.lightningkite.reactive.context.StatusListener.watchForegroundProcess]
  * on the action when set)
  */
-interface ElementWithAction : InteractiveElement {
-    var action: Action?
+public interface ElementWithAction : InteractiveElement {
+    public var action: Action?
 }
 
 /**
@@ -28,8 +28,8 @@ interface ElementWithAction : InteractiveElement {
  * action is in progress (e.g. manage [StatusListener.watchForegroundProcess][com.lightningkite.reactive.context.StatusListener.watchForegroundProcess]
  * on the action when set)
  */
-interface ElementWithSecondaryAction : ElementWithAction {
-    var secondaryAction: Action?
+public interface ElementWithSecondaryAction : ElementWithAction {
+    public var secondaryAction: Action?
 }
 
 
@@ -40,7 +40,7 @@ interface ElementWithSecondaryAction : ElementWithAction {
  * Platform-specific base class for interactive elements without children.
  * Implements [enabled] by delegating to the native view's enabled state.
  */
-expect abstract class NativeInteractiveElement(context: ElementContext) : NativeElement, InteractiveElement {
+public expect abstract class NativeInteractiveElement(context: ElementContext) : NativeElement, InteractiveElement {
     override var enabled: Boolean
 }
 
@@ -48,7 +48,7 @@ expect abstract class NativeInteractiveElement(context: ElementContext) : Native
  * Platform-specific base class for interactive container elements with children.
  * Implements [enabled] by delegating to the native view's enabled state.
  */
-expect abstract class NativeInteractiveContainerElement(context: ElementContext) : NativeContainerElement, InteractiveElement {
+public expect abstract class NativeInteractiveContainerElement(context: ElementContext) : NativeContainerElement, InteractiveElement {
     override var enabled: Boolean
 }
 
@@ -59,7 +59,7 @@ expect abstract class NativeInteractiveContainerElement(context: ElementContext)
  * Automatically watches action for foreground process state.
  * Override [nativeSetAction] to handle platform-specific action configuration.
  */
-abstract class NativeElementWithAction(context: ElementContext) : ElementWithAction, NativeInteractiveElement(context) {
+public abstract class NativeElementWithAction(context: ElementContext) : ElementWithAction, NativeInteractiveElement(context) {
     protected open fun nativeSetAction(action: Action?) {}
 
     private var stopWatchingAction: Release? = null
@@ -77,7 +77,7 @@ abstract class NativeElementWithAction(context: ElementContext) : ElementWithAct
  * Base class for non-container elements with primary and secondary actions.
  * Override [nativeSetSecondaryAction] to handle platform-specific secondary action configuration.
  */
-abstract class NativeElementWithSecondaryAction(context: ElementContext) : ElementWithSecondaryAction, NativeElementWithAction(context) {
+public abstract class NativeElementWithSecondaryAction(context: ElementContext) : ElementWithSecondaryAction, NativeElementWithAction(context) {
     protected open fun nativeSetSecondaryAction(action: Action?) {}
 
     private var stopWatchingSecondaryAction: Release? = null
@@ -98,7 +98,7 @@ abstract class NativeElementWithSecondaryAction(context: ElementContext) : Eleme
  * Automatically watches action for foreground process state.
  * Override [nativeSetAction] to handle platform-specific action configuration.
  */
-abstract class NativeContainerElementWithAction(context: ElementContext) : ElementWithAction, NativeInteractiveContainerElement(context) {
+public abstract class NativeContainerElementWithAction(context: ElementContext) : ElementWithAction, NativeInteractiveContainerElement(context) {
     protected open fun nativeSetAction(action: Action?) {}
 
     private var stopWatchingAction: Release? = null
@@ -116,7 +116,7 @@ abstract class NativeContainerElementWithAction(context: ElementContext) : Eleme
  * Base class for container elements with primary and secondary actions.
  * Override [nativeSetSecondaryAction] to handle platform-specific secondary action configuration.
  */
-abstract class NativeContainerElementWithSecondaryAction(context: ElementContext) : ElementWithSecondaryAction, NativeContainerElementWithAction(context) {
+public abstract class NativeContainerElementWithSecondaryAction(context: ElementContext) : ElementWithSecondaryAction, NativeContainerElementWithAction(context) {
     protected open fun nativeSetSecondaryAction(action: Action?) {}
 
     private var stopWatchingSecondaryAction: Release? = null

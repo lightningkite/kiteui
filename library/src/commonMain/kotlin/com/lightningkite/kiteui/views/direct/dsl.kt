@@ -19,52 +19,52 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 
-inline fun ElementWriter.activityIndicator(setup: ActivityIndicator.() -> Unit = {}): ActivityIndicator {
+public inline fun ElementWriter.activityIndicator(setup: ActivityIndicator.() -> Unit = {}): ActivityIndicator {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ActivityIndicator(context), setup)
 }
 
-inline fun ElementWriter.autoCompleteTextField(setup: AutoCompleteTextField.() -> Unit = {}): AutoCompleteTextField {
+public inline fun ElementWriter.autoCompleteTextField(setup: AutoCompleteTextField.() -> Unit = {}): AutoCompleteTextField {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(AutoCompleteTextField(context), setup)
 }
 
-inline fun ElementWriter.button(setup: Button.() -> Unit = {}): Button {
+public inline fun ElementWriter.button(setup: Button.() -> Unit = {}): Button {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Button(context), setup)
 }
 
-inline fun ElementWriter.canvas(setup: Canvas.() -> Unit = {}): Canvas {
+public inline fun ElementWriter.canvas(setup: Canvas.() -> Unit = {}): Canvas {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Canvas(context), setup)
 }
 
-inline fun ElementWriter.checkbox(setup: Checkbox.() -> Unit = {}): Checkbox {
+public inline fun ElementWriter.checkbox(setup: Checkbox.() -> Unit = {}): Checkbox {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Checkbox(context), setup)
 }
 
-inline fun ElementWriter.dismissBackground(setup: DismissBackground.() -> Unit = {}): DismissBackground {
+public inline fun ElementWriter.dismissBackground(setup: DismissBackground.() -> Unit = {}): DismissBackground {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(DismissBackground(context), setup)
 }
 
-inline fun ElementWriter.externalLink(setup: ExternalLink.() -> Unit = {}): ExternalLink {
+public inline fun ElementWriter.externalLink(setup: ExternalLink.() -> Unit = {}): ExternalLink {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ExternalLink(context), setup)
 }
 
-inline fun ElementWriter.icon(setup: IconView.() -> Unit = {}): IconView {
+public inline fun ElementWriter.icon(setup: IconView.() -> Unit = {}): IconView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(IconView(context), setup)
 }
 
-inline fun ElementWriter.image(setup: ImageView.() -> Unit = {}): ImageView {
+public inline fun ElementWriter.image(setup: ImageView.() -> Unit = {}): ImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ImageView(context), setup)
 }
 
-inline fun ElementWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): ZoomableImageView {
+public inline fun ElementWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): ZoomableImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return ZoomableImageView(this).apply {
         setup()
@@ -72,87 +72,87 @@ inline fun ElementWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {})
     }
 }
 
-inline fun ElementWriter.rawImage(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageView.() -> Unit = {}): RawImageView {
+public inline fun ElementWriter.rawImage(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageView.() -> Unit = {}): RawImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RawImageView(context, source, description, scaleType), setup)
 }
 
-inline fun ElementWriter.rawImageUnsized(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: SizelessRawImageView.() -> Unit = {}): SizelessRawImageView {
+public inline fun ElementWriter.rawImageUnsized(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: SizelessRawImageView.() -> Unit = {}): SizelessRawImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(SizelessRawImageView(context, source, description, scaleType), setup)
 }
 
-inline fun ElementWriter.rawImageZoomable(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageViewZoomable.() -> Unit = {}): RawImageViewZoomable {
+public inline fun ElementWriter.rawImageZoomable(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageViewZoomable.() -> Unit = {}): RawImageViewZoomable {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RawImageViewZoomable(context, source, description, scaleType), setup)
 }
 
-inline fun ElementWriter.phoneNumberInput(setup: PhoneNumberInput.() -> Unit = {}): PhoneNumberInput {
+public inline fun ElementWriter.phoneNumberInput(setup: PhoneNumberInput.() -> Unit = {}): PhoneNumberInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(PhoneNumberInput(context), setup)
 }
 
-inline fun ElementWriter.link(setup: Link.() -> Unit = {}): Link {
+public inline fun ElementWriter.link(setup: Link.() -> Unit = {}): Link {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Link(context), setup)
 }
 
-inline fun ElementWriter.localDateField(setup: LocalDateField.() -> Unit = {}): LocalDateField {
+public inline fun ElementWriter.localDateField(setup: LocalDateField.() -> Unit = {}): LocalDateField {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(LocalDateField(context), setup)
 }
 
-inline fun ElementWriter.localDateTimeField(setup: LocalDateTimeField.() -> Unit = {}): LocalDateTimeField {
+public inline fun ElementWriter.localDateTimeField(setup: LocalDateTimeField.() -> Unit = {}): LocalDateTimeField {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(LocalDateTimeField(context), setup)
 }
 
-inline fun ElementWriter.localTimeField(setup: LocalTimeField.() -> Unit = {}): LocalTimeField {
+public inline fun ElementWriter.localTimeField(setup: LocalTimeField.() -> Unit = {}): LocalTimeField {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(LocalTimeField(context), setup)
 }
 
-inline fun ElementWriter.menuButton(setup: MenuButton.() -> Unit = {}): MenuButton {
+public inline fun ElementWriter.menuButton(setup: MenuButton.() -> Unit = {}): MenuButton {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(MenuButton(context), setup)
 }
 
-inline fun ElementWriter.numberInput(setup: NumberInput.() -> Unit = {}): NumberInput {
+public inline fun ElementWriter.numberInput(setup: NumberInput.() -> Unit = {}): NumberInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(NumberInput(context), setup)
 }
 
-inline fun ElementWriter.progressBar(setup: ProgressBar.() -> Unit = {}): ProgressBar {
+public inline fun ElementWriter.progressBar(setup: ProgressBar.() -> Unit = {}): ProgressBar {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ProgressBar(context), setup)
 }
 
-inline fun ElementWriter.circularProgress(setup: CircularProgress.() -> Unit = {}): CircularProgress {
+public inline fun ElementWriter.circularProgress(setup: CircularProgress.() -> Unit = {}): CircularProgress {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(CircularProgress(context), setup)
 }
 
-inline fun ElementWriter.radioButton(setup: RadioButton.() -> Unit = {}): RadioButton {
+public inline fun ElementWriter.radioButton(setup: RadioButton.() -> Unit = {}): RadioButton {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RadioButton(context), setup)
 }
 
-inline fun ElementWriter.radioToggleButton(setup: RadioToggleButton.() -> Unit = {}): RadioToggleButton {
+public inline fun ElementWriter.radioToggleButton(setup: RadioToggleButton.() -> Unit = {}): RadioToggleButton {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RadioToggleButton(context), setup)
 }
 
-inline fun ElementWriter.rowCollapsingToColumn(breakpoint: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
+public inline fun ElementWriter.rowCollapsingToColumn(breakpoint: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowCollapsingToColumn(context, listOf(breakpoint)), setup)
 }
 
-inline fun ElementWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
+public inline fun ElementWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowCollapsingToColumn(context, listOf(verticalBefore, verticalAfter)), setup)
 }
 
-inline fun ElementWriter.rowCollapsingToColumn(
+public inline fun ElementWriter.rowCollapsingToColumn(
     verticalBefore: Dimension,
     verticalAfter: Dimension,
     horizontalAgainAfter: Dimension,
@@ -162,98 +162,98 @@ inline fun ElementWriter.rowCollapsingToColumn(
     return write(RowCollapsingToColumn(context, listOf(verticalBefore, verticalAfter, horizontalAgainAfter)), setup)
 }
 
-inline fun ElementWriter.select(setup: Select.() -> Unit = {}): Select {
+public inline fun ElementWriter.select(setup: Select.() -> Unit = {}): Select {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Select(context), setup)
 }
 
-inline fun ElementWriter.separator(setup: Separator.() -> Unit = {}): Separator {
+public inline fun ElementWriter.separator(setup: Separator.() -> Unit = {}): Separator {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Separator(context), setup)
 }
 
-inline fun ElementWriter.space(setup: Space.() -> Unit = {}): Space {
+public inline fun ElementWriter.space(setup: Space.() -> Unit = {}): Space {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Space(context), setup)
 }
 
-inline fun ElementWriter.space(multiplier: Double, setup: Space.() -> Unit = {}): Space {
+public inline fun ElementWriter.space(multiplier: Double, setup: Space.() -> Unit = {}): Space {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Space(context, multiplier), setup)
 }
 
-inline fun ElementWriter.frame(setup: Frame.() -> Unit = {}): Frame {
+public inline fun ElementWriter.frame(setup: Frame.() -> Unit = {}): Frame {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Frame(context), setup)
 }
 
-inline fun ElementWriter.coordinatorFrame(setup: CoordinatorFrame.() -> Unit = {}): CoordinatorFrame {
+public inline fun ElementWriter.coordinatorFrame(setup: CoordinatorFrame.() -> Unit = {}): CoordinatorFrame {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(CoordinatorFrame(context), setup)
 }
 
-inline fun ElementWriter.coordinatorDragHandle(setup: CoordinatorDragHandle.() -> Unit = {}): CoordinatorDragHandle {
+public inline fun ElementWriter.coordinatorDragHandle(setup: CoordinatorDragHandle.() -> Unit = {}): CoordinatorDragHandle {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(CoordinatorDragHandle(context), setup)
 }
 
-inline fun ElementWriter.swapView(setup: SwapView.() -> Unit = {}): SwapView {
+public inline fun ElementWriter.swapView(setup: SwapView.() -> Unit = {}): SwapView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(SwapView(context), setup)
 }
 
-inline fun ElementWriter.switch(setup: Switch.() -> Unit = {}): Switch {
+public inline fun ElementWriter.switch(setup: Switch.() -> Unit = {}): Switch {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Switch(context), setup)
 }
 
-inline fun ElementWriter.slider(setup: Slider.() -> Unit = {}): Slider {
+public inline fun ElementWriter.slider(setup: Slider.() -> Unit = {}): Slider {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Slider(context), setup)
 }
 
-inline fun ElementWriter.textArea(setup: TextArea.() -> Unit = {}): TextArea {
+public inline fun ElementWriter.textArea(setup: TextArea.() -> Unit = {}): TextArea {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextArea(context), setup)
 }
 
-inline fun ElementWriter.textInput(setup: TextInput.() -> Unit = {}): TextInput {
+public inline fun ElementWriter.textInput(setup: TextInput.() -> Unit = {}): TextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextInput(context), setup)
 }
 
 @Deprecated("Use textInput instead", ReplaceWith("textInput(setup)", "com.lightningkite.kiteui.views.direct.textInput"))
-inline fun ElementWriter.textField(setup: TextInput.() -> Unit = {}): TextInput {
+public inline fun ElementWriter.textField(setup: TextInput.() -> Unit = {}): TextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextInput(context), setup)
 }
 
-inline fun ElementWriter.formattedTextInput(setup: FormattedTextInput.() -> Unit = {}): FormattedTextInput {
+public inline fun ElementWriter.formattedTextInput(setup: FormattedTextInput.() -> Unit = {}): FormattedTextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(FormattedTextInput(context), setup)
 }
 
-inline fun ElementWriter.text(setup: TextView.() -> Unit = {}): TextView {
+public inline fun ElementWriter.text(setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextView(context), setup)
 }
 
-inline fun ElementWriter.toggleButton(setup: ToggleButton.() -> Unit = {}): ToggleButton {
+public inline fun ElementWriter.toggleButton(setup: ToggleButton.() -> Unit = {}): ToggleButton {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ToggleButton(context), setup)
 }
 
-inline fun ElementWriter.video(setup: VideoView.() -> Unit = {}): VideoView {
+public inline fun ElementWriter.video(setup: VideoView.() -> Unit = {}): VideoView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(VideoView(context), setup)
 }
 
-inline fun ElementWriter.media(setup: MediaView.() -> Unit = {}): MediaView {
+public inline fun ElementWriter.media(setup: MediaView.() -> Unit = {}): MediaView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(MediaView(context), setup)
 }
 
-inline fun ElementWriter.rawVideo(
+public inline fun ElementWriter.rawVideo(
     source: VideoSource,
     description: String,
     scaleType: ImageScaleType = ImageScaleType.Fit,
@@ -264,42 +264,42 @@ inline fun ElementWriter.rawVideo(
     return write(RawVideoView(context, source, description, scaleType, preloadHint), setup)
 }
 
-inline fun ElementWriter.webView(setup: WebView.() -> Unit = {}): WebView {
+public inline fun ElementWriter.webView(setup: WebView.() -> Unit = {}): WebView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(WebView(context), setup)
 }
 
-inline fun ElementWriter.rowWrapping(setup: RowWrapping.() -> Unit = {}): RowWrapping {
+public inline fun ElementWriter.rowWrapping(setup: RowWrapping.() -> Unit = {}): RowWrapping {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowWrapping(context), setup)
 }
 
-inline fun ElementWriter.row(setup: RowOrCol.() -> Unit = {}): RowOrCol {
+public inline fun ElementWriter.row(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowOrCol(context)) { vertical = false; setup() }
 }
 
-inline fun ElementWriter.column(setup: RowOrCol.() -> Unit = {}): RowOrCol {
+public inline fun ElementWriter.column(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowOrCol(context)) { vertical = true; setup() }
 }
 
-inline fun ElementWriter.col(setup: RowOrCol.() -> Unit = {}): RowOrCol {
+public inline fun ElementWriter.col(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowOrCol(context)) { vertical = true; setup() }
 }
 
-inline fun ElementWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {}): ProgrammaticLayout {
+public inline fun ElementWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {}): ProgrammaticLayout {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ProgrammaticLayout(context), setup)
 }
 
-inline fun ElementWriter.recyclerView(refreshAction: Action? = null, setup: Recycler2.() -> Unit = {}): Recycler2 {
+public inline fun ElementWriter.recyclerView(refreshAction: Action? = null, setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Recycler2(context, vertical = true, refreshAction = refreshAction), setup)
 }
 
-inline fun ElementWriter.horizontalRecyclerView(
+public inline fun ElementWriter.horizontalRecyclerView(
     refreshAction: Action? = null,
     setup: Recycler2.() -> Unit = {}
 ): Recycler2 {
@@ -307,7 +307,7 @@ inline fun ElementWriter.horizontalRecyclerView(
     return write(Recycler2(context, vertical = false, refreshAction = refreshAction), setup)
 }
 
-inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
+public inline fun ElementWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Recycler2(context, vertical = false)) {
         placer = RecyclerViewPagingPlacer()

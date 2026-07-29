@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.models
 
 import kotlin.time.Duration.Companion.seconds
 
-fun Theme.Companion.shadCnLike(
+public fun Theme.Companion.shadCnLike(
     id: String,
     background: Color = Color.gray(0.05f),
     accent: Color = HSPColor(hue = 0.6.turns, saturation = 0.95f, brightness = 0.4f).toRGB(),

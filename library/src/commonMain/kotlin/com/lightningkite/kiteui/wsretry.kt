@@ -17,7 +17,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 
 // by Claude — Bug 9: removed artificial 100ms delay; resume immediately on connect
-suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
+public suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
     suspendCancellableCoroutine<Unit> {
         var alreadyResumed = false
         onOpen {
@@ -35,7 +35,7 @@ suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx
     }
 }
 
-fun retryWebsocket(
+public fun retryWebsocket(
     url: String,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
@@ -47,7 +47,7 @@ fun retryWebsocket(
     log = log
 )
 
-fun retryWebsocket(
+public fun retryWebsocket(
     underlyingSocket: suspend () -> WebSocket,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
@@ -209,7 +209,7 @@ fun retryWebsocket(
     }
 }
 
-fun <SEND, RECEIVE> RetryWebsocket.typed(
+public fun <SEND, RECEIVE> RetryWebsocket.typed(
     json: Json,
     send: KSerializer<SEND>,
     receive: KSerializer<RECEIVE>,
@@ -242,25 +242,25 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
     }
 }
 
-interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
-    fun retryNow() {
+public interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
+    public fun retryNow() {
 
     }
 }
 
 
-interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
-    val connected: Reactive<Boolean>
+public interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
+    public val connected: Reactive<Boolean>
 
-    fun close(code: Short, reason: String)
-    fun send(data: SEND)
-    fun onOpen(action: () -> Unit)
-    fun onMessage(action: (RECEIVE) -> Unit)
-    fun onClose(action: (Short) -> Unit)
+    public fun close(code: Short, reason: String)
+    public fun send(data: SEND)
+    public fun onOpen(action: () -> Unit)
+    public fun onMessage(action: (RECEIVE) -> Unit)
+    public fun onClose(action: (Short) -> Unit)
 }
 
 
-val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Reactive<RECEIVE?>
+public val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Reactive<RECEIVE?>
     get() = object : Reactive<RECEIVE?> {
         var value: RECEIVE? = null
             private set

@@ -28,16 +28,16 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 
-class MediaView(private val frame: Frame) : Element by frame {
-    constructor(context: ElementContext) : this(Frame(context))
+public class MediaView(private val frame: Frame) : Element by frame {
+    public constructor(context: ElementContext) : this(Frame(context))
 
-    data class Info(
+    public data class Info(
         val sources: List<VisualMediaSource>,
         val scaleType: ImageScaleType,
         val description: String?
     )
 
-    val currentRawMediaView = Signal<Element?>(null)
+    public val currentRawMediaView = Signal<Element?>(null)
 
     init {
         val removeListener = currentRawMediaView.addListener {
@@ -47,46 +47,46 @@ class MediaView(private val frame: Frame) : Element by frame {
         onRemove(removeListener)
     }
 
-    var info: Info? = null
+    public var info: Info? = null
         set(value) {
             field = value
             if (ready) refresh()
         }
-    var source: VisualMediaSource?
+    public var source: VisualMediaSource?
         get() = info?.sources?.firstOrNull()
         set(value) {
             info = info?.copy(sources = listOfNotNull(value)) ?: Info(listOfNotNull(value), ImageScaleType.Fit, null)
         }
-    var scaleType: ImageScaleType
+    public var scaleType: ImageScaleType
         get() = info?.scaleType ?: ImageScaleType.Fit
         set(value) {
             info = info?.copy(scaleType = value) ?: Info(listOf(), value, null)
         }
-    var description: String?
+    public var description: String?
         get() = info?.description
         set(value) {
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
         }
 
-    var opaqueTransitions: Boolean = false
+    public var opaqueTransitions: Boolean = false
 
-    var showControls: Boolean = false
+    public var showControls: Boolean = false
         set(value) {
             field = value
             (currentRawMediaView.value as? RawVideoView)?.showControls = value
         }
-    var loop: Boolean = false
+    public var loop: Boolean = false
         set(value) {
             field = value
             (currentRawMediaView.value as? RawVideoView)?.loop = value
         }
 
-    val time: MutableReactive<Double> = currentRawMediaView.lens( get = { (it as? RawVideoView)?.time ?: Signal(0.0) } ).flatten()
-    val playing: MutableReactive<Boolean> = currentRawMediaView.lens { (it as? RawVideoView)?.playing ?: Signal(false) }.flatten()
-    val volume: MutableReactive<Float> = currentRawMediaView.lens { (it as? RawVideoView)?.volume ?: Signal(0f) }.flatten()
+    public val time: MutableReactive<Double> = currentRawMediaView.lens( get = { (it as? RawVideoView)?.time ?: Signal(0.0) } ).flatten()
+    public val playing: MutableReactive<Boolean> = currentRawMediaView.lens { (it as? RawVideoView)?.playing ?: Signal(false) }.flatten()
+    public val volume: MutableReactive<Float> = currentRawMediaView.lens { (it as? RawVideoView)?.volume ?: Signal(0f) }.flatten()
 
 
-    var ready = false
+    public var ready = false
 
     @OverrideOnly
     override fun onStartup() {
@@ -98,13 +98,13 @@ class MediaView(private val frame: Frame) : Element by frame {
     private var lastRendered: Info? = null
     private var lastRender: List<Element>? = null
 
-    val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
+    public val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
 
-    val shownInfo = RawReactive<Info?>(ReactiveState(null))
-    var cannotBeCovered = false
+    public val shownInfo = RawReactive<Info?>(ReactiveState(null))
+    public var cannotBeCovered = false
 
     @OptIn(ExperimentalKiteUi::class)
-    fun refresh() {
+    public fun refresh() {
         if (!ready) return
         val info = info
         if (lastRendered != info) {
@@ -229,8 +229,8 @@ class MediaView(private val frame: Frame) : Element by frame {
         }
     }
 
-    var showLoadingIndicator: Boolean by activityIndicator::shown
+    public var showLoadingIndicator: Boolean by activityIndicator::shown
 
     @Deprecated("no longer needed", ReplaceWith("this"))
-    inline val rView: Element get() = this
+    public inline val rView: Element get() = this
 }

@@ -16,7 +16,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textAreaDriverValue()
     override val driverActions get() = super.driverActions + textAreaDriverActions()
     override val native = EditText(context.activity).focusIsKeyboard().apply {
@@ -54,8 +54,8 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
 
-    actual val content: MutableReactiveValue<String> = native.contentProperty()
-    actual var keyboardHints: KeyboardHints
+    public actual val content: MutableReactiveValue<String> = native.contentProperty()
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -63,14 +63,14 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
             native.keyboardHints = value
         }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
         set(value) {
             native.hint = value
         }
-    var align: Align
+    public var align: Align
         get() {
             return when (native.gravity) {
                 Gravity.START -> Align.Start
@@ -94,7 +94,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
                 }
             }
         }
-    var textSize: Dimension
+    public var textSize: Dimension
         get() {
             return Dimension(native.textSize)
         }

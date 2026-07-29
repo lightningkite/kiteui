@@ -9,7 +9,7 @@ import platform.UIKit.UISwitch
 import platform.UIKit.isAccessibilityElement
 import platform.UIKit.setIsAccessibilityElement
 
-actual class Switch actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Switch actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
     override val driverActions get() = super.driverActions + switchDriverActions()
     override val native = UISwitch()
@@ -21,7 +21,7 @@ actual class Switch actual constructor(context: ElementContext) : NativeInteract
         setupControl()
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = object : MutableReactiveValue<Boolean> {
+    public actual val checked: MutableReactiveValue<Boolean> = object : MutableReactiveValue<Boolean> {
         override fun addListener(listener: () -> Unit): () -> Unit {
             return native.onEvent(this@Switch, UIControlEventValueChanged, listener)
         }

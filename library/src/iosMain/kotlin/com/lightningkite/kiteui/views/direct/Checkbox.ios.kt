@@ -17,13 +17,13 @@ import platform.UIKit.setAccessibilityValue
 import platform.UIKit.setIsAccessibilityElement
 
 
-actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     actual override val underlyingNativeElement: Checkbox get() = this
 
     override val driverValue: String? get() = checkboxDriverValue()
     override val driverActions get() = super.driverActions + checkboxDriverActions()
     override val native: WrapperView = WrapperView()
-    val button = FrameLayoutButton()
+    public val button = FrameLayoutButton()
     override val control: UIControl get() = button
     override val addChildTarget get() = button
 
@@ -37,7 +37,7 @@ actual class Checkbox actual constructor(context: ElementContext) : NativeIntera
     }
 
     private val _checked = Signal(false)
-    actual val checked: MutableReactiveValue<Boolean> get() = _checked
+    public actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
         _checked.addListener {

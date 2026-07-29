@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.*
 
 
 @OptIn(ExperimentalKiteUi::class)
-actual class DismissBackground actual constructor(context: ElementContext): NativeContainerElement(context) {
+public actual class DismissBackground actual constructor(context: ElementContext): NativeContainerElement(context) {
     init {
         themePipeline.add(ThemePipeline.Step.elementStyling, DismissSemantic)
     }
@@ -22,7 +22,7 @@ actual class DismissBackground actual constructor(context: ElementContext): Nati
             this@DismissBackground.context.dialogPageNavigator.clear()
         }
     }
-    actual fun onClick(action: suspend () -> Unit) {
+    public actual fun onClick(action: suspend () -> Unit) {
         val action = Action("Dismiss", Icon.close) { action() }
         native.setOnClickListener { _ ->
             action.startAction(this)

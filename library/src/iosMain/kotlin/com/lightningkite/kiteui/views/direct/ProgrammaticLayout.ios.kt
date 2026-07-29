@@ -28,14 +28,14 @@ import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIEvent
 import platform.UIKit.UIView
 
-actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+public actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
         element = WeakReference(this@ProgrammaticLayout)
         onRemove { delegate = ProgrammaticLayoutDelegate.AllFull }
     }
-    actual var delegate: ProgrammaticLayoutDelegate by native::delegate
-    actual fun invalidateLayout() {
+    public actual var delegate: ProgrammaticLayoutDelegate by native::delegate
+    public actual fun invalidateLayout() {
         native.invalidateLayout()
     }
 
@@ -62,19 +62,19 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : Na
 }
 
 @OptIn(ExperimentalNativeApi::class)
-class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSizeOverridesProtocol {
-    var spacingCurrentPx: Double = 0.0
-    var paddingTopCurrentPx: Double = 0.0
-    var paddingLeftCurrentPx: Double = 0.0
-    var paddingRightCurrentPx: Double = 0.0
-    var paddingBottomCurrentPx: Double = 0.0
-    var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
+public class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSizeOverridesProtocol {
+    public var spacingCurrentPx: Double = 0.0
+    public var paddingTopCurrentPx: Double = 0.0
+    public var paddingLeftCurrentPx: Double = 0.0
+    public var paddingRightCurrentPx: Double = 0.0
+    public var paddingBottomCurrentPx: Double = 0.0
+    public var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
             field = value
             setNeedsLayout()
         }
     private var currentSize: Size = Size.Zero
-    var element: WeakReference<ProgrammaticLayout>? = null
+    public var element: WeakReference<ProgrammaticLayout>? = null
     private val inProgress = object: ProgrammingLayoutInProgress {
         override val within: Size
             get() = currentSize
@@ -119,15 +119,15 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
         }
     }
 
-    var myInvalidated = false
-    fun invalidateLayout() {
+    public var myInvalidated = false
+    public fun invalidateLayout() {
         if(inLayout) return
         myInvalidated = true
         informParentOfSizeChangeDueToChild()
         setNeedsLayout()
     }
 
-    var inLayout = false
+    public var inLayout = false
     override fun layoutSubviews() {
         if(bounds.useContents { size.width == 0.0 && size.height == 0.0 }) return
         if (inLayout) throw IllegalStateException()

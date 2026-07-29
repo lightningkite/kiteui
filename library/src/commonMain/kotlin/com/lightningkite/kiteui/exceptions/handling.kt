@@ -26,33 +26,33 @@ import kotlin.time.Clock
  *
  * @param parent Optional parent tree to fall back to when no local handler matches
  */
-class ExceptionHandlersTree(private val parent: ExceptionHandlersTree? = null) {
+public class ExceptionHandlersTree(private val parent: ExceptionHandlersTree? = null) {
     private val handlers = ArrayList<ExceptionHandler>()
     private val messages = ArrayList<ExceptionToMessage>()
 
-    fun add(handler: ExceptionHandler) {
+    public fun add(handler: ExceptionHandler) {
         handlers.add(handler)
         handlers.sortWith(handlerComparator)
     }
 
-    fun add(message: ExceptionToMessage) {
+    public fun add(message: ExceptionToMessage) {
         messages.add(message)
         messages.sortWith(messageComparator)
     }
 
-    fun remove(handler: ExceptionHandler): Boolean = handlers.remove(handler) || parent?.remove(handler) == true
-    fun remove(message: ExceptionToMessage): Boolean = messages.remove(message) || parent?.remove(message) == true
+    public fun remove(handler: ExceptionHandler): Boolean = handlers.remove(handler) || parent?.remove(handler) == true
+    public fun remove(message: ExceptionToMessage): Boolean = messages.remove(message) || parent?.remove(message) == true
 
-    operator fun plusAssign(handler: ExceptionHandler) = add(handler)
+    public operator fun plusAssign(handler: ExceptionHandler) = add(handler)
 
-    operator fun plusAssign(message: ExceptionToMessage) = add(message)
+    public operator fun plusAssign(message: ExceptionToMessage) = add(message)
 
     /**
      * Attempts to find and invoke a matching [ExceptionHandler] in this tree to handle the exception, short-circuiting.
      *
      * @return A [Release] if a matching handler was found, `null` if no match. The returned [Release] should be called to release the handler and return everything to its original state once the error has been handled/changed.
      */
-    fun handle(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): Release? =
+    public fun handle(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): Release? =
         handlers.firstNotNullOfOrNull { it.handle(context, exception, metadata) } ?: parent?.handle(context, exception, metadata)
 
     /**
@@ -60,14 +60,14 @@ class ExceptionHandlersTree(private val parent: ExceptionHandlersTree? = null) {
      *
      * @return An [ExceptionMessage] if a handler was found matching the exception, or `null` if no handler was found.
      */
-    fun message(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): ExceptionMessage? =
+    public fun message(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): ExceptionMessage? =
         messages.firstNotNullOfOrNull { it.message(context, exception, metadata) } ?: parent?.message(context, exception, metadata)
 
-    operator fun contains(handler: ExceptionHandler): Boolean {
+    public operator fun contains(handler: ExceptionHandler): Boolean {
         return handlers.contains(handler) || parent?.contains(handler) == true
     }
 
-    operator fun contains(message: ExceptionToMessage): Boolean {
+    public operator fun contains(message: ExceptionToMessage): Boolean {
         return messages.contains(message) || parent?.contains(message) == true
     }
 }
@@ -83,7 +83,7 @@ private val messageComparator = compareByDescending<ExceptionToMessage> { it.for
  * - [ExceptionHandler.messageDialog]
  * - [ExceptionToMessage.unexpectedError]
  * */
-fun ExceptionHandlersTree.installStandardHandlers() {
+public fun ExceptionHandlersTree.installStandardHandlers() {
     add(ExceptionHandler.messageDialog)
     add(ExceptionToMessage.plainTextException)
     add(ExceptionToMessage.unexpectedError)
@@ -95,7 +95,7 @@ fun ExceptionHandlersTree.installStandardHandlers() {
  * - [ExceptionHandler.stacktraceDialog]
  * - [ExceptionToMessage.debugInformation]
  * */
-fun ExceptionHandlersTree.installDebugHandlers() {
+public fun ExceptionHandlersTree.installDebugHandlers() {
     add(ExceptionHandler.stacktraceDialog)
     add(ExceptionToMessage.plainTextException)
     add(ExceptionToMessage.debugInformation)
@@ -104,7 +104,7 @@ fun ExceptionHandlersTree.installDebugHandlers() {
 /**
  * Calls [installDebugHandlers] if `Platform.isDevelopment == true`, otherwise calls [installStandardHandlers].
  * */
-fun ExceptionHandlersTree.installSmartHandlers() {
+public fun ExceptionHandlersTree.installSmartHandlers() {
     if (Platform.isDevelopment) installDebugHandlers()
     else installStandardHandlers()
 }
@@ -117,18 +117,18 @@ fun ExceptionHandlersTree.installSmartHandlers() {
  * are tried before generic handlers, and within each category, higher priority handlers are
  * tried first.
  */
-interface ExceptionHandler {
+public interface ExceptionHandler {
     /**
      * Priority value for ordering handlers. Higher values are tried first.
      * Default priority is 0.5 when using factory functions.
      */
-    val priority: Float
+    public val priority: Float
 
     /**
      * Whether this handler is for a specific exception type (true) or all exceptions (false).
      * Specific handlers are always tried before generic handlers.
      */
-    val forSpecificException get() = false
+    public val forSpecificException get() = false
 
     /**
      * Attempts to handle the given exception.
@@ -137,16 +137,16 @@ interface ExceptionHandler {
      * @param exception The exception to handle
      * @return A Release to clean up resources when done, or `null` if this handler can't handle it
      */
-    fun handle(context: ElementContext, exception: Exception, metadata: Metadata?): Release?
+    public fun handle(context: ElementContext, exception: Exception, metadata: Metadata?): Release?
 
-    data class Metadata(
+    public data class Metadata(
         val source: Element?,
         val process: Reactive<*>?,
         val foregroundProcess: Boolean?,
         val context: Map<String, String> = emptyMap()
     )
 
-    companion object {
+    public companion object {
         /**
          * Standard fallback exception handler that displays a dialog with the exception message.
          * Displays title, body, any associated actions, and a close button.
@@ -155,7 +155,7 @@ interface ExceptionHandler {
          *
          * Suitable for production use.
          */
-        val messageDialog = ExceptionHandler(0f) { exception, meta ->
+        public val messageDialog = ExceptionHandler(0f) { exception, meta ->
             val message = exceptionMessage(exception, meta) ?: return@ExceptionHandler null
 
             dialog { close ->
@@ -190,7 +190,7 @@ interface ExceptionHandler {
          *
          * Suitable for development/debugging.
          */
-        val stacktraceDialog = ExceptionHandler(0f) { exception, meta ->
+        public val stacktraceDialog = ExceptionHandler(0f) { exception, meta ->
             val message = exceptionMessage(exception, meta) ?: return@ExceptionHandler null
 
             dialog { close ->
@@ -229,18 +229,18 @@ interface ExceptionHandler {
  *
  * @see ExceptionMessage
  */
-interface ExceptionToMessage {
+public interface ExceptionToMessage {
     /**
      * Priority value for ordering converters. Higher values are tried first.
      * Default priority is 0.5 (or 0.6 for specific types) when using factory functions.
      */
-    val priority: Float
+    public val priority: Float
 
     /**
      * Whether this converter is for a specific exception type (true) or all exceptions (false).
      * Specific converters are always tried before generic converters.
      */
-    val forSpecificException get() = false
+    public val forSpecificException get() = false
 
     /**
      * Attempts to convert the given exception into a user-friendly message.
@@ -249,13 +249,13 @@ interface ExceptionToMessage {
      * @param exception The exception to convert
      * @return An ExceptionMessage with title, body, and actions, or null if not convertible
      */
-    fun message(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): ExceptionMessage?
+    public fun message(context: ElementContext, exception: Exception, metadata: ExceptionHandler.Metadata?): ExceptionMessage?
 
-    companion object {
+    public companion object {
         /**
          * Converter for [PlainTextException] that extracts the title, message, and actions.
          */
-        val plainTextException = ExceptionToMessage<PlainTextException>(0f) {
+        public val plainTextException = ExceptionToMessage<PlainTextException>(0f) {
             ExceptionMessage(it.title, it.message, it.actions)
         }
 
@@ -265,7 +265,7 @@ interface ExceptionToMessage {
          *
          * Suitable for production use.
          */
-        val unexpectedError = ExceptionToMessage(0f) {
+        public val unexpectedError = ExceptionToMessage(0f) {
             ExceptionMessage(
                 "Error",
                 "An unexpected error occurred."
@@ -280,7 +280,7 @@ interface ExceptionToMessage {
          *
          * Suitable for development/debugging.
          */
-        val debugInformation = ExceptionToMessage(0f) { e, meta ->       // TODO: Most of this functionality should live in the stacktraceDialog handler an be reported to Otel
+        public val debugInformation = ExceptionToMessage(0f) { e, meta ->       // TODO: Most of this functionality should live in the stacktraceDialog handler an be reported to Otel
             val usingStacktraceDialog = exceptionHandlers.contains(ExceptionHandler.stacktraceDialog)
 
             fun report(): String = buildString {
@@ -365,7 +365,7 @@ interface ExceptionToMessage {
  *
  * @see ExceptionToMessage
  */
-data class ExceptionMessage(
+public data class ExceptionMessage(
     val title: String,
     val body: String,
     val actions: List<Action> = emptyList()
@@ -380,14 +380,14 @@ data class ExceptionMessage(
  * @property title The error title (defaults to "Error")
  * @property actions Optional list of actions the user can take to resolve the error
  */
-open class PlainTextException(
+public open class PlainTextException(
     override val message: String,
-    val title: String = "Error",
-    val actions: List<Action> = emptyList()
+    public val title: String = "Error",
+    public val actions: List<Action> = emptyList()
 ): Exception(message)
 
 
-fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception) -> Release?): ExceptionHandler =
+public fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception) -> Release?): ExceptionHandler =
     object : ExceptionHandler {
         override val priority: Float = priority
         override val forSpecificException: Boolean = false
@@ -395,7 +395,7 @@ fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception)
     }
 
 @JvmName("ExceptionHandlerWithMetadata")
-fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception, ExceptionHandler.Metadata?) -> Release?): ExceptionHandler =
+public fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception, ExceptionHandler.Metadata?) -> Release?): ExceptionHandler =
     object : ExceptionHandler {
         override val priority: Float = priority
         override val forSpecificException: Boolean = false
@@ -403,7 +403,7 @@ fun ExceptionHandler(priority: Float = 0.5f, handler: ElementContext.(Exception,
     }
 
 @JvmName("SpecificExceptionHandler")
-inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, crossinline handler: ElementContext.(T) -> Release?): ExceptionHandler =
+public inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, crossinline handler: ElementContext.(T) -> Release?): ExceptionHandler =
     object : ExceptionHandler {
         override val priority: Float = priority
         override val forSpecificException: Boolean = true
@@ -414,7 +414,7 @@ inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, cros
     }
 
 @JvmName("SpecificExceptionHandlerWithMetadata")
-inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, crossinline handler: ElementContext.(T, ExceptionHandler.Metadata?) -> Release?): ExceptionHandler =
+public inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, crossinline handler: ElementContext.(T, ExceptionHandler.Metadata?) -> Release?): ExceptionHandler =
     object : ExceptionHandler {
         override val priority: Float = priority
         override val forSpecificException: Boolean = true
@@ -425,7 +425,7 @@ inline fun <reified T : Exception> ExceptionHandler(priority: Float = 0.5f, cros
     }
 
 
-fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exception) -> ExceptionMessage?): ExceptionToMessage =
+public fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exception) -> ExceptionMessage?): ExceptionToMessage =
     object : ExceptionToMessage {
         override val priority: Float = priority
         override val forSpecificException: Boolean = false
@@ -433,7 +433,7 @@ fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exceptio
     }
 
 @JvmName("ExceptionToMessageWithMetadata")
-fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exception, ExceptionHandler.Metadata?) -> ExceptionMessage?): ExceptionToMessage =
+public fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exception, ExceptionHandler.Metadata?) -> ExceptionMessage?): ExceptionToMessage =
     object : ExceptionToMessage {
         override val priority: Float = priority
         override val forSpecificException: Boolean = false
@@ -441,7 +441,7 @@ fun ExceptionToMessage(priority: Float = 0.5f, message: ElementContext.(Exceptio
     }
 
 @JvmName("SpecificExceptionToMessage")
-inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, crossinline message: ElementContext.(T) -> ExceptionMessage?): ExceptionToMessage =
+public inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, crossinline message: ElementContext.(T) -> ExceptionMessage?): ExceptionToMessage =
     object : ExceptionToMessage {
         override val priority: Float = priority
         override val forSpecificException: Boolean = true
@@ -453,7 +453,7 @@ inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, cr
 
 
 @JvmName("SpecificExceptionToMessageWithMetadata")
-inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, crossinline message: ElementContext.(T, ExceptionHandler.Metadata?) -> ExceptionMessage?): ExceptionToMessage =
+public inline fun <reified T : Exception> ExceptionToMessage(priority: Float = 0.6f, crossinline message: ElementContext.(T, ExceptionHandler.Metadata?) -> ExceptionMessage?): ExceptionToMessage =
     object : ExceptionToMessage {
         override val priority: Float = priority
         override val forSpecificException: Boolean = true

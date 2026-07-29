@@ -17,7 +17,7 @@ import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
 import kotlin.math.*
 
-class ScrollView(
+public class ScrollView(
     context: ElementContext,
     override val horizontal: Boolean,
     override val vertical: Boolean
@@ -302,8 +302,8 @@ class ScrollView(
         }
     }
 
-    var queuedJumpX = -1.0
-    var queuedJumpY = -1.0
+    public var queuedJumpX = -1.0
+    public var queuedJumpY = -1.0
     override fun scrollToKeepAnimations(x: Double, y: Double) {
 //        native.mScroller?.abortAnimation()
         queuedJumpX = x

@@ -36,23 +36,23 @@ import kotlinx.coroutines.launch
  * - Connectivity issues
  * - Warn/Error log records and exception reports
  */
-class Telemetry(val config: TelemetryConfig) {
+public class Telemetry(public val config: TelemetryConfig) {
 
     // ===== Instance state =====
 
-    val sessionId: String = spanId()
-    var currentTraceId: String = traceId()
+    public val sessionId: String = spanId()
+    public var currentTraceId: String = traceId()
         internal set
-    var currentSpanId: String = ""
+    public var currentSpanId: String = ""
         internal set
 
     internal val exporter: TelemetryExporter = TelemetryExporter(config)
 
     /** Sampling decision made once per session (app launch). All traces in this session share the same decision. */
-    val currentTraceIsSampled: Boolean = Random.nextDouble() < config.traceSamplingRate
+    public val currentTraceIsSampled: Boolean = Random.nextDouble() < config.traceSamplingRate
 
     /** Effective log severity — mutable to support [setVerboseLogging]. */
-    var logMinSeverity: OtlpSeverity = config.logMinSeverity
+    public var logMinSeverity: OtlpSeverity = config.logMinSeverity
         private set
 
     private val log = LogRoot.tag("Telemetry")
@@ -124,7 +124,7 @@ class Telemetry(val config: TelemetryConfig) {
      * Separated from construction so tests can create instances without triggering
      * AppScope/lifecycle hooks.
      */
-    fun install(context: ElementContext, navigator: PageNavigator) {
+    public fun install(context: ElementContext, navigator: PageNavigator) {
         check(!installed) { "Telemetry.install() called twice. Call shutdown() first." }
         installed = true
 
@@ -229,7 +229,7 @@ class Telemetry(val config: TelemetryConfig) {
      * Removes all hooks installed by [install] and stops the flush loop.
      * Buffered data is NOT flushed — call [flush] first if you need to drain.
      */
-    fun shutdown() {
+    public fun shutdown() {
         if (!installed) return
         installed = false
         fetchInterceptors.remove(installedFetchInterceptor)
@@ -430,22 +430,22 @@ class Telemetry(val config: TelemetryConfig) {
      * Temporarily enable verbose (DEBUG+) log shipping for investigation.
      * Call with `false` to restore the configured [TelemetryConfig.logMinSeverity].
      */
-    fun setVerboseLogging(enabled: Boolean) {
+    public fun setVerboseLogging(enabled: Boolean) {
         logMinSeverity = if (enabled) OtlpSeverity.DEBUG else config.logMinSeverity
     }
 
     /** Record a custom counter metric. */
-    fun counter(name: String, value: Long = 1, attributes: List<OtlpKeyValue> = emptyList()) {
+    public fun counter(name: String, value: Long = 1, attributes: List<OtlpKeyValue> = emptyList()) {
         exporter.incrementCounter(name, value, attributes)
     }
 
     /** Record a custom histogram metric value. */
-    fun histogram(name: String, value: Double, unit: String = "ms", attributes: List<OtlpKeyValue> = emptyList()) {
+    public fun histogram(name: String, value: Double, unit: String = "ms", attributes: List<OtlpKeyValue> = emptyList()) {
         exporter.recordHistogram(name, value, unit, attributes)
     }
 
     /** Flush all buffered data immediately. Call before app termination or on background. */
-    suspend fun flush() {
+    public suspend fun flush() {
         exporter.flushAll()
     }
 
@@ -540,17 +540,17 @@ class Telemetry(val config: TelemetryConfig) {
 
     // ===== ID Generation (companion — pure functions, no instance state) =====
 
-    companion object {
+    public companion object {
         private const val hexChars = "0123456789abcdef"
 
         /** 32 hex chars (16 bytes) — W3C trace ID */
-        fun traceId(): String = randomHex(32)
+        public fun traceId(): String = randomHex(32)
 
         /** 16 hex chars (8 bytes) — W3C span ID */
-        fun spanId(): String = randomHex(16)
+        public fun spanId(): String = randomHex(16)
 
         /** Current time as nanoseconds-since-epoch string, suitable for OTLP timestamps. */
-        fun nanosString(): String {
+        public fun nanosString(): String {
             val millis = Clock.System.now().toEpochMilliseconds()
             return (millis * 1_000_000L).toString()
         }

@@ -9,11 +9,11 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 
 
-actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
     override val driverActions get() = super.driverActions + autoCompleteDriverActions()
     override val native = WrapperView()
-    val textField = UITextField().apply {
+    public val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -30,7 +30,7 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val textSize = textSize
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
@@ -39,27 +39,27 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
         textField.textAlignment = alignment
     }
 
-    fun updateHint() {
+    public fun updateHint() {
         textField.placeholder = hint
         // TODO: Colored hint
 //        textField.attributedPlaceholder = hint
     }
 
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
+    public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = textField.text ?: ""
             set(value) {
@@ -74,7 +74,7 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
         }
     }
 
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = value.case.ios
@@ -114,13 +114,13 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
         }
     }
 
-    var hint: String = ""
+    public var hint: String = ""
         set(value) {
             field = value
             updateHint()
         }
 
-    inline var align: Align
+    public inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center
@@ -143,6 +143,6 @@ actual class AutoCompleteTextField actual constructor(context: ElementContext) :
             }
         }
 
-    actual var suggestions: List<String> = listOf()
+    public actual var suggestions: List<String> = listOf()
 }
 

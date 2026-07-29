@@ -19,7 +19,7 @@ import kotlin.math.max
 
 
 
-fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit {
+public fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit {
     val mySize = bounds.useContents { size.local }
     debugPrint { "frameLayoutLayoutSubviews ${mySize}" }
     val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
@@ -65,7 +65,7 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>, anchor: Pair<PopoverPreferredDirection, UIView>) {
+public fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>, anchor: Pair<PopoverPreferredDirection, UIView>) {
     val mySize = bounds.useContents { size.local }
     val frameLayout = this
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
@@ -100,7 +100,7 @@ fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<S
 }
 
 private fun UIView.toShortString() = this.toString().substringBefore(';').substringAfter('<')
-fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
+public fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
     if (hidden) return null
     if (extensionCollapsed == true) return null
     if (!pointInside(point, withEvent)) return null
@@ -159,7 +159,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
 }
 
 
-fun UIView.frameLayoutSizeThatFits(
+public fun UIView.frameLayoutSizeThatFits(
     size: CValue<CGSize>,
     childSizeCache: ArrayList<HashMap<Size, Size>>
 ): CValue<CGSize> {
@@ -217,29 +217,29 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
     }.also { t.cancel() }
 }
 
-fun UIView.frameLayoutSubviewDidChangeSizing(child: UIView?, childSizeCache: ArrayList<HashMap<Size, Size>>) {
+public fun UIView.frameLayoutSubviewDidChangeSizing(child: UIView?, childSizeCache: ArrayList<HashMap<Size, Size>>) {
     val it = child ?: return
     val index = subviews.indexOf(child)
     if (index != -1) childSizeCache[index].clear()
     informParentOfSizeChangeDueToChild()
 }
 
-fun UIView.frameLayoutDidAddSubview(subview: UIView, childSizeCache: ArrayList<HashMap<Size, Size>>) {
+public fun UIView.frameLayoutDidAddSubview(subview: UIView, childSizeCache: ArrayList<HashMap<Size, Size>>) {
     val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
     childSizeCache.add(index, HashMap())
 }
 
-fun UIView.frameLayoutWillRemoveSubview(subview: UIView, childSizeCache: ArrayList<HashMap<Size, Size>>) {
+public fun UIView.frameLayoutWillRemoveSubview(subview: UIView, childSizeCache: ArrayList<HashMap<Size, Size>>) {
     val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
     childSizeCache.removeAt(index)
 }
 
-data class Size(var width: Double = 0.0, var height: Double = 0.0) {
+public data class Size(var width: Double = 0.0, var height: Double = 0.0) {
 }
 
 
-val Size.objc get() = CGSizeMake(width, height)
-val CGSize.local get() = Size(width, height)
+public val Size.objc get() = CGSizeMake(width, height)
+public val CGSize.local get() = Size(width, height)
 
 
-val CValue<CGSize>.local get() = useContents { local }
+public val CValue<CGSize>.local get() = useContents { local }

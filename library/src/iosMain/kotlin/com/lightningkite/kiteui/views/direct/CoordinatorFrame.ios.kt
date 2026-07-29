@@ -20,7 +20,7 @@ import platform.objc.sel_registerName
 
 private var ElementContext.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon(null)
 
-actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val native = FrameLayout()
 
     // The system only keeps weak references to the following objects, so we must keep our own references for the
@@ -30,7 +30,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
     private var rightSwipeTarget: NSObject? = null
     private var rightSwipeRecognizer: UISwipeGestureRecognizer? = null
 
-    actual fun bottomSheet(
+    public actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
         draggable: Boolean,
@@ -105,7 +105,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         context.present(viewController)
     }
 
-    actual fun leftSlidingPanel(
+    public actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit,
@@ -145,7 +145,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         willRemove?.animateIn(transition.forward)
     }
 
-    actual fun rightSlidingPanel(
+    public actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit,
@@ -186,7 +186,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         willRemove?.animateIn(transition.forward)
     }
 
-    actual fun onLeftSwipe(action: suspend () -> Unit) {
+    public actual fun onLeftSwipe(action: suspend () -> Unit) {
         leftSwipeTarget = object : NSObject() {
             @ObjCAction
             fun handleLeftSwipe(sender: UISwipeGestureRecognizer) {
@@ -200,7 +200,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         native.userInteractionEnabled = true
     }
 
-    actual fun onRightSwipe(action: suspend () -> Unit) {
+    public actual fun onRightSwipe(action: suspend () -> Unit) {
         rightSwipeTarget = object : NSObject() {
             @ObjCAction
             fun handleRightSwipe(sender: UISwipeGestureRecognizer) {
@@ -216,7 +216,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     actual override val underlyingNativeElement: CoordinatorDragHandle get() = this
     override val native = FrameLayoutButton()
     override val control: UIControl get() = native

@@ -17,14 +17,14 @@ import kotlin.coroutines.resume
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-actual class SoundEffectPool actual constructor(concurrency: Int) {
+public actual class SoundEffectPool actual constructor(concurrency: Int) {
 
     private val loadedMap = HashMap<AudioSource, Deferred<Int>>()
     private val soundPool = SoundPool.Builder().apply {
         setMaxStreams(concurrency)
     }.build()
 
-    actual suspend fun preload(sound: AudioSource) {
+    public actual suspend fun preload(sound: AudioSource) {
         preloadInternal(sound)
     }
 
@@ -48,7 +48,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
         }.await()
     }
 
-    actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
+    public actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
         val streamId = soundPool.play(preloadInternal(sound), 1.0f, 1.0f, 0, 0, 1.0f)
         return object : PlayingSoundEffect {
             override var volume: Float = 1f
@@ -73,7 +73,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
         }
     }
 
-    actual fun unload(sound: AudioSource) {
+    public actual fun unload(sound: AudioSource) {
         AppScope.launch {
             loadedMap[sound]?.await()?.let {
                 soundPool.unload(it)
@@ -83,7 +83,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
 }
 
 private val runningMediaPlayers = ArrayList<MediaPlayer>()
-actual suspend fun AudioSource.load(): PlayableAudio {
+public actual suspend fun AudioSource.load(): PlayableAudio {
     val player = MediaPlayer()
     var toClose: Closeable? = null
     when (this) {

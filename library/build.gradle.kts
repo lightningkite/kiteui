@@ -31,7 +31,7 @@ dokka {
 
 kotlin {
     applyDefaultHierarchyTemplate()
-//    explicitApi()
+    explicitApiWarning()  // api-cleanup: flip to explicitApi() (strict) once the migration lands
 
     androidTarget {
         publishLibraryVariants("release")

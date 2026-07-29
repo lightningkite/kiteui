@@ -186,7 +186,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
  * @see ContainerElement for the public interface
  * @see NativeElement for the base element class
  */
-expect abstract class NativeContainerElement(context: ElementContext) : ContainerElement, NativeContainerElementCommonCode {
+public expect abstract class NativeContainerElement(context: ElementContext) : ContainerElement, NativeContainerElementCommonCode {
     /**
      * Adds a child element to the native view hierarchy at the specified index.
      *
@@ -364,7 +364,7 @@ expect abstract class NativeContainerElement(context: ElementContext) : Containe
  * @see ContainerElement for the public interface
  * @see NativeElement for the base element class
  */
-abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context), ContainerElement {
+public abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context), ContainerElement {
     override val underlyingNativeElement: NativeContainerElement get() = this as NativeContainerElement
 
     // --- CHILDREN ---

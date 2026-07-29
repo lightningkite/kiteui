@@ -15,7 +15,7 @@ import platform.objc.sel_registerName
 
 
 @ViewModifierDsl3
-actual fun ElementWriter.hasPopover(
+public actual fun ElementWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit

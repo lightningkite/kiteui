@@ -23,9 +23,9 @@ import platform.UIKit.*
 import platform.darwin.sel_registerName
 
 
-actual class DismissBackground actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class DismissBackground actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val native = NDismissBackground()
-    actual fun onClick(action: suspend () -> Unit) {
+    public actual fun onClick(action: suspend () -> Unit) {
         native.onClick = {
             launch { action() }
         }
@@ -51,13 +51,13 @@ actual class DismissBackground actual constructor(context: ElementContext) : Nat
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 
-actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
+public actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
     UIViewWithSizeOverridesProtocol,
     UIViewWithSpacingRulesProtocol {
 
-    var onClick: () -> Unit = {}
-    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
-    var anchor: Pair<PopoverPreferredDirection, UIView>? = null
+    public var onClick: () -> Unit = {}
+    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    public var anchor: Pair<PopoverPreferredDirection, UIView>? = null
     override fun getSpacingOverrideProperty() = spacingOverride
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
@@ -127,7 +127,7 @@ actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
     }
 
     @ObjCAction
-    fun onclick() {
+    public fun onclick() {
         onClick()
     }
 }

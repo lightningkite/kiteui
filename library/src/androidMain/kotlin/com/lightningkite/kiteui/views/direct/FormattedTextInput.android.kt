@@ -16,7 +16,7 @@ import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
-actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
     override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
 
@@ -72,11 +72,11 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
 
     private var isRawData: (Char) -> Boolean = { true }
     private var formatter: (clean: String) -> String = { it }
-    actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
+    public actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
         this.isRawData = isRawData
         this.formatter = formatter
     }
-    actual val content: MutableReactiveValue<String> = native.contentProperty().lens(
+    public actual val content: MutableReactiveValue<String> = native.contentProperty().lens(
         get = { it.filter(isRawData) },
         set = { formatter(it.filter(isRawData)) }
     )
@@ -102,7 +102,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         }
     }
 
-    actual var keyboardHints: KeyboardHints
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -120,7 +120,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         }
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
@@ -130,7 +130,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
     private var _align: Align? = null
     private var _fontAndStyle: FontAndStyle? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value

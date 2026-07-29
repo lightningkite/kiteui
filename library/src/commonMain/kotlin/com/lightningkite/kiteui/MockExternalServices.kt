@@ -22,33 +22,33 @@ import kotlinx.datetime.TimeZone
  * }
  * ```
  */
-class MockExternalServices(
+public class MockExternalServices(
     private val delegate: ExternalServicesAccess? = null
 ) : ExternalServicesAccess {
 
     // --- Queued responses (FIFO) ---
     // by Claude - single queue for all file-related requests (picker, capture, multi-file)
-    val pendingFileResponses = ArrayDeque<FileReference?>()
-    val pendingGeolocation = ArrayDeque<GeolocationResult>()
+    public val pendingFileResponses = ArrayDeque<FileReference?>()
+    public val pendingGeolocation = ArrayDeque<GeolocationResult>()
 
     // --- Recorded calls ---
-    sealed class Call {
-        data class OpenLink(val url: String, val newTab: Boolean) : Call()
-        data class OpenMap(val latitude: Double, val longitude: Double, val label: String?, val zoom: Float?) : Call()
-        data class RequestFile(val mimeTypes: List<String>) : Call()
-        data class RequestFiles(val mimeTypes: List<String>) : Call()
-        data class RequestCaptureSelf(val mimeTypes: List<String>) : Call()
-        data class RequestCaptureEnvironment(val mimeTypes: List<String>) : Call()
-        data class SetClipboardText(val text: String) : Call()
-        data class ShareBlobs(val names: List<String>) : Call()
-        data class ShareText(val title: String, val message: String?, val url: String?) : Call()
-        data class OpenEvent(val title: String) : Call()
-        data class DownloadBlob(val name: String) : Call()
-        data class DownloadUrl(val name: String, val url: String) : Call()
-        data class GetCurrentPosition(val result: GeolocationResult?) : Call()
+    public sealed class Call {
+        public data class OpenLink(val url: String, val newTab: Boolean) : Call()
+        public data class OpenMap(val latitude: Double, val longitude: Double, val label: String?, val zoom: Float?) : Call()
+        public data class RequestFile(val mimeTypes: List<String>) : Call()
+        public data class RequestFiles(val mimeTypes: List<String>) : Call()
+        public data class RequestCaptureSelf(val mimeTypes: List<String>) : Call()
+        public data class RequestCaptureEnvironment(val mimeTypes: List<String>) : Call()
+        public data class SetClipboardText(val text: String) : Call()
+        public data class ShareBlobs(val names: List<String>) : Call()
+        public data class ShareText(val title: String, val message: String?, val url: String?) : Call()
+        public data class OpenEvent(val title: String) : Call()
+        public data class DownloadBlob(val name: String) : Call()
+        public data class DownloadUrl(val name: String, val url: String) : Call()
+        public data class GetCurrentPosition(val result: GeolocationResult?) : Call()
     }
 
-    val calls = mutableListOf<Call>()
+    public val calls = mutableListOf<Call>()
 
     // --- ExternalLinksAccess ---
 

@@ -19,13 +19,13 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import kotlin.math.abs
 
-class ScrollView(
+public class ScrollView(
     context: ElementContext,
     override val horizontal: Boolean,
     override val vertical: Boolean
 ) : NativeContainerElement(context), ScrollingBehaviors {
     override val native = FrameLayout()
-    val scroller = ScrollLayout()
+    public val scroller = ScrollLayout()
     init { native.addSubview(scroller) }
 
     private var scrollCalcOngoing = false

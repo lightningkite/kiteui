@@ -32,7 +32,7 @@ import kotlin.coroutines.resume
 private val logger = LogRoot.tag("ExternalServices")
 private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
-class AndroidExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
+public class AndroidExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
 
     override fun openLink(url: String, newTab: Boolean) {
         AndroidAppContext.activityCtx?.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
@@ -234,7 +234,7 @@ class AndroidExternalServices(private val ctx: ElementContext) : ExternalService
     }
 }
 
-actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = AndroidExternalServices(context)
+public actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = AndroidExternalServices(context)
 
 private suspend fun requestImageCamera(
     front: Boolean = false,

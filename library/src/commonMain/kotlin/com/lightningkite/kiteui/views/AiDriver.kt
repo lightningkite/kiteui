@@ -20,10 +20,10 @@ import kotlin.io.encoding.ExperimentalEncodingApi
  * AI Driver client — connects to a relay server via WebSocket and handles text commands.
  * Each command is a plain string; the response is a plain string sent back on the same socket.
  */
-object AiDriver {
+public object AiDriver {
     private val log = LogRoot.tag("AiDriver")
 
-    fun connect(
+    public fun connect(
         appName: String,
         platform: String = Platform.current.name.lowercase(),
         postfix: String? = buildString {
@@ -77,8 +77,8 @@ object AiDriver {
         ws.beginUse()
     }
 
-    object Defaults {
-        fun defaultDriverActions(element: Element): Map<String, suspend (List<String>) -> String> = buildMap {
+    public object Defaults {
+        public fun defaultDriverActions(element: Element): Map<String, suspend (List<String>) -> String> = buildMap {
             put("snapshot") { args -> element.driverSnapshot(parseSnapshotOptions(args.toTypedArray())) }
             put("screenshot") { element.driverScreenshot() }
             put("find") { args -> element.driverFind(args.firstOrNull() ?: "", args.contains("--hidden")) }
@@ -114,7 +114,7 @@ object AiDriver {
             }
         }
 
-        fun defaultDriverDisplay(element: Element, options: Element.DriverSnapshotOptions): String = buildString {
+        public fun defaultDriverDisplay(element: Element, options: Element.DriverSnapshotOptions): String = buildString {
             val name = element.debugName
             if (name != null) {
                 append("$name: ")
@@ -142,7 +142,7 @@ object AiDriver {
  * Lazily installs a [MockExternalServices] on the root view's [RContext], wrapping the existing
  * external services as a delegate. Returns the mock instance. Subsequent calls return the same instance.
  */
-fun ensureMockExternalServices(root: Element): MockExternalServices {
+public fun ensureMockExternalServices(root: Element): MockExternalServices {
     val existing = root.context.externalServices
     if (existing is MockExternalServices) return existing
     val mock = MockExternalServices(delegate = existing)
@@ -151,7 +151,7 @@ fun ensureMockExternalServices(root: Element): MockExternalServices {
 }
 
 @OptIn(ExperimentalEncodingApi::class)
-suspend fun handleCommand(command: String, root: Element?, navigator: PageNavigator?): String {
+public suspend fun handleCommand(command: String, root: Element?, navigator: PageNavigator?): String {
     if (command.isBlank()) throw DriverActionException("empty command")
 
     val parts = command.split('\t')

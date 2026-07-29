@@ -32,15 +32,15 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.max
 
-abstract class KiteUiActivity : AppCompatActivity() {
-    open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
-    var savedInstanceState: Bundle? = null
+public abstract class KiteUiActivity : AppCompatActivity() {
+    public open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
+    public var savedInstanceState: Bundle? = null
 
-    abstract val mainNavigator : PageNavigator
+    public abstract val mainNavigator : PageNavigator
 
-    lateinit var root: Element
+    public lateinit var root: Element
     private val safeInsetsProperty = Signal(Edges.ZERO)
-    val viewWriter: ViewWriter = object: ViewWriter, CoroutineScope by this.lifecycleScope {
+    public val viewWriter: ViewWriter = object: ViewWriter, CoroutineScope by this.lifecycleScope {
         override val context: ElementContext = ElementContext(this@KiteUiActivity)
         init {
             context.safeInsets = safeInsetsProperty
@@ -114,10 +114,10 @@ abstract class KiteUiActivity : AppCompatActivity() {
 
     private var currentNum = 0
     private val onResults = HashMap<Int, (Int, Intent?)->Unit>()
-    fun cancelOnResult(requestCode: Int) {
+    public fun cancelOnResult(requestCode: Int) {
         onResults.remove(requestCode)
     }
-    fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit): Int {
+    public fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit): Int {
         val requestCode = currentNum++
         onResults[requestCode] = onResult
         ActivityCompat.startActivityForResult(this, intent, requestCode, options)
@@ -130,13 +130,13 @@ abstract class KiteUiActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
     private val onPermissions = HashMap<Int, (PermissionResult)->Unit>()
-    fun cancelOnPermissions(requestCode: Int) {
+    public fun cancelOnPermissions(requestCode: Int) {
         onPermissions.remove(requestCode)
     }
-    data class PermissionResult(val map: Map<String, Int>) {
+    public data class PermissionResult(val map: Map<String, Int>) {
         val accepted: Boolean get() = map.values.all { it == PackageManager.PERMISSION_GRANTED }
     }
-    fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit): Int {
+    public fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit): Int {
         val ungranted = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }

@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class Switch actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Switch actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
     override val driverActions get() = super.driverActions + switchDriverActions()
 
@@ -16,7 +16,7 @@ actual class Switch actual constructor(context: ElementContext) : NativeInteract
         native.classes.add("checkResponsive")
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = native.vprop(
+    public actual val checked: MutableReactiveValue<Boolean> = native.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value }

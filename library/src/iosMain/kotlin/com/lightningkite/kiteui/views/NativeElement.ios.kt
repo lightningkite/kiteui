@@ -58,11 +58,11 @@ import kotlin.math.sin
 import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
 
-actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
-    abstract val native: UIView
+public actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
+    public abstract val native: UIView
     protected open val addChildTarget: UIView get() = native
 
-    var tag: Any? = null
+    public var tag: Any? = null
 
     // --- ACCESSIBILITY ---
 
@@ -111,7 +111,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
 
     /** Posts a screen-changed notification if this element is marked as a live region. */
-    fun postLiveRegionNotificationIfNeeded() {
+    public fun postLiveRegionNotificationIfNeeded() {
         if (accessibleLiveRegion != LiveRegionMode.None) {
             UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, native)
         }
@@ -119,7 +119,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
 
     actual override var showOnPrint: Boolean = true
 
-    var sizeConstraints: SizeConstraints?
+    public var sizeConstraints: SizeConstraints?
         get() = native.extensionSizeConstraints
         set(value) {
             native.extensionSizeConstraints = value
@@ -177,7 +177,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         native.informParentOfSizeChange()
     }
 
-    actual fun screenRectangle(): Rect? {
+    public actual fun screenRectangle(): Rect? {
         val windowView = native.window?.rootViewController?.view ?: return null
         val parent = native.superview ?: return null
         return windowView.convertRect(native.frame, fromView = parent).useContents {
@@ -190,7 +190,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
-    actual fun parentRectangle(): Rect? {
+    public actual fun parentRectangle(): Rect? {
         return native.frame.useContents {
             Rect(
                 left = (origin.x),
@@ -234,9 +234,9 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
      */
     protected open val disableBackground = false
 
-    class BlurBackgroundView : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
+    public class BlurBackgroundView : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
 
-    var effectBackground: BlurBackgroundView? = null
+    public var effectBackground: BlurBackgroundView? = null
 
     actual override fun nativeApplyTheme(theme: ThemeAndBack) {
         native.clipsToBounds = theme.drawBackground
@@ -512,9 +512,9 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     }
 
 
-    var dropInteraction: UIDropInteraction? = null
-    var dropInteractionDelegate: DropInteractionDelegate? = null
-    var scrollViewDropInteraction: UIDropInteraction? = null
+    public var dropInteraction: UIDropInteraction? = null
+    public var dropInteractionDelegate: DropInteractionDelegate? = null
+    public var scrollViewDropInteraction: UIDropInteraction? = null
 
     actual override var dropTargetDelegate: DropTargetDelegate? = null
         set(value) {
@@ -536,7 +536,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
 
     // A private delegate class to handle drop events
-    class DropInteractionDelegate(view: Element) : NSObject(), UIDropInteractionDelegateProtocol {
+    public class DropInteractionDelegate(view: Element) : NSObject(), UIDropInteractionDelegateProtocol {
         @OptIn(ExperimentalNativeApi::class)
         private val owner = WeakReference(view)
 
@@ -598,6 +598,6 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     }
 }
 
-val Element.native: UIView get() = underlyingNativeElement.native
+public val Element.native: UIView get() = underlyingNativeElement.native
 
 

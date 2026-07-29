@@ -20,13 +20,13 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 
-object AndroidAppContext {
-    lateinit var applicationCtx: Context
-    val res: Resources by lazy { applicationCtx.resources }
-    val density: Float by lazy { res.displayMetrics.density }
-    val oneRem: Float by lazy { density * 14 }
-    var autoCompleteLayoutResource: Int = android.R.layout.simple_list_item_1
-    val ktorClient: HttpClient by lazy {
+public object AndroidAppContext {
+    public lateinit var applicationCtx: Context
+    public val res: Resources by lazy { applicationCtx.resources }
+    public val density: Float by lazy { res.displayMetrics.density }
+    public val oneRem: Float by lazy { density * 14 }
+    public var autoCompleteLayoutResource: Int = android.R.layout.simple_list_item_1
+    public val ktorClient: HttpClient by lazy {
         HttpClient(OkHttp) {
             install(WebSockets)
             install(UserAgent) {
@@ -42,11 +42,11 @@ object AndroidAppContext {
             }
         }
     }
-    var activityCtxRef: WeakReference<KiteUiActivity>? = null
-    var activityCtx: KiteUiActivity?
+    public var activityCtxRef: WeakReference<KiteUiActivity>? = null
+    public var activityCtx: KiteUiActivity?
         get() = activityCtxRef?.get()
         set(value) { activityCtxRef = WeakReference(value) }
-    val executor by lazy {
+    public val executor by lazy {
         ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, ArrayBlockingQueue(10))
     }
 
@@ -55,11 +55,11 @@ object AndroidAppContext {
      * provider set as follows, based on the Android package name. The file provider is used in the implementation of
      * several ExternalServices and is referenced using this authority string.
      */
-    val fileProviderAuthority: String get() = applicationCtx.packageName + ".fileprovider"
+    public val fileProviderAuthority: String get() = applicationCtx.packageName + ".fileprovider"
 
-    fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
-    fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
-    suspend fun requestPermissions(vararg permissions: String): KiteUiActivity.PermissionResult = suspendCancellableCoroutine { continuation ->
+    public fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
+    public fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
+    public suspend fun requestPermissions(vararg permissions: String): KiteUiActivity.PermissionResult = suspendCancellableCoroutine { continuation ->
         val code = requestPermissions(*permissions) {
             continuation.resume(it)
         }

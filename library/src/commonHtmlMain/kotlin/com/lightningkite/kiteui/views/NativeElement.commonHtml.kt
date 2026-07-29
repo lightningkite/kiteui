@@ -12,8 +12,8 @@ import com.lightningkite.kiteui.models.DropTargetDelegate
 
 private var labelForIdCounter = 0
 
-actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
-    var native = FutureElement().also { it.classes.add("kui") }
+public actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
+    public var native = FutureElement().also { it.classes.add("kui") }
 
     actual override var opacity: Double = 1.0
         set(value) {
@@ -151,11 +151,11 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
-    actual fun screenRectangle(): Rect? {
+    public actual fun screenRectangle(): Rect? {
         return native.screenRectangle()
     }
 
-    actual fun parentRectangle(): Rect? {
+    public actual fun parentRectangle(): Rect? {
         return native.parentRectangle()
     }
 
@@ -206,49 +206,49 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
 
 // TODO: transform this to point to the _STYLE PARTICIPATING_ element, not necessarily the direct element
 // That's what we're using it for in every case it's used...
-val Element.native: FutureElement get() = underlyingNativeElement.native
+public val Element.native: FutureElement get() = underlyingNativeElement.native
 
-expect class FutureElementStyle
-expect class FutureElementAttributes
+public expect class FutureElementStyle
+public expect class FutureElementAttributes
 
-expect class FutureElement {
-    constructor()
+public expect class FutureElement {
+    public constructor()
 
-    val actualElementForLeakTracking: Any?
-    var xmlns: String?
-    var tag: String
-    val attributes: FutureElementAttributes
-    val style: FutureElementStyle
-    var desiredVerticalGravity: Align?
-    var desiredHorizontalGravity: Align?
-    fun setAttribute(key: String, value: String?)
-    fun setStyleProperty(key: String, value: String?)
-    inline fun addEventListener(name: String, crossinline listener: (Event) -> Unit)
-    inline fun replaceEventListener(name: String, crossinline listener: (Event) -> Unit)
-    var classes: MutableSet<String>
-    inline fun flushClasses()
-    var id: String?
-    var content: String?
-    var innerHtmlUnsafe: String?
-    val children: List<FutureElement>
-    fun appendChild(element: FutureElement)
-    fun appendChild(index: Int, element: FutureElement)
-    fun removeChild(index: Int)
-    fun clearChildren()
-    fun click()
-    fun focus()
-    fun blur()
-    fun screenRectangle(): Rect?
-    fun parentRectangle(): Rect?
+    public val actualElementForLeakTracking: Any?
+    public var xmlns: String?
+    public var tag: String
+    public val attributes: FutureElementAttributes
+    public val style: FutureElementStyle
+    public var desiredVerticalGravity: Align?
+    public var desiredHorizontalGravity: Align?
+    public fun setAttribute(key: String, value: String?)
+    public fun setStyleProperty(key: String, value: String?)
+    public inline fun addEventListener(name: String, crossinline listener: (Event) -> Unit)
+    public inline fun replaceEventListener(name: String, crossinline listener: (Event) -> Unit)
+    public var classes: MutableSet<String>
+    public inline fun flushClasses()
+    public var id: String?
+    public var content: String?
+    public var innerHtmlUnsafe: String?
+    public val children: List<FutureElement>
+    public fun appendChild(element: FutureElement)
+    public fun appendChild(index: Int, element: FutureElement)
+    public fun removeChild(index: Int)
+    public fun clearChildren()
+    public fun click()
+    public fun focus()
+    public fun blur()
+    public fun screenRectangle(): Rect?
+    public fun parentRectangle(): Rect?
 }
 
-typealias HtmlElementLike = FutureElement
+public typealias HtmlElementLike = FutureElement
 
-expect fun NativeElement.nativeScrollIntoView(
+public expect fun NativeElement.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,
     animate: Boolean
 )
 
-expect fun NativeElement.nativeSetDragData(data: DragData?)
-expect fun NativeElement.nativeOnDrop(listener: DropTargetDelegate?)
+public expect fun NativeElement.nativeSetDragData(data: DragData?)
+public expect fun NativeElement.nativeOnDrop(listener: DropTargetDelegate?)

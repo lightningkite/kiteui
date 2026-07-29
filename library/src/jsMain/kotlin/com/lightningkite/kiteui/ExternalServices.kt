@@ -18,7 +18,7 @@ import kotlin.js.json
 
 // by Claude
 
-class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
+public class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
 
     override fun openLink(url: String, newTab: Boolean) {
         window.open(url, if (newTab) "_blank" else "_self")
@@ -141,7 +141,7 @@ class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAcce
     }
 }
 
-actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = JsExternalServices(context)
+public actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = JsExternalServices(context)
 
 private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
@@ -151,7 +151,7 @@ private fun removeFileInput() {
     lastFileInput = null
 }
 
-suspend fun ElementContext.requestFileInput(
+public suspend fun ElementContext.requestFileInput(
     mimeTypes: List<String>,
     setup: HTMLInputElement.() -> Unit
 ): List<FileReference> = suspendCancellableCoroutine {

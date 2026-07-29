@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui.dom
 
-sealed interface MPNode {
-    fun secure()
+public sealed interface MPNode {
+    public fun secure()
 
-    companion object {
-        val okTags = setOf(
+    public companion object {
+        public val okTags = setOf(
             "p",
             "ul",
             "li",
@@ -36,13 +36,13 @@ sealed interface MPNode {
             "h6",
             "br",
         )
-        val okAttrs = setOf(
+        public val okAttrs = setOf(
             "href",
             "target",
         )
     }
 
-    data class Element(
+    public data class Element(
         var tagName: String,
         val attributes: MutableMap<String, String> = HashMap(),
         val children: MutableList<MPNode> = ArrayList()
@@ -61,13 +61,13 @@ sealed interface MPNode {
         }
     }
 
-    data class Text(val content: String) : MPNode {
+    public data class Text(val content: String) : MPNode {
         override fun toString(): String = content
         override fun secure() {}
     }
 }
 
-fun String.parseMPNodes(): List<MPNode> {
+public fun String.parseMPNodes(): List<MPNode> {
     val stack = arrayListOf(MPNode.Element("*"))
     starts(
         onTag = {

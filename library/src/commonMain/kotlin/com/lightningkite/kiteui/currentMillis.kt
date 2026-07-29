@@ -1,3 +1,3 @@
 package com.lightningkite.kiteui
 
-expect fun clockMillis(): Double
+public expect fun clockMillis(): Double

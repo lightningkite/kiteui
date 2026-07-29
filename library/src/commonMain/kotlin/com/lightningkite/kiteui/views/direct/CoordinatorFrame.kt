@@ -9,8 +9,8 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.core.*
 
 
-expect class CoordinatorFrame(context: ElementContext) : NativeContainerElement {
-    fun bottomSheet(
+public expect class CoordinatorFrame(context: ElementContext) : NativeContainerElement {
+    public fun bottomSheet(
         peekSize: Dimension? = null,
         partialRatio: Float = 0.5f,
         draggable: Boolean = true,
@@ -19,36 +19,36 @@ expect class CoordinatorFrame(context: ElementContext) : NativeContainerElement 
         blockBehind: Boolean = false,
         content: ElementWriter.CanAddShownWhen.(control: BottomSheetControl) -> Unit
     )
-    fun leftSlidingPanel(
+    public fun leftSlidingPanel(
         ratio: Float? = null,
         blockBehind: Boolean = false,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
     )
-    fun rightSlidingPanel(
+    public fun rightSlidingPanel(
         ratio: Float? = null,
         blockBehind: Boolean = false,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
     )
-    fun onLeftSwipe(action: suspend () -> Unit)
-    fun onRightSwipe(action: suspend () -> Unit)
+    public fun onLeftSwipe(action: suspend () -> Unit)
+    public fun onRightSwipe(action: suspend () -> Unit)
 }
 
-enum class BottomSheetState {
+public enum class BottomSheetState {
     EXPANDED,
     PARTIALLY_EXPANDED,
     COLLAPSED
 }
 
-interface BottomSheetControl {
-    val state: MutableReactive<BottomSheetState>
-    fun close()
+public interface BottomSheetControl {
+    public val state: MutableReactive<BottomSheetState>
+    public fun close()
 }
 
-interface SlidingPanelControl {
-    fun close()
+public interface SlidingPanelControl {
+    public fun close()
 }
 
-expect class CoordinatorDragHandle(context: ElementContext): NativeElement {
+public expect class CoordinatorDragHandle(context: ElementContext): NativeElement {
     override val underlyingNativeElement: CoordinatorDragHandle     // this is necessary, I promise. You can try to get rid of it if you want, but you won't be able to.
 }
 

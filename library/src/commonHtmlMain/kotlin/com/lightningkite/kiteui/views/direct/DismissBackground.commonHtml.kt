@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalKiteUi::class)
-actual class DismissBackground actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class DismissBackground actual constructor(context: ElementContext) : NativeContainerElement(context) {
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")
@@ -23,7 +23,7 @@ actual class DismissBackground actual constructor(context: ElementContext) : Nat
         element.native.addEventListener("click") { ev -> ev.stopImmediatePropagation() }
     }
 
-    actual fun onClick(action: suspend () -> Unit) {
+    public actual fun onClick(action: suspend () -> Unit) {
         native.replaceEventListener("click") { launch { action() } }
     }
 

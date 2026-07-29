@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 
 
-actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     actual override val underlyingNativeElement: Checkbox get() = this
 
     override val driverValue: String? get() = checkboxDriverValue()
@@ -19,7 +19,7 @@ actual class Checkbox actual constructor(context: ElementContext) : NativeIntera
         native.classes.add("clickable")
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = native.vprop(
+    public actual val checked: MutableReactiveValue<Boolean> = native.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value }
