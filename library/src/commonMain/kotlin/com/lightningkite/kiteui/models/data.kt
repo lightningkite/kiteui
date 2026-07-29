@@ -502,23 +502,15 @@ data class ImageRemote(
     val url: String,
     val cacheStrategy: UrlCacheStrategy
 ) : ImageSource() {
-    // Binary compatibility: preserves the old single-argument constructor
+    // Binary compatibility
     constructor(url: String) : this(url, UrlCacheStrategy.Full)
+    fun copy(url: String): ImageRemote = ImageRemote(url, cacheStrategy)
 
-    // Key used for equality/display decisions — controls whether the image view reloads
-    val displayKey: String get() = when (cacheStrategy) {
+    /** Identifies the image data for the platform's bitmap cache, per [cacheStrategy]. */
+    val cacheKey: String get() = when (cacheStrategy) {
         UrlCacheStrategy.PathOnly -> url.substringBefore('?')
         else -> url
     }
-    // Binary compatibility: preserves the old data-class-generated copy(String) overload
-    fun copy(url: String): ImageRemote = ImageRemote(url, cacheStrategy)
-
-    override fun hashCode(): Int = displayKey.hashCode()
-    override fun equals(other: Any?): Boolean {
-        if (other !is ImageRemote) return false
-        return displayKey == other.displayKey
-    }
-    override fun toString(): String = "ImageRemote($url)"
 }
 
 data class ImageRaw(val data: Blob) : ImageSource()
@@ -839,6 +831,17 @@ fun ExpandingNavSpace() = NavCustom(
 
 
 enum class ImageScaleType { Fit, Crop, Stretch, NoScale }
+/**
+ * How much of an [ImageRemote]'s URL identifies the image being shown.
+ *
+ * When a view is given a new [ImageRemote], this decides whether the picture actually changed and
+ * the image must be re-downloaded, or whether the already displayed one still shows the same thing.
+ *
+ * - [Full]: the whole URL identifies the image.  Any difference means a reload.
+ * - [PathOnly]: the query string is only there to authorize the request (a rotating signature or
+ *   token), so URLs sharing a path show the same picture and a rotated signature causes no reload.
+ * - [None]: the URL says nothing about the image, so every assignment re-renders.
+ */
 enum class UrlCacheStrategy { None, Full, PathOnly }
 
 expect class DimensionRaw

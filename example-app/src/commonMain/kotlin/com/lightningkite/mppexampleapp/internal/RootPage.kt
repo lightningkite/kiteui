@@ -113,6 +113,7 @@ object RootPage : Page {
 
                 sectionLabel("Media")
                 linkPage { ImageTestPage }
+                linkPage { ImageReloadTestPage }
                 linkPage { VideoElementPage }
                 linkPage { AudioPage }
                 linkPage { AudioTestPage }

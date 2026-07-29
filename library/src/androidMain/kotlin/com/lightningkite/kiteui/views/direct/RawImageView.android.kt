@@ -406,7 +406,7 @@ actual typealias ZoomState = Matrix
 // Returns a GlideUrl whose disk-cache key respects the ImageRemote's cacheStrategy.
 // PathOnly strips query parameters so that rotating S3 signatures don't cause cache misses.
 private fun glideUrl(value: ImageRemote): GlideUrl = object : GlideUrl(value.url) {
-    override fun getCacheKey(): String = value.displayKey
+    override fun getCacheKey(): String = value.cacheKey
 }
 
 // Bypass Glide for ImageRaw to avoid bitmap pooling/recycling issues.

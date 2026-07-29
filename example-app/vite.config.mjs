@@ -8,9 +8,11 @@ export default defineConfig({
         allowedHosts: ["localhost:8000"],
         // Enables crossOriginIsolated so performance.measureUserAgentSpecificMemory()
         // is available for GC-accurate, per-type memory measurement (leak investigation).
+        // "credentialless" rather than "require-corp" so that cross-origin images without a CORP
+        // header (the picsum.photos ones the example pages use) still load in development.
         headers: {
             "Cross-Origin-Opener-Policy": "same-origin",
-            "Cross-Origin-Embedder-Policy": "require-corp",
+            "Cross-Origin-Embedder-Policy": "credentialless",
         },
     },
 })

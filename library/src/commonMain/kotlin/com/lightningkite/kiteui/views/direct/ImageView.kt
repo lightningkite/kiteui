@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.ImageRemote
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.ThemeDerivation
+import com.lightningkite.kiteui.models.UrlCacheStrategy
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementCommonCode
@@ -74,7 +75,10 @@ class ImageView(private val frame: Frame) : Element by frame {
     }
 
     private var lastRendered: Info? = null
-    private var lastRender: List<RawImageView>? = null
+
+    /** The views currently showing [lastRendered].  Internal so tests can see what got rendered. */
+    internal var lastRender: List<RawImageView>? = null
+        private set
 
     @OptIn(ExperimentalKiteUi::class)
     fun refresh() {
@@ -82,7 +86,7 @@ class ImageView(private val frame: Frame) : Element by frame {
 
         val info = info
 
-        if (lastRendered == info) return
+        if (showsSameAs(lastRendered, info)) return
 
         lastRender?.forEach {
             if (areAnimationsEnabled) {
@@ -117,28 +121,24 @@ class ImageView(private val frame: Frame) : Element by frame {
                     this@rawImage.state.state().handle(
                         success = {
                             opacity = 1.0
-                            if (view.lastRendered == info) {
+                            if (view.lastRendered === info) {
                                 view._shownInfo.state = ReactiveState(info)
                             }
                         },
                         exception = {
-                            if (view.lastRendered == info) {
+                            if (view.lastRendered === info) {
                                 val latestInfo = view.info
-                                // If a fresher URL is available for any source (same path, rotated
-                                // signature), retry silently rather than surfacing the error.
-                                val hasFresherUrl = latestInfo != null &&
-                                    latestInfo.sources.size == info.sources.size &&
-                                    latestInfo.sources.zip(info.sources).any { (latest, current) ->
-                                        latest is ImageRemote && current is ImageRemote &&
-                                            latest.url != current.url
-                                    }
-                                if (hasFresherUrl) {
+                                if (latestInfo != null && latestInfo != info) {
+                                    // A newer source arrived that we skipped rendering because it
+                                    // showed the same image, but what's on screen failed to load -
+                                    // an expired signature, most likely.  Render the newer one.
                                     view.lastRendered = null
                                     view.refresh()
                                 } else {
                                     view._shownInfo.state = ReactiveState.exception(it)
+                                    // Nothing worth keeping is on screen, so let the next source
+                                    // assigned render even if it would otherwise show the same.
                                     view.lastRendered = null
-                                    if (view.info !== info) view.refresh()
                                 }
                             }
                         },
@@ -150,4 +150,28 @@ class ImageView(private val frame: Frame) : Element by frame {
     }
 
     @Deprecated("No longer needed", ReplaceWith("this")) val rView: Element get() = this
+
+    companion object {
+        /**
+         * Whether the views rendered for [rendered] already show [incoming], making a re-render
+         * (and thus a re-download and a fade) pointless.  See [UrlCacheStrategy].
+         */
+        private fun showsSameAs(rendered: Info?, incoming: Info?): Boolean {
+            if (rendered == null || incoming == null) return rendered == incoming
+            return rendered.scaleType == incoming.scaleType &&
+                    rendered.description == incoming.description &&
+                    rendered.sources.size == incoming.sources.size &&
+                    rendered.sources.indices.all { showsSameAs(rendered.sources[it], incoming.sources[it]) }
+        }
+
+        private fun showsSameAs(rendered: ImageSource, incoming: ImageSource): Boolean {
+            if (rendered !is ImageRemote || incoming !is ImageRemote) return rendered == incoming
+            if (rendered.cacheStrategy != incoming.cacheStrategy) return false
+            return when (rendered.cacheStrategy) {
+                UrlCacheStrategy.None -> false
+                UrlCacheStrategy.Full -> rendered.url == incoming.url
+                UrlCacheStrategy.PathOnly -> rendered.url.substringBefore('?') == incoming.url.substringBefore('?')
+            }
+        }
+    }
 }
