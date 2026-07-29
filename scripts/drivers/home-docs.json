@@ -1,9 +1,0 @@
-{
-  "url": "http://localhost:8000/",
-  "cycle": [
-    { "click": "Documentation" },
-    { "wait": 80 },
-    { "click": "Home" },
-    { "wait": 80 }
-  ]
-}
