@@ -775,43 +775,43 @@ private fun <T, ID : Any> ContainerElement.renderHeterogeneousListPositional(
 
 @InternalKiteUi
 @Deprecated("Use renderListSlowIn instead")
-fun <T> ContainerElement.forEach(
+public fun <T> ContainerElement.forEach(
     items: Reactive<List<T>>,
     beforeListModifier: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddListElementModifier.(T) -> Unit
-) = renderListExpensive(items, beforeListModifier, render)
+): Unit = renderListExpensive(items, beforeListModifier, render)
 
 @InternalKiteUi
 @Deprecated("Use renderListIn instead")
-fun <T> ContainerElement.forEachUpdating(
+public fun <T> ContainerElement.forEachUpdating(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     beforeListModifier: ViewWriter.() -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
-) = renderListPositional(items, placeholdersWhileLoading, 32, beforeListModifier, render)
+): Unit = renderListPositional(items, placeholdersWhileLoading, 32, beforeListModifier, render)
 
 @InternalKiteUi
 @Deprecated("Use renderListIn instead")
-fun <T, ID> RowOrCol.forEachById(
+public fun <T, ID> RowOrCol.forEachById(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     preHidingModifiers: ViewWriter.(ID) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
-) = renderListKeyedAnimated(items, id, { this }) { render(it) }
+): Unit = renderListKeyedAnimated(items, id, { this }) { render(it) }
 
 @InternalKiteUi
 @Deprecated("Use renderListIn instead")
-fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
+public fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     beforeListModifier: ViewWriter.() -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
-) = renderListKeyedNoAnimation(items, id, beforeListModifier, render)
+): Unit = renderListKeyedNoAnimation(items, id, beforeListModifier, render)
 
 @InternalKiteUi
 @Deprecated("Use renderListSlowIn instead")
-fun <T> RowOrCol.forEachAnimated(
+public fun <T> RowOrCol.forEachAnimated(
     items: Reactive<List<T>>,
     preHidingModifiers: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddTheme.(T) -> Unit
-) = renderListExpensiveAnimating(items, preHidingModifiers, render)
+): Unit = renderListExpensiveAnimating(items, preHidingModifiers, render)

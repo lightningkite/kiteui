@@ -27,7 +27,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 @InternalKiteUi
 @Deprecated("This will be marked as internal soon")
-fun <T, ID> ContainerElement.childrenLazyLoading(
+public fun <T, ID> ContainerElement.childrenLazyLoading(
     scroll: ScrollingBehaviors,
     items: Reactive<List<T>>,
     id: (T) -> ID,
@@ -68,7 +68,7 @@ fun <T, ID> ContainerElement.childrenLazyLoading(
     }
 }
 
-inline fun <T, ID, C : ContainerElement> ElementWriter.CanAddScrolling.renderLazyListIn(
+public inline fun <T, ID, C : ContainerElement> ElementWriter.CanAddScrolling.renderLazyListIn(
     container: ElementWriter.(C.() -> Unit) -> C,
     items: Reactive<List<T>>,
     noinline id: (T) -> ID,
@@ -103,7 +103,7 @@ inline fun <T, ID, C : ContainerElement> ElementWriter.CanAddScrolling.renderLaz
  * Creates a scrolling column that renders children with lazy loading.
  * Convenience wrapper around [childrenLazyLoading] that creates the scrolling container.
  */
-fun <T, ID> ElementWriter.CanAddScrolling.lazyColumn(
+public fun <T, ID> ElementWriter.CanAddScrolling.lazyColumn(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     threshold: Dimension = 20.rem,
@@ -122,7 +122,7 @@ fun <T, ID> ElementWriter.CanAddScrolling.lazyColumn(
  * Creates a scrolling row that renders children with lazy loading.
  * Convenience wrapper around [childrenLazyLoading] that creates the scrolling container.
  */
-fun <T, ID> ElementWriter.CanAddScrolling.lazyRow(
+public fun <T, ID> ElementWriter.CanAddScrolling.lazyRow(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     threshold: Dimension = 20.rem,

@@ -26,7 +26,7 @@ import com.lightningkite.reactive.core.Reactive
  * @see colOf for a col-specific convenience wrapper
  * @see rowOf for a row-specific convenience wrapper
  */
-inline fun <T, ID, C : ContainerElement> ElementWriter.renderListIn(
+public inline fun <T, ID, C : ContainerElement> ElementWriter.renderListIn(
     container: ElementWriter.(C.() -> Unit) -> C,
     items: Reactive<List<T>>,
     noinline id: (T) -> ID,
@@ -69,7 +69,7 @@ inline fun <T, ID, C : ContainerElement> ElementWriter.renderListIn(
  * @see colOf for a col-specific convenience wrapper
  * @see rowOf for a row-specific convenience wrapper
  */
-inline fun <T, C : ContainerElement> ElementWriter.renderListIn(
+public inline fun <T, C : ContainerElement> ElementWriter.renderListIn(
     container: ElementWriter.(C.() -> Unit) -> C,
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
@@ -138,7 +138,7 @@ inline fun <T, C : ContainerElement> ElementWriter.renderListIn(
  * @see rowOf for a row-specific convenience wrapper
  */
 @ViewDsl
-inline fun <T, ID : Any, C : ContainerElement> ElementWriter.renderListIn(
+public inline fun <T, ID : Any, C : ContainerElement> ElementWriter.renderListIn(
     container: ElementWriter.(C.() -> Unit) -> C,
     items: Reactive<List<T>>,
     rendererSet: RecyclerViewRendererSet<T, ID>,
@@ -183,7 +183,7 @@ inline fun <T, ID : Any, C : ContainerElement> ElementWriter.renderListIn(
  * @see colOfExpensive for a col-specific convenience wrapper
  * @see rowOfExpensive for a row-specific convenience wrapper
  */
-inline fun <T, C : ContainerElement> ElementWriter.renderListInExpensive(
+public inline fun <T, C : ContainerElement> ElementWriter.renderListInExpensive(
     container: ElementWriter.(C.() -> Unit) -> C,
     items: Reactive<List<T>>,
     animate: Boolean,
@@ -223,7 +223,7 @@ inline fun <T, C : ContainerElement> ElementWriter.renderListInExpensive(
  * @see colOfExpensive for a col-specific convenience wrapper
  * @see rowOfExpensive for a row-specific convenience wrapper
  */
-inline fun <T, C : ContainerElement> ElementWriter.renderListInExpensive(
+public inline fun <T, C : ContainerElement> ElementWriter.renderListInExpensive(
     container: ElementWriter.(C.() -> Unit) -> C,
     items: Reactive<List<T>>,
     noinline beforeModifier: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
@@ -268,7 +268,7 @@ inline fun <T, C : ContainerElement> ElementWriter.renderListInExpensive(
  * @param animate If true (default), animates entry/exit transitions
  * @return The created RowOrCol container
  */
-fun <T, ID> ElementWriter.colOf(
+public fun <T, ID> ElementWriter.colOf(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     animate: Boolean = true,
@@ -297,7 +297,7 @@ fun <T, ID> ElementWriter.colOf(
  * @param poolCap Maximum hidden views to retain beyond list size (default 32)
  * @return The created RowOrCol container
  */
-fun <T> ElementWriter.colOf(
+public fun <T> ElementWriter.colOf(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     poolCap: Int = 32,
@@ -319,7 +319,7 @@ fun <T> ElementWriter.colOf(
  * @param animate If true, animates entry/exit using object equality matching
  * @return The created RowOrCol container
  */
-fun <T> ElementWriter.colOfExpensive(
+public fun <T> ElementWriter.colOfExpensive(
     items: Reactive<List<T>>,
     animate: Boolean,
     beforeModifier: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
@@ -338,7 +338,7 @@ fun <T> ElementWriter.colOfExpensive(
  *
  * @return The created RowOrCol container
  */
-fun <T> ElementWriter.colOfExpensive(
+public fun <T> ElementWriter.colOfExpensive(
     items: Reactive<List<T>>,
     beforeModifier: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddListElementModifier.(T) -> Unit
@@ -377,7 +377,7 @@ fun <T> ElementWriter.colOfExpensive(
  * @return The created RowOrCol container
  */
 @ViewDsl
-fun <T, ID : Any> ElementWriter.colOf(
+public fun <T, ID : Any> ElementWriter.colOf(
     items: Reactive<List<T>>,
     rendererSet: RecyclerViewRendererSet<T, ID>,
     animate: Boolean = true,
@@ -407,7 +407,7 @@ fun <T, ID : Any> ElementWriter.colOf(
  * @param animate If true (default), animates entry/exit transitions
  * @return The created RowOrCol container
  */
-fun <T, ID> ElementWriter.rowOf(
+public fun <T, ID> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     animate: Boolean = true,
@@ -436,7 +436,7 @@ fun <T, ID> ElementWriter.rowOf(
  * @param poolCap Maximum hidden views to retain beyond list size (default 32)
  * @return The created RowOrCol container
  */
-fun <T> ElementWriter.rowOf(
+public fun <T> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     poolCap: Int = 32,
@@ -458,7 +458,7 @@ fun <T> ElementWriter.rowOf(
  * @param animate If true, animates entry/exit using object equality matching
  * @return The created RowOrCol container
  */
-fun <T> ElementWriter.rowOfExpensive(
+public fun <T> ElementWriter.rowOfExpensive(
     items: Reactive<List<T>>,
     animate: Boolean,
     beforeModifier: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
@@ -477,7 +477,7 @@ fun <T> ElementWriter.rowOfExpensive(
  *
  * @return The created RowOrCol container
  */
-fun <T> ElementWriter.rowOfExpensive(
+public fun <T> ElementWriter.rowOfExpensive(
     items: Reactive<List<T>>,
     beforeModifier: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddListElementModifier.(T) -> Unit
@@ -516,7 +516,7 @@ fun <T> ElementWriter.rowOfExpensive(
  * @return The created RowOrCol container
  */
 @ViewDsl
-fun <T, ID : Any> ElementWriter.rowOf(
+public fun <T, ID : Any> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     rendererSet: RecyclerViewRendererSet<T, ID>,
     animate: Boolean = true,

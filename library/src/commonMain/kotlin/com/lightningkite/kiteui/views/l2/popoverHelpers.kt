@@ -14,11 +14,11 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @ViewDsl
-fun ElementContext.toast(text: String, duration: Duration = 3.seconds) {
+public fun ElementContext.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) {
+public fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) {
     overlay(false) {
         atBottomCenter.col {
             withoutAnimation {
@@ -40,7 +40,7 @@ fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.
     }
 }
 
-fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddSizing.(close: ()->Unit) -> Unit) {
+public fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddSizing.(close: ()->Unit) -> Unit) {
     overlay(modal = true, navClosable = dismissable) { close ->
         dismissBackground {
             debugName = "dialog-bg"
@@ -54,7 +54,7 @@ fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.Ca
     }
 }
 
-fun ElementContext.rawPopover(
+public fun ElementContext.rawPopover(
     transition: ScreenTransitions,
     navClosable: Boolean = true,
     content: ViewWriter.() -> Unit

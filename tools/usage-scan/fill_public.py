@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Fill explicit `public` visibility at every 'Visibility must be specified' warning site.
+"""Fill explicit `public` visibility at every 'Visibility must be specified' compiler site.
 
-Reads a Kotlin compiler warning log (`w: file://PATH:LINE:COL Visibility must be specified...`)
-and inserts `public ` at each (line, col). Insertions are within a line and never add lines, so
-all other warning coordinates for the same file stay valid regardless of order.
+Reads a Kotlin compiler log (`w:`/`e: file://PATH:LINE:COL Visibility must be specified...`) and
+inserts `public ` at each (line, col). Both severities are accepted because the library is on
+strict `explicitApi()`, where these are errors; warning mode emits the same message as `w:`.
+Insertions are within a line and never add lines, so all other coordinates for the same file stay
+valid regardless of order.
 
 Modes:
   --check : report any site whose target column is not the start of an identifier/keyword/@,
@@ -12,7 +14,7 @@ Modes:
 """
 import re, sys, collections
 
-WARN_RE = re.compile(r"^w: file://([^:]+):(\d+):(\d+) Visibility must be specified")
+WARN_RE = re.compile(r"^[we]: file://([^:]+):(\d+):(\d+) Visibility must be specified")
 
 def parse(logpath):
     sites = collections.defaultdict(list)  # path -> list[(line,col)]

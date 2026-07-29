@@ -133,7 +133,7 @@ public fun ElementWriter.radioButton(checked: MutableReactive<Boolean>): RadioBu
 @ViewDsl
 public fun ElementWriter.progressBar(ratio: Reactive<Float>): ProgressBar = progressBar { ::ratio bind ratio }
 
-inline fun <T> ElementWriter.swapping(
+public inline fun <T> ElementWriter.swapping(
     crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
     crossinline current: ReactiveContext.() -> T,
     crossinline views: ViewWriter.(T) -> Unit
