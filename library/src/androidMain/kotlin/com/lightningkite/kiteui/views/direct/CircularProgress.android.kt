@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.views.NativeElement
 
 public actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
 
-    override val native = NCircularProgress(context.activity).apply {
+    override val native: NCircularProgress = NCircularProgress(context.activity).apply {
         contentDescription = "Progress"
         accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }
@@ -72,30 +72,30 @@ public class NCircularProgress(context: Context) : android.widget.ProgressBar (c
 
     private fun calculateAngle(progress: Float) = maxAngle / maxProgress * progress
 
-    public fun setProgress(@FloatRange(from = 0.0, to = 100.0) progress: Float) {
+    internal fun setProgress(@FloatRange(from = 0.0, to = 100.0) progress: Float) {
         this.progress = progress.toInt()
         angle = calculateAngle(progress)
         invalidate()
     }
 
-    public fun setProgressColor(color: Int) {
+    internal fun setProgressColor(color: Int) {
         progressPaint.color = color
         invalidate()
     }
 
-    public fun setProgressBackgroundColor(color: Int) {
+    internal fun setProgressBackgroundColor(color: Int) {
         backgroundPaint.color = color
         invalidate()
     }
 
-    public fun setProgressWidth(width: Float) {
+    internal fun setProgressWidth(width: Float) {
         progressPaint.strokeWidth = width
         backgroundPaint.strokeWidth = width
         updateRect()
         invalidate()
     }
 
-    public fun setRounded(rounded: Boolean) {
+    internal fun setRounded(rounded: Boolean) {
         progressPaint.strokeCap = if (rounded) Paint.Cap.ROUND else Paint.Cap.BUTT
         invalidate()
     }

@@ -15,35 +15,35 @@ public data class ScreenTransition(
     val easing: Easing = Easing.EaseInOut,
 ) {
     public companion object {
-        public val None = ScreenTransition("None")
-        public val Fade = ScreenTransition("Fade", fade = true)
-        public val Push = ScreenTransition(
+        public val None: ScreenTransition = ScreenTransition("None")
+        public val Fade: ScreenTransition = ScreenTransition("Fade", fade = true)
+        public val Push: ScreenTransition = ScreenTransition(
             "Push",
             entryTransform = Transformation(translationX = 1.0),
             exitTransform = Transformation(translationX = -1.0),
         )
-        public val Pop = ScreenTransition(
+        public val Pop: ScreenTransition = ScreenTransition(
             "Pop",
             entryTransform = Transformation(translationX = -1.0),
             exitTransform = Transformation(translationX = 1.0),
         )
-        public val PullUp = ScreenTransition(
+        public val PullUp: ScreenTransition = ScreenTransition(
             "PullUp",
             entryTransform = Transformation(translationY = 1.0),
             exitTransform = Transformation(translationY = -1.0),
         )
-        public val PullDown = ScreenTransition(
+        public val PullDown: ScreenTransition = ScreenTransition(
             "PullDown",
             entryTransform = Transformation(translationY = -1.0),
             exitTransform = Transformation(translationY = 1.0),
         )
-        public val GrowFade = ScreenTransition(
+        public val GrowFade: ScreenTransition = ScreenTransition(
             "GrowFade",
             entryTransform = Transformation(scaleX = 0.75, scaleY = 0.75),
             exitTransform = Transformation(scaleX = 1.33, scaleY = 1.33),
             fade = true,
         )
-        public val ShrinkFade = ScreenTransition(
+        public val ShrinkFade: ScreenTransition = ScreenTransition(
             "ShrinkFade",
             entryTransform = Transformation(scaleX = 1.33, scaleY = 1.33),
             exitTransform = Transformation(scaleX = 0.75, scaleY = 0.75),
@@ -58,27 +58,27 @@ public data class ScreenTransitions(
     val neutral: ScreenTransition,
 ) {
     public companion object {
-        public val None = ScreenTransitions(
+        public val None: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.None,
             reverse = ScreenTransition.None,
             neutral = ScreenTransition.None,
         )
-        public val HorizontalSlide = ScreenTransitions(
+        public val HorizontalSlide: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.Push,
             reverse = ScreenTransition.Pop,
             neutral = ScreenTransition.Fade,
         )
-        public val Fade = ScreenTransitions(
+        public val Fade: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.Fade,
             reverse = ScreenTransition.Fade,
             neutral = ScreenTransition.Fade,
         )
-        public val FadeResize = ScreenTransitions(
+        public val FadeResize: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.GrowFade,
             reverse = ScreenTransition.ShrinkFade,
             neutral = ScreenTransition.Fade,
         )
-        public val VerticalSlide = ScreenTransitions(
+        public val VerticalSlide: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.PullUp,
             reverse = ScreenTransition.PullDown,
             neutral = ScreenTransition.Fade,

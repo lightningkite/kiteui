@@ -16,34 +16,28 @@ public fun ViewWriter.navBottomBar(show: Reactive<Boolean> = Constant(true), nav
     }
 }
 
-public var ElementContext.overlayFrame by contextAddon<ContainerElement?>(null)
-public var ElementContext.coordinatorFrame by contextAddon<CoordinatorFrame?>(null)
+public var ElementContext.overlayFrame: ContainerElement? by contextAddon<ContainerElement?>(null)
+public var ElementContext.coordinatorFrame: CoordinatorFrame? by contextAddon<CoordinatorFrame?>(null)
 
 @Deprecated("Use directly through context", ReplaceWith("context.overlayFrame"))
-public var Element.overlayFrame
+public var Element.overlayFrame: ContainerElement?
     get() = context.overlayFrame
     set(value) { context.overlayFrame = value }
 
 @Deprecated("Use directly through context", ReplaceWith("context.coordinatorFrame"))
-public var Element.coordinatorFrame
+public var Element.coordinatorFrame: CoordinatorFrame?
     get() = context.coordinatorFrame
     set(value) { context.coordinatorFrame = value }
 
-public fun ElementWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainerElement.() -> Unit) {
+public fun ElementWriter.appBase(main: PageNavigator, mainLayout: ContainerElement.() -> Unit) {
     coordinatorFrame {
         debugName = "appBase"
         context.mainPageNavigator = main
         context.pageNavigator = main
-        dialog?.let {
-            context.dialogPageNavigator = it
-        }
         main.bindToPlatform(context)
         context.overlayFrame = this
         context.coordinatorFrame = this
         mainLayout()
-        dialog?.let {
-            navigatorViewDialog()
-        }
 //        baseStack = this
 //        baseStackWriter = split()
     }

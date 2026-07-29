@@ -6,16 +6,15 @@ import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.navigation.mainPageNavigator
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 
 /**
  * Function type for custom app wrappers.
- * Receives the ViewWriter, main navigator, dialog navigator, and current page.
+ * Receives the ViewWriter and main navigator.
  */
-public typealias AppWrapper = ViewWriter.(navigator: PageNavigator, dialog: PageNavigator) -> Unit
+public typealias AppWrapper = ViewWriter.(navigator: PageNavigator) -> Unit
 
 /**
  * Router for server-side rendering that integrates with KiteUI's Routes system.
@@ -32,7 +31,7 @@ public typealias AppWrapper = ViewWriter.(navigator: PageNavigator, dialog: Page
  * val router = SsrRouter(
  *     routes = AutoRoutes,
  *     theme = defaultTheme,
- *     appWrapper = { navigator, dialog -> app(navigator, dialog) }
+ *     appWrapper = { navigator -> app(navigator) }
  * )
  *
  * // In your HTTP handler:
@@ -48,15 +47,15 @@ public typealias AppWrapper = ViewWriter.(navigator: PageNavigator, dialog: Page
  * ```
  */
 public class SsrRouter(
-    public val routes: Routes,
-    public val theme: Theme,
-    public val basePath: String = "/",
-    public val document: SsrDocument = SsrDocument(baseHref = basePath),
+    internal val routes: Routes,
+    internal val theme: Theme,
+    internal val basePath: String = "/",
+    internal val document: SsrDocument = SsrDocument(baseHref = basePath),
     /**
      * Optional app wrapper function that provides the full app shell (navigation, etc).
      * If null, pages are rendered directly without navigation wrapper.
      */
-    public val appWrapper: AppWrapper? = null
+    internal val appWrapper: AppWrapper? = null
 ) {
     // ==================== Suspend versions with preloading ====================
 
@@ -70,7 +69,7 @@ public class SsrRouter(
      * @param userAgent Optional User-Agent string for platform detection - by Claude
      * @return Complete HTML document string, or null if the URL doesn't match any route
      */
-    public suspend fun renderWithPreload(url: String, userAgent: String? = null): String? {
+    internal suspend fun renderWithPreload(url: String, userAgent: String? = null): String? {
         val path = UrlLikePath.fromUrlString(url)
         val page = routes.parse(path) ?: return null
         return renderPageWithPreload(page, userAgent)
@@ -123,23 +122,22 @@ public class SsrRouter(
         // Single render - creates reactive structure with bindings
         // ssrResource() calls during render will register resources and start loading
         context.render {
-            // Create navigators for SSR
+            // Create the navigator for SSR
             val navigator = PageNavigator { routes }
-            val dialog = PageNavigator { routes }
 
             // Set the current page in the navigator stack
             navigator.reset(page)
 
             // Set navigators on the ViewWriter context
-            this.pageNavigator = navigator
-            this.mainPageNavigator = navigator
-            this.dialogPageNavigator = dialog
+            // (qualified with `this.` because the outer `context: SsrContext` local shadows the receiver's `context` property)
+            this.context.pageNavigator = navigator
+            this.context.mainPageNavigator = navigator
 
             if (appWrapper != null) {
                 // Use the app wrapper for full navigation shell
                 // Don't use theme.onNext here - SsrContext's willAddChild sets SetAsBase(theme)
                 // which correctly uses withBackNoPadding (background but no padding on root)
-                appWrapper(navigator, dialog)
+                appWrapper(navigator)
             } else {
                 // Render page directly without navigation
                 col {
@@ -174,7 +172,7 @@ public class SsrRouter(
      * @param url The URL path (e.g., "/docs/getting-started" or "/users/123?tab=profile")
      * @return Complete HTML document string, or null if the URL doesn't match any route
      */
-    public fun render(url: String): String? {
+    internal fun render(url: String): String? {
         val path = UrlLikePath.fromUrlString(url)
         val page = routes.parse(path) ?: return null
         return renderPage(page)
@@ -189,7 +187,7 @@ public class SsrRouter(
      * @param url The URL path
      * @return Complete HTML document string (never null - uses fallback for 404)
      */
-    public fun renderOrFallback(url: String): String {
+    internal fun renderOrFallback(url: String): String {
         val path = UrlLikePath.fromUrlString(url)
         val page = routes.parseOrFallback(path)
         return renderPage(page)
@@ -204,7 +202,7 @@ public class SsrRouter(
      * @param page The Page to render
      * @return Complete HTML document string
      */
-    public fun renderPage(page: Page): String {
+    internal fun renderPage(page: Page): String {
         val context = SsrContext(basePath)
         context.theme = theme  // Set theme on context - willAddChild applies SetAsBase (no padding on root)
         context.title = page.title.state.getOrNull()
@@ -229,7 +227,7 @@ public class SsrRouter(
      * @param wrapper Function that receives the page and ViewWriter to customize rendering
      * @return Complete HTML document string
      */
-    public fun renderPage(page: Page, wrapper: ViewWriter.(Page) -> Unit): String {
+    internal fun renderPage(page: Page, wrapper: ViewWriter.(Page) -> Unit): String {
         val context = SsrContext(basePath)
         context.title = page.title.state.getOrNull()
 
@@ -248,7 +246,7 @@ public class SsrRouter(
      * @param url The URL path
      * @return The Page instance, or null if not found
      */
-    public fun getPage(url: String): Page? {
+    internal fun getPage(url: String): Page? {
         val path = UrlLikePath.fromUrlString(url)
         return routes.parse(path)
     }
@@ -259,7 +257,7 @@ public class SsrRouter(
      * @param url The URL path
      * @return The Page instance (never null - uses fallback for 404)
      */
-    public fun getPageOrFallback(url: String): Page {
+    internal fun getPageOrFallback(url: String): Page {
         val path = UrlLikePath.fromUrlString(url)
         return routes.parseOrFallback(path)
     }

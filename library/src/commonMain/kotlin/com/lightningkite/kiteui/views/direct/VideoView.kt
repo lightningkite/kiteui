@@ -20,6 +20,8 @@ import com.lightningkite.reactive.extensions.flatten
 import com.lightningkite.reactive.lensing.lens
 import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 
 /**
@@ -58,7 +60,7 @@ public class VideoView(private val frame: Frame) : Element by frame {
         }
     }
 
-    public val time: MutableReactive<Double> = current.lens { it?.time ?: Signal(0.0) }.flatten()
+    public val time: MutableReactive<Double> = current.lens { it?.currentTime?.lens(get = { it.toDouble(DurationUnit.SECONDS) }, set = { it.seconds }) ?: Signal(0.0) }.flatten()
     public val playing: MutableReactive<Boolean> = current.lens { it?.playing ?: Signal(false) }.flatten()
     public val volume: MutableReactive<Float> = current.lens { it?.volume ?: Signal(0f) }.flatten()
     public var showControls: Boolean = false
@@ -106,8 +108,8 @@ public class VideoView(private val frame: Frame) : Element by frame {
 
     public val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
 
-    public val shownInfo = RawReactive<Info?>(ReactiveState(null))
-    public var cannotBeCovered = false
+    public val shownInfo: RawReactive<Info?> = RawReactive<Info?>(ReactiveState(null))
+    public var cannotBeCovered: Boolean = false
 
     @OptIn(ExperimentalKiteUi::class)
     public fun refresh() {

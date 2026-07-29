@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.views.ContainerElement
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewModifierDsl3
+import com.lightningkite.kiteui.views.l2.LabeledView
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.write
 import com.lightningkite.reactive.context.ReactiveContext
@@ -42,4 +43,4 @@ public fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: React
 @Deprecated("Use VideoView instead", ReplaceWith("VideoView"), level = DeprecationLevel.ERROR) public typealias Video = VideoView
 
 @Deprecated("Import has moved", ReplaceWith("label(label, content)", "com.lightningkite.kiteui.views.l2.label"))
-public inline fun ElementWriter.label(label: String, content: LinearLayoutElement.() -> Unit) = l2Label(label, content)
+public inline fun ElementWriter.label(label: String, content: LinearLayoutElement.() -> Unit): LabeledView = l2Label(label, content)

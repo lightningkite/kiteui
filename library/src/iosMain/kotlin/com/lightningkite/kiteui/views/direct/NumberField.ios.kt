@@ -18,9 +18,9 @@ import platform.objc.sel_registerName
 
 public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
-    override val driverActions get() = super.driverActions + numberInputDriverActions()
-    override val native = WrapperView()
-    public val trigger: NSObject = object : NSObject() {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + numberInputDriverActions()
+    override val native: WrapperView = WrapperView()
+    internal val trigger: NSObject = object : NSObject() {
         @ObjCAction
         fun done() {
             action?.let {
@@ -29,7 +29,7 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
             } ?: NextFocusDelegateShared.textFieldShouldReturn(textField)
         }
     }
-    public val textField = UITextField().apply {
+    internal val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -90,7 +90,7 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
         applyAlign(_align ?: theme.theme.font.align)
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -98,13 +98,13 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
         textField.textAlignment = alignment
     }
 
-    public fun updateHint() {
+    internal fun updateHint() {
         textField.placeholder = hint
         // TODO: Colored hint
 //        textField.attributedPlaceholder = hint
     }
 
-    public var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()

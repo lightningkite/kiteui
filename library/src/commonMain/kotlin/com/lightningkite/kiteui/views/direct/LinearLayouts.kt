@@ -21,6 +21,8 @@ public expect class RowOrCol(context: ElementContext) : NativeContainerElement, 
     public var vertical: Boolean
     override var gap: Dimension?
 
+    // Intentionally retained despite being ERROR-deprecated: this is a wanted capability pending a
+    // syntax redesign, not dead code to remove (maintainer decision).
     @Deprecated("This no longer works.", level = DeprecationLevel.ERROR)
     public fun spacingOverrideBeforeNext(amount: Dimension) // TODO: Find alternative, will need new syntax
 }

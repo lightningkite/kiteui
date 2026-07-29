@@ -62,4 +62,4 @@ public interface SsrPreloadable {
 /**
  * Helper to check if a Page supports preloading.
  */
-public fun Page.asPreloadable(): SsrPreloadable? = this as? SsrPreloadable
+internal fun Page.asPreloadable(): SsrPreloadable? = this as? SsrPreloadable

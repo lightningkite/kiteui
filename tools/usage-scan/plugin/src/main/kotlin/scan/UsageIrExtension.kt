@@ -3,8 +3,10 @@ package scan
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.IrElement
+import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclaration
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationWithVisibility
 import org.jetbrains.kotlin.ir.declarations.IrField
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
@@ -42,22 +44,43 @@ class UsageIrExtension(
 
     private val found = LinkedHashSet<String>()
 
+    /** In decls mode, the source location prefix ("path:line\t") for the declaration being emitted. */
+    private var declLoc: String = ""
+
     override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
         val collectRefs = mode != "decls"
-        moduleFragment.acceptVoid(object : IrVisitorVoid() {
-            override fun visitElement(element: IrElement) {
-                if (collectRefs && element is IrExpression) recordType(element.type)
-                if (collectRefs && element is IrDeclarationReference) recordSymbol(element.symbol)
-                if (!collectRefs && element is IrDeclaration) recordOwnDeclaration(element)
-                if (collectRefs && element is IrDeclaration) recordDeclarationTypes(element)
-                element.acceptChildrenVoid(this)
+        if (collectRefs) {
+            moduleFragment.acceptVoid(object : IrVisitorVoid() {
+                override fun visitElement(element: IrElement) {
+                    if (element is IrExpression) recordType(element.type)
+                    if (element is IrDeclarationReference) recordSymbol(element.symbol)
+                    if (element is IrDeclaration) recordDeclarationTypes(element)
+                    element.acceptChildrenVoid(this)
+                }
+            })
+        } else {
+            // decls mode: walk per-file so each declaration can be tagged with its source location.
+            for (file in moduleFragment.files) {
+                val entry = file.fileEntry
+                file.acceptVoid(object : IrVisitorVoid() {
+                    override fun visitElement(element: IrElement) {
+                        if (element is IrDeclaration) {
+                            declLoc = "${entry.name}:${entry.getLineNumber(element.startOffset) + 1}\t"
+                            recordOwnDeclaration(element)
+                        }
+                        element.acceptChildrenVoid(this)
+                    }
+                })
             }
-        })
+        }
         write(moduleFragment.name.asString())
     }
 
-    /** In decls mode: emit the key of any declaration that lives in a watched package. */
+    /** In decls mode: emit the key of any PUBLIC declaration in a watched package, with location. */
     private fun recordOwnDeclaration(declaration: IrDeclaration) {
+        // Only public declarations are internalization candidates; skip private/internal/protected/local.
+        if (declaration is IrDeclarationWithVisibility &&
+            declaration.visibility != DescriptorVisibilities.PUBLIC) return
         when (declaration) {
             is IrClass -> emitClass(declaration.fqNameWhenAvailable?.asString())
             is IrFunction -> if (!declaration.isFakeOverride) emitCallable(declaration.fqNameWhenAvailable?.asString())
@@ -110,11 +133,11 @@ class UsageIrExtension(
         fqName != null && prefixes.any { fqName == it || fqName.startsWith("$it.") }
 
     private fun emitClass(fqName: String?) {
-        if (watched(fqName)) found.add("CLASS:$fqName")
+        if (watched(fqName)) found.add("$declLoc" + "CLASS:$fqName")
     }
 
     private fun emitCallable(fqName: String?) {
-        if (watched(fqName)) found.add("CALL:$fqName")
+        if (watched(fqName)) found.add("$declLoc" + "CALL:$fqName")
     }
 
     private fun write(moduleName: String) {

@@ -8,9 +8,9 @@ import com.lightningkite.reactive.core.*
 
 public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
-    override val driverActions get() = super.driverActions + sliderDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + sliderDriverActions()
     private val nativeSeekBar = SeekBar(context.activity)
-    override val native = nativeSeekBar
+    override val native: SeekBar = nativeSeekBar
 
     private val valueProp = Signal(0.5f)
     public actual val value: MutableReactiveValue<Float>

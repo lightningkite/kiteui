@@ -11,9 +11,9 @@ import platform.darwin.NSObject
 
 public actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
-    override val driverActions get() = super.driverActions + autoCompleteDriverActions()
-    override val native = WrapperView()
-    public val textField = UITextField().apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + autoCompleteDriverActions()
+    override val native: WrapperView = WrapperView()
+    public val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -30,7 +30,7 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
         fontAndStyle = theme.theme.font
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val textSize = textSize
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
@@ -39,7 +39,7 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
         textField.textAlignment = alignment
     }
 
-    public fun updateHint() {
+    internal fun updateHint() {
         textField.placeholder = hint
         // TODO: Colored hint
 //        textField.attributedPlaceholder = hint

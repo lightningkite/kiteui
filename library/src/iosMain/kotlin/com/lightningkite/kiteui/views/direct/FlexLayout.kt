@@ -30,25 +30,25 @@ import kotlin.math.max
  * Similar to flexbox in web development.
  */
 public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
-    public var gap: Double = 0.0
+    internal var gap: Double = 0.0
         set(value) {
             field = value
             setNeedsLayout()
             informParentOfSizeChange()
         }
 
-    public var lineGap: Double = 0.0
+    internal var lineGap: Double = 0.0
         set(value) {
             field = value
             setNeedsLayout()
             informParentOfSizeChange()
         }
 
-    public val spacingOverride = Signal<Dimension?>(null).also {
+    internal val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null).also {
         it.addListener { it.value?.let { gap = it.value } }
     }
 
-    override fun getSpacingOverrideProperty() = spacingOverride
+    override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
     override fun forceRemeasures() {
         lastLaidOutSize = null
@@ -66,14 +66,14 @@ public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverride
         informParentOfSizeChangeDueToChild()
     }
 
-    public data class Size(var width: Double = 0.0, var height: Double = 0.0)
+    internal data class Size(var width: Double = 0.0, var height: Double = 0.0)
 
-    public val Size.objc get() = CGSizeMake(width, height)
-    public val CGSize.local get() = Size(width, height)
-    public val CValue<CGSize>.local get() = useContents { local }
+    internal val Size.objc: CValue<CGSize> get() = CGSizeMake(width, height)
+    internal val CGSize.local: Size get() = Size(width, height)
+    internal val CValue<CGSize>.local: Size get() = useContents { local }
 
-    public val arrangedSubviews = ArrayList<UIView>()
-    public fun addArrangedSubview(view: UIView) {
+    internal val arrangedSubviews: MutableList<UIView> = ArrayList<UIView>()
+    internal fun addArrangedSubview(view: UIView) {
         childSizeCache.add(arrangedSubviews.size, HashMap())
         arrangedSubviews.add(view)
         addSubview(view)
@@ -81,7 +81,7 @@ public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverride
         informParentOfSizeChangeDueToChild()
     }
 
-    public fun insertArrangedSubview(view: UIView, atIndex: NSInteger) {
+    internal fun insertArrangedSubview(view: UIView, atIndex: NSInteger) {
         childSizeCache.add(atIndex.toInt(), HashMap())
         arrangedSubviews.add(atIndex.toInt(), view)
         insertSubview(view, atIndex)
@@ -103,7 +103,7 @@ public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverride
         super.willRemoveSubview(subview)
     }
 
-    public val childSizeCache = ArrayList<HashMap<Size, Size>>()
+    internal val childSizeCache: MutableList<HashMap<Size, Size>> = ArrayList<HashMap<Size, Size>>()
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val sizeLocal = size.local
@@ -165,8 +165,8 @@ public class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverride
         return measuredSize.objc
     }
 
-    public var lastLaidOutSize: Size? = null
-    public var lastLaidOutPadding: Edges? = null
+    internal var lastLaidOutSize: Size? = null
+    internal var lastLaidOutPadding: Edges? = null
 
     override fun layoutSubviews() {
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)

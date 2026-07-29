@@ -405,4 +405,53 @@ class ThemeTest: BaseUiTest() {
             "the ThemeAndBack returned for the child must embed the child theme, not the parent"
         )
     }
+
+    // -------------------------------------------------------------------------
+    // 6. Theme.Debugger — opt-in id-collision detection
+    //
+    // equals/hashCode are id-only (see section 4), so anything that hands out a
+    // manually-assigned or non-chained id (e.g. Theme.customize) can silently alias
+    // two structurally different themes together. Debugger.checkIdCollisions is an
+    // opt-in safety net for catching that during development/testing.
+    // -------------------------------------------------------------------------
+
+    private fun withCollisionChecking(block: () -> Unit) {
+        Theme.Debugger.reset()
+        Theme.Debugger.checkIdCollisions = true
+        try {
+            block()
+        } finally {
+            Theme.Debugger.checkIdCollisions = false
+            Theme.Debugger.reset()
+        }
+    }
+
+    @Test
+    fun debugger_collidingId_withDifferentContent_throws() = runTest {
+        withCollisionChecking {
+            Theme(id = "collide-test")
+            assertFailsWith<IllegalStateException>(
+                "two Themes sharing an id but differing in visual properties must be rejected"
+            ) {
+                Theme(id = "collide-test", foreground = Color.red, background = Color.black)
+            }
+        }
+    }
+
+    @Test
+    fun debugger_collidingId_withEqualContent_doesNotThrow() = runTest {
+        withCollisionChecking {
+            Theme(id = "reregister-test", foreground = Color.red)
+            // Re-registering a structurally identical theme under the same id is the normal
+            // case (e.g. re-deriving the same semantic twice) and must not be flagged.
+            Theme(id = "reregister-test", foreground = Color.red)
+        }
+    }
+
+    @Test
+    fun debugger_disabledByDefault_doesNotThrow() = runTest {
+        assertFalse(Theme.Debugger.checkIdCollisions, "collision checking must be opt-in, off by default")
+        Theme(id = "no-check-test")
+        Theme(id = "no-check-test", foreground = Color.red, background = Color.black)
+    }
 }

@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.DismissSemantic
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
@@ -12,7 +11,6 @@ public actual class DismissBackground actual constructor(context: ElementContext
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")
-        native.replaceEventListener("click") { this.context.dialogPageNavigator.clear() }
     }
     override fun nativeAddChild(index: Int, element: Element) {
         super.nativeAddChild(index, element)

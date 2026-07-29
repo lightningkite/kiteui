@@ -6,19 +6,19 @@ public suspend inline fun fetch(
     headers: HttpHeaders = httpHeaders(),
     type: String = "text/plain",
     body: String
-) = fetch(url = url, method = method, headers = headers, body = RequestBodyText(body, type))
+): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyText(body, type))
 public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: Blob
-) = fetch(url = url, method = method, headers = headers, body = RequestBodyBlob(body))
+): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyBlob(body))
 public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: FileReference
-) = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
+): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
 
 /** Interceptor that wraps HTTP requests. Call [proceed] to continue the chain. */
 public typealias FetchInterceptor = suspend (
@@ -64,7 +64,7 @@ public class ConnectionException(message: String, cause: Exception? = null): Exc
 
 public enum class HttpMethod { GET, POST, PUT, PATCH, DELETE, HEAD }
 
-public fun httpHeaders(vararg entries: Pair<String, String>) = httpHeaders(entries.toList())
+public fun httpHeaders(vararg entries: Pair<String, String>): HttpHeaders = httpHeaders(entries.toList())
 public expect fun httpHeaders(map: Map<String, String> = mapOf()): HttpHeaders
 public expect fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders
 public expect fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders

@@ -9,11 +9,13 @@ import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
+import com.lightningkite.kiteui.views.direct.PassthroughContainer
+import com.lightningkite.kiteui.views.direct.RowOrCol
 
 private var labelForIdCounter = 0
 
 public actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
-    public var native = FutureElement().also { it.classes.add("kui") }
+    public var native: FutureElement = FutureElement().also { it.classes.add("kui") }
 
     actual override var opacity: Double = 1.0
         set(value) {
@@ -25,7 +27,10 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         set(value) {
             field = value
             native.attributes.hidden = !value
-            // TODO (parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            (parent as? PassthroughContainer)?.apply {
+                native.attributes.hidden = !value
+                (parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
+            } ?: (parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         }
 
     actual override var visible: Boolean = true
@@ -142,7 +147,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         horizontal: Align?,
         vertical: Align?,
         animate: Boolean
-    ) = nativeScrollIntoView(horizontal, vertical, animate)
+    ): Unit = nativeScrollIntoView(horizontal, vertical, animate)
 
     actual override fun requestFocus() {
         native.setAttribute("autofocus", "true")
@@ -197,6 +202,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
 
     actual override var showOnPrint: Boolean = true
         set(value) {
+            field = value
             if (value)
                 native.classes.remove("do-not-print")
             else

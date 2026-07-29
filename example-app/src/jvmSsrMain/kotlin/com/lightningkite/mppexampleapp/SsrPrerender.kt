@@ -27,7 +27,7 @@ object SsrPrerender {
         routes = AutoRoutes,
         theme = defaultTheme,
         basePath = "/",
-        appWrapper = { navigator, dialog -> app(navigator, dialog) }
+        appWrapper = { navigator -> app(navigator) }
     )
 
     /**

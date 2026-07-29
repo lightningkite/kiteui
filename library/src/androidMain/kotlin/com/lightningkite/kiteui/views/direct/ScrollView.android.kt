@@ -26,7 +26,7 @@ public class ScrollView(
     private var vx = VelocityTracker.obtain()
     private var vy = VelocityTracker.obtain()
     @SuppressLint("ClickableViewAccessibility")
-    override val native = TwoWayNestedScrollView(context.activity).apply {
+    override val native: TwoWayNestedScrollView = TwoWayNestedScrollView(context.activity).apply {
         lockX = !horizontal
         lockY = !vertical
         isFillViewport = true
@@ -302,8 +302,8 @@ public class ScrollView(
         }
     }
 
-    public var queuedJumpX = -1.0
-    public var queuedJumpY = -1.0
+    internal var queuedJumpX: Double = -1.0
+    internal var queuedJumpY: Double = -1.0
     override fun scrollToKeepAnimations(x: Double, y: Double) {
 //        native.mScroller?.abortAnimation()
         queuedJumpX = x

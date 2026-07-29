@@ -17,7 +17,7 @@ public data class DragData(
     val mimeType: String get() = typeToData.keys.firstOrNull() ?: ""
     val data: String get() = typeToData.values.firstOrNull() ?: ""
 
-    public operator fun get(mimeType: String) = typeToData[mimeType]
+    public operator fun get(mimeType: String): String? = typeToData[mimeType]
 }
 
 public data class DragShadow(
@@ -33,5 +33,5 @@ public data class DragEvent(
     val xInView: Double,
     val yInView: Double
 ) {
-    val types get() = data.typeToData.keys
+    val types: Set<String> get() = data.typeToData.keys
 }

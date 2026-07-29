@@ -8,8 +8,11 @@ public actual class Font(public val getter: () -> Typeface) {
     public fun toTypeface(): Typeface = getter()
 }
 
-public actual val systemDefaultFont: Font  get() = Font { Typeface.DEFAULT }
-public actual val systemDefaultFixedWidthFont: Font  get() = Font { Typeface.MONOSPACE }
+// Stable singletons: Font has identity equality, so a fresh instance per access would make two
+// themes built from the system default font compare unequal (breaking Theme.Debugger's structural
+// check and wasting an allocation). The lambda defers Typeface access, so `val` init is pure.
+public actual val systemDefaultFont: Font = Font { Typeface.DEFAULT }
+public actual val systemDefaultFixedWidthFont: Font = Font { Typeface.MONOSPACE }
 
 //actual sealed class ImageSource actual constructor()
 public actual typealias DimensionRaw = Float

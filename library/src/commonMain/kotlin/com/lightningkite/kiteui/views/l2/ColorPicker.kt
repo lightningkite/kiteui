@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.dynamicTheme
+import com.lightningkite.kiteui.views.dynamicThemed
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.fieldTheme
 import com.lightningkite.kiteui.views.themed
@@ -33,16 +33,15 @@ public fun ElementWriter.colorPicker(color: MutableReactive<Color>) {
                     render = { it.toString() }
                 )
             }
-            expanding.themed(ImportantSemantic).text {
-                dynamicTheme {
-                    ThemeDerivation {
-                        it.copy(
-                            id = "color_${debounced().toInt()}",
-                            background = debounced(),
-                            foreground = debounced().highlight(1f),
-                        ).withBack
-                    }
+            expanding.themed(ImportantSemantic).dynamicThemed {
+                ThemeDerivation {
+                    it.copy(
+                        id = "color_${debounced().toInt()}",
+                        background = debounced(),
+                        foreground = debounced().highlight(1f),
+                    ).withBack
                 }
+            }.text {
                 ::content { color().toAlphalessWeb() }
             }
         }

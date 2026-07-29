@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
 // ===== Shared =====
 
 @Serializable
-public data class OtlpResource(
+internal data class OtlpResource(
     val attributes: List<OtlpKeyValue> = emptyList()
 )
 
@@ -50,7 +50,7 @@ public data class OtlpAnyValue(
 }
 
 @Serializable
-public data class OtlpInstrumentationScope(
+internal data class OtlpInstrumentationScope(
     // @EncodeDefault: Kotlin default is non-empty but proto3 zero is "". If omitted, the
     // receiver would see "" instead of our SDK name, breaking scope-based filtering/grouping.
     @OptIn(ExperimentalSerializationApi::class) @EncodeDefault val name: String = "com.lightningkite.kiteui",
@@ -60,24 +60,24 @@ public data class OtlpInstrumentationScope(
 // ===== Traces =====
 
 @Serializable
-public data class OtlpExportTraceRequest(
+internal data class OtlpExportTraceRequest(
     val resourceSpans: List<OtlpResourceSpans>
 )
 
 @Serializable
-public data class OtlpResourceSpans(
+internal data class OtlpResourceSpans(
     val resource: OtlpResource,
     val scopeSpans: List<OtlpScopeSpans>
 )
 
 @Serializable
-public data class OtlpScopeSpans(
+internal data class OtlpScopeSpans(
     val scope: OtlpInstrumentationScope,
     val spans: List<OtlpSpan>
 )
 
 @Serializable
-public data class OtlpSpan(
+internal data class OtlpSpan(
     val traceId: String,               // 32 hex chars
     val spanId: String,                 // 16 hex chars
     val parentSpanId: String = "",
@@ -91,7 +91,7 @@ public data class OtlpSpan(
 )
 
 @Serializable
-public data class OtlpSpanStatus(
+internal data class OtlpSpanStatus(
     val code: Int = 0,                  // 0=UNSET, 1=OK, 2=ERROR
     val message: String = ""
 )
@@ -99,24 +99,24 @@ public data class OtlpSpanStatus(
 // ===== Metrics =====
 
 @Serializable
-public data class OtlpExportMetricsRequest(
+internal data class OtlpExportMetricsRequest(
     val resourceMetrics: List<OtlpResourceMetrics>
 )
 
 @Serializable
-public data class OtlpResourceMetrics(
+internal data class OtlpResourceMetrics(
     val resource: OtlpResource,
     val scopeMetrics: List<OtlpScopeMetrics>
 )
 
 @Serializable
-public data class OtlpScopeMetrics(
+internal data class OtlpScopeMetrics(
     val scope: OtlpInstrumentationScope,
     val metrics: List<OtlpMetric>
 )
 
 @Serializable
-public data class OtlpMetric(
+internal data class OtlpMetric(
     val name: String,
     val description: String = "",
     val unit: String = "",
@@ -125,7 +125,7 @@ public data class OtlpMetric(
 )
 
 @Serializable
-public data class OtlpSum(
+internal data class OtlpSum(
     val dataPoints: List<OtlpNumberDataPoint>,
     // @EncodeDefault: proto3 zero is 0 (UNSPECIFIED), our default is 1 (DELTA)
     @OptIn(ExperimentalSerializationApi::class) @EncodeDefault val aggregationTemporality: Int = 1, // DELTA=1, CUMULATIVE=2
@@ -134,7 +134,7 @@ public data class OtlpSum(
 )
 
 @Serializable
-public data class OtlpNumberDataPoint(
+internal data class OtlpNumberDataPoint(
     val startTimeUnixNano: String,
     val timeUnixNano: String,
     val asInt: Long? = null,
@@ -143,14 +143,14 @@ public data class OtlpNumberDataPoint(
 )
 
 @Serializable
-public data class OtlpHistogram(
+internal data class OtlpHistogram(
     val dataPoints: List<OtlpHistogramDataPoint>,
     // @EncodeDefault: proto3 zero is 0 (UNSPECIFIED), our default is 1 (DELTA)
     @OptIn(ExperimentalSerializationApi::class) @EncodeDefault val aggregationTemporality: Int = 1, // DELTA
 )
 
 @Serializable
-public data class OtlpHistogramDataPoint(
+internal data class OtlpHistogramDataPoint(
     val startTimeUnixNano: String,
     val timeUnixNano: String,
     val count: Long,
@@ -165,24 +165,24 @@ public data class OtlpHistogramDataPoint(
 // ===== Logs =====
 
 @Serializable
-public data class OtlpExportLogsRequest(
+internal data class OtlpExportLogsRequest(
     val resourceLogs: List<OtlpResourceLogs>
 )
 
 @Serializable
-public data class OtlpResourceLogs(
+internal data class OtlpResourceLogs(
     val resource: OtlpResource,
     val scopeLogs: List<OtlpScopeLogs>
 )
 
 @Serializable
-public data class OtlpScopeLogs(
+internal data class OtlpScopeLogs(
     val scope: OtlpInstrumentationScope,
     val logRecords: List<OtlpLogRecord>
 )
 
 @Serializable
-public data class OtlpLogRecord(
+internal data class OtlpLogRecord(
     val timeUnixNano: String,
     val severityNumber: Int,           // OtlpSeverity.number
     val severityText: String,

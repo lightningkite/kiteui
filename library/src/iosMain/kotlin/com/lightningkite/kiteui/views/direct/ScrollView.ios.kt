@@ -24,15 +24,15 @@ public class ScrollView(
     override val horizontal: Boolean,
     override val vertical: Boolean
 ) : NativeContainerElement(context), ScrollingBehaviors {
-    override val native = FrameLayout()
-    public val scroller = ScrollLayout()
+    override val native: FrameLayout = FrameLayout()
+    public val scroller: ScrollLayout = ScrollLayout()
     init { native.addSubview(scroller) }
 
     private var scrollCalcOngoing = false
     private val sizeChange = BasicListenable()
     private val scroll = BasicListenable()
 
-    override val addChildTarget get() = scroller
+    override val addChildTarget: ScrollLayout get() = scroller
 
     private val dg: UIScrollViewDelegateProtocol = object : NSObject(), UIScrollViewDelegateProtocol {
         override fun scrollViewDidScroll(scrollView: UIScrollView) {

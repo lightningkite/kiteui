@@ -18,8 +18,8 @@ import platform.objc.sel_registerName
 @OptIn(ExperimentalKiteUi::class)
 public actual class TextArea actual constructor(context: ElementContext) : NativeElement(context), ElementWithAction {
     override val driverValue: String? get() = textAreaDriverValue()
-    override val driverActions get() = super<NativeElement>.driverActions + textAreaDriverActions()
-    override val native = WrapperView()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super<NativeElement>.driverActions + textAreaDriverActions()
+    override val native: WrapperView = WrapperView()
     private val delegate = TextAreaDelegate()
 
     public val trigger: NSObject = object : NSObject() {
@@ -33,7 +33,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         }
     }
 
-    public val textField = UITextView().apply {
+    internal val textField: UITextView = UITextView().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -72,7 +72,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         fontAndStyle = theme.theme.font
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val textSize = textSize
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
@@ -81,19 +81,19 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         textField.textAlignment = alignment
     }
 
-    public fun updateHint() {
+    internal fun updateHint() {
         // TODO: Hint
 //        textField.attributedPlaceholder = hint
     }
 
-    public var textSize: Dimension = 1.rem
+    internal var textSize: Dimension = 1.rem
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    public var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -136,7 +136,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
             textField.accessibilityHint = value.ifEmpty { null }
         }
 
-    public inline var align: Align
+    internal inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center

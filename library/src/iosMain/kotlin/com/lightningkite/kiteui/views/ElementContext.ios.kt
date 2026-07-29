@@ -29,7 +29,7 @@ public actual class ElementContext(public val controller: UIViewController, publ
             }
         }
 
-    public val controllerForPresenting get() = generateSequence(controller) { it.parentViewController }.firstOrNull { it.definesPresentationContext } as? UIViewController?
+    public val controllerForPresenting: UIViewController? get() = generateSequence(controller) { it.parentViewController }.firstOrNull { it.definesPresentationContext } as? UIViewController?
     private var dismissing: Boolean = false
     public fun dismissSelf() {
         dismissing = true

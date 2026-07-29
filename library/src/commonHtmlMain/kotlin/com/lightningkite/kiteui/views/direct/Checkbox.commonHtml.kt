@@ -9,7 +9,7 @@ public actual class Checkbox actual constructor(context: ElementContext) : Nativ
     actual override val underlyingNativeElement: Checkbox get() = this
 
     override val driverValue: String? get() = checkboxDriverValue()
-    override val driverActions get() = super.driverActions + checkboxDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + checkboxDriverActions()
     init {
         themeChoice += ClickableSemantic
         native.tag = "input"

@@ -6,7 +6,7 @@ import org.w3c.dom.Element
  * Tracks position within a DOM subtree during hydration.
  * Provides children one at a time for matching with view tree.
  */
-public class HydrationCursor(public val element: Element) {
+internal class HydrationCursor(public val element: Element) {
     private var childIndex = 0
 
     /**
@@ -21,7 +21,7 @@ public class HydrationCursor(public val element: Element) {
     /**
      * Create a sub-cursor for the given element's children.
      */
-    public fun forElement(element: Element) = HydrationCursor(element)
+    public fun forElement(element: Element): HydrationCursor = HydrationCursor(element)
 
     /**
      * Check if all children were consumed (for mismatch detection).

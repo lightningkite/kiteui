@@ -29,14 +29,14 @@ import platform.UIKit.*
 
 public class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
-    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
-    override fun getSpacingOverrideProperty() = spacingOverride
+    internal val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
-    override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
-    override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
-    override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
+    override fun layoutSubviews(): Unit = frameLayoutLayoutSubviews(childSizeCache)
+    override fun subviewDidChangeSizing(view: UIView?): Unit = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+    override fun forceRemeasures(): Unit = childSizeCache.forEach { it.clear() }
     override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)

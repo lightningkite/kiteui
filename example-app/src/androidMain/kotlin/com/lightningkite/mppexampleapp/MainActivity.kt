@@ -21,12 +21,11 @@ import com.lightningkite.readable.*
 
 class MainActivity : KiteUiActivity() {
     override val mainNavigator: PageNavigator = PageNavigator { AutoRoutes }
-    val dialogNavigator: PageNavigator = PageNavigator { AutoRoutes }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         codeCacheDir.setReadOnly()
         with(viewWriter) {
-            app(mainNavigator, dialogNavigator)
+            app(mainNavigator)
 //            this.mainPageNavigator = mainNavigator
 //            with(LeakCheckerPage) {
 //                render()

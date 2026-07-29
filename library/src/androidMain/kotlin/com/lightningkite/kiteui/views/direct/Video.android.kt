@@ -26,7 +26,7 @@ public actual class RawVideoView actual constructor(
     public actual val scaleType: ImageScaleType,
     public actual val preloadHint: PreloadHint,
 ) : NativeElement(context) {
-    override val native = PlayerView(context.activity).apply {
+    override val native: PlayerView = PlayerView(context.activity).apply {
         player = ExoPlayer.Builder(context.activity).build()
         contentDescription = description
         resizeMode = when (scaleType) {

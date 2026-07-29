@@ -130,7 +130,7 @@ public actual class RowOrCol actual constructor(context: ElementContext) : Nativ
         rerunOptimizedBottomMarginCalc()
     }
 
-    public fun rerunOptimizedBottomMarginCalc() {
+    internal fun rerunOptimizedBottomMarginCalc() {
         if (complex) return
 
         val newLastShownElement = children.lastOrNull { it.native.attributes.hidden != true }

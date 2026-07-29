@@ -33,7 +33,7 @@ import kotlin.coroutines.resumeWithException
 // by Claude
 private val fetchLog = LogRoot.tag("fetch")
 
-public val client = HttpClient {
+public val client: HttpClient = HttpClient {
     install(WebSockets)
     install(UserAgent) {
         agent = Platform.userAgent
@@ -214,28 +214,28 @@ public actual fun websocket(url: String): WebSocket {
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 public class WebSocketWrapper(public val url: String) : WebSocket {
-    public val closeReason = Channel<CloseReason>()
-    public val sending = Channel<Frame>(10)
-    public var stayOn = true
-    public val onOpen = ArrayList<() -> Unit>()
+    public val closeReason: Channel<CloseReason> = Channel<CloseReason>()
+    public val sending: Channel<Frame> = Channel<Frame>(10)
+    public var stayOn: Boolean = true
+    public val onOpen: MutableList<() -> Unit> = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    public val onClose = ArrayList<(Short) -> Unit>()
+    public val onClose: MutableList<(Short) -> Unit> = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    public val onMessage = ArrayList<(String) -> Unit>()
+    public val onMessage: MutableList<(String) -> Unit> = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    public val onBinaryMessage = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage: MutableList<(Blob) -> Unit> = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }

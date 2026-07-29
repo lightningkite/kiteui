@@ -14,5 +14,5 @@ public object LogBuffer {
 
     public fun recent(count: Int = 50): List<Entry> = buffer.takeLast(count)
 
-    public fun clear() = buffer.clear()
+    public fun clear(): Unit = buffer.clear()
 }

@@ -23,16 +23,16 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 public actual class FloatingInfoHolder actual constructor(public val source: Element) {
-    public val maxDist = 32
-    public var blockView: Element? = null
-    public var closeView: Element? = null
-    public var existingView: Element? = null
+    internal val maxDist: Int = 32
+    internal var blockView: Element? = null
+    internal var closeView: Element? = null
+    internal var existingView: Element? = null
 
     public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
-    public var currentDirection: PopoverPreferredDirection = preferredDirection
+    internal var currentDirection: PopoverPreferredDirection = preferredDirection
     public actual var menuGenerator: Frame.() -> Unit = { space() }
 
-    public fun closeButton() {
+    internal fun closeButton() {
         if (closeView != null) return
         val o = source.context.overlayFrame ?: return
         val v = existingView ?: return
@@ -307,11 +307,11 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
 
                 removeElementFromOverlay = {
                     blockView?.let {
-                        source.overlayFrame!!.removeChild(it)
+                        source.context.overlayFrame!!.removeChild(it)
                     }
                     blockView = null
                     closeView?.let {
-                        source.overlayFrame!!.removeChild(it)
+                        source.context.overlayFrame!!.removeChild(it)
                     }
                     closeView = null
                     window.removeEventListener("scroll", repos, true)
@@ -349,5 +349,5 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
     }
 }
 
-public val DOMRect.centerY get() =  (top + bottom) / 2
-public val DOMRect.centerX get() =  (left + right) / 2
+internal val DOMRect.centerY: Double get() =  (top + bottom) / 2
+internal val DOMRect.centerX: Double get() =  (left + right) / 2

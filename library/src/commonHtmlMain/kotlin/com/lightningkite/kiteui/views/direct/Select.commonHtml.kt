@@ -13,7 +13,7 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
-    override val driverActions get() = super.driverActions + buildMap {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + buildMap {
         _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
     }
     init {
@@ -27,7 +27,7 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
         render: (T) -> String
     ) {
         var list: List<T> = listOf()
-        reactiveScope {
+        reactive {
             list = data()
             val v = edits.state.getOrNull()
             native.clearChildren()
@@ -43,10 +43,10 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
             }
         }
         var alreadyHandled = false
-        reactiveScope {
+        reactive {
             val newValue = edits()
             val list = data.state.getOrNull() ?: listOf()
-            if (alreadyHandled) return@reactiveScope
+            if (alreadyHandled) return@reactive
             alreadyHandled = true
             val index = list.indexOf(newValue).toString()
             native.children.find { it.attributes.valueString == index }?.attributes?.selected = true
@@ -62,7 +62,7 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
             setAction.startAction(this)
         }
         // Driver support: track selected display and allow setValue
-        reactiveScope {
+        reactive {
             _driverSelectedDisplay = render(edits())
         }
         _driverSelectSetValue = { displayText ->

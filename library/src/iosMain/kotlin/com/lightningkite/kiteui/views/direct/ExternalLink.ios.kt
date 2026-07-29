@@ -13,8 +13,8 @@ import platform.UIKit.accessibilityTraits
 import platform.UIKit.setAccessibilityTraits
 
 public actual class ExternalLink actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + externalLinkDriverActions()
-    override val native = FrameLayoutButton()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + externalLinkDriverActions()
+    override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
 
     init {

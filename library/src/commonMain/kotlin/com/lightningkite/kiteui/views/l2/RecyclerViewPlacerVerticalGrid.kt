@@ -9,18 +9,18 @@ import com.lightningkite.kiteui.views.direct.col
 import kotlin.math.abs
 
 @Deprecated("Call directly instead", ReplaceWith("RecyclerViewPlacerVerticalGrid(columns, ratio)"))
-public fun RecyclerViewPlacerVerticalTrueGrid(columns: Int, ratio: Double = 1.0) = RecyclerViewPlacerVerticalGrid(columns, ratio)
+public fun RecyclerViewPlacerVerticalTrueGrid(columns: Int, ratio: Double = 1.0): RecyclerViewPlacerVerticalGrid = RecyclerViewPlacerVerticalGrid(columns, ratio)
 public class RecyclerViewPlacerVerticalGrid(
     public val columns: Int,
     public val ratio: Double? = null,
     public val sizeDoesNotChange: Boolean = false,
 ) :
     RecyclerViewPlacerGrid {
-    public val sizeByType = HashMap<RecyclerViewRenderer<*>, Double>()
-    public fun RecyclerViewPlaceable.height(cellSize: Double) = ratio?.let { cellSize * it }
+    internal val sizeByType: MutableMap<RecyclerViewRenderer<*>, Double> = HashMap<RecyclerViewRenderer<*>, Double>()
+    internal fun RecyclerViewPlaceable.height(cellSize: Double): Double = ratio?.let { cellSize * it }
         ?: sizeByType[type]
         ?: size.height.also { if(sizeDoesNotChange) sizeByType[type] = it }
-    public fun RecyclerViewPlaceable.existingHeight(cellSize: Double) = ratio?.let { cellSize * it }
+    internal fun RecyclerViewPlaceable.existingHeight(cellSize: Double): Double = ratio?.let { cellSize * it }
         ?: sizeByType[type]
         ?: (bottom - top).also { if(sizeDoesNotChange) sizeByType[type] = it }
 

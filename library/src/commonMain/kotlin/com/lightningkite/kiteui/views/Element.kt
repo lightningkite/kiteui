@@ -487,8 +487,8 @@ public interface Element : KiteUiCoroutineScopeHelpers {
     )
 
     public object Debugger {
-        public var removeBeforeShutdown = false
-        public var leakDetect = false
+        public var removeBeforeShutdown: Boolean = false
+        public var leakDetect: Boolean = false
         public var debugTarget: Element? = null
 
         /**
@@ -498,7 +498,7 @@ public interface Element : KiteUiCoroutineScopeHelpers {
          * [Element.onShutdown] never ran). This signal is GC-independent, so it is reliable on
          * platforms where forcing a garbage collection isn't possible (e.g. the browser).
          */
-        public var countInstances = false
+        public var countInstances: Boolean = false
         public val liveInstancesByClass: MutableMap<String, Int> = mutableMapOf()
         public var liveInstanceTotal: Int = 0
             private set
@@ -685,7 +685,7 @@ public interface ContainerElement : Element, ElementWithChildren, ViewWriter {
      * Equivalent to `addChild(children.size, element)`.
      */
     @OverrideOnly
-    override fun addChild(element: Element) = addChild(children.size, element)
+    override fun addChild(element: Element): Unit = addChild(children.size, element)
 
     /**
      * Removes the specified child element from this container.

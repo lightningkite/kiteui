@@ -20,16 +20,16 @@ import platform.UIKit.*
  * A UIVisualEffectView that mimics the functionality of FrameLayout.
  * This allows us to have a blur effect and frame layout capabilities in a single view.
  */
-public class GlassFrameLayout : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleLight)), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+internal class GlassFrameLayout : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleLight)), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
     public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
-    override fun getSpacingOverrideProperty() = spacingOverride
+    override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
-    override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
-    override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
-    override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+    override fun layoutSubviews(): Unit = frameLayoutLayoutSubviews(childSizeCache)
+    override fun forceRemeasures(): Unit = childSizeCache.forEach { it.clear() }
+    override fun subviewDidChangeSizing(view: UIView?): Unit = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
     override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)

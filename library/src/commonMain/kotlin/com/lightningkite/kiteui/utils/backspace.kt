@@ -55,7 +55,7 @@ public inline fun numberAutocommaRepair(
     setResult: (String) -> Unit,
     setSelectionRange: (Int, Int) -> Unit,
     allowDecimal: Boolean = true
-) = repairFormatAndPosition(
+): Unit = repairFormatAndPosition(
     dirty = dirty,
     selectionStart = selectionStart,
     selectionEnd = selectionEnd,

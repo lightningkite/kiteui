@@ -50,7 +50,7 @@ public class ZoomableImageView(viewWriter: ElementWriter) : CoroutineScope {
     public var refreshOnParamChange: Boolean = false
     public var naturalSize: Boolean = false
 
-    public var ready = false
+    public var ready: Boolean = false
     public fun postSetup() {
         ready = true
         refresh()
@@ -69,7 +69,7 @@ public class ZoomableImageView(viewWriter: ElementWriter) : CoroutineScope {
         }
     }
 
-    public val shown = RawReactive<Info?>(ReactiveState(null))
+    public val shown: RawReactive<Info?> = RawReactive<Info?>(ReactiveState(null))
     public fun refresh() {
         if (!ready) return
         val info = info

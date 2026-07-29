@@ -9,12 +9,12 @@ import com.lightningkite.reactive.core.*
 
 public actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textAreaDriverValue()
-    override val driverActions get() = super.driverActions + textAreaDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + textAreaDriverActions()
     init {
         native.tag = "div"
         native.classes.add("textarea-container")
     }
-    public val textarea = FutureElement().apply {
+    internal val textarea: FutureElement = FutureElement().apply {
         tag = "textarea"
         classes.add("editable")
         classes.add("kui")

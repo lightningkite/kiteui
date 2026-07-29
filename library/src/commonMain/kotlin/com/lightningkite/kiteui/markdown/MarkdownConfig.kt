@@ -92,7 +92,7 @@ public interface CustomBlockHandler {
     public object Default : JustSemantic(CardSemantic)
 
     public companion object {
-        public val default = mapOf(
+        public val default: Map<String, JustSemantic> = mapOf(
             "card" to CardSemantic,
             "important" to ImportantSemantic,
             "warning" to WarningSemantic,
@@ -158,7 +158,7 @@ public data class MarkdownConfig(
         /**
          * Default configuration with no custom handlers or internal link support.
          */
-        public val Default = MarkdownConfig()
+        public val Default: MarkdownConfig = MarkdownConfig()
 
         /**
          * Creates a configuration that uses the provided Routes to handle internal links.

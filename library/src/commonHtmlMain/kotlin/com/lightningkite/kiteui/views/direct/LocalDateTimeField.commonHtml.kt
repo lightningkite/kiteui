@@ -8,9 +8,9 @@ import kotlinx.datetime.*
 
 public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
-    override val driverActions get() = super.driverActions + localDateTimeDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateTimeDriverActions()
     public companion object {
-        public val charCount = "2024-06-01T08:30".length
+        internal val charCount: Int = "2024-06-01T08:30".length
     }
     init {
         native.tag = "input"
@@ -41,7 +41,7 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
         set(value) {
             native.attributes.placeholder = value
         }
-    public var align: Align = Align.Start
+    internal var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -51,7 +51,7 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
                 Align.Stretch -> "justify"
             }
         }
-    public var textSize: Dimension = 1.rem
+    internal var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()
@@ -72,9 +72,9 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
 
 public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
-    override val driverActions get() = super.driverActions + localDateDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateDriverActions()
     public companion object {
-        public val charCount = "2024-06-01".length
+        internal val charCount: Int = "2024-06-01".length
     }
     init {
         native.tag = "input"
@@ -107,7 +107,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
         set(value) {
             native.attributes.placeholder = value
         }
-    public var align: Align = Align.Start
+    internal var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -117,7 +117,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
                 Align.Stretch -> "justify"
             }
         }
-    public var textSize: Dimension = 1.rem
+    internal var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()
@@ -137,9 +137,9 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
 
 public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
-    override val driverActions get() = super.driverActions + localTimeDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localTimeDriverActions()
     public companion object {
-        public val charCount = "08:30".length
+        internal val charCount: Int = "08:30".length
     }
     init {
         native.tag = "input"
@@ -172,7 +172,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
         set(value) {
             native.attributes.placeholder = value
         }
-    public var align: Align = Align.Start
+    internal var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -182,7 +182,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
                 Align.Stretch -> "justify"
             }
         }
-    public var textSize: Dimension = 1.rem
+    internal var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()

@@ -11,8 +11,8 @@ import kotlin.native.ref.WeakReference
 @OptIn(ExperimentalNativeApi::class)
 public actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = content
-    override val native = UILabelWithLayerBackground(WeakReference(context))
-    public val label get() = native.label
+    override val native: UILabelWithLayerBackground = UILabelWithLayerBackground(WeakReference(context))
+    internal val label: UILabel get() = native.label
 
     init {
         label.numberOfLines = 0
@@ -58,7 +58,7 @@ public actual class TextView actual constructor(context: ElementContext) : Nativ
             label.numberOfLines = if (value) 0 else 1
         }
 
-    public var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -159,8 +159,8 @@ private val dynamicTypeScaleFactors = mapOf(
     UIContentSizeCategoryExtraExtraLarge to 1.31,
     UIContentSizeCategoryExtraExtraExtraLarge to 1.42,
 )
-public const val ENABLE_DYNAMIC_TYPE = true
-public fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
+internal const val ENABLE_DYNAMIC_TYPE: Boolean = true
+internal fun preferredScaleFactor(): Double = if (ENABLE_DYNAMIC_TYPE) {
     dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
 } else {
     1.0

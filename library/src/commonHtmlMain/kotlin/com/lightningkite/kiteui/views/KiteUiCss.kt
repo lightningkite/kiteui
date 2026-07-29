@@ -172,7 +172,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
 
             .circle-progress-background {
                           fill: none;
-                          stroke: var(--nearest-background-color); !important;
+                          stroke: var(--nearest-background-color);
                           stroke-width: 3;
             }
             
@@ -335,9 +335,6 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
 
             .kui.scroll-horizontal  * {
                 max-width: unset;
-            }
-            .kui.scroll-horizontal * {
-                max-width: 100;
             }
 
             .kui.scroll-vertical {
@@ -897,12 +894,12 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             theme.derivedFrom?.let { themeInteractive(it) }
             theme(theme)
             val cs = theme.classSelector
-            fun sub(subthemeGen: Semantic?, asSelectors: List<String>) {
+            fun sub(subthemeGen: Semantic?, asSelectors: List<String>, diff: Theme = theme) {
                 val subtheme = subthemeGen?.let { s -> theme[s] } ?: theme.withoutBack
                 if (theme != subtheme.theme) {
                     theme(
                         subtheme.theme,
-                        diff = theme,
+                        diff,
                         asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs") },
                         includeMaybeTransition = subtheme.drawBackground
                     )
@@ -910,7 +907,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val hov = subtheme[HoverSemantic]
                 theme(
                     hov.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:hover$it $cs",
@@ -923,7 +920,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val foc = subtheme[FocusSemantic]
                 theme(
                     foc.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:focus-visible$it $cs",
@@ -939,7 +936,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val dwn = subtheme[DownSemantic]
                 theme(
                     dwn.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:active$it $cs",
@@ -951,7 +948,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val dis = subtheme[DisabledSemantic]
                 theme(
                     dis.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:disabled$it $cs",
@@ -963,7 +960,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 val print = subtheme[PrintSemantic]
                 theme(
                     print.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.map { "$it$cs$cs" },
                     includeMaybeTransition = print.drawBackground,
                     mediaQuery = "print"
@@ -972,6 +969,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             sub(null, asSelectors = listOf(""))
             sub(
                 SelectedSemantic,
+                diff = theme[UnselectedSemantic].theme,
                 asSelectors = listOf(".checked.checkResponsive"),
             )
             sub(
@@ -991,7 +989,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
     private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
         getter().takeUnless { diff?.getter() == it }
 
-    public fun theme(
+    internal fun theme(
         theme: Theme,
         diff: Theme? = null,
         asSelectors: List<String> = listOf(theme.classSelector),
@@ -1209,9 +1207,9 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
         return classes
     }
 
-    public fun Edges.css() = "${top.value} ${right.value} ${bottom.value} ${left.value}"
+    internal fun Edges.css(): String = "${top.value} ${right.value} ${bottom.value} ${left.value}"
 
-    public val rowCollapsingToColumnHandled = HashSet<String>()
+    internal val rowCollapsingToColumnHandled: MutableSet<String> = HashSet<String>()
     public fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
         val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.roughPx.roundToInt().toString() }}"
         if (rowCollapsingToColumnHandled.add(name)) {
@@ -1282,9 +1280,5 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             }
         }
         return name
-    }
-
-    public inline fun apply(theme: Theme, out: (prop: String, value: String) -> Unit) {
-
     }
 }

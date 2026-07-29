@@ -12,13 +12,13 @@ import com.lightningkite.kiteui.views.*
 
 @OptIn(ExperimentalKiteUi::class)
 public actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + buttonDriverActions()
-    public val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + buttonDriverActions()
+    internal val progress: ProgressBar = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0
         visibility = View.GONE
     }
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
 

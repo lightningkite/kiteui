@@ -127,22 +127,21 @@ object ViewModifiersPage : DocPage {
             }
 
             h2("Has Popover")
-            text("The hasPopover modifier is used to add a popover to a view.")
+            text("The hintPopover modifier is used to add a popover to a view.")
             example(
                 """
-                button {
-                    text("Has Popover")
-                } in hasPopover {
-                    col {
-                        button {
+                hintPopover {
+                    card.col {
+                        card.button {
                             text("Popover")
-                        } in card
-                        button {
+                        }
+                        card.button {
                             text("Second Popover button")
-                        } in card
-                    }in card
+                        }
+                    }
+                }.button {
+                    text("Has Popover")
                 }
-            }
             """.trimIndent()
             ) {
                 hintPopover {

@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewDebug
 import android.view.ViewGroup
@@ -13,14 +12,13 @@ public typealias SimplifiedLinearLayoutLayoutParams = SimplifiedLinearLayout.Lay
 /**
  * A drastically simplified variant of LinearLayout.
  */
-public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : ViewGroup(context, attrs, defStyleAttr, defStyleRes) {
-    public var isBaselineAligned = true
-    private var mBaselineAlignedChildIndex = -1
-    private var mBaselineChildTop = 0
+public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : ViewGroup(context, attrs, defStyleAttr, defStyleRes), LinearChildHost {
+    override val isHorizontal: Boolean get() = orientation == HORIZONTAL
+
+    public var isBaselineAligned: Boolean = true
     private var mOrientation = 0
     private var mGravity = Gravity.START or Gravity.TOP
     private var mTotalLength = 0
-    public var isMeasureWithLargestChildEnabled: Boolean = false
     private var mMaxAscent: IntArray = IntArray(4)
     private var mMaxDescent: IntArray = IntArray(4)
 
@@ -45,74 +43,12 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
         }
 
 
-    override fun getBaseline(): Int {
-        if (mBaselineAlignedChildIndex < 0) {
-            return super.getBaseline()
-        }
-        if (childCount <= mBaselineAlignedChildIndex) {
-            throw RuntimeException(
-                "mBaselineAlignedChildIndex of LinearLayout "
-                        + "set to an index that is out of bounds."
-            )
-        }
-        val child = getChildAt(mBaselineAlignedChildIndex)
-        val childBaseline = child.baseline
-        if (childBaseline == -1) {
-            if (mBaselineAlignedChildIndex == 0) {
-                // this is just the default case, safe to return -1
-                return -1
-            }
-            // the user picked an index that points to something that doesn't
-            // know how to calculate its baseline.
-            throw RuntimeException(
-                ("mBaselineAlignedChildIndex of LinearLayout "
-                        + "points to a View that doesn't know how to get its baseline.")
-            )
-        }
-
-        // TODO: This should try to take into account the virtual offsets
-        // (See getNextLocationOffset and getLocationOffset)
-        // We should add to childTop:
-        // sum([getNextLocationOffset(getChildAt(i)) / i < mBaselineAlignedChildIndex])
-        // and also add:
-        // getLocationOffset(child)
-        var childTop = mBaselineChildTop
-        if (mOrientation == VERTICAL) {
-            val majorGravity = mGravity and Gravity.VERTICAL_GRAVITY_MASK
-            if (majorGravity != Gravity.TOP) {
-                when (majorGravity) {
-                    Gravity.BOTTOM -> childTop = bottom - top - paddingBottom - mTotalLength
-                    Gravity.CENTER_VERTICAL -> childTop += ((bottom - top - paddingTop - paddingBottom) -
-                            mTotalLength) / 2
-                }
-            }
-        }
-        val lp = child.layoutParams as LayoutParams
-        return childTop + /*lp.topMargin +*/ childBaseline
-    }
-
-    public var baselineAlignedChildIndex: Int
-        /**
-         * @return The index of the child that will be used if this layout is
-         * part of a larger layout that is baseline aligned, or -1 if none has
-         * been set.
-         */
-        get() = mBaselineAlignedChildIndex
-        /**
-         * @param i The index of the child that will be used if this layout is
-         * part of a larger layout that is baseline aligned.
-         *
-         * @attr ref android.R.styleable#LinearLayout_baselineAlignedChildIndex
-         */
-        set(i) {
-            if ((i < 0) || (i >= childCount)) {
-                throw IllegalArgumentException(
-                    ("base aligned child index out "
-                            + "of range (0, " + childCount + ")")
-                )
-            }
-            mBaselineAlignedChildIndex = i
-        }
+    // NOTE: AOSP LinearLayout supports pointing getBaseline() at an arbitrary child index
+    // (mBaselineAlignedChildIndex / baselineAlignedChildIndex) so that a parent baseline-aligned
+    // layout can align to this LinearLayout as if it were a single baseline-having view. KiteUI
+    // never sets that index (it stays at its default, "unset"), so that whole feature - and the
+    // getBaseline() override that served it - was unreachable and has been removed; this class now
+    // falls back to ViewGroup's default getBaseline() (-1, "no baseline").
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (mOrientation == VERTICAL) {
@@ -120,33 +56,6 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
         } else {
             measureHorizontal(widthMeasureSpec, heightMeasureSpec)
         }
-    }
-
-    /**
-     * Checks whether all (virtual) child views before the given index are gone.
-     */
-    private fun allViewsAreGoneBefore(childIndex: Int): Boolean {
-        for (i in childIndex - 1 downTo 0) {
-            val child = getChildAt(i)
-            if (child != null && child.visibility != GONE) {
-                return false
-            }
-        }
-        return true
-    }
-
-    /**
-     * Checks whether all (virtual) child views after the given index are gone.
-     */
-    private fun allViewsAreGoneAfter(childIndex: Int): Boolean {
-        val count = childCount
-        for (i in childIndex + 1 until count) {
-            val child = getChildAt(i)
-            if (child != null && child.visibility != GONE) {
-                return false
-            }
-        }
-        return true
     }
 
     private val LayoutParams.weightUnlessIgnored: Float get() = if(ignoreWeights) 0f else weight
@@ -175,37 +84,24 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         var matchWidth = false
         var skippedMeasure = false
-        val baselineChildIndex = mBaselineAlignedChildIndex
-        val useLargestChild = isMeasureWithLargestChildEnabled
-        var largestChildHeight = Int.MIN_VALUE
         var consumedExcessSpace = 0
-        var nonSkippedChildCount = 0
 
         // See how tall everyone is. Also remember max width.
         var i = 0
         while (i < count) {
             val child = getChildAt(i)
-            if (child == null) {
-                mTotalLength += measureNullChild(i)
-                ++i
-                continue
-            }
             if (child.visibility == GONE) {
-                i += getChildrenSkipCount(child, i)
                 ++i
                 continue
             }
             val lp = child.layoutParams as LayoutParams
             if (i > 0) mTotalLength += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
-            nonSkippedChildCount++
             totalWeight += lp.weightUnlessIgnored
             val useExcessSpace = lp.height == 0 && lp.weightUnlessIgnored > 0
             if (heightMode == MeasureSpec.EXACTLY && useExcessSpace) {
                 // Optimization: don't bother measuring children who are only
                 // laid out using excess space. These views will get measured
                 // later if we have space to distribute.
-                val totalLength = mTotalLength
-                mTotalLength = Math.max(totalLength, totalLength)
                 skippedMeasure = true
             } else {
                 if (useExcessSpace) {
@@ -221,11 +117,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                 // previous children have given a weight, then we allow it to
                 // use all available space (and we will shrink things later
                 // if needed).
-                val usedHeight = if (totalWeight == 0f) mTotalLength else 0
-                measureChildBeforeLayout(
-                    child, i, widthMeasureSpec, 0,
-                    heightMeasureSpec, usedHeight
-                )
+                measureChild(child, widthMeasureSpec, heightMeasureSpec)
                 val childHeight = child.measuredHeight.coerceAtMost(lp.maxHeight)
                 if (useExcessSpace) {
                     // Restore the original height and record how much space
@@ -234,32 +126,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                     lp.height = 0
                     consumedExcessSpace += childHeight
                 }
-                val totalLength = mTotalLength
-                mTotalLength = Math.max(
-                    totalLength, (totalLength + childHeight + getNextLocationOffset(child))
-                )
-                if (useLargestChild) {
-                    largestChildHeight = Math.max(childHeight, largestChildHeight)
-                }
-            }
-            /**
-             * If applicable, compute the additional offset to the child's baseline
-             * we'll need later when asked [.getBaseline].
-             */
-            if ((baselineChildIndex >= 0) && (baselineChildIndex == i + 1)) {
-                mBaselineChildTop = mTotalLength
-            }
-
-            // if we are trying to use a child index for our baseline, the above
-            // book keeping only works if there are no children above it with
-            // weight.  fail fast to aid the developer.
-            if (i < baselineChildIndex && lp.weightUnlessIgnored > 0) {
-                throw RuntimeException(
-                    ("A child of LinearLayout with index "
-                            + "less than mBaselineAlignedChildIndex has weight > 0, which "
-                            + "won't work.  Either remove the weight, or don't set "
-                            + "mBaselineAlignedChildIndex.")
-                )
+                mTotalLength += childHeight
             }
             var matchWidthLocally = false
             if (widthMode != MeasureSpec.EXACTLY && lp.width == ViewGroup.LayoutParams.MATCH_PARENT) {
@@ -290,34 +157,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                     if (matchWidthLocally) margin else measuredWidth
                 ).coerceAtMost(lp.maxWidth)
             }
-            i += getChildrenSkipCount(child, i)
             ++i
-        }
-        if (useLargestChild &&
-            (heightMode == MeasureSpec.AT_MOST || heightMode == MeasureSpec.UNSPECIFIED)
-        ) {
-            mTotalLength = 0
-            var i = 0
-            while (i < count) {
-                val child = getChildAt(i)
-                if (child == null) {
-                    mTotalLength += measureNullChild(i)
-                    ++i
-                    continue
-                }
-                if (child.visibility == GONE) {
-                    i += getChildrenSkipCount(child, i)
-                    ++i
-                    continue
-                }
-                val lp = child.layoutParams as LayoutParams
-                // Account for negative margins
-                val totalLength = mTotalLength
-                mTotalLength = Math.max(
-                    totalLength, (totalLength + largestChildHeight + getNextLocationOffset(child))
-                )
-                ++i
-            }
         }
 
         // Add in our padding
@@ -342,7 +182,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
             mTotalLength = 0
             for (i in 0 until count) {
                 val child = getChildAt(i)
-                if (child == null || child.visibility == GONE) {
+                if (child.visibility == GONE) {
                     continue
                 }
                 val lp = child.layoutParams as LayoutParams
@@ -351,19 +191,14 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                     val share = (childWeight * remainingExcess / remainingWeightSum).coerceAtMost(lp.maxHeight.toFloat()).toInt()
                     remainingExcess -= share
                     remainingWeightSum -= childWeight
-                    val childHeight: Int
-                    if (isMeasureWithLargestChildEnabled && heightMode != MeasureSpec.EXACTLY) {
-                        childHeight = largestChildHeight
-                    } else if (lp.height == 0 && ((!false
-                                || heightMode == MeasureSpec.EXACTLY))
-                    ) {
+                    val childHeight: Int = if (lp.height == 0) {
                         // This child needs to be laid out from scratch using
                         // only its share of excess space.
-                        childHeight = share
+                        share
                     } else {
                         // This child had some intrinsic height to which we
                         // need to add its share of excess space.
-                        childHeight = child.measuredHeight + share
+                        child.measuredHeight + share
                     }
                     val childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(
                         Math.max(0, childHeight), MeasureSpec.EXACTLY
@@ -391,11 +226,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                     if (matchWidthLocally) margin else measuredWidth
                 )
                 allFillParent = allFillParent && lp.width == ViewGroup.LayoutParams.MATCH_PARENT
-                val totalLength = mTotalLength
-                mTotalLength = Math.max(
-                    totalLength, (totalLength + child.measuredHeight +
-                            getNextLocationOffset(child))
-                )
+                mTotalLength += child.measuredHeight
             }
 
             // Add in our padding
@@ -406,32 +237,6 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                 alternativeMaxWidth,
                 weightedMaxWidth
             )
-
-
-            // We have no limit, so make all weighted views as tall as the largest child.
-            // Children will have already been measured once.
-            if (useLargestChild && heightMode != MeasureSpec.EXACTLY) {
-                for (i in 0 until count) {
-                    val child = getChildAt(i)
-                    if (child == null || child.visibility == GONE) {
-                        continue
-                    }
-                    val lp = child.layoutParams as LayoutParams
-                    val childExtra = lp.weightUnlessIgnored
-                    if (childExtra > 0) {
-                        child.measure(
-                            MeasureSpec.makeMeasureSpec(
-                                child.measuredWidth,
-                                MeasureSpec.EXACTLY
-                            ),
-                            MeasureSpec.makeMeasureSpec(
-                                largestChildHeight,
-                                MeasureSpec.EXACTLY
-                            )
-                        )
-                    }
-                }
-            }
         }
 //        if (!allFillParent && widthMode != MeasureSpec.EXACTLY) {
 //            maxWidth = alternativeMaxWidth
@@ -527,9 +332,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
         maxDescent[1] = maxDescent[2]
         maxDescent[0] = maxDescent[1]
         val baselineAligned = isBaselineAligned
-        val useLargestChild = isMeasureWithLargestChildEnabled
         val isExactly = widthMode == MeasureSpec.EXACTLY
-        var largestChildWidth = Int.MIN_VALUE
         var usedExcessSpace = 0
         var nonSkippedChildCount = 0
 
@@ -537,13 +340,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
         var i = 0
         while (i < count) {
             val child = getChildAt(i)
-            if (child == null) {
-                mTotalLength += measureNullChild(i)
-                ++i
-                continue
-            }
             if (child.visibility == GONE) {
-                i += getChildrenSkipCount(child, i)
                 ++i
                 continue
             }
@@ -587,11 +384,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                 // previous children have given a weight, then we allow it to
                 // use all available space (and we will shrink things later
                 // if needed).
-                val usedWidth = if (totalWeight == 0f) mTotalLength else 0
-                measureChildBeforeLayout(
-                    child, i, widthMeasureSpec, usedWidth,
-                    heightMeasureSpec, 0
-                )
+                measureChild(child, widthMeasureSpec, heightMeasureSpec)
                 val childWidth = child.measuredWidth
                 if (useExcessSpace) {
                     // Restore the original width and record how much space
@@ -600,19 +393,9 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                     lp.width = 0
                     usedExcessSpace += childWidth
                 }
-                if (isExactly) {
-                    mTotalLength += (childWidth
-                            + getNextLocationOffset(child))
-                } else {
-                    val totalLength = mTotalLength
-                    mTotalLength = Math.max(
-                        totalLength, (totalLength + childWidth
-                                + getNextLocationOffset(child))
-                    )
-                }
-                if (useLargestChild) {
-                    largestChildWidth = Math.max(childWidth, largestChildWidth)
-                }
+                // Measured sizes are never negative, so both branches below add the same amount;
+                // isExactly only matters for the weight-redistribution pass further down.
+                mTotalLength += childWidth
             }
             var matchHeightLocally = false
             if (heightMode != MeasureSpec.EXACTLY && lp.height == ViewGroup.LayoutParams.MATCH_PARENT) {
@@ -655,7 +438,6 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                     if (matchHeightLocally) margin else childHeight
                 )
             }
-            i += getChildrenSkipCount(child, i)
             ++i
         }
 
@@ -688,38 +470,6 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
             )
             maxHeight = Math.max(maxHeight, ascent + descent)
         }
-        if (useLargestChild &&
-            (widthMode == MeasureSpec.AT_MOST || widthMode == MeasureSpec.UNSPECIFIED)
-        ) {
-            mTotalLength = 0
-            nonSkippedChildCount = 0
-            var i = 0
-            while (i < count) {
-                val child = getChildAt(i)
-                if (child == null) {
-                    mTotalLength += measureNullChild(i)
-                    ++i
-                    continue
-                }
-                if (child.visibility == GONE) {
-                    i += getChildrenSkipCount(child, i)
-                    ++i
-                    continue
-                }
-                nonSkippedChildCount++
-                val lp = child.layoutParams as LayoutParams
-                if (isExactly) {
-                    mTotalLength += (largestChildWidth  +
-                            getNextLocationOffset(child))
-                } else {
-                    val totalLength = mTotalLength
-                    mTotalLength = Math.max(
-                        totalLength, (totalLength + largestChildWidth + getNextLocationOffset(child))
-                    )
-                }
-                ++i
-            }
-        }
 
         // Add in our padding
         mTotalLength += paddingLeft + paddingRight
@@ -735,11 +485,8 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
         // Either expand children with weight to take up available space or
         // shrink them if they extend beyond our current bounds. If we skipped
         // measurement on any children, we need to measure them now.
-        var remainingExcess = (widthSize - mTotalLength
-                + (if (false) 0 else usedExcessSpace))
-        if ((skippedMeasure
-                    || ((true || remainingExcess != 0) && totalWeight > 0.0f))
-        ) {
+        var remainingExcess = widthSize - mTotalLength + usedExcessSpace
+        if (skippedMeasure || totalWeight > 0.0f) {
             var remainingWeightSum = totalWeight
             maxAscent[3] = -1
             maxAscent[2] = maxAscent[3]
@@ -751,32 +498,25 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
             maxDescent[0] = maxDescent[1]
             maxHeight = -1
             mTotalLength = 0
-            nonSkippedChildCount = 0
             for (i in 0 until count) {
                 val child = getChildAt(i)
-                if (child == null || child.visibility == GONE) {
+                if (child.visibility == GONE) {
                     continue
                 }
-                nonSkippedChildCount++
                 val lp = child.layoutParams as LayoutParams
                 val childWeight = lp.weightUnlessIgnored
                 if (childWeight > 0) {
                     val share = (childWeight * remainingExcess / remainingWeightSum).toInt()
                     remainingExcess -= share
                     remainingWeightSum -= childWeight
-                    val childWidth: Int
-                    if (isMeasureWithLargestChildEnabled && widthMode != MeasureSpec.EXACTLY) {
-                        childWidth = largestChildWidth
-                    } else if (lp.width == 0 && ((!false
-                                || widthMode == MeasureSpec.EXACTLY))
-                    ) {
+                    val childWidth: Int = if (lp.width == 0) {
                         // This child needs to be laid out from scratch using
                         // only its share of excess space.
-                        childWidth = share
+                        share
                     } else {
                         // This child had some intrinsic width to which we
                         // need to add its share of excess space.
-                        childWidth = child.measuredWidth + share
+                        child.measuredWidth + share
                     }
                     val childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(
                         Math.max(0, childWidth), MeasureSpec.EXACTLY
@@ -794,15 +534,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                         child.measuredState and MEASURED_STATE_MASK
                     )
                 }
-                if (isExactly) {
-                    mTotalLength += (child.measuredWidth +
-                            getNextLocationOffset(child))
-                } else {
-                    val totalLength = mTotalLength
-                    mTotalLength = Math.max(
-                        totalLength, (totalLength + child.measuredWidth + getNextLocationOffset(child))
-                    )
-                }
+                mTotalLength += child.measuredWidth
                 val matchHeightLocally = heightMode != MeasureSpec.EXACTLY &&
                         lp.height == ViewGroup.LayoutParams.MATCH_PARENT
                 val margin = 0
@@ -865,28 +597,6 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
             }
         } else {
             alternativeMaxHeight = Math.max(alternativeMaxHeight, weightedMaxHeight)
-
-            // We have no limit, so make all weighted views as wide as the largest child.
-            // Children will have already been measured once.
-            if (useLargestChild && widthMode != MeasureSpec.EXACTLY) {
-                for (i in 0 until count) {
-                    val child = getChildAt(i)
-                    if (child == null || child.visibility == GONE) {
-                        continue
-                    }
-                    val lp = child.layoutParams as LayoutParams
-                    val childExtra = lp.weightUnlessIgnored
-                    if (childExtra > 0) {
-                        child.measure(
-                            MeasureSpec.makeMeasureSpec(largestChildWidth, MeasureSpec.EXACTLY),
-                            MeasureSpec.makeMeasureSpec(
-                                child.measuredHeight,
-                                MeasureSpec.EXACTLY
-                            )
-                        )
-                    }
-                }
-            }
         }
 //        if (!allFillParent && heightMode != MeasureSpec.EXACTLY) {
 //            maxHeight = alternativeMaxHeight
@@ -933,80 +643,12 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
         }
     }
 
-    /**
-     *
-     * Returns the number of children to skip after measuring/laying out
-     * the specified child.
-     *
-     * @param child the child after which we want to skip children
-     * @param index the index of the child after which we want to skip children
-     * @return the number of children to skip, 0 by default
-     */
-    public fun getChildrenSkipCount(child: View?, index: Int): Int {
-        return 0
-    }
-
-    /**
-     *
-     * Returns the size (width or height) that should be occupied by a null
-     * child.
-     *
-     * @param childIndex the index of the null child
-     * @return the width or height of the child depending on the orientation
-     */
-    public fun measureNullChild(childIndex: Int): Int {
-        return 0
-    }
-
-    /**
-     *
-     * Measure the child according to the parent's measure specs. This
-     * method should be overridden by subclasses to force the sizing of
-     * children. This method is called by [.measureVertical] and
-     * [.measureHorizontal].
-     *
-     * @param child the child to measure
-     * @param childIndex the index of the child in this view
-     * @param widthMeasureSpec horizontal space requirements as imposed by the parent
-     * @param totalWidth extra space that has been used up by the parent horizontally
-     * @param heightMeasureSpec vertical space requirements as imposed by the parent
-     * @param totalHeight extra space that has been used up by the parent vertically
-     */
-    public fun measureChildBeforeLayout(
-        child: View?, childIndex: Int,
-        widthMeasureSpec: Int, totalWidth: Int, heightMeasureSpec: Int,
-        totalHeight: Int
-    ) {
-        measureChild(
-            child, widthMeasureSpec,
-            heightMeasureSpec
-        )
-    }
-
-    /**
-     *
-     * Return the location offset of the specified child. This can be used
-     * by subclasses to change the location of a given widget.
-     *
-     * @param child the child for which to obtain the location offset
-     * @return the location offset in pixels
-     */
-    public fun getLocationOffset(child: View?): Int {
-        return 0
-    }
-
-    /**
-     *
-     * Return the size offset of the next sibling of the specified child.
-     * This can be used by subclasses to change the location of the widget
-     * following `child`.
-     *
-     * @param child the child whose next sibling will be moved
-     * @return the location offset of the next child in pixels
-     */
-    public fun getNextLocationOffset(child: View?): Int {
-        return 0
-    }
+    // NOTE: AOSP LinearLayout exposes getChildrenSkipCount/measureNullChild/getLocationOffset/
+    // getNextLocationOffset/measureChildBeforeLayout as overridable extension points for subclasses
+    // that manage "virtual" children (e.g. TableRow). None of them are declared `open` here, so they
+    // could never actually be overridden, and they all returned trivial constants (0, or a plain
+    // measureChild passthrough) - every call site below was doing dead arithmetic. Removed; call
+    // sites now call measureChild(...) directly and no longer add the always-zero offsets.
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if (mOrientation == VERTICAL) {
@@ -1054,9 +696,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
         var gapApplied = false
         while (i < count) {
             val child = getChildAt(i)
-            if (child == null) {
-                childTop += measureNullChild(i)
-            } else if (child.visibility != GONE) {
+            if (child.visibility != GONE) {
                 val childWidth = child.measuredWidth
                 val childHeight = child.measuredHeight
                 val lp = child.layoutParams as LayoutParams
@@ -1078,12 +718,8 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                 } else {
                     gapApplied = true
                 }
-                setChildFrame(
-                    child, childLeft, childTop + getLocationOffset(child),
-                    childWidth, childHeight
-                )
-                childTop += childHeight + getNextLocationOffset(child)
-                i += getChildrenSkipCount(child, i)
+                setChildFrame(child, childLeft, childTop, childWidth, childHeight)
+                childTop += childHeight
             }
             i++
         }
@@ -1152,9 +788,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
         while (i < count) {
             val childIndex = start + dir * i
             val child = getChildAt(childIndex)
-            if (child == null) {
-                childLeft += measureNullChild(childIndex)
-            } else if (child.visibility != GONE) {
+            if (child.visibility != GONE) {
                 val childWidth = child.measuredWidth
                 val childHeight = child.measuredHeight
                 var childBaseline = -1
@@ -1202,12 +836,8 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                 } else {
                     gapApplied = true
                 }
-                setChildFrame(
-                    child, childLeft + getLocationOffset(child), childTop,
-                    childWidth, childHeight
-                )
-                childLeft += (childWidth + getNextLocationOffset(child))
-                i += getChildrenSkipCount(child, childIndex)
+                setChildFrame(child, childLeft, childTop, childWidth, childHeight)
+                childLeft += childWidth
             }
             i++
         }
@@ -1334,7 +964,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
      * @attr ref android.R.styleable#LinearLayout_Layout_layout_weight
      * @attr ref android.R.styleable#LinearLayout_Layout_layout_gravity
      */
-    public open class LayoutParams : UseMarginsLayoutParams, MaxSizeLayoutParams {
+    public open class LayoutParams : UseMarginsLayoutParams, MaxSizeLayoutParams, WeightedLayoutParams {
         /**
          * Indicates how much of the extra space in the LinearLayout will be
          * allocated to the view associated with these LayoutParams. Specify
@@ -1342,7 +972,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
          * will be pro-rated among all views whose weight is greater than 0.
          */
         @ViewDebug.ExportedProperty(category = "layout")
-        public var weight = 0f
+        override var weight: Float = 0f
         /**
          * Indicates how much of the extra space in the LinearLayout will be
          * allocated to the view associated with these LayoutParams. Specify
@@ -1350,7 +980,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
          * will be pro-rated among all views whose weight is greater than 0.
          */
         @ViewDebug.ExportedProperty(category = "layout")
-        public var gapRatio = 1f
+        public var gapRatio: Float = 1f
 
         @ViewDebug.ExportedProperty(category = "layout")
         public var gapBeforeOverride: Int? = null
@@ -1391,7 +1021,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                 to = "FILL"
             )]
         )
-        public var gravity = -1
+        public var gravity: Int = -1
 
         /**
          * {@inheritDoc}
@@ -1432,8 +1062,8 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
     }
 
     public companion object {
-        public const val HORIZONTAL = 0
-        public const val VERTICAL = 1
+        public const val HORIZONTAL: Int = 0
+        public const val VERTICAL: Int = 1
         private const val VERTICAL_GRAVITY_COUNT = 4
 
         private const val INDEX_CENTER_VERTICAL = 0

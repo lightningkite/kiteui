@@ -19,7 +19,7 @@ import platform.UIKit.*
 import platform.darwin.*
 
 public actual class Canvas actual constructor(context: ElementContext) : NativeElement(context) {
-    override val native = CanvasView()
+    override val native: CanvasView = CanvasView()
 
     public actual var delegate: CanvasDelegate?
         get() = native.delegate
@@ -90,7 +90,7 @@ public class CanvasView : UIView(CGRectZero.readValue()) {
         }
     }
 
-    public var delegate: CanvasDelegate? = null
+    internal var delegate: CanvasDelegate? = null
         set(value) {
             field?.invalidate = {}
             field = value
@@ -105,7 +105,7 @@ public class CanvasView : UIView(CGRectZero.readValue()) {
         addGestureRecognizer(gestureRecognizer!!)
     }
 
-    public fun terminate() {
+    internal fun terminate() {
         if(gestureRecognizer == null) return
         removeGestureRecognizer(gestureRecognizer!!)
         delegate = null

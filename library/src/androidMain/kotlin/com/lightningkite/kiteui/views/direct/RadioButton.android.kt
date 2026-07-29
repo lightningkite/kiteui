@@ -12,8 +12,8 @@ public actual class RadioButton actual constructor(context: ElementContext): Nat
     actual override val underlyingNativeElement: RadioButton get() = this
 
     override val driverValue: String? get() = radioDriverValue()
-    override val driverActions get() = super.driverActions + radioDriverActions()
-    override val native = android.widget.RadioButton(context.activity)
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + radioDriverActions()
+    override val native: android.widget.RadioButton = android.widget.RadioButton(context.activity)
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)

@@ -18,8 +18,8 @@ import com.lightningkite.reactive.core.*
 
 public actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textAreaDriverValue()
-    override val driverActions get() = super.driverActions + textAreaDriverActions()
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + textAreaDriverActions()
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
     }
@@ -70,7 +70,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         set(value) {
             native.hint = value
         }
-    public var align: Align
+    internal var align: Align
         get() {
             return when (native.gravity) {
                 Gravity.START -> Align.Start
@@ -94,7 +94,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
                 }
             }
         }
-    public var textSize: Dimension
+    internal var textSize: Dimension
         get() {
             return Dimension(native.textSize)
         }

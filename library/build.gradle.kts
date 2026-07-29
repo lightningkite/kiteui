@@ -31,7 +31,7 @@ dokka {
 
 kotlin {
     applyDefaultHierarchyTemplate()
-    explicitApiWarning()  // api-cleanup: flip to explicitApi() (strict) once the migration lands
+    explicitApi()  // strict: missing visibility/return-type on public API is a compile error
 
     androidTarget {
         publishLibraryVariants("release")

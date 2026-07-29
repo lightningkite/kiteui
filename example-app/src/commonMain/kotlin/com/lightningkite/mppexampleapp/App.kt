@@ -22,7 +22,7 @@ val appTheme = Signal<Theme>(defaultTheme)
 
 class ToastException(override val message: String) : Exception()
 
-fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
+fun ViewWriter.app(navigator: PageNavigator) {
     debugMode = true
 //    configureTelemetry(navigator)
 
@@ -44,7 +44,7 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
 
     Element.Debugger.leakDetect = true
     val rootView = produceExactlyOneElement {
-        appNav(navigator, dialog) {
+        appNav(navigator) {
             appName = "KiteUI Sample App"
 
             ::navItems {

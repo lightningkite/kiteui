@@ -48,14 +48,14 @@ import platform.darwin.NSObject
 //}
 public class ExtensionProperty<A: NSObject, B>(): ReadWriteProperty<A, B?> {
     
-    public val key = NSValue.valueWithPointer((Random.nextLong().toString() as NSString).UTF8String)
+    public val key: NSValue = NSValue.valueWithPointer((Random.nextLong().toString() as NSString).UTF8String)
     override fun getValue(thisRef: A, property: KProperty<*>): B? = getValue(thisRef)
-    override fun setValue(thisRef: A, property: KProperty<*>, value: B?) = setValue(thisRef, value)
+    override fun setValue(thisRef: A, property: KProperty<*>, value: B?): Unit = setValue(thisRef, value)
     
     @Suppress("UNCHECKED_CAST")
     public fun getValue(thisRef: A): B? = com.lightningkite.kiteui.objc.getAssociatedObjectWithKey(thisRef, key) as? B
     
-    public fun setValue(thisRef: A, value: B?) = com.lightningkite.kiteui.objc.setAssociatedObjectWithKey(thisRef, key, value)
+    public fun setValue(thisRef: A, value: B?): Unit = com.lightningkite.kiteui.objc.setAssociatedObjectWithKey(thisRef, key, value)
     public companion object {
         public fun debug() {}
     }

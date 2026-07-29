@@ -28,8 +28,8 @@ public class MockExternalServices(
 
     // --- Queued responses (FIFO) ---
     // by Claude - single queue for all file-related requests (picker, capture, multi-file)
-    public val pendingFileResponses = ArrayDeque<FileReference?>()
-    public val pendingGeolocation = ArrayDeque<GeolocationResult>()
+    public val pendingFileResponses: ArrayDeque<FileReference?> = ArrayDeque<FileReference?>()
+    public val pendingGeolocation: ArrayDeque<GeolocationResult> = ArrayDeque<GeolocationResult>()
 
     // --- Recorded calls ---
     public sealed class Call {
@@ -48,7 +48,7 @@ public class MockExternalServices(
         public data class GetCurrentPosition(val result: GeolocationResult?) : Call()
     }
 
-    public val calls = mutableListOf<Call>()
+    public val calls: MutableList<Call> = mutableListOf<Call>()
 
     // --- ExternalLinksAccess ---
 

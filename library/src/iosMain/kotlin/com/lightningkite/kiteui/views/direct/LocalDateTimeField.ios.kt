@@ -19,9 +19,9 @@ import platform.UIKit.*
 
 public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
-    override val driverActions get() = super.driverActions + localDateDriverActions()
-    override val native = WrapperView()
-    public val textField = TextFieldInput(this)
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateDriverActions()
+    override val native: WrapperView = WrapperView()
+    internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
@@ -62,7 +62,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
         }
     }
 
-    public var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -75,7 +75,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
         fontAndStyle = theme.theme.font
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -86,9 +86,9 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
 
 public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
-    override val driverActions get() = super.driverActions + localTimeDriverActions()
-    override val native = WrapperView()
-    public val textField = TextFieldInput(this)
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localTimeDriverActions()
+    override val native: WrapperView = WrapperView()
+    internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
@@ -129,7 +129,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
         }
     }
 
-    public var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -142,7 +142,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
         fontAndStyle = theme.theme.font
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -153,9 +153,9 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
 
 public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
-    override val driverActions get() = super.driverActions + localDateTimeDriverActions()
-    override val native = WrapperView()
-    public val textField = TextFieldInput(this)
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateTimeDriverActions()
+    override val native: WrapperView = WrapperView()
+    internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
@@ -195,7 +195,7 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
         }
     }
 
-    public var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -208,7 +208,7 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
         fontAndStyle = theme.theme.font
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)

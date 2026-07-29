@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.views.*
 import android.webkit.WebView as AndroidWebView
 
 public actual class WebView actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = AndroidWebView(context.activity).apply {
+    override val native: AndroidWebView = AndroidWebView(context.activity).apply {
     }
     public actual var url: String
         get() {

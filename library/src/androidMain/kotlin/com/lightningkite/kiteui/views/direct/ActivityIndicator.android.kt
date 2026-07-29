@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 
 public actual class ActivityIndicator actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = ProgressBar(context.activity).apply {
+    override val native: ProgressBar = ProgressBar(context.activity).apply {
         importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
         contentDescription = "Loading"
     }

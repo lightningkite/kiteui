@@ -51,7 +51,7 @@ public data class TransformMatrix(
     val f: Double = 0.0,  // vertical translation
 ) {
     public companion object {
-        public val identity = TransformMatrix()
+        public val identity: TransformMatrix = TransformMatrix()
     }
 }
 

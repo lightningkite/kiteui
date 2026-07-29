@@ -7,6 +7,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
@@ -129,7 +130,7 @@ public fun retryWebsocket(
         }
     }
 
-    return object : RetryWebsocket, CalculationContext {
+    return object : RetryWebsocket, CoroutineScope {
 
         override val connected: Reactive<Boolean>
             get() = connected
@@ -147,7 +148,7 @@ public fun retryWebsocket(
 
         init {
             var starting = false
-            reactiveScope {
+            reactive {
                 val shouldBeOn = shouldBeOn()
                 val isOn = connected()
                 if (shouldBeOn && !isOn && !starting) {

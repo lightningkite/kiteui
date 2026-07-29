@@ -168,7 +168,7 @@ private fun ContainerElement.navGroupActionsInner(readable: Reactive<List<NavEle
     }
 }
 
-public fun ElementWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}) {
+public fun ElementWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainerElement.() -> Unit = {}) {
     row {
         navGroupTopInner(readable)
         setup()
@@ -206,7 +206,7 @@ private fun ContainerElement.navGroupTopInner(readable: Reactive<List<NavElement
                 ::shown { it.hidden?.invoke() != true }
                 preferredDirection = PopoverPreferredDirection.belowRight
                 opensMenu {
-                    navGroupColumn(remember { it.children() }, { closePopovers() })
+                    navGroupColumn(remember { it.children() }, { context.closePopovers() })
                 }
                 text { ::content { it.title() } }
             }
@@ -260,7 +260,7 @@ public fun ElementWriter.navElementIconAndCountHorizontal(navElement: NavElement
     }
 }
 
-public fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): Unit {
+public fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainerElement.() -> Unit): Unit {
     row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {
@@ -292,7 +292,7 @@ public fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setu
                     display(it)
                     preferredDirection = PopoverPreferredDirection.aboveCenter
                     opensMenu {
-                        navGroupColumn(remember { it.children() }, { closePopovers() })
+                        navGroupColumn(remember { it.children() }, { context.closePopovers() })
                     }
                 }
 

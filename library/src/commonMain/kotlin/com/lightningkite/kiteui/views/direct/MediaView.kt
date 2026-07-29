@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 
 public class MediaView(private val frame: Frame) : Element by frame {
@@ -37,7 +38,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
         val description: String?
     )
 
-    public val currentRawMediaView = Signal<Element?>(null)
+    public val currentRawMediaView: Signal<Element?> = Signal<Element?>(null)
 
     init {
         val removeListener = currentRawMediaView.addListener {
@@ -81,12 +82,12 @@ public class MediaView(private val frame: Frame) : Element by frame {
             (currentRawMediaView.value as? RawVideoView)?.loop = value
         }
 
-    public val time: MutableReactive<Double> = currentRawMediaView.lens( get = { (it as? RawVideoView)?.time ?: Signal(0.0) } ).flatten()
+    public val time: MutableReactive<Double> = currentRawMediaView.lens( get = { (it as? RawVideoView)?.currentTime?.lens(get = { it.toDouble(DurationUnit.SECONDS) }, set = { it.seconds }) ?: Signal(0.0) } ).flatten()
     public val playing: MutableReactive<Boolean> = currentRawMediaView.lens { (it as? RawVideoView)?.playing ?: Signal(false) }.flatten()
     public val volume: MutableReactive<Float> = currentRawMediaView.lens { (it as? RawVideoView)?.volume ?: Signal(0f) }.flatten()
 
 
-    public var ready = false
+    public var ready: Boolean = false
 
     @OverrideOnly
     override fun onStartup() {
@@ -100,8 +101,8 @@ public class MediaView(private val frame: Frame) : Element by frame {
 
     public val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
 
-    public val shownInfo = RawReactive<Info?>(ReactiveState(null))
-    public var cannotBeCovered = false
+    public val shownInfo: RawReactive<Info?> = RawReactive<Info?>(ReactiveState(null))
+    public var cannotBeCovered: Boolean = false
 
     @OptIn(ExperimentalKiteUi::class)
     public fun refresh() {

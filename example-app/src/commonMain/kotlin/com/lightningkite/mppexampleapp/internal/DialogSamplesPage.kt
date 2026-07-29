@@ -3,8 +3,6 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
-import com.lightningkite.kiteui.navigation.render
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.confirmDanger
@@ -34,7 +32,7 @@ object DialogSamplesPage : Page {
                 h6 { content = "Launch Test Dialog" }
                 onClick {
                     context.dialog { close ->
-                        col {
+                        card.col {
                             h2 { content = "Sample Dialog" }
                             text { content = "This is a sample dialog." }
                             row {
@@ -50,7 +48,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch edit dialog" }
                 onClick {
-                    context.dialog { close ->
+                    dialog { close ->
                         col {
                             text("INPUT TIME!")
                             field("Field") {

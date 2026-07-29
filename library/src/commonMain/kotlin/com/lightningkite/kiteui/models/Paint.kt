@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.time.Duration
 
@@ -46,7 +47,7 @@ public data class LinearGradient(
     val y1: Double? = null,
 ) : Paint {
     public companion object {
-        public val INVALID = LinearGradient(listOf())
+        public val INVALID: LinearGradient = LinearGradient(listOf())
     }
     override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
@@ -68,11 +69,11 @@ public data class LinearGradient(
         )
     }
 
-    public fun toGrayscale() = copy(stops = stops.map { it.copy(color = it.color.toGrayscale()) })
-    public fun toWhite(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.toWhite(ratio)) })
-    public fun toBlack(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.toBlack(ratio)) })
-    public fun highlight(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.highlight(ratio)) })
-    public fun invert() = copy(stops = stops.map { it.copy(color = it.color.invert()) })
+    public fun toGrayscale(): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.toGrayscale()) })
+    public fun toWhite(ratio: Float): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.toWhite(ratio)) })
+    public fun toBlack(ratio: Float): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.toBlack(ratio)) })
+    public fun highlight(ratio: Float): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.highlight(ratio)) })
+    public fun invert(): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.invert()) })
 }
 
 /**
@@ -120,12 +121,12 @@ public data class RadialGradient(
 
 @Serializable
 public data class Color(
-    val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
+    val alpha: Float = 1f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
 ) : Paint {
 
     override fun map(mapper: (Color) -> Color): Paint = let(mapper)
     override fun closestColor(): Color = this
-    public fun applyAlpha(alpha: Float) = copy(alpha = alpha * this.alpha)
+    public fun applyAlpha(alpha: Float): Color = copy(alpha = alpha * this.alpha)
 
     public fun toInt(): Int {
         return (alpha.byteize() shl 24) or (red.byteize() shl 16) or (green.byteize() shl 8) or (blue.byteize())
@@ -157,20 +158,22 @@ public data class Color(
     )
 
     public companion object {
+        /** Minimum WCAG 2.1 AA contrast ratio for normal-size body text. */
+        public const val WCAG_AA_NORMAL_TEXT_CONTRAST_RATIO: Float = 4.5f
 
-        public val transparent = Color()
-        public val white = Color(1f, 1f, 1f, 1f)
-        public val gray = Color(1f, .5f, .5f, .5f)
-        public fun gray(amount: Float) = Color(1f, amount, amount, amount)
-        public val black = Color(1f, 0f, 0f, 0f)
+        public val transparent: Color = Color(alpha = 0f)
+        public val white: Color = Color(1f, 1f, 1f, 1f)
+        public val gray: Color = Color(1f, .5f, .5f, .5f)
+        public fun gray(amount: Float): Color = Color(1f, amount, amount, amount)
+        public val black: Color = Color(1f, 0f, 0f, 0f)
 
-        public val red = Color(1f, 1f, 0f, 0f)
-        public val orange = Color(1f, 1f, 0.5f, 0f)
-        public val yellow = Color(1f, 1f, 1f, 0f)
-        public val green = Color(1f, 0f, 1f, 0f)
-        public val teal = Color(1f, 0f, 1f, 1f)
-        public val blue = Color(1f, 0f, 0f, 1f)
-        public val purple = Color(1f, 1f, 0f, 1f)
+        public val red: Color = Color(1f, 1f, 0f, 0f)
+        public val orange: Color = Color(1f, 1f, 0.5f, 0f)
+        public val yellow: Color = Color(1f, 1f, 1f, 0f)
+        public val green: Color = Color(1f, 0f, 1f, 0f)
+        public val teal: Color = Color(1f, 0f, 1f, 1f)
+        public val blue: Color = Color(1f, 0f, 0f, 1f)
+        public val purple: Color = Color(1f, 1f, 0f, 1f)
 
         private fun Float.byteize() = (this * 0xFF).toInt().coerceIn(0x00, 0xFF)
 
@@ -227,6 +230,18 @@ public data class Color(
 
         public fun hsvInterpolate(left: Color, right: Color, ratio: Float): Color =
             HSVColor.interpolate(left.toHSV(), right.toHSV(), ratio).toRGB()
+
+        public fun mutedButLegible(foreground: Color, background: Color): Color {
+            // Binary-search the largest interpolation toward the background that still clears the ratio.
+            var lo = 0f
+            var hi = 0.6f
+            repeat(10) {
+                val mid = (lo + hi) / 2f
+                if (interpolate(foreground, background, mid) contrastAgainst background >= WCAG_AA_NORMAL_TEXT_CONTRAST_RATIO) lo = mid
+                else hi = mid
+            }
+            return interpolate(foreground, background, lo)
+        }
     }
 
     val average: Float get() = (red + green + blue) / 3f
@@ -269,9 +284,9 @@ public data class Color(
             abs(blue - other.blue) +
             abs(alpha - other.alpha)
 
-    public fun toWhite(ratio: Float) = interpolate(this, white, ratio)
-    public fun toBlack(ratio: Float) = interpolate(this, black, ratio)
-    public fun highlight(ratio: Float) = if (average > .5) toBlack(ratio) else toWhite(ratio)
+    public fun toWhite(ratio: Float): Color = interpolate(this, white, ratio)
+    public fun toBlack(ratio: Float): Color = interpolate(this, black, ratio)
+    public fun highlight(ratio: Float): Color = if (average > .5) toBlack(ratio) else toWhite(ratio)
     public fun invert(): Color = Color(alpha = alpha, red = 1f - red, green = 1f - green, blue = 1f - blue)
 
     public fun toHSV(): HSVColor = HSVColor(alpha = alpha, hue = when {
@@ -327,6 +342,23 @@ public data class Color(
     public fun toAlphalessWeb(): String {
         @Suppress("EXPERIMENTAL_API_USAGE") return "#" + this.toInt().toUInt().toString(16).padStart(8, '0').drop(2)
     }
+
+    public infix fun contrastAgainst(against: Color): Float {
+        val la = this.relativeLuminance()
+        val lb = against.relativeLuminance()
+        val lighter = maxOf(la, lb)
+        val darker = minOf(la, lb)
+        return (lighter + 0.05f) / (darker + 0.05f)
+    }
+
+    /** WCAG 2.1 relative luminance: gamma-linearized channels weighted by human luminance sensitivity. */
+    public fun relativeLuminance(): Float {
+        fun linearize(channel: Float) =
+            if (channel <= 0.03928f) channel / 12.92f else ((channel + 0.055f) / 1.055f).pow(2.4f)
+        return 0.2126f * linearize(red) + 0.7152f * linearize(green) + 0.0722f * linearize(blue)
+    }
+
+    public val maximallyContrastingForeground: Color get() = if(relativeLuminance() > 0.5f) Color.black else Color.white
 }
 
 public interface ColorSpace {
@@ -467,9 +499,9 @@ public data class HSPColor(
     }
 
     public companion object {
-        public const val redBrightness = .299f
-        public const val greenBrightness = .587f
-        public const val blueBrightness = .114f
+        public const val redBrightness: Float = .299f
+        public const val greenBrightness: Float = .587f
+        public const val blueBrightness: Float = .114f
         public fun interpolate(left: HSPColor, right: HSPColor, ratio: Float): HSPColor {
             val invRatio = 1 - ratio
             return HSPColor(

@@ -78,7 +78,7 @@ private class ObserveRemover(val source: WeakReference<NSObject>, val key: Strin
     }
 }
 
-public fun UIControl.findNextFocus(): UIView? {
+internal fun UIControl.findNextFocus(): UIView? {
     return superview?.let {
         it.findNextParentFocus(startingAtIndex = it.subviews.indexOf(this) + 1)
     }
@@ -105,9 +105,9 @@ private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
     return null
 }
 
-public val NextFocusDelegateShared = NextFocusDelegate()
+internal val NextFocusDelegateShared: NextFocusDelegate = NextFocusDelegate()
 
-public class NextFocusDelegate : NSObject(), UITextFieldDelegateProtocol {
+internal class NextFocusDelegate : NSObject(), UITextFieldDelegateProtocol {
     override fun textFieldShouldReturn(textField: UITextField): Boolean {
         textField.findNextFocus()?.let {
             it.becomeFirstResponder()

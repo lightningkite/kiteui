@@ -97,7 +97,7 @@ public inline fun <reified T : Any> ViewWriter.ssrResource(
  * @param loader Suspending function that fetches the data.
  */
 public class SsrResource<T : Any>(
-    public val key: String,
+    internal val key: String,
     private val serializer: KSerializer<T>,
     private val loader: suspend () -> T
 ) : Reactive<ReactiveState<T>> {
@@ -115,7 +115,7 @@ public class SsrResource<T : Any>(
     /**
      * Get the inner ReactiveState directly (for non-reactive contexts).
      */
-    public val innerState: ReactiveState<T>
+    internal val innerState: ReactiveState<T>
         get() = _state.state.getOrNull() ?: ReactiveState.notReady
 
     override fun addListener(listener: () -> Unit): () -> Unit = _state.addListener(listener)
@@ -151,7 +151,7 @@ public class SsrResource<T : Any>(
      * Suspend until the resource is loaded (success or exception).
      * Throws if the resource loading failed with an exception.
      */
-    public suspend fun awaitLoaded(): T {
+    internal suspend fun awaitLoaded(): T {
         return suspendCancellableCoroutine { cont ->
             var resolved = false
             var removeListener: (() -> Unit)? = null
@@ -187,7 +187,7 @@ public class SsrResource<T : Any>(
      * Serialize current value. Throws if not loaded.
      * Called during SSR to export data for client hydration.
      */
-    public fun serialize(): String {
+    internal fun serialize(): String {
         val value = innerState.getOrNull()
             ?: throw IllegalStateException("Cannot serialize unloaded resource '$key'")
         return Json.encodeToString(serializer, value)

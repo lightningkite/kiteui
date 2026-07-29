@@ -8,7 +8,7 @@ package com.lightningkite.kiteui.telemetry
  * trace is garbage (iOS release with only memory addresses, or empty), falls back to
  * exception cause chain + normalized message.
  */
-public object CrashFingerprint {
+internal object CrashFingerprint {
 
     private val addressPattern = Regex("0x[0-9a-fA-F]+")
     private val identityHashPattern = Regex("@[0-9a-f]{4,}")

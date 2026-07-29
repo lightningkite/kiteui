@@ -12,7 +12,7 @@ import kotlin.math.min
 
 
 public actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = NCanvas(context.activity)
+    override val native: NCanvas = NCanvas(context.activity)
 
     public actual var delegate: CanvasDelegate?
         get() = native.delegate
@@ -36,7 +36,7 @@ public actual class NCanvas @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
-    public var delegate: CanvasDelegate? = null
+    internal var delegate: CanvasDelegate? = null
         set(value) {
             field?.invalidate = {}
             field = value

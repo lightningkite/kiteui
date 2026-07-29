@@ -22,11 +22,11 @@ import kotlin.coroutines.resume
 
 public object AndroidAppContext {
     public lateinit var applicationCtx: Context
-    public val res: Resources by lazy { applicationCtx.resources }
+    internal val res: Resources by lazy { applicationCtx.resources }
     public val density: Float by lazy { res.displayMetrics.density }
     public val oneRem: Float by lazy { density * 14 }
     public var autoCompleteLayoutResource: Int = android.R.layout.simple_list_item_1
-    public val ktorClient: HttpClient by lazy {
+    internal val ktorClient: HttpClient by lazy {
         HttpClient(OkHttp) {
             install(WebSockets)
             install(UserAgent) {
@@ -42,11 +42,11 @@ public object AndroidAppContext {
             }
         }
     }
-    public var activityCtxRef: WeakReference<KiteUiActivity>? = null
+    internal var activityCtxRef: WeakReference<KiteUiActivity>? = null
     public var activityCtx: KiteUiActivity?
         get() = activityCtxRef?.get()
         set(value) { activityCtxRef = WeakReference(value) }
-    public val executor by lazy {
+    public val executor: ThreadPoolExecutor by lazy {
         ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, ArrayBlockingQueue(10))
     }
 
@@ -57,8 +57,8 @@ public object AndroidAppContext {
      */
     public val fileProviderAuthority: String get() = applicationCtx.packageName + ".fileprovider"
 
-    public fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
-    public fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
+    public fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit): Int? = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
+    public fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit): Int? = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
     public suspend fun requestPermissions(vararg permissions: String): KiteUiActivity.PermissionResult = suspendCancellableCoroutine { continuation ->
         val code = requestPermissions(*permissions) {
             continuation.resume(it)

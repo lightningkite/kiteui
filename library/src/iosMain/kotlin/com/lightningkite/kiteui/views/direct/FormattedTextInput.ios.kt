@@ -11,9 +11,9 @@ import platform.darwin.NSObject
 
 public actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
-    override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
-    override val native = WrapperView()
-    public val textField = UITextField().apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + formattedTextInputDriverActions()
+    override val native: WrapperView = WrapperView()
+    internal val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -60,7 +60,7 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
         applyAlign(_align ?: theme.theme.font.align)
     }
 
-    public fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -68,13 +68,13 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
         textField.textAlignment = alignment
     }
 
-    public fun updateHint() {
+    internal fun updateHint() {
         textField.placeholder = hint
         // TODO: Colored hint
 //        textField.attributedPlaceholder = hint
     }
 
-    public var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()

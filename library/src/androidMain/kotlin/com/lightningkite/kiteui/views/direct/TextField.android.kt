@@ -22,8 +22,8 @@ import com.lightningkite.reactive.core.*
 
 public actual open class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
-    override val driverActions get() = super.driverActions + textInputDriverActions()
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + textInputDriverActions()
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         inputType = EditorInfo.TYPE_CLASS_TEXT
     }
 
@@ -127,12 +127,12 @@ public actual open class TextInput actual constructor(context: ElementContext) :
 }
 
 
-public abstract class EquatableByRef(public val key: String, public val ref: Any) {
+internal abstract class EquatableByRef(public val key: String, public val ref: Any) {
     override fun hashCode(): Int = key.hashCode() + ref.hashCode()
     override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
 }
 
-public var EditText.keyboardHints: KeyboardHints
+internal var EditText.keyboardHints: KeyboardHints
     get() {
         return when (inputType) {
             InputType.TYPE_CLASS_NUMBER -> KeyboardHints(KeyboardCase.None, KeyboardType.Integer)

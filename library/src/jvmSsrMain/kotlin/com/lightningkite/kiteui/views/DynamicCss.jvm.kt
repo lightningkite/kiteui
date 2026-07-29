@@ -7,8 +7,8 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 public actual class DynamicCss actual constructor(basePath: String) {
-    public val rules = java.util.Collections.synchronizedList(ArrayList<String>())
-    public val headElements = java.util.Collections.synchronizedList(ArrayList<String>())
+    internal val rules: MutableList<String> = java.util.Collections.synchronizedList(ArrayList<String>())
+    internal val headElements: MutableList<String> = java.util.Collections.synchronizedList(ArrayList<String>())
 
     public actual val basePath: String = basePath
 
@@ -39,14 +39,14 @@ public actual class DynamicCss actual constructor(basePath: String) {
         return rules.joinToString("\n")
     }
 
-    public val map = java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, String>>>()
+    internal val map: java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, String>>> = java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, String>>>()
 
     public actual fun add(selector: String, key: String, value: String, media: String) {
         map.getOrPut(media) { java.util.concurrent.ConcurrentHashMap() }.getOrPut(selector) { java.util.concurrent.ConcurrentHashMap() }[key] = value
     }
 
-    @Volatile public var flushTotal: Duration = 0.seconds
-    @Volatile public var ruleTotal = 0
+    @Volatile internal var flushTotal: Duration = 0.seconds
+    @Volatile internal var ruleTotal: Int = 0
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     @Synchronized
     public actual fun flush() {

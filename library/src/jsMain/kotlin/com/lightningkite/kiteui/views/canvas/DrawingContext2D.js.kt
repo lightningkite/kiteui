@@ -10,7 +10,7 @@ import org.w3c.dom.CanvasTextAlign
 public actual typealias DrawingContext2D = CanvasRenderingContext2D
 //actual typealias TextAlign = CanvasTextAlign
 
-public actual fun DrawingContext2D.appendArc(x: Double, y: Double, radius: Double, startAngle: Angle, endAngle: Angle, anticlockwise: Boolean) = arc(x, y, radius, startAngle.radians.toDouble(), endAngle.radians.toDouble(), anticlockwise)
+public actual fun DrawingContext2D.appendArc(x: Double, y: Double, radius: Double, startAngle: Angle, endAngle: Angle, anticlockwise: Boolean): Unit = arc(x, y, radius, startAngle.radians.toDouble(), endAngle.radians.toDouble(), anticlockwise)
 public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double):Unit = strokeText(text, x, y)
 public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double):Unit = fillText(text, x, y)
 public actual fun DrawingContext2D.font(size: Double, value: FontAndStyle) {
@@ -19,8 +19,8 @@ public actual fun DrawingContext2D.font(size: Double, value: FontAndStyle) {
 public actual fun DrawingContext2D.textAlign(alignment: TextAlign){
     textAlign = alignment.toString().asDynamic().unsafeCast<CanvasTextAlign>()
 }
-public actual fun DrawingContext2D.fill() = fill("nonzero".asDynamic().unsafeCast<CanvasFillRule>())
-public actual fun DrawingContext2D.fillEvenOdd() = fill("evenodd".asDynamic().unsafeCast<CanvasFillRule>())
+public actual fun DrawingContext2D.fill(): Unit = fill("nonzero".asDynamic().unsafeCast<CanvasFillRule>())
+public actual fun DrawingContext2D.fillEvenOdd(): Unit = fill("evenodd".asDynamic().unsafeCast<CanvasFillRule>())
 
 public actual var DrawingContext2D.strokePaint: Paint
     get() = when(val it = strokeStyle) {

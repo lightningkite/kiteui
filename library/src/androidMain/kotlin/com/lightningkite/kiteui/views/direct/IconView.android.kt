@@ -11,12 +11,12 @@ public actual class NIconView(context: Context) : AppCompatImageView(context) {
     init {
         scaleType = ScaleType.CENTER_INSIDE
     }
-    public var icon: Icon? = null
+    internal var icon: Icon? = null
         set(value) {
             field = value
             updateIcon()
         }
-    public var iconPaint: Paint = Color.black
+    internal var iconPaint: Paint = Color.black
         set(value) {
             field = value
             updateIcon()
@@ -27,7 +27,7 @@ public actual class NIconView(context: Context) : AppCompatImageView(context) {
 }
 
 public actual class IconView actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = NIconView(context.activity)
+    override val native: NIconView = NIconView(context.activity)
     public actual var source: Icon?
         get() = native.icon
         set(value) {

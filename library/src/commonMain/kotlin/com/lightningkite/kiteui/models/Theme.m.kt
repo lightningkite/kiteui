@@ -17,7 +17,7 @@ public fun Theme.Companion.material(
     gap: Dimension = 1.rem,
     outline: Paint = background.closestColor().highlight(0.1f),
     outlineWidth: Dimension = 0.dp,
-) = Theme(
+): Theme = Theme(
     id = id,
     font = body,
     elevation = elevation,
@@ -123,7 +123,7 @@ public object MaterialLikeTheme {
         gap: Dimension = 1.rem,
         outline: Paint = background.closestColor().highlight(0.1f),
         outlineWidth: Dimension = 0.dp,
-    ) = Theme.material(
+    ): Theme = Theme.material(
         id = id,
         foreground = foreground,
         background = background,
@@ -167,7 +167,7 @@ public object MaterialLikeTheme {
     public fun random(): Theme = if (Random.nextBoolean()) randomLight() else randomDark()
 }
 
-public fun Theme.randomTitleFontSettings() = copy(
+public fun Theme.randomTitleFontSettings(): Theme = copy(
     id = "${Random.nextInt()}",
     semanticOverrides = SemanticOverrides(
         HeaderSemantic.override {
@@ -184,7 +184,7 @@ public fun Theme.randomTitleFontSettings() = copy(
     )
 )
 
-public fun Theme.randomElevationAndCorners() = when (Random.nextInt(0, 3)) {
+public fun Theme.randomElevationAndCorners(): Theme = when (Random.nextInt(0, 3)) {
     0 -> copy(
         id = "${Random.nextInt()}",
         elevation = Random.nextInt(2, 4).dp,

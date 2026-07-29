@@ -34,7 +34,7 @@ internal inline fun UIView.layoutSubviewsAndLayers() {
     }
 }
 
-public fun UIView.roundCorners(corners: UIRectCorner, radius: CGFloat) {
+internal fun UIView.roundCorners(corners: UIRectCorner, radius: CGFloat) {
 //    val path = UIBezierPath.bezierPathWithRoundedRect(this.bounds, byRoundingCorners = UIRectCornerTopRight, cornerRadii = CGSizeMake(radius, radius))
 //    this.layer.maskedCorners
 //    val mask = CAShapeLayer()
@@ -99,7 +99,7 @@ public class CAGradientLayerResizing : CAGradientLayer {
      * In some cases, we need a separate layer to mask views. The actual CAGradientLayerResizing layer cannot be used
      * because it has a superlayer and the CALayer mask property does not work with layers that have superlayers
      */
-    public fun getOrInitBackgroundMask(): CALayer {
+    internal fun getOrInitBackgroundMask(): CALayer {
         if (backgroundMask == null) {
             val whiteLayer = CALayer().apply {
                 backgroundColor = UIColor.whiteColor.CGColor
@@ -111,19 +111,19 @@ public class CAGradientLayerResizing : CAGradientLayer {
         return backgroundMask!!
     }
 
-    public var desiredCornerRadius: CornerRadii = CornerRadii.Fixed(0.px)
+    internal var desiredCornerRadius: CornerRadii = CornerRadii.Fixed(0.px)
         set(value) {
             if (this == null) return //stupid iOS issue prevention
             field = value
             refreshCorners()
         }
-    public var desiredCornerShape: CornerShape = CornerShape.Circular
+    internal var desiredCornerShape: CornerShape = CornerShape.Circular
         set(value) {
             if (this == null) return //stupid iOS issue prevention
             field = value
             refreshCorners()
         }
-    public var parentSpacing: CGFloat = 0.0
+    internal var parentSpacing: CGFloat = 0.0
         set(value) {
             if (this == null) return //stupid iOS issue prevention
             field = value
@@ -180,7 +180,7 @@ public class CAGradientLayerResizing : CAGradientLayer {
 
 
 
-    public fun refreshCorners() {
+    internal fun refreshCorners() {
         if (this == null) return //stupid iOS issue prevention
 
         fun valueOfRadii(d: CornerRadii): Double {

@@ -8,7 +8,7 @@ public actual data class DimensionRaw(
     val px: Double = 0.0,
     val rem: Double = 0.0,
 ) : Comparable<DimensionRaw> {
-    val roughPx get() = px + rem * 16
+    val roughPx: Double get() = px + rem * 16
     override fun toString(): String {
         return when {
             px == 0.0 -> "${rem}rem"
@@ -20,14 +20,14 @@ public actual data class DimensionRaw(
     override fun compareTo(other: DimensionRaw): Int = roughPx.compareTo(other.roughPx)
 
     public companion object {
-        public val zero = DimensionRaw()
+        public val zero: DimensionRaw = DimensionRaw()
     }
 }
 
 public fun Dimension(
     px: Double = 0.0,
     rem: Double = 0.0,
-) = Dimension(DimensionRaw(px, rem))
+): Dimension = Dimension(DimensionRaw(px, rem))
 
 public actual val Int.px: Dimension
     get() = Dimension(px = this.toDouble())

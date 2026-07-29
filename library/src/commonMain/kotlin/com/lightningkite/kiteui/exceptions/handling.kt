@@ -43,9 +43,9 @@ public class ExceptionHandlersTree(private val parent: ExceptionHandlersTree? = 
     public fun remove(handler: ExceptionHandler): Boolean = handlers.remove(handler) || parent?.remove(handler) == true
     public fun remove(message: ExceptionToMessage): Boolean = messages.remove(message) || parent?.remove(message) == true
 
-    public operator fun plusAssign(handler: ExceptionHandler) = add(handler)
+    public operator fun plusAssign(handler: ExceptionHandler): Unit = add(handler)
 
-    public operator fun plusAssign(message: ExceptionToMessage) = add(message)
+    public operator fun plusAssign(message: ExceptionToMessage): Unit = add(message)
 
     /**
      * Attempts to find and invoke a matching [ExceptionHandler] in this tree to handle the exception, short-circuiting.
@@ -128,7 +128,7 @@ public interface ExceptionHandler {
      * Whether this handler is for a specific exception type (true) or all exceptions (false).
      * Specific handlers are always tried before generic handlers.
      */
-    public val forSpecificException get() = false
+    public val forSpecificException: Boolean get() = false
 
     /**
      * Attempts to handle the given exception.
@@ -155,7 +155,7 @@ public interface ExceptionHandler {
          *
          * Suitable for production use.
          */
-        public val messageDialog = ExceptionHandler(0f) { exception, meta ->
+        public val messageDialog: ExceptionHandler = ExceptionHandler(0f) { exception, meta ->
             val message = exceptionMessage(exception, meta) ?: return@ExceptionHandler null
 
             dialog { close ->
@@ -190,7 +190,7 @@ public interface ExceptionHandler {
          *
          * Suitable for development/debugging.
          */
-        public val stacktraceDialog = ExceptionHandler(0f) { exception, meta ->
+        public val stacktraceDialog: ExceptionHandler = ExceptionHandler(0f) { exception, meta ->
             val message = exceptionMessage(exception, meta) ?: return@ExceptionHandler null
 
             dialog { close ->
@@ -240,7 +240,7 @@ public interface ExceptionToMessage {
      * Whether this converter is for a specific exception type (true) or all exceptions (false).
      * Specific converters are always tried before generic converters.
      */
-    public val forSpecificException get() = false
+    public val forSpecificException: Boolean get() = false
 
     /**
      * Attempts to convert the given exception into a user-friendly message.
@@ -255,7 +255,7 @@ public interface ExceptionToMessage {
         /**
          * Converter for [PlainTextException] that extracts the title, message, and actions.
          */
-        public val plainTextException = ExceptionToMessage<PlainTextException>(0f) {
+        public val plainTextException: ExceptionToMessage = ExceptionToMessage<PlainTextException>(0f) {
             ExceptionMessage(it.title, it.message, it.actions)
         }
 
@@ -265,7 +265,7 @@ public interface ExceptionToMessage {
          *
          * Suitable for production use.
          */
-        public val unexpectedError = ExceptionToMessage(0f) {
+        public val unexpectedError: ExceptionToMessage = ExceptionToMessage(0f) {
             ExceptionMessage(
                 "Error",
                 "An unexpected error occurred."
@@ -280,7 +280,7 @@ public interface ExceptionToMessage {
          *
          * Suitable for development/debugging.
          */
-        public val debugInformation = ExceptionToMessage(0f) { e, meta ->       // TODO: Most of this functionality should live in the stacktraceDialog handler an be reported to Otel
+        public val debugInformation: ExceptionToMessage = ExceptionToMessage(0f) { e, meta ->       // TODO: Most of this functionality should live in the stacktraceDialog handler an be reported to Otel
             val usingStacktraceDialog = exceptionHandlers.contains(ExceptionHandler.stacktraceDialog)
 
             fun report(): String = buildString {

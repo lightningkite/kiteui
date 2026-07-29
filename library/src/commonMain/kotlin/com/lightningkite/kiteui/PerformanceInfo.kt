@@ -7,9 +7,9 @@ import kotlin.time.measureTime
 public class PerformanceInfo(public val key: String, public val immediate: Boolean = false) {
     public var sum: Duration = Duration.ZERO
     public var count: Int = 0
-    public val average get() = sum / count.coerceAtLeast(1)
+    public val average: Duration get() = sum / count.coerceAtLeast(1)
 
-    public fun trace() = Trace()
+    public fun trace(): Trace = Trace()
 
     public inline operator fun <T> invoke(crossinline action: ()->T): T {
         val time = TimeSource.Monotonic.markNow()
@@ -41,8 +41,8 @@ public class PerformanceInfo(public val key: String, public val immediate: Boole
 
     public companion object {
         public var display: Boolean = true
-        public val all = HashMap<String, PerformanceInfo>()
-        public var lastReport = clockMillis()
+        public val all: MutableMap<String, PerformanceInfo> = HashMap<String, PerformanceInfo>()
+        public var lastReport: Double = clockMillis()
         public fun reportIfNeeded() {
             if(!display) return
             val now = clockMillis()
@@ -51,13 +51,13 @@ public class PerformanceInfo(public val key: String, public val immediate: Boole
                 all.values.filter { it.count > 0 }.sortedByDescending { it.sum }.forEach { it.print() }
             }
         }
-        public operator fun get(key: String) = all.getOrPut(key) { PerformanceInfo(key) }
-        public fun trace(key: String) = get(key).trace()
+        public operator fun get(key: String): PerformanceInfo = all.getOrPut(key) { PerformanceInfo(key) }
+        public fun trace(key: String): Trace = get(key).trace()
     }
 
     public inner class Trace() {
-        public var going = true
-        public var time = TimeSource.Monotonic.markNow()
+        public var going: Boolean = true
+        public var time: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
         public fun pause() {
             if(!going) throw Exception("Trace mess up")
             going = false

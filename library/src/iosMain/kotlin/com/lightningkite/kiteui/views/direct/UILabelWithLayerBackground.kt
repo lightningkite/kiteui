@@ -16,16 +16,16 @@ import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 
 @OptIn(ExperimentalNativeApi::class)
-public class UILabelWithLayerBackground(public val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
+public class UILabelWithLayerBackground(internal val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
     init {
         userInteractionEnabled = false
     }
 
-    public val label = UILabel().also {
+    public val label: UILabel = UILabel().also {
         userInteractionEnabled = false
     }.also(::addSubview)
 
-    public var foreground: Paint = Color.black
+    internal var foreground: Paint = Color.black
         set(f) {
             field = f
             label.textColor = when (f) {
@@ -108,7 +108,7 @@ public class UILabelWithLayerBackground(public val context: WeakReference<RConte
 
     }
 
-    public val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
+    internal val recognizer: UITapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
     internal fun linkSetup(active: Boolean) {
         userInteractionEnabled = active
         label.userInteractionEnabled = active

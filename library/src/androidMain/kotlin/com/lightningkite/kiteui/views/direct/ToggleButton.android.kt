@@ -10,8 +10,8 @@ import com.lightningkite.reactive.core.*
 @OptIn(ExperimentalKiteUi::class)
 public actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
-    override val driverActions get() = super.driverActions + toggleDriverActions()
-    override val native = FrameLayout(context.activity).apply {
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + toggleDriverActions()
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener { checkedProp.value = !checkedProp.value }
     }
@@ -30,5 +30,5 @@ public actual class ToggleButton actual constructor(context: ElementContext) : N
         }
     }
 
-    override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack): Unit = applyThemeWithRipple(theme)
 }

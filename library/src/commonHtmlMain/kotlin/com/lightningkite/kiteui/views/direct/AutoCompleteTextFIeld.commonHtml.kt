@@ -8,7 +8,7 @@ import com.lightningkite.reactive.core.*
 
 public actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
-    override val driverActions get() = super.driverActions + autoCompleteDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + autoCompleteDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")
@@ -32,7 +32,7 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
         set(value) {
             native.attributes.placeholder = value
         }
-    public var align: Align = Align.Start
+    internal var align: Align = Align.Start
         set(value) {
             native.style.textAlign = when (value) {
                 Align.Start -> "start"
@@ -41,7 +41,7 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
                 Align.Stretch -> "justify"
             }
         }
-    public var textSize: Dimension = 1.rem
+    internal var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()

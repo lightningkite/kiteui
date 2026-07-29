@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui.dom
 
-public sealed interface MPNode {
+internal sealed interface MPNode {
     public fun secure()
 
     public companion object {
-        public val okTags = setOf(
+        internal val okTags: Set<String> = setOf(
             "p",
             "ul",
             "li",
@@ -36,7 +36,7 @@ public sealed interface MPNode {
             "h6",
             "br",
         )
-        public val okAttrs = setOf(
+        internal val okAttrs: Set<String> = setOf(
             "href",
             "target",
         )
@@ -67,7 +67,7 @@ public sealed interface MPNode {
     }
 }
 
-public fun String.parseMPNodes(): List<MPNode> {
+internal fun String.parseMPNodes(): List<MPNode> {
     val stack = arrayListOf(MPNode.Element("*"))
     starts(
         onTag = {

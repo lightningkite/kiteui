@@ -51,9 +51,9 @@ public actual class RawVideoView actual constructor(
     public class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
         // Empty delegate - no weak reference needed as it doesn't capture owner
     }
-    public val ios = IosDelegate()
+    public val ios: IosDelegate = IosDelegate()
 
-    public val controller = AVPlayerViewController().apply {
+    public val controller: AVPlayerViewController = AVPlayerViewController().apply {
         delegate = ios
 
         // Most UIViews use UIViewAutoresizingNone by default, but AVPlayerViewController does not and causes
@@ -64,7 +64,7 @@ public actual class RawVideoView actual constructor(
         // set by the KiteUI theme
         view.backgroundColor = UIColor.colorWithWhite(0.0, 0.0)
     }
-    override val native = controller.view
+    override val native: UIView = controller.view
 
         private val _state = RawReactive<Unit>()
         public actual val state: Reactive<Unit> = _state

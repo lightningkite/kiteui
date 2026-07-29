@@ -79,7 +79,7 @@ public interface ThemeDerivation {
         /**
          * A no-op derivation that returns the theme unchanged without background.
          */
-        @Deprecated("Just use 'None' object directly", ReplaceWith("None")) public val none get() = None
+        @Deprecated("Just use 'None' object directly", ReplaceWith("None")) public val none: None get() = None
     }
 
     /**
@@ -236,7 +236,7 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
         semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
-    ) = copy(
+    ): ThemeAndBack = copy(
         id = key,
         cascading = cascading,
         font = font,
@@ -302,7 +302,7 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
         semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
-    ) = copy(
+    ): ThemeAndBack = copy(
         id = key,
         cascading = cascading,
         font = font,
@@ -371,7 +371,7 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
         semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
-    ) = copy(
+    ): Theme = copy(
         id = key,
         cascading = cascading,
         font = font,
@@ -460,7 +460,7 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
  * @param derivation The transformation function to apply.
  * @return A new semantic override.
  */
-public fun <T : Semantic> T.override(derivation: T.(Theme) -> ThemeAndBack) = Semantic.Override(this, derivation)
+public fun <T : Semantic> T.override(derivation: T.(Theme) -> ThemeAndBack): Semantic.Override<T> = Semantic.Override(this, derivation)
 
 /**
  * Creates a semantic override for all semantics of the specified type.
@@ -469,7 +469,7 @@ public fun <T : Semantic> T.override(derivation: T.(Theme) -> ThemeAndBack) = Se
  * @param derivation The transformation function to apply.
  * @return A new semantic override.
  */
-public inline fun <reified T : Semantic> override(noinline derivation: T.(Theme) -> ThemeAndBack) = Semantic.Override(T::class, derivation)
+public inline fun <reified T : Semantic> override(noinline derivation: T.(Theme) -> ThemeAndBack): Semantic.Override<T> = Semantic.Override(T::class, derivation)
 
 
 /**
@@ -559,7 +559,7 @@ public value class SemanticOverrides private constructor(
      * @param other The other override set to combine with.
      * @return A new override set containing both sets of overrides.
      */
-    public operator fun plus(other: SemanticOverrides) = SemanticOverrides(overrides + other.overrides)
+    public operator fun plus(other: SemanticOverrides): SemanticOverrides = SemanticOverrides(overrides + other.overrides)
 
     public companion object {
         /**
@@ -977,7 +977,7 @@ public data class HeaderSizeSemantic(val level: Int) : Semantic("h$level") {
         /**
          * Font size multipliers for each header level (H1-H8).
          */
-        public val lookup = arrayOf(
+        public val lookup: Array<Double> = arrayOf(
             2.0,
             1.6,
             1.4,
@@ -1069,32 +1069,32 @@ public data object PrintSemantic : Semantic("print") {
 /**
  * H1 header semantic (largest header, 2.0rem).
  */
-public val H1Semantic = HeaderSizeSemantic(1)
+public val H1Semantic: HeaderSizeSemantic = HeaderSizeSemantic(1)
 
 /**
  * H2 header semantic (1.6rem).
  */
-public val H2Semantic = HeaderSizeSemantic(2)
+public val H2Semantic: HeaderSizeSemantic = HeaderSizeSemantic(2)
 
 /**
  * H3 header semantic (1.4rem).
  */
-public val H3Semantic = HeaderSizeSemantic(3)
+public val H3Semantic: HeaderSizeSemantic = HeaderSizeSemantic(3)
 
 /**
  * H4 header semantic (1.3rem).
  */
-public val H4Semantic = HeaderSizeSemantic(4)
+public val H4Semantic: HeaderSizeSemantic = HeaderSizeSemantic(4)
 
 /**
  * H5 header semantic (1.2rem).
  */
-public val H5Semantic = HeaderSizeSemantic(5)
+public val H5Semantic: HeaderSizeSemantic = HeaderSizeSemantic(5)
 
 /**
  * H6 header semantic (smallest header, 1.1rem).
  */
-public val H6Semantic = HeaderSizeSemantic(6)
+public val H6Semantic: HeaderSizeSemantic = HeaderSizeSemantic(6)
 
 // ================================
 // Markdown-specific semantics (by Claude)
@@ -1304,6 +1304,10 @@ public class Theme(
 
     public val semanticOverrides: SemanticOverrides = SemanticOverrides.EMPTY,
 ) {
+    init {
+        if (Debugger.checkIdCollisions) Debugger.checkAndRegister(this)
+    }
+
     /**
      * The icon color, using [iconOverride] if set, otherwise [foreground].
      */
@@ -1321,7 +1325,7 @@ public class Theme(
      * @param padding Whether to apply padding.
      * @return A new [ThemeAndBack] instance.
      */
-    public fun with(back: Boolean, padding: Boolean) = if (back) {
+    public fun with(back: Boolean, padding: Boolean): ThemeAndBack = if (back) {
         if (padding) withBack
         else withBackNoPadding
     } else {
@@ -1332,22 +1336,22 @@ public class Theme(
     /**
      * This theme with background drawn and padding applied.
      */
-    public val withBack = ThemeAndBack(this, drawBackground = true, padding = true)
+    public val withBack: ThemeAndBack = ThemeAndBack(this, drawBackground = true, padding = true)
 
     /**
      * This theme with background drawn but no padding.
      */
-    public val withBackNoPadding = ThemeAndBack(this, drawBackground = true, padding = false)
+    public val withBackNoPadding: ThemeAndBack = ThemeAndBack(this, drawBackground = true, padding = false)
 
     /**
      * This theme without background and no padding.
      */
-    public val withoutBack = ThemeAndBack(this, drawBackground = false, padding = false)
+    public val withoutBack: ThemeAndBack = ThemeAndBack(this, drawBackground = false, padding = false)
 
     /**
      * This theme without background but with padding applied.
      */
-    public val withoutBackButPadding = ThemeAndBack(this, drawBackground = false, padding = true)
+    public val withoutBackButPadding: ThemeAndBack = ThemeAndBack(this, drawBackground = false, padding = true)
 
     private val themeCache = HashMap<Semantic, ThemeAndBack>()
 
@@ -1367,11 +1371,45 @@ public class Theme(
     }
 
     /**
+     * Field-by-field comparison of the properties that affect rendered output, ignoring [id],
+     * provenance ([derivedFrom]/[derivationId]/[revert]), and [semanticOverrides] (a map of
+     * closures, which aren't meaningfully comparable). Used only by [Debugger]'s id-collision
+     * check - [equals] intentionally stays id-only for lookup performance; this is the
+     * "would these two themes render the same?" check that backs it.
+     */
+    internal fun structurallyEquals(other: Theme): Boolean =
+        font == other.font &&
+        elevation == other.elevation &&
+        cornerRadii == other.cornerRadii &&
+        cornerShape == other.cornerShape &&
+        gap == other.gap &&
+        padding == other.padding &&
+        foreground == other.foreground &&
+        iconOverride == other.iconOverride &&
+        outline == other.outline &&
+        outlineWidth == other.outlineWidth &&
+        separatorOverride == other.separatorOverride &&
+        background == other.background &&
+        blurBackground == other.blurBackground &&
+        transform == other.transform &&
+        bodyTransitions == other.bodyTransitions &&
+        dialogTransitions == other.dialogTransitions &&
+        transitionDuration == other.transitionDuration
+
+    /**
      * Creates a customized copy of this theme with all specified properties.
      *
      * Unlike [copy], this creates a completely new theme that doesn't inherit
      * unspecified properties from the original. All parameters default to this
      * theme's values, and semantic overrides are merged.
+     *
+     * Unlike [copy], [newId] is used exactly as given - it is **not** chained onto this theme's
+     * id. That makes `customize` the right tool for minting an independent, fully-named theme
+     * variant (e.g. a branded reskin), but it also means the caller is responsible for [newId]
+     * being unique across the app: a colliding id will silently alias with whatever theme
+     * registered it first (see [Theme.Debugger] for a way to catch that in testing). When you're
+     * deriving a variant of a theme rather than authoring a new one, prefer [copy] or a
+     * [Semantic], which chain ids for you and can't collide with unrelated themes.
      *
      * @param newId The unique identifier for the new theme.
      * @param font The font styling.
@@ -1540,7 +1578,7 @@ public class Theme(
         /**
          * A placeholder theme used during initialization or when no theme is available.
          */
-        public val placeholder = Theme("placeholder")
+        public val placeholder: Theme = Theme("placeholder")
 
         private var randomGenId: Int = 0
 
@@ -1616,4 +1654,46 @@ public class Theme(
      * @return The theme's unique identifier.
      */
     override fun toString(): String = id
+
+    /**
+     * Debug-only tooling for catching id collisions between [Theme]s.
+     *
+     * [Theme.equals]/[Theme.hashCode] are id-only by design (see [Theme] KDoc) - this is a
+     * deliberate performance tradeoff, not something to work around. It relies on every theme's
+     * id being unique, which [themeCache], the web `t-{id}` CSS class registry, and CSS sub-theme
+     * diffing all assume too: if two structurally different themes ever share an id, one silently
+     * aliases onto the other's cached styling. Uniqueness is normally guaranteed by deriving
+     * themes through semantics ([copy], the `Semantic.withBack`/`withoutBack`/`alter` helpers),
+     * which chain the parent id into the child id. [customize] is the one common way to opt out
+     * of that chaining (see its KDoc) - it's where a collision is most likely to originate.
+     */
+    public object Debugger {
+        /**
+         * When true, every constructed [Theme] is checked against previously constructed themes
+         * that share its [id]; a colliding id whose visual properties differ throws immediately,
+         * naming the id. Off by default: the check holds a strong reference to one [Theme] per
+         * distinct id ever constructed for the life of the process, which is fine for a debugging
+         * session but not something to leave on in production.
+         */
+        public var checkIdCollisions: Boolean = false
+
+        private val seen = HashMap<String, Theme>()
+
+        internal fun checkAndRegister(theme: Theme) {
+            val prior = seen[theme.id]
+            if (prior == null) {
+                seen[theme.id] = theme
+            } else check(prior.structurallyEquals(theme)) {
+                "Theme id collision: two structurally different Themes both use id '${theme.id}'. " +
+                    "Themes must be derived through semantic derivation (Theme.copy, semantics, " +
+                    "the withBack/withoutBack/alter helpers) so ids stay unique - look for a " +
+                    "manually-assigned or non-chained id, e.g. from Theme.customize."
+            }
+        }
+
+        /** Clears the collision registry, e.g. between test cases. */
+        public fun reset() {
+            seen.clear()
+        }
+    }
 }

@@ -14,11 +14,11 @@ import com.lightningkite.reactive.context.*
 public actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
     actual override val underlyingNativeElement: SwapView get() = this
 
-    override val native = FrameLayout(context.activity)
+    override val native: FrameLayout = FrameLayout(context.activity)
 
     public companion object {
-        public val swapTimeMakeViewPerformance = PerformanceInfo("swapTimeMakeView")
-        public val swapTimeAddViewsPerformance = PerformanceInfo("swapTimeAddViews")
+        internal val swapTimeMakeViewPerformance: PerformanceInfo = PerformanceInfo("swapTimeMakeView")
+        internal val swapTimeAddViewsPerformance: PerformanceInfo = PerformanceInfo("swapTimeAddViews")
     }
 
     public actual fun swap(

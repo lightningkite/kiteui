@@ -58,7 +58,7 @@ public inline fun HTMLElement.suppressMutationObserverForClass(change: ()->Unit)
     e.add(this.getAttribute("class") ?: "")
 }
 
-public fun HTMLElement.measureByTempEdit(max: Size): Size {
+internal fun HTMLElement.measureByTempEdit(max: Size): Size {
     val tempchildwidth = this.style.width
     val tempchildheight = this.style.height
     val tempchildmaxWidth = this.style.maxWidth
@@ -81,7 +81,7 @@ public fun HTMLElement.measureByTempEdit(max: Size): Size {
     return out
 }
 
-public fun HTMLElement.measureByDuplicate(max: Size): Size {
+internal fun HTMLElement.measureByDuplicate(max: Size): Size {
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement
@@ -98,7 +98,7 @@ public fun HTMLElement.measureByDuplicate(max: Size): Size {
     return out
 }
 
-public fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
+internal fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement
@@ -160,7 +160,14 @@ public actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenab
                 }
             }).apply {
                 this@mutationObserver.onElement {
-                    this.observe(it, MutationObserverInit(childList = true, attributes = true, subtree = recursive, attributeOldValue = true))
+                    // Build MutationObserverInit as a raw JS object rather than via the generated
+                    // MutationObserverInit(...) factory: that factory assigns every unset optional member
+                    // to the DOM bindings' `undefined` sentinel, which currently evaluates to `null`. A
+                    // `null` attributeFilter (declared sequence<DOMString>) fails WebIDL conversion and
+                    // throws. Omitting the key entirely keeps it truly absent (real `undefined`).
+                    val init = js("({ childList: true, attributes: true, attributeOldValue: true })")
+                    init.subtree = recursive
+                    this.observe(it, init.unsafeCast<MutationObserverInit>())
                 }
             }
         }

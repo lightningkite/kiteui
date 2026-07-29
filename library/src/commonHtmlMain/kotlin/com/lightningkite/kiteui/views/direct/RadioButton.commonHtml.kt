@@ -8,7 +8,7 @@ public actual class RadioButton actual constructor(context: ElementContext) : Na
     actual override val underlyingNativeElement: RadioButton get() = this
 
     override val driverValue: String? get() = radioDriverValue()
-    override val driverActions get() = super.driverActions + radioDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + radioDriverActions()
     init {
         themeChoice += ClickableSemantic
         native.tag = "input"

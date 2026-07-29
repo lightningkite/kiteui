@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.*
 
 
 public actual class Separator actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = NSeparator(context.activity).apply {
+    override val native: NSeparator = NSeparator(context.activity).apply {
         minimumWidth = 1
         minimumHeight = 1
     }
@@ -38,7 +38,7 @@ public actual class Separator actual constructor(context: ElementContext): Nativ
 }
 
 public class NSeparator(context: Context) : View(context) {
-    public var thickness: Int = 1
+    internal var thickness: Int = 1
         set(value) {
             field = value
             requestLayout()

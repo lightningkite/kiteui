@@ -11,8 +11,8 @@ import platform.UIKit.setIsAccessibilityElement
 
 public actual class Switch actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
-    override val driverActions get() = super.driverActions + switchDriverActions()
-    override val native = UISwitch()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + switchDriverActions()
+    override val native: UISwitch = UISwitch()
     override val control: UIControl get() = native
     init {
         // UISwitch already has built-in VoiceOver support (traits, value announcements).

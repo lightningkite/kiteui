@@ -31,11 +31,11 @@ class DragDropReordering(
         )
     }
 
-    fun encode(index: Int) = DragData("Source Index", mimeType, index.toString())
-    fun decode(data: DragData) = data[mimeType]?.toInt()
+    public fun encode(index: Int): DragData = DragData("Source Index", mimeType, index.toString())
+    public fun decode(data: DragData): Int? = data[mimeType]?.toInt()
 
-    data class Move(val start: Int, val end: Int) {
-        fun <T> reorder(list: List<T>) =
+    public data class Move(val start: Int, val end: Int) {
+        public fun <T> reorder(list: List<T>): List<T> =
             if (start == end) list
             else list
                 .toMutableList()
@@ -43,7 +43,7 @@ class DragDropReordering(
                 .toList()
     }
 
-    val willMove = Signal<Move?>(null)
+    public val willMove: Signal<Move?> = Signal<Move?>(null)
 
     inner class Delegate(val index: Reactive<Int>) : DropTargetDelegate {
         override fun enter(event: DragEvent): Boolean =
@@ -167,7 +167,7 @@ class RecyclerReorderable<T, ID>(
     val separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
     reorder: suspend (DragDropReordering.Move) -> Unit
 ) : RecyclerViewRendererSet<T, ID> {
-    val handler = DragDropReordering(view, reorder = reorder)
+    public val handler: DragDropReordering = DragDropReordering(view, reorder = reorder)
 
     override fun id(item: T): ID = wraps.id(item)
 

@@ -63,18 +63,18 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
 
 @OptIn(ExperimentalNativeApi::class)
 public class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSizeOverridesProtocol {
-    public var spacingCurrentPx: Double = 0.0
-    public var paddingTopCurrentPx: Double = 0.0
-    public var paddingLeftCurrentPx: Double = 0.0
-    public var paddingRightCurrentPx: Double = 0.0
-    public var paddingBottomCurrentPx: Double = 0.0
-    public var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
+    internal var spacingCurrentPx: Double = 0.0
+    internal var paddingTopCurrentPx: Double = 0.0
+    internal var paddingLeftCurrentPx: Double = 0.0
+    internal var paddingRightCurrentPx: Double = 0.0
+    internal var paddingBottomCurrentPx: Double = 0.0
+    internal var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
             field = value
             setNeedsLayout()
         }
     private var currentSize: Size = Size.Zero
-    public var element: WeakReference<ProgrammaticLayout>? = null
+    internal var element: WeakReference<ProgrammaticLayout>? = null
     private val inProgress = object: ProgrammingLayoutInProgress {
         override val within: Size
             get() = currentSize
@@ -119,15 +119,15 @@ public class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIView
         }
     }
 
-    public var myInvalidated = false
-    public fun invalidateLayout() {
+    internal var myInvalidated: Boolean = false
+    internal fun invalidateLayout() {
         if(inLayout) return
         myInvalidated = true
         informParentOfSizeChangeDueToChild()
         setNeedsLayout()
     }
 
-    public var inLayout = false
+    internal var inLayout: Boolean = false
     override fun layoutSubviews() {
         if(bounds.useContents { size.width == 0.0 && size.height == 0.0 }) return
         if (inLayout) throw IllegalStateException()

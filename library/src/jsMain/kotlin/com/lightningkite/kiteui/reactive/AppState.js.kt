@@ -74,7 +74,7 @@ public actual object AppState {
         }
     }
 
-    public val _lastUniversalKeyboardInput = reactiveProcess<KeyCodeWithModifiers> {
+    public val _lastUniversalKeyboardInput: Reactive<KeyCodeWithModifiers> = reactiveProcess<KeyCodeWithModifiers> {
         val l = { ev: Event ->
             ev as KeyboardEvent
             emit(

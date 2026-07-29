@@ -11,8 +11,8 @@ import com.lightningkite.reactive.core.*
 
 public actual class Switch actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
-    override val driverActions get() = super.driverActions + switchDriverActions()
-    override val native = android.widget.Switch(context.activity)
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + switchDriverActions()
+    override val native: android.widget.Switch = android.widget.Switch(context.activity)
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun nativeApplyTheme(theme: ThemeAndBack) {

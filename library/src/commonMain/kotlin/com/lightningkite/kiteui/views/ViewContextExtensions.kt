@@ -39,24 +39,24 @@ class ContextAddon<T>(val init: Init<T>) {
     }
 }
 
-fun <T> contextAddon(init: T) = ContextAddon(init)
-fun <T> lateInitContextAddon() = ContextAddon<T>(ContextAddon.Init.LateInit)
-fun <T> lazyContextAddon(init: (ElementContext) -> T) = ContextAddon(init)
+public fun <T> contextAddon(init: T): ContextAddon<T> = ContextAddon(init)
+public fun <T> lateInitContextAddon(): ContextAddon<T> = ContextAddon<T>(ContextAddon.Init.LateInit)
+public fun <T> lazyContextAddon(init: (ElementContext) -> T): ContextAddon<T> = ContextAddon(init)
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("contextAddon(init)"))
-fun <T> rContextAddon(init: T) = contextAddon(init)
+public fun <T> rContextAddon(init: T): ContextAddon<T> = contextAddon(init)
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("lazyContextAddon(init)"))
-fun <T> rContextAddonGenerate(init: (ElementContext) -> T) = lazyContextAddon(init)
+public fun <T> rContextAddonGenerate(init: (ElementContext) -> T): ContextAddon<T> = lazyContextAddon(init)
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("lateInitContextAddon()"))
-fun <T> rContextAddonInit() = lateInitContextAddon<T>()
+public fun <T> rContextAddonInit(): ContextAddon<T> = lateInitContextAddon<T>()
 
-var ElementContext.safeInsets by lazyContextAddon<Reactive<Edges>> { Constant(Edges.ZERO) }
+public var ElementContext.safeInsets: Reactive<Edges> by lazyContextAddon<Reactive<Edges>> { Constant(Edges.ZERO) }
 
-var ElementContext.popoverParent by lazyContextAddon<ContainerElement?> { null }
-var ElementContext.popoverCloser by lazyContextAddon<(() -> Unit)?> { null }
-var ElementContext.popoverKeepOpen by lazyContextAddon { 0 }
+public var ElementContext.popoverParent: ContainerElement? by lazyContextAddon<ContainerElement?> { null }
+public var ElementContext.popoverCloser: (() -> Unit)? by lazyContextAddon<(() -> Unit)?> { null }
+public var ElementContext.popoverKeepOpen: Int by lazyContextAddon { 0 }
 
 // Stack of dismiss lambdas for currently-open dismissable modal dialogs (topmost is last). Shared
 // app-wide because a lazyContextAddon's default is created once and stored on the ROOT context, so

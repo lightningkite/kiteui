@@ -56,8 +56,8 @@ Parameter types can be any KotlinX Serialization serializable type.
 @Routable("sample/login")
 object SampleLogInPage : Page {
     override fun ViewWriter.render(): Unit = run {
-        val email = Property("")
-        val password = Property("")
+        val email = Signal("")
+        val password = Signal("")
         frame {
             gap = 0.rem
             image {
@@ -102,7 +102,7 @@ object SampleLogInPage : Page {
         }
     }
 
-    private suspend fun ViewWriter.fakeLogin(email: Property<String>) {
+    private suspend fun ViewWriter.fakeLogin(email: Signal<String>) {
         fetch("fake-login/${email()}")
         pageNavigator.navigate(ControlsPage)
     }
@@ -113,7 +113,7 @@ object SampleLogInPage : Page {
 
 A typical KiteUI page consists of:
 
-1. **State Management**: Using `Property` objects to manage state
+1. **State Management**: Using `Signal` objects to manage state
 2. **Layout Containers**: Such as `frame`, `col`, `row`, etc.
 3. **UI Components**: Such as `text`, `button`, `textInput`, etc.
 4. **Modifiers**: Applied using the `-` operator
@@ -194,12 +194,12 @@ KiteUI uses reactive programming for state management. This section covers the b
 
 ### Basic Reactive Tools
 
-#### Property
+#### Signal
 
-The most basic reactive container is `Property`. It holds a value and notifies its listeners when that value changes.
+The most basic reactive container is `Signal`. It holds a value and notifies its listeners when that value changes.
 
 ```kotlin
-val email = Property("")
+val email = Signal("")
 ```
 
 You can update a property's value directly:
@@ -232,24 +232,24 @@ text {
 
 The UI will automatically update whenever the email property changes.
 
-#### Shared Calculations
+#### Remembered Calculations
 
-The `shared` function creates a dependency-tracking calculation. If any of its dependencies change, the calculation is re-evaluated and listeners are notified.
+The `remember` function creates a dependency-tracking calculation. If any of its dependencies change, the calculation is re-evaluated and listeners are notified.
 
 ```kotlin
-val fullName = shared { "${firstName()} ${lastName()}" }
+val fullName = remember { "${firstName()} ${lastName()}" }
 ```
 
 This is more efficient than recalculating the same value in multiple places.
 
 ### Advanced Reactive Tools
 
-#### LazyProperty
+#### MutableRemember
 
-`LazyProperty` is similar to `shared`, but allows you to override the calculated value and reset it back to the calculation if needed.
+`MutableRemember` is similar to `remember`, but allows you to override the calculated value and reset it back to the calculation if needed.
 
 ```kotlin
-val calculatedValue = LazyProperty { baseValue() * multiplier() }
+val calculatedValue = MutableRemember { baseValue() * multiplier() }
 
 // Override the calculated value
 calculatedValue.value = 100.0
@@ -258,12 +258,12 @@ calculatedValue.value = 100.0
 calculatedValue.reset()
 ```
 
-#### LateInitProperty
+#### LateInitSignal
 
-`LateInitProperty` is useful for values that aren't available at declaration time. It starts in a "not ready" state until a value is set.
+`LateInitSignal` is useful for values that aren't available at declaration time. It starts in a "not ready" state until a value is set.
 
 ```kotlin
-val userData = LateInitProperty<UserData>()
+val userData = LateInitSignal<UserData>()
 
 // Set a value later
 userData.value = fetchedUserData
@@ -272,36 +272,36 @@ userData.value = fetchedUserData
 userData.unset()
 ```
 
-Components that depend on a `LateInitProperty` will show loading states until a value is available.
+Components that depend on a `LateInitSignal` will show loading states until a value is available.
 
-#### Creating Custom Writables with withWrite
+#### Creating Custom Mutable Reactives with withWrite
 
-You can create custom writable properties using the `withWrite` function:
+You can create a custom mutable reactive from a read-only one using the `withWrite` function:
 
 ```kotlin
-val customWritable = someReadable.withWrite { newValue ->
+val customMutable = someReactive.withWrite { newValue ->
     // Custom logic to handle setting the new value
-    // This might update multiple other properties
+    // This might update multiple other signals
 }
 ```
 
-### Using Reactive Properties Outside of Reactive Scopes
+### Using Reactive Values Outside of Reactive Scopes
 
 #### Getting Current Values
 
-To get the current value of a reactive property:
+To get the current value of a reactive value:
 
 ```kotlin
 // Suspending function that waits for a value
-val value = someReadable.awaitOnce()
+val value = someReactive.awaitOnce()
 
 // Get the current state immediately (may be not ready or error)
-val state = someReadable.state
+val state = someReactive.state
 ```
 
 #### Handling States
 
-Reactive properties can be in different states:
+Reactive values can be in different states:
 - Ready: A value is available
 - Not Ready: No value is available yet (loading)
 - Error: An error occurred while calculating the value
@@ -362,8 +362,8 @@ row {
 ### Form with Validation
 
 ```kotlin
-val email = Property("")
-val password = Property("")
+val email = Signal("")
+val password = Signal("")
 
 col {
     field("Email") {
@@ -392,7 +392,7 @@ col {
 ### Dynamic Content
 
 ```kotlin
-val items = Property(listOf("Item 1", "Item 2", "Item 3"))
+val items = Signal(listOf("Item 1", "Item 2", "Item 3"))
 
 col {
     forEach(items) { item ->

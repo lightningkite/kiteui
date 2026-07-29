@@ -58,7 +58,7 @@ public class AndroidExternalServices(private val ctx: ElementContext) : External
         ) { _, _ -> }
     }
 
-    override suspend fun requestFile(mimeTypes: List<String>) = suspendCancellableCoroutine { cont ->
+    override suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
         // by Claude - fixed: was || which is always true; need && to check if mime type is neither image nor video
         if (mimeTypes.any { !it.startsWith("image/") && !it.startsWith("video/") }) {
             val od = ActivityResultContracts.OpenDocument()
@@ -83,7 +83,7 @@ public class AndroidExternalServices(private val ctx: ElementContext) : External
         }
     }
 
-    override suspend fun requestFiles(mimeTypes: List<String>) = suspendCancellableCoroutine { cont ->
+    override suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> = suspendCancellableCoroutine { cont ->
         // by Claude - fixed: was || which is always true; need && to check if mime type is neither image nor video
         if (mimeTypes.any { !it.startsWith("image/") && !it.startsWith("video/") }) {
             val od = ActivityResultContracts.OpenDocument()

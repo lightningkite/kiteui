@@ -14,9 +14,9 @@ public sealed class CornerRadii {
     ) : CornerRadii()
     public companion object {
         @Deprecated("Use Fixed instead", ReplaceWith("Fixed(value)"))
-        public fun ForceConstant(value: Dimension) = Fixed(value)
+        public fun ForceConstant(value: Dimension): Fixed = Fixed(value)
         @Deprecated("Use AdaptiveToSpacing instead", ReplaceWith("AdaptiveToSpacing(value)"))
-        public fun Constant(value: Dimension) = AdaptiveToSpacing(value)
+        public fun Constant(value: Dimension): AdaptiveToSpacing = AdaptiveToSpacing(value)
     }
 }
 
