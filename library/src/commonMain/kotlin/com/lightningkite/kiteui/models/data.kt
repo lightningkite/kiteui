@@ -502,23 +502,15 @@ public data class ImageRemote(
     val url: String,
     val cacheStrategy: UrlCacheStrategy
 ) : ImageSource() {
-    // Binary compatibility: preserves the old single-argument constructor
+    // Binary compatibility
     public constructor(url: String) : this(url, UrlCacheStrategy.Full)
+    public fun copy(url: String): ImageRemote = ImageRemote(url, cacheStrategy)
 
-    // Key used for equality/display decisions — controls whether the image view reloads
-    val displayKey: String get() = when (cacheStrategy) {
+    /** Identifies the image data for the platform's bitmap cache, per [cacheStrategy]. */
+    public val cacheKey: String get() = when (cacheStrategy) {
         UrlCacheStrategy.PathOnly -> url.substringBefore('?')
         else -> url
     }
-    // Binary compatibility: preserves the old data-class-generated copy(String) overload
-    public fun copy(url: String): ImageRemote = ImageRemote(url, cacheStrategy)
-
-    override fun hashCode(): Int = displayKey.hashCode()
-    override fun equals(other: Any?): Boolean {
-        if (other !is ImageRemote) return false
-        return displayKey == other.displayKey
-    }
-    override fun toString(): String = "ImageRemote($url)"
 }
 
 public data class ImageRaw(val data: Blob) : ImageSource()

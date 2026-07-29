@@ -98,7 +98,7 @@ public suspend fun ImageSource?.load(size: Size?): UIImage? =
             is ImageResource -> UIImage.imageNamed(value.name)
             is ImageVector -> ImageCache.get(value.hashCode().toString()) { value.render() }
             is ImageRemote -> {
-                val cacheKey = value.displayKey
+                val cacheKey = value.cacheKey
                 val loader = suspend {
                     inBackground {
                         val data =
