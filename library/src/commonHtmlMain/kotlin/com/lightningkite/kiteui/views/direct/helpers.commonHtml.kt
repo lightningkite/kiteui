@@ -18,12 +18,16 @@ public fun <V> FutureElement.vprop(
         override var value: V
             get() = get(this@vprop)
             set(value) {
+                if (get(this@vprop) != value) {
+                    set(this@vprop, value)
+                    invokeAllListeners()
+                }
+            }
+        override suspend fun set(value: V) {
+            if (get(this@vprop) != value) {
                 set(this@vprop, value)
                 invokeAllListeners()
             }
-        override suspend fun set(value: V) {
-            set(this@vprop, value)
-            invokeAllListeners()
         }
     }
 }
