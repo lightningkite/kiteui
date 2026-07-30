@@ -101,8 +101,12 @@ internal fun <T> ContainerElement.renderReorderableList(
             themeChoice += DragDropReordering.HalfGap
             dropTargetDelegate = handler.Delegate(idx)
 
+            // Drop indicators must use `shown`, not `visible`: `visible` only toggles CSS-style
+            // visibility and keeps the separator's space reserved at all times, which would leave
+            // a permanent gap between every item. `shown` removes the separator from layout
+            // entirely while inactive and reflows the surrounding gap in when a drop is pending.
             beforeSetup {
-                ::visible shown@{
+                ::shown shown@{
                     val move = handler.willMove() ?: return@shown false
                     val i = idx()
                     move.end == i && move.start >= i
@@ -114,7 +118,7 @@ internal fun <T> ContainerElement.renderReorderableList(
             }.render(item)
 
             beforeSetup {
-                ::visible shown@{
+                ::shown shown@{
                     val move = handler.willMove() ?: return@shown false
                     val i = idx()
                     move.end == i && move.start < i
@@ -187,8 +191,12 @@ public class RecyclerReorderable<T, ID>(
 
                 dropTargetDelegate = handler.Delegate(index)
 
+                // Drop indicators must use `shown`, not `visible`: `visible` only toggles CSS-style
+                // visibility and keeps the separator's space reserved at all times, which would leave
+                // a permanent gap between every item. `shown` removes the separator from layout
+                // entirely while inactive and reflows the surrounding gap in when a drop is pending.
                 beforeSetup {
-                    ::visible shown@{
+                    ::shown shown@{
                         val move = handler.willMove() ?: return@shown false
                         val i = index()
                         move.end == i && move.start >= i
