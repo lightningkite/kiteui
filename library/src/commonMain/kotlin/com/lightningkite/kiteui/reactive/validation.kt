@@ -51,7 +51,6 @@ public fun ElementWriter.CanAddTheme.validate(vararg validates: IssueTracking, a
         applyValidationTheming(validates, appliedWhen)
     }
 
-@ViewDsl
 public fun ElementWriter.CanAddShownWhen.issueText(
     issues: Reactive<List<Issue>>,
     transform: (Issue) -> String = { it.summary },

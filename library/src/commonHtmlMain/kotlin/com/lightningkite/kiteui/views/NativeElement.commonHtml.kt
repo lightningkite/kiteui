@@ -172,6 +172,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     }
 
     protected var prevThemeClass: String? = null
+    @Suppress("DEPRECATION")
     actual override fun nativeApplyTheme(theme: ThemeAndBack) {
         if (theme.drawBackground) {
             native.classes.add("transition")
@@ -232,7 +233,7 @@ public expect class FutureElement {
     public inline fun addEventListener(name: String, crossinline listener: (Event) -> Unit)
     public inline fun replaceEventListener(name: String, crossinline listener: (Event) -> Unit)
     public var classes: MutableSet<String>
-    public inline fun flushClasses()
+    public fun flushClasses()
     public var id: String?
     public var content: String?
     public var innerHtmlUnsafe: String?

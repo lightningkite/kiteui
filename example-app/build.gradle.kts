@@ -51,15 +51,23 @@ kotlin {
     if (onMac) {
         iosArm64()
         iosSimulatorArm64()
+        targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
+            compilations.configureEach {
+                compileTaskProvider.configure {
+                    compilerOptions {
+                        optIn.add("kotlinx.cinterop.BetaInteropApi")
+                        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
+                    }
+                }
+            }
+        }
     }
-    js(IR) {
+    js {
         binaries.executable()
         browser()
     }
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
-        optIn.add("kotlinx.cinterop.BetaInteropApi")
-        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
         optIn.add("kotlin.time.ExperimentalTime")
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
@@ -197,7 +205,7 @@ android {
 }
 
 fun env(name: String, profile: String) {
-    tasks.create("deployWeb${name}Init", Exec::class.java) {
+    tasks.register("deployWeb${name}Init", Exec::class.java) {
         group = "deploy"
         this.dependsOn("jsBundleProduction")
         this.environment("AWS_PROFILE", "$profile")
@@ -209,7 +217,7 @@ fun env(name: String, profile: String) {
         this.args("init")
         this.workingDir = file("terraform/$name")
     }
-    tasks.create("deployWeb${name}", Exec::class.java) {
+    tasks.register("deployWeb${name}", Exec::class.java) {
         group = "deploy"
         this.dependsOn("deployWeb${name}Init")
         this.environment("AWS_PROFILE", "$profile")

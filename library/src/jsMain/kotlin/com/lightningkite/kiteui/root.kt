@@ -134,6 +134,7 @@ private fun hydrateRootInternal(
     // by Claude
     val elementContext = ElementContext(basePath).apply {
         ssrDispatcher = Dispatchers.Unconfined
+        @Suppress("DEPRECATION")
         ExternalServices.baseContext = this  // Set consistently for both theme variants
     }
 

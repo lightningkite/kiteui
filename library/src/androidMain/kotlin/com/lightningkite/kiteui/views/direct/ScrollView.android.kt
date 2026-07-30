@@ -88,7 +88,7 @@ public class ScrollView(
                 * ppi
                 * 0.84f);
         val l =
-            ln((INFLEXION * abs(velocity.toDouble()) / (SCROLL_FRICTION * mPhysicalCoeff)).toDouble())
+            ln(INFLEXION * abs(velocity.toDouble()) / (SCROLL_FRICTION * mPhysicalCoeff))
         val decelMinusOne = DECELERATION_RATE - 1.0
         return ((SCROLL_FRICTION * mPhysicalCoeff
                 * exp(DECELERATION_RATE / decelMinusOne * l))).toFloat()
@@ -222,8 +222,8 @@ public class ScrollView(
                 debugPrint { "Reading actual viewport, got ${native.scrollX}, ${native.scrollY}" }
                 return ReactiveState(
                     Rect.fromSize(
-                        (native.scrollX ?: 0).toDouble(),
-                        (native.scrollY ?: 0).toDouble(),
+                        native.scrollX.toDouble(),
+                        native.scrollY.toDouble(),
                         native.width.toDouble(),
                         native.height.toDouble(),
                     )

@@ -18,9 +18,12 @@ public actual val Platform.Companion.userAgent: String
 
 // by Claude - check if the app was built with debuggable flag
 public actual val Platform.Companion.isDevelopment: Boolean
-    get() = (AndroidAppContext.applicationCtx?.applicationInfo?.flags ?: 0) and
+    get() = (AndroidAppContext.applicationCtx.applicationInfo?.flags ?: 0) and
             ApplicationInfo.FLAG_DEBUGGABLE != 0
 
+// Pre-API-30 devices (minSdk 23) have no WindowInsetsController, so the systemUiVisibility/
+// statusBarColor fallback path below necessarily uses deprecated View/Window APIs.
+@Suppress("DEPRECATION")
 public actual fun setStatusBarColor(color: Color) {
     val window = AndroidAppContext.activityCtx?.window
 
@@ -37,7 +40,6 @@ public actual fun setStatusBarColor(color: Color) {
         }
     } else {
         // For older versions, fallback to systemUiVisibility method
-        @Suppress("DEPRECATION")
         var flags = window?.decorView?.systemUiVisibility
         if (flags != null) {
             if (isColorDark(color.toInt())) {

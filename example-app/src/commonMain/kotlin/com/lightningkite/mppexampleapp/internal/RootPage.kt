@@ -170,7 +170,6 @@ object RootPage : Page {
                             }
                             icon(Icon.Companion.chevronRight, "Open")
                         }
-                        transitionId = "test-id"
                     }
                 }
 

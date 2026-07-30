@@ -149,7 +149,7 @@ public class ImageView(private val frame: Frame) : Element by frame {
         }
     }
 
-    @Deprecated("No longer needed", ReplaceWith("this")) val rView: Element get() = this
+    @Deprecated("No longer needed", ReplaceWith("this")) public val rView: Element get() = this
 
     public companion object {
         /**

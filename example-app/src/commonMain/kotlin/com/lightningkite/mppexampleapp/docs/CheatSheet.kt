@@ -1324,24 +1324,20 @@ object CheatSheet : DocPage {
                     }
                     titledSection("Other (not yet categorized)") {
                         example(
-                            name = "forEach",
+                            name = "colOfExpensive",
                             description = "",
                             code = """
                             val fruits = listOf("Apples", "Oranges", "Plums", "Bananas", "Cherries")
 
-                            col {
-                                forEach(remember { fruits }) { fruit ->
-                                    card.text(fruit)
-                                }
+                            colOfExpensive(remember { fruits }) { fruit ->
+                                card.text(fruit)
                             }
                     """.trimIndent(),
                             result = {
                                 val fruits = listOf("Apples", "Oranges", "Plums", "Bananas", "Cherries")
 
-                                col {
-                                    forEach(remember { fruits }) { fruit ->
-                                        card.text(fruit)
-                                    }
+                                colOfExpensive(remember { fruits }) { fruit ->
+                                    card.text(fruit)
                                 }
                             }
                         )

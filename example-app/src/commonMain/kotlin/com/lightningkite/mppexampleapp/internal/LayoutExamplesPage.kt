@@ -165,7 +165,7 @@ object LayoutExamplesPage : Page {
                 }
                 label {
                     content = "Element count:"
-                    textField { content bind countString }
+                    textInput { content bind countString }
                 }
             }
 

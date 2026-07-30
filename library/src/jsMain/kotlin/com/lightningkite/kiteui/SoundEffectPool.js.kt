@@ -78,8 +78,6 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
                         val arrayBuffer = response.arrayBuffer().await()
                         context.decodeAudioData(arrayBuffer).await()
                     }
-
-                    else -> TODO()  // Not sure why this else branch is necessary as AudioSource is a sealed class
                 }
             }
         }.await()
@@ -188,7 +186,6 @@ public actual suspend fun AudioSource.load(): PlayableAudio {
             is AudioRaw -> native.src = URL.createObjectURL(Blob(arrayOf(value.data)))
             is AudioResource -> native.src = basePath + value.relativeUrl
             is AudioLocal -> native.src = URL.createObjectURL(value.file)
-            else -> {}
         }
         native.load()
         cont.invokeOnCancellation {

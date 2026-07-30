@@ -804,7 +804,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                     Gravity.TOP -> {
                         childTop = paddingTop
                         if (childBaseline != -1) {
-                            childTop += maxAscent!![INDEX_TOP] - childBaseline
+                            childTop += maxAscent[INDEX_TOP] - childBaseline
                         }
                     }
 
@@ -825,7 +825,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                         childTop = childBottom - childHeight
                         if (childBaseline != -1) {
                             val descent = child.measuredHeight - childBaseline
-                            childTop -= (maxDescent!![INDEX_BOTTOM] - descent)
+                            childTop -= (maxDescent[INDEX_BOTTOM] - descent)
                         }
                     }
 

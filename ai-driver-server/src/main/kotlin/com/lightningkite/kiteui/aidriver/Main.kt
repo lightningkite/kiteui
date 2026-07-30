@@ -372,22 +372,22 @@ internal object AppWebSocketHandler : WebSocketHandler<PathSpec0, Unit>,
     }
 
     // Standard WebSocketHandler methods — unused because DirectExecutableWebSocketHandler takes priority
-    context(_: ServerRuntime)
+    context(serverRuntime: ServerRuntime)
     override suspend fun willConnect(request: WebSocketConnectRequest<PathSpec0>) = Unit
 
-    context(_: WebSocketConnection<PathSpec0, Unit>)
+    context(connection: WebSocketConnection<PathSpec0, Unit>)
     override suspend fun didConnect() {
     }
 
-    context(_: WebSocketConnection<PathSpec0, Unit>)
+    context(connection: WebSocketConnection<PathSpec0, Unit>)
     override suspend fun messageFromClient(frame: WebSocketFrame) {
     }
 
-    context(_: WebSocketConnection<PathSpec0, Unit>)
+    context(connection: WebSocketConnection<PathSpec0, Unit>)
     override suspend fun messageFromSubscription(topic: WebSocketSubscriptionMessage<*, *>) {
     }
 
-    context(_: WebSocketConnection<PathSpec0, Unit>)
+    context(connection: WebSocketConnection<PathSpec0, Unit>)
     override suspend fun disconnect(reason: WebSocketClose) {
     }
 }

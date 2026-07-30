@@ -65,8 +65,8 @@ class SpanTest {
 
         val s = recordedSpans.single()
         assertNotNull(s.status)
-        assertEquals(2, s.status!!.code)
-        assertEquals("boom", s.status!!.message)
+        assertEquals(2, s.status.code)
+        assertEquals("boom", s.status.message)
     }
 
     @Test

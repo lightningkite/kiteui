@@ -137,7 +137,6 @@ public inline fun <T, C : ContainerElement> ElementWriter.renderListIn(
  * @see colOf for a col-specific convenience wrapper
  * @see rowOf for a row-specific convenience wrapper
  */
-@ViewDsl
 public inline fun <T, ID : Any, C : ContainerElement> ElementWriter.renderListIn(
     container: ElementWriter.(C.() -> Unit) -> C,
     items: Reactive<List<T>>,
@@ -376,7 +375,6 @@ public fun <T> ElementWriter.colOfExpensive(
  * @param placeholdersWhileLoading Renderers to show while data loads
  * @return The created RowOrCol container
  */
-@ViewDsl
 public fun <T, ID : Any> ElementWriter.colOf(
     items: Reactive<List<T>>,
     rendererSet: RecyclerViewRendererSet<T, ID>,
@@ -515,7 +513,6 @@ public fun <T> ElementWriter.rowOfExpensive(
  * @param placeholdersWhileLoading Renderers to show while data loads
  * @return The created RowOrCol container
  */
-@ViewDsl
 public fun <T, ID : Any> ElementWriter.rowOf(
     items: Reactive<List<T>>,
     rendererSet: RecyclerViewRendererSet<T, ID>,

@@ -179,7 +179,7 @@ public class SsrResource<T : Any>(
             // Then check immediately (handles case where resource completed before listener was added)
             checkAndResolve()
 
-            cont.invokeOnCancellation { removeListener?.invoke() }
+            cont.invokeOnCancellation { removeListener.invoke() }
         }
     }
 

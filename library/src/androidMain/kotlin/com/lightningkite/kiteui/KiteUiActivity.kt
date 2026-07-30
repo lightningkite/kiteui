@@ -27,23 +27,10 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.context.onRemove
-import com.lightningkite.reactive.core.ReactiveThreadCheck
 import com.lightningkite.reactive.core.Signal
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.max
-
-// Installs the reactive graph's thread-confinement guard once per process, debug builds only.
-// Guarded by a top-level flag (not per-Activity) since onCreate can run again after process
-// restarts/recreation and installing the hook is a one-time, process-wide concern.
-private var reactiveThreadCheckInstalled = false
-private fun installReactiveThreadCheckOnce() {
-    if (reactiveThreadCheckInstalled) return
-    reactiveThreadCheckInstalled = true
-    if (Build.debug) {
-        ReactiveThreadCheck.currentThread = { Thread.currentThread() }
-    }
-}
 
 public abstract class KiteUiActivity : AppCompatActivity() {
     public open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
@@ -97,7 +84,6 @@ public abstract class KiteUiActivity : AppCompatActivity() {
         )
         AndroidAppContext.applicationCtx = this.applicationContext
         AndroidAppContext.activityCtx = this
-        installReactiveThreadCheckOnce()
 
         savedInstanceState?.getStringArray("navStack")?.let {
             mainNavigator.stack.value = it.mapNotNull { mainNavigator.routes.parse(UrlLikePath.fromUrlString(it)) }

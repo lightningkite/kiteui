@@ -41,8 +41,6 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
                     is AudioResource -> {
                         soundPool.load(AndroidAppContext.applicationCtx, source.resource, 1)
                     }
-
-                    else -> TODO()  // Not sure why this else branch is necessary as AudioSource is a sealed class
                 }
             }
         }.await()
@@ -96,8 +94,6 @@ public actual suspend fun AudioSource.load(): PlayableAudio {
             player.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
             toClose = afd
         }
-
-        else -> TODO()
     }
     val onCompletes = ArrayList<() -> Unit>()
     player.setOnCompletionListener {

@@ -21,10 +21,10 @@ class KiteUiPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
         val ext = extensions.create("kiteui", KiteUiPluginExtension::class.java)
         afterEvaluate {
-            if (ext.packageName == null)
-                throw IllegalArgumentException("KiteUiPluginExtension property packageName is null. Please configure KiteUiPluginExtension and provide a value")
-            if (ext.iosProjectRoot == null)
-                throw IllegalArgumentException("KiteUiPluginExtension property iosProjectRoot is null. Please configure KiteUiPluginExtension and provide a value")
+            if (ext.packageName.isEmpty())
+                throw IllegalArgumentException("KiteUiPluginExtension property packageName is not set. Please configure KiteUiPluginExtension and provide a value")
+            if (ext.iosProjectRoot.path.isEmpty())
+                throw IllegalArgumentException("KiteUiPluginExtension property iosProjectRoot is not set. Please configure KiteUiPluginExtension and provide a value")
         }
 
         val kotlinExtension = project.extensions.findByName("kotlin")

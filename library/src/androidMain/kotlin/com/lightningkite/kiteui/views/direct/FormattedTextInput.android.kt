@@ -28,7 +28,6 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             post {
                 val str = this.text.toString()
                 try {
-                    if (str == null) return@post
                     repairFormatAndPosition(
                         dirty = str,
                         selectionStart = selectionStart,
@@ -66,7 +65,7 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
                 (if(theme.font.underline) Paint.UNDERLINE_TEXT_FLAG else 0) or
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         useAllCaps = theme.font.allCaps
-        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
         applyAlign(_align ?: theme.font.align)
     }
 

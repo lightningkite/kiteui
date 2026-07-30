@@ -56,7 +56,6 @@ public actual abstract class RawImageViewLike(
             is ImageResource -> context.basePath + value.relativeUrl
             is ImageLocal -> createObjectURL(value.file).also { currentBlobUrl = it }
             is ImageVector -> value.vectorToSvgDataUrl()
-            else -> ""
         }
     }
 }

@@ -39,8 +39,18 @@ kotlin {
         iosArm64()
         iosSimulatorArm64()
         iosX64()
+        targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
+            compilations.configureEach {
+                compileTaskProvider.configure {
+                    compilerOptions {
+                        optIn.add("kotlinx.cinterop.BetaInteropApi")
+                        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
+                    }
+                }
+            }
+        }
     }
-    js(IR) {
+    js {
         browser()
     }
     // jvm("jvmDesktop") - Commented out due to Kotlin Multiplatform limitation:
@@ -53,8 +63,6 @@ kotlin {
 
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
-        optIn.add("kotlinx.cinterop.BetaInteropApi")
-        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
     }
 
     sourceSets {

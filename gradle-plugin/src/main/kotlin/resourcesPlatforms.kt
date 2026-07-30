@@ -18,8 +18,6 @@ internal fun resourcesCommon(resourceFolder: File, out: File, ext: KiteUiPluginE
                     usesBlob = true; "suspend fun ${r.name}(): Blob"
                 }
                 is Resource.ImageVector -> "val ${r.name}: ImageVector"
-
-                else -> ""
             }
         }
 
@@ -73,8 +71,6 @@ internal fun resourcesJs(gitIgnores: List<File>, resourceFolder: File, out: File
                 }
 
                 is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
-
-                else -> ""
             }
         }
 
@@ -228,8 +224,6 @@ internal fun resourcesIos(
                 }
 
                 is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
-
-                else -> ""
             }
         }
 
@@ -332,7 +326,6 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
 
                     "actual suspend fun ${r.name}(): Blob = Blob(AndroidAppContext.applicationCtx.resources.openRawResource(R.raw.${it.key.snakeCase()}).readBytes(), \"$mimeType\")"
                 }
-                else -> ""
             }
         }
 

@@ -187,7 +187,6 @@ public actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(url)
 }
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
 public class WebSocketWrapper(public val url: String) : WebSocket {
     public val closeReason: Channel<CloseReason> = Channel<CloseReason>()
     public val sending: Channel<Frame> = Channel<Frame>(10)

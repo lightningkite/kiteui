@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalSerializationApi::class)
+@file:Suppress("DEPRECATION")
 
 package com.lightningkite.kiteui
 
@@ -36,6 +37,7 @@ class UrlEncodingTest {
         val out = HashMap<String, String>()
         val properties = Properties
         testCases.forEach {
+            @Suppress("UNCHECKED_CAST")
             properties.encodeToStringMap(it.serializer as KSerializer<Any?>, it.sample, it.name, out)
         }
         println(out)

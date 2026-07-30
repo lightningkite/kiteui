@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Theme
@@ -12,6 +14,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.kiteui.views.dynamicTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.setMain
 import java.io.File
 import kotlin.test.Test

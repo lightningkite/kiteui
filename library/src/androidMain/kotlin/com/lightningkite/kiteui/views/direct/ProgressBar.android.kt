@@ -32,6 +32,7 @@ public actual class ProgressBar actual constructor(context: ElementContext) : Na
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
 
+    @Suppress("DEPRECATION")
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
         val theme = theme.theme

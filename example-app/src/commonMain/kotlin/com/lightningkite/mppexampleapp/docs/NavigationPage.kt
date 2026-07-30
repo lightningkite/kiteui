@@ -66,7 +66,7 @@ object NavigationPage: DocPage {
                 """
                 button {
                     onClick { 
-                        pageNavigator.navigate(DocSearchPage)
+                        context.pageNavigator.navigate(DocSearchPage)
                     }
                     centered.row {
                         centered.icon(Icon.arrowBack, "Back")
@@ -77,7 +77,7 @@ object NavigationPage: DocPage {
             ) {
                 button {
                     onClick {
-                        pageNavigator.navigate(DocSearchPage)
+                        context.pageNavigator.navigate(DocSearchPage)
                     }
                     centered.row {
                         centered.icon(Icon.arrowBack, "Back")
@@ -91,7 +91,7 @@ object NavigationPage: DocPage {
                 col {
                     button {
                         onClick {
-                            pageNavigator.goBack()
+                            context.pageNavigator.goBack()
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -100,7 +100,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            pageNavigator.replace(DocSearchPage)
+                            context.pageNavigator.replace(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -109,7 +109,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            pageNavigator.reset(DocSearchPage)
+                            context.pageNavigator.reset(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -122,7 +122,7 @@ object NavigationPage: DocPage {
                 col {
                     button {
                         onClick {
-                            pageNavigator.goBack()
+                            context.pageNavigator.goBack()
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -131,7 +131,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            pageNavigator.replace(DocSearchPage)
+                            context.pageNavigator.replace(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -140,7 +140,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            pageNavigator.reset(DocSearchPage)
+                            context.pageNavigator.reset(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")

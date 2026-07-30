@@ -21,7 +21,6 @@ import platform.UIKit.accessibilityTraits
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-@ViewModifierDsl3
 public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
@@ -41,26 +40,22 @@ public actual fun ElementWriter.hintPopover(
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.textPopover(message: String): ElementWriter = hintPopover {
     themed(PopoverSemantic).text(message)
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         native.extensionWeight = amount
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         native::extensionWeight { amount() }
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
     return beforeSetup {
         native.extensionHorizontalAlign = horizontal
@@ -68,7 +63,6 @@ public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertica
     }
 }
 
-@ViewModifierDsl3
 public actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
@@ -79,7 +73,6 @@ public actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
     }
 }
 
-@ViewModifierDsl3
 public actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
@@ -120,12 +113,10 @@ public actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncon
     scrollView
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
     return beforeSetup { native.extensionSizeConstraints = constraints }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
     return beforeSetup {
         reactive {
@@ -136,7 +127,6 @@ public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints:
 }
 
 // End
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return beforeSetup {
         native.hidden = !default
@@ -192,24 +182,22 @@ public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, tran
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
     beforeSetup { native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitHeader }
 
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3
 public actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
     beforeSetup { native.accessibilityElementsHidden = true }
 
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3 public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
+public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
 
 @InternalKiteUi
 internal actual fun ContainerElement.setupAsListContainer() {} // VoiceOver infers list structure from content

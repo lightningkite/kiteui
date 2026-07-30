@@ -11,7 +11,6 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-@ViewDsl
 public fun ElementWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.() -> Unit) {
     col {
         var noViewCreated = true
@@ -37,7 +36,6 @@ public fun ElementWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWrit
     }
 }
 
-@ViewDsl
 public fun ElementWriter.CanAddShownWhen.errorText() {
     val errors = ReactiveMutableSet<Exception>()
     val errorView = shownWhen { errors().isNotEmpty() }.themed(SubtextSemantic).themed(ErrorSemantic).text {

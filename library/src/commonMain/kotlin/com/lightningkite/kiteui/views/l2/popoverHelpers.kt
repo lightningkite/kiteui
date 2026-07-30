@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-@ViewDsl
 public fun ElementContext.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }

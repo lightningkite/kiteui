@@ -150,7 +150,7 @@ public fun Long.commaString(): String {
 }
 
 
-private inline fun StringBuilder.keyValue(key: String, value: Any?) = appendLine("$key: $value")
+private fun StringBuilder.keyValue(key: String, value: Any?) = appendLine("$key: $value")
 
 public inline fun repairFormatAndPosition(
     dirty: String,

@@ -543,7 +543,8 @@ public class MarkdownParser(
     // Inline parsing
     // ================================
 
-    override fun parseInline(text: String): List<MarkdownNode.InlineNode> {
+    override fun parseInline(content: String): List<MarkdownNode.InlineNode> {
+        val text = content
         if (text.isEmpty()) return emptyList()
 
         val result = mutableListOf<MarkdownNode.InlineNode>()

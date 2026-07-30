@@ -28,7 +28,6 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
             post {
                 val str = this.text.toString()
                 try {
-                    if (str == null) return@post
                     numberAutocommaRepair(
                         dirty = str,
                         selectionStart = selectionStart,
@@ -52,7 +51,7 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
         super.nativeApplyTheme(theme)
         val theme = theme.theme
         _fontAndStyle = theme.font
-        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
         native.setTextColor(theme.foreground.colorInt())
         native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
         native.setTypeface(

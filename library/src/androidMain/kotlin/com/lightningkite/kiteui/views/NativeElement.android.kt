@@ -134,7 +134,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         set(value) {
             super.labelFor = value
             if (value != null) {
-                val targetView = (value.underlyingNativeElement as NativeElement).native
+                val targetView = value.underlyingNativeElement.native
                 if (targetView.id == View.NO_ID) {
                     targetView.id = View.generateViewId()
                 }
@@ -178,12 +178,14 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             field = value
             if (value == null) native.setOnLongClickListener(null)
             else native.setOnLongClickListener {
-                native.startDrag(
-                    ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data)),
-                    value.dragShadow?.let(::DragShadowBuilder) ?: View.DragShadowBuilder(native),
-                    value,
-                    0
-                )
+                val clipData = ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data))
+                val shadowBuilder = value.dragShadow?.let(::DragShadowBuilder) ?: View.DragShadowBuilder(native)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    native.startDragAndDrop(clipData, shadowBuilder, value, 0)
+                } else {
+                    @Suppress("DEPRECATION")
+                    native.startDrag(clipData, shadowBuilder, value, 0)
+                }
                 true
             }
         }

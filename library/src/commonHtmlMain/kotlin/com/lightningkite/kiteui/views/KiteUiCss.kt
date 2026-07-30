@@ -1166,7 +1166,10 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             }
         }
         
-        theme.diff(diff) { transform }?.let {
+        // theme.diff can't distinguish "unchanged" from "changed to null" since it flattens T?,
+        // so the transform-cleared case is checked explicitly here.
+        if (diff == null || diff.transform != theme.transform) {
+            val it = theme.transform
             if (it != null) {
                 val transformParts = mutableListOf<String>()
                 

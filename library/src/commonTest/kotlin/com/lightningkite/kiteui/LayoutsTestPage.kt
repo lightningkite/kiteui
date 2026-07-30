@@ -73,7 +73,7 @@ class LayoutsTestPage : Page {
                 gap = customSpacing
                 val textList = remember { listOf("Text 1", "Text 2", "Text 3").withIndex().toList() }
                 val textViews = mutableListOf<TextView>()
-                forEach(textList) { (index, it) ->
+                renderListExpensive(textList, { this }) { (index, it) ->
                     textViews.add(text(it).apply {
                         checks += check@{
                             val below = textViews.getOrNull(index + 1) ?: return@check

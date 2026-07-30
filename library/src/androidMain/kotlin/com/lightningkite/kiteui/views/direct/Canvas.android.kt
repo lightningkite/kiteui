@@ -29,8 +29,7 @@ public actual class Canvas actual constructor(context: ElementContext): NativeEl
     }
 }
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-public actual class NCanvas @JvmOverloads constructor(
+public class NCanvas @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0

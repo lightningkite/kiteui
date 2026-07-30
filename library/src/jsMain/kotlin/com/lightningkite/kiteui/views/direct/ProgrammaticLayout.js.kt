@@ -152,8 +152,8 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
         definedFlexGrow = native.style.flexGrow?.takeUnless { it.isBlank() }
         definedWidth = native.style.width?.takeUnless { it == enforcedWidth || it.isBlank() }
         definedHeight = native.style.height?.takeUnless { it == enforcedHeight || it.isBlank() }
-        val parentIsFlex = parentElement?.style?.display?.contains("flex") == true
-        val parentIsVertical = parentElement?.style?.flexDirection?.contains("col") == true
+        val parentIsFlex = parentElement.style.display.contains("flex") == true
+        val parentIsVertical = parentElement.style.flexDirection.contains("col") == true
         val elementHasGrow = element.style.flexGrow.isNotBlank()
         val elementIsStretch = element.style.alignSelf == "stretch" || element.style.alignSelf.isBlank()
         lastFillWidth =

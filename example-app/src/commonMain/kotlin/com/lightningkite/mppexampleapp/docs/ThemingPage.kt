@@ -81,7 +81,7 @@ object ThemingPage : DocPage {
                         warning.frame { text("warning - used to indicate that there is some warning you need to pay attention to") }
                         danger.frame { text("danger - used to indicate that this element is dangerous to use") }
                         affirmative.frame { text("affirmative - used to indicate success") }
-                        emphasize.frame { text("emphasize - used to mildly draw attention to some text") }
+                        emphasized.frame { text("emphasized - used to mildly draw attention to some text") }
                     }
                     titledSection("Semantics are Nestable") {
                         text("Applying the same semantic multiple times might not have identical effects.  This is on purpose.  For example, here's multiple layers of cards:")
@@ -196,5 +196,4 @@ data object InvertedSemantic : Semantic("invert") {
     ).withBack
 }
 
-@ViewModifierDsl3
 inline val ElementWriter.CanAddTheme.inverted: ElementWriter.CanAddTheme get() = themed(InvertedSemantic)

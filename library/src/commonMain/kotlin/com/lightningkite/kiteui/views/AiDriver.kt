@@ -163,13 +163,13 @@ public suspend fun handleCommand(command: String, root: Element?, navigator: Pag
         "navigate" -> {
             if (navigator == null) throw DriverActionException("no navigator available")
             val route = action ?: throw DriverActionException("no route specified")
-            navigator.navigateUrlLikePath(route) ?: throw DriverActionException("route '$route' not found")
+            if (!navigator.navigateUrlLikePath(route)) throw DriverActionException("route '$route' not found")
             "OK"
         }
         "reset" -> {
             if (navigator == null) throw DriverActionException("no navigator available")
             val route = action ?: throw DriverActionException("no route specified")
-            navigator.resetUrlLikePath(route) ?: throw DriverActionException("route '$route' not found")
+            if (!navigator.resetUrlLikePath(route)) throw DriverActionException("route '$route' not found")
             "OK"
         }
         "url" -> {

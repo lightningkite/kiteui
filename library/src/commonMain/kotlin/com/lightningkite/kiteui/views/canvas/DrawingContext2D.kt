@@ -281,6 +281,9 @@ public fun DrawingContext2D.setTransform(matrix: TransformMatrix) {
 }
 
 /** Resets the transformation matrix to the identity matrix. */
+// On JS, DrawingContext2D is a typealias for the browser's CanvasRenderingContext2D, which already
+// has a native resetTransform() member with identical semantics - this extension is unreachable there.
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 public fun DrawingContext2D.resetTransform() {
     setTransform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 }

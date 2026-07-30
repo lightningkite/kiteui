@@ -13,7 +13,6 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-@ViewDsl
 public inline fun ElementWriter.subtext(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -22,7 +21,6 @@ public inline fun ElementWriter.subtext(crossinline setup: TextView.() -> Unit =
     }
 }
 
-@ViewDsl
 public inline fun ElementWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -31,7 +29,6 @@ public inline fun ElementWriter.h1(crossinline setup: TextView.() -> Unit = {}):
     }
 }
 
-@ViewDsl
 public inline fun ElementWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -40,7 +37,6 @@ public inline fun ElementWriter.h2(crossinline setup: TextView.() -> Unit = {}):
     }
 }
 
-@ViewDsl
 public inline fun ElementWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -49,7 +45,6 @@ public inline fun ElementWriter.h3(crossinline setup: TextView.() -> Unit = {}):
     }
 }
 
-@ViewDsl
 public inline fun ElementWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -58,7 +53,6 @@ public inline fun ElementWriter.h4(crossinline setup: TextView.() -> Unit = {}):
     }
 }
 
-@ViewDsl
 public inline fun ElementWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -67,7 +61,6 @@ public inline fun ElementWriter.h5(crossinline setup: TextView.() -> Unit = {}):
     }
 }
 
-@ViewDsl
 public inline fun ElementWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
@@ -76,61 +69,50 @@ public inline fun ElementWriter.h6(crossinline setup: TextView.() -> Unit = {}):
     }
 }
 
-@ViewDsl
 public fun ElementWriter.h1(text: String, align: Align? = null): TextView = h1 {
     content = text
     this.align = align
 }
 
-@ViewDsl
 public fun ElementWriter.h2(text: String, align: Align? = null): TextView = h2 {
     content = text
     this.align = align
 }
 
-@ViewDsl
 public fun ElementWriter.h3(text: String, align: Align? = null): TextView = h3 {
     content = text
     this.align = align
 }
 
-@ViewDsl
 public fun ElementWriter.h4(text: String, align: Align? = null): TextView = h4 {
     content = text
     this.align = align
 }
 
-@ViewDsl
 public fun ElementWriter.h5(text: String, align: Align? = null): TextView = h5 {
     content = text
     this.align = align
 }
 
-@ViewDsl
 public fun ElementWriter.h6(text: String, align: Align? = null): TextView = h6 {
     content = text
     this.align = align
 }
 
-@ViewDsl
 public fun ElementWriter.text(text: String, align: Align? = null): TextView = text {
     content = text
     this.align = align
 }
 
-@ViewDsl
 public fun ElementWriter.subtext(text: String, align: Align? = null): TextView = subtext {
     content = text
     this.align = align
 }
 
-@ViewDsl
 public fun ElementWriter.checkbox(checked: MutableReactive<Boolean>): Checkbox = checkbox { this.checked bind checked }
 
-@ViewDsl
 public fun ElementWriter.radioButton(checked: MutableReactive<Boolean>): RadioButton = radioButton { this.checked bind checked }
 
-@ViewDsl
 public fun ElementWriter.progressBar(ratio: Reactive<Float>): ProgressBar = progressBar { ::ratio bind ratio }
 
 public inline fun <T> ElementWriter.swapping(
@@ -144,7 +126,6 @@ public inline fun <T> ElementWriter.swapping(
 }
 
 
-@ViewDsl
 public inline fun ElementWriter.icon(icon: Icon, description: String, setup: IconView.() -> Unit = {}): IconView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return icon {

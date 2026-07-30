@@ -774,7 +774,7 @@ private fun <T, ID : Any> ContainerElement.renderHeterogeneousListPositional(
 // ---------------------------------------------------------------------------
 
 @InternalKiteUi
-@Deprecated("Use renderListSlowIn instead")
+@Deprecated("Use renderListInExpensive, or colOfExpensive/rowOfExpensive, instead")
 public fun <T> ContainerElement.forEach(
     items: Reactive<List<T>>,
     beforeListModifier: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },
@@ -809,7 +809,7 @@ public fun <T, ID> RowOrCol.forEachByIdWithoutAnimation(
 ): Unit = renderListKeyedNoAnimation(items, id, beforeListModifier, render)
 
 @InternalKiteUi
-@Deprecated("Use renderListSlowIn instead")
+@Deprecated("Use renderListInExpensive, or colOfExpensive/rowOfExpensive, instead")
 public fun <T> RowOrCol.forEachAnimated(
     items: Reactive<List<T>>,
     preHidingModifiers: ViewWriter.(T) -> ElementWriter.CanAddListElementModifier = { this },

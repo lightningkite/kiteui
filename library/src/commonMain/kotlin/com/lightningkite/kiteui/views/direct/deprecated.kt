@@ -24,7 +24,6 @@ public typealias ContainingView = ContainerElement
 @Deprecated("Renamed to Frame", ReplaceWith("Frame")) public typealias Stack = Frame
 
 @OptIn(ExperimentalContracts::class)
-@ViewDsl
 @Deprecated("Renamed to frame", ReplaceWith("frame(setup)"))
 public inline fun ElementWriter.stack(setup: Frame.() -> Unit = {}): Frame {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
@@ -32,11 +31,9 @@ public inline fun ElementWriter.stack(setup: Frame.() -> Unit = {}): Frame {
 }
 
 
-@ViewModifierDsl3
 @Deprecated("Renamed for consistency", ReplaceWith("dynamicWeight(amount)"))
 public fun ElementWriter.CanAddWeight.changingWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddShownWhen = dynamicWeight(amount)
 
-@ViewModifierDsl3
 @Deprecated("Renamed for consistency", ReplaceWith("dynamicSizeConstraints(constraints)"))
 public fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme = dynamicSizeConstraints(constraints)
 

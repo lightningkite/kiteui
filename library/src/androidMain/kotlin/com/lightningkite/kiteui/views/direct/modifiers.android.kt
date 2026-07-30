@@ -44,7 +44,6 @@ public interface WeightedLayoutParams {
     public var weight: Float
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         val host = parent?.native as? LinearChildHost ?: return@beforeSetup
@@ -56,7 +55,6 @@ public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWrite
 }
 
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         val host = parent?.native as? LinearChildHost ?: return@beforeSetup
@@ -75,7 +73,6 @@ public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveConte
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
     return this@align.beforeSetup {
         val params = lparams
@@ -127,7 +124,6 @@ public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertica
 }
 
 @OptIn(InternalKiteUi::class)
-@ViewModifierDsl3
 public actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return lazyInjectModifierWriter(setup) {
         ScrollView(context, horizontal = horizontal, vertical = vertical)
@@ -135,7 +131,6 @@ public actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(ver
 }
 
 @OptIn(InternalKiteUi::class)
-@ViewModifierDsl3
 public actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
@@ -191,7 +186,6 @@ public actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncon
 }
 
 @OptIn(InternalKiteUi::class)
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
         return lazyInjectModifierWriter {
@@ -218,7 +212,6 @@ public actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstrain
 }
 
 @OptIn(InternalKiteUi::class)
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
     return lazyInjectModifierWriter {
         object : NativeContainerElement(context) {
@@ -365,7 +358,6 @@ public class DesiredSizeView(context: Context) : ViewGroup(context) {
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
@@ -379,7 +371,6 @@ public actual fun ElementWriter.hintPopover(
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.textPopover(message: String): ElementWriter {
     return beforeSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -389,7 +380,6 @@ public actual fun ElementWriter.textPopover(message: String): ElementWriter {
 }
 
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return beforeSetup {
         shown = default
@@ -590,26 +580,24 @@ internal object TypedValueAnimator {
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
     beforeSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) native.isAccessibilityHeading = true
     }
 
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3
 public actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
     beforeSetup { native.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS }
 
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3 public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
+public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
 
 @InternalKiteUi
 internal actual fun ContainerElement.setupAsListContainer() {} // TalkBack infers list structure from content

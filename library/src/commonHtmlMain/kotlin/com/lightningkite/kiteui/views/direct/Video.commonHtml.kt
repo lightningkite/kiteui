@@ -27,7 +27,6 @@ public actual class RawVideoView actual constructor(
             is VideoRaw -> native.attributes.src = createObjectURL(value.data)
             is VideoResource -> native.attributes.src = context.basePath + value.relativeUrl
             is VideoLocal -> native.attributes.src = createObjectURL(value.file)
-            else -> native.attributes.src = ""
         }
         nativeLoad(native.attributes.src)
         native.attributes.preload = when(preloadHint) {

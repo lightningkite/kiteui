@@ -48,7 +48,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch edit dialog" }
                 onClick {
-                    dialog { close ->
+                    context.dialog { close ->
                         col {
                             text("INPUT TIME!")
                             field("Field") {

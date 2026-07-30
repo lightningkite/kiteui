@@ -13,7 +13,6 @@ import com.lightningkite.reactive.context.ReactiveContext
  * @param content The markdown text to render
  * @param config Configuration for parsing and rendering
  */
-@ViewDsl
 public fun ViewWriter.markdown(content: String, config: MarkdownConfig = MarkdownConfig.Default) {
     val parser = MarkdownParser(config.customBlocks)
     val document = parser.parse(content)
@@ -26,7 +25,6 @@ public fun ViewWriter.markdown(content: String, config: MarkdownConfig = Markdow
  * @param content Lambda that returns markdown text (reactive)
  * @param config Configuration for parsing and rendering
  */
-@ViewDsl
 public fun ViewWriter.markdownDynamic(content: ReactiveContext.() -> String, config: MarkdownConfig = MarkdownConfig.Default) {
     swapView {
         swapping(current = content) { md ->

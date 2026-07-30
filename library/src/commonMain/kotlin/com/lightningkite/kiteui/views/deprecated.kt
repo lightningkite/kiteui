@@ -1,4 +1,5 @@
 @file:OptIn(InternalKiteUi::class, ExperimentalKiteUi::class)
+@file:Suppress("DEPRECATION")
 
 package com.lightningkite.kiteui.views
 
@@ -137,62 +138,50 @@ public operator fun String.minus(writer: ViewWriter): ViewWriter = writer.also {
 public fun Element.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?): Unit = applyDynamicTheme(calculate)
 
 @Deprecated("Just bind to themeChoice directly", level = DeprecationLevel.ERROR)
-@ViewModifierDsl3
 public fun ElementWriter.CanAddTheme.themeFromLast(calculate: (Theme) -> Theme): ElementWriter {
     return beforeSetup { themeChoice += ThemeDerivation { calculate(it).withBack } }
 }
 
 @Deprecated("Just bind to themeChoice directly", level = DeprecationLevel.ERROR)
-@ViewModifierDsl3
 public inline fun ElementWriter.CanAddTheme.maybeThemeFromLast(crossinline calculate: (Theme) -> Theme?): ElementWriter {
     return beforeSetup { themeChoice += ThemeDerivation { calculate(it)?.withBack ?: it.withoutBack } }
 }
 
 @Deprecated("Just bind to themeChoice directly", level = DeprecationLevel.ERROR)
-@ViewModifierDsl3
 public inline fun ElementWriter.CanAddTheme.tweakTheme(crossinline calculate: (Theme) -> Theme): ElementWriter {
     return beforeSetup { themeChoice += ThemeDerivation { calculate(it).withoutBack } }
 }
 
-@ViewModifierDsl3
 @Deprecated("No longer needed - just tell the parent what its spacing value should be.", ReplaceWith("this"), DeprecationLevel.ERROR)
 public val ViewWriter.marginless: ViewWriter get() = this
 
-@ViewModifierDsl3
 @Deprecated("Renamed to 'shownWhen'", ReplaceWith("shownWhen", "com.lightningkite.kiteui.views.direct.shownWhen"))
 public fun ElementWriter.CanAddShownWhen.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddTheme = shownWhen(default, condition = condition)
 
-@ViewModifierDsl3
 @Deprecated("use align instead", ReplaceWith("align"))
 public fun ElementWriter.CanAddAlignment.gravity(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight = align(horizontal, vertical)
 
-@ViewModifierDsl3
 @Deprecated("use scrolling instead", ReplaceWith("scrolling"))
 public val ElementWriter.CanAddScrolling.scrolls: ElementWriter get() = __scrollsUncontracted(vertical = true, horizontal = false)
 
-@ViewModifierDsl3
 @Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollingHorizontally"))
 public val ElementWriter.CanAddScrolling.scrollsHorizontally: ElementWriter get() = __scrollsUncontracted(vertical = false, horizontal = true)
 
-@ViewModifierDsl3
 @Deprecated("use scrolling instead", ReplaceWith("scrolling"))
 public inline fun ElementWriter.CanAddScrolling.scrolls(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return __scrollsUncontracted(vertical = true, horizontal = false, setup)
 }
 
-@ViewModifierDsl3
 @Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollingHorizontally"))
 public inline fun ElementWriter.CanAddScrolling.scrollsHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return __scrollsUncontracted(vertical = false, horizontal = true, setup)
 }
 
-@ViewModifierDsl3
 @Deprecated("use scrollingBoth instead", ReplaceWith("scrollingBoth"))
 public inline fun ElementWriter.CanAddScrolling.scrollsBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return __scrollsUncontracted(vertical = true, horizontal = true, setup)
 }
 
-@ViewModifierDsl3
 @Deprecated("use scrolling instead", ReplaceWith("scrolling"))
 public inline fun ElementWriter.CanAddScrolling.scrolls(
     vertical: Boolean,
@@ -211,32 +200,23 @@ val Semantic.onNext: ElementWriter.CanAddTheme get() = writer.themed(this)
 @Deprecated("Use themed() instead", ReplaceWith("themed(theme)"))
 public fun ElementWriter.CanAddTheme.onNext(theme: ThemeDerivation): ElementWriter.CanAddTheme = themed(theme)
 
-@ViewModifierDsl3
 @Deprecated("Renamed to 'emphasized' for consistency of adjective terms.", ReplaceWith("emphasized", "com.lightningkite.kiteui.views.emphasized"))
 public inline val ElementWriter.CanAddTheme.emphasize: ElementWriter.CanAddTheme get() = themed(EmphasizedSemantic)
-@ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("themed(DialogSemantic)", "com.lightningkite.kiteui.models.DialogSemantic"))
 public inline val ElementWriter.CanAddTheme.dialog: ElementWriter.CanAddTheme get() = themed(DialogSemantic)
-@ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("themed(MainContentSemantic)", "com.lightningkite.kiteui.models.MainContentSemantic"))
 public inline val ElementWriter.CanAddTheme.mainContent: ElementWriter.CanAddTheme get() = themed(MainContentSemantic)
-@ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("themed(HoverSemantic)", "com.lightningkite.kiteui.models.HoverSemantic"))
 public inline val ElementWriter.CanAddTheme.hover: ElementWriter.CanAddTheme get() = themed(HoverSemantic)
-@ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("themed(DownSemantic)", "com.lightningkite.kiteui.models.DownSemantic"))
 public inline val ElementWriter.CanAddTheme.down: ElementWriter.CanAddTheme get() = themed(DownSemantic)
-@ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("themed(SelectedSemantic)", "com.lightningkite.kiteui.models.SelectedSemantic"))
 public inline val ElementWriter.CanAddTheme.selected: ElementWriter.CanAddTheme get() = themed(SelectedSemantic)
-@ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("themed(UnselectedSemantic)", "com.lightningkite.kiteui.models.UnselectedSemantic"))
 public inline val ElementWriter.CanAddTheme.unselected: ElementWriter.CanAddTheme get() = themed(UnselectedSemantic)
-@ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("themed(DisabledSemantic)", "com.lightningkite.kiteui.models.DisabledSemantic"))
 public inline val ElementWriter.CanAddTheme.disabled: ElementWriter.CanAddTheme get() = themed(DisabledSemantic)
 
-@ViewModifierDsl3
 @Deprecated("Renamed to 'padded'", ReplaceWith("padded", "com.lightningkite.kiteui.views.direct.padded"))
 public val ElementWriter.CanAddTheme.withDefaultPadding: ElementWriter.CanAddTheme get() = padded
 
@@ -304,11 +284,6 @@ public fun Element.keepPopoverOpen(lifecycle: CoroutineScope) {
     popoverKeepOpen++
     lifecycle.onRemove { popoverKeepOpen-- }
 }
-
-@Deprecated("Set on native element directly")
-public var Element.showOnPrint: Boolean
-    get() = underlyingNativeElement.showOnPrint
-    set(value) { underlyingNativeElement.showOnPrint = value }
 
 @Deprecated("Use `themeBase` directly", ReplaceWith("themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading"))
 public var NativeElement.themeTakeNonCascadingFromParent: Boolean

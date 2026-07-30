@@ -23,8 +23,8 @@ public abstract class DrawingView : View {
     public constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     public constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 }
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-public actual abstract class DrawingContext2D(public val canvas: Canvas) {
+public actual abstract class DrawingContext2D {
+    public abstract val canvas: Canvas
     public val currentPath: Path = Path()
     public val clearPaint: android.graphics.Paint = android.graphics.Paint().apply {
         color = android.graphics.Color.TRANSPARENT
@@ -95,7 +95,7 @@ public actual abstract class DrawingContext2D(public val canvas: Canvas) {
 
 }
 
-public class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
+public class DrawingContext2DImpl(override val canvas: Canvas): DrawingContext2D() {
     // Internal state tracking
     internal var lineDashSegments: List<Double> = emptyList()
     internal var _shadowBlur: Double = 0.0

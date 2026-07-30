@@ -77,7 +77,6 @@ public actual suspend fun fetchRaw(
                 request.setRequestHeader("Content-Type", body.type)
                 request.send(body.content)
             }
-            else -> throw NotImplementedError()
         }
         cont.invokeOnCancellation {
             request.abort()

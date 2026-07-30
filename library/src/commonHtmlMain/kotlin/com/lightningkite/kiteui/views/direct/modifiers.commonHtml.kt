@@ -12,7 +12,6 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
 
-@ViewModifierDsl3
 public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit
@@ -31,12 +30,10 @@ public actual fun ElementWriter.hintPopover(
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.textPopover(message: String): ElementWriter = hintPopover {
     themed(PopoverSemantic).text(message)
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         native.style.flexGrow = "$amount"
@@ -47,7 +44,6 @@ public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWrite
 }
 
 // by Claude - wrapper pattern for animation-aware weight changes
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
     return lazyInjectModifierWriter {
         object : NativeContainerElement(context) {
@@ -81,7 +77,6 @@ public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveConte
     }
 }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight =
     beforeSetup { // Use parent's default alignment if not explicitly set (Align.Stretch means not set)
         native.classes.add("h${horizontal}")
@@ -90,11 +85,9 @@ public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertica
         native.desiredVerticalGravity = vertical
     }
 
-@ViewModifierDsl3
 public actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter =
     beforeSetup { setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical)) }
 
-@ViewModifierDsl3
 public actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
@@ -110,7 +103,6 @@ public actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncon
         }
     }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme =
     beforeSetup {
         if (constraints.minHeight == null) native.style.minHeight = null
@@ -138,7 +130,6 @@ public actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstrain
         else native.style.height = constraints.height.value.toString()
     }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme =
     beforeSetup {
         reactive {
@@ -188,7 +179,6 @@ public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints:
 //        }
 //    }
 
-@ViewModifierDsl3
 public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return lazyInjectModifierWriter {
         object : NativeContainerElement(context) {
@@ -310,17 +300,17 @@ internal class PassthroughContainer(context: ElementContext): NativeContainerEle
     }
 }
 
-@ViewModifierDsl3 public actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme = ApplyTag("h${level.coerceIn(1, 6)}", this)
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = ApplyTag("main", this)
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = ApplyTag("nav", this)
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = ApplyTag("header", this)
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = ApplyTag("footer", this)
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = ApplyTag("aside", this)
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = ApplyTag("search", this)
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
+public actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme = ApplyTag("h${level.coerceIn(1, 6)}", this)
+public actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = ApplyTag("main", this)
+public actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = ApplyTag("nav", this)
+public actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = ApplyTag("header", this)
+public actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = ApplyTag("footer", this)
+public actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = ApplyTag("aside", this)
+public actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = ApplyTag("search", this)
+public actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
     beforeSetup { native.setAttribute("aria-hidden", "true") }
-@ViewModifierDsl3 public actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = ApplyTag("ul", this)
-@ViewModifierDsl3 public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = ApplyTag("li", this)
+public actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = ApplyTag("ul", this)
+public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = ApplyTag("li", this)
 
 internal actual fun ContainerElement.setupAsListContainer() {
     if (native.tag == "div" || native.tag == "span") native.tag = "ul"

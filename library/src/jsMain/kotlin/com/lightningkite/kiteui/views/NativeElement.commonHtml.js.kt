@@ -296,7 +296,7 @@ public actual class FutureElement actual constructor() {
 
 
     public actual var classes: MutableSet<String> = ClassSet()
-    public actual inline fun flushClasses() {}
+    public actual fun flushClasses() {}
     public actual var id: String? = null
         set(value) {
             field = value

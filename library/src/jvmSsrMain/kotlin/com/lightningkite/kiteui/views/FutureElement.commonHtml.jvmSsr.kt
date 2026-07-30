@@ -54,7 +54,7 @@ public actual class FutureElement actual constructor() {
     public actual fun screenRectangle(): Rect? = null
     public actual fun parentRectangle(): Rect? = null
 
-    public actual inline fun flushClasses() {}
+    public actual fun flushClasses() {}
 
     public actual val attributes: FutureElementAttributes = FutureElementAttributes(HashMap())
     public actual val style: FutureElementStyle = FutureElementStyle(HashMap())
