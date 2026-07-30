@@ -34,7 +34,7 @@ public actual class IconView actual constructor(context: ElementContext): Native
         }
     public actual var description: String?
         get() {
-            return native.contentDescription.toString()
+            return native.contentDescription?.toString()
         }
         set(value) {
             native.contentDescription = value
