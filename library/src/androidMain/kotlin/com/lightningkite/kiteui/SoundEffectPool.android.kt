@@ -13,6 +13,8 @@ import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.reactive.extensions.invokeAllSafe
 import kotlinx.coroutines.*
 import java.io.Closeable
+import java.io.File
+import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -24,6 +26,19 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
         setMaxStreams(concurrency)
     }.build()
 
+    // SoundPool.load() returns immediately but decodes the sample on a background thread, so we
+    // track pending loads by sample ID and resolve them from the pool-wide completion listener.
+    private val loadCompletions = HashMap<Int, CompletableDeferred<Unit>>()
+
+    init {
+        soundPool.setOnLoadCompleteListener { _, sampleId, status ->
+            loadCompletions.remove(sampleId)?.let {
+                if (status == 0) it.complete(Unit)
+                else it.completeExceptionally(IOException("SoundPool failed to load sample (status $status)"))
+            }
+        }
+    }
+
     public actual suspend fun preload(sound: AudioSource) {
         preloadInternal(sound)
     }
@@ -32,18 +47,35 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
         return loadedMap.getOrPut(source) {
             AppScope.async {
                 when (source) {
-                    is AudioRemote -> TODO()
-                    is AudioRaw -> TODO()
-                    is AudioLocal -> {
-                        soundPool.load(source.file.uri.path, 1)
-                    }
-
-                    is AudioResource -> {
-                        soundPool.load(AndroidAppContext.applicationCtx, source.resource, 1)
-                    }
+                    // SoundPool can only load from a resource or a file path, so remote and raw
+                    // audio are first written to a cache file, the same trick used by AudioSource.load().
+                    is AudioRemote -> loadBytes(fetch(source.url).blob().toByteArray())
+                    is AudioRaw -> loadBytes(source.data.toByteArray())
+                    is AudioLocal -> awaitLoad(soundPool.load(source.file.uri.path, 1))
+                    is AudioResource -> awaitLoad(soundPool.load(AndroidAppContext.applicationCtx, source.resource, 1))
                 }
             }
         }.await()
+    }
+
+    private suspend fun loadBytes(bytes: ByteArray): Int {
+        val file = File.createTempFile("soundeffect", ".audio", AndroidAppContext.applicationCtx.cacheDir)
+        return try {
+            file.writeBytes(bytes)
+            awaitLoad(soundPool.load(file.path, 1))
+        } finally {
+            file.delete()
+        }
+    }
+
+    private suspend fun awaitLoad(soundId: Int): Int {
+        // A sample ID of 0 means SoundPool rejected the load synchronously (bad data, pool full);
+        // no completion event will ever arrive for it.
+        if (soundId == 0) throw IOException("SoundPool failed to load sample")
+        val completion = CompletableDeferred<Unit>()
+        loadCompletions[soundId] = completion
+        completion.await()
+        return soundId
     }
 
     public actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
@@ -86,7 +118,15 @@ public actual suspend fun AudioSource.load(): PlayableAudio {
     var toClose: Closeable? = null
     when (this) {
         is AudioLocal -> player.setDataSource(AndroidAppContext.applicationCtx, file.uri)
-        is AudioRaw -> TODO()
+        is AudioRaw -> {
+            // MediaPlayer has no API to play from an in-memory buffer, so stage it in a cache file.
+            // Deleting the file once it is opened (see toClose below) is safe: the file stays
+            // readable through its open descriptor in the media server until playback finishes.
+            val file = File.createTempFile("soundeffect", ".audio", AndroidAppContext.applicationCtx.cacheDir)
+            file.writeBytes(data.toByteArray())
+            player.setDataSource(file.path)
+            toClose = Closeable { file.delete() }
+        }
         is AudioRemote -> player.setDataSource(AndroidAppContext.applicationCtx, Uri.parse(url))
         is AudioResource -> {
             val afd = AndroidAppContext.applicationCtx.resources.openRawResourceFd(this.resource)
