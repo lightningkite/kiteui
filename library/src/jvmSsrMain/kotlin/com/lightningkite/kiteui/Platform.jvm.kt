@@ -72,9 +72,10 @@ public actual val Platform.Companion.userAgent: String
     get() = SsrUserAgentContext.get()
         ?: "JVM ${Runtime.version()} ${System.getProperty("os.name") ?: "Unknown"}"
 
-// by Claude - SSR is always a development server
+// Defaults to production (false) so stack traces/debug info from installDebugHandlers()
+// are never shown to real visitors unless the deploying app explicitly opts in.
 public actual val Platform.Companion.isDevelopment: Boolean
-    get() = true
+    get() = System.getenv("KITEUI_DEVELOPMENT")?.toBoolean() ?: false
 
 public actual fun setStatusBarColor(color: Color) {
 }

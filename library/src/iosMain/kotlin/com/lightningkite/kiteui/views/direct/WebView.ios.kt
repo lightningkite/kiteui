@@ -36,9 +36,14 @@ public actual class WebView actual constructor(context: ElementContext) : Native
             native.configuration.preferences.javaScriptEnabled = value
         }
 
-    public actual inline var content: String
-        get() = ""
+    // WKWebView has no synchronous API to read back the loaded HTML, so cache the last-set value.
+    private var contentCache: String = ""
+
+    // Not inline: the accessors read private cached state, which an inline public accessor cannot do.
+    public actual var content: String
+        get() = contentCache
         set(value) {
+            contentCache = value
             native.loadHTMLString(value, baseURL = null)
         }
 }

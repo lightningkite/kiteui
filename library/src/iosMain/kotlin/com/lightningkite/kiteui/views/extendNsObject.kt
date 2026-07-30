@@ -47,8 +47,11 @@ import platform.darwin.NSObject
 //    }
 //}
 public class ExtensionProperty<A: NSObject, B>(): ReadWriteProperty<A, B?> {
-    
-    public val key: NSValue = NSValue.valueWithPointer((Random.nextLong().toString() as NSString).UTF8String)
+
+    // UTF8String's pointer is only valid as long as the NSString it came from is kept alive,
+    // so we retain keyString here rather than letting it be a throwaway temporary.
+    private val keyString: NSString = Random.nextLong().toString() as NSString
+    public val key: NSValue = NSValue.valueWithPointer(keyString.UTF8String)
     override fun getValue(thisRef: A, property: KProperty<*>): B? = getValue(thisRef)
     override fun setValue(thisRef: A, property: KProperty<*>, value: B?): Unit = setValue(thisRef, value)
     

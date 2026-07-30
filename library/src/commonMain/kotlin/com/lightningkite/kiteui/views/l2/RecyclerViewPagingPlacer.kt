@@ -26,7 +26,7 @@ public class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
         existingCells.forEach {
             log?.log("    Index ${it.index} at ${it.left} (viewport.left: ${viewport.left}, previousViewport.left: ${previousViewport.left})")
         }
-        val (anchorXStart, anchorIndex) = anchor?.let {
+        val (anchorXStart, anchorIndex) = (anchor?.let {
             when(it) {
                 is RecyclerViewAnchor.FuzzyIndex -> {
                     (viewport.left - it.index.rem(1) * viewport.width) to it.index.toInt()
@@ -44,6 +44,11 @@ public class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
                 it.left to it.index
         } ?: run {
             viewport.left to dataRange.first
+        }).let {
+            // existingCells can carry indices from before the underlying data shrank, so the
+            // derived anchor may no longer fall within dataRange; fall back to the start of
+            // the range rather than rendering nothing this frame.
+            if (it.second !in dataRange) viewport.left to dataRange.first else it
         }
         log?.log("Anchor is ${anchorXStart} index ${anchorIndex}")
 

@@ -138,18 +138,30 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
                 // We guard with suppressNav during the async gap so the popstate
                 // fired by go() does not trigger a stack change.
                 val stepsBack = window.history.length - 1
-                if (stepsBack > 0) {
-                    // suppressNav remains true through the async popstate fired by go().
-                    // We set it false again only after replaceState completes.
-                    window.history.go(-stepsBack)
-                    // go() is async; replaceState is safe to call synchronously right
-                    // after because the popstate fires on the next event-loop tick.
-                }
                 val new = s.lastOrNull() ?: return@reactive
-                routes.render(new)?.urlLikePath?.let { url ->
-                    log?.log("reset: replaceState '${url.render()}'")
-                    window.history.replaceState(null, "", basePath + url.render())
-                    rememberStack(url, s)
+                val replaceOldestEntry = {
+                    routes.render(new)?.urlLikePath?.let { url ->
+                        log?.log("reset: replaceState '${url.render()}'")
+                        window.history.replaceState(null, "", basePath + url.render())
+                        rememberStack(url, s)
+                    }
+                    Unit
+                }
+                if (stepsBack > 0) {
+                    // history.go() is asynchronous: the active entry doesn't change
+                    // until the popstate it queues actually fires, so replaceState()
+                    // must run from that popstate handler - calling it synchronously
+                    // right after go() would overwrite the entry we're leaving, not
+                    // the oldest entry go() is navigating to.
+                    lateinit var onSettled: (Event) -> Unit
+                    onSettled = {
+                        window.removeEventListener("popstate", onSettled)
+                        replaceOldestEntry()
+                    }
+                    window.addEventListener("popstate", onSettled)
+                    window.history.go(-stepsBack)
+                } else {
+                    replaceOldestEntry()
                 }
             } else if (s.lastOrNull() != lastStack.lastOrNull()) {
                 val new = s.lastOrNull() ?: return@reactive

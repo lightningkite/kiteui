@@ -1,10 +1,21 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.AutoComplete
+import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.DriverActionException
 import com.lightningkite.kiteui.views.driverChildren
 import com.lightningkite.kiteui.views.driverSnapshot
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.datetime.*
+
+// Password/new-password fields must never surface their plaintext through the driver
+// snapshot (used by test automation and MCP-connected agents), since that would defeat
+// the UI's visual masking.
+private fun KeyboardHints.isSecret(): Boolean =
+    autocomplete == AutoComplete.Password || autocomplete == AutoComplete.NewPassword
+
+private fun redactedDriverValue(hints: KeyboardHints, actual: String): String =
+    if (hints.isSecret()) "•".repeat(actual.length) else actual
 
 // --- Button ---
 
@@ -15,7 +26,7 @@ public fun Button.buttonDriverActions(): Map<String, suspend (List<String>) -> S
 
 // --- TextInput ---
 
-public fun TextInput.textInputDriverValue(): String = content.value
+public fun TextInput.textInputDriverValue(): String = redactedDriverValue(keyboardHints, content.value)
 public fun TextInput.textInputDriverActions(): Map<String, suspend (List<String>) -> String> = buildMap {
     put("setValue") { args -> content.set(args.joinToString(" ")); "OK" }
     action?.let { a -> put("submit") { a.startAction(this@textInputDriverActions); "OK" } }
@@ -23,7 +34,7 @@ public fun TextInput.textInputDriverActions(): Map<String, suspend (List<String>
 
 // --- TextArea ---
 
-public fun TextArea.textAreaDriverValue(): String = content.value
+public fun TextArea.textAreaDriverValue(): String = redactedDriverValue(keyboardHints, content.value)
 public fun TextArea.textAreaDriverActions(): Map<String, suspend (List<String>) -> String> = buildMap {
     put("setValue") { args -> content.set(args.joinToString(" ")); "OK" }
     action?.let { a -> put("submit") { a.startAction(this@textAreaDriverActions); "OK" } }
@@ -105,7 +116,7 @@ public fun MenuButton.menuDriverActions(
 
 // --- AutoCompleteTextField ---
 
-public fun AutoCompleteTextField.autoCompleteDriverValue(): String = content.value
+public fun AutoCompleteTextField.autoCompleteDriverValue(): String = redactedDriverValue(keyboardHints, content.value)
 public fun AutoCompleteTextField.autoCompleteDriverActions(): Map<String, suspend (List<String>) -> String> = buildMap {
     put("setValue") { args -> content.set(args.joinToString(" ")); "OK" }
     action?.let { a -> put("submit") { a.startAction(this@autoCompleteDriverActions); "OK" } }
@@ -125,7 +136,7 @@ public fun NumberInput.numberInputDriverActions(): Map<String, suspend (List<Str
 
 // --- FormattedTextInput ---
 
-public fun FormattedTextInput.formattedTextInputDriverValue(): String = content.value
+public fun FormattedTextInput.formattedTextInputDriverValue(): String = redactedDriverValue(keyboardHints, content.value)
 public fun FormattedTextInput.formattedTextInputDriverActions(): Map<String, suspend (List<String>) -> String> = buildMap {
     put("setValue") { args -> content.set(args.joinToString(" ")); "OK" }
     action?.let { a -> put("submit") { a.startAction(this@formattedTextInputDriverActions); "OK" } }

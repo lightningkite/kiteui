@@ -96,6 +96,10 @@ public class SsrContext(
      * Register an SSR resource for tracking and data loading.
      */
     override fun registerResource(resource: SsrResource<*>) {
+        // Keys must be unique per page; a silent overwrite here would drop the first
+        // resource's data from the exported map while leaving it wired into that
+        // component's reactive bindings, producing incomplete SSR HTML with no error.
+        check(resource.key !in resources) { "Duplicate SsrResource key: '${resource.key}' - keys must be unique per page" }
         resources[resource.key] = resource
         resource.startLoading(loadingScope)
     }

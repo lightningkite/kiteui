@@ -86,7 +86,10 @@ public abstract class KiteUiActivity : AppCompatActivity() {
         AndroidAppContext.activityCtx = this
 
         savedInstanceState?.getStringArray("navStack")?.let {
+            // If every saved route fails to parse (e.g. renamed/removed in an app update), fall back
+            // to the default route instead of leaving the navigator stack empty.
             mainNavigator.stack.value = it.mapNotNull { mainNavigator.routes.parse(UrlLikePath.fromUrlString(it)) }
+                .ifEmpty { listOf(mainNavigator.routes.fallback) }
         } ?: run {
             mainNavigator.stack.value = (mainNavigator.routes.parse(UrlLikePath(listOf(), mapOf())) ?: mainNavigator.routes.fallback).let(::listOf)
         }

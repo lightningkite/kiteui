@@ -20,9 +20,9 @@ import platform.Foundation.NSString
 import platform.Foundation.numberWithFloat
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.CATransform3DIdentity
-import platform.QuartzCore.CATransform3DMakeRotation
-import platform.QuartzCore.CATransform3DMakeScale
-import platform.QuartzCore.CATransform3DMakeTranslation
+import platform.QuartzCore.CATransform3DRotate
+import platform.QuartzCore.CATransform3DScale
+import platform.QuartzCore.CATransform3DTranslate
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
 import com.lightningkite.kiteui.models.LiveRegionMode
@@ -365,29 +365,27 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
 
             // Apply transformation if present
             theme.theme.transform?.let { transform ->
-                // Apply transformations to the native view's layer
+                // Compose all transformation components together, matching how
+                // Android (independent View properties) and Web (concatenated CSS
+                // transform string) combine translate/rotate/scale simultaneously,
+                // rather than only applying whichever one happens first.
+                var t = CATransform3DIdentity.readValue()
                 if (transform.translationX != 0.0 || transform.translationY != 0.0 || transform.translationZ != 0.0) {
-                    // Apply translation
-                    native.layer.transform = CATransform3DMakeTranslation(
-                        transform.translationX,
-                        transform.translationY,
-                        transform.translationZ
-                    )
-                } else if (transform.rotation != 0.0) {
-                    // Apply rotation (convert degrees to radians)
-                    val radians = transform.rotation * (PI / 180.0)
-                    native.layer.transform = CATransform3DMakeRotation(radians, 0.0, 0.0, 1.0)
-                } else if (transform.scaleX != 1.0 || transform.scaleY != 1.0) {
-                    // Apply scale
-                    native.layer.transform = CATransform3DMakeScale(
-                        transform.scaleX,
-                        transform.scaleY,
-                        1.0
-                    )
-                } else {
-                    // Default identity transform
-                    native.layer.transform = CATransform3DIdentity.readValue()
+                    t = CATransform3DTranslate(t, transform.translationX, transform.translationY, transform.translationZ)
                 }
+                if (transform.rotationX != 0.0) {
+                    t = CATransform3DRotate(t, transform.rotationX * (PI / 180.0), 1.0, 0.0, 0.0)
+                }
+                if (transform.rotationY != 0.0) {
+                    t = CATransform3DRotate(t, transform.rotationY * (PI / 180.0), 0.0, 1.0, 0.0)
+                }
+                if (transform.rotation != 0.0) {
+                    t = CATransform3DRotate(t, transform.rotation * (PI / 180.0), 0.0, 0.0, 1.0)
+                }
+                if (transform.scaleX != 1.0 || transform.scaleY != 1.0) {
+                    t = CATransform3DScale(t, transform.scaleX, transform.scaleY, 1.0)
+                }
+                native.layer.transform = t
             } ?: run {
                 // Reset transform if no transformation is specified
                 native.layer.transform = CATransform3DIdentity.readValue()

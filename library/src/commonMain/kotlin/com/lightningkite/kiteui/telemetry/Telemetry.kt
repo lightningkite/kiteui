@@ -263,7 +263,8 @@ public class Telemetry(public val config: TelemetryConfig) {
         val parentSpanId = ctx.spanId().ifEmpty { currentSpanId }
         val viewPath = ctx.viewPath()
 
-        val host = url.substringAfter("://").substringBefore("/").substringBefore("?")
+        // Strip any userinfo (user:pass@) so embedded credentials never reach telemetry attributes
+        val host = url.substringAfter("://").substringBefore("/").substringBefore("?").substringAfter("@")
 
         // Copy headers to avoid mutating the caller's HttpHeaders instance
         val outHeaders = httpHeaders(headers)

@@ -8,7 +8,7 @@ public actual object KeyCodes {
     public actual val right: KeyCode get() = KeyEvent.KEYCODE_DPAD_RIGHT
     public actual val up: KeyCode get() = KeyEvent.KEYCODE_DPAD_UP
     public actual val down: KeyCode get() = KeyEvent.KEYCODE_DPAD_DOWN
-    public actual fun letter(char: Char): KeyCode = KeyEvent.KEYCODE_A + char.code
+    public actual fun letter(char: Char): KeyCode = KeyEvent.KEYCODE_A + (char.uppercaseChar() - 'A')
     public actual fun num(digit: Int): KeyCode = KeyEvent.KEYCODE_0 + digit
     public actual fun numpad(digit: Int): KeyCode = KeyEvent.KEYCODE_NUMPAD_0 + digit
     public actual val space: KeyCode get() = KeyEvent.KEYCODE_SPACE

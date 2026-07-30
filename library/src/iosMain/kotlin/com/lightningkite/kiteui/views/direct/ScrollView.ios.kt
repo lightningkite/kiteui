@@ -171,14 +171,14 @@ public class ScrollView(
         }
     }
     override val content: Reactive<Rect> = (sizeChange).lensListenable {
+        // contentSize is already the full scrollable content extent; do not add the
+        // viewport size on top, or distanceToEnd calculations (e.g. childrenLazyLoading)
+        // get inflated by one viewport length.
         val (sw, sh) = scroller.contentSize.useContents { width to height }
-        val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
-        scroller.bounds.useContents {
-            Rect.fromSize(
-                width = vw + sw,
-                height = vh + sh,
-            )
-        }
+        Rect.fromSize(
+            width = sw,
+            height = sh,
+        )
     }
     private val _directlyInteractingWithScroller = Signal(false)
     override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller

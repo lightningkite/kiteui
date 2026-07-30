@@ -77,7 +77,10 @@ expect class TestHarness() {
 
 /**
  * Helper function to run a test with automatic cleanup.
- * Automatically skips test if platform is not supported.
+ *
+ * Fails with an [AssertionError] if the platform does not support the harness. It deliberately
+ * does not skip: a silent skip lets the runner report the test's un-run assertions as a pass,
+ * which hides the coverage gap rather than surfacing it.
  *
  * Example:
  * ```
@@ -93,8 +96,10 @@ expect class TestHarness() {
 inline fun withTestHarness(block: (TestHarness) -> Unit) {
     val harness = TestHarness()
     if (!harness.supported) {
-        println("Skipping test - platform not supported")
-        return
+        // Fail loudly instead of returning normally: a silent return here would let the
+        // test runner report `block`'s un-run assertions as a pass, hiding a real gap in
+        // coverage on this platform.
+        throw AssertionError("Test harness not supported on this platform - cannot run test")
     }
     try {
         block(harness)

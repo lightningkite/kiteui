@@ -73,7 +73,9 @@ class KiteUiPlugin : Plugin<Project> {
             task.dependsOn("kiteuiResourcesJsNonVitePart")
             group = "kiteui"
             task.from("src/commonMain/resources")
-            task.into("src/jsMain/resources/common")
+            // Copy's into() sets a single destinationDir, so calling it twice would just
+            // overwrite the first target rather than copy to both. The "common" destination
+            // is instead populated by the kiteuiResourcesJsNonVitePart dependency above.
             task.into("src/jsMain/resources/public/common")
             val out = project.file("build/generated/kiteui-js/Resources.js.kt")
             val gitIgnore = project.file("src/jsMain/resources/common/.gitignore")

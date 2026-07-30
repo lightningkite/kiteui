@@ -333,7 +333,10 @@ public open class GraphDelegate : CanvasDelegate() {
             font(tickLabelFontSize.canvasUnits, FontAndStyle(systemDefaultFont))
 
             // X-axis ticks and labels
-            var x = ceil(minX / xStep) * xStep
+            // Custom labels are indexed from the data minimum, not from zero, so ticks must be
+            // anchored there (data can extend below zero) rather than at multiples of xStep from 0.
+            val xTickOrigin = xAxisLabels?.let { rawMinX } ?: 0.0
+            var x = xTickOrigin + ceil((minX - xTickOrigin) / xStep) * xStep
             while (x <= maxX) {
                 val cx = toCanvasX(x)
 
@@ -345,13 +348,14 @@ public open class GraphDelegate : CanvasDelegate() {
 
                 // Draw label
                 textAlign(TextAlign.center)
-                drawText(xAxisLabels?.let { it[(x / xStep).roundToInt()] } ?: formatNumber(x), cx, height - paddingCanvas - xAxisLabelHeight + 1.rem.canvasUnits)
+                drawText(xAxisLabels?.let { it.getOrNull(((x - xTickOrigin) / xStep).roundToInt()) } ?: formatNumber(x), cx, height - paddingCanvas - xAxisLabelHeight + 1.rem.canvasUnits)
 
                 x += xStep
             }
 
             // Y-axis ticks and labels
-            var y = ceil(minY / yStep) * yStep
+            val yTickOrigin = yAxisLabels?.let { rawMinY } ?: 0.0
+            var y = yTickOrigin + ceil((minY - yTickOrigin) / yStep) * yStep
             while (y <= maxY) {
                 val cy = toCanvasY(y)
 
@@ -363,7 +367,7 @@ public open class GraphDelegate : CanvasDelegate() {
 
                 // Draw label
                 textAlign(TextAlign.right)
-                drawText(yAxisLabels?.let { it[(y / yStep).roundToInt()] } ?: formatNumber(y), paddingCanvas + yAxisLabelWidth - 0.5.rem.canvasUnits, cy + 0.3.rem.canvasUnits)
+                drawText(yAxisLabels?.let { it.getOrNull(((y - yTickOrigin) / yStep).roundToInt()) } ?: formatNumber(y), paddingCanvas + yAxisLabelWidth - 0.5.rem.canvasUnits, cy + 0.3.rem.canvasUnits)
 
                 y += yStep
             }

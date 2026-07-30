@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.reactive
 import com.lightningkite.kiteui.exceptions.ExceptionHandlersTree
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.reactive.context.DependencyChangeListener
+import com.lightningkite.reactive.context.awaitOnce
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.*
 import com.lightningkite.reactive.extensions.*
@@ -161,8 +162,17 @@ public class RetryableAction(
         ignoreRetryWhileRunning,
         reportTo
     ) plus@{
+        // startAction() is fire-and-forget, so without awaiting each sub-action's own
+        // terminal state here, this lambda (and thus the combined action) would report
+        // completion the instant both starts were issued, before either had actually finished.
+        // Both are awaited even when the first fails, so the combined action does not settle
+        // while the second is still running; the first failure is still the one reported.
         this@RetryableAction.startAction(this)
         other.startAction(this)
+        val first = runCatching { this@RetryableAction.awaitOnce() }
+        val second = runCatching { other.awaitOnce() }
+        first.getOrThrow()
+        second.getOrThrow()
     }
 
     override fun toString(): String = "RetryableAction($title)"
@@ -244,8 +254,17 @@ public class DependentAction(
         ignoreRetryWhileRunning,
         reportTo
     ) plus@{
+        // startAction() is fire-and-forget, so without awaiting each sub-action's own
+        // terminal state here, this lambda (and thus the combined action) would report
+        // completion the instant both starts were issued, before either had actually finished.
+        // Both are awaited even when the first fails, so the combined action does not settle
+        // while the second is still running; the first failure is still the one reported.
         this@DependentAction.startAction(this)
         other.startAction(this)
+        val first = runCatching { this@DependentAction.awaitOnce() }
+        val second = runCatching { other.awaitOnce() }
+        first.getOrThrow()
+        second.getOrThrow()
     }
 
     override fun toString(): String = "DependentAction($title)"

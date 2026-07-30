@@ -44,7 +44,14 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
                     list = data()
                     picker.reloadAllComponents()
                 }
-                reactive { textField.text = render(edits()) }
+                reactive {
+                    val current = edits()
+                    textField.text = render(current)
+                    // Keep the wheel's highlighted row in sync so opening the picker
+                    // shows the actual current selection instead of a stale row.
+                    val idx = list.indexOf(current)
+                    if (idx >= 0) picker.selectRow(idx.toLong(), inComponent = 0L, animated = false)
+                }
             }
 
             override fun numberOfComponentsInPickerView(pickerView: UIPickerView): NSInteger = 1L

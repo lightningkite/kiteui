@@ -104,11 +104,53 @@ public class DrawingContext2DImpl(override val canvas: Canvas): DrawingContext2D
     internal var _shadowOffsetY: Double = 0.0
     internal val transformMatrix: Matrix = Matrix()
 
+    // canvas.save()/restore() only roll back the transform matrix and clip. Fill/stroke
+    // style (color, alpha, dash, shadow, line width/cap/join) lives in fillPaintObj/
+    // strokePaintObj and the tracked shadow/dash/alpha fields below, none of which the
+    // Canvas snapshots on its own, so we mirror the same push/pop here to match the
+    // save/restore contract that Web and iOS provide.
+    private data class PaintState(
+        val fillPaint: android.graphics.Paint,
+        val strokePaint: android.graphics.Paint,
+        val lineDashSegments: List<Double>,
+        val lineDashOffset: Double,
+        val globalAlpha: Double,
+        val shadowBlur: Double,
+        val shadowColor: Color,
+        val shadowOffsetX: Double,
+        val shadowOffsetY: Double,
+    )
+    private val paintStateStack = ArrayDeque<PaintState>()
+
     override fun save() {
         canvas.save()
+        paintStateStack.addLast(
+            PaintState(
+                fillPaint = android.graphics.Paint(fillPaintObj),
+                strokePaint = android.graphics.Paint(strokePaintObj),
+                lineDashSegments = lineDashSegments,
+                lineDashOffset = _lineDashOffset,
+                globalAlpha = _globalAlpha,
+                shadowBlur = _shadowBlur,
+                shadowColor = _shadowColor,
+                shadowOffsetX = _shadowOffsetX,
+                shadowOffsetY = _shadowOffsetY,
+            )
+        )
     }
     override fun restore() {
         canvas.restore()
+        paintStateStack.removeLastOrNull()?.let {
+            fillPaintObj = it.fillPaint
+            strokePaintObj = it.strokePaint
+            lineDashSegments = it.lineDashSegments
+            _lineDashOffset = it.lineDashOffset
+            _globalAlpha = it.globalAlpha
+            _shadowBlur = it.shadowBlur
+            _shadowColor = it.shadowColor
+            _shadowOffsetX = it.shadowOffsetX
+            _shadowOffsetY = it.shadowOffsetY
+        }
     }
     override fun scale(x: Double, y: Double) {
         canvas.scale(x.toFloat(), y.toFloat())
@@ -440,6 +482,9 @@ public actual fun DrawingContext2D.font(
 ) {
     fillPaintObj.setTypeface(value.font.toTypeface())
     fillPaintObj.textSize = size.toFloat()
+    // strokePaintObj backs drawOutlinedText, so it needs the same typeface/size.
+    strokePaintObj.setTypeface(value.font.toTypeface())
+    strokePaintObj.textSize = size.toFloat()
 }
 
 public actual fun DrawingContext2D.textAlign(alignment: TextAlign) {

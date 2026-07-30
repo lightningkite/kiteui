@@ -20,7 +20,6 @@ import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.annotation.RequiresApi
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
@@ -312,12 +311,11 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         // When a view has corner radii and draws a background, clip children to the
         // rounded outline. This matches web behavior where border-radius + overflow: hidden
         // clips content (e.g. images inside a rounded frame).
-        // We use Outline.setPath() with the per-corner radii array so PerCorner is respected.
+        // We use Outline.setConvexPath() with the per-corner radii array so PerCorner is respected.
         // A rounded rect path is always convex, so this works on API 21+.
         if (cr > 0f && themeAndBack.drawBackground) {
             val capturedRadii = radii.copyOf()
             native.outlineProvider = object : ViewOutlineProvider() {
-                @RequiresApi(Build.VERSION_CODES.R)
                 override fun getOutline(view: View, outline: Outline) {
                     val path = Path().apply {
                         addRoundRect(
@@ -326,7 +324,10 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
                             Path.Direction.CW
                         )
                     }
-                    outline.setPath(path)
+                    // setConvexPath (API 21+) is sufficient since a rounded rect is always convex,
+                    // avoiding the API 30+ requirement of setPath.
+                    @Suppress("DEPRECATION")
+                    outline.setConvexPath(path)
                 }
             }
             native.clipToOutline = true

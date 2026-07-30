@@ -36,7 +36,7 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
             paddingLeft + it * gap + it * cellSize
         }
 
-        val (anchorRowX, anchorRowIndex) = anchor?.let {
+        val (anchorRowX, anchorRowIndex) = (anchor?.let {
             when(it) {
                 is RecyclerViewAnchor.FuzzyIndex -> {
                     val averageRowWidth = existingCells.sumOf { it.right - it.left } / existingCells.size
@@ -67,7 +67,23 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
         }?.let {
 //            println("Using existing cells for anchor: ${it.left} to ${it.index.div(columns).times(columns)}")
             it.left to it.index.div(rows).times(rows)
-        } ?: (viewport.left + paddingLeft to dataRange.first.div(rows).times(rows))
+        } ?: (viewport.left + paddingLeft to dataRange.first.div(rows).times(rows))).let {
+            // anchor correction for out of bounds - existingCells' indices can be stale after
+            // the data range shrinks, so re-anchor to the viewport instead of drifting off-screen
+            if (it.second < dataRange.first - rows) {
+                (viewport.left + paddingLeft to dataRange.first.div(rows).times(rows))
+            } else if (it.second > dataRange.last + rows) {
+                val currentIndex = dataRange.last.div(rows).times(rows)
+                val cells = (0..<rows).map {
+                    if (currentIndex + it in dataRange) getNewCell(
+                        currentIndex + it,
+                        constrain
+                    ) else null
+                }
+                val max = cells.maxOf { it?.size?.width ?: 0.0 }
+                (viewport.right - max - paddingRight to currentIndex)
+            } else it
+        }
 
         // Place rightwards, one row at a time
         var currentX = anchorRowX

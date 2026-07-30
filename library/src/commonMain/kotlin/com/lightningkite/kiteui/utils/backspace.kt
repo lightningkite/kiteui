@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.utils
 
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -127,26 +128,44 @@ public inline fun numberAutocommaRepair(
 //)
 
 public fun Double.toStringNoExponential(): String {
-    val preDecimal = toLong().toString()
-    val r = rem(1)
-    if (r == 0.0) return preDecimal
+    // Sign is handled separately since toLong() drops it for magnitudes under 1 (e.g. -0.5 -> 0)
+    // and rem(1) keeps the dividend's sign, which otherwise corrupts the fractional digits below.
+    val negative = this < 0.0
+    val abs = abs(this)
+    val preDecimal = abs.toLong().toString()
+    val r = abs.rem(1)
+    if (r == 0.0) return if (negative) "-$preDecimal" else preDecimal
     val availableDigits = 10 - preDecimal.length
     val postDecimal = r.times(10.0.pow(availableDigits)).roundToInt()
-    if (postDecimal == 0) return preDecimal
-    else return preDecimal + "." + postDecimal.toString().padStart(availableDigits, '0').trimEnd('0')
+    val result = if (postDecimal == 0) preDecimal
+    else preDecimal + "." + postDecimal.toString().padStart(availableDigits, '0').trimEnd('0')
+    return if (negative) "-$result" else result
 }
 
 public fun Double.commaString(): String {
     val clean = this.toStringNoExponential().filter { it.isDigit() || it in setOf('.', '-') }
-    val preDecimal = clean.substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
-    val postDecimal = clean.substringAfter('.', "")
-    return if (clean.contains('.')) "$preDecimal.$postDecimal" else preDecimal
+    // The '-' must be split off before chunking, or it gets grouped with the digits
+    // (e.g. "-100" -> "-,100") whenever the digit count is a multiple of 3.
+    val negative = clean.startsWith('-')
+    val digits = clean.removePrefix("-")
+    val preDecimal = digits.substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+    val postDecimal = digits.substringAfter('.', "")
+    val result = if (digits.contains('.')) "$preDecimal.$postDecimal" else preDecimal
+    return if (negative) "-$result" else result
 }
 public fun Int.commaString(): String {
-    return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+    val s = toString()
+    val negative = s.startsWith('-')
+    val digits = s.removePrefix("-")
+    val result = digits.reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+    return if (negative) "-$result" else result
 }
 public fun Long.commaString(): String {
-    return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+    val s = toString()
+    val negative = s.startsWith('-')
+    val digits = s.removePrefix("-")
+    val result = digits.reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+    return if (negative) "-$result" else result
 }
 
 

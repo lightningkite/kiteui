@@ -20,12 +20,15 @@ public actual fun ElementContext.overlay(
 
         val close: () -> Unit = {
             willRemove?.let {
-                it.animateOut(transition.reverse) {
-                    this@with.removeChild(it)
-                    willRemove = null
-                }
+                // Clear state before starting the exit animation so a second close() call
+                // (e.g. a double tap on a dismiss button) during the animation is a no-op
+                // instead of animating/removing the same element twice.
+                willRemove = null
                 unregister?.invoke()
                 unregister = null
+                it.animateOut(transition.reverse) {
+                    this@with.removeChild(it)
+                }
             }
         }
 

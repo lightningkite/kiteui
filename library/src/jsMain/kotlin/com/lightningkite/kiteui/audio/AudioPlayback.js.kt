@@ -31,7 +31,10 @@ public actual class AudioPlayback actual constructor(public actual val format: A
 
     // Buffer queue for audio data
     private val audioQueue = ArrayDeque<ByteArray>()
-    private var currentSourceNode: AudioBufferSourceNode? = null
+
+    // Every buffer scheduled since the last stop() - a single drain of audioQueue can
+    // schedule several nodes at once, so stop() must stop all of them, not just the latest.
+    private val scheduledSourceNodes = mutableListOf<AudioBufferSourceNode>()
     private var nextStartTime: Double = 0.0
     private var isScheduling = false
 
@@ -79,8 +82,8 @@ public actual class AudioPlayback actual constructor(public actual val format: A
 
     public actual fun stop() {
         _isPlaying.value = false
-        currentSourceNode?.stop()
-        currentSourceNode = null
+        scheduledSourceNodes.forEach { it.stop() }
+        scheduledSourceNodes.clear()
         clearBuffer()
     }
 
@@ -139,7 +142,7 @@ public actual class AudioPlayback actual constructor(public actual val format: A
             sourceNode.start(nextStartTime)
             nextStartTime += buffer.duration
 
-            currentSourceNode = sourceNode
+            scheduledSourceNodes.add(sourceNode)
         }
 
         isScheduling = false

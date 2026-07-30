@@ -4,6 +4,10 @@ package com.lightningkite.kiteui.markdown
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.px
 
+// Maximum recursion depth for nested blocks (blockquotes, list items, custom blocks); see
+// MarkdownParser.blockNestingDepth.
+private const val MAX_BLOCK_NESTING_DEPTH = 100
+
 /**
  * Custom markdown parser that converts markdown text into an AST.
  * Supports standard markdown features plus custom extensions:
@@ -16,6 +20,10 @@ import com.lightningkite.kiteui.models.px
 public class MarkdownParser(
     private val customBlocks: Map<String, CustomBlockHandler> = emptyMap()
 ) : MarkdownParseContext {
+
+    // Guards against StackOverflowError on pathological input (e.g. thousands of nested
+    // blockquotes/list items/custom blocks, each level recursing back into parseBlocksInternal).
+    private var blockNestingDepth = 0
 
     // by Claude - MarkdownParseContext implementation
     override fun parseBlocks(content: String): List<MarkdownNode> {
@@ -35,6 +43,23 @@ public class MarkdownParser(
     // ================================
 
     private fun parseBlocksInternal(lines: List<String>): List<MarkdownNode> {
+        if (blockNestingDepth >= MAX_BLOCK_NESTING_DEPTH) {
+            // Too deeply nested (e.g. a line of thousands of ">" characters); stop recursing
+            // and render the remainder as plain text instead of overflowing the stack.
+            return listOf(MarkdownNode.Paragraph(parseInline(lines.joinToString(" "))))
+        }
+        // The decrement must run even if parsing throws, since a caller-supplied
+        // CustomBlockHandler can raise, and a leaked increment would permanently lower the
+        // usable nesting depth of this parser instance.
+        blockNestingDepth++
+        try {
+            return parseBlockLines(lines)
+        } finally {
+            blockNestingDepth--
+        }
+    }
+
+    private fun parseBlockLines(lines: List<String>): List<MarkdownNode> {
         val result = mutableListOf<MarkdownNode>()
         var i = 0
 
