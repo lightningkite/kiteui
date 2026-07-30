@@ -52,9 +52,9 @@ public actual class TextView actual constructor(context: ElementContext) : Nativ
             native.setStyleProperty("text-wrap", if(value) "wrap" else "nowrap")
             native.setStyleProperty("text-wrap-mode", if(value) "wrap" else "nowrap")
         }
-    public actual var wordBreak: WordBreak
-        get() = TODO("Not yet implemented")
+    public actual var wordBreak: WordBreak = WordBreak.Normal
         set(value) {
+            field = value
             native.setStyleProperty("word-break", if(value == WordBreak.BreakAll) "break-all" else "normal")
         }
     public actual var lineClamp: Int? = null
