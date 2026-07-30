@@ -3,15 +3,20 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.inBackground
+import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.reactive.core.BaseListenable
 import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.ReactiveState
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import platform.AVFAudio.*
 import platform.AVFoundation.AVFileTypeMPEG4
 import platform.AVFoundation.AVFileTypeMPEGLayer3
 import platform.AVFoundation.AVFileTypeWAVE
 import platform.Foundation.NSBundle
+import platform.Foundation.NSData
+import platform.Foundation.dataWithContentsOfURL
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
 import platform.darwin.NSObject
@@ -19,24 +24,101 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
+/** The raw bytes of a sound effect plus the UTI hint AVAudioPlayer needs to decode it. */
+private class LoadedSound(val data: NSData, val fileTypeHint: String?)
+
+private fun fileTypeHint(extension: String): String? = when (extension) {
+    "mp3" -> AVFileTypeMPEGLayer3
+    "m4a" -> AVFileTypeMPEG4
+    "wav" -> AVFileTypeWAVE
+    else -> null
+}
+
 public actual class SoundEffectPool actual constructor(concurrency: Int) {
+
+    // Sound effects are short and frequently overlap (e.g. rapid button taps), so each play()
+    // gets its own AVAudioPlayer instance; only the decoded bytes are shared via this cache.
+    private val loadedMap = HashMap<AudioSource, Deferred<LoadedSound>>()
+
     public actual suspend fun preload(sound: AudioSource) {
+        preloadInternal(sound)
     }
 
-    public actual suspend fun play(sound: AudioSource): PlayingSoundEffect = object : PlayingSoundEffect {
-        override var isPlaying: Boolean
-            get() = false
-            set(value) {}
-        override var volume: Float
-            get() = 0f
-            set(value) {}
+    private suspend fun preloadInternal(source: AudioSource): LoadedSound {
+        return loadedMap.getOrPut(source) {
+            AppScope.async {
+                inBackground {
+                    when (source) {
+                        is AudioRemote -> LoadedSound(
+                            data = NSData.dataWithContentsOfURL(NSURL(string = source.url))
+                                ?: throw Exception("Could not load audio from ${source.url}"),
+                            fileTypeHint = fileTypeHint(source.url.substringAfterLast('.'))
+                        )
 
-        override fun stop() {
+                        is AudioResource -> {
+                            val url = NSBundle.mainBundle.URLForResource(source.name, source.extension)
+                                ?: throw Exception("Could not find the audio in the bundle ${source.name} / ${source.extension}")
+                            LoadedSound(
+                                data = NSData.dataWithContentsOfURL(url)
+                                    ?: throw Exception("Could not load audio at $url"),
+                                fileTypeHint = fileTypeHint(source.extension)
+                            )
+                        }
 
+                        is AudioLocal -> TODO()
+                        is AudioRaw -> TODO()
+                    }
+                }
+            }
+        }.await()
+    }
+
+    public actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
+        val loaded = preloadInternal(sound)
+        val player = AVAudioPlayer(data = loaded.data, fileTypeHint = loaded.fileTypeHint, null)
+        return object : PlayingSoundEffect {
+            @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+            val dg = run {
+                // Use a weak reference to avoid a retain cycle between the delegate and this effect.
+                val weakSelf = kotlin.native.ref.WeakReference(this)
+                object : NSObject(), AVAudioPlayerDelegateProtocol {
+                    override fun audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully: Boolean) {
+                        weakSelf.get()?.let { keepAlive.remove(it) }
+                    }
+
+                    override fun audioPlayerDecodeErrorDidOccur(player: AVAudioPlayer, error: NSError?) {
+                        weakSelf.get()?.let { keepAlive.remove(it) }
+                    }
+                }
+            }
+
+            init {
+                player.delegate = dg
+                // Keep this effect (and transitively its delegate) alive for as long as it's playing.
+                keepAlive.add(this)
+                player.play()
+            }
+
+            override var isPlaying: Boolean
+                get() = player.isPlaying()
+                set(value) {
+                    if (value) player.play() else player.pause()
+                }
+            override var volume: Float
+                get() = player.volume
+                set(value) {
+                    player.volume = value
+                }
+
+            override fun stop() {
+                player.stop()
+                keepAlive.remove(this)
+            }
         }
     }
 
     public actual fun unload(sound: AudioSource) {
+        loadedMap.remove(sound)
     }
 }
 
