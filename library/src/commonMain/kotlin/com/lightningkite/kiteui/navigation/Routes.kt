@@ -23,6 +23,24 @@ public class Routes(
 ) {
     public fun render(screen: Page): RouteRendered? = renderers.get(screen::class)?.invoke(screen)
     public fun parse(path: UrlLikePath): Page? = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
+
+    /**
+     * Like [parse], but returns null instead of throwing when the path cannot be parsed.
+     *
+     * Generated route parsers decode path segments into typed parameters, so malformed input
+     * raises rather than simply failing to match. Any path that came from outside the
+     * application - a deep link, a restored navigation stack, a link inside user content -
+     * must go through this or [parseOrFallback]; calling [parse] directly on such input
+     * crashes the app on input an attacker or a stale saved state controls.
+     */
+    public fun parseOrNull(path: UrlLikePath): Page? =
+        try {
+            parse(path)
+        } catch (e: Exception) {
+            LogRoot.warn("Encountered exception when parsing route: $e")
+            null
+        }
+
     public fun parseOrFallback(path: UrlLikePath): Page =
         try {
             parse(path) ?: fallback
@@ -51,8 +69,10 @@ public data class UrlLikePath(
         )
 
         public fun fromUrlString(url: String): UrlLikePath {
-            val parts = url.split("?")
-            return fromParts(parts.getOrNull(0) ?: "", parts.getOrNull(1) ?: "")
+            // Only the first '?' separates path from query; a literal '?' is legal inside the
+            // query per RFC 3986. Splitting on every occurrence silently discarded everything
+            // after the second one, so "/p?redirect=/other?a=b" lost "a=b" with no error.
+            return fromParts(url.substringBefore('?'), url.substringAfter('?', ""))
         }
     }
 

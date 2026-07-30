@@ -208,7 +208,7 @@ public data class MarkdownConfig(
                         baseUrl != "/" && url.startsWith(baseUrl) -> url.removePrefix(baseUrl)
                         else -> url
                     }
-                    routes.parse(UrlLikePath.fromUrlString(path))
+                    routes.parseOrNull(UrlLikePath.fromUrlString(path))
                 }
             )
         }
@@ -272,7 +272,7 @@ public data class MarkdownConfig(
                     baseUrl != "/" && url.startsWith(baseUrl) -> url.removePrefix(baseUrl)
                     else -> url
                 }
-                routes.parse(UrlLikePath.fromUrlString(path))
+                routes.parseOrNull(UrlLikePath.fromUrlString(path))
             }
         )
     }
