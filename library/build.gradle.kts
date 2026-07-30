@@ -44,16 +44,6 @@ kotlin {
         iosArm64()
         iosSimulatorArm64()
         iosX64()
-        targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
-            compilations.configureEach {
-                compileTaskProvider.configure {
-                    compilerOptions {
-                        optIn.add("kotlinx.cinterop.BetaInteropApi")
-                        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
-                    }
-                }
-            }
-        }
     }
     js {
         browser {
@@ -124,6 +114,17 @@ kotlin {
         }
 
         if (iosTarget) {
+            // Opt in across the whole iOS hierarchy rather than on the native compilations. The
+            // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
+            // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also
+            // requires a source set's opt-ins to be a superset of those of the source sets it
+            // depends on, so the leaf target source sets must be covered too, not just iosMain.
+            matching { it.name.startsWith("ios") }.configureEach {
+                languageSettings {
+                    optIn("kotlinx.cinterop.BetaInteropApi")
+                    optIn("kotlinx.cinterop.ExperimentalForeignApi")
+                }
+            }
             val iosMain by getting {
                 dependencies {
                     implementation(libs.ktor.client.darwin)
