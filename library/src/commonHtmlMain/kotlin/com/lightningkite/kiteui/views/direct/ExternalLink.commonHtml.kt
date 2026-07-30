@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.rel
 import kotlinx.coroutines.launch
@@ -20,10 +21,13 @@ public actual class ExternalLink actual constructor(context: ElementContext) : N
         Frame.internalAddChildStack(this, index, element)
     }
 
-    public actual inline var to: String?
+    // Not inline: the setter calls a validator, and an unsafe target must never reach href.
+    // This is the sink where a javascript: or data: URL would actually execute, so it is
+    // checked here as well as at the sources that build links from untrusted content.
+    public actual var to: String?
         get() = native.attributes.href
         set(value) {
-            native.attributes.href = value
+            native.attributes.href = safeLinkUrlOrNull(value)
         }
 
     public actual inline var newTab: Boolean

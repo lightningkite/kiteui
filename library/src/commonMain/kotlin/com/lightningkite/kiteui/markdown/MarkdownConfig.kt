@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.WarningSemantic
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.UrlLikePath
+import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.externalLink
@@ -122,7 +123,9 @@ public interface CustomBlockHandler {
                     }
                 } else {
                     writer.externalLink {
-                        to = href
+                        // The href comes from a `::: block href="..."` declaration in untrusted
+                        // markdown source, so it gets the same scheme check as inline links.
+                        to = safeLinkUrlOrNull(href)
                         col {
                             with(context) { children.forEach { renderNode(it) } }
                         }

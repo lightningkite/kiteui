@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.dom
 
+import com.lightningkite.kiteui.utils.isSafeLinkUrl
+
 internal sealed interface MPNode {
     public fun secure()
 
@@ -42,32 +44,6 @@ internal sealed interface MPNode {
         )
 
         /**
-         * URL schemes permitted in [okAttrs] values. Anything else — notably `javascript:`
-         * and `data:` — executes script or renders attacker-controlled documents when the
-         * browser follows the link.
-         */
-        internal val okUrlSchemes: Set<String> = setOf("http", "https", "mailto", "tel")
-
-        /**
-         * True if [url] is safe to emit as a link target: either scheme-relative/relative,
-         * or carrying one of [okUrlSchemes].
-         *
-         * Browsers ignore ASCII whitespace and C0 control characters inside URLs, so
-         * `java\tscript:` reaches the same handler as `javascript:`. Those characters are
-         * removed before the scheme is examined rather than trusted as separators.
-         */
-        internal fun urlAllowed(url: String): Boolean {
-            val cleaned = url.filter { it.code > 0x20 }
-            val colon = cleaned.indexOf(':')
-            if (colon < 0) return true
-            // A delimiter before the colon means the colon belongs to a path, query or
-            // fragment rather than to a scheme, e.g. "/a:b" or "?x=1:2".
-            val delimiter = cleaned.indexOfFirst { it == '/' || it == '?' || it == '#' }
-            if (delimiter in 0 until colon) return true
-            return cleaned.substring(0, colon).lowercase() in okUrlSchemes
-        }
-
-        /**
          * Escapes an attribute value for emission inside double quotes.
          *
          * `&` is deliberately left alone: it cannot terminate a quoted attribute, and
@@ -96,7 +72,7 @@ internal sealed interface MPNode {
             attributes.keys.retainAll(okAttrs)
             // An allowed attribute name is not enough: href values carry their own scheme,
             // so a permitted attribute can still smuggle in executable content.
-            if (attributes["href"]?.let { !urlAllowed(it) } == true) attributes.remove("href")
+            if (attributes["href"]?.let { !isSafeLinkUrl(it) } == true) attributes.remove("href")
             children.forEach { it.secure() }
         }
     }

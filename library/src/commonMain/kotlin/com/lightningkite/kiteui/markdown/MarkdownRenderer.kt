@@ -2,6 +2,7 @@
 package com.lightningkite.kiteui.markdown
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
@@ -159,7 +160,9 @@ private fun ViewWriter.renderBlock(node: MarkdownNode, config: MarkdownConfig) {
                 }
             } else {
                 externalLink {
-                    to = node.url
+                    // Markdown is routinely rendered from content the app did not author, so a
+                    // link target is untrusted input regardless of which platform renders it.
+                    to = safeLinkUrlOrNull(node.url)
                     col {
                         node.children.forEach { child ->
                             renderBlock(child, config)
@@ -432,9 +435,13 @@ private fun inlineNodeToHtml(node: MarkdownNode.InlineNode, config: MarkdownConf
         is MarkdownNode.InlineCode -> "<tt>${escapeHtml(node.content)}</tt>"
 
         is MarkdownNode.Link -> {
-            val escapedUrl = escapeHtml(node.url)
             val innerHtml = inlineNodesToHtml(node.children, config)
-            "<a href=\"$escapedUrl\">$innerHtml</a>"
+            // escapeHtml only neutralizes markup characters; it does not inspect the scheme,
+            // so a javascript: target would survive it intact. Unsafe targets render as plain
+            // text rather than as a link that silently goes nowhere.
+            safeLinkUrlOrNull(node.url)
+                ?.let { "<a href=\"${escapeHtml(it)}\">$innerHtml</a>" }
+                ?: innerHtml
         }
 
         is MarkdownNode.Image -> {
