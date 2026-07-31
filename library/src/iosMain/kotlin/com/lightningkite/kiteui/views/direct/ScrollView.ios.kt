@@ -171,13 +171,21 @@ public class ScrollView(
         }
     }
     override val content: Reactive<Rect> = (sizeChange).lensListenable {
-        // contentSize is already the full scrollable content extent; do not add the
-        // viewport size on top, or distanceToEnd calculations (e.g. childrenLazyLoading)
-        // get inflated by one viewport length.
+        // Each axis has to come from a different source, because ScrollLayout only ever sets
+        // contentSize on the axis it scrolls - it leaves the cross axis at 0.0 so UIScrollView
+        // won't scroll sideways. So:
+        //  - scroll axis: contentSize, which is already the full scrollable extent. Adding the
+        //    viewport on top inflated `content.bottom - viewport.bottom` by a whole viewport, so
+        //    childrenLazyLoading never saw itself get near the end and stopped loading pages.
+        //  - cross axis: the viewport, where the content is laid out to fit. Reading contentSize
+        //    here would report 0.0 and make the content look narrower than the viewport.
+        // scrollTo() in this same class already treats contentSize this way (`maxY - sizeY` is
+        // its maximum offset), and web (scrollHeight) and Android (child height) agree.
         val (sw, sh) = scroller.contentSize.useContents { width to height }
+        val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
         Rect.fromSize(
-            width = sw,
-            height = sh,
+            width = if (vertical) vw else sw,
+            height = if (vertical) sh else vh,
         )
     }
     private val _directlyInteractingWithScroller = Signal(false)
