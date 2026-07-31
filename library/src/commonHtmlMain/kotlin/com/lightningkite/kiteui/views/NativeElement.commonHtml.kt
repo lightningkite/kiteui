@@ -190,7 +190,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
 
     init {
         foregroundProcesses.addListener {   // auto-released when view is removed
-            if (!foregroundProcesses.state.success) native.classes.add("working")
+            if (!foregroundProcesses.state.ready) native.classes.add("working")
             else native.classes.remove("working")
         }
     }
