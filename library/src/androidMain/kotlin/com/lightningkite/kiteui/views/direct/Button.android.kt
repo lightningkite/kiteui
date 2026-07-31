@@ -28,7 +28,7 @@ actual class Button actual constructor(context: ElementContext): NativeContainer
         addChild(object: NativeElement(context) {
             override val native = this@Button.progress
         })
-        foregroundProcesses.addListener { progress.visibility = if(!foregroundProcesses.state.success) View.VISIBLE else View.GONE }
+        foregroundProcesses.addListener { progress.visibility = if(!foregroundProcesses.state.ready) View.VISIBLE else View.GONE }
     }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
