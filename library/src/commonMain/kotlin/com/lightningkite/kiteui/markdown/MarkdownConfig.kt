@@ -9,7 +9,6 @@ import com.lightningkite.kiteui.models.WarningSemantic
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.UrlLikePath
-import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.externalLink
@@ -123,9 +122,9 @@ public interface CustomBlockHandler {
                     }
                 } else {
                     writer.externalLink {
-                        // The href comes from a `::: block href="..."` declaration in untrusted
-                        // markdown source, so it gets the same scheme check as inline links.
-                        to = safeLinkUrlOrNull(href)
+                        // No scheme check here: `to` validates on assignment on every platform,
+                        // and that sink is the security boundary.
+                        to = href
                         col {
                             with(context) { children.forEach { renderNode(it) } }
                         }
@@ -208,7 +207,7 @@ public data class MarkdownConfig(
                         baseUrl != "/" && url.startsWith(baseUrl) -> url.removePrefix(baseUrl)
                         else -> url
                     }
-                    routes.parseOrNull(UrlLikePath.fromUrlString(path))
+                    routes.parse(UrlLikePath.fromUrlString(path))
                 }
             )
         }
@@ -272,7 +271,7 @@ public data class MarkdownConfig(
                     baseUrl != "/" && url.startsWith(baseUrl) -> url.removePrefix(baseUrl)
                     else -> url
                 }
-                routes.parseOrNull(UrlLikePath.fromUrlString(path))
+                routes.parse(UrlLikePath.fromUrlString(path))
             }
         )
     }

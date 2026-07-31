@@ -5,6 +5,13 @@ package com.lightningkite.kiteui.utils
  *
  * Everything outside this set is rejected. An allow-list is used rather than a deny-list
  * because new script-bearing schemes appear over time, and a deny-list silently fails open.
+ *
+ * The dangerous schemes differ per platform, which is why one shared list covers all of them:
+ * `javascript:` and `data:` execute script or render an attacker-controlled document on web;
+ * `intent:` and `file:` reach other applications and local storage on Android; a custom scheme
+ * registered by any installed app is reachable through `UIApplication.openURL` on iOS. Allowing
+ * only the handful of schemes that mean "show the user a document, a mail draft or a dialer"
+ * covers all three without needing a per-platform list.
  */
 public val safeLinkSchemes: Set<String> = setOf("http", "https", "mailto", "tel", "sms")
 
@@ -18,6 +25,14 @@ public val safeLinkSchemes: Set<String> = setOf("http", "https", "mailto", "tel"
  * Use this for any URL that originates outside the application: markdown, a CMS field, a user
  * profile, an API response. Application-authored constants do not need checking, though passing
  * them through is harmless.
+ *
+ * Where this is enforced: every sink that hands a URL to the platform applies it - `ExternalLink.to`
+ * on all four platforms, and the raw-HTML sanitizer's `href` handling. That is the security
+ * boundary, so application code gets the protection without opting in. [MarkdownRenderer] also
+ * checks before it builds a link, but for a different reason: it can render an unsafe URL as plain
+ * text, whereas a sink can only refuse to act on a click. The two are not redundant - one decides
+ * how untrusted content is presented, the other guarantees nothing dangerous is ever handed to the
+ * OS or browser.
  *
  * Browsers strip ASCII whitespace and C0 control characters from URLs before resolving the
  * scheme, so `java\tscript:alert(1)` reaches the same handler as `javascript:alert(1)`. Those

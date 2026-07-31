@@ -160,9 +160,10 @@ private fun ViewWriter.renderBlock(node: MarkdownNode, config: MarkdownConfig) {
                 }
             } else {
                 externalLink {
-                    // Markdown is routinely rendered from content the app did not author, so a
-                    // link target is untrusted input regardless of which platform renders it.
-                    to = safeLinkUrlOrNull(node.url)
+                    // No scheme check here: `to` validates on assignment on every platform, and
+                    // that sink is the security boundary. Checking again would just be a second
+                    // copy of the same rule to keep in sync.
+                    to = node.url
                     col {
                         node.children.forEach { child ->
                             renderBlock(child, config)
@@ -436,9 +437,10 @@ private fun inlineNodeToHtml(node: MarkdownNode.InlineNode, config: MarkdownConf
 
         is MarkdownNode.Link -> {
             val innerHtml = inlineNodesToHtml(node.children, config)
-            // escapeHtml only neutralizes markup characters; it does not inspect the scheme,
-            // so a javascript: target would survive it intact. Unsafe targets render as plain
-            // text rather than as a link that silently goes nowhere.
+            // This path builds an <a href> string directly instead of going through ExternalLink,
+            // so it does not get the sink's validation and has to check for itself. escapeHtml
+            // only neutralizes markup characters and never inspects the scheme, so a javascript:
+            // target would survive it intact. Unsafe targets render as plain text.
             safeLinkUrlOrNull(node.url)
                 ?.let { "<a href=\"${escapeHtml(it)}\">$innerHtml</a>" }
                 ?: innerHtml

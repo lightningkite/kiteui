@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElementWithSecondaryAction
 import com.lightningkite.kiteui.views.NativeInteractiveContainerElement
@@ -29,7 +30,14 @@ public actual class ExternalLink actual constructor(context: ElementContext): Na
         })
     }
 
+    // Validated on assignment for the same reason as on web: this is the sink. `openURL` will
+    // launch any installed app that registered the scheme, so an unchecked custom scheme from
+    // untrusted content hands control to a third-party app of the attacker's choosing.
     public actual var to: String? = null
+        set(value) {
+            field = safeLinkUrlOrNull(value)
+        }
+
     public actual var newTab: Boolean = false
 
     init {

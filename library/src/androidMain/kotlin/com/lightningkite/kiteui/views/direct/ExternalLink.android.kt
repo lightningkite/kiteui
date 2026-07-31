@@ -4,6 +4,7 @@ import android.widget.FrameLayout
 import com.lightningkite.kiteui.externalServices
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
@@ -25,7 +26,13 @@ public actual class ExternalLink actual constructor(context: ElementContext) : N
         }
     }
 
+    // Validated on assignment for the same reason as on web: this is the sink. `openLink` resolves
+    // the URL through an Intent, so an unchecked scheme like `intent:` or `file:` from untrusted
+    // content would reach another installed app or local storage.
     public actual var to: String? = null
+        set(value) {
+            field = safeLinkUrlOrNull(value)
+        }
 
     public actual var newTab: Boolean = false
 
