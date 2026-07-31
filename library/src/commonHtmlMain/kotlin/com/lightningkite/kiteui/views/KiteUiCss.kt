@@ -170,19 +170,6 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 margin: 10px auto;
             }
 
-            .circle-progress-background {
-                          fill: none;
-                          stroke: var(--nearest-background-color);
-                          stroke-width: 3;
-            }
-            
-            .circle-progress {
-                fill: none;
-                stroke-width:2.8;
-                stroke-linecap: round;
-                animation: progress 1s ease-out forwards;
-                  stroke: currentcolor;
-            }
 
             @media (pointer: coarse) and (hover: none) {
                 .touchscreenOnly {
@@ -791,6 +778,73 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                     height: 100%;
                     background-color: currentColor;
                     border-radius: 1rem;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        /*
+         * The circular progress ring. Shares the <progress> tag with the linear bar above, so the
+         * element and its parts have to be restyled here rather than left to inherit the bar rules.
+         *
+         * The arc is a conic-gradient swept to --kiteui-progress turns, masked down to a band so
+         * the middle stays hollow. Driving it from a custom property means updating the ratio is a
+         * single style write with no arc geometry recomputed in script, and it renders identically
+         * from server-side HTML because the markup alone carries the value.
+         */
+        try {
+            dynamicCss.rule(
+                """progress.kui.kiteui-circular-progress {
+                    --kiteui-progress: 0;
+                    --kiteui-progress-width: 3px;
+                    appearance: none;
+                    -webkit-appearance: none;
+                    border: none;
+                    aspect-ratio: 1 / 1;
+                    border-radius: 50%;
+                    background: conic-gradient(
+                        currentcolor calc(var(--kiteui-progress) * 360deg),
+                        var(--nearest-background-color, transparent) 0
+                    );
+                    -webkit-mask: radial-gradient(
+                        closest-side,
+                        transparent calc(100% - var(--kiteui-progress-width)),
+                        #000 calc(100% - var(--kiteui-progress-width))
+                    );
+                    mask: radial-gradient(
+                        closest-side,
+                        transparent calc(100% - var(--kiteui-progress-width)),
+                        #000 calc(100% - var(--kiteui-progress-width))
+                    );
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        // These must out-specify the linear bar's own progress.kui::-webkit-progress-* rules above,
+        // hence naming the tag and both classes: otherwise the bar paints over the ring.
+        try {
+            dynamicCss.rule(
+                """progress.kui.kiteui-circular-progress::-webkit-progress-bar {
+                    background: transparent;
+                    border-radius: 0;
+                    padding: 0;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """progress.kui.kiteui-circular-progress::-webkit-progress-value {
+                    background: transparent;
+                    background-color: transparent;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """progress.kui.kiteui-circular-progress::-moz-progress-bar {
+                    background: transparent;
+                    background-color: transparent;
                 }"""
             )
         } catch (e: Throwable) { /*squish*/

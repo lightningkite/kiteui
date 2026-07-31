@@ -194,19 +194,6 @@ table {
      margin: 10px auto;
  }
 
- .circle-progress-background {
-               fill: none;
-               stroke: var(--nearest-background-color);
-               stroke-width: 3;
- }
- 
- .circle-progress {
-     fill: none;
-     stroke-width:2.8;
-     stroke-linecap: round;
-     animation: progress 1s ease-out forwards;
-       stroke: currentcolor;
- }
 
  @media (pointer: coarse) and (hover: none) {
      .touchscreenOnly {
@@ -869,6 +856,42 @@ progress.kui::-moz-progress-bar {
                     height: 100%;
                     background-color: currentColor;
                     border-radius: 1rem;
+                }
+progress.kui.kiteui-circular-progress {
+                    --kiteui-progress: 0;
+                    --kiteui-progress-width: 3px;
+                    appearance: none;
+                    -webkit-appearance: none;
+                    border: none;
+                    aspect-ratio: 1 / 1;
+                    border-radius: 50%;
+                    background: conic-gradient(
+                        currentcolor calc(var(--kiteui-progress) * 360deg),
+                        var(--nearest-background-color, transparent) 0
+                    );
+                    -webkit-mask: radial-gradient(
+                        closest-side,
+                        transparent calc(100% - var(--kiteui-progress-width)),
+                        #000 calc(100% - var(--kiteui-progress-width))
+                    );
+                    mask: radial-gradient(
+                        closest-side,
+                        transparent calc(100% - var(--kiteui-progress-width)),
+                        #000 calc(100% - var(--kiteui-progress-width))
+                    );
+                }
+progress.kui.kiteui-circular-progress::-webkit-progress-bar {
+                    background: transparent;
+                    border-radius: 0;
+                    padding: 0;
+                }
+progress.kui.kiteui-circular-progress::-webkit-progress-value {
+                    background: transparent;
+                    background-color: transparent;
+                }
+progress.kui.kiteui-circular-progress::-moz-progress-bar {
+                    background: transparent;
+                    background-color: transparent;
                 }
 input.kui::-webkit-outer-spin-button, input.kui::-webkit-inner-spin-button {
                     -webkit-appearance: none;
