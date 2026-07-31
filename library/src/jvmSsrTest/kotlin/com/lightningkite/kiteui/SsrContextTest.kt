@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.models.turns
 import com.lightningkite.kiteui.ssr.SsrContext
 import com.lightningkite.kiteui.ssr.SsrDocument
+import com.lightningkite.kiteui.ssr.SsrResource
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
@@ -16,8 +17,10 @@ import com.lightningkite.kiteui.views.dynamicTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.setMain
+import kotlinx.serialization.serializer
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class SsrContextTest {
@@ -171,6 +174,23 @@ class SsrContextTest {
         assertTrue(context2.getPreloaded<String>("data") == "context2-data", "Context 2 data should be isolated")
         assertTrue(result1.html.contains("Content 1"), "Result 1 should have Content 1")
         assertTrue(result2.html.contains("Content 2"), "Result 2 should have Content 2")
+    }
+
+    /**
+     * A silent overwrite on a duplicate key would drop the first resource's data from the
+     * exported map while leaving it wired into that component's reactive bindings, producing
+     * incomplete SSR HTML with no error - see commit 94f1ebe6b. Before that fix,
+     * `registerResource` just did `resources[resource.key] = resource` with no check, so this
+     * would have silently replaced the first resource instead of throwing.
+     */
+    @Test
+    fun testDuplicateResourceKeyThrows() {
+        val context = SsrContext("/")
+        val first = SsrResource("user", serializer<String>()) { "first" }
+        val second = SsrResource("user", serializer<String>()) { "second" }
+
+        context.registerResource(first)
+        assertFailsWith<IllegalStateException> { context.registerResource(second) }
     }
 
     @Test
