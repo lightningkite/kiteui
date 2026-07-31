@@ -193,6 +193,12 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            // Without this, any commonTest that reaches a logging path fails on Android with
+            // "Method w in android.util.Log not mocked" - the stubbed android.jar throws on every
+            // call. Common code legitimately logs (Routes.parse warns on an unparseable URL), so
+            // the alternative is that no shared test may exercise such a path at all. Returning
+            // defaults is scoped to unit tests; instrumented and Robolectric tests are unaffected.
+            isReturnDefaultValues = true
         }
     }
 }
