@@ -100,7 +100,19 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     // reacting to a popstate event or programmatically driving history.
     var suppressNav = false
 
+    // Set while a reset is winding history back, holding the work to run once the popstate that
+    // history.go() queues actually arrives. The single listener below completes it, so no
+    // per-reset listener is registered: doing that leaked one every time the popstate never
+    // came, and stacked duplicates when resets arrived faster than the browser settled.
+    var finishPendingReset: (() -> Unit)? = null
+
     window.addEventListener("popstate", { event ->
+        finishPendingReset?.let { finish ->
+            finishPendingReset = null
+            finish()
+            suppressNav = false
+            return@addEventListener
+        }
         if (suppressNav) return@addEventListener
         event as PopStateEvent
 
@@ -126,6 +138,8 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     AppScope.reactive {
         val s = stack()
         if (suppressNav) return@reactive
+        // Set when a reset hands responsibility for clearing suppressNav to the popstate handler.
+        var awaitingResetPopstate = false
         try {
             suppressNav = true
 
@@ -153,13 +167,22 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
                     // must run from that popstate handler - calling it synchronously
                     // right after go() would overwrite the entry we're leaving, not
                     // the oldest entry go() is navigating to.
-                    lateinit var onSettled: (Event) -> Unit
-                    onSettled = {
-                        window.removeEventListener("popstate", onSettled)
-                        replaceOldestEntry()
-                    }
-                    window.addEventListener("popstate", onSettled)
+                    finishPendingReset = replaceOldestEntry
+                    awaitingResetPopstate = true
                     window.history.go(-stepsBack)
+                    // Browsers may decline a traversal outright - Chrome throttles them without
+                    // recent user activation, and history.length counts entries from pages before
+                    // this app, so the requested distance can exceed what is actually ours. If no
+                    // popstate arrives, finish the reset anyway; leaving suppressNav set would
+                    // disable address-bar updates for the rest of the session.
+                    window.setTimeout({
+                        finishPendingReset?.let { finish ->
+                            finishPendingReset = null
+                            log?.log("reset: popstate never arrived, completing anyway")
+                            finish()
+                            suppressNav = false
+                        }
+                    }, 500)
                 } else {
                     replaceOldestEntry()
                 }
@@ -171,10 +194,13 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
                 }
             }
         } finally {
-            // Delay releasing suppressNav by one microtask so the popstate event
-            // triggered by history.go() (in the reset path) is still suppressed.
-            val release = { suppressNav = false }
-            window.setTimeout(release, 0)
+            // In the reset path the popstate handler owns suppressNav until the traversal lands,
+            // so releasing here would let that popstate be treated as a user pressing Back.
+            if (!awaitingResetPopstate) {
+                // Delay releasing by one macrotask so any popstate we provoked is still suppressed.
+                val release = { suppressNav = false }
+                window.setTimeout(release, 0)
+            }
         }
         lastStack = s
     }
