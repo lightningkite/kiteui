@@ -13,8 +13,8 @@ public class PageNavigator(private val routesGetter: ()->Routes) {
     // (an OS deep link, a restored navigation stack), so parsing must not be able to throw.
     // Returning false lets the caller decide what to do; crashing is never the right answer
     // for input the application did not produce.
-    public fun navigateUrlLikePath(path: String): Boolean = routes.parseOrNull(UrlLikePath.fromUrlString(path))?.let { navigate(it); true } ?: false
-    public fun resetUrlLikePath(path: String): Boolean = routes.parseOrNull(UrlLikePath.fromUrlString(path))?.let { reset(it); true } ?: false
+    public fun navigateUrlLikePath(path: String): Boolean = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it); true } ?: false
+    public fun resetUrlLikePath(path: String): Boolean = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it); true } ?: false
 
     public val stack: Signal<List<Page>> = Signal(listOf())
 

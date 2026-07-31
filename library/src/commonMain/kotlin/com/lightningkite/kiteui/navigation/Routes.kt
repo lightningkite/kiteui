@@ -22,32 +22,28 @@ public class Routes(
     }
 ) {
     public fun render(screen: Page): RouteRendered? = renderers.get(screen::class)?.invoke(screen)
-    public fun parse(path: UrlLikePath): Page? = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
 
     /**
-     * Like [parse], but returns null instead of throwing when the path cannot be parsed.
+     * Resolves [path] to the first matching [Page], or null if no route matches it.
      *
-     * Generated route parsers decode path segments into typed parameters, so malformed input
-     * raises rather than simply failing to match. Any path that came from outside the
-     * application - a deep link, a restored navigation stack, a link inside user content -
-     * must go through this or [parseOrFallback]; calling [parse] directly on such input
-     * crashes the app on input an attacker or a stale saved state controls.
+     * Every path reaching this function came from outside the application - an OS deep link, an
+     * HTTP request line, a restored navigation stack, a link inside user content - so a path that
+     * a generated parser cannot decode is bad input, not a programming error. Generated parsers
+     * decode segments into typed parameters and raise on garbage (`/user/abc` where an Int is
+     * expected), which is reported here as "no route matched" rather than propagating: an
+     * unroutable URL must produce a 404 or the fallback page, never a crash on input an attacker
+     * or a stale bookmark controls. The exception is logged so genuine parser faults stay visible.
      */
-    public fun parseOrNull(path: UrlLikePath): Page? =
+    public fun parse(path: UrlLikePath): Page? =
         try {
-            parse(path)
+            parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
         } catch (e: Exception) {
             LogRoot.warn("Encountered exception when parsing route: $e")
             null
         }
 
-    public fun parseOrFallback(path: UrlLikePath): Page =
-        try {
-            parse(path) ?: fallback
-        } catch(e: Exception) {
-            LogRoot.warn("Encountered exception when parsing route: $e")
-            fallback
-        }
+    /** Like [parse], but substitutes [fallback] - typically a "not found" page - for an unroutable path. */
+    public fun parseOrFallback(path: UrlLikePath): Page = parse(path) ?: fallback
 }
 
 public data class RouteRendered(

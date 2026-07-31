@@ -71,7 +71,7 @@ public class SsrRouter(
      */
     internal suspend fun renderWithPreload(url: String, userAgent: String? = null): String? {
         val path = UrlLikePath.fromUrlString(url)
-        val page = routes.parseOrNull(path) ?: return null
+        val page = routes.parse(path) ?: return null
         return renderPageWithPreload(page, userAgent)
     }
 
@@ -174,7 +174,7 @@ public class SsrRouter(
      */
     internal fun render(url: String): String? {
         val path = UrlLikePath.fromUrlString(url)
-        val page = routes.parseOrNull(path) ?: return null
+        val page = routes.parse(path) ?: return null
         return renderPage(page)
     }
 
@@ -248,7 +248,7 @@ public class SsrRouter(
      */
     internal fun getPage(url: String): Page? {
         val path = UrlLikePath.fromUrlString(url)
-        return routes.parseOrNull(path)
+        return routes.parse(path)
     }
 
     /**

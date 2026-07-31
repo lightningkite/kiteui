@@ -14,7 +14,7 @@ public actual fun PageNavigator.askForConfirmNavigateAway(): Boolean {
 
 public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     lastBoundPageNavigator = this
-    val landing = routes.parseOrNull(postedLandingUrl ?: UrlLikePath.EMPTY)
+    val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
     stack.value = listOf(landing ?: routes.fallback)
 }
 
@@ -32,7 +32,7 @@ public fun handleUserActivity(activity: NSUserActivity) {
     activity.webpageUrlLikePath()?.let { path ->
         ConsoleRoot.info("handleUserActivity: $path")
         lastBoundPageNavigator?.let { pageNavigator ->
-            pageNavigator.navigate(pageNavigator.routes.parseOrNull(path) ?: return)
+            pageNavigator.navigate(pageNavigator.routes.parse(path) ?: return)
         }
     }
 }
