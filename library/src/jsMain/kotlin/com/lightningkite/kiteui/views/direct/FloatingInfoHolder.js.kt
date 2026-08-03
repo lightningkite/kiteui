@@ -329,7 +329,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                         this.onShutdown()
                         (e as HTMLElement)
                         window.getComputedStyle(e).getPropertyValue("transition-duration")
-                            .let { Duration.parse(it) ?: 0.25.seconds }
+                            .let { Duration.parseOrNull(it) ?: 0.25.seconds }
                             .let {
                                 window.setTimeout({
                                     source.context.overlayFrame!!.removeChild(this)
