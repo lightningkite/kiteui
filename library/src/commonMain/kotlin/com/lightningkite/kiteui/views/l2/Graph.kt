@@ -134,18 +134,13 @@ public open class GraphDelegate : CanvasDelegate() {
 
     private val xAxisLabelHeight = 2.5.rem.canvasUnits
     private val yAxisLabelWidth: Double
-        get() = (2 + (yAxisLabels?.maxOf { it.length } ?: run {
-            var longestLabelSize = 0
-            var y = ceil(minY / yStep) * yStep
-            while (y <= maxY) {
-                val nextLabelSize = formatNumber(y).length
-                if (nextLabelSize > longestLabelSize) {
-                    longestLabelSize = nextLabelSize
-                }
-                y += yStep
-            }
-            longestLabelSize
-        }) / 2.0).rem.canvasUnits
+        // Measured over the same tick positions that get drawn, so the reserved width cannot
+        // disagree with what ends up in it. This used to be a second copy of the stepping loop,
+        // which also meant it span forever whenever yStep came out as 0.
+        get() = (2 + (yAxisLabels?.maxOf { it.length }
+            ?: axisTicks(minY, maxY, yStep, rawMinY, null)
+                .maxOfOrNull { formatNumber(it.first).length }
+            ?: 0) / 2.0).rem.canvasUnits
 
     override fun draw(context: DrawingContext2D) {
         if (data.isEmpty()) {
@@ -333,11 +328,7 @@ public open class GraphDelegate : CanvasDelegate() {
             font(tickLabelFontSize.canvasUnits, FontAndStyle(systemDefaultFont))
 
             // X-axis ticks and labels
-            // Custom labels are indexed from the data minimum, not from zero, so ticks must be
-            // anchored there (data can extend below zero) rather than at multiples of xStep from 0.
-            val xTickOrigin = xAxisLabels?.let { rawMinX } ?: 0.0
-            var x = xTickOrigin + ceil((minX - xTickOrigin) / xStep) * xStep
-            while (x <= maxX) {
+            for ((x, label) in axisTicks(minX, maxX, xStep, rawMinX, xAxisLabels)) {
                 val cx = toCanvasX(x)
 
                 // Draw tick
@@ -348,15 +339,11 @@ public open class GraphDelegate : CanvasDelegate() {
 
                 // Draw label
                 textAlign(TextAlign.center)
-                drawText(xAxisLabels?.let { it.getOrNull(((x - xTickOrigin) / xStep).roundToInt()) } ?: formatNumber(x), cx, height - paddingCanvas - xAxisLabelHeight + 1.rem.canvasUnits)
-
-                x += xStep
+                drawText(label ?: formatNumber(x), cx, height - paddingCanvas - xAxisLabelHeight + 1.rem.canvasUnits)
             }
 
             // Y-axis ticks and labels
-            val yTickOrigin = yAxisLabels?.let { rawMinY } ?: 0.0
-            var y = yTickOrigin + ceil((minY - yTickOrigin) / yStep) * yStep
-            while (y <= maxY) {
+            for ((y, label) in axisTicks(minY, maxY, yStep, rawMinY, yAxisLabels)) {
                 val cy = toCanvasY(y)
 
                 // Draw tick
@@ -367,9 +354,7 @@ public open class GraphDelegate : CanvasDelegate() {
 
                 // Draw label
                 textAlign(TextAlign.right)
-                drawText(yAxisLabels?.let { it.getOrNull(((y - yTickOrigin) / yStep).roundToInt()) } ?: formatNumber(y), paddingCanvas + yAxisLabelWidth - 0.5.rem.canvasUnits, cy + 0.3.rem.canvasUnits)
-
-                y += yStep
+                drawText(label ?: formatNumber(y), paddingCanvas + yAxisLabelWidth - 0.5.rem.canvasUnits, cy + 0.3.rem.canvasUnits)
             }
         }
     }
@@ -474,4 +459,41 @@ public inline fun ElementWriter.lineGraph(
     setup: GraphCanvas.() -> Unit = {}
 ): GraphCanvas {
     return lineGraph(points.map { Point(it.first, it.second) }, setup)
+}
+
+/**
+ * The tick positions to draw on one axis between [from] and [to], each paired with its label.
+ *
+ * With no [labels] the ticks are round multiples of [step] from zero and every label is null,
+ * leaving the caller to format the number. With [labels] there is exactly one tick per label,
+ * anchored at [labelOrigin] - labels span the whole plotted range and are indexed from its minimum,
+ * which is not zero when the data extends below it.
+ *
+ * The distinction that makes this worth extracting: [from] and [to] pad the plotted range by 5% on
+ * *each* side, and that padding exceeds one step once there are 21 or more labels. A labelled axis
+ * therefore has to skip the positions below the first label and stop at the last, rather than
+ * indexing the list with whatever the arithmetic produces.
+ */
+internal fun axisTicks(
+    from: Double,
+    to: Double,
+    step: Double,
+    labelOrigin: Double,
+    labels: List<String>?,
+): List<Pair<Double, String?>> {
+    if (step <= 0.0 || !step.isFinite()) return emptyList()
+    val origin = if (labels != null) labelOrigin else 0.0
+    val result = ArrayList<Pair<Double, String?>>()
+    var position = origin + ceil((from - origin) / step) * step
+    while (position <= to) {
+        if (labels == null) {
+            result.add(position to null)
+        } else {
+            val index = ((position - origin) / step).roundToInt()
+            if (index >= labels.size) break
+            if (index >= 0) result.add(position to labels[index])
+        }
+        position += step
+    }
+    return result
 }

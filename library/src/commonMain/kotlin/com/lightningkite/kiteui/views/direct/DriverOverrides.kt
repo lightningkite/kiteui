@@ -14,8 +14,14 @@ import kotlinx.datetime.*
 private fun KeyboardHints.isSecret(): Boolean =
     autocomplete == AutoComplete.Password || autocomplete == AutoComplete.NewPassword
 
-private fun redactedDriverValue(hints: KeyboardHints, actual: String): String =
-    if (hints.isSecret()) "•".repeat(actual.length) else actual
+// A fixed-width mask rather than one bullet per character: the length of a password is itself
+// worth withholding, and no driver caller has a use for it. Empty stays distinguishable from
+// filled, since "is this field blank?" is a legitimate thing for a test to assert.
+private fun redactedDriverValue(hints: KeyboardHints, actual: String): String = when {
+    !hints.isSecret() -> actual
+    actual.isEmpty() -> ""
+    else -> "••••••••"
+}
 
 // --- Button ---
 

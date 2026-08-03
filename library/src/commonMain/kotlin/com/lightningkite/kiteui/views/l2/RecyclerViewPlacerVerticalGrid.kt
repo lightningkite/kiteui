@@ -16,6 +16,12 @@ public class RecyclerViewPlacerVerticalGrid(
     public val sizeDoesNotChange: Boolean = false,
 ) :
     RecyclerViewPlacerGrid {
+    init {
+        // See RecyclerViewPlacerHorizontalGrid: cellSize divides by this and the column-height
+        // measurements take maxOf over an empty list, so zero fails far from its cause.
+        require(columns > 0) { "RecyclerViewPlacerVerticalGrid needs at least one column, got $columns" }
+    }
+
     internal val sizeByType: MutableMap<RecyclerViewRenderer<*>, Double> = HashMap<RecyclerViewRenderer<*>, Double>()
     internal fun RecyclerViewPlaceable.height(cellSize: Double): Double = ratio?.let { cellSize * it }
         ?: sizeByType[type]

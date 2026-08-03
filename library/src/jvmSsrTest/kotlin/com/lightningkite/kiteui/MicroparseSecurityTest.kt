@@ -83,4 +83,30 @@ class MicroparseSecurityTest {
         val rel = sanitize("""<a href="/about">x</a>""")
         assertTrue(rel.contains("/about"), "relative link was dropped: $rel")
     }
+
+    @Test
+    fun uppercaseMarkupIsRecognizedRatherThanMangled() {
+        // HTML tag and attribute names are case-insensitive; the allow-lists are lowercase. Matching
+        // them as-written failed closed, which is safe but turned every `<A HREF>` into a bare span
+        // and silently threw the link away.
+        val out = sanitize("""<A HREF="https://example.com">x</A>""")
+        assertTrue(out.contains("<a "), "uppercase anchor was not recognized: $out")
+        assertTrue(out.contains("https://example.com"), "uppercase href was dropped: $out")
+    }
+
+    @Test
+    fun uppercaseUnsafeSchemesAreStillRejected() {
+        // The flip side of normalizing case: it must not open a way in.
+        val out = sanitize("""<A HREF="JavaScript:alert(1)">x</A>""")
+        assertFalse(out.lowercase().contains("javascript:"), "javascript: URL survived: $out")
+    }
+
+    @Test
+    fun deeplyNestedMarkupDoesNotOverflowTheStack() {
+        // secure() and toString() both recurse per level, so unbounded nesting was a stack overflow
+        // reachable from any user-generated content rendered through setBasicHtmlContent.
+        val depth = 50_000
+        val out = sanitize("<div>".repeat(depth) + "boom" + "</div>".repeat(depth))
+        assertTrue(out.contains("boom"), "content was lost entirely: ${out.take(80)}")
+    }
 }

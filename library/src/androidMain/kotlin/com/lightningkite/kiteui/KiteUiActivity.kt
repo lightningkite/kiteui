@@ -137,14 +137,24 @@ public abstract class KiteUiActivity : AppCompatActivity() {
         onPermissions.remove(requestCode)
     }
     public data class PermissionResult(val map: Map<String, Int>) {
-        val accepted: Boolean get() = map.values.all { it == PackageManager.PERMISSION_GRANTED }
+        /**
+         * Whether every requested permission came back granted.
+         *
+         * An empty [map] is false, not true. Android delivers empty permission and grant arrays when
+         * it interrupts a request - a rotation, or the user tapping outside the dialog - and treating
+         * that as consent means a caller gating on this fails open. The already-granted shortcut in
+         * [requestPermissions] reports the permissions it checked for exactly this reason, so an
+         * empty map now only ever means "nothing came back".
+         */
+        val accepted: Boolean get() = map.isNotEmpty() && map.values.all { it == PackageManager.PERMISSION_GRANTED }
     }
     public fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit): Int {
         val ungranted = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
         if(ungranted.isEmpty()) {
-            onResult(PermissionResult(mapOf()))
+            // Reports the permissions it checked rather than an empty map - see PermissionResult.accepted.
+            onResult(PermissionResult(permissions.associateWith { PackageManager.PERMISSION_GRANTED }))
             return -1
         }
         val requestCode = currentNum++

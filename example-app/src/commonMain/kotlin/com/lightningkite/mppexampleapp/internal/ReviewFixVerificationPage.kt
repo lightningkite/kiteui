@@ -7,9 +7,11 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.forEachReorderable
+import com.lightningkite.kiteui.views.l2.renderLazyListIn
+import com.lightningkite.kiteui.views.l2.renderReorderableListIn
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import kotlinx.coroutines.delay
 import kotlin.math.abs
 
 /**
@@ -35,6 +37,7 @@ object ReviewFixVerificationPage : Page {
             circularProgressSection()
             reorderIndicatorSection()
             externalLinkSchemeSection()
+            lazyLoadingSection()
         }
     }
 
@@ -127,16 +130,62 @@ object ReviewFixVerificationPage : Page {
         text("Drag a row slowly up and down the list. Expected: the row under the pointer does not jump, and rows below do not shift as the indicator moves. A highlight appearing at the drop position is correct; items changing position before you release is not.")
 
         val numbers = Signal((1..8).toList())
-        col {
-            forEachReorderable(
-                items = numbers,
-                reorder = { move -> numbers.value = move.reorder(numbers.value) },
-            ) { item ->
-                card.row {
-                    icon(Icon.menu, "Drag handle")
-                    centered.text { ::content { "Item ${item()}" } }
-                }
+        renderReorderableListIn(
+            container = { col(it) },
+            items = numbers,
+            reorder = { move -> numbers.value = move.reorder(numbers.value) },
+        ) { item ->
+            card.row {
+                icon(Icon.menu, "Drag handle")
+                centered.text { ::content { "Item ${item()}" } }
             }
+        }
+    }
+
+    /**
+     * Lazy loading stops once a load stops growing the list, and starts again when it can grow.
+     *
+     * Two fixes meet here. `childrenLazyLoading` used to re-fire forever once a load returned nothing
+     * new, and on iOS `ScrollingBehaviors.content` inflated "distance to the end" by a whole viewport
+     * so it never fired at all. Nothing else in this app uses lazy loading, so without this section
+     * there is no way to check either by hand.
+     */
+    private fun ElementWriter.CanAddTheme.lazyLoadingSection() = card.col {
+        h2("5. Lazy loading start and stop")
+        text("Platform: all. iOS is where it never triggered; the runaway-reload half affects everyone.")
+        text(
+            "Scroll the list to the bottom. Expected: it loads three more pages, one per trip to the " +
+                    "end, then stops - the load counter must settle at 4 and stay there no matter how " +
+                    "much more you scroll. A counter that keeps climbing on its own is the runaway bug; " +
+                    "a list that never grows past 20 on iOS is the scroll-metrics bug."
+        )
+
+        // Deliberately finite: the fourth call returns nothing, which is the case that used to loop.
+        val items = Signal((1..20).toList())
+        val loadCalls = Signal(0)
+
+        text {
+            ::content {
+                "loads requested: ${loadCalls()}   items: ${items().size}" +
+                        if (loadCalls() > 4) "   <- FAIL: loading did not stop" else ""
+            }
+        }
+
+        sizeConstraints(height = 15.rem).renderLazyListIn(
+            container = { col(it) },
+            items = items,
+            id = { it },
+            loadMore = {
+                loadCalls.value += 1
+                // Three pages of 20, then nothing more - so the list stops growing while the user is
+                // still at the end, which is exactly when the old code kept asking.
+                if (items.value.size < 80) {
+                    delay(300)
+                    items.value = items.value + (items.value.size + 1..items.value.size + 20)
+                }
+            },
+        ) { item ->
+            card.text { ::content { "Item ${item()}" } }
         }
     }
 

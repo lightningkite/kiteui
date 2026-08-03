@@ -9,6 +9,13 @@ import kotlin.math.abs
 
 public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
     RecyclerViewPlacerGrid {
+    init {
+        // Every row calculation below divides by or iterates over this, so zero would surface far
+        // from the cause: cellSize divides by rows, and the row-width measurements take maxOf over
+        // an empty list. Fail at construction, where the caller can see what it passed.
+        require(rows > 0) { "RecyclerViewPlacerHorizontalGrid needs at least one row, got $rows" }
+    }
+
     override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid =
         RecyclerViewPlacerVerticalGrid(count)
 
@@ -36,6 +43,12 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
             paddingLeft + it * gap + it * cellSize
         }
 
+        /** Width of the widest cell in the row starting at [rowStartIndex], for right-aligning it. */
+        fun rowWidth(rowStartIndex: Int): Double = (0..<rows).maxOf {
+            if (rowStartIndex + it in dataRange) getNewCell(rowStartIndex + it, constrain).size.width
+            else 0.0
+        }
+
         val (anchorRowX, anchorRowIndex) = (anchor?.let {
             when(it) {
                 is RecyclerViewAnchor.FuzzyIndex -> {
@@ -46,13 +59,7 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
                 }
                 is RecyclerViewAnchor.SpecificElement -> {
                     val currentIndex = it.index.coerceIn(dataRange).div(rows).times(rows)
-                    val cells = (0..<rows).map {
-                        if (currentIndex + it in dataRange) getNewCell(
-                            currentIndex + it,
-                            constrain
-                        ) else null
-                    }
-                    val max = cells.maxOf { it?.size?.width ?: 0.0 }
+                    val max = rowWidth(currentIndex)
                     when (it.align) {
                         Align.Start -> viewport.left + paddingLeft
                         Align.End -> viewport.right - max - paddingRight
@@ -74,14 +81,7 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
                 (viewport.left + paddingLeft to dataRange.first.div(rows).times(rows))
             } else if (it.second > dataRange.last + rows) {
                 val currentIndex = dataRange.last.div(rows).times(rows)
-                val cells = (0..<rows).map {
-                    if (currentIndex + it in dataRange) getNewCell(
-                        currentIndex + it,
-                        constrain
-                    ) else null
-                }
-                val max = cells.maxOf { it?.size?.width ?: 0.0 }
-                (viewport.right - max - paddingRight to currentIndex)
+                (viewport.right - rowWidth(currentIndex) - paddingRight to currentIndex)
             } else it
         }
 

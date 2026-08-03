@@ -13,15 +13,28 @@ import kotlin.test.assertTrue
  * Password and new-password fields used to report their plaintext content through
  * `driverValue`, which feeds `snapshot()`/`find()` in the text-based driver protocol used
  * by test automation and MCP-connected agents. That bypassed the UI's visual masking
- * entirely. `redactedDriverValue()` in DriverOverrides.kt now swaps the real value for
- * "•".repeat(actual.length) whenever `KeyboardHints.autocomplete` is Password or
- * NewPassword, for TextInput, TextArea, AutoCompleteTextField and FormattedTextInput.
+ * entirely. `redactedDriverValue()` in DriverOverrides.kt now swaps the real value for a
+ * fixed-width bullet mask whenever `KeyboardHints.autocomplete` is Password or NewPassword,
+ * for TextInput, TextArea, AutoCompleteTextField and FormattedTextInput.
+ *
+ * The mask is a fixed width rather than one bullet per character: a password's length is itself
+ * worth withholding, and no driver caller has a use for it. An empty field still reports empty,
+ * because "is this field blank?" is a legitimate thing for a test to assert.
  *
  * Every "password"/"newPassword" test here would have failed before the fix (the snapshot
  * would have contained the plaintext instead of bullets). The "plain field" tests are the
  * negative case: they guard against over-redaction breaking the driver for every other field.
  */
 class DriverRedactionTest {
+
+    /**
+     * Mirrors the fixed-width mask in DriverOverrides.redactedDriverValue.
+     *
+     * Assertions below match `= "$MASK"` rather than just containing MASK: a bare `contains`
+     * would also be satisfied by the old per-character mask for any password of 8+ characters,
+     * so it would not fail if the fix were reverted.
+     */
+    private val MASK = "\u2022".repeat(8)
 
     @Test
     fun textInputPasswordIsRedacted() = uiTest(
@@ -36,7 +49,7 @@ class DriverRedactionTest {
     ) {
         setValue("pw", "hunter2")
         val snap = snapshot("pw")
-        assertTrue(snap.contains("•••••••"), "Should show 7 bullets for 'hunter2': $snap")
+        assertTrue(snap.contains("= \"$MASK\""), "Should show exactly the fixed-width mask: $snap")
         assertTrue(!snap.contains("hunter2"), "Plaintext must never reach the snapshot: $snap")
     }
 
@@ -54,7 +67,7 @@ class DriverRedactionTest {
         setValue("newPw", "correcthorse")
         val snap = snapshot("newPw")
         assertTrue(!snap.contains("correcthorse"), "New-password plaintext must never reach the snapshot: $snap")
-        assertTrue(snap.contains("•".repeat("correcthorse".length)), "Should redact to matching bullet count: $snap")
+        assertTrue(snap.contains("= \"$MASK\""), "Should show exactly the fixed-width mask: $snap")
     }
 
     @Test
@@ -84,7 +97,7 @@ class DriverRedactionTest {
         setValue("pwArea", "supersecret")
         val snap = snapshot("pwArea")
         assertTrue(!snap.contains("supersecret"), "TextArea password plaintext must never reach the snapshot: $snap")
-        assertTrue(snap.contains("•".repeat("supersecret".length)), "Should redact to matching bullet count: $snap")
+        assertTrue(snap.contains("= \"$MASK\""), "Should show exactly the fixed-width mask: $snap")
     }
 
     @Test
@@ -114,7 +127,7 @@ class DriverRedactionTest {
         setValue("pwAuto", "abc12345")
         val snap = snapshot("pwAuto")
         assertTrue(!snap.contains("abc12345"), "AutoCompleteTextField password plaintext must never reach the snapshot: $snap")
-        assertTrue(snap.contains("•".repeat("abc12345".length)), "Should redact to matching bullet count: $snap")
+        assertTrue(snap.contains("= \"$MASK\""), "Should show exactly the fixed-width mask: $snap")
     }
 
     @Test
@@ -144,7 +157,7 @@ class DriverRedactionTest {
         setValue("pwFormatted", "p4ssw0rd")
         val snap = snapshot("pwFormatted")
         assertTrue(!snap.contains("p4ssw0rd"), "FormattedTextInput password plaintext must never reach the snapshot: $snap")
-        assertTrue(snap.contains("•".repeat("p4ssw0rd".length)), "Should redact to matching bullet count: $snap")
+        assertTrue(snap.contains("= \"$MASK\""), "Should show exactly the fixed-width mask: $snap")
     }
 
     @Test
@@ -163,7 +176,7 @@ class DriverRedactionTest {
     }
 
     @Test
-    fun redactedLengthMatchesActualValueLength() = uiTest(
+    fun redactedValueDoesNotRevealTheRealLength() = uiTest(
         content = {
             col {
                 textInput {
@@ -173,10 +186,12 @@ class DriverRedactionTest {
             }
         }
     ) {
-        // Bullet count must track the real value's length exactly - too few would suggest
-        // truncation, too many would suggest padding, either could leak information.
+        // A per-character mask told any driver caller exactly how long the password was. Two
+        // different lengths must now be indistinguishable.
         setValue("pw", "1234567890")
-        assertValue("pw", "•".repeat(10))
+        assertValue("pw", MASK)
+        setValue("pw", "ab")
+        assertValue("pw", MASK)
     }
 
     @Test

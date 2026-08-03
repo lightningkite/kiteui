@@ -288,6 +288,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         }
     protected var backgroundBlock: GradientDrawable? = null
 
+    /** Whether the corner-radius handling below turned on `clipToOutline`, so it knows to turn it off again. */
+    private var appliedCornerClip: Boolean = false
+
     public fun updateCorners() {
         @Suppress("DEPRECATION")
         val cr = when (val it = theme.cornerRadii) {
@@ -311,26 +314,54 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         // When a view has corner radii and draws a background, clip children to the
         // rounded outline. This matches web behavior where border-radius + overflow: hidden
         // clips content (e.g. images inside a rounded frame).
-        // We use Outline.setConvexPath() with the per-corner radii array so PerCorner is respected.
-        // A rounded rect path is always convex, so this works on API 21+.
+        //
+        // Which Outline shape is used decides whether clipping happens at all: View.clipToOutline
+        // only clips outlines for which Outline.canClip() is true, and that excludes path-based
+        // outlines below API 33 (canClip() returned `mMode != MODE_PATH` until then; setConvexPath
+        // is just setPath, so neither helps). setRoundRect is clippable on every supported level,
+        // so it is used whenever all four corners share a radius - which is every case except an
+        // explicit CornerRadii.PerCorner that switches some corners off. Those genuinely cannot be
+        // expressed as a round rect and fall back to the path, which still gives a correct shadow
+        // everywhere and correct clipping from API 33 on.
         if (cr > 0f && themeAndBack.drawBackground) {
+            val uniformRadius = radii.all { it == radii[0] }
             val capturedRadii = radii.copyOf()
             native.outlineProvider = object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
-                    val path = Path().apply {
-                        addRoundRect(
-                            RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
-                            capturedRadii,
-                            Path.Direction.CW
+                    if (uniformRadius) {
+                        // A radius larger than the view degenerates to a pill; Skia scales the
+                        // path form down the same way, so clamping here keeps the two in step.
+                        outline.setRoundRect(
+                            0,
+                            0,
+                            view.width,
+                            view.height,
+                            capturedRadii[0].coerceAtMost(min(view.width, view.height) / 2f)
                         )
+                    } else {
+                        val path = Path().apply {
+                            addRoundRect(
+                                RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
+                                capturedRadii,
+                                Path.Direction.CW
+                            )
+                        }
+                        @Suppress("DEPRECATION")
+                        outline.setConvexPath(path)
                     }
-                    // setConvexPath (API 21+) is sufficient since a rounded rect is always convex,
-                    // avoiding the API 30+ requirement of setPath.
-                    @Suppress("DEPRECATION")
-                    outline.setConvexPath(path)
                 }
             }
             native.clipToOutline = true
+            appliedCornerClip = true
+        } else if (appliedCornerClip) {
+            // Undo our own clip when the theme stops asking for one - a reactive `::theme` switching
+            // from a rounded card to a flat background would otherwise leave children cut to the old
+            // radius forever. Tracked with a flag rather than by reading clipToOutline, because other
+            // elements (RawImageView, ProgressBar) set it on their own natives and must not be reset
+            // here just because this element has no corners.
+            appliedCornerClip = false
+            native.clipToOutline = false
+            native.outlineProvider = ViewOutlineProvider.BACKGROUND
         } else if (!native.clipToOutline) {
             native.outlineProvider = ViewOutlineProvider.BACKGROUND
         }

@@ -9,9 +9,15 @@ import com.lightningkite.kiteui.SoundEffectPool
 import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.fetch
+import com.lightningkite.kiteui.requestFile
 import com.lightningkite.kiteui.lottie.views.direct.lottie
+import com.lightningkite.kiteui.models.AudioLocal
 import com.lightningkite.kiteui.models.AudioRaw
 import com.lightningkite.kiteui.models.AudioRemote
+import com.lightningkite.kiteui.models.Semantic
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.Transformation
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
@@ -32,6 +38,22 @@ import com.lightningkite.reactive.core.*
  * Where the result is a judgement call (does it sound right, does the ring look right) that is
  * stated plainly rather than dressed up as a computed pass/fail.
  */
+/**
+ * Asks for translate, rotate and scale at once, which is the combination iOS used to collapse to
+ * whichever component it tested for first. Mirrors the transform `ThemeTransformTest` asserts.
+ */
+private object CompositeTransformSemantic : Semantic("compositeTransformCheck") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        transform = Transformation(
+            translationX = 20.0,
+            translationY = 10.0,
+            rotation = 20.0,
+            scaleX = 1.4,
+            scaleY = 1.4,
+        )
+    )
+}
+
 @OptIn(ExperimentalKiteUi::class, Untested::class, InternalKiteUi::class)
 @Routable("platform-fixes")
 object PlatformFixVerificationPage : Page {
@@ -55,17 +77,18 @@ object PlatformFixVerificationPage : Page {
             cameraPermissionSection()
             overlayReentrancySection()
             resourceLeakSection()
+            themeTransformSection()
         }
     }
 
     /**
-     * AudioRemote and AudioRaw playback through SoundEffectPool were unimplemented (Android) or a
-     * silent no-op (iOS); both now play. Resources.audioTaunt (used by AudioPage) is an
-     * AudioResource, which already worked, so it does not exercise this fix - these two source
-     * types specifically do.
+     * Three of the four AudioSource kinds were unimplemented somewhere: AudioRemote and AudioRaw
+     * through SoundEffectPool were a `TODO()` on Android and a silent no-op on iOS, and AudioLocal
+     * was a `TODO()` on iOS. Resources.audioTaunt (used by AudioPage) is an AudioResource, which
+     * already worked, so it does not exercise any of this - these three kinds specifically do.
      */
     private fun ElementWriter.CanAddTheme.soundEffectPoolSection() = card.col {
-        h2("1. SoundEffectPool: AudioRemote and AudioRaw")
+        h2("1. SoundEffectPool: AudioRemote, AudioRaw and AudioLocal")
         text("Platform: Android and iOS changed here. JS already worked and is included for comparison.")
         text(
             "Whether the sound plays, and whether it sounds right, is a judgement call - there is no " +
@@ -80,16 +103,52 @@ object PlatformFixVerificationPage : Page {
                 text("Play via AudioRemote (network fetch by URL)")
                 onClick { pool.play(AudioRemote(REMOTE_AUDIO_URL)) }
             }
-            if (Platform.current == Platform.Android || Platform.current == Platform.Web) {
-                button {
-                    text("Play via AudioRaw (bytes fetched ourselves, then handed over as raw data)")
-                    onClick {
-                        val blob: Blob = fetch(REMOTE_AUDIO_URL).blob()
-                        pool.play(AudioRaw(blob))
-                    }
+            // No platform guard any more: AudioRaw and AudioLocal are implemented everywhere this
+            // section runs, iOS included. They used to be TODO() there, which is what this checks.
+            button {
+                text("Play via AudioRaw (bytes fetched ourselves, then handed over as raw data)")
+                onClick {
+                    val blob: Blob = fetch(REMOTE_AUDIO_URL).blob()
+                    pool.play(AudioRaw(blob))
                 }
-            } else {
-                text("AudioRaw is not implemented on iOS yet (pre-existing gap, not part of this fix) - button hidden here to avoid a guaranteed crash.")
+            }
+            button {
+                // AudioLocal reads through NSItemProvider on iOS, which is a different path again
+                // from remote and raw - and the one that used to be TODO() there.
+                text("Pick an audio file, then play it via AudioLocal")
+                onClick {
+                    // Concrete MIME types rather than an "audio" wildcard: the route generator
+                    // strips comments before parsing, and a wildcard would put a "/" followed by a
+                    // "*" in the source, which it reads as the start of a block comment.
+                    context.requestFile(listOf("audio/mpeg", "audio/wav", "audio/mp4"))
+                        ?.let { pool.play(AudioLocal(it)) }
+                }
+            }
+        }
+    }
+
+    /**
+     * `Theme.transform` composes translate, rotate and scale together.
+     *
+     * iOS applied only whichever component it checked first, so a theme asking for two of them
+     * silently dropped one. There is no other screen in this app using a transform, which is why one
+     * lives here - `ThemeTransformTest` asserts the resulting matrix, not what you can see.
+     */
+    private fun ElementWriter.CanAddTheme.themeTransformSection() = card.col {
+        h2("7. Theme transform composition")
+        text("Platform: iOS is the one under test. Web and Android should look the same.")
+        text(
+            "The square below is translated, rotated and scaled at once. Expected: visibly rotated " +
+                    "AND larger AND offset from the dotted outline. Any one of those missing is the bug."
+        )
+
+        sizeConstraints(width = 14.rem, height = 14.rem).frame {
+            // Untransformed reference, so "did it move" is answerable without a ruler.
+            centered.sizeConstraints(width = 6.rem, height = 6.rem).card.frame {
+                centered.text("ref")
+            }
+            centered.sizeConstraints(width = 6.rem, height = 6.rem).themed(CompositeTransformSemantic).frame {
+                centered.text("T")
             }
         }
     }

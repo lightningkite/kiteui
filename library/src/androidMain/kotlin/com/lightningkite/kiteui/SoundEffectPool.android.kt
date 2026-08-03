@@ -5,6 +5,7 @@ import android.media.SoundPool
 import android.net.Uri
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.kiteui.utils.SuspendCache
 import com.lightningkite.kiteui.views.AndroidAppContext
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.reactive.core.BaseListenable
@@ -15,71 +16,85 @@ import kotlinx.coroutines.*
 import java.io.Closeable
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 public actual class SoundEffectPool actual constructor(concurrency: Int) {
 
-    private val loadedMap = HashMap<AudioSource, Deferred<Int>>()
     private val soundPool = SoundPool.Builder().apply {
         setMaxStreams(concurrency)
     }.build()
 
-    // SoundPool.load() returns immediately but decodes the sample on a background thread, so we
-    // track pending loads by sample ID and resolve them from the pool-wide completion listener.
-    private val loadCompletions = HashMap<Int, CompletableDeferred<Unit>>()
+    private val loaded = SuspendCache<AudioSource, Int> { source ->
+        when (source) {
+            // SoundPool can only load from a resource or a file path, so remote and raw audio are
+            // first staged in a cache file, the same trick used by AudioSource.load().
+            is AudioRemote -> loadBytes(fetch(source.url).blob().toByteArray())
+            is AudioRaw -> loadBytes(source.data.toByteArray())
+            is AudioLocal -> awaitLoad(soundPool.load(source.file.uri.path, 1))
+            is AudioResource -> awaitLoad(soundPool.load(AndroidAppContext.applicationCtx, source.resource, 1))
+        }
+    }
+
+    // SoundPool.load() returns immediately and decodes on a background thread, reporting every
+    // result through one pool-wide listener. Rather than have the waiter register and the listener
+    // look up - which breaks if the listener gets there first - both sides go through
+    // completionFor(), so whichever arrives first creates the CompletableDeferred and the other
+    // finds it. That has to be atomic: the listener is delivered on the Looper of the thread that
+    // built the pool, which need not be the thread staging the load. putIfAbsent gives exactly that
+    // guarantee, and unlike computeIfAbsent it is not desugared on API 23.
+    private val loadCompletions = ConcurrentHashMap<Int, CompletableDeferred<Unit>>()
 
     init {
         soundPool.setOnLoadCompleteListener { _, sampleId, status ->
-            loadCompletions.remove(sampleId)?.let {
-                if (status == 0) it.complete(Unit)
-                else it.completeExceptionally(IOException("SoundPool failed to load sample (status $status)"))
-            }
+            val completion = completionFor(sampleId)
+            if (status == 0) completion.complete(Unit)
+            else completion.completeExceptionally(IOException("SoundPool failed to load sample (status $status)"))
         }
     }
 
-    public actual suspend fun preload(sound: AudioSource) {
-        preloadInternal(sound)
-    }
-
-    private suspend fun preloadInternal(source: AudioSource): Int {
-        return loadedMap.getOrPut(source) {
-            AppScope.async {
-                when (source) {
-                    // SoundPool can only load from a resource or a file path, so remote and raw
-                    // audio are first written to a cache file, the same trick used by AudioSource.load().
-                    is AudioRemote -> loadBytes(fetch(source.url).blob().toByteArray())
-                    is AudioRaw -> loadBytes(source.data.toByteArray())
-                    is AudioLocal -> awaitLoad(soundPool.load(source.file.uri.path, 1))
-                    is AudioResource -> awaitLoad(soundPool.load(AndroidAppContext.applicationCtx, source.resource, 1))
-                }
-            }
-        }.await()
-    }
-
-    private suspend fun loadBytes(bytes: ByteArray): Int {
-        val file = File.createTempFile("soundeffect", ".audio", AndroidAppContext.applicationCtx.cacheDir)
-        return try {
-            file.writeBytes(bytes)
-            awaitLoad(soundPool.load(file.path, 1))
-        } finally {
-            file.delete()
-        }
+    private fun completionFor(sampleId: Int): CompletableDeferred<Unit> {
+        val fresh = CompletableDeferred<Unit>()
+        return loadCompletions.putIfAbsent(sampleId, fresh) ?: fresh
     }
 
     private suspend fun awaitLoad(soundId: Int): Int {
         // A sample ID of 0 means SoundPool rejected the load synchronously (bad data, pool full);
         // no completion event will ever arrive for it.
         if (soundId == 0) throw IOException("SoundPool failed to load sample")
-        val completion = CompletableDeferred<Unit>()
-        loadCompletions[soundId] = completion
-        completion.await()
+        try {
+            completionFor(soundId).await()
+        } finally {
+            loadCompletions.remove(soundId)
+        }
         return soundId
     }
 
+    private suspend fun loadBytes(bytes: ByteArray): Int {
+        // AppScope runs on the main dispatcher, so staging has to move off it: writing a
+        // multi-megabyte clip would otherwise block the UI thread for the whole write.
+        val file = withContext(Dispatchers.IO) {
+            File.createTempFile("soundeffect", ".audio", AndroidAppContext.applicationCtx.cacheDir)
+        }
+        return try {
+            // Inside the try, so a write that fails partway (a full cache partition) still leaves a
+            // deletable file behind rather than an orphan.
+            withContext(Dispatchers.IO) { file.writeBytes(bytes) }
+            awaitLoad(soundPool.load(file.path, 1))
+        } finally {
+            // NonCancellable so the staging file is still cleaned up when the load is cancelled.
+            withContext(NonCancellable + Dispatchers.IO) { file.delete() }
+        }
+    }
+
+    public actual suspend fun preload(sound: AudioSource) {
+        loaded.get(sound)
+    }
+
     public actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
-        val streamId = soundPool.play(preloadInternal(sound), 1.0f, 1.0f, 0, 0, 1.0f)
+        val streamId = soundPool.play(loaded.get(sound), 1.0f, 1.0f, 0, 0, 1.0f)
         return object : PlayingSoundEffect {
             override var volume: Float = 1f
                 set(value) {
@@ -104,10 +119,18 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
     }
 
     public actual fun unload(sound: AudioSource) {
+        val loading = loaded.peek(sound) ?: return
+        // Dropped from the cache as well as from the pool. Leaving it cached meant a later play()
+        // handed SoundPool a sample ID it had already freed, which plays nothing at all.
+        loaded.forget(sound)
         AppScope.launch {
-            loadedMap[sound]?.await()?.let {
-                soundPool.unload(it)
+            // A load that ended up failing has no sample to free, and evicted itself already.
+            val id = try {
+                loading.await()
+            } catch (e: Exception) {
+                return@launch
             }
+            soundPool.unload(id)
         }
     }
 }
@@ -122,8 +145,11 @@ public actual suspend fun AudioSource.load(): PlayableAudio {
             // MediaPlayer has no API to play from an in-memory buffer, so stage it in a cache file.
             // Deleting the file once it is opened (see toClose below) is safe: the file stays
             // readable through its open descriptor in the media server until playback finishes.
-            val file = File.createTempFile("soundeffect", ".audio", AndroidAppContext.applicationCtx.cacheDir)
-            file.writeBytes(data.toByteArray())
+            // Written off the caller's dispatcher, which is the main thread in practice.
+            val file = withContext(Dispatchers.IO) {
+                File.createTempFile("soundeffect", ".audio", AndroidAppContext.applicationCtx.cacheDir)
+                    .apply { writeBytes(data.toByteArray()) }
+            }
             player.setDataSource(file.path)
             toClose = Closeable { file.delete() }
         }

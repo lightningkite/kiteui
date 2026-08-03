@@ -198,6 +198,10 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            // Matches :library - see the same setting there for why. Kept in step deliberately:
+            // both modules compile commonTest sources against the same stubbed android.jar, so a
+            // test that logs must not be writable in one module and impossible in the other.
+            isReturnDefaultValues = true
         }
     }
     dependencies {
