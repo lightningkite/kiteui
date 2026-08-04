@@ -33,7 +33,6 @@ object IosMiscFixesPage : Page {
 
             hintPopoverSection()
             bidirectionalScrollSection()
-            bottomSheetPollSection()
         }
     }
 
@@ -97,42 +96,6 @@ object IosMiscFixesPage : Page {
                 for (c in 0 until 8) {
                     sizeConstraints(width = 3.rem, height = 2.5.rem).card.frame {
                         centered.text("$r,$c")
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * startBottomSheetThemePoll's poll loop is supposed to be tied to the sheet's own lifetime
-     * (see the comment on it in CoordinatorFrame.ios.kt) - CoordinatorFrameThemePollTest already
-     * proves that with a single open/close cycle. This section is for confirming it holds up under
-     * REPEATED cycles on a real device/simulator, where [bottomSheetThemePollCount] should always
-     * return to 0 shortly after the sheet closes and never climb higher with each additional open.
-     */
-    private fun ElementWriter.CanAddTheme.bottomSheetPollSection() = card.col {
-        h2("Bottom sheet theme-poll loop cleanup")
-        text(
-            "Open and close the sheet below several times in a row (including by dragging it down, " +
-                    "not just the Close button). Expected: \"Active poll loops\" reads 0 before you " +
-                    "open a sheet, climbs to 1 while a sheet is open, and drops back to 0 within a " +
-                    "second or so of every close - never climbing higher with repeated open/close " +
-                    "cycles. If it keeps climbing instead of returning to 0, the loop is leaking."
-        )
-        text { ::content { "Active poll loops: ${bottomSheetThemePollCount()}" } }
-        button {
-            text("Open bottom sheet")
-            onClick {
-                context.coordinatorFrame?.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) { control ->
-                    themed(DialogSemantic).col {
-                        applySafeInsets()
-                        centered.coordinatorDragHandle()
-                        button {
-                            text("Close")
-                            onClick { control.close() }
-                        }
-                        h2("Bottom sheet")
-                        text { ::content { "Active poll loops right now: ${bottomSheetThemePollCount()}" } }
                     }
                 }
             }
