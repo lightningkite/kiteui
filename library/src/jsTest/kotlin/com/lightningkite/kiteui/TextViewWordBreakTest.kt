@@ -12,9 +12,9 @@ import kotlin.test.assertEquals
 /**
  * `TextView.wordBreak` on web.
  *
- * The getter used to be `TODO("Not yet implemented")`, so merely reading back a value the same
- * class lets you set crashed - the setter's CSS write was never actually verifiable. These tests
- * read the property back (proving the getter no longer throws) and check the resolved CSS
+ * The getter was once unimplemented and threw, so merely reading back a value the same class lets
+ * you set crashed - which also meant the setter's CSS write was never verifiable. These tests read
+ * the property back (proving the getter returns rather than throws) and check the resolved CSS
  * (proving the setter's write still reaches the DOM).
  */
 class TextViewWordBreakTest {

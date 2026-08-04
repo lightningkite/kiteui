@@ -126,7 +126,8 @@ public class NCanvas @JvmOverloads constructor(
     private val metrics = context.resources.displayMetrics
     override fun onDraw(canvas: android.graphics.Canvas) {
         super.onDraw(canvas)
-        delegate?.draw(DrawingContext2DImpl(canvas))
+        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        delegate?.draw(DrawingContext2DImpl(canvas, isRtl = isRtl))
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

@@ -25,6 +25,7 @@ import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 
@@ -60,7 +61,8 @@ object PlatformFixVerificationPage : Page {
     override val title: Reactive<String> get() = Constant("Platform Fix Verification")
 
     // Known-good remote audio file, already used elsewhere in this app for manual audio checks.
-    private const val REMOTE_AUDIO_URL = "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav"
+    private const val REMOTE_AUDIO_URL = "https://github.com/rafaelreis-hotmart/Audio-Sample-files/raw/refs/heads/master/sample.mp3"
+//    private const val REMOTE_AUDIO_URL = "https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples/AFsp/M1F1-Alaw-AFsp.wav"
 
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
         scrolling.col {
@@ -122,6 +124,14 @@ object PlatformFixVerificationPage : Page {
                     // "*" in the source, which it reads as the start of a block comment.
                     context.requestFile(listOf("audio/mpeg", "audio/wav", "audio/mp4"))
                         ?.let { pool.play(AudioLocal(it)) }
+                }
+            }
+            button {
+                // AudioLocal reads through NSItemProvider on iOS, which is a different path again
+                // from remote and raw - and the one that used to be TODO() there.
+                text("Play Resource as Baseline")
+                onClick {
+                    pool.play(Resources.audioTaunt)
                 }
             }
         }

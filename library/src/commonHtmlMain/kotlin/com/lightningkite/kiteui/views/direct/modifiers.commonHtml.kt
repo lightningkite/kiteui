@@ -315,3 +315,9 @@ public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWri
 internal actual fun ContainerElement.setupAsListContainer() {
     if (native.tag == "div" || native.tag == "span") native.tag = "ul"
 }
+
+public actual fun ElementWriter.CanAddShownWhen.shownForQuery(query: MediaQuery): ElementWriter.CanAddSizing {
+    return beforeSetup {
+        native.classes.add(context.kiteUiCss.querySet(query))
+    }
+}

@@ -145,6 +145,9 @@ public val ElementWriter.CanAddTheme.unpadded: ElementWriter.CanAddTheme get() =
 
 public expect fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean = false, transition: ScreenTransition = ScreenTransition.None, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing
 
+public expect fun ElementWriter.CanAddShownWhen.shownForQuery(
+    query: MediaQuery
+): ElementWriter.CanAddSizing
 
 
 public expect fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme

@@ -8,13 +8,18 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
+import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.useContents
 import kotlinx.datetime.*
+import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSCalendar
 import platform.Foundation.NSDate
 import platform.Foundation.NSDateComponents
 import platform.Foundation.NSTimeZone
 import platform.Foundation.localTimeZone
 import platform.UIKit.*
+import platform.darwin.NSObject
+import platform.objc.sel_registerName
 
 
 public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
@@ -27,6 +32,17 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
 
     private val _content = Signal<LocalDate?>(null)
     public actual val content: MutableReactiveValue<LocalDate?> get() = _content
+
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+    internal val trigger: ClearDoneTrigger<LocalDateField> = ClearDoneTrigger(
+        weakSelf = kotlin.native.ref.WeakReference(this),
+        onClear = { it.content.value = null },
+        onDone = { it.textField.resignFirstResponder(); it.action?.startAction(it) },
+    )
+
+    override fun nativeSetAction(action: Action?) {
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
+    }
 
     public actual var range: ClosedRange<LocalDate>? = null
         set(value) {
@@ -48,7 +64,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
         }
 
     init {
-        // TODO: need a way to CLEAR the field.
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
         textField.inputView = UIDatePicker().apply {
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleInline)
             datePickerMode = UIDatePickerMode.UIDatePickerModeDate
@@ -95,8 +111,15 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
     private val _content = Signal<LocalTime?>(null)
     public actual val content: MutableReactiveValue<LocalTime?> get() = _content
 
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+    internal val trigger: ClearDoneTrigger<LocalTimeField> = ClearDoneTrigger(
+        weakSelf = kotlin.native.ref.WeakReference(this),
+        onClear = { it.content.value = null },
+        onDone = { it.textField.resignFirstResponder(); it.action?.startAction(it) },
+    )
+
     override fun nativeSetAction(action: Action?) {
-        textField.action = action
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
     }
 
     public actual var range: ClosedRange<LocalTime>? = null
@@ -116,6 +139,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
         }
 
     init {
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
         textField.inputView = UIDatePicker().apply {
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleWheels)
             datePickerMode = UIDatePickerMode.UIDatePickerModeTime
@@ -161,8 +185,16 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
 
     private val _content = Signal<LocalDateTime?>(null)
     public actual val content: MutableReactiveValue<LocalDateTime?> get() = _content
+
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+    internal val trigger: ClearDoneTrigger<LocalDateTimeField> = ClearDoneTrigger(
+        weakSelf = kotlin.native.ref.WeakReference(this),
+        onClear = { it.content.value = null },
+        onDone = { it.textField.resignFirstResponder(); it.action?.startAction(it) },
+    )
+
     override fun nativeSetAction(action: Action?) {
-        textField.action = action
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
     }
     public actual var range: ClosedRange<LocalDateTime>? = null
         set(value) {
@@ -182,6 +214,7 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
 
 
     init {
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
         textField.inputView = UIDatePicker().apply {
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleWheels)
             datePickerMode = UIDatePickerMode.UIDatePickerModeDateAndTime
@@ -217,6 +250,53 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
     }
 }
 
+
+/**
+ * Backs the Clear/Done buttons of [clearableToolbar] for [LocalDateField], [LocalTimeField]
+ * and [LocalDateTimeField]. Holds only a weak reference to the field to avoid a retain cycle
+ * (the field owns [textField], which owns the toolbar, which targets this object).
+ *
+ * `internal` (rather than an anonymous `NSObject`) so [clear]/[done] can be called directly as
+ * ordinary Kotlin functions from tests, instead of routing through UIKit's target/action
+ * selector dispatch.
+ */
+@OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+internal class ClearDoneTrigger<T : Any>(
+    private val weakSelf: kotlin.native.ref.WeakReference<T>,
+    private val onClear: (T) -> Unit,
+    private val onDone: (T) -> Unit,
+) : NSObject() {
+    @ObjCAction
+    fun clear() {
+        weakSelf.get()?.let(onClear)
+    }
+    @ObjCAction
+    fun done() {
+        weakSelf.get()?.let(onDone)
+    }
+}
+
+/**
+ * Builds an inputAccessoryView toolbar with Clear and Done buttons for [LocalDateField],
+ * [LocalTimeField] and [LocalDateTimeField]. UIDatePicker has no way to represent "no
+ * selection" once shown, so Clear is the only way for a user to null the content back out
+ * once they've picked a value.
+ */
+private fun clearableToolbar(target: NSObject, doneTitle: String): UIToolbar =
+    // Explicit frame prevents UnsatisfiableConstraints error when automatic constraints are set by the system
+    // https://stackoverflow.com/questions/54284029/uitoolbar-with-uibarbuttonitem-layoutconstraint-issue
+    UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
+        barStyle = UIBarStyleDefault
+        setTranslucent(true)
+        sizeToFit()
+        setItems(
+            listOf(
+                UIBarButtonItem(title = "Clear", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = target, action = sel_registerName("clear")),
+                UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
+                UIBarButtonItem(title = doneTitle, style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = target, action = sel_registerName("done")),
+            ), animated = false
+        )
+    }
 
 //NSDateComponents().date() depends on the calendar property being set.
 //If you don’t specify one (like NSCalendar.currentCalendar()), then date() can return null — because the system doesn’t know which calendar/timezone to use to interpret the components.

@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -78,14 +77,5 @@ public class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
                 viewport.bottom
             )
         }
-    }
-
-    override fun prebake(
-        prebakeRange: IntRange,
-        dataRange: IntRange,
-        writer: ViewWriter,
-        render: ViewWriter.(Int) -> Unit
-    ) {
-        TODO("Not yet implemented")
     }
 }

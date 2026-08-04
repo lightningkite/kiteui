@@ -1068,7 +1068,6 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         if (pointerId == mActivePointerId) {
             // This was our active pointer going up. Choose a new
             // active pointer and adjust accordingly.
-            // TODO: Make this decision more intelligent.
             val newPointerIndex = if (pointerIndex == 0) 1 else 0
             mLastMotionX = ev.getX(newPointerIndex).toInt()
             mLastMotionY = ev.getY(newPointerIndex).toInt()
@@ -1942,15 +1941,11 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
 
         val fadingEdge = horizontalFadingEdgeLength
 
-        // TODO: screenTop should be incremented by fadingEdge * getTopFadingEdgeStrength (but for
-        // the target scroll distance).
         // leave room for top fading edge as long as rect isn't at very top
         if (rect.left > 0) {
             screenLeft += fadingEdge
         }
 
-        // TODO: screenBottom should be decremented by fadingEdge * getBottomFadingEdgeStrength (but
-        // for the target scroll distance).
         // leave room for bottom fading edge as long as rect isn't at very bottom
         val child = getChildAt(0)
         val lp = child.layoutParams as LayoutParams
@@ -2014,15 +2009,11 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
 
         val fadingEdge = verticalFadingEdgeLength
 
-        // TODO: screenTop should be incremented by fadingEdge * getTopFadingEdgeStrength (but for
-        // the target scroll distance).
         // leave room for top fading edge as long as rect isn't at very top
         if (rect.top > 0) {
             screenTop += fadingEdge
         }
 
-        // TODO: screenBottom should be decremented by fadingEdge * getBottomFadingEdgeStrength (but
-        // for the target scroll distance).
         // leave room for bottom fading edge as long as rect isn't at very bottom
         val child = getChildAt(0)
         val lp = child.layoutParams as LayoutParams

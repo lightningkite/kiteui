@@ -33,20 +33,52 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
     public actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
         // An AudioBufferSourceNode can only be played once so we must create a new instance every time we want to play
         // a sound
+        // Browsers create an AudioContext already suspended and leave it that way until the page
+        // has user activation. A suspended context's clock does not advance, so the sound is not
+        // merely silent - it never reaches its end either, and `onended` never fires, which is why
+        // the returned handle used to report isPlaying forever. Chrome resumes on a user gesture by
+        // itself; Firefox and Safari do not, so it has to be asked for explicitly.
+        //
+        // Deliberately not awaited: without user activation the promise can stay pending
+        // indefinitely, and awaiting it would hang play() rather than just delaying audio. The
+        // source is scheduled either way and plays once the context does resume.
+        if (context.state != "running") {
+            context.resume().catch {
+                // The browser refusing until the user interacts is normal, not a fault to report.
+                if (it.message?.contains("NotAllowedError") != true) {
+                    Exception("Failed to resume the audio context", it).report()
+                }
+            }
+        }
+
         val bufferSource = context.createBufferSource()
         bufferSource.buffer = preloadInternal(sound)
-        bufferSource.connect(context.destination)
+        // An AudioBufferSourceNode has no volume control of its own, so route it through a gain node to get one.
+        val gain = context.createGain()
+        bufferSource.connect(gain)
+        gain.connect(context.destination)
         bufferSource.start()
+
+        // The Web Audio API offers no "is this source still running" query, so track it ourselves.
+        var playing = true
+        bufferSource.onended = { playing = false }
 
         return object : PlayingSoundEffect {
             override var volume: Float
-                get() = TODO()
-                set(value) {}
+                get() = gain.gain.value
+                set(value) {
+                    gain.gain.value = value
+                }
+
+            /** A source node cannot be restarted once stopped, so setting this to `true` is ignored. */
             override var isPlaying: Boolean
-                get() = TODO()
-                set(value) {}
+                get() = playing
+                set(value) {
+                    if (!value) stop()
+                }
 
             override fun stop() {
+                playing = false
                 bufferSource.stop()
             }
         }
@@ -96,8 +128,12 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
 public external class AudioContext() {
     public fun createChannelMerger(numberOfInputs: Int): ChannelMergerNode
     public fun createBufferSource(): AudioBufferSourceNode
+    public fun createGain(): GainNode
     public fun decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer>
     public val destination: AudioDestinationNode
+    /** "suspended", "running" or "closed". A context is created suspended. */
+    public val state: String
+    public fun resume(): Promise<Unit>
 }
 
 public open external class AudioNode {
@@ -107,10 +143,19 @@ public open external class AudioNode {
 
 public external class ChannelMergerNode : AudioNode
 
+public external class GainNode : AudioNode {
+    public val gain: AudioParam
+}
+
+public external class AudioParam {
+    public var value: Float
+}
+
 public external class AudioBufferSourceNode : AudioNode {
     public var buffer: AudioBuffer
     public fun start()
     public fun stop()
+    public var onended: (() -> Unit)?
 }
 
 public external class AudioBuffer {

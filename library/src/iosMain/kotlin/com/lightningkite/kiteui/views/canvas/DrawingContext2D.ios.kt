@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.canvas
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.addLine
-import com.lightningkite.kiteui.views.direct.arcTo
 import com.lightningkite.kiteui.views.toUIFontWeight
 import com.lightningkite.kiteui.views.toUiColor
 import kotlinx.cinterop.*
@@ -233,20 +232,6 @@ public class DrawingContext2DImpl(public val wraps: CGContextRef, public val wid
 
     override fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double): Unit =
         CGContextAddCurveToPoint(wraps, cp1x, cp1y, cp2x, cp2y, x, y)
-
-//    override fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double) = arcTo(
-//        x1, y1, x2, y2, radius, radius, 0.0
-//    )
-//
-//    override fun arcTo(
-//        x1: Double,
-//        y1: Double,
-//        x2: Double,
-//        y2: Double,
-//        radiusX: Double,
-//        radiusY: Double,
-//        rotation: Double
-//    ) = TODO()
 
     override fun rect(x: Double, y: Double, w: Double, h: Double): Unit = CGContextAddRect(wraps, CGRectMake(x, y, w, h))
 

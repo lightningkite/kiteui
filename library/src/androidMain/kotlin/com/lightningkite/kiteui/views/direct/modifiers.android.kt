@@ -364,8 +364,12 @@ public actual fun ElementWriter.hintPopover(
 ): ElementWriter {
     return this@hintPopover.beforeSetup {
         native.setOnLongClickListener {
-            // TODO: implement popover
-            // toast(inner = setup)
+            // Reuses the same in-tree overlay popover MenuButton.opensMenu() is built on
+            // (Element.openPopover, openPopover.android.kt) rather than a PopupWindow/AlertDialog,
+            // so it gets the same theming, positioning against preferredDirection, and
+            // tap-outside-to-dismiss (via dismissBackground -> context.closePopovers()) for free -
+            // no separate window token to leak.
+            openPopover(preferredDirection, setup)
             true
         }
     }
@@ -379,6 +383,19 @@ public actual fun ElementWriter.textPopover(message: String): ElementWriter {
     }
 }
 
+
+/**
+ * The web target hands this to CSS; Android has to evaluate it, so it becomes an ordinary reactive
+ * condition over [AppState.windowInfo] and re-runs whenever the window changes - on rotation, on
+ * multi-window resize, on the soft keyboard opening.
+ *
+ * The initial value is computed up front rather than defaulting to hidden, so an element that
+ * should be visible does not flash out of existence on the first frame.
+ */
+public actual fun ElementWriter.CanAddShownWhen.shownForQuery(query: MediaQuery): ElementWriter.CanAddSizing =
+    shownWhen(default = query.matches(AppState.windowInfo.value, touchNativeDeviceTraits)) {
+        query.matches(AppState.windowInfo(), touchNativeDeviceTraits)
+    }
 
 public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return beforeSetup {

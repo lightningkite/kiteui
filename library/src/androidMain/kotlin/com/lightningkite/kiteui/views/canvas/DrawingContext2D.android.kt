@@ -95,7 +95,15 @@ public actual abstract class DrawingContext2D {
 
 }
 
-public class DrawingContext2DImpl(override val canvas: Canvas): DrawingContext2D() {
+public class DrawingContext2DImpl(
+    override val canvas: Canvas,
+    /**
+     * Resolved layout direction of the [View] this canvas is drawing for, used to map
+     * [TextAlign.start]/[TextAlign.end] to the correct physical side under RTL locales - see
+     * [textAlign]. Defaults to LTR for callers (tests, previews) that don't have a View to ask.
+     */
+    internal val isRtl: Boolean = false,
+): DrawingContext2D() {
     // Internal state tracking
     internal var lineDashSegments: List<Double> = emptyList()
     internal var _shadowBlur: Double = 0.0
@@ -488,9 +496,14 @@ public actual fun DrawingContext2D.font(
 }
 
 public actual fun DrawingContext2D.textAlign(alignment: TextAlign) {
+    // start/end are direction-relative (CSS semantics): under RTL, start means the right edge.
+    // isRtl comes from the drawing View's resolved layoutDirection - see DrawingContext2DImpl and
+    // its construction in Canvas.android.kt#onDraw. Contexts without a View (e.g. unit tests)
+    // default to LTR, matching left/right below.
+    val isRtl = (this as? DrawingContext2DImpl)?.isRtl == true
     fillPaintObj.textAlign = when(alignment) {
-        TextAlign.start -> android.graphics.Paint.Align.LEFT  // TODO: locales
-        TextAlign.end -> android.graphics.Paint.Align.RIGHT  // TODO: locales
+        TextAlign.start -> if (isRtl) android.graphics.Paint.Align.RIGHT else android.graphics.Paint.Align.LEFT
+        TextAlign.end -> if (isRtl) android.graphics.Paint.Align.LEFT else android.graphics.Paint.Align.RIGHT
         TextAlign.left -> android.graphics.Paint.Align.LEFT
         TextAlign.right -> android.graphics.Paint.Align.RIGHT
         TextAlign.center -> android.graphics.Paint.Align.CENTER

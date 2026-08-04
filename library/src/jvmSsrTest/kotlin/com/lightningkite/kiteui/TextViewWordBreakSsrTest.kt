@@ -17,9 +17,9 @@ import kotlin.test.assertTrue
 /**
  * `TextView.wordBreak` under SSR.
  *
- * Same underlying implementation as the web target (both live in commonHtmlMain), so the same
- * bug applied here: the getter was `TODO("Not yet implemented")`, meaning any server-side code
- * that read the property back - not just set it - crashed rendering outright.
+ * Same underlying implementation as the web target (both live in commonHtmlMain), so the same bug
+ * applied here: the getter was once unimplemented and threw, meaning any server-side code that read
+ * the property back - not just set it - crashed rendering outright.
  */
 class TextViewWordBreakSsrTest {
     init {

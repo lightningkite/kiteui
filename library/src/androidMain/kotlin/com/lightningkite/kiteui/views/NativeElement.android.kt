@@ -14,6 +14,7 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Build
 import android.os.Looper
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewOutlineProvider
@@ -22,6 +23,7 @@ import android.widget.HorizontalScrollView
 import android.widget.ScrollView
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.KiteUiActivity
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.afterTimeout
@@ -171,21 +173,66 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         }
     }
 
+    /**
+     * Where in this view the current gesture went down, in view coordinates, or null if no touch
+     * has been seen.
+     *
+     * Translated from [KiteUiActivity.lastTouchDownOnScreen] rather than recorded here: a `View`'s
+     * own `OnTouchListener` runs only after child dispatch, so a row containing anything that
+     * consumes touches - a plain text view does - would never see the press that started its own
+     * drag. The activity sees every gesture first, unconditionally.
+     *
+     * internal rather than private so a test can confirm the translation, which is otherwise only
+     * observable inside a drag shadow the platform has already taken ownership of.
+     */
+    internal val grabPoint: Point?
+        get() {
+            val screen = KiteUiActivity.lastTouchDownOnScreen ?: return null
+            val viewOnScreen = IntArray(2).also(native::getLocationOnScreen)
+            return Point(screen.x - viewOnScreen[0], screen.y - viewOnScreen[1])
+        }
+
+    /**
+     * Anchors the drag shadow at the point the view was grabbed.
+     *
+     * The platform's own `View.DragShadowBuilder` puts the touch point at the centre of the shadow,
+     * so the row jumps to centre itself under the finger the instant a drag begins, and every later
+     * position is offset by however far from the middle it was picked up.
+     */
+    internal class GrabPointShadowBuilder(view: View, private val grab: Point) : View.DragShadowBuilder(view) {
+        override fun onProvideShadowMetrics(outShadowSize: Point?, outShadowTouchPoint: Point?) {
+            val v = view ?: return
+            // A zero-size shadow is rejected by the platform, hence the floor of 1.
+            outShadowSize?.set(v.width.coerceAtLeast(1), v.height.coerceAtLeast(1))
+            outShadowTouchPoint?.set(
+                grab.x.coerceIn(0, v.width.coerceAtLeast(1)),
+                grab.y.coerceIn(0, v.height.coerceAtLeast(1)),
+            )
+        }
+    }
+
     // drag 'n drop
     actual override var dragData: DragData? = null
         set(value) {
             field = value
-            if (value == null) native.setOnLongClickListener(null)
-            else native.setOnLongClickListener {
-                val clipData = ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data))
-                val shadowBuilder = value.dragShadow?.let(::DragShadowBuilder) ?: View.DragShadowBuilder(native)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    native.startDragAndDrop(clipData, shadowBuilder, value, 0)
-                } else {
-                    @Suppress("DEPRECATION")
-                    native.startDrag(clipData, shadowBuilder, value, 0)
+            if (value == null) {
+                native.setOnLongClickListener(null)
+            } else {
+                native.setOnLongClickListener {
+                    val clipData = ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data))
+                    val shadowBuilder = value.dragShadow?.let(::DragShadowBuilder)
+                        ?: grabPoint?.let { GrabPointShadowBuilder(native, it) }
+                        // No recorded touch means the drag was not started by one - the platform's
+                        // centred shadow is as good a guess as any.
+                        ?: View.DragShadowBuilder(native)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        native.startDragAndDrop(clipData, shadowBuilder, value, 0)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        native.startDrag(clipData, shadowBuilder, value, 0)
+                    }
+                    true
                 }
-                true
             }
         }
 

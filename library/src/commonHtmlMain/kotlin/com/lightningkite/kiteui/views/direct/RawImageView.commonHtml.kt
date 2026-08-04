@@ -98,7 +98,7 @@ public actual class SizelessRawImageView actual constructor(
         native.style.backgroundSize = when(scaleType) {
             ImageScaleType.Fit -> "contain"
             ImageScaleType.Crop -> "cover"
-            ImageScaleType.Stretch -> TODO("Not supported yet")
+            ImageScaleType.Stretch -> "100% 100%"
             ImageScaleType.NoScale -> "auto"
         }
         launch {

@@ -1,6 +1,10 @@
 package com.lightningkite.kiteui
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import com.bumptech.glide.Glide
+import com.lightningkite.kiteui.views.AndroidAppContext
 import java.lang.ref.WeakReference
 
 public actual fun debugger() {
@@ -14,7 +18,13 @@ public actual fun gc(): GCInfo {
     }
 }
 public actual fun cleanImageCache() {
-    // TODO
+    // Android's image loading goes entirely through Glide (see RawImageView.android.kt) - there is
+    // no separate KiteUI-owned cache here. Clearing both Glide caches mirrors what iOS's
+    // cleanImageCache() does to its NSCache-backed ImageCache (RawImageView.ios.kt/ImageCache).
+    // Glide requires clearMemory() on the main thread and clearDiskCache() off it.
+    val context = AndroidAppContext.applicationCtx
+    Handler(Looper.getMainLooper()).post { Glide.get(context).clearMemory() }
+    Thread { Glide.get(context).clearDiskCache() }.start()
 }
 
 public actual fun gcReport() {}

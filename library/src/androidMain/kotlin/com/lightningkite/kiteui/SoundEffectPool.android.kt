@@ -21,6 +21,21 @@ import kotlin.coroutines.resume
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * Backed by `SoundPool`, which is built for short, overlapping effects and imposes two limits worth
+ * knowing before choosing a clip:
+ *
+ * - **About one megabyte of *decoded* audio per sound.** Decoded, not encoded - so the ceiling is
+ *   set by sample rate and channel count, not by file size. At 44.1kHz stereo 16-bit that is
+ *   roughly 5.7 seconds, and a longer clip is silently truncated rather than rejected. A
+ *   compressed file that looks small on disk is no help: an 800KB MP3 decodes to far more.
+ * - **No completion callback**, which is why [PlayingSoundEffect.isPlaying] cannot report a sound
+ *   reaching its own end here. See the property for details.
+ *
+ * For anything longer than a few seconds - music, voice, a full sound bed - use
+ * [AudioSource.load] instead. It is backed by `MediaPlayer`, which streams rather than decoding
+ * into memory, has no length limit, and reports completion properly.
+ */
 public actual class SoundEffectPool actual constructor(concurrency: Int) {
 
     private val soundPool = SoundPool.Builder().apply {
@@ -101,10 +116,27 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
                     field = value
                     soundPool.setVolume(streamId, value, value)
                 }
-            override var isPlaying: Boolean = true
+
+            /** Backing state for [isPlaying], so [stop] can clear it without re-entering the setter. */
+            private var isPlayingBacking: Boolean = true
+
+            /**
+             * **Reports pausing and stopping, but not a sound reaching its own end.**
+             *
+             * `SoundPool` exposes no completion callback of any kind - there is no listener, no
+             * stream-state query, nothing to observe - so a clip that simply finishes leaves this
+             * reading `true`. Deriving it from the clip's duration would be the only alternative,
+             * and it would be wrong the moment a stream is paused, resumed or pre-empted when the
+             * pool runs out of channels.
+             *
+             * The other platforms do report a natural end, so treat a `true` here as "not
+             * explicitly stopped" rather than "still audible".
+             */
+            override var isPlaying: Boolean
+                get() = isPlayingBacking
                 set(value) {
-                    if (field == value) return
-                    field = value
+                    if (isPlayingBacking == value) return
+                    isPlayingBacking = value
                     if (value) {
                         soundPool.resume(streamId)
                     } else {
@@ -114,6 +146,9 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
 
             override fun stop() {
                 soundPool.stop(streamId)
+                // Has to be assigned through the backing field, not the setter: the setter would
+                // see the change to false and call pause() on a stream that has just been stopped.
+                isPlayingBacking = false
             }
         }
     }

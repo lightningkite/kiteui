@@ -82,7 +82,7 @@ private suspend fun FileReference.data(): NSData {
  * Reads a sound effect's bytes and works out the decode hint for them.
  *
  * Shared by [SoundEffectPool] and [AudioSource.load] so the four source kinds are handled in exactly
- * one place - they had drifted into two copies with different gaps, each with its own `TODO()`.
+ * one place - they had drifted into two copies, each missing a different subset of the kinds.
  *
  * Everything is decoded from bytes rather than handed to AVAudioPlayer as a URL. That is required
  * for raw and picked-file sources, and it is also the only thing that works for a remote one:

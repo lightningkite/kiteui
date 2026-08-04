@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.views.NativeContainerElementWithSecondaryAction
 import com.lightningkite.kiteui.views.NativeInteractiveContainerElement
 import com.lightningkite.reactive.context.onRemove
 import kotlinx.coroutines.launch
+import com.lightningkite.kiteui.Log
 import platform.Foundation.NSURL
 import platform.UIKit.UIAccessibilityTraitLink
 import platform.UIKit.UIApplication
@@ -24,7 +25,14 @@ public actual class ExternalLink actual constructor(context: ElementContext): Na
                 action?.startAction(this@launch)
                 to?.let { to ->
                     onNavigateAction?.startAction(this@launch)
-                    UIApplication.sharedApplication.openURL(NSURL(string = to), mapOf<Any?, Any?>()) {}
+                    UIApplication.sharedApplication.openURL(NSURL(string = to), mapOf<Any?, Any?>()) { opened ->
+                        // A URL that passed validation but the OS declines to open is worth saying
+                        // out loud. It is indistinguishable, on screen, from a link this library
+                        // deliberately refused - and the usual cause is benign: the Simulator ships
+                        // no Mail or Phone app, so `mailto:` and `tel:` never open there however
+                        // correct the link is.
+                        if (!opened) Log.warn("ExternalLink: iOS declined to open '$to' - no installed app handles that scheme")
+                    }
                 }
             }
         })

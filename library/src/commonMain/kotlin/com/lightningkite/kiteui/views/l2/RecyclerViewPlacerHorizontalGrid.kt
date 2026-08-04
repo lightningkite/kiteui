@@ -3,8 +3,6 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.direct.col
 import kotlin.math.abs
 
 public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
@@ -118,23 +116,6 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
             }
             currentX -= max + gap
             currentIndex -= rows
-        }
-    }
-
-    override fun prebake(
-        prebakeRange: IntRange,
-        dataRange: IntRange,
-        writer: ViewWriter,
-        render: ViewWriter.(Int) -> Unit
-    ): Unit = with(writer) {
-        if (rows == 1) {
-            col {
-                prebakeRange.forEach {
-                    render(it)
-                }
-            }
-        } else {
-            TODO()
         }
     }
 }

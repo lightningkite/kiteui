@@ -860,3 +860,45 @@ public operator fun Dimension.div(other: Double): Dimension = this / other.toFlo
 public expect fun Dimension.coerceAtMost(other: Dimension): Dimension
 public expect fun Dimension.coerceAtLeast(other: Dimension): Dimension
 public operator fun Dimension.unaryMinus(): Dimension = this * -1
+
+/**
+ * Corresponds to [media queries in CSS](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Media_queries/Using)
+ */
+public sealed interface MediaQuery {
+    public data class And(val queries: Set<MediaQuery>): MediaQuery
+    public data class Or(val queries: Set<MediaQuery>): MediaQuery
+    public data class MinAspectRatio(val ratio: Double): MediaQuery
+    public data class MaxAspectRatio(val ratio: Double): MediaQuery
+    /**
+     * Use `.dp` or `.rem` for these four, **never `.px`**.
+     *
+     * `.px` is not the same unit across platforms: on web it is a CSS pixel (already
+     * density-independent, identical to `.dp`), but on Android and iOS it is a raw device pixel.
+     * On a density-3 phone `600.px` is therefore a 600-pixel breakpoint on web and a 200dp one on
+     * Android - so a query written as a tablet breakpoint fires on an ordinary phone. `.dp` and
+     * `.rem` mean the same thing everywhere and do not have this problem.
+     */
+    public data class MinWidth(val dimension: Dimension): MediaQuery
+    /** See [MinWidth] - use `.dp` or `.rem`, never `.px`. */
+    public data class MaxWidth(val dimension: Dimension): MediaQuery
+    /** See [MinWidth] - use `.dp` or `.rem`, never `.px`. */
+    public data class MinHeight(val dimension: Dimension): MediaQuery
+    /** See [MinWidth] - use `.dp` or `.rem`, never `.px`. */
+    public data class MaxHeight(val dimension: Dimension): MediaQuery
+    public data class Update(val value: Option): MediaQuery {
+        public enum class Option { None, Slow, Fast }
+    }
+
+    /**
+     * Checks if the pointer device supports hovering.
+     */
+    public data class Hover(val value: Option): MediaQuery {
+        public enum class Option { None, Hover }
+    }
+    public data class DisplayMode(val value: Option): MediaQuery {
+        public enum class Option { Browser, Fullscreen, MinimalUI, PictureInPicture, Standalone, WindowControlsOverlay }
+    }
+    public data class Pointer(val value: Option): MediaQuery {
+        public enum class Option { None, Coarse, Fine }
+    }
+}

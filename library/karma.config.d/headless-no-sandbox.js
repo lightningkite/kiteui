@@ -4,7 +4,16 @@
 config.customLaunchers = {
     ChromeHeadlessNoSandbox: {
         base: "ChromeHeadless",
-        flags: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+        // --autoplay-policy: without it Chrome keeps every AudioContext suspended until the page
+        // has user activation, which a test has no way to produce. A suspended context's clock
+        // never advances, so no sound ever ends and no `ended` event ever fires - audio behaviour
+        // would be untestable rather than merely silent.
+        flags: [
+            "--no-sandbox",
+            "--disable-gpu",
+            "--disable-dev-shm-usage",
+            "--autoplay-policy=no-user-gesture-required",
+        ],
     },
 };
 config.browsers = ["ChromeHeadlessNoSandbox"];

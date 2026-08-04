@@ -9,8 +9,12 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.ObjCObjectBase
+import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
+import platform.CoreGraphics.CGRectZero
+import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
@@ -33,7 +37,8 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         }
     }
 
-    internal val textField: UITextView = UITextView().apply {
+    // TODO: WrapperView + custom text view seems excessive, but it works
+    internal val textField: HintTextView = HintTextView().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -63,6 +68,10 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
     init {
         delegate.listeners.add {
             textField.informParentOfSizeChange()
+            // UITextView never notifies its delegate for programmatic text changes (only typing),
+            // so the hint's visibility is re-evaluated here rather than solely from the delegate
+            // callback. `content.value = ...` fires this same listener list on programmatic sets.
+            updateHintVisibility()
         }
     }
 
@@ -70,20 +79,30 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         super.nativeApplyTheme(theme)
         textField.textColor = theme.theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.theme.font
+        updateHint()
     }
 
     internal fun updateFont() {
         val textSize = textSize
         val alignment = textField.textAlignment
-        textField.font = fontAndStyle?.let {
+        val font = fontAndStyle?.let {
             it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
         } ?: UIFont.systemFontOfSize(textSize.value)
+        textField.font = font
         textField.textAlignment = alignment
+        textField.hintLabel.font = font
+    }
+
+    private fun updateHintVisibility() {
+        textField.hintLabel.hidden = textField.text.isNotEmpty()
     }
 
     internal fun updateHint() {
-        // TODO: Hint
-//        textField.attributedPlaceholder = hint
+        // UITextView has no native placeholder, so the hint is rendered by an overlay UILabel
+        // (owned by HintTextView) kept aligned with the text container and shown only while empty.
+        textField.hintLabel.text = hint
+        textField.hintLabel.textColor = theme.foreground.closestColor().withAlpha(0.5f).toUiColor()
+        updateHintVisibility()
     }
 
     internal var textSize: Dimension = 1.rem
@@ -194,5 +213,43 @@ private class TextAreaDelegate() : NSObject(), UITextViewDelegateProtocol {
     val listeners = ArrayList<() -> Unit>()
     override fun textViewDidChange(textView: UITextView) {
         listeners.invokeAllSafe()
+    }
+}
+
+/**
+ * A [UITextView] with a hint (placeholder) [UILabel] overlaid on it, since UITextView has no
+ * native placeholder support. The label tracks the text container's inset/padding so its text
+ * lines up with where typed text would begin, and is repositioned whenever the view lays out.
+ */
+internal class HintTextView : UITextView {
+    @ObjCObjectBase.OverrideInit
+    constructor() : super(frame = CGRectZero.readValue(), textContainer = null)
+
+    val hintLabel: UILabel = UILabel().apply {
+        numberOfLines = 0
+        userInteractionEnabled = false
+        hidden = true
+    }
+
+    init {
+        addSubview(hintLabel)
+    }
+
+    override fun layoutSubviews() {
+        super.layoutSubviews()
+        val insetLeft = textContainerInset.useContents { left } + textContainer.lineFragmentPadding
+        val insetTop = textContainerInset.useContents { top }
+        val insetRight = textContainerInset.useContents { right } + textContainer.lineFragmentPadding
+        val insetBottom = textContainerInset.useContents { bottom }
+        bounds.useContents {
+            hintLabel.setFrame(
+                CGRectMake(
+                    insetLeft,
+                    insetTop,
+                    (size.width - insetLeft - insetRight).coerceAtLeast(0.0),
+                    (size.height - insetTop - insetBottom).coerceAtLeast(0.0),
+                )
+            )
+        }
     }
 }

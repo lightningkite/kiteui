@@ -36,6 +36,31 @@ public abstract class KiteUiActivity : AppCompatActivity() {
     public open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
     public var savedInstanceState: Bundle? = null
 
+    /**
+     * Records where each gesture starts, in screen coordinates, for [lastTouchDownOnScreen].
+     *
+     * The activity is the only place that sees a touch before anything else: a `View`'s own
+     * `OnTouchListener` runs *after* child dispatch, so any child that consumes the event - an
+     * ordinary text view will - hides it from the container. Drag-and-drop needs the starting point
+     * to anchor its shadow, and a long press carries no coordinates of its own.
+     */
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (ev.actionMasked == android.view.MotionEvent.ACTION_DOWN) {
+            lastTouchDownOnScreen = android.graphics.Point(ev.rawX.toInt(), ev.rawY.toInt())
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    public companion object {
+        /**
+         * Screen coordinates of the most recent gesture start, or null before any touch.
+         *
+         * Deliberately process-wide rather than per-activity: there is only ever one gesture in
+         * flight, and the drag shadow is built from a `View` that has no route back to its activity.
+         */
+        internal var lastTouchDownOnScreen: android.graphics.Point? = null
+    }
+
     public abstract val mainNavigator : PageNavigator
 
     public lateinit var root: Element

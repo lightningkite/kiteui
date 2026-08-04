@@ -127,7 +127,6 @@ public object AiDriver {
             }
             append(element::class.simpleName)
             element.driverValue?.let { append(" = \"$it\"") }
-//            element.htmlElementTag?.let { append(" ($it)") } TODO: htmlElementTag
             if (!element.shown) append(" (hidden)")
             else if (!element.visible) append(" (invisible)")
             if (options.includeActions) element.driverActions.keys

@@ -4,8 +4,6 @@ import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.direct.col
 import kotlin.math.abs
 
 @Deprecated("Call directly instead", ReplaceWith("RecyclerViewPlacerVerticalGrid(columns, ratio)"))
@@ -152,23 +150,6 @@ public class RecyclerViewPlacerVerticalGrid(
             }
             currentY -= max + gap
             currentIndex -= columns
-        }
-    }
-
-    override fun prebake(
-        prebakeRange: IntRange,
-        dataRange: IntRange,
-        writer: ViewWriter,
-        render: ViewWriter.(Int) -> Unit
-    ): Unit = with(writer) {
-        if (columns == 1) {
-            col {
-                prebakeRange.forEach {
-                    render(it)
-                }
-            }
-        } else {
-            TODO()
         }
     }
 }

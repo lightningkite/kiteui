@@ -13,6 +13,9 @@ import com.lightningkite.reactive.context.*
 import kotlinx.cinterop.*
 import platform.UIKit.UIAccessibilityTraitHeader
 import platform.UIKit.UIControlEventValueChanged
+import platform.UIKit.UIGestureRecognizer
+import platform.UIKit.UIGestureRecognizerState
+import platform.UIKit.UIGestureRecognizerStateBegan
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.UIRefreshControl
 import platform.UIKit.UITapGestureRecognizer
@@ -21,22 +24,53 @@ import platform.UIKit.accessibilityTraits
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
+/**
+ * Backs [hintPopover]'s long-press gesture. Exposed with `internal` visibility specifically so
+ * tests can invoke [handleState] directly as an ordinary Kotlin call instead of routing through
+ * `NSObject.performSelector` (which segfaults for void-returning selectors in Kotlin/Native: it is
+ * typed to return `id` and Kotlin tries to retain whatever garbage happens to be in the return
+ * register) - or, worse, trying to force a real `UIGestureRecognizerState` transition on a fake
+ * recognizer, which UIKit's internal state machine silently ignores outside its own touch-delivery
+ * pipeline.
+ */
+internal class HintPopoverTrigger(
+    private val element: Element,
+    private val preferredDirection: PopoverPreferredDirection,
+    private val setup: ViewWriter.() -> Unit,
+) : NSObject() {
+    @ObjCAction
+    fun longPress(sender: UIGestureRecognizer) = handleState(sender.state)
+
+    internal fun handleState(state: UIGestureRecognizerState) {
+        // UILongPressGestureRecognizer is continuous and reports every state transition
+        // (began/changed/ended) for as long as the finger is down; only open on began so a
+        // single long-press opens a single popover instead of stacking one per transition.
+        if (state == UIGestureRecognizerStateBegan) {
+            element.openPopover(preferredDirection, setup)
+        }
+    }
+}
+
 public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ElementWriter {
     return beforeSetup {
-        fun openDialog() {
-            // TODO: implement popover
-            // toast(inner = setup)
-        }
-
-        val actionHolder = object : NSObject() {
-            @ObjCAction
-            fun eventHandler() = openDialog()
-        }
-        val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
+        // Reuses the same in-tree overlay popover MenuButton.opensMenu() and openPopover.ios.kt are
+        // built on (Element.openPopover) rather than a UIPopoverPresentationController, so it gets
+        // the same theming, positioning against preferredDirection, and tap-outside-to-dismiss
+        // (via dismissBackground -> context.closePopovers()) for free.
+        val trigger = HintPopoverTrigger(this, preferredDirection, setup)
+        val rec = UILongPressGestureRecognizer(trigger, sel_registerName("longPress:"))
+        // Containers turn interaction off in their initialisers (see LinearLayout and FlexLayout)
+        // so they do not intercept touches meant for their children. A gesture recognizer on a view
+        // in that state is never sent anything, so attaching one without this line leaves the
+        // modifier completely inert - it fails silently, with the recognizer correctly installed.
+        native.userInteractionEnabled = true
         native.addGestureRecognizer(rec)
+        // UIGestureRecognizer does not retain its target; hold a strong ref for the element's
+        // lifetime (same trick as the UIRefreshControl target below).
+        underlyingNativeElement.tag = trigger
     }
 }
 
@@ -125,6 +159,19 @@ public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints:
         }
     }
 }
+
+/**
+ * The web target hands this to CSS; iOS has to evaluate it, so it becomes an ordinary reactive
+ * condition over [AppState.windowInfo] and re-runs whenever the window changes - on rotation, on
+ * split view, on a resized iPad window.
+ *
+ * The initial value is computed up front rather than defaulting to hidden, so an element that
+ * should be visible does not flash out of existence on the first frame.
+ */
+public actual fun ElementWriter.CanAddShownWhen.shownForQuery(query: MediaQuery): ElementWriter.CanAddSizing =
+    shownWhen(default = query.matches(AppState.windowInfo.value, touchNativeDeviceTraits)) {
+        query.matches(AppState.windowInfo(), touchNativeDeviceTraits)
+    }
 
 // End
 public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {

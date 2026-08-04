@@ -23,6 +23,21 @@ import com.lightningkite.reactive.core.*
 object WebViewPermissionPage : Page {
     override val title: Reactive<String> get() = Constant("WebView Permissions")
 
+    /**
+     * ~62ms of silent 8kHz mono PCM, inline.
+     *
+     * The autoplay probe used to point a `<video>` at a third-party URL, which fails on every
+     * platform for a different reason: inline HTML is given an opaque origin by design, and an
+     * opaque-origin document cannot fetch cross-origin media on Android, while on web the same
+     * request is refused whenever the page is cross-origin isolated. Embedding the clip sidesteps
+     * all of it - and the WAV's sample data is entirely zeroes, so all but the 45-byte header
+     * base64-encodes to a run of 'A', which is why this is spelt as a header plus a repeat rather
+     * than 1,392 opaque characters.
+     */
+    private val SILENT_WAV_DATA_URI: String =
+        "data:audio/wav;base64,UklGRgwEAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YegDAAAA" +
+                "A".repeat(1332)
+
     /** Pages that make each capability observable, so the verdict is what you see rather than a flag. */
     private val probes: List<Triple<String, WebViewPermission, String>> = listOf(
         Triple(
@@ -60,20 +75,47 @@ object WebViewPermissionPage : Page {
             "Autoplay",
             WebViewPermission.Autoplay,
             """<body style="font:16px sans-serif;padding:1rem">
-                 <p>Granted: the clip below starts on its own. Denied: it waits for a tap.</p>
-                 <video autoplay muted loop playsinline width="240"
-                        src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"></video>
-                 <p><small>Needs network. A clip that fails to load looks the same in both columns.</small></p>
+                 <p id="out">waiting...</p>
+                 <audio id="clip" src="$SILENT_WAV_DATA_URI"></audio>
+                 <script>
+                   var out = document.getElementById('out'), clip = document.getElementById('clip');
+                   function verdict(text) { out.textContent = text }
+                   var started = clip.play();
+                   if (started && started.then) {
+                     started.then(function () { verdict('GRANTED - playback started with no gesture') })
+                            .catch(function (e) { verdict('DENIED - ' + (e && e.name ? e.name : e)) });
+                   } else {
+                     setTimeout(function () {
+                       verdict(clip.paused ? 'DENIED - still paused' : 'GRANTED - playback started with no gesture');
+                     }, 500);
+                   }
+                 </script>
+                 <p><small>The clip is silent by design - the verdict above is the result, not what you
+                 hear. It is embedded rather than fetched, so this works offline and needs no
+                 third-party site to stay up.</small></p>
                </body>""",
         ),
         Triple(
             "Downloads",
             WebViewPermission.Downloads,
+            // Two links, because no single one can prove the rule on every platform.
+            //
+            // The data: link is the one web can actually judge. The `download` attribute is only
+            // honoured for same-origin, blob: and data: URLs, and inline HTML is given an opaque
+            // origin by design - so a cross-origin target is ignored and the link merely navigates
+            // in *both* columns, which is what the https link below used to do on its own. With a
+            // data: URL the attribute takes effect, so allow-downloads is what decides.
+            //
+            // The https link is the one Android and iOS judge: there a permitted download leaves
+            // the view for the system browser, and the URL is scheme-checked on the way out.
             """<body style="font:16px sans-serif;padding:1rem">
-                 <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" download>Download a PDF</a>
-                 <p><b>Android only.</b> Granted: the system browser takes over. Denied: nothing happens.
-                 On iOS WebKit renders a PDF itself, so the download path is never entered; on web a
-                 cross-origin <code>download</code> just navigates.</p>
+                 <p><a href="data:text/plain;charset=utf-8,KiteUI%20download%20test" download="kiteui-download-test.txt">Download a text file (data:)</a><br>
+                 <small><b>Web.</b> Granted: the file downloads. Denied: the browser blocks it and logs to the console.</small></p>
+                 <p><a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" download>Download a PDF (https)</a><br>
+                 <small><b>Android.</b> Granted: the system browser takes over. Denied: nothing happens.
+                 On iOS WebKit renders a PDF itself, so the download path is never entered. On web this
+                 one is cross-origin, so <code>download</code> is ignored and it just navigates - use the
+                 data: link above there.</small></p>
                </body>""",
         ),
     )
@@ -112,7 +154,7 @@ object WebViewPermissionPage : Page {
                     val base = if (permission == WebViewPermission.Scripts) emptySet()
                     else setOf(WebViewPermission.Scripts)
 
-                    rowCollapsingToColumn(40.rem) {
+                    rowCollapsingToColumn(45.rem) {
                         expanding.col {
                             subtext("Denied")
                             sizeConstraints(height = 14.rem).webView {
@@ -141,13 +183,13 @@ object WebViewPermissionPage : Page {
                     rowCollapsingToColumn(40.rem) {
                         expanding.col {
                             subtext("Denied")
-                            sizeConstraints(height = 18.rem).webView {
+                            sizeConstraints(height = 32.rem).webView {
                                 load(WebViewSource.Url(CAPTURE_PROBE_URL), setOf(WebViewPermission.Scripts))
                             }
                         }
                         expanding.col {
                             subtext("Granted")
-                            sizeConstraints(height = 18.rem).webView {
+                            sizeConstraints(height = 32.rem).webView {
                                 load(
                                     WebViewSource.Url(CAPTURE_PROBE_URL),
                                     setOf(WebViewPermission.Scripts, permission),
