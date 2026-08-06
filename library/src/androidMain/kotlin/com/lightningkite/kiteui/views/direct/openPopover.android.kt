@@ -52,7 +52,7 @@ public actual fun Element.openPopover(
     }
 }
 
-fun Frame.configurePopoverLayout(
+public fun Frame.configurePopoverLayout(
     dismissBackground: Element,
     anchorView: android.view.View,
     preferredDirection: PopoverPreferredDirection
