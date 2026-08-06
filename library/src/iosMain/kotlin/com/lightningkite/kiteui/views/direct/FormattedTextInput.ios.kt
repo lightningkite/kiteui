@@ -9,10 +9,11 @@ import com.lightningkite.reactive.core.*
 import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + formattedTextInputDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + formattedTextInputDriverActions()
     override val native: WrapperView = WrapperView()
     internal val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo

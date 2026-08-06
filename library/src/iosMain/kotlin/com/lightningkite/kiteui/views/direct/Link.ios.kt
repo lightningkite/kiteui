@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.mainPageNavigator
+import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElementWithSecondaryAction
 import com.lightningkite.reactive.context.onRemove
@@ -11,9 +12,10 @@ import platform.UIKit.UIAccessibilityTraitLink
 import platform.UIKit.UIControl
 import platform.UIKit.accessibilityTraits
 import platform.UIKit.setAccessibilityTraits
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class Link actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + linkDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + linkDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
 

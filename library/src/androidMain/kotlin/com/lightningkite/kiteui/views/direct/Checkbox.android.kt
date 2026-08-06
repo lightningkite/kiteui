@@ -5,17 +5,19 @@ import android.content.res.ColorStateList
 import androidx.core.view.ViewCompat
 import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.MutableReactiveValue
 import android.widget.CheckBox as AndroidCheckBox
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class Checkbox actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     actual override val underlyingNativeElement: Checkbox get() = this
 
     override val driverValue: String? get() = checkboxDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + checkboxDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + checkboxDriverActions()
     override val native: AndroidCheckBox = AndroidCheckBox(context.activity)
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {

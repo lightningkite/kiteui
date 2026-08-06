@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.MutableReactiveValue
@@ -8,10 +9,11 @@ import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
 import platform.UIKit.isAccessibilityElement
 import platform.UIKit.setIsAccessibilityElement
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class Switch actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + switchDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + switchDriverActions()
     override val native: UISwitch = UISwitch()
     override val control: UIControl get() = native
     init {

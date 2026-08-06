@@ -7,11 +7,12 @@ import android.widget.AutoCompleteTextView as AndroidAutocompleteTextView
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class AutoCompleteTextField actual constructor(context: ElementContext): NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + autoCompleteDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + autoCompleteDriverActions()
     override val native: AndroidAutocompleteTextView = AndroidAutocompleteTextView(context.activity)
     public actual val content: MutableReactiveValue<String> = native.contentProperty()
 

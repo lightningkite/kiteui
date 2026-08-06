@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
+import com.lightningkite.kiteui.views.AiDriver
 
 /**
  * Base interface for all UI elements in KiteUI.
@@ -472,7 +473,7 @@ public interface Element : KiteUiCoroutineScopeHelpers {
     public var describedBy: Element?
 
     public val driverValue: String? get() = null
-    public val driverActions: Map<String, suspend (List<String>) -> String> get() = AiDriver.Defaults.defaultDriverActions(this)
+    public val driverActions: AiDriver.Actions get() = AiDriver.Defaults.defaultDriverActions(this)
     public fun driverDisplay(options: DriverSnapshotOptions): String = AiDriver.Defaults.defaultDriverDisplay(this, options)
 
     override fun toString(): String

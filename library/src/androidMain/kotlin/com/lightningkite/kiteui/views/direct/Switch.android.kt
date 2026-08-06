@@ -8,10 +8,11 @@ import androidx.core.view.ViewCompat
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class Switch actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + switchDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + switchDriverActions()
     override val native: android.widget.Switch = android.widget.Switch(context.activity)
 
     @RequiresApi(Build.VERSION_CODES.M)

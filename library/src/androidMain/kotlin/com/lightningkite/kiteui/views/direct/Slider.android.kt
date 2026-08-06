@@ -5,10 +5,11 @@ import android.widget.SeekBar
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + sliderDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + sliderDriverActions()
     private val nativeSeekBar = SeekBar(context.activity)
     override val native: SeekBar = nativeSeekBar
 

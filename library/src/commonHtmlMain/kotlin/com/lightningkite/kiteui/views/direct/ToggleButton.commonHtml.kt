@@ -6,11 +6,12 @@ import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + toggleDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + toggleDriverActions()
     internal val input: FutureElement = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
@@ -68,9 +69,11 @@ public actual class ToggleButton actual constructor(context: ElementContext) : N
     }
 
     override var enabled: Boolean
-        get() = input.attributes.disabled != true
+        get() = (native.attributes.disabled != true || input.attributes.disabled != true)
         set(value) {
             input.attributes.disabled = !value
+            input.setAttribute("aria-disabled", if (value) null else "true")
+            native.attributes.disabled = !value
             native.setAttribute("aria-disabled", if (value) null else "true")
         }
 }

@@ -6,10 +6,11 @@ import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textAreaDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + textAreaDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + textAreaDriverActions()
     init {
         native.tag = "div"
         native.classes.add("textarea-container")

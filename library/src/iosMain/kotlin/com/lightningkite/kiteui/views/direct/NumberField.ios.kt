@@ -15,11 +15,12 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + numberInputDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + numberInputDriverActions()
     override val native: WrapperView = WrapperView()
     internal val trigger: NSObject = object : NSObject() {
         @ObjCAction

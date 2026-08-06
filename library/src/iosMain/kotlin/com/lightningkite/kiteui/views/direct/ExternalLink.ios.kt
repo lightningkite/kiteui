@@ -1,21 +1,23 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
+import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElementWithSecondaryAction
 import com.lightningkite.kiteui.views.NativeInteractiveContainerElement
 import com.lightningkite.reactive.context.onRemove
 import kotlinx.coroutines.launch
-import com.lightningkite.kiteui.Log
 import platform.Foundation.NSURL
 import platform.UIKit.UIAccessibilityTraitLink
 import platform.UIKit.UIApplication
 import platform.UIKit.UIControl
 import platform.UIKit.accessibilityTraits
 import platform.UIKit.setAccessibilityTraits
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class ExternalLink actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + externalLinkDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + externalLinkDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
 

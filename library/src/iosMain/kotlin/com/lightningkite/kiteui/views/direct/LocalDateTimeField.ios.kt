@@ -20,11 +20,12 @@ import platform.Foundation.localTimeZone
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localDateDriverActions()
     override val native: WrapperView = WrapperView()
     internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
@@ -102,7 +103,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
 
 public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localTimeDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localTimeDriverActions()
     override val native: WrapperView = WrapperView()
     internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
@@ -177,7 +178,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
 
 public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateTimeDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localDateTimeDriverActions()
     override val native: WrapperView = WrapperView()
     internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
