@@ -117,7 +117,8 @@ public fun Theme.Companion.flat2(
             it.withBack(
                 cascading = false,
                 cornerRadii = CornerRadii.AdaptiveToSpacing(0.px),
-                padding = Edges(0.px)
+                padding = Edges(0.px),
+                gap = 0.px,
             )
         },
         OuterSemantic.override { it.withBack(cascading = false, gap = 1.px, padding = Edges.ZERO, background = Color.gray(0.3f)) },

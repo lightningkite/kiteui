@@ -44,29 +44,29 @@ fun ViewWriter.app(navigator: PageNavigator) {
 
     Element.Debugger.leakDetect = true
     val rootView = produceExactlyOneElement {
-        appNav(navigator) {
-            appName = "KiteUI Sample App"
-
-            ::navItems {
-                listOf(
-                    NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-                    NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
-                    NavLink(title = { "Material Icons" }, icon = { Icon.search }) { { MaterialIconLibraryPage } },
-                    NavLink(title = { "Shorthand Builder" }, icon = { Icon.list }) { { ShorthandBuilderPage } },
-                    NavLink(title = { "Test Pages" }, icon = { Icon.home }) { { RootPage } },
-                )
-            }
-
-            ::exists {
-                navigator.currentPage() !is UseFullPage
-            }
-
-            actions = listOf(
-                NavLink(
-                    title = { "Search" },
-                    icon = { Icon.search },
-                    destination = { { DocSearchPage } }
-                ),
+        appBase(navigator) {
+            navWebStyle(
+                appLogo = Icon.star.toImageSource(Color.green),
+                appName = "KiteUI Example",
+                showNav = { navigator.currentPage() !is UseFullPage },
+                menuItems = {
+                    listOf(
+                        NavElement2.Link(title = "Home", icon = Icon.home) { HomePage() },
+                        NavElement2.Link(title = "Documentation", icon = Icon.list) { DocSearchPage },
+                        NavElement2.Link(title = "Material Icons", icon = Icon.search) { MaterialIconLibraryPage },
+                        NavElement2.Link(title = "Shorthand Builder", icon = Icon.list) { ShorthandBuilderPage },
+                        NavElement2.Link(title = "Test Pages", icon = Icon.home) { RootPage },
+                    )
+                },
+                actionItems = {
+                    listOf(
+                        NavElement2.Link(
+                            title = "Search",
+                            icon = Icon.search,
+                            to = { DocSearchPage }
+                        ),
+                    )
+                }
             )
         }
     }

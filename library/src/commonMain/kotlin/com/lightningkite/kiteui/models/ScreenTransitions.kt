@@ -27,6 +27,16 @@ public data class ScreenTransition(
             entryTransform = Transformation(translationX = -1.0),
             exitTransform = Transformation(translationX = 1.0),
         )
+        public val FromLeft: ScreenTransition = ScreenTransition(
+            "FromLeft",
+            entryTransform = Transformation(translationX = -1.0),
+            exitTransform = Transformation(translationX = -1.0),
+        )
+        public val FromRight: ScreenTransition = ScreenTransition(
+            "FromRight",
+            entryTransform = Transformation(translationX = 1.0),
+            exitTransform = Transformation(translationX = 1.0),
+        )
         public val PullUp: ScreenTransition = ScreenTransition(
             "PullUp",
             entryTransform = Transformation(translationY = 1.0),
