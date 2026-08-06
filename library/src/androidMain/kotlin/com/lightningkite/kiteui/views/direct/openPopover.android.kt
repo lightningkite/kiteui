@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.view.ViewGroup
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.Element
-import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.closePopovers
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.native
@@ -12,6 +12,7 @@ import com.lightningkite.kiteui.views.themed
 
 public actual fun Element.openPopover(
     preferredDirection: PopoverPreferredDirection,
+    anchor: Element?,
     createMenu: Frame.() -> Unit
 ) {
     var willRemove: Element? = null
@@ -39,27 +40,44 @@ public actual fun Element.openPopover(
                 context.closePopovers()
             }
 
-            atTopStart.themed(PopoverSemantic).frame {
-                this@dismissBackground.native.apply {
-                    clipChildren = false
-                    clipToPadding = false
-                }
-                this@dismissBackground.native.addOnLayoutChangeListener { dismissBackground, _, _, _, _, _, _, _, _ ->
-                    val overlayContainer = this@frame.native
-                    val anchor = this@openPopover.native
-
-                    val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
-                    val offset = preferredDirection.calculatePopoverOffset(
-                        anchor.getBoundariesInWindow(),
-                        overlayBoundsInWindow,
-                        dismissBackground.getBoundariesInWindow()
-                    )
-
-                    overlayContainer.offsetLeftAndRight((offset.first - overlayBoundsInWindow.left).toInt())
-                    overlayContainer.offsetTopAndBottom((offset.second - overlayBoundsInWindow.top).toInt())
-                }
+            themed(PopoverSemantic).frame {
+                configurePopoverLayout(
+                    dismissBackground = this@dismissBackground,
+                    anchorView = (anchor ?: this@openPopover).native,
+                    preferredDirection = preferredDirection
+                )
                 createMenu()
             }
         }
+    }
+}
+
+public fun Frame.configurePopoverLayout(
+    dismissBackground: Element,
+    anchorView: android.view.View,
+    preferredDirection: PopoverPreferredDirection
+) {
+    native.layoutParams = android.widget.FrameLayout.LayoutParams(
+        ViewGroup.LayoutParams.WRAP_CONTENT,
+        ViewGroup.LayoutParams.WRAP_CONTENT
+    ).apply {
+        gravity = android.view.Gravity.TOP or android.view.Gravity.LEFT
+    }
+    (dismissBackground.native as? ViewGroup)?.apply {
+        clipChildren = false
+        setClipToPadding(false)
+    }
+    dismissBackground.native.addOnLayoutChangeListener { dismissBackgroundView, _, _, _, _, _, _, _, _ ->
+        val overlayContainer = this.native
+
+        val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
+        val offset = preferredDirection.calculatePopoverOffset(
+            anchorView.getBoundariesInWindow(),
+            overlayBoundsInWindow,
+            dismissBackgroundView.getBoundariesInWindow()
+        )
+
+        overlayContainer.offsetLeftAndRight((offset.first - overlayBoundsInWindow.left).toInt())
+        overlayContainer.offsetTopAndBottom((offset.second - overlayBoundsInWindow.top).toInt())
     }
 }

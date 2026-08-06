@@ -6,10 +6,11 @@ import com.lightningkite.kiteui.views.l2.overlayFrame
 
 public actual fun Element.openPopover(
     preferredDirection: PopoverPreferredDirection,
+    anchor: Element?,
     createMenu: Frame.() -> Unit
 ) {
     var willRemove: Element? = null
-    val f= overlayFrame!!
+    val f = overlayFrame!!
     f.popoverWriter {
         willRemove?.let { f.removeChild(it) }
         willRemove = null
@@ -31,7 +32,7 @@ public actual fun Element.openPopover(
                     )
                 ).withBack
             }
-            native.anchor = preferredDirection to this@openPopover.native
+            native.anchor = preferredDirection to (anchor ?: this@openPopover).native
             onClick {
                 context.closePopovers()
             }

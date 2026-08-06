@@ -60,6 +60,23 @@ object PopoverTestingPage : Page {
                         }
                     }
                 }
+
+                row {
+                    var anchorTarget: Element? = null
+                    button {
+                        anchorTarget = this
+                        text("Anchor Target")
+                    }
+                    space()
+                    button {
+                        text("Open at Target")
+                        onClick {
+                            openPopover(PopoverPreferredDirection.belowCenter, anchorTarget) {
+                                text("Anchored to Target!")
+                            }
+                        }
+                    }
+                }
             }
             atTopStart.testGrouping()
             atTopCenter.testGrouping()

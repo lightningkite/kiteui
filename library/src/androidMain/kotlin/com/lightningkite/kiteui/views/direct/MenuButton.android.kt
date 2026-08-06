@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.l2.overlayFrame
@@ -44,25 +43,12 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
                     onClick {
                         context.closePopovers()
                     }
-                    atTopStart.themed(PopoverSemantic).frame {
-                        this@dismissBackground.native.apply {
-                            clipChildren = false
-                            clipToPadding = false
-                        }
-                        this@dismissBackground.native.addOnLayoutChangeListener { dismissBackground, _, _, _, _, _, _, _, _ ->
-                            val overlayContainer = this@frame.native
-                            val anchor = this@MenuButton.native
-
-                            val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
-                            val offset = this@MenuButton.preferredDirection.calculatePopoverOffset(
-                                anchor.getBoundariesInWindow(),
-                                overlayBoundsInWindow,
-                                dismissBackground.getBoundariesInWindow()
-                            )
-
-                            overlayContainer.offsetLeftAndRight((offset.first - overlayBoundsInWindow.left).toInt())
-                            overlayContainer.offsetTopAndBottom((offset.second - overlayBoundsInWindow.top).toInt())
-                        }
+                    themed(PopoverSemantic).frame {
+                        configurePopoverLayout(
+                            dismissBackground = this@dismissBackground,
+                            anchorView = this@MenuButton.native,
+                            preferredDirection = this@MenuButton.preferredDirection
+                        )
                         createMenu()
                     }
                 }

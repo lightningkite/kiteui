@@ -22,8 +22,8 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-public actual class FloatingInfoHolder actual constructor(public val source: Element) {
-    internal val maxDist: Int = 32
+public actual class FloatingInfoHolder actual constructor(public val source: Element, public val anchor: Element?) {
+    internal val maxDist = 32
     internal var blockView: Element? = null
     internal var closeView: Element? = null
     internal var existingView: Element? = null
@@ -112,7 +112,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                 fun reposition() {
                     native.onElement { e ->
                         e as HTMLElement
-                        val sourcePosition = source.native.element!!.getBoundingClientRect()
+                        val sourcePosition = (anchor ?: source).native.element!!.getBoundingClientRect()
                         val screen = document.body!!.getBoundingClientRect()
                         val size = e.getBoundingClientRect()
                         e.style.removeProperty("top")
@@ -286,7 +286,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                 val mouseMove = { it: Event ->
                     it as MouseEvent
                     if (blockView == null && context.popoverKeepOpen <= 0) {
-                        val clientRect = (source.native.element as HTMLElement).getBoundingClientRect()
+                        val clientRect = ((anchor ?: source).native.element as HTMLElement).getBoundingClientRect()
                         val popUpRect = (native.element as HTMLElement).getBoundingClientRect()
                         val popUpDist = maxOf(
                             it.x - popUpRect.right,

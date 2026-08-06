@@ -369,7 +369,7 @@ public actual fun ElementWriter.hintPopover(
             // so it gets the same theming, positioning against preferredDirection, and
             // tap-outside-to-dismiss (via dismissBackground -> context.closePopovers()) for free -
             // no separate window token to leak.
-            openPopover(preferredDirection, setup)
+            openPopover(preferredDirection, createMenu = setup)
             true
         }
     }
