@@ -16,8 +16,8 @@ export default defineConfig({
     root: "kotlin",
     server: {
         host: true,
-        port: 8000,
-        allowedHosts: ["localhost:8000"],
+        port: 5173,
+        allowedHosts: ["localhost:5173"],
         headers: crossOriginIsolated
             ? {
                 "Cross-Origin-Opener-Policy": "same-origin",

@@ -2,13 +2,12 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.AutoComplete
 import com.lightningkite.kiteui.models.KeyboardHints
-import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.DriverActionException
 import com.lightningkite.kiteui.views.driverChildren
 import com.lightningkite.kiteui.views.driverSnapshot
 import com.lightningkite.kiteui.views.l2.overlayFrame
-import kotlinx.datetime.*
 import com.lightningkite.kiteui.views.AiDriver
+import kotlinx.datetime.*
 
 // Password/new-password fields must never surface their plaintext through the driver
 // snapshot (used by test automation and MCP-connected agents), since that would defeat

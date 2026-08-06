@@ -574,18 +574,17 @@ public data class PopoverPreferredDirection(
     public companion object {
         public val belowRight: PopoverPreferredDirection = PopoverPreferredDirection(false, after = true, align = Align.End)
         public val belowLeft: PopoverPreferredDirection = PopoverPreferredDirection(false, after = true, align = Align.Start)
-        public val belowCenter: PopoverPreferredDirection =
-            PopoverPreferredDirection(false, after = true, align = Align.Center)
+        public val belowCenter: PopoverPreferredDirection = PopoverPreferredDirection(false, after = true, align = Align.Center)
         public val aboveRight: PopoverPreferredDirection = PopoverPreferredDirection(false, after = false, align = Align.End)
         public val aboveLeft: PopoverPreferredDirection = PopoverPreferredDirection(false, after = false, align = Align.Start)
-        public val aboveCenter: PopoverPreferredDirection =
-            PopoverPreferredDirection(false, after = false, align = Align.Center)
+        public val aboveCenter: PopoverPreferredDirection = PopoverPreferredDirection(false, after = false, align = Align.Center)
         public val rightBottom: PopoverPreferredDirection = PopoverPreferredDirection(true, after = true, align = Align.End)
         public val rightTop: PopoverPreferredDirection = PopoverPreferredDirection(true, after = true, align = Align.Start)
         public val rightCenter: PopoverPreferredDirection = PopoverPreferredDirection(true, after = true, align = Align.Center)
         public val leftBottom: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.End)
         public val leftTop: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Start)
         public val leftCenter: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Center)
+
         public val all: List<PopoverPreferredDirection> = listOf(
             belowRight,
             belowLeft,
