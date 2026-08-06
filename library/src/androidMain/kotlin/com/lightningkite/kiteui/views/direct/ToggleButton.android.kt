@@ -6,11 +6,12 @@ import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 @OptIn(ExperimentalKiteUi::class)
 public actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + toggleDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + toggleDriverActions()
     override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener { checkedProp.value = !checkedProp.value }

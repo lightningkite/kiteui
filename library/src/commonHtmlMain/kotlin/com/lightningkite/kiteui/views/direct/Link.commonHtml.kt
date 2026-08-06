@@ -6,10 +6,11 @@ import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class Link actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + linkDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + linkDriverActions()
     override fun nativeSetAction(action: Action?) {
         native.setAttribute("aria-label", accessibleLabel ?: action?.title)
     }

@@ -11,10 +11,11 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import kotlinx.datetime.*
 import kotlin.time.Clock
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateTimeDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localDateTimeDriverActions()
     private val property: Signal<LocalDateTime?> = Signal(null)
     public actual val content: MutableReactiveValue<LocalDateTime?> = property
     

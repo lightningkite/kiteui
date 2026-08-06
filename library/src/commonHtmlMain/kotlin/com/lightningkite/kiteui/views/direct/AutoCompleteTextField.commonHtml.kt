@@ -5,12 +5,13 @@ import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 private var autoCompleteDatalistIdCounter = 0
 
 public actual class AutoCompleteTextField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = autoCompleteDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + autoCompleteDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + autoCompleteDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")

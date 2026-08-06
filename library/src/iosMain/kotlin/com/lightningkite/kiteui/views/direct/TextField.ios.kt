@@ -13,11 +13,12 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + textInputDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + textInputDriverActions()
 
     public companion object {
         public var alwaysToolbar: Boolean = false

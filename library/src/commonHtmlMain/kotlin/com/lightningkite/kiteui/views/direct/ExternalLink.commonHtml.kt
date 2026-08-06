@@ -6,10 +6,11 @@ import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.rel
 import kotlinx.coroutines.launch
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class ExternalLink actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + externalLinkDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + externalLinkDriverActions()
     init {
         themeChoice += ClickableSemantic
         native.tag = "a"

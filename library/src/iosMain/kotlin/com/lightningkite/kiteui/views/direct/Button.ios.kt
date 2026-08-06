@@ -12,10 +12,11 @@ import platform.UIKit.accessibilityLabel
 import platform.UIKit.accessibilityTraits
 import platform.UIKit.setAccessibilityLabel
 import platform.UIKit.setAccessibilityTraits
+import com.lightningkite.kiteui.views.AiDriver
 
 @OptIn(ExperimentalKiteUi::class)
 public actual class Button actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + buttonDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + buttonDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
 

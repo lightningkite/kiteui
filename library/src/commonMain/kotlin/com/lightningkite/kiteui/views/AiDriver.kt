@@ -23,6 +23,8 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 public object AiDriver {
     private val log = LogRoot.tag("AiDriver")
 
+    public typealias Actions = Map<String, suspend (List<String>) -> String>
+
     public fun connect(
         appName: String,
         platform: String = Platform.current.name.lowercase(),
@@ -78,7 +80,7 @@ public object AiDriver {
     }
 
     public object Defaults {
-        public fun defaultDriverActions(element: Element): Map<String, suspend (List<String>) -> String> = buildMap {
+        public fun defaultDriverActions(element: Element): AiDriver.Actions = buildMap {
             put("snapshot") { args -> element.driverSnapshot(parseSnapshotOptions(args.toTypedArray())) }
             put("screenshot") { element.driverScreenshot() }
             put("find") { args -> element.driverFind(args.firstOrNull() ?: "", args.contains("--hidden")) }

@@ -3,12 +3,11 @@ package com.lightningkite.kiteui.views.direct
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.closePopovers
+import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.l2.overlayFrame
-import com.lightningkite.kiteui.views.themed
 
 public actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + menuDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + menuDriverActions()
     override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
