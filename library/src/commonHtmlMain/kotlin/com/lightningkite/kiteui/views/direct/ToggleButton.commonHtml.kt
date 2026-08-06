@@ -68,9 +68,11 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
     }
 
     override var enabled: Boolean
-        get() = input.attributes.disabled != true
+        get() = (native.attributes.disabled != true || input.attributes.disabled != true)
         set(value) {
             input.attributes.disabled = !value
+            input.setAttribute("aria-disabled", if (value) null else "true")
+            native.attributes.disabled = !value
             native.setAttribute("aria-disabled", if (value) null else "true")
         }
 }
