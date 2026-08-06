@@ -7,13 +7,14 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration.Companion.milliseconds
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class Select actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + buildMap {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + buildMap {
         _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
     }
     init {

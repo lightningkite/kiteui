@@ -13,11 +13,12 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import kotlinx.datetime.*
 import kotlin.time.Clock
+import com.lightningkite.kiteui.views.AiDriver
 
 @OptIn(ExperimentalKiteUi::class)
 public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localDateDriverActions()
     private val property: Signal<LocalDate?> = Signal(null)
     public actual val content: MutableReactiveValue<LocalDate?> = property
     public actual var range: ClosedRange<LocalDate>? = null

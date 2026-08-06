@@ -18,11 +18,12 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import com.lightningkite.kiteui.views.AiDriver
 
 @OptIn(ExperimentalKiteUi::class)
 public actual class TextArea actual constructor(context: ElementContext) : NativeElement(context), ElementWithAction {
     override val driverValue: String? get() = textAreaDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super<NativeElement>.driverActions + textAreaDriverActions()
+    override val driverActions: AiDriver.Actions get() = super<NativeElement>.driverActions + textAreaDriverActions()
     override val native: WrapperView = WrapperView()
     private val delegate = TextAreaDelegate()
 

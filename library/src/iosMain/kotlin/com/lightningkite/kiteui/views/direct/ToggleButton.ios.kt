@@ -12,11 +12,12 @@ import platform.UIKit.accessibilityTraits
 import platform.UIKit.accessibilityValue
 import platform.UIKit.setAccessibilityTraits
 import platform.UIKit.setAccessibilityValue
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + toggleDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + toggleDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
 

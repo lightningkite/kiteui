@@ -5,10 +5,11 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import kotlinx.datetime.*
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateTimeDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localDateTimeDriverActions()
     public companion object {
         internal val charCount: Int = "2024-06-01T08:30".length
     }
@@ -72,7 +73,7 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
 
 public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localDateDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localDateDriverActions()
     public companion object {
         internal val charCount: Int = "2024-06-01".length
     }
@@ -137,7 +138,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
 
 public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + localTimeDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localTimeDriverActions()
     public companion object {
         internal val charCount: Int = "08:30".length
     }

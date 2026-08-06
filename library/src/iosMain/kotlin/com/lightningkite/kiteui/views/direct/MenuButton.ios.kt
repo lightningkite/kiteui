@@ -12,10 +12,11 @@ import platform.UIKit.accessibilityHint
 import platform.UIKit.accessibilityTraits
 import platform.UIKit.setAccessibilityHint
 import platform.UIKit.setAccessibilityTraits
+import com.lightningkite.kiteui.views.AiDriver
 
 public actual class MenuButton actual constructor(context: ElementContext): NativeInteractiveContainerElement(context) {
     private var _openMenu: (() -> Unit)? = null
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + menuDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + menuDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
     init {

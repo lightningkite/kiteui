@@ -14,13 +14,14 @@ import platform.UIKit.isAccessibilityElement
 import platform.UIKit.setAccessibilityTraits
 import platform.UIKit.setAccessibilityValue
 import platform.UIKit.setIsAccessibilityElement
+import com.lightningkite.kiteui.views.AiDriver
 
 
 public actual class RadioButton actual constructor(context: ElementContext) : NativeContainerElementWithAction(context) {
     actual override val underlyingNativeElement: RadioButton get() = this
 
     override val driverValue: String? get() = radioDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + radioDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + radioDriverActions()
     override val native: WrapperView = WrapperView()    // Todo: Unneeded wrapper?
     internal val button: FrameLayoutButton = FrameLayoutButton()
     override val addChildTarget: FrameLayoutButton get() = button
