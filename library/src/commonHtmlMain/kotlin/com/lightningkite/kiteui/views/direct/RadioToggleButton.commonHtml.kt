@@ -9,7 +9,7 @@ import com.lightningkite.reactive.core.*
 
 public actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = radioToggleDriverValue()
-    override val driverActions get() = super.driverActions + radioToggleDriverActions()
+    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + radioToggleDriverActions()
 
     internal val input = FutureElement().apply {
         themeChoice += ClickableSemantic
