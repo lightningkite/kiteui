@@ -9,8 +9,9 @@ import com.lightningkite.reactive.core.*
 
 public actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = radioToggleDriverValue()
-    override val driverActions: Map<String, suspend (List<String>) -> String> get() = super.driverActions + radioToggleDriverActions()
-    internal val input: FutureElement = FutureElement().apply {
+    override val driverActions get() = super.driverActions + radioToggleDriverActions()
+
+    internal val input = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
         attributes.type = "radio"
@@ -51,6 +52,15 @@ public actual class RadioToggleButton actual constructor(context: ElementContext
         { attributes.checked == true },
         { value -> attributes.checked = value }
     )
+
+    override var enabled: Boolean
+        get() = (native.attributes.disabled != true || input.attributes.disabled != true)
+        set(value) {
+            input.attributes.disabled = !value
+            input.setAttribute("aria-disabled", if (value) null else "true")
+            native.attributes.disabled = !value
+            native.setAttribute("aria-disabled", if (value) null else "true")
+        }
 
     init {
         native.setAttribute("role", "radio")

@@ -17,6 +17,8 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
 
     override val native: FrameLayout = FrameLayout(context.activity)
 
+    private var currentView: Element? = this.children.firstOrNull()
+
     public companion object {
         internal val swapTimeMakeViewPerformance: PerformanceInfo = PerformanceInfo("swapTimeMakeView")
         internal val swapTimeAddViewsPerformance: PerformanceInfo = PerformanceInfo("swapTimeAddViews")
@@ -27,7 +29,7 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
         createNewView: ViewWriter.() -> Unit,
     ) {
         native.visibility = View.VISIBLE
-        val oldView = this.children.firstOrNull()
+        val oldView = this.currentView
         var newViewHolder: Element? = null
         val writer = object : ViewWriter, CoroutineScope by this {
             override val context: ElementContext
@@ -52,6 +54,7 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
             animationsEnabled = true
         }
         val newView = newViewHolder
+        currentView = newView
         swapTimeAddViewsPerformance {
             newView?.native?.let { native ->
                 native.layoutParams = native.layoutParams?.also {
@@ -62,7 +65,7 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
             oldView?.let { old ->
                 old.animateOut(transition) {
                     removeChild(old)
-                    if (newView == null) native.visibility = View.GONE
+                    if (currentView == null) native.visibility = View.GONE
                 }
             }
             newView?.let { addChild(it) }
