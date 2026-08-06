@@ -53,7 +53,6 @@ public actual class RawVideoView actual constructor(
                     _state.state = ReactiveState.exception(Exception(e))
                 }
             }
-            else -> {}
         }
         native.player!!.prepare()
         val l = object : Player.Listener {

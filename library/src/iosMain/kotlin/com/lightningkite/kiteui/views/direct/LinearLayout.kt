@@ -221,7 +221,9 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
             if (out[index] != null) return@forEachIndexed
             if (it.hidden || it.extensionCollapsed == true) return@forEachIndexed
             val w = it.extensionWeight?.takeUnless { ignoreWeights }?.toDouble() ?: 1.0
-            val available = ((w / totalWeight) * remaining.primary).coerceAtLeast(0.0)
+            // totalWeight is 0 when every weighted child has weight 0; w / totalWeight would be
+            // 0.0 / 0.0 = NaN in that case, so collapse those children to zero size instead.
+            val available = if (totalWeight <= 0f) 0.0 else ((w / totalWeight) * remaining.primary).coerceAtLeast(0.0)
             t.pause()
             val required =
                 it.sizeThatFits2(Size(available, remaining.secondary).objc, it.extensionSizeConstraints).local

@@ -18,6 +18,19 @@ public expect class SoundEffectPool(concurrency: Int = 4) {
 
 public interface PlayingSoundEffect {
     public var volume: Float
+
+    /**
+     * Whether this sound is still going.
+     *
+     * **Android reports pausing and stopping but not a sound reaching its own end**, so it stays
+     * `true` after a clip finishes there. The platform's `SoundPool` exposes no completion callback
+     * of any kind, and there is nothing to poll either. Treat this as "not explicitly stopped"
+     * rather than "still audible" if you need a cross-platform answer; use [AudioSource.load] and
+     * [PlayableAudio.onComplete] where a real end-of-playback signal matters.
+     *
+     * Setting it to `false` pauses or stops on every platform. Setting it back to `true` resumes on
+     * Android but is ignored on web, where a finished source node cannot be restarted.
+     */
     public var isPlaying: Boolean
     public fun stop()
 }

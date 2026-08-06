@@ -213,7 +213,10 @@ class UiTestScope(val backend: UiTestBackend) {
     /** Assert that a view's driver value matches. */
     suspend fun assertValue(target: String, expected: String) {
         val snapshot = snapshot(target)
-        if (!snapshot.contains("= \"$expected\"")) {
+        // The first line of a snapshot is always `target` itself; the remaining lines are
+        // descendants, so checking the full text would match on an unrelated child's value.
+        val ownLine = snapshot.lineSequence().firstOrNull().orEmpty()
+        if (!ownLine.contains("= \"$expected\"")) {
             throw AssertionError("Expected value '$expected' for '$target' but snapshot:\n$snapshot")
         }
     }

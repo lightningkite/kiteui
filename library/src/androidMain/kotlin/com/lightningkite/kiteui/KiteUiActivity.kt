@@ -27,27 +27,39 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.context.onRemove
-import com.lightningkite.reactive.core.ReactiveThreadCheck
 import com.lightningkite.reactive.core.Signal
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.max
 
-// Installs the reactive graph's thread-confinement guard once per process, debug builds only.
-// Guarded by a top-level flag (not per-Activity) since onCreate can run again after process
-// restarts/recreation and installing the hook is a one-time, process-wide concern.
-private var reactiveThreadCheckInstalled = false
-private fun installReactiveThreadCheckOnce() {
-    if (reactiveThreadCheckInstalled) return
-    reactiveThreadCheckInstalled = true
-    if (Build.debug) {
-        ReactiveThreadCheck.currentThread = { Thread.currentThread() }
-    }
-}
-
 public abstract class KiteUiActivity : AppCompatActivity() {
     public open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
     public var savedInstanceState: Bundle? = null
+
+    /**
+     * Records where each gesture starts, in screen coordinates, for [lastTouchDownOnScreen].
+     *
+     * The activity is the only place that sees a touch before anything else: a `View`'s own
+     * `OnTouchListener` runs *after* child dispatch, so any child that consumes the event - an
+     * ordinary text view will - hides it from the container. Drag-and-drop needs the starting point
+     * to anchor its shadow, and a long press carries no coordinates of its own.
+     */
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (ev.actionMasked == android.view.MotionEvent.ACTION_DOWN) {
+            lastTouchDownOnScreen = android.graphics.Point(ev.rawX.toInt(), ev.rawY.toInt())
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    public companion object {
+        /**
+         * Screen coordinates of the most recent gesture start, or null before any touch.
+         *
+         * Deliberately process-wide rather than per-activity: there is only ever one gesture in
+         * flight, and the drag shadow is built from a `View` that has no route back to its activity.
+         */
+        internal var lastTouchDownOnScreen: android.graphics.Point? = null
+    }
 
     public abstract val mainNavigator : PageNavigator
 
@@ -97,10 +109,12 @@ public abstract class KiteUiActivity : AppCompatActivity() {
         )
         AndroidAppContext.applicationCtx = this.applicationContext
         AndroidAppContext.activityCtx = this
-        installReactiveThreadCheckOnce()
 
         savedInstanceState?.getStringArray("navStack")?.let {
+            // If every saved route fails to parse (e.g. renamed/removed in an app update), fall back
+            // to the default route instead of leaving the navigator stack empty.
             mainNavigator.stack.value = it.mapNotNull { mainNavigator.routes.parse(UrlLikePath.fromUrlString(it)) }
+                .ifEmpty { listOf(mainNavigator.routes.fallback) }
         } ?: run {
             mainNavigator.stack.value = (mainNavigator.routes.parse(UrlLikePath(listOf(), mapOf())) ?: mainNavigator.routes.fallback).let(::listOf)
         }
@@ -148,14 +162,24 @@ public abstract class KiteUiActivity : AppCompatActivity() {
         onPermissions.remove(requestCode)
     }
     public data class PermissionResult(val map: Map<String, Int>) {
-        val accepted: Boolean get() = map.values.all { it == PackageManager.PERMISSION_GRANTED }
+        /**
+         * Whether every requested permission came back granted.
+         *
+         * An empty [map] is false, not true. Android delivers empty permission and grant arrays when
+         * it interrupts a request - a rotation, or the user tapping outside the dialog - and treating
+         * that as consent means a caller gating on this fails open. The already-granted shortcut in
+         * [requestPermissions] reports the permissions it checked for exactly this reason, so an
+         * empty map now only ever means "nothing came back".
+         */
+        val accepted: Boolean get() = map.isNotEmpty() && map.values.all { it == PackageManager.PERMISSION_GRANTED }
     }
     public fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit): Int {
         val ungranted = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
         if(ungranted.isEmpty()) {
-            onResult(PermissionResult(mapOf()))
+            // Reports the permissions it checked rather than an empty map - see PermissionResult.accepted.
+            onResult(PermissionResult(permissions.associateWith { PackageManager.PERMISSION_GRANTED }))
             return -1
         }
         val requestCode = currentNum++

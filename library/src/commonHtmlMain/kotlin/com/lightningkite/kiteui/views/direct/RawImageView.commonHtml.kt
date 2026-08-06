@@ -56,7 +56,6 @@ public actual abstract class RawImageViewLike(
             is ImageResource -> context.basePath + value.relativeUrl
             is ImageLocal -> createObjectURL(value.file).also { currentBlobUrl = it }
             is ImageVector -> value.vectorToSvgDataUrl()
-            else -> ""
         }
     }
 }
@@ -99,7 +98,7 @@ public actual class SizelessRawImageView actual constructor(
         native.style.backgroundSize = when(scaleType) {
             ImageScaleType.Fit -> "contain"
             ImageScaleType.Crop -> "cover"
-            ImageScaleType.Stretch -> TODO("Not supported yet")
+            ImageScaleType.Stretch -> "100% 100%"
             ImageScaleType.NoScale -> "auto"
         }
         launch {

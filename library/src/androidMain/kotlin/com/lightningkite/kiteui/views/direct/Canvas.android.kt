@@ -29,8 +29,7 @@ public actual class Canvas actual constructor(context: ElementContext): NativeEl
     }
 }
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-public actual class NCanvas @JvmOverloads constructor(
+public class NCanvas @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -127,7 +126,8 @@ public actual class NCanvas @JvmOverloads constructor(
     private val metrics = context.resources.displayMetrics
     override fun onDraw(canvas: android.graphics.Canvas) {
         super.onDraw(canvas)
-        delegate?.draw(DrawingContext2DImpl(canvas))
+        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        delegate?.draw(DrawingContext2DImpl(canvas, isRtl = isRtl))
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

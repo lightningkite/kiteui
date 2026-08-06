@@ -277,7 +277,7 @@ class ThemeTest: BaseUiTest() {
         assertNotNull(cascadedChange.revert, "cascading copy with an existing revert must propagate it")
         assertEquals(
             Color.red,
-            cascadedChange.revert!!.background.closestColor(),
+            cascadedChange.revert.background.closestColor(),
             "cascading property changes must also be applied to the revert theme"
         )
     }

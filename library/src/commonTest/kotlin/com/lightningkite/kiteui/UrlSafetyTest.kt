@@ -1,0 +1,82 @@
+package com.lightningkite.kiteui
+
+import com.lightningkite.kiteui.utils.isSafeLinkUrl
+import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+/**
+ * The scheme allow-list guarding every link target built from content the app did not author.
+ */
+class UrlSafetyTest {
+
+    private fun rejects(url: String) =
+        assertFalse(isSafeLinkUrl(url), "should have been rejected: $url")
+
+    private fun accepts(url: String) =
+        assertTrue(isSafeLinkUrl(url), "should have been accepted: $url")
+
+    @Test
+    fun scriptBearingSchemesAreRejected() {
+        rejects("javascript:alert(1)")
+        rejects("JavaScript:alert(1)")
+        rejects("JAVASCRIPT:alert(1)")
+        rejects("vbscript:msgbox(1)")
+    }
+
+    @Test
+    fun dataUrlsAreRejected() {
+        rejects("data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==")
+        rejects("data:image/svg+xml,<svg onload=alert(1)>")
+    }
+
+    @Test
+    fun whitespaceAndControlCharactersCannotHideAScheme() {
+        // Browsers strip these before resolving the scheme, so the sanitizer must too.
+        rejects("java\tscript:alert(1)")
+        rejects("java\nscript:alert(1)")
+        rejects("java\rscript:alert(1)")
+        rejects(" javascript:alert(1)")
+        rejects("javascript\u0000:alert(1)")
+        rejects("jav\u0001ascript:alert(1)")
+    }
+
+    @Test
+    fun ordinaryWebSchemesAreAccepted() {
+        accepts("https://example.com")
+        accepts("http://example.com/path?query=1#frag")
+        accepts("HTTPS://EXAMPLE.COM")
+        accepts("mailto:someone@example.com")
+        accepts("tel:+15555555555")
+        accepts("sms:+15555555555")
+    }
+
+    @Test
+    fun relativeUrlsAreAccepted() {
+        accepts("/about")
+        accepts("about")
+        accepts("../sibling")
+        accepts("#anchor")
+        accepts("?query=1")
+        accepts("")
+    }
+
+    @Test
+    fun aColonInAPathIsNotMistakenForAScheme() {
+        // The colon here belongs to the path, not to a scheme, so this must not be rejected.
+        accepts("/some:path")
+        accepts("./a:b")
+        accepts("?x=1:2")
+        accepts("#a:b")
+    }
+
+    @Test
+    fun safeLinkUrlOrNullDropsUnsafeTargetsAndKeepsSafeOnes() {
+        assertEquals(null, safeLinkUrlOrNull("javascript:alert(1)"))
+        assertEquals(null, safeLinkUrlOrNull(null))
+        assertEquals("/about", safeLinkUrlOrNull("/about"))
+        assertEquals("https://example.com", safeLinkUrlOrNull("https://example.com"))
+    }
+}

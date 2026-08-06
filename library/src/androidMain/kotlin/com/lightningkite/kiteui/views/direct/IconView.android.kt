@@ -6,8 +6,7 @@ import com.lightningkite.kiteui.views.Path.PathDrawable
 import android.content.Context
 import com.lightningkite.kiteui.views.*
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-public actual class NIconView(context: Context) : AppCompatImageView(context) {
+public class NIconView(context: Context) : AppCompatImageView(context) {
     init {
         scaleType = ScaleType.CENTER_INSIDE
     }
@@ -35,7 +34,7 @@ public actual class IconView actual constructor(context: ElementContext): Native
         }
     public actual var description: String?
         get() {
-            return native.contentDescription.toString()
+            return native.contentDescription?.toString()
         }
         set(value) {
             native.contentDescription = value

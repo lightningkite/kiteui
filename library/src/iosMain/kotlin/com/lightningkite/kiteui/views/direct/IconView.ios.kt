@@ -28,7 +28,7 @@ public actual class IconView actual constructor(context: ElementContext): Native
         }
     public actual var description: String?
         get() {
-            return native.accessibilityLabel.toString()
+            return native.accessibilityLabel
         }
         set(value) {
             native.accessibilityLabel = value

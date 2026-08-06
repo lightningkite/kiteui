@@ -36,10 +36,10 @@ object WebSocketPage : Page {
                     socket.await().close(1000, "OK")
                 }
             }
-            reactiveScope {
+            reactive {
                 println("mostRecent.await(): ${mostRecent()}")
             }
-            reactiveScope {
+            reactive {
                 println("mostRecent.await().await(): ${mostRecent()()}")
             }
         }

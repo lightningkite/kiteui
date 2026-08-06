@@ -35,7 +35,7 @@ private fun ElementWriter.CanAddTheme.selectedIfRouteMatches(it: NavLink): Eleme
 
 private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNavigate: suspend () -> Unit = {}) {
     themeChoice += ListSemantic
-    forEach(readable) {
+    renderListExpensive(readable, { this }) {
         fun ViewWriter.display(navElement: NavElement) {
             row {
                 centered.navElementIconAndCountHorizontal(navElement)
@@ -129,7 +129,7 @@ private fun ContainerElement.navGroupActionsInner(readable: Reactive<List<NavEle
         }
     }
     themeChoice += ListSemantic
-    forEach(readable) {
+    renderListExpensive(readable, { this }) {
         when (it) {
             is NavAction -> button {
                 shown = false
@@ -177,7 +177,7 @@ public fun ElementWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup
 
 private fun ContainerElement.navGroupTopInner(readable: Reactive<List<NavElement>>) {
     themeChoice += ListSemantic
-    forEach(readable) {
+    renderListExpensive(readable, { this }) {
         when (it) {
             is NavAction -> button {
                 shown = false
@@ -270,7 +270,7 @@ public fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setu
             }
         }
         themeChoice += ListSemantic
-        forEach(readable, beforeListModifier = { expanding }) {
+        renderListExpensive(readable, beforeModifier = { expanding }) {
             when (it) {
                 is NavAction -> button {
                     shown = false

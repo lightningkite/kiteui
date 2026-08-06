@@ -128,22 +128,28 @@ public class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIView
     }
 
     internal var inLayout: Boolean = false
+    private var lastLaidOutSize: Size? = null
     override fun layoutSubviews() {
-        if(bounds.useContents { size.width == 0.0 && size.height == 0.0 }) return
+        val mySize = bounds.useContents { Size(size.width, size.height) }
+        if(mySize.width == 0.0 && mySize.height == 0.0) return
         if (inLayout) throw IllegalStateException()
-        if(myInvalidated) {
+        // Relayout not just when explicitly invalidated, but also when our own bounds changed
+        // size (e.g. rotation/parent resize) since neither forceRemeasures() nor
+        // subviewDidChangeSizing() fire for that case.
+        if(myInvalidated || lastLaidOutSize != mySize) {
             myInvalidated = false
+            lastLaidOutSize = mySize
 //            Exception("layoutSubviews").printStackTrace()
             inLayout = true
             // TODO: is this weird that the result is dropped?
             delegate.measure(element?.get() ?: run {
                 Log.warn("ProgrammaticLayout.layoutSubviews won't work because Element is inaccessible")
                 return
-            }, inProgress, bounds.useContents { Size(size.width, size.height) })
+            }, inProgress, mySize)
             delegate.layout(element?.get() ?: run {
                 Log.warn("ProgrammaticLayout.layoutSubviews won't work because Element is inaccessible")
                 return
-            }, inProgress, bounds.useContents { Size(size.width, size.height) })
+            }, inProgress, mySize)
             inLayout = false
         }
     }

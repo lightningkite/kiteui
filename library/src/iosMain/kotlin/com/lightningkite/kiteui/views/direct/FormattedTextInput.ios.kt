@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
@@ -57,6 +58,7 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
         super.nativeApplyTheme(theme)
         textField.textColor = theme.theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.theme.font
+        updateHint()
         applyAlign(_align ?: theme.theme.font.align)
     }
 
@@ -69,9 +71,10 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
     }
 
     internal fun updateHint() {
-        textField.placeholder = hint
-        // TODO: Colored hint
-//        textField.attributedPlaceholder = hint
+        textField.attributedPlaceholder = NSAttributedString.create(
+            hint,
+            mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor())
+        )
     }
 
     internal var fontAndStyle: FontAndStyle? = null

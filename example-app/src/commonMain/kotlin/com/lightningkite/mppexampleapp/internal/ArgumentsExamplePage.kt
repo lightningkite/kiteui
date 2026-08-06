@@ -29,11 +29,9 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
 
     override fun ElementWriter.CanAddTheme.render() {
         col {
-            transitionId = id
             h1 { content = "Hello world!" }
             text {
                 content = "My item ID is ${id}"
-                transitionId = "itemid"
             }
             text {
                 content =
@@ -71,7 +69,6 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
                     else -> Resources.imagesLightningBackground
                 }
                 scaleType = ImageScaleType.Crop
-                transitionId = "Sample"
             }
         }
     }

@@ -22,14 +22,28 @@ public class Routes(
     }
 ) {
     public fun render(screen: Page): RouteRendered? = renderers.get(screen::class)?.invoke(screen)
-    public fun parse(path: UrlLikePath): Page? = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
-    public fun parseOrFallback(path: UrlLikePath): Page =
+
+    /**
+     * Resolves [path] to the first matching [Page], or null if no route matches it.
+     *
+     * Every path reaching this function came from outside the application - an OS deep link, an
+     * HTTP request line, a restored navigation stack, a link inside user content - so a path that
+     * a generated parser cannot decode is bad input, not a programming error. Generated parsers
+     * decode segments into typed parameters and raise on garbage (`/user/abc` where an Int is
+     * expected), which is reported here as "no route matched" rather than propagating: an
+     * unroutable URL must produce a 404 or the fallback page, never a crash on input an attacker
+     * or a stale bookmark controls. The exception is logged so genuine parser faults stay visible.
+     */
+    public fun parse(path: UrlLikePath): Page? =
         try {
-            parse(path) ?: fallback
-        } catch(e: Exception) {
+            parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
+        } catch (e: Exception) {
             LogRoot.warn("Encountered exception when parsing route: $e")
-            fallback
+            null
         }
+
+    /** Like [parse], but substitutes [fallback] - typically a "not found" page - for an unroutable path. */
+    public fun parseOrFallback(path: UrlLikePath): Page = parse(path) ?: fallback
 }
 
 public data class RouteRendered(
@@ -51,8 +65,10 @@ public data class UrlLikePath(
         )
 
         public fun fromUrlString(url: String): UrlLikePath {
-            val parts = url.split("?")
-            return fromParts(parts.getOrNull(0) ?: "", parts.getOrNull(1) ?: "")
+            // Only the first '?' separates path from query; a literal '?' is legal inside the
+            // query per RFC 3986. Splitting on every occurrence silently discarded everything
+            // after the second one, so "/p?redirect=/other?a=b" lost "a=b" with no error.
+            return fromParts(url.substringBefore('?'), url.substringAfter('?', ""))
         }
     }
 

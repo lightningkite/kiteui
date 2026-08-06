@@ -14,6 +14,7 @@ import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import com.lightningkite.kiteui.views.canvas.clear
 import com.lightningkite.kiteui.views.canvas.height
 import com.lightningkite.kiteui.views.canvas.width
+import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -99,6 +100,10 @@ actual class LottieView actual constructor(
 
         // Load animation
         loadAnimation()
+
+        // Release the render scope and animation-frame listener when this element is torn down;
+        // otherwise the scope leaks and the frame listener keeps firing after removal.
+        onRemove { cleanup() }
     }
 
     private fun loadAnimation() {
@@ -244,6 +249,13 @@ actual class LottieView actual constructor(
         context.restore()
     }
 
+    /**
+     * Releases the render scope and stops the animation-frame listener.
+     *
+     * Invoked automatically when the element is torn down, so calling it is not required. It
+     * stays public because callers may have been invoking it by hand to work around the leak
+     * this teardown now handles; calling it twice is harmless.
+     */
     fun cleanup() {
         scope.cancel()
         stopAnimationLoop()

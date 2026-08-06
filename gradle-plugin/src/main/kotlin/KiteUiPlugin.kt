@@ -21,10 +21,10 @@ class KiteUiPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
         val ext = extensions.create("kiteui", KiteUiPluginExtension::class.java)
         afterEvaluate {
-            if (ext.packageName == null)
-                throw IllegalArgumentException("KiteUiPluginExtension property packageName is null. Please configure KiteUiPluginExtension and provide a value")
-            if (ext.iosProjectRoot == null)
-                throw IllegalArgumentException("KiteUiPluginExtension property iosProjectRoot is null. Please configure KiteUiPluginExtension and provide a value")
+            if (ext.packageName.isEmpty())
+                throw IllegalArgumentException("KiteUiPluginExtension property packageName is not set. Please configure KiteUiPluginExtension and provide a value")
+            if (ext.iosProjectRoot.path.isEmpty())
+                throw IllegalArgumentException("KiteUiPluginExtension property iosProjectRoot is not set. Please configure KiteUiPluginExtension and provide a value")
         }
 
         val kotlinExtension = project.extensions.findByName("kotlin")
@@ -73,7 +73,9 @@ class KiteUiPlugin : Plugin<Project> {
             task.dependsOn("kiteuiResourcesJsNonVitePart")
             group = "kiteui"
             task.from("src/commonMain/resources")
-            task.into("src/jsMain/resources/common")
+            // Copy's into() sets a single destinationDir, so calling it twice would just
+            // overwrite the first target rather than copy to both. The "common" destination
+            // is instead populated by the kiteuiResourcesJsNonVitePart dependency above.
             task.into("src/jsMain/resources/public/common")
             val out = project.file("build/generated/kiteui-js/Resources.js.kt")
             val gitIgnore = project.file("src/jsMain/resources/common/.gitignore")

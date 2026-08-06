@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.canvas
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.addLine
-import com.lightningkite.kiteui.views.direct.arcTo
 import com.lightningkite.kiteui.views.toUIFontWeight
 import com.lightningkite.kiteui.views.toUiColor
 import kotlinx.cinterop.*
@@ -234,20 +233,6 @@ public class DrawingContext2DImpl(public val wraps: CGContextRef, public val wid
     override fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double): Unit =
         CGContextAddCurveToPoint(wraps, cp1x, cp1y, cp2x, cp2y, x, y)
 
-//    override fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double) = arcTo(
-//        x1, y1, x2, y2, radius, radius, 0.0
-//    )
-//
-//    override fun arcTo(
-//        x1: Double,
-//        y1: Double,
-//        x2: Double,
-//        y2: Double,
-//        radiusX: Double,
-//        radiusY: Double,
-//        rotation: Double
-//    ) = TODO()
-
     override fun rect(x: Double, y: Double, w: Double, h: Double): Unit = CGContextAddRect(wraps, CGRectMake(x, y, w, h))
 
     internal var textAlign: TextAlign = TextAlign.start
@@ -385,7 +370,10 @@ public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double):
     )
     val ns = (text as NSString)
     val sizeTaken = ns.sizeWithAttributes(attrs).useContents { width }
-    val height = font.lineHeight
+    // drawAtPoint's origin is the top of the text's bounding box, but (x, y) here is meant to be
+    // the baseline (matching Android's canvas.drawText and web's fillText), so shift up by the
+    // ascender rather than the full lineHeight, which also includes descent/leading.
+    val ascent = font.ascender
     var dx = x
     var dy = y
     when((this as DrawingContext2DImpl).textAlign) {
@@ -397,7 +385,7 @@ public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double):
             dx -= sizeTaken / 2
         }
     }
-    dy -= height
+    dy -= ascent
     (text as NSString).drawAtPoint(
         CGPointMake(dx, dy),
         withAttributes = attrs
@@ -424,7 +412,9 @@ public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: 
     )
     val ns = (text as NSString)
     val sizeTaken = ns.sizeWithAttributes(attrs).useContents { width }
-    val height = font.lineHeight
+    // See drawText: shift up by the ascender to convert baseline (x, y) into drawAtPoint's
+    // top-of-bounding-box origin.
+    val ascent = font.ascender
     var dx = x
     var dy = y
     when((this as DrawingContext2DImpl).textAlign) {
@@ -436,7 +426,7 @@ public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: 
             dx -= sizeTaken / 2
         }
     }
-    dy -= height
+    dy -= ascent
     (text as NSString).drawAtPoint(
         CGPointMake(dx, dy),
         withAttributes = attrs

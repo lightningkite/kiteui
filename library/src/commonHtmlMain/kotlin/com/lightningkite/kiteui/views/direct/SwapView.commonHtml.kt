@@ -31,7 +31,7 @@ public expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewVie
 //
 //    val myStyle = window.getComputedStyle(native)
 //    val transitionTime = myStyle.transitionDuration.takeUnless { it.isBlank() } ?: "0.15"
-//    val transitionMs = Duration.parseOrNull(transitionTime)?.inWholeMilliseconds ?: 150L
+//    val transitionMs = Duration.parse(transitionTime)?.inWholeMilliseconds ?: 150L
 //    native.children.let { (0 until it.length).map { i -> it.get(i) } }.filterIsInstance<HTMLElement>()
 //        .forEach { view ->
 //            if (view.asDynamic().__ROCK__removing) return@forEach

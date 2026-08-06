@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerHorizontalGrid
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -30,7 +31,7 @@ object RecyclerViewTestPage : Page {
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
         var expanded = Signal(-1)
         val items = remember { (1..elementCount()).toList() }
-        var recyclerView: RecyclerView? = null
+        var recyclerView: Recycler2? = null
         col {
             row {
                 for (align in Align.values()) {

@@ -501,7 +501,7 @@ object FormsAndValidationPage : DocPage {
                             // Debounce username check
                             var checkJob: Job? = null
 
-                            reactiveScope {
+                            reactive {
                                 val currentUsername = username()
                                 checkJob?.cancel()
 

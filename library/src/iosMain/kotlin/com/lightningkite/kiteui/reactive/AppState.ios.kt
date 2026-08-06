@@ -32,8 +32,44 @@ public actual object AppState {
     private val handle = object: NSObject() {
         @ObjCAction
         fun onFrame() {
+            refreshWindowInfo()
             _animationFrame.invokeAll()
         }
+    }
+
+    /**
+     * The window's current size, preferring the app's own window over the physical screen.
+     *
+     * On a device that can show two apps at once - Split View, Slide Over, Stage Manager - the
+     * screen keeps its full size while the app gets a fraction of it, so reading the screen would
+     * report a width the app does not have.
+     */
+    private fun currentWindowStatistics(): WindowStatistics {
+        val bounds = UIApplication.sharedApplication.keyWindow?.bounds ?: UIScreen.mainScreen.bounds
+        return WindowStatistics(
+            width = Dimension(bounds.useContents { size.width }),
+            height = Dimension(bounds.useContents { size.height }),
+            density = UIScreen.mainScreen.scale.toFloat(),
+        )
+    }
+
+    /**
+     * Republishes [windowInfo] when the window has actually changed size.
+     *
+     * Driven from the display link that is already running rather than from a rotation
+     * notification, because rotation is only one of the ways this changes: Split View, Slide Over,
+     * Stage Manager resizing and a window moving between displays all do too, and several of them
+     * report a stale size at notification time. Comparing two `WindowStatistics` values costs a
+     * `CGRect` read per frame and cannot miss a cause.
+     *
+     * Before this, `_windowInfo` was written exactly once - at initialisation - and never again, so
+     * every reader of it was pinned to whatever the launch orientation happened to be.
+     */
+    // internal rather than private so a test can drive it without a running display link, which a
+    // test binary has no frames to produce.
+    internal fun refreshWindowInfo() {
+        val now = currentWindowStatistics()
+        if (now != _windowInfo.value) _windowInfo.value = now
     }
     init {
         CADisplayLink.displayLinkWithTarget(handle, sel_registerName("onFrame")).addToRunLoop(NSRunLoop.currentRunLoop, forMode = NSRunLoopCommonModes)
@@ -43,6 +79,8 @@ public actual object AppState {
         height = Dimension(UIScreen.mainScreen.bounds.useContents { size.height }),
         density = UIScreen.mainScreen.scale.toFloat()
     ))
+        // Kept as the screen rather than currentWindowStatistics(): at object-initialisation time
+        // the app has no key window yet, and refreshWindowInfo() replaces this on the first frame.
     public actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo
     public val _inForeground: Signal<Boolean> = Signal(true)

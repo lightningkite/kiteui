@@ -45,12 +45,11 @@ kotlin {
         iosSimulatorArm64()
         iosX64()
     }
-    js(IR) {
+    js {
         browser {
             testTask {
                 useKarma {
-//                    useChromeHeadless()
-                    useFirefox()
+                    useChromeHeadless()
                 }
             }
         }
@@ -58,9 +57,6 @@ kotlin {
 
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
-        freeCompilerArgs.add("-Xcontext-parameters")
-        optIn.add("kotlinx.cinterop.BetaInteropApi")
-        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
         optIn.add("kotlin.time.ExperimentalTime")
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
@@ -117,6 +113,17 @@ kotlin {
         }
 
         if (iosTarget) {
+            // Opt in across the whole iOS hierarchy rather than on the native compilations. The
+            // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
+            // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also
+            // requires a source set's opt-ins to be a superset of those of the source sets it
+            // depends on, so the leaf target source sets must be covered too, not just iosMain.
+            matching { it.name.startsWith("ios") }.configureEach {
+                languageSettings {
+                    optIn("kotlinx.cinterop.BetaInteropApi")
+                    optIn("kotlinx.cinterop.ExperimentalForeignApi")
+                }
+            }
             val iosMain by getting {
                 dependencies {
                     implementation(libs.ktor.client.darwin)
@@ -186,6 +193,12 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            // Without this, any commonTest that reaches a logging path fails on Android with
+            // "Method w in android.util.Log not mocked" - the stubbed android.jar throws on every
+            // call. Common code legitimately logs (Routes.parse warns on an unparseable URL), so
+            // the alternative is that no shared test may exercise such a path at all. Returning
+            // defaults is scoped to unit tests; instrumented and Robolectric tests are unaffected.
+            isReturnDefaultValues = true
         }
     }
 }

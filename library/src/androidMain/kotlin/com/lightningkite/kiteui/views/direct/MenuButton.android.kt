@@ -19,10 +19,10 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
     public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         val openFn = {
             var willRemove: Element? = null
-            popoverWriter(this.overlayFrame!!) {
+            popoverWriter(context.overlayFrame!!) {
                 val r = willRemove
                 willRemove = null
-                r?.let { overlayFrame!!.removeChild(it) }
+                r?.let { context.overlayFrame!!.removeChild(it) }
 
             }.run {
                 willRemove = dismissBackground {
@@ -35,7 +35,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
                                     it.withBack(
                                         background = Color.transparent,
                                         outlineWidth = 0.dp,
-                                        cornerRadii = CornerRadii.Constant(0.dp),
+                                        cornerRadii = CornerRadii.AdaptiveToSpacing(0.dp),
                                         cascading = false,
                                     )
                                 }
@@ -71,6 +71,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
         }
         native.setOnClickListener {
             openFn()
+            @Suppress("DEPRECATION")
             native.announceForAccessibility("Menu opened")
         }
         _openMenu = openFn

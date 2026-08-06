@@ -51,7 +51,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
                 (if(theme.font.underline) android.graphics.Paint.UNDERLINE_TEXT_FLAG else 0) or
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.isAllCaps = theme.font.allCaps
-        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
     }
 
     public actual val content: MutableReactiveValue<String> = native.contentProperty()
@@ -99,6 +99,6 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
             return Dimension(native.textSize)
         }
         set(value) {
-            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
+            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value)
         }
 }

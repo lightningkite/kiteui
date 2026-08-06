@@ -10,8 +10,8 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.debounce
-import com.lightningkite.readable.Property
 
 @Routable("markdown-demo")
 object MarkdownDemoPage : Page {
@@ -87,7 +87,7 @@ This is a custom block without a link.
 
 
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
-        val markdownSource = Property(sampleMarkdown)
+        val markdownSource = Signal(sampleMarkdown)
         val debouncedSource = markdownSource.debounce(300)
 
         scrolling.col {

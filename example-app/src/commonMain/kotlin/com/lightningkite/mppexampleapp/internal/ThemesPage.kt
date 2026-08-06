@@ -9,6 +9,32 @@ import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.appTheme
 import kotlin.random.Random
 
+// MaterialLikeTheme.randomLight/randomDark are deprecated with no direct successor (Theme.material
+// only replaces the plain constructor); these mirror that same randomization for the "M1" demo buttons.
+private fun randomM1Light(): Theme {
+    val hue = Random.nextFloat().turns
+    val saturation = Random.nextFloat() * 0.5f + 0.25f
+    val value = Random.nextFloat() * 0.5f + 0.25f
+    return Theme.material(
+        id = "materialRandomLight-${Random.nextInt()}",
+        primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
+        secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(),
+    )
+}
+
+private fun randomM1Dark(): Theme {
+    val hue = Random.nextFloat().turns
+    val saturation = Random.nextFloat() * 0.5f + 0.25f
+    val value = Random.nextFloat() * 0.5f + 0.25f
+    return Theme.material(
+        id = "materialRandomDark-${Random.nextInt()}",
+        foreground = Color.white,
+        background = Color.gray(0.2f),
+        primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
+        secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(),
+    )
+}
+
 @Routable("themes")
 object ThemesPage : Page {
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
@@ -52,14 +78,14 @@ object ThemesPage : Page {
                         expanding.button {
                             text("M1 Light")
                             onClick {
-                                appTheme set MaterialLikeTheme.randomLight().randomElevationAndCorners()
+                                appTheme set randomM1Light().randomElevationAndCorners()
                                     .randomTitleFontSettings()
                             }
                         }
                         expanding.button {
                             text("M1 Dark")
                             onClick {
-                                appTheme set MaterialLikeTheme.randomDark().randomElevationAndCorners()
+                                appTheme set randomM1Dark().randomElevationAndCorners()
                                     .randomTitleFontSettings()
                             }
                         }

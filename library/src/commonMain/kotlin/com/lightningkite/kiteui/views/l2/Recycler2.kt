@@ -253,8 +253,11 @@ public class Recycler2(
                     } else {
                         val index = if (this@Recycler2.activeCells.isEmpty()) -1
                         else if (index > this@Recycler2.activeCells.last().index) -1
-                        else if (index < this@Recycler2.activeCells.first().index) 0
+                        // +1 on the found/not-found cases below: children[0] is the scrollSentinel,
+                        // so positions among activeCells must be shifted past it.
+                        else if (index < this@Recycler2.activeCells.first().index) 1
                         else this@Recycler2.activeCells.binarySearchBy(index) { it.index }
+                            .let { if (it < 0) -it - 1 else it } + 1
                         if (index == -1) this@Recycler2.cells.addChild(element)
                         else this@Recycler2.cells.addChild(index, element)
                     }
@@ -669,7 +672,7 @@ public class Recycler2(
                         val id = rendererSet.id(item)
                         //Pulling a cell should prefer (in order) same item ID, off-screen, create new
                         // O(1) ID lookup via map instead of O(n) linear scan - by Claude
-                        (activeCellsByID.remove(id)?.also {
+                        (activeCellsByID.remove(id)?.takeIf { it.type == renderer }?.also {
                             // Same item ID: Data change should be animated here
                             it.onPullForPlacing(size, ReactiveState(item), index, inProgress)
                         } ?: reuseableCells.takeIf { recycling }?.popOrNull { it.type == renderer }?.also {

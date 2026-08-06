@@ -11,7 +11,6 @@ import com.lightningkite.kiteui.views.*
  * heading(2) - text("Section Title")
  * ```
  */
-@ViewModifierDsl3
 public fun ElementWriter.CanAddTheme.heading(level: Int): ElementWriter.CanAddTheme = asHeading(level)
 
 /**
@@ -21,6 +20,5 @@ public fun ElementWriter.CanAddTheme.heading(level: Int): ElementWriter.CanAddTh
  * liveRegion() - col { text { ::content { statusMessage() } } }
  * ```
  */
-@ViewModifierDsl3
 public fun ElementWriter.CanAddTheme.liveRegion(mode: LiveRegionMode = LiveRegionMode.Polite): ElementWriter.CanAddTheme =
     beforeSetup { accessibleLiveRegion = mode }

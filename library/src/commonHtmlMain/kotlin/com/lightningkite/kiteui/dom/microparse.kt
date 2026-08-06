@@ -1,5 +1,13 @@
 package com.lightningkite.kiteui.dom
 
+import com.lightningkite.kiteui.utils.isSafeLinkUrl
+
+// Depth past which nested markup is discarded rather than walked. secure() and toString() both
+// recurse per level, so untrusted HTML nested thousands deep would overflow the stack before any
+// of the tag/attribute filtering below got a chance to run. Matches the equivalent guard in
+// MarkdownParser, which takes the same kind of input.
+private const val MAX_NESTING_DEPTH = 100
+
 internal sealed interface MPNode {
     public fun secure()
 
@@ -40,6 +48,17 @@ internal sealed interface MPNode {
             "href",
             "target",
         )
+
+        /**
+         * Escapes an attribute value for emission inside double quotes.
+         *
+         * `&` is deliberately left alone: it cannot terminate a quoted attribute, and
+         * escaping it would corrupt query strings that already contain entities.
+         */
+        internal fun escapeAttribute(value: String): String = value
+            .replace("\"", "&quot;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
     }
 
     public data class Element(
@@ -49,14 +68,28 @@ internal sealed interface MPNode {
     ) : MPNode {
         override fun toString(): String {
             if(tagName == "br") return "<br>"
-            return "<${tagName} ${attributes.entries.joinToString(" ") { "${it.key}=\"${it.value}\"" }}>${
+            return "<${tagName} ${attributes.entries.joinToString(" ") { "${it.key}=\"${escapeAttribute(it.value)}\"" }}>${
                 children.joinToString("")
             }</${tagName}>"
         }
 
         override fun secure() {
+            // HTML tag and attribute names are case-insensitive, but the allow-lists are lowercase.
+            // Matching them as-written failed closed - safe, but it silently turned every
+            // `<A HREF="...">` into a span and threw the link away - so both are normalised first.
+            // The parser already lowercases tag names; repeated here so this stays a complete
+            // security boundary on its own rather than one that assumes a particular producer.
+            tagName = tagName.lowercase()
             if (tagName !in okTags) tagName = "span"
+
+            val lowercased = attributes.entries.associate { it.key.lowercase() to it.value }
+            attributes.clear()
+            attributes.putAll(lowercased)
             attributes.keys.retainAll(okAttrs)
+
+            // An allowed attribute name is not enough: href values carry their own scheme,
+            // so a permitted attribute can still smuggle in executable content.
+            if (attributes["href"]?.let { !isSafeLinkUrl(it) } == true) attributes.remove("href")
             children.forEach { it.secure() }
         }
     }
@@ -71,8 +104,17 @@ internal fun String.parseMPNodes(): List<MPNode> {
     val stack = arrayListOf(MPNode.Element("*"))
     starts(
         onTag = {
-            it.analyzeTagInside { tagName, start, end, kvs ->
-                if (start) {
+            it.analyzeTagInside { rawTagName, start, end, kvs ->
+                // Tag names are case-insensitive in HTML, so normalising here is what lets
+                // `</DIV>` close the `<div>` it was written to close.
+                val tagName = rawTagName.lowercase()
+                // Capped here rather than in secure()/toString() because this is the only place that
+                // can stop the deep tree from being built at all. An element past the cap is dropped
+                // outright and nothing is pushed, so its content reattaches to the nearest surviving
+                // ancestor - and because the matching close tag still pops a real ancestor, content
+                // after it shifts up a level too. Markup nested past 100 deep therefore comes out
+                // flattened and reshuffled, which is the intended trade against a stack overflow.
+                if (start && stack.size <= MAX_NESTING_DEPTH) {
                     val newElement = MPNode.Element(tagName, attributes = kvs)
                     stack.last().children.add(newElement)
                     stack.add(newElement)

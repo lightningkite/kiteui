@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.reactive.core.*
 
 @Routable("docs/recyclerView")
@@ -93,7 +94,7 @@ object RecyclerViewPage : DocPage {
             h2("Scrolling to a Specific Item")
             text("You can programmatically scroll to a specific item in the recyclerView:")
             example("""
-                var recyclerView: RecyclerView? = null
+                var recyclerView: Recycler2? = null
                 col {
                     button {
                         text("Scroll to Item 10")
@@ -110,7 +111,7 @@ object RecyclerViewPage : DocPage {
                     }
                 }
             """.trimIndent()) {
-                var recyclerView: RecyclerView? = null
+                var recyclerView: Recycler2? = null
                 col {
                     button {
                         text("Scroll to Item 10")

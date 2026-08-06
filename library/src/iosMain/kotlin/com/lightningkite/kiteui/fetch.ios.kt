@@ -38,21 +38,9 @@ public val client: HttpClient = HttpClient {
     install(UserAgent) {
         agent = Platform.userAgent
     }
-    install(HttpCache) {
-//        publicStorage(object: CacheStorage {
-//            override suspend fun find(url: Url, varyKeys: Map<String, String>): CachedResponseData? {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override suspend fun findAll(url: Url): Set<CachedResponseData> {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override suspend fun store(url: Url, data: CachedResponseData) {
-//                TODO("Not yet implemented")
-//            }
-//        })
-    }
+    // Uses Ktor's default in-memory cache storage. Responses are therefore not retained across app
+    // launches; a disk-backed CacheStorage has never been written for iOS.
+    install(HttpCache)
 }
 
 public actual suspend fun fetchRaw(

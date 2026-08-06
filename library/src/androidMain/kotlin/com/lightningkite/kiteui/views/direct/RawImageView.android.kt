@@ -42,7 +42,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 public actual abstract class RawImageViewLike constructor(
-    context: RContext,
+    context: ElementContext,
     public actual val source: ImageSource,
     public actual val description: String,
     public actual val scaleType: ImageScaleType,
@@ -53,7 +53,7 @@ public actual abstract class RawImageViewLike constructor(
 
 
 public actual class RawImageView actual constructor(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -121,7 +121,6 @@ public actual class RawImageView actual constructor(
                 native.setImageDrawable(PathDrawable(value))
                 _state.state = ReactiveState(Unit)
             }
-            else -> TODO()
         }
     }
 
@@ -195,7 +194,7 @@ public actual class RawImageView actual constructor(
 
 
 public actual class SizelessRawImageView actual constructor(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -260,7 +259,6 @@ public actual class SizelessRawImageView actual constructor(
             is ImageRemote -> Glide.with(native).load(glideUrl(value)).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> native.setImageDrawable(PathDrawable(value))
-            else -> TODO()
         }
     }
 
@@ -339,7 +337,7 @@ public actual class SizelessRawImageView actual constructor(
 
 
 public actual class RawImageViewZoomable actual constructor(
-    context: RContext,
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -396,7 +394,6 @@ public actual class RawImageViewZoomable actual constructor(
                 native.setImageDrawable(PathDrawable(value))
                 _state.state = ReactiveState(Unit)
             }
-            else -> TODO()
         }
     }
 }

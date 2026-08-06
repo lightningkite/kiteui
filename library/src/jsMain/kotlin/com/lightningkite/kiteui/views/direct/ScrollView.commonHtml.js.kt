@@ -1,3 +1,5 @@
+@file:OptIn(com.lightningkite.reactive.core.InternalReactiveApi::class)
+
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.afterTimeout

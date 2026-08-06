@@ -270,6 +270,7 @@ private fun downloadContinued(name: String, url: String) {
     val request = DownloadManager.Request(url.toUri())
         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
+    @Suppress("DEPRECATION")
     request.allowScanningByMediaScanner()
     (AndroidAppContext.applicationCtx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
 }

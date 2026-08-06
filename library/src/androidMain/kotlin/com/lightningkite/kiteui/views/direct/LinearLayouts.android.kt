@@ -30,6 +30,8 @@ public abstract class NativeLinearLayoutElement(context: ElementContext) : Nativ
         native.gap = (gap ?: theme.theme.gap).value.roundToInt()
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Will probably be removed in the future.")
     override val spacingForChildCornerRadii: Dimension
         get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 }
@@ -100,6 +102,8 @@ public actual class RowWrapping actual constructor(context: ElementContext) : Na
         native.lineGap = (gap ?: theme.theme.gap).value.roundToInt()
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Will probably be removed in the future.")
     override val spacingForChildCornerRadii: Dimension
         get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 }

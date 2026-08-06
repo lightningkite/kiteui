@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.views.ContainerElement

@@ -231,7 +231,6 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
 
             // Add in our padding
             mTotalLength += paddingTop + paddingBottom
-            // TODO: Should we recompute the heightSpec based on the new total length?
         } else {
             alternativeMaxWidth = Math.max(
                 alternativeMaxWidth,
@@ -564,7 +563,6 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
 
             // Add in our padding
             mTotalLength += paddingLeft + paddingRight
-            // TODO: Should we update widthSize with the new total length?
 
             // Check mMaxAscent[INDEX_TOP] first because it maps to Gravity.TOP,
             // the most common case
@@ -804,7 +802,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                     Gravity.TOP -> {
                         childTop = paddingTop
                         if (childBaseline != -1) {
-                            childTop += maxAscent!![INDEX_TOP] - childBaseline
+                            childTop += maxAscent[INDEX_TOP] - childBaseline
                         }
                     }
 
@@ -825,7 +823,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
                         childTop = childBottom - childHeight
                         if (childBaseline != -1) {
                             val descent = child.measuredHeight - childBaseline
-                            childTop -= (maxDescent!![INDEX_BOTTOM] - descent)
+                            childTop -= (maxDescent[INDEX_BOTTOM] - descent)
                         }
                     }
 
@@ -942,11 +940,11 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
     }
 
     override fun generateLayoutParams(lp: ViewGroup.LayoutParams): LayoutParams {
-        if (lp is LayoutParams) {
-            return LayoutParams(lp)
-        } else if (lp is MarginLayoutParams) {
-            return LayoutParams(lp)
-        } else TODO()
+        // The copy constructor preserves weight and gravity, so it is worth picking when we can.
+        // Everything else goes through the ViewGroup.LayoutParams constructor, which copies margins
+        // when there are any - the same fallback AOSP's LinearLayout uses. There is no third case:
+        // a plain LayoutParams is still convertible, so refusing it only crashed the layout pass.
+        return if (lp is LayoutParams) LayoutParams(lp) else LayoutParams(lp)
     }
 
     // Override to allow type-checking of LayoutParams.

@@ -126,17 +126,17 @@ private object _AnimationFrame : Listenable {
     override fun addListener(listener: () -> Unit): () -> Unit {
         var end = false
         var sub: (Double) -> Unit = {}
+        var pendingId = 0
         sub = label@{
+            if (end) return@label
             listener()
-            if (end) {
-                // Done!
-            } else {
-                window.requestAnimationFrame(sub)
-            }
+            pendingId = window.requestAnimationFrame(sub)
         }
-        window.requestAnimationFrame(sub)
+        pendingId = window.requestAnimationFrame(sub)
         return {
             end = true
+            // Cancel the already-scheduled frame so the listener isn't invoked one more time after unsubscribing.
+            window.cancelAnimationFrame(pendingId)
         }
     }
 }

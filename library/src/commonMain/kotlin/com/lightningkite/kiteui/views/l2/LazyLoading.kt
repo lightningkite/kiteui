@@ -46,6 +46,9 @@ public fun <T, ID> ContainerElement.childrenLazyLoading(
             val vp = scroll.viewport()
             val ct = scroll.content()
             if (loadJob != null) return@reactive
+            // If the last completed load didn't grow the list, don't trigger another one
+            // until something changes (e.g. an error resets sizeAtLoadStart to allow retry).
+            if (list.size == sizeAtLoadStart) return@reactive
 
             val contentEnd = if (scroll.vertical) ct.bottom else ct.right
             val viewportEnd = if (scroll.vertical) vp.bottom else vp.right

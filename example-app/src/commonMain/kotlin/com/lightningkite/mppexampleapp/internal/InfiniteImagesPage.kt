@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalTrueGrid
 import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -58,13 +59,12 @@ object InfiniteImagesPage : Page {
             placer = RecyclerViewPlacerVerticalGrid(4, 1.0)
             children(Constant(ReturnIndexList), id = { it }) {
                 unpadded.button {
-                    ::transitionId { it().toString() }
                     sizeConstraints(aspectRatio = 1.0).image {
                         scaleType = ImageScaleType.Crop
                         ::source { ImageRemote("https://picsum.photos/seed/${it()}/100/100") }
                     }
                     onClick {
-                        pageNavigator.navigate(ImageViewPager(it.await()))
+                        context.pageNavigator.navigate(ImageViewPager(it.await()))
                     }
                 }
             }
@@ -77,15 +77,14 @@ class ImageViewPager(val initialIndex: Int) : Page {
 
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
         themed(ThemeDerivation { it.copy(id="dumb", background = Color.black, foreground = Color.white).withoutBack }).frame {
-            val rv: ViewPager
+            val rv: Recycler2
             viewPager {
                 rv = this
                 children(Constant(InfiniteImagesPage.ReturnIndexList), id = { it }) { currImage ->
                     val renders = Signal(0)
                     frame {
-                        ::transitionId { currImage().toString() }
                         image {
-                            reactiveScope {
+                            reactive {
                                 renders.value++
                                 val index = currImage()
                                 info = ImageView.Info(
@@ -106,7 +105,7 @@ class ImageViewPager(val initialIndex: Int) : Page {
             align(Align.End, Align.Start).button {
                 icon { source = Icon.close }
                 onClick {
-                    pageNavigator.dismiss()
+                    context.pageNavigator.dismiss()
                 }
             }
             atBottomCenter.row {

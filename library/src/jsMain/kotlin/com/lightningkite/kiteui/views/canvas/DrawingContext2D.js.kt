@@ -93,7 +93,6 @@ private fun Paint.toCanvasStyle(ctx: DrawingContext2D): dynamic = when(this) {
         gradient
     }
     is FadingColor -> base.toWeb()
-    else -> closestColor().toWeb()
 }
 public actual val DrawingContext2D.width: Double get() = canvas.width.toDouble()
 public actual val DrawingContext2D.height: Double get() = canvas.height.toDouble()

@@ -48,7 +48,7 @@ object SsrPrerender {
 
                     // For classes, try to create a default instance (works for no-arg constructors)
                     else -> try {
-                        pageClass.createInstance() as Page
+                        pageClass.createInstance()
                     } catch (e: Exception) {
                         // Skip pages that require constructor arguments - they'll be in manualRoutes
                         null

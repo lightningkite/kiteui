@@ -101,6 +101,11 @@ internal fun <T> ContainerElement.renderReorderableList(
             themeChoice += DragDropReordering.HalfGap
             dropTargetDelegate = handler.Delegate(idx)
 
+            // Drop indicators use `visible`, not `shown`, on purpose: `visible` keeps the
+            // separator's space reserved at all times, so revealing an indicator mid-drag only
+            // repaints. Using `shown` would insert and remove the separator from layout, shifting
+            // every following item each time the hovered drop target changes - the list would
+            // jitter under the pointer during the drag, which is exactly when stability matters.
             beforeSetup {
                 ::visible shown@{
                     val move = handler.willMove() ?: return@shown false
@@ -187,6 +192,10 @@ public class RecyclerReorderable<T, ID>(
 
                 dropTargetDelegate = handler.Delegate(index)
 
+                // Drop indicators use `visible`, not `shown`, on purpose - see the matching note in
+                // renderReorderableList. Reserving the separator's space at all times means
+                // revealing an indicator repaints instead of reflowing every following item, so
+                // the list does not jitter under the pointer mid-drag.
                 beforeSetup {
                     ::visible shown@{
                         val move = handler.willMove() ?: return@shown false
@@ -200,7 +209,7 @@ public class RecyclerReorderable<T, ID>(
                 }, data, index)
 
                 beforeSetup {
-                    ::shown shown@{
+                    ::visible shown@{
                         val move = handler.willMove() ?: return@shown false
                         val i = index()
                         move.end == i && move.start < i

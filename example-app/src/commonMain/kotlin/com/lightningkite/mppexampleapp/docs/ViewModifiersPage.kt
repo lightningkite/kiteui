@@ -181,22 +181,22 @@ object ViewModifiersPage : DocPage {
                 }
             }
 
-            h2("Scrolls Horizontally")
-            text("The scrollsHorizontally modifier is used to add a horizontal scroll bar to a view.")
+            h2("Scrolling Horizontally")
+            text("The scrollingHorizontally modifier is used to add a horizontal scroll bar to a view.")
             example(
                 """
-                sizeConstraints(minHeight = 10.px).scrollsHorizontally.row {
+                sizeConstraints(minHeight = 10.px).scrollingHorizontally.row {
                     text(
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
-                                "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollsHorizontally"
+                                "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollingHorizontally"
                     )
                 }
               """.trimIndent()
             ) {
-                sizeConstraints(minHeight = 10.px).scrollsHorizontally.row {
+                sizeConstraints(minHeight = 10.px).scrollingHorizontally.row {
                     text(
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
-                                "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollsHorizontally"
+                                "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollingHorizontally"
                     )
                 }
             }
@@ -274,7 +274,7 @@ object ViewModifiersPage : DocPage {
                 """
                 col {
                     important.toggleButton {
-                        text { reactiveScope { content = if(condition()) "Hide" else "Show" } }
+                        text { reactive { content = if(condition()) "Hide" else "Show" } }
                         checked bind condition
                     }
                     shownWhen(condition = { condition() }).text("Show Text Only When Toggled")
@@ -283,7 +283,7 @@ object ViewModifiersPage : DocPage {
             ) {
                 col {
                     important.toggleButton {
-                        text { reactiveScope { content = if (condition()) "Hide" else "Show" } }
+                        text { reactive { content = if (condition()) "Hide" else "Show" } }
                         checked bind condition
                     }
                     shownWhen(condition = { condition() }).text("Show Text Only When Toggled")

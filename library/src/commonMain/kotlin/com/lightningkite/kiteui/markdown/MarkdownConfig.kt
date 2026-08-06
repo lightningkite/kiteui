@@ -122,6 +122,8 @@ public interface CustomBlockHandler {
                     }
                 } else {
                     writer.externalLink {
+                        // No scheme check here: `to` validates on assignment on every platform,
+                        // and that sink is the security boundary.
                         to = href
                         col {
                             with(context) { children.forEach { renderNode(it) } }

@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Build
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.UnsafeModifier
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
@@ -23,12 +24,15 @@ import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.important
 import com.lightningkite.mppexampleapp.docs.article
 import com.lightningkite.mppexampleapp.docs.example
+import com.lightningkite.mppexampleapp.internal.*
 import com.lightningkite.reactive.core.*
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("/")
 class HomePage : Page {
     override val title: Reactive<String> get() = Constant("KiteUI")
+
+    @OptIn(UnsafeModifier::class)
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
         return withUnsafeModifiers().scrolling.article {
             centered.h1("KiteUI - Beautiful by Default")
@@ -102,6 +106,21 @@ class HomePage : Page {
             text("TODO")
             space()
             text("Version: ${Build.version}")
+            space()
+            text("Quick jumps for recent testing")
+            listOf(
+                PlatformFixVerificationPage,
+                WebViewPermissionPage,
+                ReviewFixVerificationPage,
+                MediaQueryPage,
+                AutoCompleteTestPage,
+                SoundEffectHandlePage,
+                AndroidFixesVerificationPage,
+                IosMiscFixesPage,
+                IosTextInputsVerificationPage,
+            ).forEach {
+                link { text { ::content { it.title() } }; to = { it } }
+            }
         }
     }
 }

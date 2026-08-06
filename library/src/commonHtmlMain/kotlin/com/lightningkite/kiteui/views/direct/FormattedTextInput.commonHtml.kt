@@ -56,9 +56,10 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             set(value) {
                 val clean = value.filter(isRawData)
                 val formatted = formatter(clean)
-                if (native.attributes.valueString != formatted)
+                if (native.attributes.valueString != formatted) {
                     native.attributes.valueString = formatted
                     invokeAllListeners()
+                }
             }
     }
     public actual var keyboardHints: KeyboardHints = KeyboardHints()

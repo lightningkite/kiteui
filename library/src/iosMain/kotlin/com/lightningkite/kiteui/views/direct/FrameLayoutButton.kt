@@ -25,7 +25,7 @@ import platform.darwin.sel_registerName
 public class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
     private val tapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("onclick"))
-    private val longPressGestureRecognizer = UILongPressGestureRecognizer(this, sel_registerName("onLongPress"))
+    private val longPressGestureRecognizer = UILongPressGestureRecognizer(this, sel_registerName("onLongPress:"))
 
     internal val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
     override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
@@ -77,8 +77,10 @@ public class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSi
 
     private var onLongPress: (()->Unit)? = null
     @ObjCAction
-    public fun onLongPress() {
-        if (enabled) {
+    public fun onLongPress(sender: UILongPressGestureRecognizer) {
+        // UILongPressGestureRecognizer is continuous and reports every state transition
+        // (began/changed/ended); only fire on began so this behaves like a discrete long-press.
+        if (enabled && sender.state == UIGestureRecognizerStateBegan) {
             onLongPress?.invoke()
         }
     }

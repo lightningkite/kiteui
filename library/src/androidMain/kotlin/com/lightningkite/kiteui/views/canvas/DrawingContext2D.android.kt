@@ -23,8 +23,8 @@ public abstract class DrawingView : View {
     public constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     public constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 }
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-public actual abstract class DrawingContext2D(public val canvas: Canvas) {
+public actual abstract class DrawingContext2D {
+    public abstract val canvas: Canvas
     public val currentPath: Path = Path()
     public val clearPaint: android.graphics.Paint = android.graphics.Paint().apply {
         color = android.graphics.Color.TRANSPARENT
@@ -95,7 +95,15 @@ public actual abstract class DrawingContext2D(public val canvas: Canvas) {
 
 }
 
-public class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
+public class DrawingContext2DImpl(
+    override val canvas: Canvas,
+    /**
+     * Resolved layout direction of the [View] this canvas is drawing for, used to map
+     * [TextAlign.start]/[TextAlign.end] to the correct physical side under RTL locales - see
+     * [textAlign]. Defaults to LTR for callers (tests, previews) that don't have a View to ask.
+     */
+    internal val isRtl: Boolean = false,
+): DrawingContext2D() {
     // Internal state tracking
     internal var lineDashSegments: List<Double> = emptyList()
     internal var _shadowBlur: Double = 0.0
@@ -104,11 +112,53 @@ public class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
     internal var _shadowOffsetY: Double = 0.0
     internal val transformMatrix: Matrix = Matrix()
 
+    // canvas.save()/restore() only roll back the transform matrix and clip. Fill/stroke
+    // style (color, alpha, dash, shadow, line width/cap/join) lives in fillPaintObj/
+    // strokePaintObj and the tracked shadow/dash/alpha fields below, none of which the
+    // Canvas snapshots on its own, so we mirror the same push/pop here to match the
+    // save/restore contract that Web and iOS provide.
+    private data class PaintState(
+        val fillPaint: android.graphics.Paint,
+        val strokePaint: android.graphics.Paint,
+        val lineDashSegments: List<Double>,
+        val lineDashOffset: Double,
+        val globalAlpha: Double,
+        val shadowBlur: Double,
+        val shadowColor: Color,
+        val shadowOffsetX: Double,
+        val shadowOffsetY: Double,
+    )
+    private val paintStateStack = ArrayDeque<PaintState>()
+
     override fun save() {
         canvas.save()
+        paintStateStack.addLast(
+            PaintState(
+                fillPaint = android.graphics.Paint(fillPaintObj),
+                strokePaint = android.graphics.Paint(strokePaintObj),
+                lineDashSegments = lineDashSegments,
+                lineDashOffset = _lineDashOffset,
+                globalAlpha = _globalAlpha,
+                shadowBlur = _shadowBlur,
+                shadowColor = _shadowColor,
+                shadowOffsetX = _shadowOffsetX,
+                shadowOffsetY = _shadowOffsetY,
+            )
+        )
     }
     override fun restore() {
         canvas.restore()
+        paintStateStack.removeLastOrNull()?.let {
+            fillPaintObj = it.fillPaint
+            strokePaintObj = it.strokePaint
+            lineDashSegments = it.lineDashSegments
+            _lineDashOffset = it.lineDashOffset
+            _globalAlpha = it.globalAlpha
+            _shadowBlur = it.shadowBlur
+            _shadowColor = it.shadowColor
+            _shadowOffsetX = it.shadowOffsetX
+            _shadowOffsetY = it.shadowOffsetY
+        }
     }
     override fun scale(x: Double, y: Double) {
         canvas.scale(x.toFloat(), y.toFloat())
@@ -440,12 +490,20 @@ public actual fun DrawingContext2D.font(
 ) {
     fillPaintObj.setTypeface(value.font.toTypeface())
     fillPaintObj.textSize = size.toFloat()
+    // strokePaintObj backs drawOutlinedText, so it needs the same typeface/size.
+    strokePaintObj.setTypeface(value.font.toTypeface())
+    strokePaintObj.textSize = size.toFloat()
 }
 
 public actual fun DrawingContext2D.textAlign(alignment: TextAlign) {
+    // start/end are direction-relative (CSS semantics): under RTL, start means the right edge.
+    // isRtl comes from the drawing View's resolved layoutDirection - see DrawingContext2DImpl and
+    // its construction in Canvas.android.kt#onDraw. Contexts without a View (e.g. unit tests)
+    // default to LTR, matching left/right below.
+    val isRtl = (this as? DrawingContext2DImpl)?.isRtl == true
     fillPaintObj.textAlign = when(alignment) {
-        TextAlign.start -> android.graphics.Paint.Align.LEFT  // TODO: locales
-        TextAlign.end -> android.graphics.Paint.Align.RIGHT  // TODO: locales
+        TextAlign.start -> if (isRtl) android.graphics.Paint.Align.RIGHT else android.graphics.Paint.Align.LEFT
+        TextAlign.end -> if (isRtl) android.graphics.Paint.Align.LEFT else android.graphics.Paint.Align.RIGHT
         TextAlign.left -> android.graphics.Paint.Align.LEFT
         TextAlign.right -> android.graphics.Paint.Align.RIGHT
         TextAlign.center -> android.graphics.Paint.Align.CENTER

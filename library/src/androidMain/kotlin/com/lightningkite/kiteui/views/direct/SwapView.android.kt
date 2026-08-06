@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
+import kotlinx.coroutines.CoroutineScope
 
 
 public actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
@@ -28,7 +29,7 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
         native.visibility = View.VISIBLE
         val oldView = this.children.firstOrNull()
         var newViewHolder: Element? = null
-        val writer = object : ViewWriter, CalculationContext by this {
+        val writer = object : ViewWriter, CoroutineScope by this {
             override val context: ElementContext
                 get() = this@SwapView.context
 
@@ -52,10 +53,12 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
         }
         val newView = newViewHolder
         swapTimeAddViewsPerformance {
-            newView?.native?.layoutParams = newView?.native?.layoutParams?.also {
-                it.width = ViewGroup.LayoutParams.MATCH_PARENT
-                it.height = ViewGroup.LayoutParams.MATCH_PARENT
-            } ?: FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            newView?.native?.let { native ->
+                native.layoutParams = native.layoutParams?.also {
+                    it.width = ViewGroup.LayoutParams.MATCH_PARENT
+                    it.height = ViewGroup.LayoutParams.MATCH_PARENT
+                } ?: FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            }
             oldView?.let { old ->
                 old.animateOut(transition) {
                     removeChild(old)

@@ -2,6 +2,7 @@
 package com.lightningkite.kiteui.markdown
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
@@ -13,7 +14,6 @@ import com.lightningkite.reactive.context.ReactiveContext
  * @param content The markdown text to render
  * @param config Configuration for parsing and rendering
  */
-@ViewDsl
 public fun ViewWriter.markdown(content: String, config: MarkdownConfig = MarkdownConfig.Default) {
     val parser = MarkdownParser(config.customBlocks)
     val document = parser.parse(content)
@@ -26,7 +26,6 @@ public fun ViewWriter.markdown(content: String, config: MarkdownConfig = Markdow
  * @param content Lambda that returns markdown text (reactive)
  * @param config Configuration for parsing and rendering
  */
-@ViewDsl
 public fun ViewWriter.markdownDynamic(content: ReactiveContext.() -> String, config: MarkdownConfig = MarkdownConfig.Default) {
     swapView {
         swapping(current = content) { md ->
@@ -161,6 +160,9 @@ private fun ViewWriter.renderBlock(node: MarkdownNode, config: MarkdownConfig) {
                 }
             } else {
                 externalLink {
+                    // No scheme check here: `to` validates on assignment on every platform, and
+                    // that sink is the security boundary. Checking again would just be a second
+                    // copy of the same rule to keep in sync.
                     to = node.url
                     col {
                         node.children.forEach { child ->
@@ -434,9 +436,14 @@ private fun inlineNodeToHtml(node: MarkdownNode.InlineNode, config: MarkdownConf
         is MarkdownNode.InlineCode -> "<tt>${escapeHtml(node.content)}</tt>"
 
         is MarkdownNode.Link -> {
-            val escapedUrl = escapeHtml(node.url)
             val innerHtml = inlineNodesToHtml(node.children, config)
-            "<a href=\"$escapedUrl\">$innerHtml</a>"
+            // This path builds an <a href> string directly instead of going through ExternalLink,
+            // so it does not get the sink's validation and has to check for itself. escapeHtml
+            // only neutralizes markup characters and never inspects the scheme, so a javascript:
+            // target would survive it intact. Unsafe targets render as plain text.
+            safeLinkUrlOrNull(node.url)
+                ?.let { "<a href=\"${escapeHtml(it)}\">$innerHtml</a>" }
+                ?: innerHtml
         }
 
         is MarkdownNode.Image -> {

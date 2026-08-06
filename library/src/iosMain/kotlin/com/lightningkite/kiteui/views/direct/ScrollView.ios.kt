@@ -131,7 +131,19 @@ public class ScrollView(
     }
 
     init {
-        scroller.horizontal = !vertical  //TODO: Support both directions
+        // Investigated bidirectional scrolling (both axes oversized at once): NOT a simple flag
+        // flip. ScrollLayout (ScrollLayout.kt) is built entirely around one "primary" (scrolling)
+        // axis and one "secondary" (cross) axis: calcSizes() measures the child unbound
+        // (ScrollLayoutMeta.unboundSize) only along the primary axis, while the secondary axis is
+        // measured against the fixed viewport size and positioned via Align (start/center/end/
+        // stretch) rather than scrolled. layoutSubviews() then deliberately sets
+        // UIScrollView.contentSize to 0 on the secondary axis - see the comment on `content` below
+        // - so UIKit has nothing to scroll on that axis regardless of this `horizontal` flag.
+        // Supporting both directions at once would mean reworking that model to unbound-measure
+        // both axes and set contentSize on both, plus deciding what "secondary alignment" even
+        // means once there's no non-scrolling axis left to align against. That's a real
+        // architectural change, not something to take on here.
+        scroller.horizontal = !vertical
         scroller.onSizeChange = label@{
             if (scrollCalcOngoing) return@label
             scrollCalcOngoing = true
@@ -171,14 +183,22 @@ public class ScrollView(
         }
     }
     override val content: Reactive<Rect> = (sizeChange).lensListenable {
+        // Each axis has to come from a different source, because ScrollLayout only ever sets
+        // contentSize on the axis it scrolls - it leaves the cross axis at 0.0 so UIScrollView
+        // won't scroll sideways. So:
+        //  - scroll axis: contentSize, which is already the full scrollable extent. Adding the
+        //    viewport on top inflated `content.bottom - viewport.bottom` by a whole viewport, so
+        //    childrenLazyLoading never saw itself get near the end and stopped loading pages.
+        //  - cross axis: the viewport, where the content is laid out to fit. Reading contentSize
+        //    here would report 0.0 and make the content look narrower than the viewport.
+        // scrollTo() in this same class already treats contentSize this way (`maxY - sizeY` is
+        // its maximum offset), and web (scrollHeight) and Android (child height) agree.
         val (sw, sh) = scroller.contentSize.useContents { width to height }
         val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
-        scroller.bounds.useContents {
-            Rect.fromSize(
-                width = vw + sw,
-                height = vh + sh,
-            )
-        }
+        Rect.fromSize(
+            width = if (vertical) vw else sw,
+            height = if (vertical) sh else vh,
+        )
     }
     private val _directlyInteractingWithScroller = Signal(false)
     override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller

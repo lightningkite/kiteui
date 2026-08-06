@@ -37,6 +37,7 @@ private fun gcIfNotVeryRecent() {
     }
 }
 
+@Suppress("DEPRECATION")
 public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
@@ -47,6 +48,7 @@ public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
     }
 }
 
+@Suppress("DEPRECATION")
 public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
@@ -58,6 +60,7 @@ public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
     }
 }
 
+@Suppress("DEPRECATION")
 public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
@@ -69,6 +72,7 @@ public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String
     }
 }
 
+@Suppress("DEPRECATION")
 public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()

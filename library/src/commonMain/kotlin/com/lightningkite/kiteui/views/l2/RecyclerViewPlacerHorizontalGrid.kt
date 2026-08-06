@@ -3,12 +3,17 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.direct.col
 import kotlin.math.abs
 
 public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
     RecyclerViewPlacerGrid {
+    init {
+        // Every row calculation below divides by or iterates over this, so zero would surface far
+        // from the cause: cellSize divides by rows, and the row-width measurements take maxOf over
+        // an empty list. Fail at construction, where the caller can see what it passed.
+        require(rows > 0) { "RecyclerViewPlacerHorizontalGrid needs at least one row, got $rows" }
+    }
+
     override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid =
         RecyclerViewPlacerVerticalGrid(count)
 
@@ -36,7 +41,13 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
             paddingLeft + it * gap + it * cellSize
         }
 
-        val (anchorRowX, anchorRowIndex) = anchor?.let {
+        /** Width of the widest cell in the row starting at [rowStartIndex], for right-aligning it. */
+        fun rowWidth(rowStartIndex: Int): Double = (0..<rows).maxOf {
+            if (rowStartIndex + it in dataRange) getNewCell(rowStartIndex + it, constrain).size.width
+            else 0.0
+        }
+
+        val (anchorRowX, anchorRowIndex) = (anchor?.let {
             when(it) {
                 is RecyclerViewAnchor.FuzzyIndex -> {
                     val averageRowWidth = existingCells.sumOf { it.right - it.left } / existingCells.size
@@ -46,13 +57,7 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
                 }
                 is RecyclerViewAnchor.SpecificElement -> {
                     val currentIndex = it.index.coerceIn(dataRange).div(rows).times(rows)
-                    val cells = (0..<rows).map {
-                        if (currentIndex + it in dataRange) getNewCell(
-                            currentIndex + it,
-                            constrain
-                        ) else null
-                    }
-                    val max = cells.maxOf { it?.size?.width ?: 0.0 }
+                    val max = rowWidth(currentIndex)
                     when (it.align) {
                         Align.Start -> viewport.left + paddingLeft
                         Align.End -> viewport.right - max - paddingRight
@@ -67,7 +72,16 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
         }?.let {
 //            println("Using existing cells for anchor: ${it.left} to ${it.index.div(columns).times(columns)}")
             it.left to it.index.div(rows).times(rows)
-        } ?: (viewport.left + paddingLeft to dataRange.first.div(rows).times(rows))
+        } ?: (viewport.left + paddingLeft to dataRange.first.div(rows).times(rows))).let {
+            // anchor correction for out of bounds - existingCells' indices can be stale after
+            // the data range shrinks, so re-anchor to the viewport instead of drifting off-screen
+            if (it.second < dataRange.first - rows) {
+                (viewport.left + paddingLeft to dataRange.first.div(rows).times(rows))
+            } else if (it.second > dataRange.last + rows) {
+                val currentIndex = dataRange.last.div(rows).times(rows)
+                (viewport.right - rowWidth(currentIndex) - paddingRight to currentIndex)
+            } else it
+        }
 
         // Place rightwards, one row at a time
         var currentX = anchorRowX
@@ -102,23 +116,6 @@ public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
             }
             currentX -= max + gap
             currentIndex -= rows
-        }
-    }
-
-    override fun prebake(
-        prebakeRange: IntRange,
-        dataRange: IntRange,
-        writer: ViewWriter,
-        render: ViewWriter.(Int) -> Unit
-    ): Unit = with(writer) {
-        if (rows == 1) {
-            col {
-                prebakeRange.forEach {
-                    render(it)
-                }
-            }
-        } else {
-            TODO()
         }
     }
 }

@@ -11,6 +11,7 @@ import com.lightningkite.reactive.core.*
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
+import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
@@ -87,6 +88,7 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
         super.nativeApplyTheme(theme)
         textField.textColor = theme.theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.theme.font
+        updateHint()
         applyAlign(_align ?: theme.theme.font.align)
     }
 
@@ -99,9 +101,10 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
     }
 
     internal fun updateHint() {
-        textField.placeholder = hint
-        // TODO: Colored hint
-//        textField.attributedPlaceholder = hint
+        textField.attributedPlaceholder = NSAttributedString.create(
+            hint,
+            mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor())
+        )
     }
 
     internal var fontAndStyle: FontAndStyle? = null

@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import kotlin.time.Duration.Companion.milliseconds
 
 private var ElementContext.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon(null)
 
@@ -54,9 +55,10 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
         viewController.kiteUi(context.split(viewController)) {
             beforeSetup {
                 underlyingNativeElement.parent = this@CoordinatorFrame
-                launch {    // TODO: What the fuck
-                    while(true) {
-                        delay(100)
+                // Can confirm this is OK; automatically cleaned up properly.
+                launch {
+                    while (true) {
+                        delay(100.milliseconds)
                         underlyingNativeElement.refreshTheming()
                     }
                 }
@@ -216,11 +218,15 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
 }
 
 
-public actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
+    NativeInteractiveContainerElement(context) {
     actual override val underlyingNativeElement: CoordinatorDragHandle get() = this
     override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
-    init { setupControl() }
+
+    init {
+        setupControl()
+    }
 
     @OverrideOnly
     override fun onStartup() {

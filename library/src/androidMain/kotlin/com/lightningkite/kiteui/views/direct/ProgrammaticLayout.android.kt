@@ -23,6 +23,8 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
             native.spacingCurrentPx = gap?.px ?: theme.gap.px
         }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Will probably be removed in the future.")
     actual override val spacingForChildCornerRadii: Dimension
         get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 

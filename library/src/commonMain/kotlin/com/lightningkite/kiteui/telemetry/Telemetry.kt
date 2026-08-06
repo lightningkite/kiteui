@@ -263,7 +263,13 @@ public class Telemetry(public val config: TelemetryConfig) {
         val parentSpanId = ctx.spanId().ifEmpty { currentSpanId }
         val viewPath = ctx.viewPath()
 
-        val host = url.substringAfter("://").substringBefore("/").substringBefore("?")
+        // Strip credentials once, from the whole URL, rather than per attribute. The original fix
+        // sanitised only `host`, and the `url.path` attribute went on shipping `user:pass@` to the
+        // backend regardless. Doing it here means every attribute derived below is safe and a
+        // later-added attribute cannot quietly reintroduce the leak. `proceed` still receives the
+        // untouched `url`, because the request itself may genuinely need those credentials.
+        val telemetryUrl = url.withoutUserInfo()
+        val host = telemetryUrl.substringAfter("://").substringBefore("/").substringBefore("?")
 
         // Copy headers to avoid mutating the caller's HttpHeaders instance
         val outHeaders = httpHeaders(headers)
@@ -282,7 +288,7 @@ public class Telemetry(public val config: TelemetryConfig) {
             errorType = e::class.simpleName ?: "Unknown"
             val durationMs = clockMillis() - startMs
             val endNanos = nanosString()
-            recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType = errorType)
+            recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, telemetryUrl, host, viewPath, startNanos, endNanos, durationMs, errorType = errorType)
             throw e
         }
 
@@ -290,7 +296,7 @@ public class Telemetry(public val config: TelemetryConfig) {
         val endNanos = nanosString()
         val statusCode = response.status
         errorType = if (statusCode >= 500) "HTTP $statusCode" else null
-        recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType, statusCode)
+        recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, telemetryUrl, host, viewPath, startNanos, endNanos, durationMs, errorType, statusCode)
 
         return response
     }
@@ -581,4 +587,27 @@ internal class InteractionSpan(
 
     /** Ends the interaction span and records telemetry. Call from `finally`. */
     fun end() = onEnd()
+}
+
+/**
+ * Returns this URL with any `user:pass@` userinfo removed from its authority.
+ *
+ * Credentials embedded in a URL are still credentials once they reach a telemetry backend, where
+ * they are retained, indexed, and readable by anyone with dashboard access. Only the authority is
+ * examined, because a bare `@` is legal in a path or query and must survive untouched.
+ */
+private fun String.withoutUserInfo(): String {
+    val schemeEnd = indexOf("://")
+    if (schemeEnd < 0) return this
+    val authorityStart = schemeEnd + 3
+    var authorityEnd = length
+    for (i in authorityStart until length) {
+        if (this[i] == '/' || this[i] == '?' || this[i] == '#') {
+            authorityEnd = i
+            break
+        }
+    }
+    val at = lastIndexOf('@', authorityEnd - 1)
+    if (at < authorityStart) return this
+    return substring(0, authorityStart) + substring(at + 1)
 }

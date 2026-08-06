@@ -21,7 +21,6 @@ import android.widget.ScrollView
 import androidx.annotation.RestrictTo
 import androidx.core.view.*
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
-import androidx.core.view.accessibility.AccessibilityRecordCompat
 import androidx.core.widget.EdgeEffectCompat
 import kotlin.math.abs
 import kotlin.math.max
@@ -812,7 +811,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
                 mActivePointerId = INVALID_POINTER
                 recycleVelocityTracker()
                 if (mScroller!!.springBack(scrollX, scrollY, 0, scrollRangeX, 0, scrollRangeY)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 stopNestedScroll(ViewCompat.TYPE_TOUCH)
             }
@@ -1003,7 +1002,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
                         if (mEdgeGlowTop != null
                             && (!mEdgeGlowLeft!!.isFinished || !mEdgeGlowTop!!.isFinished || !mEdgeGlowRight!!.isFinished || !mEdgeGlowBottom!!.isFinished)
                         ) {
-                            ViewCompat.postInvalidateOnAnimation(this)
+                            this.postInvalidateOnAnimation()
                         }
                     }
                 }
@@ -1025,7 +1024,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
                         0, scrollRangeY
                     )
                 ) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 mActivePointerId = INVALID_POINTER
                 endDrag()
@@ -1034,7 +1033,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
             MotionEvent.ACTION_CANCEL -> {
                 if (mIsBeingDragged && childCount > 0) {
                     if (mScroller!!.springBack(scrollX, scrollY, 0, scrollRangeX, 0, scrollRangeY)) {
-                        ViewCompat.postInvalidateOnAnimation(this)
+                        this.postInvalidateOnAnimation()
                     }
                 }
                 mActivePointerId = INVALID_POINTER
@@ -1069,7 +1068,6 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         if (pointerId == mActivePointerId) {
             // This was our active pointer going up. Choose a new
             // active pointer and adjust accordingly.
-            // TODO: Make this decision more intelligent.
             val newPointerIndex = if (pointerIndex == 0) 1 else 0
             mLastMotionX = ev.getX(newPointerIndex).toInt()
             mLastMotionY = ev.getY(newPointerIndex).toInt()
@@ -1858,7 +1856,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         }
 
         if (!mScroller!!.isFinished) {
-            ViewCompat.postInvalidateOnAnimation(this)
+            this.postInvalidateOnAnimation()
         } else {
             stopNestedScroll(ViewCompat.TYPE_NON_TOUCH)
         }
@@ -1875,7 +1873,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         }
         mLastScrollerX = scrollX
         mLastScrollerY = scrollY
-        ViewCompat.postInvalidateOnAnimation(this)
+        this.postInvalidateOnAnimation()
     }
 
     private fun abortAnimatedScroll() {
@@ -1943,15 +1941,11 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
 
         val fadingEdge = horizontalFadingEdgeLength
 
-        // TODO: screenTop should be incremented by fadingEdge * getTopFadingEdgeStrength (but for
-        // the target scroll distance).
         // leave room for top fading edge as long as rect isn't at very top
         if (rect.left > 0) {
             screenLeft += fadingEdge
         }
 
-        // TODO: screenBottom should be decremented by fadingEdge * getBottomFadingEdgeStrength (but
-        // for the target scroll distance).
         // leave room for bottom fading edge as long as rect isn't at very bottom
         val child = getChildAt(0)
         val lp = child.layoutParams as LayoutParams
@@ -2015,15 +2009,11 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
 
         val fadingEdge = verticalFadingEdgeLength
 
-        // TODO: screenTop should be incremented by fadingEdge * getTopFadingEdgeStrength (but for
-        // the target scroll distance).
         // leave room for top fading edge as long as rect isn't at very top
         if (rect.top > 0) {
             screenTop += fadingEdge
         }
 
-        // TODO: screenBottom should be decremented by fadingEdge * getBottomFadingEdgeStrength (but
-        // for the target scroll distance).
         // leave room for bottom fading edge as long as rect isn't at very bottom
         val child = getChildAt(0)
         val lp = child.layoutParams as LayoutParams
@@ -2309,7 +2299,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
                 canvas.rotate(-90f, height / 2f, height / 2f)
                 mEdgeGlowLeft!!.setSize(height, width)
                 if (mEdgeGlowLeft!!.draw(canvas)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 canvas.restoreToCount(restoreCount)
             }
@@ -2330,7 +2320,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
                 canvas.translate(xTranslation.toFloat(), yTranslation.toFloat())
                 mEdgeGlowTop!!.setSize(width, height)
                 if (mEdgeGlowTop!!.draw(canvas)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 canvas.restoreToCount(restoreCount)
             }
@@ -2352,7 +2342,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
                 canvas.rotate(90f, width / 2f, width / 2f)
                 mEdgeGlowRight!!.setSize(height, width)
                 if (mEdgeGlowRight!!.draw(canvas)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 canvas.restoreToCount(restoreCount)
             }
@@ -2374,7 +2364,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
                 canvas.rotate(180f, width.toFloat(), 0f)
                 mEdgeGlowBottom!!.setSize(width, height)
                 if (mEdgeGlowBottom!!.draw(canvas)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 canvas.restoreToCount(restoreCount)
             }
@@ -2521,8 +2511,8 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
             event.isScrollable = scrollable
             event.scrollX = nsvHost.scrollX
             event.scrollY = nsvHost.scrollY
-            AccessibilityRecordCompat.setMaxScrollX(event, nsvHost.scrollRangeX)
-            AccessibilityRecordCompat.setMaxScrollY(event, nsvHost.scrollRangeY)
+            event.maxScrollX = nsvHost.scrollRangeX
+            event.maxScrollY = nsvHost.scrollRangeY
         }
     }
 

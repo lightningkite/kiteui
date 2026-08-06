@@ -30,6 +30,7 @@ public abstract class NativeLinearLayoutElement(context: ElementContext) : Nativ
             native.setStyleProperty("--spacing", value?.value?.toString())
         }
 
+    @Suppress("DEPRECATION")
     @Deprecated("Will probably be removed in the future.")
     override val spacingForChildCornerRadii: Dimension
         get() = super<LinearLayoutElement>.spacingForChildCornerRadii
