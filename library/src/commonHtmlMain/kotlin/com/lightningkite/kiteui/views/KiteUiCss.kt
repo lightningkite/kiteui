@@ -143,6 +143,10 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 border-radius: 1rem;
             }
 
+            /* The linear bar's thinness cap, scoped away from the circular ring.
+               Unscoped, this capped every <progress> at 4px tall - and being !important it beat the
+               inline height sizeConstraints writes, so a ring asked for 4rem rendered as a 64x4
+               sliver. min-height appeared to fix it only because min-height wins over max-height. */
             progress.kui:not(.kiteui-circular-progress) {
                 max-height: 0.25rem !important;
             }
