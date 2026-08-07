@@ -8,13 +8,16 @@ import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import io.ktor.client.request.invoke
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
-
+import platform.Foundation.NSAttributedString
+import platform.Foundation.NSMutableAttributedString
+import platform.Foundation.NSMakeRange
 
 actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
@@ -88,6 +91,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         textField.textColor = theme.theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.theme.font
         applyAlign(_align ?: theme.theme.font.align)
+        updateHint()
     }
 
     fun updateFont() {
@@ -100,8 +104,22 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
 
     fun updateHint() {
         textField.placeholder = hint
-        // TODO: Colored hint
-//        textField.attributedPlaceholder = hint
+        if (hint.isEmpty()) {
+            textField.placeholder = ""
+            textField.attributedPlaceholder = null
+            return
+        }
+        val hintColor = textField.textColor?.colorWithAlphaComponent(0.5) ?: UIColor.lightGrayColor
+        val attrString = NSMutableAttributedString()
+
+        attrString.replaceCharactersInRange(NSMakeRange(0uL, 0uL), hint)
+
+        attrString.setAttributes(
+            mapOf<Any?, Any?>(NSForegroundColorAttributeName to hintColor),
+            NSMakeRange(0uL, hint.length.toULong())
+        )
+
+        textField.attributedPlaceholder = attrString
     }
 
     var fontAndStyle: FontAndStyle? = null
