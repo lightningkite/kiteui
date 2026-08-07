@@ -2,13 +2,33 @@
 
 ## Using Built-in Themes
 
+Every built-in factory takes the same first three parameters — `(id, background, accent)` — so
+switching design language means swapping the function name and nothing else. `background` is the
+app canvas, and **its brightness is what selects light or dark**; there is no separate flag.
+`accent` is the one brand color the theme derives everything else from. Everything after those has
+a default.
+
 ```kotlin
-// Available themes
-Theme.clean()
-Theme.flat()
-Theme.flat2()
-Theme.m3()
-Theme.shadCnLike("theme-name")
+Theme.material()      // Material 2: primary app bar, elevation shadows, all-caps actions
+Theme.material3()     // Material 3: tonal palette, pill controls, tone instead of shadow
+Theme.clean()         // Apple: grouped white cells on gray, one tint, translucent bars
+Theme.shadCnLike()    // shadcn/ui: near-neutral, hairline borders, small dense type
+Theme.light()         // light-only; surfaces separate by light, outlines mean "actionable"
+
+// Dark is the same call with a dark canvas.
+Theme.material3("app-dark", background = Color.fromHexString("#141218"))
+
+// A brand color reaches the primary action, selection, focus — and in most of these, the neutrals.
+Theme.shadCnLike("app", accent = Color.fromHexString("#2563EB"))
+```
+
+`Theme.flat` and `Theme.flat2` predate this and are still parameterized by `hue` instead.
+
+To change a theme's shape rather than its colors, derive from it with `Theme.copy` — the factories
+deliberately do not take `elevation`/`cornerRadii`/`gap`/`outline` parameters:
+
+```kotlin
+Theme.material("compact").copy(id = "compact", gap = 0.5.rem)
 ```
 
 ## Applying Semantics

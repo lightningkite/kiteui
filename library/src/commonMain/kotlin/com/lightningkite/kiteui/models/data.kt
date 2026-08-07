@@ -203,6 +203,14 @@ public data class Icon(
             Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"))
         public val chevronLeft: Icon =
             Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"))
+
+        /**
+         * [chevronRight] rotated a quarter turn, for disclosure controls that turn to point at the
+         * content they revealed. Note that [expand] and [collapse] are the fullscreen corner arrows,
+         * not chevrons.
+         */
+        public val chevronDown: Icon =
+            Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("M480-456 664-640l56 56-240 240-240-240 56-56 184 184Z"))
         public val logout: Icon = Icon(
             1.5.rem,
             1.5.rem,
@@ -496,6 +504,8 @@ public data class ImageVector(
         val strokeCap: Icon.StrokeLineCap? = null,
         val path: String
     )
+
+    public companion object
 }
 
 public data class ImageRemote(

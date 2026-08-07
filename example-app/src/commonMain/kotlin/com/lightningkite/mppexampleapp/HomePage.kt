@@ -102,25 +102,6 @@ class HomePage : Page {
                     }
                 }
             }
-            h1("Getting Started")
-            text("TODO")
-            space()
-            text("Version: ${Build.version}")
-            space()
-            text("Quick jumps for recent testing")
-            listOf(
-                PlatformFixVerificationPage,
-                WebViewPermissionPage,
-                ReviewFixVerificationPage,
-                MediaQueryPage,
-                AutoCompleteTestPage,
-                SoundEffectHandlePage,
-                AndroidFixesVerificationPage,
-                IosMiscFixesPage,
-                IosTextInputsVerificationPage,
-            ).forEach {
-                link { text { ::content { it.title() } }; to = { it } }
-            }
         }
     }
 }

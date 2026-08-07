@@ -99,6 +99,50 @@ class ShownForQueryCssTest {
         )
     }
 
+    /**
+     * [MediaQuery.And] and [MediaQuery.Or] used to join their children with plain `joinToString`,
+     * which falls back to each child's `toString()` - so a compound query reached the stylesheet as
+     * `(MinWidth(dimension=Dimension(value=40rem)) and ...)`. The browser dropped the unparseable
+     * `@media` block, the `display: none` rule inside it never applied, and every branch of a
+     * compound query rendered at once. A band picked with two breakpoints showed on top of its
+     * neighbours at every width.
+     */
+    @Test
+    fun aCompoundQueryHidesTheElementWhenOneSideFails() {
+        val el = mount(MediaQuery.And(setOf(alwaysMatches, neverMatches)))
+
+        assertEquals(
+            "none",
+            kotlinx.browser.window.getComputedStyle(el).display,
+            "an `and` query must not match when one of its parts does not",
+        )
+    }
+
+    @Test
+    fun aCompoundQueryLeavesTheElementVisibleWhenEverySideMatches() {
+        val el = mount(MediaQuery.And(setOf(alwaysMatches, MediaQuery.MinHeight(1.px))))
+
+        assertTrue(
+            kotlinx.browser.window.getComputedStyle(el).display != "none",
+            "an `and` query must match when all of its parts do",
+        )
+    }
+
+    @Test
+    fun anOrQueryHidesTheElementOnlyWhenEverySideFails() {
+        assertTrue(
+            kotlinx.browser.window.getComputedStyle(mount(MediaQuery.Or(setOf(neverMatches, alwaysMatches))))
+                .display != "none",
+            "an `or` query must match when any of its parts does",
+        )
+        assertEquals(
+            "none",
+            kotlinx.browser.window.getComputedStyle(mount(MediaQuery.Or(setOf(neverMatches, MediaQuery.MinWidth(888888.px)))))
+                .display,
+            "an `or` query must not match when none of its parts does",
+        )
+    }
+
     @Test
     fun theSameQueryReusesOneGeneratedClass() {
         // querySet used to compute a name, emit its rules, and never record it - so every element

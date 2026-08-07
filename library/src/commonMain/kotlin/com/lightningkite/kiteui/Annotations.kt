@@ -57,6 +57,34 @@ public annotation class ExperimentalKiteUi
 )
 public annotation class Untested
 
+/**
+ * Marks an API whose *signature* is stable but whose *appearance* is not.
+ *
+ * These are the opinionated, batteries-included components: you hand them your data and KiteUI
+ * decides how it looks. That decision gets refined between releases - spacing, breakpoints,
+ * which control a group collapses into, whether a label survives at a given width. Your code keeps
+ * compiling and keeps meaning the same thing; the pixels move.
+ *
+ * The practical consequences:
+ * - Don't pin screenshot or golden-HTML tests to these components. Test what they *do* - that the
+ *   right destination is selected, that the menu opens - not what they render.
+ *   Wrap them or rebuild from the lower-level components if you need a look that holds still.
+ * - Don't target their internal structure from CSS or from element-tree lookups.
+ *
+ * Opt in once at the file or module level and forget about it:
+ * ```kotlin
+ * @file:OptIn(EvolvingAppearance::class)
+ * ```
+ */
+@Suppress("ExperimentalAnnotationRetention")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "The API here is stable, but its appearance is refined between releases. Don't depend on the exact visual result - notably, don't pin screenshot tests to it."
+)
+public annotation class EvolvingAppearance
+
 
 /**
  * Marks APIs that bypass the compile-time modifier ordering system.

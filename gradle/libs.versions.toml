@@ -34,7 +34,7 @@ transition = "1.7.0"
 uriEncoding = "0.0.1-6"
 vannitechPublishing = "0.36.0"
 jsPlainObjects = "2.3.0"
-kfc = "19.3.0"
+kfc = "19.13.0"
 
 
 [libraries]

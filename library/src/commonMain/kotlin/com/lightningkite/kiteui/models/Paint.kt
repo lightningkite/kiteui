@@ -231,6 +231,34 @@ public data class Color(
         public fun hsvInterpolate(left: Color, right: Color, ratio: Float): Color =
             HSVColor.interpolate(left.toHSV(), right.toHSV(), ratio).toRGB()
 
+        /**
+         * The smallest push away from [background] that clears WCAG AA, keeping the hue intact.
+         *
+         * The counterpart to [mutedButLegible]: that one takes contrast away from a color that has
+         * it to spare, this one gives contrast to a color that is short. Status colors are where it
+         * earns its keep - a brand red is chosen to be recognizable as a fill and is routinely a
+         * point or two under the bar once it becomes error *text* on a pale surface. Rather than
+         * reject such a color or quietly swap in a neutral, this darkens or lightens it - whichever
+         * direction the background calls for - by only as much as it has to.
+         *
+         * If even pure black or white cannot clear AA against [background], the best available is
+         * returned; a mid-gray surface simply has no legible text color.
+         */
+        public fun legibleOn(foreground: Color, background: Color): Color {
+            if (foreground contrastAgainst background >= WCAG_AA_NORMAL_TEXT_CONTRAST_RATIO) return foreground
+            val target = background.maximallyContrastingForeground
+            // Contrast rises monotonically as the color moves toward that target, so binary-search
+            // the least movement that clears the bar.
+            var lo = 0f
+            var hi = 1f
+            repeat(10) {
+                val mid = (lo + hi) / 2f
+                if (interpolate(foreground, target, mid) contrastAgainst background >= WCAG_AA_NORMAL_TEXT_CONTRAST_RATIO) hi = mid
+                else lo = mid
+            }
+            return interpolate(foreground, target, hi)
+        }
+
         public fun mutedButLegible(foreground: Color, background: Color): Color {
             // Binary-search the largest interpolation toward the background that still clears the ratio.
             var lo = 0f
@@ -358,7 +386,16 @@ public data class Color(
         return 0.2126f * linearize(red) + 0.7152f * linearize(green) + 0.0722f * linearize(blue)
     }
 
-    public val maximallyContrastingForeground: Color get() = if(relativeLuminance() > 0.5f) Color.black else Color.white
+    /**
+     * White or black, whichever the WCAG contrast ratio actually says reads better on this color.
+     *
+     * Text on a mid-tone fill - an amber warning chip, a mid-blue button - is the case that
+     * decides this, and the crossover is not at half brightness: because contrast is measured
+     * against gamma-linearized luminance, black wins from about 0.18 upward. Anything picking by
+     * `brightness > 0.5` puts white on colors where black reads roughly twice as well.
+     */
+    public val maximallyContrastingForeground: Color
+        get() = if (Color.white contrastAgainst this >= Color.black contrastAgainst this) Color.white else Color.black
 }
 
 public interface ColorSpace {

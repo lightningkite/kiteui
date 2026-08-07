@@ -1351,8 +1351,10 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
 
     internal val querySetHandled: MutableMap<MediaQuery, String> = HashMap()
     private fun MediaQuery.render(): String = when(this) {
-        is MediaQuery.And -> queries.joinToString(" and ", "(", ")")
-        is MediaQuery.Or -> queries.joinToString(" or ", "(", ")")
+        // The transform is required: without it joinToString falls back to each child's toString(),
+        // which emits the Kotlin data class rendering into the stylesheet and silently kills the query.
+        is MediaQuery.And -> queries.joinToString(" and ", "(", ")") { it.render() }
+        is MediaQuery.Or -> queries.joinToString(" or ", "(", ")") { it.render() }
         is MediaQuery.DisplayMode -> when(value){
             MediaQuery.DisplayMode.Option.Browser -> "(display-mode: browser)"
             MediaQuery.DisplayMode.Option.Fullscreen -> "(display-mode: fullscreen)"

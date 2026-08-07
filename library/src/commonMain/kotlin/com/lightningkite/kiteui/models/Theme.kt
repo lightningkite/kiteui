@@ -1585,10 +1585,11 @@ public class Theme(
         /**
          * Generates a random theme for testing or demonstration purposes.
          *
-         * Creates a random theme by generating a random hue and using various
-         * theme factories (Material, Material3, Flat) with randomized properties.
-         * Each call produces a different theme with unique colors, elevations,
-         * corners, and typography.
+         * Picks one of the built-in factories and hands it a random accent on a light or dark
+         * canvas. The randomness is deliberately confined to the accent and the polarity: each
+         * built-in theme's elevation, corner and type language is the thing that makes it that
+         * design system, so scrambling those would only produce a theme that is no longer any of
+         * them. Use [randomElevationAndCorners] explicitly if that is what you want.
          *
          * @param random The random number generator to use.
          * @return A randomly generated theme.
@@ -1598,53 +1599,25 @@ public class Theme(
             val hue = random.nextFloat().turns
             val saturation = random.nextFloat() * 0.5f + 0.25f
             val value = random.nextFloat() * 0.5f + 0.25f
+            val accent = HSVColor(hue = hue, saturation = saturation, value = value).toRGB()
+            val secondary =
+                HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB()
+            // The built-in factories all take (id, background, accent, ...), so a random theme is a
+            // random accent handed to one of them on a light or a dark canvas.
+            val lightCanvas = Color.fromHexString("#FAFAFA")
+            val darkCanvas = Color.fromHexString("#121212")
             return listOf(
-                Theme.material(
-                    id = id,
-                    primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
-                    secondary = HSVColor(
-                        hue = hue + Angle.halfTurn,
-                        saturation = 1f - saturation,
-                        value = 1f - value
-                    ).toRGB(),
-                ).randomElevationAndCorners().randomTitleFontSettings(),
-                Theme.material(
-                    id = id,
-                    foreground = Color.white,
-                    background = Color.gray(0.2f),
-                    primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
-                    secondary = HSVColor(
-                        hue = hue + Angle.halfTurn,
-                        saturation = 1f - saturation,
-                        value = 1f - value
-                    ).toRGB(),
-                ).randomElevationAndCorners().randomTitleFontSettings(),
-                Theme.material3(
-                    id = id,
-                    primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
-                    secondary = HSVColor(
-                        hue = hue + Angle.halfTurn,
-                        saturation = 1f - saturation,
-                        value = 1f - value
-                    ).toRGB(),
-                    backgroundAdjust = Random.nextFloat() * 0.15f,
-                ).randomElevationAndCorners().randomTitleFontSettings(),
-                Theme.material3(
-                    id = id,
-                    foreground = Color.white,
-                    backgroundAdjust = Random.nextFloat() * 0.5f,
-                    primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
-                    secondary = HSVColor(
-                        hue = hue + Angle.halfTurn,
-                        saturation = 1f - saturation,
-                        value = 1f - value
-                    ).toRGB(),
-                ).randomElevationAndCorners().randomTitleFontSettings(),
-                Theme.flat(id = id, hue = hue, saturation = 0.15f, baseBrightness = 0.8f)
-                    .copy(id = id, cornerRadii = CornerRadii.AdaptiveToSpacing(Random.nextDouble().rem)).randomTitleFontSettings(),
-                Theme.flat(id = id, hue = hue, saturation = 0.5f)
-                    .copy(id = id, cornerRadii = CornerRadii.AdaptiveToSpacing(Random.nextDouble().rem)).randomTitleFontSettings(),
-            ).random(random)
+                { Theme.material(id, lightCanvas, accent, secondary) },
+                { Theme.material(id, darkCanvas, accent, secondary) },
+                { Theme.material3(id, lightCanvas, accent, secondary) },
+                { Theme.material3(id, darkCanvas, accent, secondary) },
+                { Theme.clean(id, lightCanvas, accent) },
+                { Theme.clean(id, Color.black, accent) },
+                { Theme.shadCnLike(id, lightCanvas, accent) },
+                { Theme.shadCnLike(id, darkCanvas, accent) },
+                { Theme.flat(id = id, hue = hue, saturation = 0.15f, baseBrightness = 0.8f) },
+                { Theme.flat(id = id, hue = hue, saturation = 0.5f) },
+            ).random(random)().randomTitleFontSettings()
         }
     }
 
