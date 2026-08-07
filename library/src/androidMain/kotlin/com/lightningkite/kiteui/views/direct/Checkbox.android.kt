@@ -5,7 +5,6 @@ import android.content.res.ColorStateList
 import androidx.core.view.ViewCompat
 import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.MutableReactiveValue

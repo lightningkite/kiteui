@@ -46,7 +46,7 @@ internal class HintPopoverTrigger(
         // (began/changed/ended) for as long as the finger is down; only open on began so a
         // single long-press opens a single popover instead of stacking one per transition.
         if (state == UIGestureRecognizerStateBegan) {
-            element.openPopover(preferredDirection, setup)
+            element.openPopover(preferredDirection, createMenu = setup)
         }
     }
 }

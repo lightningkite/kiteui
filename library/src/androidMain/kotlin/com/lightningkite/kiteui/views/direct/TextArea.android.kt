@@ -12,10 +12,8 @@ import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
-import com.lightningkite.kiteui.views.focusIsKeyboard
 import com.lightningkite.reactive.core.*
 import com.lightningkite.kiteui.views.AiDriver
 
