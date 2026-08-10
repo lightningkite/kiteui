@@ -2,6 +2,8 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.testing.BaseUiTest
+import com.lightningkite.reactive.core.RawReactive
+import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.context.invoke
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +46,37 @@ class DependentActionTest: BaseUiTest() {
         trigger.value = 1
         assertNull(action.state.exception, "dependency change should have cleared the error state")
         assertEquals(false, action.state.getOrNull(), "state should reset to a non-loading, non-error false")
+
+        scope.coroutineContext[Job]!!.cancel()
+    }
+
+    /**
+     * Regression test: a dependency going not-ready must not make a finished [DependentAction] report
+     * itself as running. Dependencies registered during a run outlive it, so a shared reactive
+     * reloading - typically because the user pressed some *other* button - used to flip every action
+     * that had ever read it to `notReady`, showing a working spinner on buttons nobody pressed.
+     */
+    @Test
+    fun dependencyNotReadyDoesNotReportRunning() {
+        val scope = CoroutineScope(Job() + Dispatchers.Unconfined)
+        val shared = RawReactive(ReactiveState(0))
+
+        val action = DependentAction(
+            title = "test",
+            icon = Icon.send,
+            keepRunningWhile = scope,
+            action = { shared() },
+        )
+
+        // Runs synchronously to completion under Unconfined, registering `shared` as a dependency.
+        action.startAction(scope)
+        assertEquals(true, action.state.ready, "action should have settled after completing")
+
+        // Something else invalidates the shared value. This action is not running, so it must not
+        // claim to be.
+        shared.state = ReactiveState.notReady
+        assertEquals(true, action.state.ready, "a not-ready dependency must not look like a running action")
+        assertNull(action.state.exception, "a not-ready dependency is not an error either")
 
         scope.coroutineContext[Job]!!.cancel()
     }

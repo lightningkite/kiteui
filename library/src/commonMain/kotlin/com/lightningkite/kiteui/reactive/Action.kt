@@ -288,9 +288,14 @@ public class DependentAction(
 ) : DependencyChangeListener(), Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
-    override fun onDependencyNotReady() {
-        reportTo.state = ReactiveState.notReady
-    }
+    // A dependency going not-ready means this action's *inputs* are unsettled, not that this action is
+    // running - and the two are indistinguishable to anything watching the action, because a button
+    // shows its working spinner for `notReady`. Reporting notReady here meant that pressing one button
+    // lit up every *other* button whose action had previously read the same shared reactive (a model
+    // cache entry, a session query): dependencies registered during a run outlive it, so those actions
+    // were still listening. Treat it as any other dependency change instead - clear the settled result,
+    // and leave a run that is actually in flight alone.
+    override fun onDependencyNotReady(): Unit = onDependencyChange()
 
     override fun onDependencyChange() {
         // Clearing is for the settled result a *finished* run left behind. A dependency moving while
