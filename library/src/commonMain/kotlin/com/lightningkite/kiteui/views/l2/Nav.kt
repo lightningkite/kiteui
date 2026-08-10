@@ -51,29 +51,73 @@ import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
 
 /**
- * A destination, grouping, or action in an app's navigation.
+ * An app's navigation: what is in it, what state it is in, and the pieces that draw it.
  *
- * The same list is handed to any of the nav variants below; each one decides how to present it at
- * a given window width. Nothing here describes appearance - a [Group] becomes an expanding section
- * in a sidebar and a dropdown in a top bar, from the same declaration.
+ * Construct one, then place its parts wherever your layout wants them:
+ *
+ * ```kotlin
+ * val nav = Nav(this, appLogo, "My App", menuItems = { listOf(Nav.Link(...), ...) })
+ * themed(OuterSemantic).col {
+ *     nav.appBar(this, menuButtonFor = MediaQuery.MaxWidth(40.rem))
+ *     expanding.frame {
+ *         navigatorView(context.pageNavigator)
+ *         nav.drawer(this, closeAbove = 40.rem)
+ *     }
+ * }
+ * ```
+ *
+ * The four `nav*` variants below are built from exactly these parts and nothing else - read one of
+ * them as a worked example. Reach for them first; assemble by hand when your layout does not fit
+ * any of the four.
+ *
+ * One instance drives every part you place, which is the point: they share the selection, the
+ * drawer's open state, and which groups are expanded, so a drawer and a rail cannot disagree.
+ *
+ * @param writer The writer the nav is built under. It is needed at construction because the
+ *   selection is derived from the page navigator reachable through it.
+ * @param footerItems Pinned to the far end of the rail and drawer, below a spacer. Account,
+ *   settings, sign out - the things that are not destinations within the app's content. Only the
+ *   parts with somewhere to put them ([rail], [drawer]) show these.
  */
 @ExperimentalKiteUi
-public sealed interface Nav {
-    public val title: String
-    public val icon: Icon
+public class Nav(
+    writer: ViewWriter,
+    public val appLogo: ImageSource,
+    public val appName: String,
+    public val showNav: ReactiveContext.() -> Boolean = { true },
+    menuItems: ReactiveContext.() -> List<Item> = { listOf() },
+    footerItems: ReactiveContext.() -> List<Item> = { listOf() },
+    actionItems: ReactiveContext.() -> List<Item> = { listOf() },
+) {
+
+    // -----------------------------------------------------------------------------------------
+    // What is in the nav
+    // -----------------------------------------------------------------------------------------
 
     /**
-     * A badge on this item - unread messages, pending approvals.
+     * A destination, grouping, or action in an app's navigation.
      *
-     * - `null` shows nothing.
-     * - `0` shows a bare dot, for "there is something here" without a number.
-     * - Anything higher shows the number.
-     *
-     * This is a plain value rather than a reactive one, so a badge that changes rebuilds the nav
-     * rather than just the badge. That is fine for something that ticks over occasionally and
-     * wasteful for something that ticks every second.
+     * The same list is handed to any of the parts below; each one decides how to present it at the
+     * width it has. Nothing here describes appearance - a [Group] becomes an expanding section in
+     * a rail and a dropdown in a top bar, from the same declaration.
      */
-    public val count: Int?
+    public sealed interface Item {
+        public val title: String
+        public val icon: Icon
+
+        /**
+         * A badge on this item - unread messages, pending approvals.
+         *
+         * - `null` shows nothing.
+         * - `0` shows a bare dot, for "there is something here" without a number.
+         * - Anything higher shows the number.
+         *
+         * This is a plain value rather than a reactive one, so a badge that changes rebuilds the
+         * nav rather than just the badge. That is fine for something that ticks over occasionally
+         * and wasteful for something that ticks every second.
+         */
+        public val count: Int?
+    }
 
     /**
      * A named set of destinations. Presented inline with a disclosure control where there is
@@ -82,11 +126,11 @@ public sealed interface Nav {
     public data class Group(
         override val title: String,
         override val icon: Icon,
-        val children: List<Nav>,
+        val children: List<Item>,
         /** See [Link.fullTitle]. */
         val fullTitle: String = title,
         override val count: Int? = null,
-    ) : Nav
+    ) : Item
 
     /**
      * A destination.
@@ -101,7 +145,7 @@ public sealed interface Nav {
         override val icon: Icon,
         override val count: Int? = null,
         val to: () -> Page,
-    ) : Nav
+    ) : Item
 
     /** A destination outside the app - docs, a status page, a support portal. */
     public data class External(
@@ -110,7 +154,7 @@ public sealed interface Nav {
         override val icon: Icon,
         override val count: Int? = null,
         val to: String,
-    ) : Nav
+    ) : Item
 
     /** Something that happens in place - sign out, open a dialog - rather than a destination. */
     public data class Action(
@@ -118,18 +162,18 @@ public sealed interface Nav {
         override val icon: Icon,
         override val count: Int? = null,
         val onSelect: suspend () -> Unit,
-    ) : Nav
+    ) : Item
 
     /**
      * An escape hatch: your own content in a nav slot. A user avatar with a name beside it, a
      * search field, a workspace switcher - anything the other four cannot express.
      *
-     * You get two forms because the variants ask for two. [wide] is used where there is room for a
+     * You get two forms because the parts ask for two. [wide] is used where there is room for a
      * label beside an icon (the labeled rail, the drawer, a popover menu, inline top-bar links);
      * [narrow] where there is not (the compact rail, the tab bar, bar actions). [narrow] defaults
      * to [wide], which is right when your content is already small.
      *
-     * Both run in a plain frame, so the surrounding variant contributes nothing but position -
+     * Both run in a plain frame, so the surrounding part contributes nothing but position -
      * selection highlighting, badges, and accessible labelling are yours to handle. [title] is
      * still used as the accessible label for the slot.
      */
@@ -138,9 +182,180 @@ public sealed interface Nav {
         override val icon: Icon = Icon.moreHoriz,
         val wide: ViewWriter.() -> Unit,
         val narrow: ViewWriter.() -> Unit = wide,
-    ) : Nav {
+    ) : Item {
         /** [Custom] draws its own content, so there is nowhere to hang a badge. */
         override val count: Int? get() = null
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // State, shared by every part
+    // -----------------------------------------------------------------------------------------
+
+    /** The destinations themselves. */
+    public val items: Reactive<List<Item>> = remember(action = menuItems)
+
+    /** See the `footerItems` constructor parameter. */
+    public val footerItems: Reactive<List<Item>> = remember(action = footerItems)
+
+    /** Shown in the app bar, as icons only. */
+    public val actionItems: Reactive<List<Item>> = remember(action = actionItems)
+
+    /** The path of the nav link that best matches the current page. See [navSelectedPath]. */
+    public val selectedPath: Reactive<List<String>?> = with(writer) { navSelectedPath(items) }
+
+    /** Whether the [drawer] is open. Set it to close the drawer after acting on something. */
+    public val drawerOpen: Signal<Boolean> = Signal(false)
+
+    /**
+     * Groups the person has explicitly opened or closed, by title. A group that is absent falls
+     * back to opening itself when it contains the current page.
+     */
+    public val groupOverrides: Signal<Map<String, Boolean>> = Signal(mapOf())
+
+    // -----------------------------------------------------------------------------------------
+    // Parts
+    //
+    // Each takes the writer to draw into, so it can be placed under any modifier chain.
+    // -----------------------------------------------------------------------------------------
+
+    /**
+     * The app bar: back button, logo, the current page's title, and the bar actions.
+     *
+     * @param menuButtonFor Where the [drawer] toggle appears, or null if there is no drawer to
+     *   toggle. `MediaQuery.MinWidth(0.dp)` reads as "at every width".
+     * @param inlineLinksFor Where [items] appear in the bar itself, as text links, or null to keep
+     *   them out of the bar.
+     */
+    @EvolvingAppearance
+    public fun appBar(
+        writer: ElementWriter.CanAddAlignment,
+        menuButtonFor: MediaQuery? = null,
+        inlineLinksFor: MediaQuery? = null,
+    ) {
+        writer.shownWhen(default = false, condition = showNav).bar.row {
+            applySafeInsets(bottom = false)
+            debugName = "app bar"
+            showOnPrint = false
+
+            // The web has the browser's own back button; everywhere else the bar has to provide one.
+            if (Platform.current != Platform.Web) centered.button {
+                icon(Icon.arrowBack, "Go back")
+                ::visible { context.pageNavigator.canGoBack() }
+                onClick { context.pageNavigator.goBack() }
+            }
+            if (menuButtonFor != null) centered.shownForQuery(menuButtonFor).toggleButton {
+                checked bind drawerOpen
+                icon(Icon.menu, "Navigation menu")
+            }
+            centered.sizeConstraints(height = 2.5.rem, width = 2.5.rem).link {
+                rawImage(appLogo, appName)
+                accessibleLabel = "$appName home"
+                to = { context.mainPageNavigator.routes.parse(UrlLikePath(listOf(), mapOf()))!! }
+            }
+
+            centered.expanding.themed(HeaderSemantic).text {
+                ::content { context.pageNavigator.currentPage()?.title?.let { it() } ?: "" }
+                wraps = false
+                ellipsis = true
+            }
+            if (inlineLinksFor != null) {
+                centered.shownForQuery(inlineLinksFor).themed(ListSemantic).rowOfExpensive(items) { element ->
+                    renderAsMenus(element, PopoverPreferredDirection.belowLeft, selectedPath) {
+                        navTextContent(element)
+                    }
+                }
+            }
+            centered.themed(ListSemantic).rowOfExpensive(actionItems) { element ->
+                renderAsMenus(element, PopoverPreferredDirection.belowLeft, selectedPath) {
+                    navIconContent(element)
+                }
+            }
+        }
+    }
+
+    /**
+     * A vertical strip of destinations beside the content.
+     *
+     * @param labeled True for the roomy form (icon beside label, groups expand in place); false for
+     *   the narrow form (icon above a small label, groups open as popovers - there is no room to
+     *   grow downward in a rail this narrow).
+     */
+    @EvolvingAppearance
+    public fun rail(writer: ElementWriter.CanAddAlignment, labeled: Boolean, width: Dimension) {
+        fun ElementWriter.CanAddTheme.item(element: Item) {
+            if (labeled) renderInline(element, this@Nav, selectedPath) {}
+            else renderAsMenus(element, PopoverPreferredDirection.rightBottom, selectedPath) {
+                navStackedContent(element)
+            }
+        }
+        writer.shownWhen(default = false, condition = showNav).sizeConstraints(width = width).nav.col {
+            debugName = if (labeled) "nav rail" else "nav rail compact"
+            showOnPrint = false
+            gap = 0.px
+            applySafeInsets(top = false)
+            expanding.themed(ListSemantic).scrolling.colOfExpensive(items) { item(it) }
+            // Account and sign-out belong at the far end, away from the destinations.
+            shownWhen(default = false) { footerItems().isNotEmpty() }
+                .themed(ListSemantic).colOfExpensive(footerItems) { item(it) }
+        }
+    }
+
+    /** The bottom tab bar. One tab per destination, each taking an equal share of the width. */
+    @EvolvingAppearance
+    public fun tabBar(writer: ElementWriter.CanAddAlignment, shown: Reactive<Boolean>) {
+        writer.shownWhen(default = false) { shown() }.nav.themed(ListSemantic).rowOfExpensive(
+            items,
+            beforeModifier = { expanding },
+        ) { element ->
+            renderAsMenus(element, PopoverPreferredDirection.aboveCenter, selectedPath) {
+                navStackedContent(element)
+            }
+        }.apply {
+            applySafeInsets(top = false)
+            debugName = "nav tabs"
+            showOnPrint = false
+        }
+    }
+
+    /**
+     * The drawer: a panel over the content, with a scrim behind it. Opened by [drawerOpen], which
+     * [appBar]'s menu button toggles.
+     *
+     * The scrim is what makes a drawer readable. Without it the panel sits on live content with no
+     * separation, and the only way to dismiss it is to find the toggle again. [dismissBackground]
+     * supplies both the dimming and the tap-to-close.
+     *
+     * @param closeAbove The width at which the layout reveals a rail or inline links instead, or
+     *   null when the drawer is the nav at every width.
+     */
+    @EvolvingAppearance
+    public fun drawer(writer: ElementWriter.CanAddAlignment, closeAbove: Dimension?) {
+        // The layout swap itself is a media query, but the open/closed state behind it is not:
+        // growing the window past the breakpoint would otherwise leave the drawer stranded open
+        // over the rail.
+        if (closeAbove != null) writer.reactive {
+            if (AppState.windowInfo().width > closeAbove) drawerOpen.value = false
+        }
+        writer.shownWhen(default = false, transition = ScreenTransition.Fade) { drawerOpen() && showNav(this) }
+            .dismissBackground {
+                padding = 0.px
+                debugName = "nav drawer"
+                showOnPrint = false
+                onClick { drawerOpen.value = false }
+                atStart.shownWhen(default = false, transition = ScreenTransition.FromLeft) { drawerOpen() }.frame {
+                    sizeConstraints(width = 17.rem).nav.col {
+                        gap = 0.px
+                        applySafeInsets(right = false)
+                        expanding.themed(ListSemantic).scrolling.colOfExpensive(items) {
+                            renderInline(it, this@Nav, selectedPath) { drawerOpen.value = false }
+                        }
+                        shownWhen(default = false) { footerItems().isNotEmpty() }
+                            .themed(ListSemantic).colOfExpensive(footerItems) {
+                                renderInline(it, this@Nav, selectedPath) { drawerOpen.value = false }
+                            }
+                    }
+                }
+            }
     }
 }
 
@@ -181,20 +396,20 @@ public fun ViewWriter.navSidebar(
     expandedBreakpoint: Dimension = 60.rem,
     compactBreakpoint: Dimension = 40.rem,
     showNav: ReactiveContext.() -> Boolean = { true },
-    menuItems: ReactiveContext.() -> List<Nav> = { listOf() },
-    footerItems: ReactiveContext.() -> List<Nav> = { listOf() },
-    actionItems: ReactiveContext.() -> List<Nav> = { listOf() },
+    menuItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
+    footerItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
+    actionItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
 ) {
-    val shell = navShell(appLogo, appName, showNav, menuItems, footerItems, actionItems)
+    val nav = Nav(this, appLogo, appName, showNav, menuItems, footerItems, actionItems)
     themed(OuterSemantic).col {
         debugName = "nav-sidebar"
-        shell.appBar(this, menuButtonFor = MediaQuery.MaxWidth(compactBreakpoint), inlineLinksFor = null)
+        nav.appBar(this, menuButtonFor = MediaQuery.MaxWidth(compactBreakpoint))
         expanding.themed(OuterSemantic).frame {
             applySafeInsets(top = false)
             debugName = "nav and content"
             themed(OuterSemantic).row {
                 shownForQuery(MediaQuery.MinWidth(expandedBreakpoint)).frame {
-                    shell.rail(this, labeled = true, width = 16.rem)
+                    nav.rail(this, labeled = true, width = 16.rem)
                 }
                 shownForQuery(
                     MediaQuery.And(
@@ -204,11 +419,11 @@ public fun ViewWriter.navSidebar(
                         )
                     )
                 ).frame {
-                    shell.rail(this, labeled = false, width = 5.5.rem)
+                    nav.rail(this, labeled = false, width = 5.5.rem)
                 }
                 expanding.navigatorView(context.pageNavigator)
             }
-            shell.drawer(this, closeAbove = compactBreakpoint)
+            nav.drawer(this, closeAbove = compactBreakpoint)
         }
         frame { applySafeInsets(top = false) }
     }
@@ -232,13 +447,13 @@ public fun ViewWriter.navTopBar(
     appName: String,
     breakpoint: Dimension = 50.rem,
     showNav: ReactiveContext.() -> Boolean = { true },
-    menuItems: ReactiveContext.() -> List<Nav> = { listOf() },
-    actionItems: ReactiveContext.() -> List<Nav> = { listOf() },
+    menuItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
+    actionItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
 ) {
-    val shell = navShell(appLogo, appName, showNav, menuItems, { listOf() }, actionItems)
+    val nav = Nav(this, appLogo, appName, showNav, menuItems, { listOf() }, actionItems)
     themed(OuterSemantic).col {
         debugName = "nav-top-bar"
-        shell.appBar(
+        nav.appBar(
             this,
             menuButtonFor = MediaQuery.MaxWidth(breakpoint),
             inlineLinksFor = MediaQuery.MinWidth(breakpoint),
@@ -246,7 +461,7 @@ public fun ViewWriter.navTopBar(
         expanding.themed(OuterSemantic).frame {
             applySafeInsets(top = false)
             navigatorView(context.pageNavigator)
-            shell.drawer(this, closeAbove = breakpoint)
+            nav.drawer(this, closeAbove = breakpoint)
         }
         frame { applySafeInsets(top = false) }
     }
@@ -274,29 +489,29 @@ public fun ViewWriter.navTabs(
     appName: String,
     breakpoint: Dimension = 40.rem,
     showNav: ReactiveContext.() -> Boolean = { true },
-    menuItems: ReactiveContext.() -> List<Nav> = { listOf() },
-    actionItems: ReactiveContext.() -> List<Nav> = { listOf() },
+    menuItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
+    actionItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
 ) {
-    val shell = navShell(appLogo, appName, showNav, menuItems, { listOf() }, actionItems)
+    val nav = Nav(this, appLogo, appName, showNav, menuItems, { listOf() }, actionItems)
     // The tab bar covers the bottom safe area itself, so the content only needs to when the tabs
     // step aside for the keyboard.
-    val tabsHandleBottom = remember { shell.showNav(this) && !AppState.softInputOpen() }
+    val tabsHandleBottom = remember { nav.showNav(this) && !AppState.softInputOpen() }
     themed(OuterSemantic).col {
         debugName = "nav-tabs"
-        shell.appBar(this, menuButtonFor = null, inlineLinksFor = null)
+        nav.appBar(this)
         expanding.themed(OuterSemantic).frame {
             applySafeInsets { edges ->
                 edges.copy(top = 0.px, bottom = if (tabsHandleBottom()) 0.px else edges.bottom)
             }
             themed(OuterSemantic).row {
                 shownForQuery(MediaQuery.MinWidth(breakpoint)).frame {
-                    shell.rail(this, labeled = false, width = 5.5.rem)
+                    nav.rail(this, labeled = false, width = 5.5.rem)
                 }
                 expanding.navigatorView(context.pageNavigator)
             }
         }
         shownForQuery(MediaQuery.MaxWidth(breakpoint)).frame {
-            shell.tabBar(this, tabsHandleBottom)
+            nav.tabBar(this, tabsHandleBottom)
         }
     }
 }
@@ -314,200 +529,22 @@ public fun ViewWriter.navDrawer(
     appLogo: ImageSource,
     appName: String,
     showNav: ReactiveContext.() -> Boolean = { true },
-    menuItems: ReactiveContext.() -> List<Nav> = { listOf() },
-    footerItems: ReactiveContext.() -> List<Nav> = { listOf() },
-    actionItems: ReactiveContext.() -> List<Nav> = { listOf() },
+    menuItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
+    footerItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
+    actionItems: ReactiveContext.() -> List<Nav.Item> = { listOf() },
 ) {
-    val shell = navShell(appLogo, appName, showNav, menuItems, footerItems, actionItems)
+    val nav = Nav(this, appLogo, appName, showNav, menuItems, footerItems, actionItems)
     themed(OuterSemantic).col {
         debugName = "nav-drawer"
         // MinWidth(0) reads as "at every width" - the drawer is this variant's only nav.
-        shell.appBar(this, menuButtonFor = MediaQuery.MinWidth(0.dp), inlineLinksFor = null)
+        nav.appBar(this, menuButtonFor = MediaQuery.MinWidth(0.dp))
         expanding.themed(OuterSemantic).frame {
             applySafeInsets(top = false)
             navigatorView(context.pageNavigator)
-            shell.drawer(this, closeAbove = null)
+            nav.drawer(this, closeAbove = null)
         }
         frame { applySafeInsets(top = false) }
     }
-}
-
-// ---------------------------------------------------------------------------------------------
-// Shared shell
-//
-// Every variant places these same pieces; they differ only in which ones and at what widths.
-// ---------------------------------------------------------------------------------------------
-
-private class NavShell(
-    val appLogo: ImageSource,
-    val appName: String,
-    val showNav: ReactiveContext.() -> Boolean,
-    val items: Reactive<List<Nav>>,
-    val footerItems: Reactive<List<Nav>>,
-    val actionItems: Reactive<List<Nav>>,
-    /** The path of the nav link that best matches the current page. See [navSelectedPath]. */
-    val selectedPath: Reactive<List<String>?>,
-) {
-    val drawerOpen: Signal<Boolean> = Signal(false)
-
-    /**
-     * Groups the person has explicitly opened or closed, by title. A group that is absent falls
-     * back to opening itself when it contains the current page.
-     */
-    val groupOverrides: Signal<Map<String, Boolean>> = Signal(mapOf())
-}
-
-private fun ViewWriter.navShell(
-    appLogo: ImageSource,
-    appName: String,
-    showNav: ReactiveContext.() -> Boolean,
-    menuItems: ReactiveContext.() -> List<Nav>,
-    footerItems: ReactiveContext.() -> List<Nav>,
-    actionItems: ReactiveContext.() -> List<Nav>,
-): NavShell {
-    val items = remember(action = menuItems)
-    return NavShell(
-        appLogo = appLogo,
-        appName = appName,
-        showNav = showNav,
-        items = items,
-        footerItems = remember(action = footerItems),
-        actionItems = remember(action = actionItems),
-        selectedPath = navSelectedPath(items),
-    )
-}
-
-/**
- * The app bar. Every variant has one; they differ only in whether it carries the drawer toggle and
- * whether the destinations themselves live in it.
- *
- * @param menuButtonFor Where the drawer toggle appears, or null for variants with no drawer.
- * @param inlineLinksFor Where the destinations appear in the bar itself, or null.
- */
-private fun NavShell.appBar(
-    writer: ElementWriter.CanAddAlignment,
-    menuButtonFor: MediaQuery?,
-    inlineLinksFor: MediaQuery?,
-) {
-    writer.shownWhen(default = false, condition = showNav).bar.row {
-        applySafeInsets(bottom = false)
-        debugName = "app bar"
-        showOnPrint = false
-
-        // The web has the browser's own back button; everywhere else the bar has to provide one.
-        if (Platform.current != Platform.Web) centered.button {
-            icon(Icon.arrowBack, "Go back")
-            ::visible { context.pageNavigator.canGoBack() }
-            onClick { context.pageNavigator.goBack() }
-        }
-        if (menuButtonFor != null) centered.shownForQuery(menuButtonFor).toggleButton {
-            checked bind drawerOpen
-            icon(Icon.menu, "Navigation menu")
-        }
-        centered.sizeConstraints(height = 2.5.rem, width = 2.5.rem).link {
-            rawImage(appLogo, appName)
-            accessibleLabel = "$appName home"
-            to = { context.mainPageNavigator.routes.parse(UrlLikePath(listOf(), mapOf()))!! }
-        }
-
-        centered.expanding.themed(HeaderSemantic).text {
-            ::content { context.pageNavigator.currentPage()?.title?.let { it() } ?: "" }
-            wraps = false
-            ellipsis = true
-        }
-        if (inlineLinksFor != null) {
-            centered.shownForQuery(inlineLinksFor).themed(ListSemantic).rowOfExpensive(items) { element ->
-                renderAsMenus(element, PopoverPreferredDirection.belowLeft, selectedPath) {
-                    navTextContent(element)
-                }
-            }
-        }
-        centered.themed(ListSemantic).rowOfExpensive(actionItems) { element ->
-            renderAsMenus(element, PopoverPreferredDirection.belowLeft, selectedPath) {
-                navIconContent(element)
-            }
-        }
-    }
-}
-
-/**
- * A vertical strip of destinations beside the content.
- *
- * @param labeled True for the roomy form (icon beside label, groups expand in place); false for
- *   the narrow form (icon above a small label, groups open as popovers - there is no room to grow
- *   downward in a rail this narrow).
- */
-private fun NavShell.rail(writer: ElementWriter.CanAddAlignment, labeled: Boolean, width: Dimension) {
-    fun ElementWriter.CanAddTheme.item(element: Nav) {
-        if (labeled) renderInline(element, this@rail, selectedPath) {}
-        else renderAsMenus(element, PopoverPreferredDirection.rightBottom, selectedPath) {
-            navStackedContent(element)
-        }
-    }
-    writer.shownWhen(default = false, condition = showNav).sizeConstraints(width = width).nav.col {
-        debugName = if (labeled) "nav rail" else "nav rail compact"
-        showOnPrint = false
-        gap = 0.px
-        applySafeInsets(top = false)
-        expanding.themed(ListSemantic).scrolling.colOfExpensive(items) { item(it) }
-        // Account and sign-out belong at the far end, away from the destinations.
-        shownWhen(default = false) { footerItems().isNotEmpty() }
-            .themed(ListSemantic).colOfExpensive(footerItems) { item(it) }
-    }
-}
-
-/** The bottom tab bar. One tab per destination, each taking an equal share of the width. */
-private fun NavShell.tabBar(writer: ElementWriter.CanAddAlignment, shown: Reactive<Boolean>) {
-    writer.shownWhen(default = false) { shown() }.nav.themed(ListSemantic).rowOfExpensive(
-        items,
-        beforeModifier = { expanding },
-    ) { element ->
-        renderAsMenus(element, PopoverPreferredDirection.aboveCenter, selectedPath) {
-            navStackedContent(element)
-        }
-    }.apply {
-        applySafeInsets(top = false)
-        debugName = "nav tabs"
-        showOnPrint = false
-    }
-}
-
-/**
- * The drawer: a panel over the content, with a scrim behind it.
- *
- * The scrim is what makes a drawer readable. Without it the panel sits on live content with no
- * separation, and the only way to dismiss it is to find the toggle again. [dismissBackground]
- * supplies both the dimming and the tap-to-close.
- *
- * @param closeAbove The width at which this variant reveals a rail or inline links instead, or
- *   null for a variant whose drawer is the nav at every width.
- */
-private fun NavShell.drawer(writer: ElementWriter.CanAddAlignment, closeAbove: Dimension?) {
-    // The layout swap itself is a media query, but the open/closed state behind it is not: growing
-    // the window past the breakpoint would otherwise leave the drawer stranded open over the rail.
-    if (closeAbove != null) writer.reactive {
-        if (AppState.windowInfo().width > closeAbove) drawerOpen.value = false
-    }
-    writer.shownWhen(default = false, transition = ScreenTransition.Fade) { drawerOpen() && showNav(this) }
-        .dismissBackground {
-            padding = 0.px
-            debugName = "nav drawer"
-            showOnPrint = false
-            onClick { drawerOpen.value = false }
-            atStart.shownWhen(default = false, transition = ScreenTransition.FromLeft) { drawerOpen() }.frame {
-                sizeConstraints(width = 17.rem).nav.col {
-                    gap = 0.px
-                    applySafeInsets(right = false)
-                    expanding.themed(ListSemantic).scrolling.colOfExpensive(items) {
-                        renderInline(it, this@drawer, selectedPath) { drawerOpen.value = false }
-                    }
-                    shownWhen(default = false) { footerItems().isNotEmpty() }
-                        .themed(ListSemantic).colOfExpensive(footerItems) {
-                            renderInline(it, this@drawer, selectedPath) { drawerOpen.value = false }
-                        }
-                }
-            }
-        }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -537,14 +574,14 @@ private fun ElementWriter.CanAddTheme.navBadge(count: Int) {
 }
 
 /** The name a screen reader reads, with the badge folded in so it is not silently visual. */
-private fun Nav.accessibleName(full: String): String = when (count) {
+private fun Nav.Item.accessibleName(full: String): String = when (count) {
     null -> full
     0 -> "$full, has updates"
     else -> "$full, $count"
 }
 
 /** The icon with its badge on the corner - the form used wherever there is no room beside it. */
-private fun ElementWriter.CanAddTheme.navIconAndBadge(element: Nav) {
+private fun ElementWriter.CanAddTheme.navIconAndBadge(element: Nav.Item) {
     fun ElementWriter.navIcon() = icon {
         source = element.icon.copy(width = 1.5.rem, height = 1.5.rem)
         description = ""
@@ -569,7 +606,7 @@ private fun ElementWriter.CanAddTheme.navIconAndBadge(element: Nav) {
 }
 
 /** Icon beside label - the roomy form, used in the labeled rail and the drawer. */
-private fun ElementWriter.CanAddTheme.navRowContent(element: Nav, disclosure: Reactive<Boolean>? = null) {
+private fun ElementWriter.CanAddTheme.navRowContent(element: Nav.Item, disclosure: Reactive<Boolean>? = null) {
     if (element is Nav.Custom) {
         frame { element.wide(this) }
         return
@@ -591,7 +628,7 @@ private fun ElementWriter.CanAddTheme.navRowContent(element: Nav, disclosure: Re
 }
 
 /** Icon above a small label - the narrow rail and the tab bar. */
-private fun ElementWriter.CanAddTheme.navStackedContent(element: Nav) {
+private fun ElementWriter.CanAddTheme.navStackedContent(element: Nav.Item) {
     if (element is Nav.Custom) {
         frame { element.narrow(this) }
         return
@@ -607,7 +644,7 @@ private fun ElementWriter.CanAddTheme.navStackedContent(element: Nav) {
 }
 
 /** Label only - inline links in a top bar, where an icon beside every word is just noise. */
-private fun ElementWriter.CanAddTheme.navTextContent(element: Nav) {
+private fun ElementWriter.CanAddTheme.navTextContent(element: Nav.Item) {
     if (element is Nav.Custom) {
         frame { element.wide(this) }
         return
@@ -624,7 +661,7 @@ private fun ElementWriter.CanAddTheme.navTextContent(element: Nav) {
 }
 
 /** Icon only - bar actions, which are identified by their icon and their accessible label. */
-private fun ElementWriter.CanAddTheme.navIconContent(element: Nav) {
+private fun ElementWriter.CanAddTheme.navIconContent(element: Nav.Item) {
     if (element is Nav.Custom) {
         frame { element.narrow(this) }
         return
@@ -643,8 +680,8 @@ private fun ElementWriter.CanAddTheme.navIconContent(element: Nav) {
  * shows you where you are without a click. Toggling it by hand takes over from then on.
  */
 private fun ElementWriter.CanAddTheme.renderInline(
-    element: Nav,
-    shell: NavShell,
+    element: Nav.Item,
+    shell: Nav,
     selectedPath: Reactive<List<String>?>,
     select: suspend () -> Unit,
 ) {
@@ -683,7 +720,7 @@ private fun ElementWriter.CanAddTheme.renderInline(
 
 /** Groups open as popover menus - the only option where there is no room to grow in place. */
 private fun ElementWriter.CanAddTheme.renderAsMenus(
-    element: Nav,
+    element: Nav.Item,
     direction: PopoverPreferredDirection,
     selectedPath: Reactive<List<String>?>,
     select: suspend () -> Unit = {},
@@ -711,7 +748,7 @@ private fun ElementWriter.CanAddTheme.renderAsMenus(
 
 /** Everything that is not a [Nav.Group] renders the same way in every variant. */
 private fun ElementWriter.CanAddTheme.renderLeaf(
-    element: Nav,
+    element: Nav.Item,
     selectedPath: Reactive<List<String>?>,
     select: suspend () -> Unit,
     content: ElementWriter.CanAddTheme.() -> Unit,
@@ -764,7 +801,7 @@ private fun ElementWriter.CanAddTheme.renderLeaf(
  * takes precedence over its parent. The root link has an empty path, which prefixes everything, so
  * it only wins when nothing else matches - exactly what it wants.
  */
-private fun ViewWriter.navSelectedPath(items: Reactive<List<Nav>>): Reactive<List<String>?> = remember {
+private fun ViewWriter.navSelectedPath(items: Reactive<List<Nav.Item>>): Reactive<List<String>?> = remember {
     val navigator = context.mainPageNavigator
     val current = navigator.currentPage()?.let { navigator.routes.render(it) }?.urlLikePath?.segments
         ?: return@remember null
@@ -776,7 +813,7 @@ private fun ViewWriter.navSelectedPath(items: Reactive<List<Nav>>): Reactive<Lis
 
 // Only Link participates in selection: External leaves the app, and Action and Custom have no
 // destination to compare against.
-private fun List<Nav>.allLinks(): List<Nav.Link> = flatMap {
+private fun List<Nav.Item>.allLinks(): List<Nav.Link> = flatMap {
     when (it) {
         is Nav.Group -> it.children.allLinks()
         is Nav.Link -> listOf(it)
@@ -785,7 +822,7 @@ private fun List<Nav>.allLinks(): List<Nav.Link> = flatMap {
 }
 
 /** Whether this element, or anything under it, is the destination at [path]. */
-private fun Nav.contains(path: List<String>, pathOf: (Page) -> List<String>?): Boolean = when (this) {
+private fun Nav.Item.contains(path: List<String>, pathOf: (Page) -> List<String>?): Boolean = when (this) {
     is Nav.Group -> children.any { it.contains(path, pathOf) }
     is Nav.Link -> pathOf(to()) == path
     is Nav.External, is Nav.Action, is Nav.Custom -> false

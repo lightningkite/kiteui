@@ -206,8 +206,24 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
         if (timeoutSet) return
         window.setTimeout({
             log?.log("invalidateLayout timeout")
-            val element = native.element as? HTMLElement ?: return@setTimeout
-            val parentElement = element.parentElement as? HTMLElement ?: return@setTimeout
+            val element = native.element as? HTMLElement
+            val parentElement = element?.parentElement as? HTMLElement
+            if (element == null || parentElement == null) {
+                // Not in the document yet, so there is nothing to lay out against. The flag must
+                // still be cleared: leaving it set would make every later invalidateLayout() on
+                // this layout a permanent no-op.
+                timeoutSet = false
+                return@setTimeout
+            }
+
+            // The constraint is otherwise only ever learned from the ResizeObserver registered in
+            // onStartup(), and that callback is only delivered while the browser is updating the
+            // rendering. Anything that keeps the first observation from arriving - a page laid out
+            // in a background tab, an ancestor that starts display:none - therefore leaves this at
+            // Size.Zero, and every delegate that declines to lay out at zero size (Recycler2 does)
+            // renders nothing until some later resize happens to arrive. Measure it ourselves the
+            // first time instead of waiting to be told.
+            if (lastConstraintSize == Size.Zero) remeasureConstrainedSize()
 
             // run measure
             currentSize = lastConstraintSize

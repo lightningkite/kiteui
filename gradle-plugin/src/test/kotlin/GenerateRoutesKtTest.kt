@@ -13,6 +13,7 @@ import java.io.File
  *   (c) Parser order: specific routes (constant segments) before variable routes
  *   (d) Duplicate/ambiguous route templates throw a helpful error
  *   (e) Malformed @Routable (missing path string) throws a helpful error
+ *   (f) A string literal containing a MIME wildcard glob does not open a phantom block comment
  */
 class GenerateRoutesKtTest {
 
@@ -152,6 +153,38 @@ class GenerateRoutesKtTest {
             assertTrue("Error must name ItemByIdScreen", "ItemByIdScreen" in msg)
             assertTrue("Error must name ItemBySlugScreen", "ItemBySlugScreen" in msg)
         }
+    }
+
+    // ---- (f) "/*" inside a string literal must not open a phantom block comment -------------
+
+    @Test
+    fun `a string literal containing slash-star does not swallow the rest of the class body`() {
+        // Before the fix, the naive block-comment regex treated the "/*" in "image/*" as the
+        // start of a real comment and deleted everything up to the next "*/" (the one inside
+        // the trailing line comment below), taking the class's closing brace with it. That left
+        // the source with unbalanced braces, which afterBraces() then reported as a failure.
+        val source = """
+            package com.example
+
+            @Routable("courses/{id}/manage")
+            class CourseManagementPage(val id: String) {
+                @QueryParameter
+                val mode: String = ""
+                fun pickImage() {
+                    requestFile(listOf("image/*"))
+                }
+                fun clone() {
+                    doThing().takeIf { false /*allowedToCreateCourse()*/ }
+                }
+            }
+        """.trimIndent()
+
+        val result = generateFromSources("CourseManagementPage.kt" to source)
+
+        assertTrue("route generation must succeed and reference the class",
+            result.contains("CourseManagementPage"))
+        assertTrue("the @QueryParameter inside the class body must still be found",
+            result.contains("\"mode\""))
     }
 
 }

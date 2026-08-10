@@ -9,8 +9,6 @@ private fun String.indexOf(startIndex: Int, vararg chars: Char): Int {
     }.minOrNull() ?: length
 }
 
-private val blockComment = Regex("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/")
-
 // Matches val/var as a keyword (word-boundary aware), avoiding false matches
 // inside longer identifiers like `private`, `invalidate`, etc.
 private val valOrVarKeyword = Regex("""\bva[lr]\b""")
@@ -34,7 +32,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                 .map { it.trim() }
                 .filter { !it.startsWith("//") }
                 .joinToString("\n")
-                .replace(blockComment, "")
+                .stripBlockComments()
 
             val packageName = text.substringAfter("package ").substringBefore("\n").trim()
             var index = 0

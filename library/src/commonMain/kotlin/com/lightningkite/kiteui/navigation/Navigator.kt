@@ -18,8 +18,18 @@ public class PageNavigator(private val routesGetter: ()->Routes) {
 
     public val stack: Signal<List<Page>> = Signal(listOf())
 
-    public val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
-    public val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
+    // reentrancyLimit>0: a page whose render() re-entrantly navigates (the "redirect page"
+    // pattern - show a spinner, then replace()/navigate() from a coroutine that doesn't actually
+    // suspend) mutates `stack` while this calculation may still be unwinding an earlier mutation's
+    // listener cascade - most visibly the very first time something reads currentPage/canGoBack
+    // and activates this remember{}, since that activation is itself nested inside the stack
+    // mutation that triggered it. Without a positive limit here, that shows up as a permanently
+    // stuck currentPage (a swallowed ReactiveReentrancyException) even though `stack` itself
+    // updated correctly and the redirect wrote to it in good faith. See SwapView.swapping()'s
+    // matching reentrancyLimit, which handles the same pattern one layer up but does not, by
+    // itself, cover this one - the two were found and fixed together.
+    public val currentPage: Reactive<Page?> = remember(reentrancyLimit = 8) { stack().lastOrNull() }
+    public val canGoBack: Reactive<Boolean> = remember(reentrancyLimit = 8) { stack().size > 1 }
 
     private val allowNavigate get(): Boolean {
         val notBlocked = (stack.value.lastOrNull() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true

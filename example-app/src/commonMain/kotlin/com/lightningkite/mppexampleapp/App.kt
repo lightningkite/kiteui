@@ -63,7 +63,7 @@ fun ViewWriter.app(navigator: PageNavigator) {
     val appLogo = ImageVector.kiteUiLogo()
     val appName = "KiteUI Example"
     val showNav: ReactiveContext.() -> Boolean = { navigator.currentPage() !is UseFullPage }
-    val menuItems: ReactiveContext.() -> List<Nav> = {
+    val menuItems: ReactiveContext.() -> List<Nav.Item> = {
         listOf(
             Nav.Link(title = "Home", icon = Icon.home) { HomePage() },
             Nav.Link(title = "Docs", fullTitle = "Documentation", icon = Icon.list) { DocSearchPage },
@@ -81,7 +81,7 @@ fun ViewWriter.app(navigator: PageNavigator) {
             )
         )
     }
-    val footerItems: ReactiveContext.() -> List<Nav> = {
+    val footerItems: ReactiveContext.() -> List<Nav.Item> = {
         listOf(
             Nav.Custom(
                 title = "Nav style",
@@ -91,7 +91,7 @@ fun ViewWriter.app(navigator: PageNavigator) {
             Nav.Link(title = "Settings", icon = Icon.settings) { SettingsPage() },
         )
     }
-    val actionItems: ReactiveContext.() -> List<Nav> = {
+    val actionItems: ReactiveContext.() -> List<Nav.Item> = {
         listOf(
             Nav.Link(title = "Search", icon = Icon.search, count = 0, to = { DocSearchPage }),
             // The escape hatch: content the other four kinds cannot express. Note that it reads
