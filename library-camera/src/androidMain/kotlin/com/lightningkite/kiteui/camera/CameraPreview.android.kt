@@ -87,9 +87,7 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
         }
     }
 
-    @OverrideOnly
-    override fun onStartup() {
-        super.onStartup()
+    private fun bindCamera() {
         cameraController.apply {
             bindToLifecycle(context.activity)
             cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -110,7 +108,15 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
                 analysisPipeline.forEach { it(imageProxy, imageProxyRelease) }
             }
         }
+    }
 
+    @OverrideOnly
+    override fun onStartup() {
+        super.onStartup()
+
+        // Resolve the CAMERA permission before binding the controller to the lifecycle;
+        // binding first causes CameraX to attempt to open the camera before the user has
+        // been asked, which can fail with a SecurityException.
         if (ContextCompat.checkSelfPermission(context.activity, Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_DENIED
         ) {
@@ -118,10 +124,12 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
                 Manifest.permission.CAMERA,
                 onResult = { result: KiteUiActivity.PermissionResult ->
                     _hasPermissions.value = result.accepted
+                    if (result.accepted) bindCamera()
                 }
             )
         } else {
             _hasPermissions.value = true
+            bindCamera()
         }
     }
 
@@ -141,9 +149,9 @@ actual class CameraPreview actual constructor(context: ElementContext) : NativeE
                     }
 
                 val file = File(AndroidAppContext.applicationCtx.filesDir, "${timestamp()}.jpg")
-                val outputStream = FileOutputStream(file)
-                translated.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-                outputStream.close()
+                FileOutputStream(file).use { outputStream ->
+                    translated.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                }
 
                 val outputUri = file.toUri()
                 val image = ImageLocal(FileReference(outputUri))

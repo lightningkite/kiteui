@@ -26,19 +26,33 @@ import kotlinx.coroutines.delay
  * ```
  *
  * @param basePath The base path for URL resolution
- * @param windowWidth The assumed window width for responsive calculations
- * @param windowHeight The assumed window height for responsive calculations
  * @param userAgent The client's User-Agent string from the HTTP request.
  *                  This is used to determine Platform.probablyAppleUser and other
  *                  platform-specific rendering decisions to match client-side hydration.
  *                  - by Claude
  */
-class SsrContext(
-    val basePath: String = "/",
-    val windowWidth: Int = 1920,
-    val windowHeight: Int = 1080,
-    val userAgent: String? = null,
+public class SsrContext(
+    internal val basePath: String = "/",
+    internal val userAgent: String? = null,
 ) : SsrResourceRegistry {
+    /**
+     * The viewport (window width/height) is unavailable during SSR: the server never learns the
+     * client's actual screen size, so any value here would be a guess that can silently mismatch
+     * real devices - e.g. a phone hydrating a tree that was structured for a hard-coded desktop
+     * width. These accessors throw instead of returning a guessed value, so that any code that
+     * needs viewport-dependent DOM *structure* fails loudly during SSR rather than shipping a
+     * layout that's subtly wrong on hydration. Structural (DOM-shape) responsiveness must be
+     * CSS-only (media queries) or use the coarse [com.lightningkite.kiteui.Platform] hint instead.
+     * - by Claude
+     */
+    internal val windowWidth: Int get() = throw UnsupportedOperationException(
+        "Viewport width is unavailable during SSR; structural (DOM-shape) responsiveness must be " +
+            "CSS-only - use CSS media queries or the coarse Platform hint instead."
+    )
+    internal val windowHeight: Int get() = throw UnsupportedOperationException(
+        "Viewport height is unavailable during SSR; structural (DOM-shape) responsiveness must be " +
+            "CSS-only - use CSS media queries or the coarse Platform hint instead."
+    )
     /** The coroutine scope for loading SsrResource data */
     private val loadingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -46,7 +60,7 @@ class SsrContext(
     private val renderScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
 
     /** Cancel all coroutines started during rendering. Call this after serialize() is done. */
-    fun cancel() {
+    internal fun cancel() {
         // Shut down the element tree first so onRemove callbacks fire before scopes are cancelled
         renderedFrame?.onShutdown()
         loadingScope.cancel()
@@ -54,16 +68,16 @@ class SsrContext(
     }
 
     /** The underlying RContext for KiteUI rendering */
-    val elementContext = ElementContext(basePath)
+    internal val elementContext: ElementContext = ElementContext(basePath)
 
     /** The default theme to use for rendering */
-    var theme: Theme? = null
+    internal var theme: Theme? = null
 
     /** Page metadata - can be set during rendering */
-    var title: String? = null
-    var description: String? = null
-    var canonicalUrl: String? = null
-    val metaTags: MutableMap<String, String> = mutableMapOf()
+    internal var title: String? = null
+    internal var description: String? = null
+    internal var canonicalUrl: String? = null
+    internal val metaTags: MutableMap<String, String> = mutableMapOf()
 
     /** Storage for preloaded data (legacy API) */
     private val preloadedData = mutableMapOf<String, Any?>()
@@ -82,6 +96,10 @@ class SsrContext(
      * Register an SSR resource for tracking and data loading.
      */
     override fun registerResource(resource: SsrResource<*>) {
+        // Keys must be unique per page; a silent overwrite here would drop the first
+        // resource's data from the exported map while leaving it wired into that
+        // component's reactive bindings, producing incomplete SSR HTML with no error.
+        check(resource.key !in resources) { "Duplicate SsrResource key: '${resource.key}' - keys must be unique per page" }
         resources[resource.key] = resource
         resource.startLoading(loadingScope)
     }
@@ -90,7 +108,7 @@ class SsrContext(
      * Await all registered resources until they are loaded.
      * Throws if any resource fails to load.
      */
-    suspend fun awaitAllResources() {
+    internal suspend fun awaitAllResources() {
         resources.values.forEach { resource ->
             resource.awaitLoaded()
         }
@@ -103,14 +121,14 @@ class SsrContext(
      * Export all resource data as a map of key to serialized JSON.
      * Call this after awaitAllResources() completes.
      */
-    fun exportResourceData(): Map<String, String> {
+    internal fun exportResourceData(): Map<String, String> {
         return resources.mapValues { (_, resource) -> resource.serialize() }
     }
 
     /**
      * Preload data that can be retrieved during rendering.
      */
-    fun <T> preload(key: String, value: T) {
+    internal fun <T> preload(key: String, value: T) {
         preloadedData[key] = value
     }
 
@@ -118,7 +136,7 @@ class SsrContext(
      * Get preloaded data by key.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T> getPreloaded(key: String): T? = preloadedData[key] as? T
+    internal fun <T> getPreloaded(key: String): T? = preloadedData[key] as? T
 
     /** The rendered frame - stored for deferred serialization */
     private var renderedFrame: Frame? = null
@@ -135,7 +153,7 @@ class SsrContext(
      * Platform.probablyAppleUser returns correct values for the client.
      * - by Claude
      */
-    fun render(content: ViewWriter.() -> Unit) {
+    internal fun render(content: ViewWriter.() -> Unit) {
         // Set user agent context for platform detection during rendering - by Claude
         SsrUserAgentContext.withUserAgent(userAgent) {
             // Flush any pending CSS from previous operations
@@ -177,7 +195,7 @@ class SsrContext(
      * Serialize the rendered frame to an SsrResult.
      * Call this AFTER awaiting all resources so reactive bindings have updated.
      */
-    fun serialize(): SsrResult {
+    internal fun serialize(): SsrResult {
         val frame = renderedFrame ?: throw IllegalStateException("render() must be called before serialize()")
 
         // Build HTML from rendered content (now with updated reactive values)
@@ -202,7 +220,7 @@ class SsrContext(
      * Legacy: Render content and serialize immediately (no resource waiting).
      * For pages that don't use SsrResource, this is equivalent to the old behavior.
      */
-    fun renderAndSerialize(content: ViewWriter.() -> Unit): SsrResult {
+    internal fun renderAndSerialize(content: ViewWriter.() -> Unit): SsrResult {
         render(content)
         return serialize()
     }
@@ -210,7 +228,7 @@ class SsrContext(
     /**
      * Render a Page (deferred serialization).
      */
-    fun renderPage(page: Page) {
+    internal fun renderPage(page: Page) {
         // Use the page's title if we don't have one set
         if (title == null) {
             // The title is reactive, so we read its current value
@@ -227,7 +245,7 @@ class SsrContext(
     /**
      * Legacy: Render a Page and serialize immediately.
      */
-    fun renderPageAndSerialize(page: Page): SsrResult {
+    internal fun renderPageAndSerialize(page: Page): SsrResult {
         renderPage(page)
         return serialize()
     }

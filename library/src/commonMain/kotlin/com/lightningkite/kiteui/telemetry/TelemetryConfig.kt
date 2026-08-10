@@ -7,7 +7,7 @@ package com.lightningkite.kiteui.telemetry
  * Everything else has sensible defaults following the KiteUI philosophy of
  * "make the correct decision the default."
  */
-data class TelemetryConfig(
+public data class TelemetryConfig(
     /** OTLP HTTP endpoint, e.g. "https://otlp-gateway-prod-us-central-0.grafana.net/otlp" */
     val endpoint: String,
     /** HTTP headers for authentication, e.g. mapOf("Authorization" to "Basic ...") */

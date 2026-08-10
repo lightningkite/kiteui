@@ -14,15 +14,16 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Build
 import android.os.Looper
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.annotation.RequiresApi
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.KiteUiActivity
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.afterTimeout
@@ -46,10 +47,10 @@ import com.lightningkite.reactive.context.onRemove
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
-    abstract val native: View
+public actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
+    public abstract val native: View
 
-    var removeListener: (() -> Unit)? = null
+    internal var removeListener: (() -> Unit)? = null
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
             throw Exception("Cannot create views on any thread but the main thread")
@@ -59,7 +60,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
-    open fun defaultLayoutParams(): LayoutParams =
+    public open fun defaultLayoutParams(): LayoutParams =
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
     actual override var opacity: Double = 1.0
@@ -134,7 +135,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         set(value) {
             super.labelFor = value
             if (value != null) {
-                val targetView = (value.underlyingNativeElement as NativeElement).native
+                val targetView = value.underlyingNativeElement.native
                 if (targetView.id == View.NO_ID) {
                     targetView.id = View.generateViewId()
                 }
@@ -172,19 +173,66 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
+    /**
+     * Where in this view the current gesture went down, in view coordinates, or null if no touch
+     * has been seen.
+     *
+     * Translated from [KiteUiActivity.lastTouchDownOnScreen] rather than recorded here: a `View`'s
+     * own `OnTouchListener` runs only after child dispatch, so a row containing anything that
+     * consumes touches - a plain text view does - would never see the press that started its own
+     * drag. The activity sees every gesture first, unconditionally.
+     *
+     * internal rather than private so a test can confirm the translation, which is otherwise only
+     * observable inside a drag shadow the platform has already taken ownership of.
+     */
+    internal val grabPoint: Point?
+        get() {
+            val screen = KiteUiActivity.lastTouchDownOnScreen ?: return null
+            val viewOnScreen = IntArray(2).also(native::getLocationOnScreen)
+            return Point(screen.x - viewOnScreen[0], screen.y - viewOnScreen[1])
+        }
+
+    /**
+     * Anchors the drag shadow at the point the view was grabbed.
+     *
+     * The platform's own `View.DragShadowBuilder` puts the touch point at the centre of the shadow,
+     * so the row jumps to centre itself under the finger the instant a drag begins, and every later
+     * position is offset by however far from the middle it was picked up.
+     */
+    internal class GrabPointShadowBuilder(view: View, private val grab: Point) : View.DragShadowBuilder(view) {
+        override fun onProvideShadowMetrics(outShadowSize: Point?, outShadowTouchPoint: Point?) {
+            val v = view ?: return
+            // A zero-size shadow is rejected by the platform, hence the floor of 1.
+            outShadowSize?.set(v.width.coerceAtLeast(1), v.height.coerceAtLeast(1))
+            outShadowTouchPoint?.set(
+                grab.x.coerceIn(0, v.width.coerceAtLeast(1)),
+                grab.y.coerceIn(0, v.height.coerceAtLeast(1)),
+            )
+        }
+    }
+
     // drag 'n drop
     actual override var dragData: DragData? = null
         set(value) {
             field = value
-            if (value == null) native.setOnLongClickListener(null)
-            else native.setOnLongClickListener {
-                native.startDrag(
-                    ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data)),
-                    value.dragShadow?.let(::DragShadowBuilder) ?: View.DragShadowBuilder(native),
-                    value,
-                    0
-                )
-                true
+            if (value == null) {
+                native.setOnLongClickListener(null)
+            } else {
+                native.setOnLongClickListener {
+                    val clipData = ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data))
+                    val shadowBuilder = value.dragShadow?.let(::DragShadowBuilder)
+                        ?: grabPoint?.let { GrabPointShadowBuilder(native, it) }
+                        // No recorded touch means the drag was not started by one - the platform's
+                        // centred shadow is as good a guess as any.
+                        ?: View.DragShadowBuilder(native)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        native.startDragAndDrop(clipData, shadowBuilder, value, 0)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        native.startDrag(clipData, shadowBuilder, value, 0)
+                    }
+                    true
+                }
             }
         }
 
@@ -261,7 +309,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
-    actual fun screenRectangle(): Rect? {
+    public actual fun screenRectangle(): Rect? {
         val r = android.graphics.Rect()
         native.getGlobalVisibleRect(r)
         return Rect(
@@ -271,7 +319,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
             bottom = r.bottom.toDouble(),
         )
     }
-    actual fun parentRectangle(): Rect? {
+    public actual fun parentRectangle(): Rect? {
         return Rect(
             left = native.left.toDouble(),
             top = native.top.toDouble(),
@@ -287,7 +335,10 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     protected var backgroundBlock: GradientDrawable? = null
 
-    fun updateCorners() {
+    /** Whether the corner-radius handling below turned on `clipToOutline`, so it knows to turn it off again. */
+    private var appliedCornerClip: Boolean = false
+
+    public fun updateCorners() {
         @Suppress("DEPRECATION")
         val cr = when (val it = theme.cornerRadii) {
             is CornerRadii.AdaptiveToSpacing -> min((parent?.spacingForChildCornerRadii ?: 0.px).value, it.value.value)
@@ -310,31 +361,61 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         // When a view has corner radii and draws a background, clip children to the
         // rounded outline. This matches web behavior where border-radius + overflow: hidden
         // clips content (e.g. images inside a rounded frame).
-        // We use Outline.setPath() with the per-corner radii array so PerCorner is respected.
-        // A rounded rect path is always convex, so this works on API 21+.
+        //
+        // Which Outline shape is used decides whether clipping happens at all: View.clipToOutline
+        // only clips outlines for which Outline.canClip() is true, and that excludes path-based
+        // outlines below API 33 (canClip() returned `mMode != MODE_PATH` until then; setConvexPath
+        // is just setPath, so neither helps). setRoundRect is clippable on every supported level,
+        // so it is used whenever all four corners share a radius - which is every case except an
+        // explicit CornerRadii.PerCorner that switches some corners off. Those genuinely cannot be
+        // expressed as a round rect and fall back to the path, which still gives a correct shadow
+        // everywhere and correct clipping from API 33 on.
         if (cr > 0f && themeAndBack.drawBackground) {
+            val uniformRadius = radii.all { it == radii[0] }
             val capturedRadii = radii.copyOf()
             native.outlineProvider = object : ViewOutlineProvider() {
-                @RequiresApi(Build.VERSION_CODES.R)
                 override fun getOutline(view: View, outline: Outline) {
-                    val path = Path().apply {
-                        addRoundRect(
-                            RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
-                            capturedRadii,
-                            Path.Direction.CW
+                    if (uniformRadius) {
+                        // A radius larger than the view degenerates to a pill; Skia scales the
+                        // path form down the same way, so clamping here keeps the two in step.
+                        outline.setRoundRect(
+                            0,
+                            0,
+                            view.width,
+                            view.height,
+                            capturedRadii[0].coerceAtMost(min(view.width, view.height) / 2f)
                         )
+                    } else {
+                        val path = Path().apply {
+                            addRoundRect(
+                                RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
+                                capturedRadii,
+                                Path.Direction.CW
+                            )
+                        }
+                        @Suppress("DEPRECATION")
+                        outline.setConvexPath(path)
                     }
-                    outline.setPath(path)
                 }
             }
             native.clipToOutline = true
+            appliedCornerClip = true
+        } else if (appliedCornerClip) {
+            // Undo our own clip when the theme stops asking for one - a reactive `::theme` switching
+            // from a rounded card to a flat background would otherwise leave children cut to the old
+            // radius forever. Tracked with a flag rather than by reading clipToOutline, because other
+            // elements (RawImageView, ProgressBar) set it on their own natives and must not be reset
+            // here just because this element has no corners.
+            appliedCornerClip = false
+            native.clipToOutline = false
+            native.outlineProvider = ViewOutlineProvider.BACKGROUND
         } else if (!native.clipToOutline) {
             native.outlineProvider = ViewOutlineProvider.BACKGROUND
         }
     }
 
     // Map to track active animators for each view property
-    companion object {
+    internal companion object {
         private val activeAnimators = mutableMapOf<String, ValueAnimator>()
         // by Claude - cache reflected Method to avoid repeated getMethod() calls on every clickable element
         private val rippleSetDrawableMethod: java.lang.reflect.Method? by lazy {
@@ -500,4 +581,4 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     actual override var showOnPrint: Boolean = true
 }
 
-val Element.native get() = underlyingNativeElement.native
+public val Element.native: View get() = underlyingNativeElement.native

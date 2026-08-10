@@ -2,12 +2,11 @@ package com.lightningkite.kiteui.utils
 
 import com.lightningkite.kiteui.views.AndroidAppContext
 
-actual fun getAppVersion(): String {
-    try {
+public actual fun getAppVersion(): String {
+    return try {
         val packageInfo = AndroidAppContext.applicationCtx.packageManager.getPackageInfo(AndroidAppContext.applicationCtx.packageName, 0)
-        return packageInfo.versionName ?:""
+        packageInfo.versionName ?: ""
     } catch (e: Exception) {
         ""
     }
-    return ""
 }

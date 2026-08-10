@@ -12,12 +12,12 @@ import platform.UIKit.*
 import platform.objc.sel_registerName
 
 @OptIn(ExperimentalNativeApi::class)
-class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
-    val calculationContextWeak = WeakReference(calculationContext)
+internal class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
+    public val calculationContextWeak: WeakReference<CalculationContext> = WeakReference(calculationContext)
 
     // Explicit frame prevents UnsatisfiableConstraints error when automatic constraints are set by the system
     // https://stackoverflow.com/questions/54284029/uitoolbar-with-uibarbuttonitem-layoutconstraint-issue
-    val toolbar = UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
+    public val toolbar: UIToolbar = UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
         barStyle = UIBarStyleDefault
         setTranslucent(true)
         sizeToFit()
@@ -33,12 +33,12 @@ class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRect
         }
     }
     @ObjCAction
-    fun done() {
+    public fun done() {
         resignFirstResponder()
         calculationContextWeak.get()?.let { action?.startAction(it) }
     }
 
-    var action: Action? = null
+    public var action: Action? = null
         set(value) {
             field = value
             toolbar.setItems(listOf(

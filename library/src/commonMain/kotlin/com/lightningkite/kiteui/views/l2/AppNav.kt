@@ -13,45 +13,45 @@ import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.reactive.core.*
 
-data class UserInfo(
+public data class UserInfo(
     val name: String,
     val profileImage: ImageVector? = null,
     val defaultIcon: Icon,
 )
 
-interface AppNav {
-    var appName: String
-    var appIcon: Icon
-    var appLogo: ImageSource
-    var navItems: List<NavElement>
-    var actions: List<NavElement>
-    var exists: Boolean
+public interface AppNav {
+    public var appName: String
+    public var appIcon: Icon
+    public var appLogo: ImageSource
+    public var navItems: List<NavElement>
+    public var actions: List<NavElement>
+    public var exists: Boolean
 
-    class ByProperty : AppNav {
-        val appNameProperty = Signal("My App")
+    public class ByProperty : AppNav {
+        public val appNameProperty: Signal<String> = Signal("My App")
         override var appName: String by appNameProperty
-        val appIconProperty = Signal<Icon>(Icon.home)
+        public val appIconProperty: Signal<Icon> = Signal<Icon>(Icon.home)
         override var appIcon: Icon by appIconProperty
-        val appLogoProperty = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
+        public val appLogoProperty: Signal<ImageSource> = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
         override var appLogo: ImageSource by appLogoProperty
-        val navItemsProperty = Signal(listOf<NavElement>())
+        public val navItemsProperty: Signal<List<NavElement>> = Signal(listOf<NavElement>())
         override var navItems: List<NavElement> by navItemsProperty
-        val actionsProperty = Signal<List<NavElement>>(listOf())
+        public val actionsProperty: Signal<List<NavElement>> = Signal<List<NavElement>>(listOf())
         override var actions: List<NavElement> by actionsProperty
-        val existsProperty = Signal(true)
+        public val existsProperty: Signal<Boolean> = Signal(true)
         override var exists: Boolean by existsProperty
     }
 }
 
 
-val ElementContext.appNavFactory by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
+public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> Unit> by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
     Signal(
         ViewWriter::appNavBottomTabs
     )
 )
 
-fun ElementWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit) {
-    return appBase(main, dialog) {
+public fun ElementWriter.appNav(main: PageNavigator, setup: AppNav.() -> Unit) {
+    return appBase(main) {
         swapView {
             debugName = "swap-appNavFactory"
             swapping(
@@ -62,7 +62,7 @@ fun ElementWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, set
     }
 }
 
-fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
+public fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     val showMenu = Signal(false)
     themed(OuterSemantic).col {
@@ -78,8 +78,8 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             }
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { pageNavigator.canGoBack() }
-                onClick { pageNavigator.goBack() }
+                ::visible { context.pageNavigator.canGoBack() }
+                onClick { context.pageNavigator.goBack() }
             }
             centered.expanding.themed(HeaderSemantic).text {
                 ::content.invoke { context.pageNavigator.currentPage()?.title?.let { it() } ?: "" }
@@ -92,7 +92,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
         expanding.frame {
             applySafeInsets(top = false)
             debugName = "menu and navigator container"
-            navigatorView(pageNavigator)
+            navigatorView(context.pageNavigator)
             atStart.shownWhen(false) { showMenu() && appNav.existsProperty() }.nav.scrolling.navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
                 gap = 0.px
             }
@@ -101,7 +101,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
 }
 
 
-fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
+public fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
     themed(OuterSemantic).col {
@@ -111,11 +111,11 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { pageNavigator.canGoBack() }
-                onClick { pageNavigator.goBack() }
+                ::visible { context.pageNavigator.canGoBack() }
+                onClick { context.pageNavigator.goBack() }
             }
             centered.themed(HeaderSemantic).text {
-                ::content { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
+                ::content { context.pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             }
@@ -125,11 +125,11 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
             centered.navGroupActions(appNav.actionsProperty)
             ::shown { appNav.existsProperty() }
         }
-        beforeSetup { applySafeInsets(top = false) }.expanding.navigatorView(pageNavigator)
+        beforeSetup { applySafeInsets(top = false) }.expanding.navigatorView(context.pageNavigator)
     }
 }
 
-fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
+public fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     themed(OuterSemantic).col {
         debugName = "outer nav"
@@ -140,21 +140,21 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
                 debugName = "apple app bar"
                 showOnPrint = false
                 setup(appNav)
-                atStart.onNext(InteractiveSemantic).button {
+                atStart.themed(InteractiveSemantic).button {
                     row {
                         gap = 0.px
                         centered.icon(Icon.chevronLeft, "Go Back")
                         centered.text {
                             ::content {
-                                pageNavigator.stack().let { it.getOrNull(it.size - 2) }?.title?.let { it().let { if (it.length > 15) it.take(15) + "\u2026" else it } } ?: ""
+                                context.pageNavigator.stack().let { it.getOrNull(it.size - 2) }?.title?.let { it().let { if (it.length > 15) it.take(15) + "\u2026" else it } } ?: ""
                             }
                         }
                     }
-                    ::visible { pageNavigator.canGoBack() }
-                    onClick { pageNavigator.goBack() }
+                    ::visible { context.pageNavigator.canGoBack() }
+                    onClick { context.pageNavigator.goBack() }
                 }
                 centered.expanding.themed(HeaderSemantic).text {
-                    ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
+                    ::content.invoke { context.pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
                 }
@@ -169,11 +169,11 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
                 setup(appNav)
                 if (Platform.current != Platform.Web) button {
                     icon(Icon.arrowBack, "Go Back")
-                    ::visible { pageNavigator.canGoBack() }
-                    onClick { pageNavigator.goBack() }
+                    ::visible { context.pageNavigator.canGoBack() }
+                    onClick { context.pageNavigator.goBack() }
                 }
                 centered.expanding.themed(HeaderSemantic).text {
-                    ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
+                    ::content.invoke { context.pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
                 }
@@ -193,7 +193,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
                     bottom = if (!tabsHandleBottom()) edges.bottom else 0.px,
                 )
             }
-        }.expanding.navigatorView(pageNavigator)
+        }.expanding.navigatorView(context.pageNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         nav.navGroupTabs(appNav.navItemsProperty) {
             applySafeInsets(top = false)
@@ -204,7 +204,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     }
 }
 
-fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
+public fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     themed(OuterSemantic).col {
 // Nav 4 left and top - add dropdown for user info
@@ -214,11 +214,11 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { pageNavigator.canGoBack() }
-                onClick { pageNavigator.goBack() }
+                ::visible { context.pageNavigator.canGoBack() }
+                onClick { context.pageNavigator.goBack() }
             }
             centered.themed(HeaderSemantic).text {
-                ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
+                ::content.invoke { context.pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             }
@@ -232,7 +232,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
                 ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
             }
-            beforeSetup { applySafeInsets(top = false) }.expanding.navigatorView(pageNavigator)
+            beforeSetup { applySafeInsets(top = false) }.expanding.navigatorView(context.pageNavigator)
         }
     }
 }

@@ -7,7 +7,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.measureTime
 
-class KiteUiCss(val dynamicCss: DynamicCss) {
+public class KiteUiCss(public val dynamicCss: DynamicCss) {
     init {
         // basis rules
         //language=CSS
@@ -143,9 +143,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 border-radius: 1rem;
             }
 
+            /* The linear bar's thinness cap, scoped away from the circular ring.
+               Unscoped, this capped every <progress> at 4px tall - and being !important it beat the
+               inline height sizeConstraints writes, so a ring asked for 4rem rendered as a 64x4
+               sliver. min-height appeared to fix it only because min-height wins over max-height. */
+            progress.kui:not(.kiteui-circular-progress) {
+                max-height: 0.25rem !important;
+            }
+
             progress.kui {
                 background: none;
-                max-height: 0.25rem !important;
                 border: medium;
                 border-radius: 1rem;
                 padding: 0px !important;
@@ -170,19 +177,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 margin: 10px auto;
             }
 
-            .circle-progress-background {
-                          fill: none;
-                          stroke: var(--nearest-background-color); !important;
-                          stroke-width: 3;
-            }
-            
-            .circle-progress {
-                fill: none;
-                stroke-width:2.8;
-                stroke-linecap: round;
-                animation: progress 1s ease-out forwards;
-                  stroke: currentcolor;
-            }
 
             @media (pointer: coarse) and (hover: none) {
                 .touchscreenOnly {
@@ -335,9 +329,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .kui.scroll-horizontal  * {
                 max-width: unset;
-            }
-            .kui.scroll-horizontal * {
-                max-width: 100;
             }
 
             .kui.scroll-vertical {
@@ -798,6 +789,73 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             )
         } catch (e: Throwable) { /*squish*/
         }
+        /*
+         * The circular progress ring. Shares the <progress> tag with the linear bar above, so the
+         * element and its parts have to be restyled here rather than left to inherit the bar rules.
+         *
+         * The arc is a conic-gradient swept to --kiteui-progress turns, masked down to a band so
+         * the middle stays hollow. Driving it from a custom property means updating the ratio is a
+         * single style write with no arc geometry recomputed in script, and it renders identically
+         * from server-side HTML because the markup alone carries the value.
+         */
+        try {
+            dynamicCss.rule(
+                """progress.kui.kiteui-circular-progress {
+                    --kiteui-progress: 0;
+                    --kiteui-progress-width: 3px;
+                    appearance: none;
+                    -webkit-appearance: none;
+                    border: none;
+                    aspect-ratio: 1 / 1;
+                    border-radius: 50%;
+                    background: conic-gradient(
+                        currentcolor calc(var(--kiteui-progress) * 360deg),
+                        var(--nearest-background-color, transparent) 0
+                    );
+                    -webkit-mask: radial-gradient(
+                        closest-side,
+                        transparent calc(100% - var(--kiteui-progress-width)),
+                        #000 calc(100% - var(--kiteui-progress-width))
+                    );
+                    mask: radial-gradient(
+                        closest-side,
+                        transparent calc(100% - var(--kiteui-progress-width)),
+                        #000 calc(100% - var(--kiteui-progress-width))
+                    );
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        // These must out-specify the linear bar's own progress.kui::-webkit-progress-* rules above,
+        // hence naming the tag and both classes: otherwise the bar paints over the ring.
+        try {
+            dynamicCss.rule(
+                """progress.kui.kiteui-circular-progress::-webkit-progress-bar {
+                    background: transparent;
+                    border-radius: 0;
+                    padding: 0;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """progress.kui.kiteui-circular-progress::-webkit-progress-value {
+                    background: transparent;
+                    background-color: transparent;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.rule(
+                """progress.kui.kiteui-circular-progress::-moz-progress-bar {
+                    background: transparent;
+                    background-color: transparent;
+                }"""
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
         try {
             dynamicCss.rule(
                 """input.kui::-webkit-outer-spin-button, input.kui::-webkit-inner-spin-button {
@@ -817,7 +875,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     }
 
     private val transitionHandled = HashSet<String>()
-    fun transition(transition: ScreenTransition): String {
+    public fun transition(transition: ScreenTransition): String {
         if (!transitionHandled.add(transition.name)) return "transition-${transition.name}"
 
         fun Transformation.toCssTransform(): String {
@@ -891,18 +949,18 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
     private var cssGenTotal: Duration = 0.seconds
     private val themeInteractiveHandled = HashSet<String>()
-    fun themeInteractive(theme: Theme): String {
+    public fun themeInteractive(theme: Theme): String {
         if (!themeInteractiveHandled.add(theme.id)) return theme.classes
         measureTime {
             theme.derivedFrom?.let { themeInteractive(it) }
             theme(theme)
             val cs = theme.classSelector
-            fun sub(subthemeGen: Semantic?, asSelectors: List<String>) {
+            fun sub(subthemeGen: Semantic?, asSelectors: List<String>, diff: Theme = theme) {
                 val subtheme = subthemeGen?.let { s -> theme[s] } ?: theme.withoutBack
                 if (theme != subtheme.theme) {
                     theme(
                         subtheme.theme,
-                        diff = theme,
+                        diff,
                         asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs") },
                         includeMaybeTransition = subtheme.drawBackground
                     )
@@ -910,7 +968,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 val hov = subtheme[HoverSemantic]
                 theme(
                     hov.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:hover$it $cs",
@@ -923,7 +981,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 val foc = subtheme[FocusSemantic]
                 theme(
                     foc.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:focus-visible$it $cs",
@@ -939,7 +997,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 val dwn = subtheme[DownSemantic]
                 theme(
                     dwn.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:active$it $cs",
@@ -951,7 +1009,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 val dis = subtheme[DisabledSemantic]
                 theme(
                     dis.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:disabled$it $cs",
@@ -963,7 +1021,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 val print = subtheme[PrintSemantic]
                 theme(
                     print.theme,
-                    diff = theme,
+                    diff,
                     asSelectors = asSelectors.map { "$it$cs$cs" },
                     includeMaybeTransition = print.drawBackground,
                     mediaQuery = "print"
@@ -972,6 +1030,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             sub(null, asSelectors = listOf(""))
             sub(
                 SelectedSemantic,
+                diff = theme[UnselectedSemantic].theme,
                 asSelectors = listOf(".checked.checkResponsive"),
             )
             sub(
@@ -991,7 +1050,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
         getter().takeUnless { diff?.getter() == it }
 
-    fun theme(
+    internal fun theme(
         theme: Theme,
         diff: Theme? = null,
         asSelectors: List<String> = listOf(theme.classSelector),
@@ -1168,18 +1227,24 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
         }
         
-        theme.diff(diff) { transform }?.let {
+        // theme.diff can't distinguish "unchanged" from "changed to null" since it flattens T?,
+        // so the transform-cleared case is checked explicitly here.
+        if (diff == null || diff.transform != theme.transform) {
+            val it = theme.transform
             if (it != null) {
                 val transformParts = mutableListOf<String>()
                 
-                // Add translation transforms
+                // Add translation transforms.
+                //
+                // All three components are always written. translate3d() takes exactly three
+                // arguments, so emitting only the non-zero ones produced `translate3d(10px)` for a
+                // purely horizontal move - invalid, which makes the browser discard the whole
+                // `transform` declaration and take the rotation and scale below down with it. That
+                // is why a theme setting all three appeared to apply only one of them.
                 if (it.translationX != 0.0 || it.translationY != 0.0 || it.translationZ != 0.0) {
-                    val translateParts = mutableListOf<String>()
-                    if (it.translationX != 0.0) translateParts.add("${it.translationX}px")
-                    if (it.translationY != 0.0) translateParts.add("${it.translationY}px")
-                    if (it.translationZ != 0.0) translateParts.add("${it.translationZ}px")
-                    
-                    transformParts.add("translate3d(${translateParts.joinToString(", ")})")
+                    transformParts.add(
+                        "translate3d(${it.translationX}px, ${it.translationY}px, ${it.translationZ}px)"
+                    )
                 }
                 
                 // Add rotation transforms
@@ -1209,10 +1274,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         return classes
     }
 
-    fun Edges.css() = "${top.value} ${right.value} ${bottom.value} ${left.value}"
+    internal fun Edges.css(): String = "${top.value} ${right.value} ${bottom.value} ${left.value}"
 
-    val rowCollapsingToColumnHandled = HashSet<String>()
-    fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
+    internal val rowCollapsingToColumnHandled: MutableSet<String> = HashSet<String>()
+    public fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
         val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.roughPx.roundToInt().toString() }}"
         if (rowCollapsingToColumnHandled.add(name)) {
             dynamicCss.rule(
@@ -1284,7 +1349,68 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         return name
     }
 
-    inline fun apply(theme: Theme, out: (prop: String, value: String) -> Unit) {
-
+    internal val querySetHandled: MutableMap<MediaQuery, String> = HashMap()
+    private fun MediaQuery.render(): String = when(this) {
+        // The transform is required: without it joinToString falls back to each child's toString(),
+        // which emits the Kotlin data class rendering into the stylesheet and silently kills the query.
+        is MediaQuery.And -> queries.joinToString(" and ", "(", ")") { it.render() }
+        is MediaQuery.Or -> queries.joinToString(" or ", "(", ")") { it.render() }
+        is MediaQuery.DisplayMode -> when(value){
+            MediaQuery.DisplayMode.Option.Browser -> "(display-mode: browser)"
+            MediaQuery.DisplayMode.Option.Fullscreen -> "(display-mode: fullscreen)"
+            MediaQuery.DisplayMode.Option.MinimalUI -> "(display-mode: minimal-ui)"
+            MediaQuery.DisplayMode.Option.PictureInPicture -> "(display-mode: picture-in-picture)"
+            MediaQuery.DisplayMode.Option.Standalone -> "(display-mode: standalone)"
+            MediaQuery.DisplayMode.Option.WindowControlsOverlay -> "(display-mode: window-controls-overlay)"
+        }
+        is MediaQuery.Hover -> when(value){
+            MediaQuery.Hover.Option.None -> "(hover: none)"
+            MediaQuery.Hover.Option.Hover -> "(hover: hover)"
+        }
+        is MediaQuery.Pointer -> when(value){
+            MediaQuery.Pointer.Option.None -> "(pointer: none)"
+            MediaQuery.Pointer.Option.Coarse -> "(pointer: coarse)"
+            MediaQuery.Pointer.Option.Fine -> "(pointer: fine)"
+        }
+        is MediaQuery.Update -> when(value){
+            MediaQuery.Update.Option.None -> "(update: none)"
+            MediaQuery.Update.Option.Slow -> "(update: slow)"
+            MediaQuery.Update.Option.Fast -> "(update: fast)"
+        }
+        is MediaQuery.MaxAspectRatio -> "(max-aspect-ratio: $ratio)"
+        is MediaQuery.MinAspectRatio -> "(min-aspect-ratio: $ratio)"
+        is MediaQuery.MaxHeight -> "(max-height: ${dimension.value})"
+        is MediaQuery.MaxWidth -> "(max-width: ${dimension.value})"
+        is MediaQuery.MinHeight -> "(min-height: ${dimension.value})"
+        is MediaQuery.MinWidth -> "(min-width: ${dimension.value})"
+    }
+    /**
+     * A class that hides its element unless [query] matches.
+     *
+     * Emitted as a single negated rule rather than a base rule plus an `@media` override, for two
+     * reasons that both bit the previous version:
+     *
+     * - [DynamicCss.rule] inserts at the *top* of the stylesheet by default, so of two rules with
+     *   equal specificity the one added second ends up first and loses. The `@media` override was
+     *   added second, so the base rule won and the element was never shown, whatever the viewport.
+     * - Restoring a hidden element needs to know what `display` it should go back to, which varies
+     *   per element (`flex` for containers, `block` for text). Negating the query means only the
+     *   hidden state is ever written, so nothing has to be restored.
+     *
+     * `display: none` rather than `visibility`, because this modifier sits in the `shownWhen` slot:
+     * a non-matching element must take no space. `visibility: collapse` computes to `hidden` on
+     * anything that is not a table row or column, which reserves the full layout box.
+     *
+     * `!important` is load-bearing, and is why `visibility` was reached for originally: layout
+     * writes `display` as an *inline* style (`display: flex` on every container), and an inline
+     * declaration outranks any stylesheet selector however specific. An author `!important`
+     * declaration does outrank a normal inline one, so this is the only way a class can win.
+     */
+    public fun querySet(query: MediaQuery): String = querySetHandled.getOrPut(query) {
+        val name = "querySet_${query.render().filter { it.isLetterOrDigit() }}"
+        // `not all and` rather than bare `not`: it means the same thing and parses under the
+        // original media-query grammar as well as the current one.
+        dynamicCss.rule("@media not all and ${query.render()} { .$name { display: none !important } }")
+        name
     }
 }

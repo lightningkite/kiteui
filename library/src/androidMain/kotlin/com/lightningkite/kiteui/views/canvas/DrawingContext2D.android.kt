@@ -18,27 +18,27 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-abstract class DrawingView : View {
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+public abstract class DrawingView : View {
+    public constructor(context: Context?) : super(context)
+    public constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+    public constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 }
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual abstract class DrawingContext2D(val canvas: Canvas) {
-    val currentPath = Path()
-    val clearPaint = android.graphics.Paint().apply {
+public actual abstract class DrawingContext2D {
+    public abstract val canvas: Canvas
+    public val currentPath: Path = Path()
+    public val clearPaint: android.graphics.Paint = android.graphics.Paint().apply {
         color = android.graphics.Color.TRANSPARENT
         setXfermode(PorterDuffXfermode(PorterDuff.Mode.DST_OUT))
     }
-    var fillPaintObj = android.graphics.Paint().apply { style = android.graphics.Paint.Style.FILL }
-    var strokePaintObj = android.graphics.Paint().apply { style = android.graphics.Paint.Style.STROKE }
-    val drawingResource = DrawingResources()
-    actual abstract fun save()
-    actual abstract fun restore()
-    actual abstract fun scale(x: Double, y: Double)
-    actual abstract fun rotate(angle: Double)
-    actual abstract fun translate(x: Double, y: Double)
-    actual abstract fun transform(
+    public var fillPaintObj: android.graphics.Paint = android.graphics.Paint().apply { style = android.graphics.Paint.Style.FILL }
+    public var strokePaintObj: android.graphics.Paint = android.graphics.Paint().apply { style = android.graphics.Paint.Style.STROKE }
+    public val drawingResource: DrawingResources = DrawingResources()
+    public actual abstract fun save()
+    public actual abstract fun restore()
+    public actual abstract fun scale(x: Double, y: Double)
+    public actual abstract fun rotate(angle: Double)
+    public actual abstract fun translate(x: Double, y: Double)
+    public actual abstract fun transform(
         a: Double,
         b: Double,
         c: Double,
@@ -47,24 +47,24 @@ actual abstract class DrawingContext2D(val canvas: Canvas) {
         f: Double
     )
 
-    actual abstract var globalAlpha: Double
-    actual abstract var globalCompositeOperation: String
-    actual abstract var imageSmoothingEnabled: Boolean
-    actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun beginPath()
-    actual abstract fun stroke()
-    actual abstract var lineWidth: Double
-    actual abstract var miterLimit: Double
-    actual abstract var lineDashOffset: Double
-    abstract fun setLineDash(segments: Array<Double>)
-    abstract fun getLineDash(): Array<Double>
-    actual abstract fun closePath()
-    actual abstract fun moveTo(x: Double, y: Double)
-    actual abstract fun lineTo(x: Double, y: Double)
-    actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
-    actual abstract fun bezierCurveTo(
+    public actual abstract var globalAlpha: Double
+    public actual abstract var globalCompositeOperation: String
+    public actual abstract var imageSmoothingEnabled: Boolean
+    public actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun beginPath()
+    public actual abstract fun stroke()
+    public actual abstract var lineWidth: Double
+    public actual abstract var miterLimit: Double
+    public actual abstract var lineDashOffset: Double
+    public abstract fun setLineDash(segments: Array<Double>)
+    public abstract fun getLineDash(): Array<Double>
+    public actual abstract fun closePath()
+    public actual abstract fun moveTo(x: Double, y: Double)
+    public actual abstract fun lineTo(x: Double, y: Double)
+    public actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
+    public actual abstract fun bezierCurveTo(
         cp1x: Double,
         cp1y: Double,
         cp2x: Double,
@@ -91,11 +91,19 @@ actual abstract class DrawingContext2D(val canvas: Canvas) {
 //        rotation: Double
 //    )
 
-    actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
 
 }
 
-class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
+public class DrawingContext2DImpl(
+    override val canvas: Canvas,
+    /**
+     * Resolved layout direction of the [View] this canvas is drawing for, used to map
+     * [TextAlign.start]/[TextAlign.end] to the correct physical side under RTL locales - see
+     * [textAlign]. Defaults to LTR for callers (tests, previews) that don't have a View to ask.
+     */
+    internal val isRtl: Boolean = false,
+): DrawingContext2D() {
     // Internal state tracking
     internal var lineDashSegments: List<Double> = emptyList()
     internal var _shadowBlur: Double = 0.0
@@ -104,11 +112,53 @@ class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
     internal var _shadowOffsetY: Double = 0.0
     internal val transformMatrix: Matrix = Matrix()
 
+    // canvas.save()/restore() only roll back the transform matrix and clip. Fill/stroke
+    // style (color, alpha, dash, shadow, line width/cap/join) lives in fillPaintObj/
+    // strokePaintObj and the tracked shadow/dash/alpha fields below, none of which the
+    // Canvas snapshots on its own, so we mirror the same push/pop here to match the
+    // save/restore contract that Web and iOS provide.
+    private data class PaintState(
+        val fillPaint: android.graphics.Paint,
+        val strokePaint: android.graphics.Paint,
+        val lineDashSegments: List<Double>,
+        val lineDashOffset: Double,
+        val globalAlpha: Double,
+        val shadowBlur: Double,
+        val shadowColor: Color,
+        val shadowOffsetX: Double,
+        val shadowOffsetY: Double,
+    )
+    private val paintStateStack = ArrayDeque<PaintState>()
+
     override fun save() {
         canvas.save()
+        paintStateStack.addLast(
+            PaintState(
+                fillPaint = android.graphics.Paint(fillPaintObj),
+                strokePaint = android.graphics.Paint(strokePaintObj),
+                lineDashSegments = lineDashSegments,
+                lineDashOffset = _lineDashOffset,
+                globalAlpha = _globalAlpha,
+                shadowBlur = _shadowBlur,
+                shadowColor = _shadowColor,
+                shadowOffsetX = _shadowOffsetX,
+                shadowOffsetY = _shadowOffsetY,
+            )
+        )
     }
     override fun restore() {
         canvas.restore()
+        paintStateStack.removeLastOrNull()?.let {
+            fillPaintObj = it.fillPaint
+            strokePaintObj = it.strokePaint
+            lineDashSegments = it.lineDashSegments
+            _lineDashOffset = it.lineDashOffset
+            _globalAlpha = it.globalAlpha
+            _shadowBlur = it.shadowBlur
+            _shadowColor = it.shadowColor
+            _shadowOffsetX = it.shadowOffsetX
+            _shadowOffsetY = it.shadowOffsetY
+        }
     }
     override fun scale(x: Double, y: Double) {
         canvas.scale(x.toFloat(), y.toFloat())
@@ -282,20 +332,20 @@ class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
 //    }
 }
 
-actual fun DrawingContext2D.fill() {
+public actual fun DrawingContext2D.fill() {
     currentPath.fillType = Path.FillType.WINDING
     canvas.drawPath(currentPath, fillPaintObj)
 }
-actual fun DrawingContext2D.fillEvenOdd()  {
+public actual fun DrawingContext2D.fillEvenOdd()  {
     currentPath.fillType = Path.FillType.EVEN_ODD
     canvas.drawPath(currentPath, fillPaintObj)
 }
-actual var DrawingContext2D.strokePaint: com.lightningkite.kiteui.models.Paint
+public actual var DrawingContext2D.strokePaint: com.lightningkite.kiteui.models.Paint
     get() = Color.fromInt(strokePaintObj.color)
     set(value) {
         applyPaintToAndroidPaint(value, strokePaintObj)
     }
-actual var DrawingContext2D.fillPaint: com.lightningkite.kiteui.models.Paint
+public actual var DrawingContext2D.fillPaint: com.lightningkite.kiteui.models.Paint
     get() = Color.fromInt(fillPaintObj.color)
     set(value) {
         applyPaintToAndroidPaint(value, fillPaintObj)
@@ -354,12 +404,12 @@ private fun DrawingContext2D.applyPaintToAndroidPaint(
         }
     }
 }
-actual val DrawingContext2D.width: Double
+public actual val DrawingContext2D.width: Double
     get() = canvas.width.toDouble()
-actual val DrawingContext2D.height: Double
+public actual val DrawingContext2D.height: Double
     get() = canvas.height.toDouble()
 
-actual fun DrawingContext2D.appendArc(
+public actual fun DrawingContext2D.appendArc(
     x: Double,
     y: Double,
     radius: Double,
@@ -408,7 +458,7 @@ actual fun DrawingContext2D.appendArc(
     currentPath.addArc(oval, startDegrees, sweepDegrees)
 }
 
-actual fun DrawingContext2D.drawText(
+public actual fun DrawingContext2D.drawText(
     text: String,
     x: Double,
     y: Double
@@ -421,7 +471,7 @@ actual fun DrawingContext2D.drawText(
     )
 }
 
-actual fun DrawingContext2D.drawOutlinedText(
+public actual fun DrawingContext2D.drawOutlinedText(
     text: String,
     x: Double,
     y: Double
@@ -434,29 +484,37 @@ actual fun DrawingContext2D.drawOutlinedText(
     )
 }
 
-actual fun DrawingContext2D.font(
+public actual fun DrawingContext2D.font(
     size: Double,
     value: FontAndStyle
 ) {
-    fillPaintObj.setTypeface(value.font)
+    fillPaintObj.setTypeface(value.font.toTypeface())
     fillPaintObj.textSize = size.toFloat()
+    // strokePaintObj backs drawOutlinedText, so it needs the same typeface/size.
+    strokePaintObj.setTypeface(value.font.toTypeface())
+    strokePaintObj.textSize = size.toFloat()
 }
 
-actual fun DrawingContext2D.textAlign(alignment: TextAlign) {
+public actual fun DrawingContext2D.textAlign(alignment: TextAlign) {
+    // start/end are direction-relative (CSS semantics): under RTL, start means the right edge.
+    // isRtl comes from the drawing View's resolved layoutDirection - see DrawingContext2DImpl and
+    // its construction in Canvas.android.kt#onDraw. Contexts without a View (e.g. unit tests)
+    // default to LTR, matching left/right below.
+    val isRtl = (this as? DrawingContext2DImpl)?.isRtl == true
     fillPaintObj.textAlign = when(alignment) {
-        TextAlign.start -> android.graphics.Paint.Align.LEFT  // TODO: locales
-        TextAlign.end -> android.graphics.Paint.Align.RIGHT  // TODO: locales
+        TextAlign.start -> if (isRtl) android.graphics.Paint.Align.RIGHT else android.graphics.Paint.Align.LEFT
+        TextAlign.end -> if (isRtl) android.graphics.Paint.Align.LEFT else android.graphics.Paint.Align.RIGHT
         TextAlign.left -> android.graphics.Paint.Align.LEFT
         TextAlign.right -> android.graphics.Paint.Align.RIGHT
         TextAlign.center -> android.graphics.Paint.Align.CENTER
     }
 }
 
-actual fun DrawingContext2D.clear() {
+public actual fun DrawingContext2D.clear() {
     canvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.DST_OUT)
 }
 
-actual var DrawingContext2D.lineCapStyle: LineCap
+public actual var DrawingContext2D.lineCapStyle: LineCap
     get() = when (strokePaintObj.strokeCap) {
         android.graphics.Paint.Cap.BUTT -> LineCap.butt
         android.graphics.Paint.Cap.ROUND -> LineCap.round
@@ -471,7 +529,7 @@ actual var DrawingContext2D.lineCapStyle: LineCap
         }
     }
 
-actual var DrawingContext2D.lineJoinStyle: LineJoin
+public actual var DrawingContext2D.lineJoinStyle: LineJoin
     get() = when (strokePaintObj.strokeJoin) {
         android.graphics.Paint.Join.MITER -> LineJoin.miter
         android.graphics.Paint.Join.ROUND -> LineJoin.round
@@ -490,12 +548,12 @@ actual var DrawingContext2D.lineJoinStyle: LineJoin
 // Clipping
 // ============================================================================
 
-actual fun DrawingContext2D.clip() {
+public actual fun DrawingContext2D.clip() {
     currentPath.fillType = Path.FillType.WINDING
     canvas.clipPath(currentPath)
 }
 
-actual fun DrawingContext2D.clip(fillRule: FillRule) {
+public actual fun DrawingContext2D.clip(fillRule: FillRule) {
     currentPath.fillType = when (fillRule) {
         FillRule.nonzero -> Path.FillType.WINDING
         FillRule.evenodd -> Path.FillType.EVEN_ODD
@@ -504,7 +562,7 @@ actual fun DrawingContext2D.clip(fillRule: FillRule) {
 }
 
 @Suppress("DEPRECATION")
-actual fun DrawingContext2D.resetClip() {
+public actual fun DrawingContext2D.resetClip() {
     // Note: Region.Op.REPLACE is deprecated but there's no direct replacement for resetting clip
     // The recommended approach is to use save/restore, but this function is for cases where
     // that's not possible
@@ -521,7 +579,7 @@ actual fun DrawingContext2D.resetClip() {
 // Line Dash
 // ============================================================================
 
-actual fun DrawingContext2D.setLineDash(segments: List<Double>) {
+public actual fun DrawingContext2D.setLineDash(segments: List<Double>) {
     if (this is DrawingContext2DImpl) {
         lineDashSegments = segments
         if (segments.isEmpty()) {
@@ -535,7 +593,7 @@ actual fun DrawingContext2D.setLineDash(segments: List<Double>) {
     }
 }
 
-actual fun DrawingContext2D.getLineDash(): List<Double> {
+public actual fun DrawingContext2D.getLineDash(): List<Double> {
     return if (this is DrawingContext2DImpl) {
         lineDashSegments
     } else {
@@ -547,7 +605,7 @@ actual fun DrawingContext2D.getLineDash(): List<Double> {
 // Text Metrics
 // ============================================================================
 
-actual fun DrawingContext2D.measureText(text: String): TextMetrics {
+public actual fun DrawingContext2D.measureText(text: String): TextMetrics {
     val width = fillPaintObj.measureText(text).toDouble()
     val fontMetrics = fillPaintObj.fontMetrics
     val ascent = -fontMetrics.ascent.toDouble()  // ascent is negative in Android
@@ -565,7 +623,7 @@ actual fun DrawingContext2D.measureText(text: String): TextMetrics {
 // Shapes
 // ============================================================================
 
-actual fun DrawingContext2D.roundRect(x: Double, y: Double, width: Double, height: Double, radius: Double) {
+public actual fun DrawingContext2D.roundRect(x: Double, y: Double, width: Double, height: Double, radius: Double) {
     val r = radius.toFloat()
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         currentPath.addRoundRect(
@@ -585,7 +643,7 @@ actual fun DrawingContext2D.roundRect(x: Double, y: Double, width: Double, heigh
     }
 }
 
-actual fun DrawingContext2D.roundRect(
+public actual fun DrawingContext2D.roundRect(
     x: Double, y: Double, width: Double, height: Double,
     topLeftRadius: Double, topRightRadius: Double,
     bottomRightRadius: Double, bottomLeftRadius: Double
@@ -616,7 +674,7 @@ actual fun DrawingContext2D.roundRect(
     }
 }
 
-actual fun DrawingContext2D.ellipse(
+public actual fun DrawingContext2D.ellipse(
     x: Double, y: Double,
     radiusX: Double, radiusY: Double,
     rotation: Double,
@@ -670,11 +728,11 @@ actual fun DrawingContext2D.ellipse(
 // Hit Testing
 // ============================================================================
 
-actual fun DrawingContext2D.isPointInPath(x: Double, y: Double): Boolean {
+public actual fun DrawingContext2D.isPointInPath(x: Double, y: Double): Boolean {
     return isPointInPath(x, y, FillRule.nonzero)
 }
 
-actual fun DrawingContext2D.isPointInPath(x: Double, y: Double, fillRule: FillRule): Boolean {
+public actual fun DrawingContext2D.isPointInPath(x: Double, y: Double, fillRule: FillRule): Boolean {
     // Save the original fill type
     val originalFillType = currentPath.fillType
 
@@ -734,7 +792,7 @@ private fun DrawingContext2D.applyShadowToPaints() {
     }
 }
 
-actual var DrawingContext2D.shadowBlur: Double
+public actual var DrawingContext2D.shadowBlur: Double
     get() = if (this is DrawingContext2DImpl) _shadowBlur else 0.0
     set(value) {
         if (this is DrawingContext2DImpl) {
@@ -743,7 +801,7 @@ actual var DrawingContext2D.shadowBlur: Double
         }
     }
 
-actual var DrawingContext2D.shadowColorValue: Color
+public actual var DrawingContext2D.shadowColorValue: Color
     get() = if (this is DrawingContext2DImpl) _shadowColor else Color.transparent
     set(value) {
         if (this is DrawingContext2DImpl) {
@@ -752,7 +810,7 @@ actual var DrawingContext2D.shadowColorValue: Color
         }
     }
 
-actual var DrawingContext2D.shadowOffsetX: Double
+public actual var DrawingContext2D.shadowOffsetX: Double
     get() = if (this is DrawingContext2DImpl) _shadowOffsetX else 0.0
     set(value) {
         if (this is DrawingContext2DImpl) {
@@ -761,7 +819,7 @@ actual var DrawingContext2D.shadowOffsetX: Double
         }
     }
 
-actual var DrawingContext2D.shadowOffsetY: Double
+public actual var DrawingContext2D.shadowOffsetY: Double
     get() = if (this is DrawingContext2DImpl) _shadowOffsetY else 0.0
     set(value) {
         if (this is DrawingContext2DImpl) {
@@ -774,7 +832,7 @@ actual var DrawingContext2D.shadowOffsetY: Double
 // Transform
 // ============================================================================
 
-actual fun DrawingContext2D.getTransform(): TransformMatrix {
+public actual fun DrawingContext2D.getTransform(): TransformMatrix {
     if (this is DrawingContext2DImpl) {
         val values = FloatArray(9)
         transformMatrix.getValues(values)
@@ -798,7 +856,7 @@ actual fun DrawingContext2D.getTransform(): TransformMatrix {
     return TransformMatrix.identity
 }
 
-actual fun DrawingContext2D.setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) {
+public actual fun DrawingContext2D.setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) {
     if (this is DrawingContext2DImpl) {
         // Reset the canvas matrix to identity first
         // We need to get the current matrix and invert it to reset

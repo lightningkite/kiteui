@@ -8,6 +8,6 @@ import kotlinx.coroutines.CoroutineScope
  * A [CoroutineScope] with helper functions which require an additional [CoroutineScope] context.
  * This will eventually be removed in favor of context parameters.
  * */
-interface KiteUiCoroutineScopeHelpers : CoroutineScopeHelpers {
-    operator fun Action.invoke() = startAction(this@KiteUiCoroutineScopeHelpers)
+public interface KiteUiCoroutineScopeHelpers : CoroutineScopeHelpers {
+    public operator fun Action.invoke(): Unit = startAction(this@KiteUiCoroutineScopeHelpers)
 }

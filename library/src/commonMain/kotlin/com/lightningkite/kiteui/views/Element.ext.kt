@@ -10,15 +10,15 @@ import com.lightningkite.reactive.core.Release
 import kotlinx.coroutines.CoroutineScope
 
 
-val Element.theme: Theme get() = themeAndBack.theme
+public val Element.theme: Theme get() = themeAndBack.theme
 
-var Element.padding: Dimension?
+public var Element.padding: Dimension?
     get() = paddingByEdge?.left
     set(value) { paddingByEdge = value?.let(::Edges) }
 
-fun Element.closestElementWriter(): ElementWriter? = (this as? ElementWriter) ?: this.parent
+public fun Element.closestElementWriter(): ElementWriter? = (this as? ElementWriter) ?: this.parent
 
-fun Element.viewPath(): String = generateSequence(this) { it.parent }
+public fun Element.viewPath(): String = generateSequence(this) { it.parent }
     .map { element ->
         val id = element.debugName ?: element.parent?.children?.indexOf(element)?.toString() ?: ""
         val type = element::class.simpleName ?: "anonymous"
@@ -35,19 +35,15 @@ private class FalseWhenSuccessful(val status: Reactive<*>): Reactive<Boolean> {
 
     override fun addListener(listener: () -> Unit): Release = status.addListener(listener)
 }
-@Suppress("UNCHECKED_CAST")
-val NativeElement.working: Reactive<Boolean> get() =
-    context.addons.local.getOrPut("NativeElement.working") { FalseWhenSuccessful(foregroundProcesses) } as Reactive<Boolean>
+public val NativeElement.working: Reactive<Boolean> get() = FalseWhenSuccessful(foregroundProcesses)
 
-@Suppress("UNCHECKED_CAST")
-val NativeElement.loading: Reactive<Boolean> get() =
-    context.addons.local.getOrPut("NativeElement.loading") { FalseWhenSuccessful(backgroundProcesses) } as Reactive<Boolean>
+public val NativeElement.loading: Reactive<Boolean> get() = FalseWhenSuccessful(backgroundProcesses)
 
 /**
  * Returns whether animations are currently enabled for this element.
  * This is a platform-specific property that respects system-wide animation settings.
  */
-expect val Element.areAnimationsEnabled: Boolean
+public expect val Element.areAnimationsEnabled: Boolean
 
 /**
  * Executes the given action with animations temporarily disabled.
@@ -57,9 +53,9 @@ expect val Element.areAnimationsEnabled: Boolean
  *
  * @param action The code to execute without animations.
  */
-expect inline fun Element.withoutAnimation(action: () -> Unit)
+public expect inline fun Element.withoutAnimation(action: () -> Unit)
 
-inline fun Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHelpers.() -> Unit) {
+public inline fun Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHelpers.() -> Unit) {
     object : KiteUiCoroutineScopeHelpers, CoroutineScope by CoroutineScope(coroutineContext.minusKey(StatusListener.Key)) {}.run(block)
 }
 
@@ -67,7 +63,7 @@ inline fun Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHelpers.(
  * Requests focus on this element, or on its first interactive descendant if this element
  * isn't interactive. Used by navigation to move focus to new page content.
  */
-fun Element.requestFocusOrDescendant() {
+public fun Element.requestFocusOrDescendant() {
     if (this is InteractiveElement) {
         requestFocus()
     } else if (this is ElementWithChildren) {

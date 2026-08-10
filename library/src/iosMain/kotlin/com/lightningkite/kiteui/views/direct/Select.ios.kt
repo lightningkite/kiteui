@@ -10,18 +10,19 @@ import kotlinx.cinterop.ObjCSignatureOverride
 import platform.UIKit.*
 import platform.darwin.NSInteger
 import platform.darwin.NSObject
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class Select actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Select actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
-    override val driverActions
+    override val driverActions: AiDriver.Actions
         get() = super.driverActions + buildMap {
             _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
         }
-    override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    override val native: WrapperView = WrapperView()
+    internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
 
     init {
@@ -30,7 +31,7 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
         textField.inputView = UIPickerView()
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
         render: (T) -> String
@@ -44,7 +45,14 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
                     list = data()
                     picker.reloadAllComponents()
                 }
-                reactive { textField.text = render(edits()) }
+                reactive {
+                    val current = edits()
+                    textField.text = render(current)
+                    // Keep the wheel's highlighted row in sync so opening the picker
+                    // shows the actual current selection instead of a stale row.
+                    val idx = list.indexOf(current)
+                    if (idx >= 0) picker.selectRow(idx.toLong(), inComponent = 0L, animated = false)
+                }
             }
 
             override fun numberOfComponentsInPickerView(pickerView: UIPickerView): NSInteger = 1L
@@ -88,7 +96,7 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -101,7 +109,7 @@ actual class Select actual constructor(context: ElementContext) : NativeInteract
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)

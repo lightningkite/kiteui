@@ -19,14 +19,14 @@ import kotlin.math.sqrt
  * Android implementation of AudioCapture using AudioRecord.
  * Uses VOICE_COMMUNICATION audio source for echo cancellation.
  */
-actual class AudioCapture actual constructor(actual val format: AudioFormat) {
+public actual class AudioCapture actual constructor(public actual val format: AudioFormat) {
     private val _hasPermission = Signal(false)
     private val _isCapturing = Signal(false)
     private val _level = Signal(0f)
 
-    actual val hasPermission: Reactive<Boolean> = _hasPermission
-    actual val isCapturing: Reactive<Boolean> = _isCapturing
-    actual val level: Reactive<Float> = _level
+    public actual val hasPermission: Reactive<Boolean> = _hasPermission
+    public actual val isCapturing: Reactive<Boolean> = _isCapturing
+    public actual val level: Reactive<Float> = _level
 
     private var audioRecord: AudioRecord? = null
     private var captureThread: Thread? = null
@@ -47,11 +47,11 @@ actual class AudioCapture actual constructor(actual val format: AudioFormat) {
         maxOf(minBuffer, format.sampleRate / 10 * format.bytesPerSample)
     }
 
-    actual fun onAudioData(action: (ByteArray) -> Unit) {
+    public actual fun onAudioData(action: (ByteArray) -> Unit) {
         onDataCallback = action
     }
 
-    actual suspend fun start(): Boolean {
+    public actual suspend fun start(): Boolean {
         // Check/request permission
         val context = AndroidAppContext.applicationCtx
 
@@ -125,7 +125,7 @@ actual class AudioCapture actual constructor(actual val format: AudioFormat) {
         }
     }
 
-    actual fun stop() {
+    public actual fun stop() {
         isRunning = false
         captureThread?.join(1000)
         captureThread = null
@@ -140,7 +140,7 @@ actual class AudioCapture actual constructor(actual val format: AudioFormat) {
         _level.value = 0f
     }
 
-    actual fun release() {
+    public actual fun release() {
         stop()
         audioRecord?.release()
         audioRecord = null

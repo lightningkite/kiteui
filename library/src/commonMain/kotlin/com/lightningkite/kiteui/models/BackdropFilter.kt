@@ -1,5 +1,5 @@
 package com.lightningkite.kiteui.models
 
-sealed interface BackdropFilter {
-    class Blur(val amount: Dimension): BackdropFilter
+public sealed interface BackdropFilter {
+    public class Blur(public val amount: Dimension): BackdropFilter
 }

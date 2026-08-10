@@ -10,9 +10,9 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 
-actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
 
-    override val native = NCircularProgress(context.activity).apply {
+    override val native: NCircularProgress = NCircularProgress(context.activity).apply {
         contentDescription = "Progress"
         accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }
@@ -27,13 +27,13 @@ actual class CircularProgress actual constructor(context: ElementContext) : Nati
         native.setPaddingAll(0)
     }
 
-    actual var ratio: Float
+    public actual var ratio: Float
         get() = native.progress /100f
         set(value) { native.setProgress((value * 100)) }
 }
 
 
-class NCircularProgress(context: Context) : android.widget.ProgressBar (context) {
+public class NCircularProgress(context: Context) : android.widget.ProgressBar (context) {
 
     private val progressPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -72,30 +72,30 @@ class NCircularProgress(context: Context) : android.widget.ProgressBar (context)
 
     private fun calculateAngle(progress: Float) = maxAngle / maxProgress * progress
 
-    fun setProgress(@FloatRange(from = 0.0, to = 100.0) progress: Float) {
+    internal fun setProgress(@FloatRange(from = 0.0, to = 100.0) progress: Float) {
         this.progress = progress.toInt()
         angle = calculateAngle(progress)
         invalidate()
     }
 
-    fun setProgressColor(color: Int) {
+    internal fun setProgressColor(color: Int) {
         progressPaint.color = color
         invalidate()
     }
 
-    fun setProgressBackgroundColor(color: Int) {
+    internal fun setProgressBackgroundColor(color: Int) {
         backgroundPaint.color = color
         invalidate()
     }
 
-    fun setProgressWidth(width: Float) {
+    internal fun setProgressWidth(width: Float) {
         progressPaint.strokeWidth = width
         backgroundPaint.strokeWidth = width
         updateRect()
         invalidate()
     }
 
-    fun setRounded(rounded: Boolean) {
+    internal fun setRounded(rounded: Boolean) {
         progressPaint.strokeCap = if (rounded) Paint.Cap.ROUND else Paint.Cap.BUTT
         invalidate()
     }

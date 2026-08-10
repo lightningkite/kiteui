@@ -45,7 +45,7 @@ import com.lightningkite.kiteui.navigation.Page
  * - Use context.preload(key, value) to store data that can be serialized for hydration
  * - Set context.title, context.description etc. for SEO metadata
  */
-interface SsrPreloadable {
+public interface SsrPreloadable {
     /**
      * Load data before rendering this page.
      *
@@ -56,10 +56,10 @@ interface SsrPreloadable {
      *
      * @param context The SSR context for this request
      */
-    suspend fun preload(context: SsrContext)
+    public suspend fun preload(context: SsrContext)
 }
 
 /**
  * Helper to check if a Page supports preloading.
  */
-fun Page.asPreloadable(): SsrPreloadable? = this as? SsrPreloadable
+internal fun Page.asPreloadable(): SsrPreloadable? = this as? SsrPreloadable

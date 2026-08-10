@@ -1,14 +1,18 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.ImageVector
+import com.lightningkite.kiteui.models.kiteUiLogo
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.mppexampleapp.lightningKiteLogo
 
 @Routable("docs/icons")
 object IconsPage : DocPage {
-    override val covers: List<String> = listOf("icons", "Icons")
+    override val covers: List<String> = listOf("icons", "Icons", "logo", "Logo", "brand", "ImageVector")
     val Icon.Companion.fingerPrintCustom
         get() = Icon(
             2.rem, 2.rem, 0, -960, 960, 960, listOf(
@@ -106,6 +110,39 @@ object IconsPage : DocPage {
                     }
                 }
 
+            }
+            h2("Logos")
+            text("KiteUI's own mark ships with the library as an ImageVector, so it stays sharp at any size and takes whatever color you hand it. The example app also carries Lightning Kite's mark, KiteUI's parent brand.")
+            example(
+                """
+                    centered.image {
+                        source = ImageVector.kiteUiLogo(size = 6.rem)
+                        description = "KiteUI"
+                    }
+                    centered.image {
+                        source = ImageVector.kiteUiLogo(Color.fromHexString("#0E5C6B"), 4.rem)
+                        description = "KiteUI"
+                    }
+                    centered.image {
+                        source = lightningKiteLogo(size = 4.rem)
+                        description = "Lightning Kite"
+                    }
+                """.trimIndent()
+            ) {
+                card.row {
+                    centered.image {
+                        source = ImageVector.kiteUiLogo(size = 6.rem)
+                        description = "KiteUI"
+                    }
+                    centered.image {
+                        source = ImageVector.kiteUiLogo(Color.fromHexString("#0E5C6B"), 4.rem)
+                        description = "KiteUI"
+                    }
+                    centered.image {
+                        source = lightningKiteLogo(size = 4.rem)
+                        description = "Lightning Kite"
+                    }
+                }
             }
         }
     }

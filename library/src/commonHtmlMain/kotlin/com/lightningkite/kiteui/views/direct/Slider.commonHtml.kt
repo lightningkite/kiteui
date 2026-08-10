@@ -2,10 +2,11 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
-    override val driverActions get() = super.driverActions + sliderDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + sliderDriverActions()
     init {
         native.tag = "input"
         native.attributes.type = "range"
@@ -17,7 +18,7 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
     }
 
     private val valueProp = Signal(0.5f)
-    actual val value: MutableReactiveValue<Float> = native.vprop(
+    public actual val value: MutableReactiveValue<Float> = native.vprop(
         "input",
         { attributes.valueString?.toFloatOrNull() ?: 0.5f },
         { newValue -> 
@@ -38,7 +39,7 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
         }
     )
 
-    actual var min: Float = 0f
+    public actual var min: Float = 0f
         set(value) {
             field = value
             native.setAttribute("min", value.toString())
@@ -46,7 +47,7 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
             this.value.value = this.value.value
         }
 
-    actual var max: Float = 1f
+    public actual var max: Float = 1f
         set(value) {
             field = value
             native.setAttribute("max", value.toString())
@@ -54,7 +55,7 @@ actual class Slider actual constructor(context: ElementContext) : NativeInteract
             this.value.value = this.value.value
         }
 
-    actual var step: Float? = null
+    public actual var step: Float? = null
         set(value) {
             field = value
             native.setAttribute("step", value?.toString() ?: "any")

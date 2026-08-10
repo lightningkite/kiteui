@@ -6,41 +6,55 @@ import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
 
-class PageNavigator(private val routesGetter: ()->Routes) {
-    val routes: Routes by lazy { routesGetter() }
+public class PageNavigator(private val routesGetter: ()->Routes) {
+    public val routes: Routes by lazy { routesGetter() }
 
-    fun navigateUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
-    fun resetUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
+    // These take a raw URL string, which in practice arrives from outside the application
+    // (an OS deep link, a restored navigation stack), so parsing must not be able to throw.
+    // Returning false lets the caller decide what to do; crashing is never the right answer
+    // for input the application did not produce.
+    public fun navigateUrlLikePath(path: String): Boolean = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it); true } ?: false
+    public fun resetUrlLikePath(path: String): Boolean = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it); true } ?: false
 
-    val stack: Signal<List<Page>> = Signal(listOf())
+    public val stack: Signal<List<Page>> = Signal(listOf())
 
-    val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
-    val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
+    // reentrancyLimit>0: a page whose render() re-entrantly navigates (the "redirect page"
+    // pattern - show a spinner, then replace()/navigate() from a coroutine that doesn't actually
+    // suspend) mutates `stack` while this calculation may still be unwinding an earlier mutation's
+    // listener cascade - most visibly the very first time something reads currentPage/canGoBack
+    // and activates this remember{}, since that activation is itself nested inside the stack
+    // mutation that triggered it. Without a positive limit here, that shows up as a permanently
+    // stuck currentPage (a swallowed ReactiveReentrancyException) even though `stack` itself
+    // updated correctly and the redirect wrote to it in good faith. See SwapView.swapping()'s
+    // matching reentrancyLimit, which handles the same pattern one layer up but does not, by
+    // itself, cover this one - the two were found and fixed together.
+    public val currentPage: Reactive<Page?> = remember(reentrancyLimit = 8) { stack().lastOrNull() }
+    public val canGoBack: Reactive<Boolean> = remember(reentrancyLimit = 8) { stack().size > 1 }
 
     private val allowNavigate get(): Boolean {
         val notBlocked = (stack.value.lastOrNull() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true
         return if (notBlocked) true else askForConfirmNavigateAway()
     }
 
-    fun navigate(screen: Page) {
+    public fun navigate(screen: Page) {
         if (allowNavigate) {
             stack.value += screen
         }
     }
 
-    fun replace(screen: Page) {
+    public fun replace(screen: Page) {
         if (allowNavigate) {
             stack.value = stack.value.dropLast(1) + screen
         }
     }
 
-    fun reset(screen: Page) {
+    public fun reset(screen: Page) {
         if (allowNavigate) {
             stack.value = listOf(screen)
         }
     }
 
-    fun goBack(): Boolean {
+    public fun goBack(): Boolean {
         if(stack.value.size <= 1 || !allowNavigate) {
             return false
         }
@@ -48,26 +62,26 @@ class PageNavigator(private val routesGetter: ()->Routes) {
         return true
     }
 
-    fun dismiss(): Boolean {
+    public fun dismiss(): Boolean {
         if(stack.value.isEmpty() || !allowNavigate) {
             return false
         }
         stack.value = stack.value.dropLast(1)
         return true
     }
-    fun clear() {
+    public fun clear() {
         if (allowNavigate) {
             stack.value = listOf()
         }
     }
-    fun isStackEmpty(): Boolean = stack.value.isEmpty()
+    public fun isStackEmpty(): Boolean = stack.value.isEmpty()
 
-    companion object;
+    public companion object;
 }
 
-expect fun PageNavigator.bindToPlatform(context: ElementContext)
+public expect fun PageNavigator.bindToPlatform(context: ElementContext)
 
 internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 
-var ElementContext.pageNavigator by lateInitContextAddon<PageNavigator>()
-var ElementContext.mainPageNavigator by lateInitContextAddon<PageNavigator>()
+public var ElementContext.pageNavigator: PageNavigator by lateInitContextAddon<PageNavigator>()
+public var ElementContext.mainPageNavigator: PageNavigator by lateInitContextAddon<PageNavigator>()

@@ -2,15 +2,15 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.89.0"
+      version = "~> 6.53.0"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.7.1"
+      version = "~> 3.9.0"
     }
     archive = {
       source  = "hashicorp/archive"
-      version = "~> 2.7.0"
+      version = "~> 2.8.0"
     }
   }
   required_version = "~> 1.0"
@@ -32,7 +32,7 @@ provider "aws" {
 }
 
 module "web" {
-  source = "git@github.com:lightningkite/terraform-static-site.git"
+  source = "git@github.com:lightningkite/terraform-static-site.git?ref=1.2.0"
   providers = {
     aws = aws
     aws.acm = aws.acm

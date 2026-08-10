@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.models
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
-fun Theme.Companion.flat(
+public fun Theme.Companion.flat(
     id: String,
     hue: Angle,
     accentHue: Angle = hue + Angle.halfTurn,
@@ -12,7 +12,7 @@ fun Theme.Companion.flat(
     brightnessStep: Float = 0.05f,
     title: FontAndStyle = FontAndStyle(),
     body: FontAndStyle = FontAndStyle(),
-) = Theme(
+): Theme = Theme(
     id = id,
     font = body,
     elevation = 0.dp,

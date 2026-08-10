@@ -6,14 +6,16 @@ import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
-    override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
-    override val native = WrapperView()
-    val textField = UITextField().apply {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + formattedTextInputDriverActions()
+    override val native: WrapperView = WrapperView()
+    internal val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -57,10 +59,11 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         super.nativeApplyTheme(theme)
         textField.textColor = theme.theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.theme.font
+        updateHint()
         applyAlign(_align ?: theme.theme.font.align)
     }
 
-    fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -68,13 +71,14 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         textField.textAlignment = alignment
     }
 
-    fun updateHint() {
-        textField.placeholder = hint
-        // TODO: Colored hint
-//        textField.attributedPlaceholder = hint
+    internal fun updateHint() {
+        textField.attributedPlaceholder = NSAttributedString.create(
+            hint,
+            mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor())
+        )
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -83,12 +87,12 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
 
     private var isRawData: (Char) -> Boolean = { true }
     private var formatter: (clean: String) -> String = { it }
-    actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
+    public actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
         this.isRawData = isRawData
         this.formatter = formatter
     }
 
-    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
+    public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = (textField.text ?: "").filter(isRawData)
             set(value) {
@@ -106,7 +110,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
     }
 
 
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = value.case.ios
@@ -146,13 +150,13 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         }
     }
 
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             updateHint()
         }
     private var _align: Align? = null
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value

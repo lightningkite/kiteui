@@ -1,9 +1,10 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.models.Dimension
 import platform.UIKit.UIView
 import kotlin.math.max
 
-actual abstract class NativeContainerElement actual constructor(context: ElementContext) : ContainerElement, NativeContainerElementCommonCode(context) {
+public actual abstract class NativeContainerElement actual constructor(context: ElementContext) : ContainerElement, NativeContainerElementCommonCode(context) {
     actual override fun nativeAddChild(index: Int, element: Element) {
         val existingView = children.getOrNull(index)
         val existingIndex = addChildTarget.subviews.indexOfFirst { it == existingView?.native }
@@ -26,7 +27,7 @@ actual abstract class NativeContainerElement actual constructor(context: Element
         }
     }
 
-    protected open val mySpacing get() = theme.gap
+    protected open val mySpacing: Dimension get() = theme.gap
 
     override fun refreshPadding() {
         super.refreshPadding()

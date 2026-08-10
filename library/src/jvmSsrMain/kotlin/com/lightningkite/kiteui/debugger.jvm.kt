@@ -2,33 +2,33 @@ package com.lightningkite.kiteui
 
 import java.lang.ref.WeakReference
 
-actual fun debugger() {
+public actual fun debugger() {
 }
 
-actual fun gc(): GCInfo {
+public actual fun gc(): GCInfo {
     return Runtime.getRuntime().run {
         gc()
         GCInfo(totalMemory() - freeMemory())
     }
 }
-actual fun cleanImageCache() {
+public actual fun cleanImageCache() {
 }
-actual fun gcReport() {}
+public actual fun gcReport() {}
 
-actual typealias WeakReference<T> = WeakReference<T>
+public actual typealias WeakReference<T> = WeakReference<T>
 
-actual fun assertMainThread() {
+public actual fun assertMainThread() {
 }
 
-actual fun Throwable.printStackTrace2() = printStackTrace()
+public actual fun Throwable.printStackTrace2(): Unit = printStackTrace()
 
-actual object LogRoot: Log {
+public actual object LogRoot: Log {
     private val platform = PlatformLog("")
     actual override fun tag(tag: String): Log = platform.tag(tag)
-    actual override fun log(vararg entries: Any?) = platform.log(*entries)
-    actual override fun error(vararg entries: Any?) = platform.error(*entries)
-    actual override fun info(vararg entries: Any?) = platform.info(*entries)
-    actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
+    actual override fun log(vararg entries: Any?): Unit = platform.log(*entries)
+    actual override fun error(vararg entries: Any?): Unit = platform.error(*entries)
+    actual override fun info(vararg entries: Any?): Unit = platform.info(*entries)
+    actual override fun warn(vararg entries: Any?): Unit = platform.warn(*entries)
 }
 private class PlatformLog(val tag: String): Log {
     override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
@@ -49,4 +49,4 @@ private class PlatformLog(val tag: String): Log {
     }
 }
 
-actual fun Any?.identityHashCode(): Int = System.identityHashCode(this)
+public actual fun Any?.identityHashCode(): Int = System.identityHashCode(this)

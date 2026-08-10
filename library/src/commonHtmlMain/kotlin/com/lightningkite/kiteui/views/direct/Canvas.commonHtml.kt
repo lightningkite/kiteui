@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 
 
-actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
-    actual var delegate: CanvasDelegate? = null
+public actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
+    public actual var delegate: CanvasDelegate? = null
         set(value) {
             field = value
             onDelegateSet(value)
@@ -103,9 +103,9 @@ actual class Canvas actual constructor(context: ElementContext): NativeElement(c
     }
 }
 
-expect fun Canvas.onDelegateSet(delegate: CanvasDelegate?)
+public expect fun Canvas.onDelegateSet(delegate: CanvasDelegate?)
 
-expect fun Canvas.setupResizeListener()
+public expect fun Canvas.setupResizeListener()
 
 //actual var Canvas.delegate: CanvasDelegate?
 //    get() = this.native.asDynamic().__ROCK_delegate__ as? CanvasDelegate

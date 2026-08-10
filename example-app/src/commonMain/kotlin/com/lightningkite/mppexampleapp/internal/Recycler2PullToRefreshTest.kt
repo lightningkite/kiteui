@@ -17,7 +17,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock.System.now
 import kotlin.time.Duration.Companion.seconds
 
-@Routable("recycler2-test")
+@Routable("recycler2-pull-to-refresh-test")
 object Recycler2PullToRefreshTest : Page {
 
     @QueryParameter

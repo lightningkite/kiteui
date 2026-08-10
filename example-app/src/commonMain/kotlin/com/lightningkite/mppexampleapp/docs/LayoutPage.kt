@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.docs
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -334,29 +335,29 @@ object LayoutPage : DocPage {
                     text("Sometimes you have a fairly small list of data that you want to display.")
                     example("""
                         val strings = Signal(listOf("First", "Second", "Third", "Fourth"))
-                        col {
-                            forEach(strings) {
-                                text { content = it }
-                            }
+                        colOfExpensive(strings) {
+                            text { content = it }
                         }
                     """.trimIndent()) {
                         val strings = Signal(listOf("First", "Second", "Third", "Fourth"))
-                        col {
-                            forEach(strings) {
-                                text { content = it }
-                            }
+                        colOfExpensive(strings) {
+                            text { content = it }
                         }
                     }
                     text("Have a small dataset that needs to scroll add the scrolling\nor scrollingHorizontally view modifiers.")
                     example("""
                         sizeConstraints(height = 10.rem).scrolling.col {
                             val strings = Signal((0..20).toList().map { "String ${'$'}it" })
+                            @OptIn(InternalKiteUi::class)
+                            @Suppress("DEPRECATION")
                             forEach(strings) { string ->
                                 text { content = string }
                             }
                         }""".trimIndent()) {
                         sizeConstraints(height = 10.rem).scrolling.col {
                             val strings = Signal((0..20).toList().map { "String $it" })
+                            @OptIn(InternalKiteUi::class)
+                            @Suppress("DEPRECATION")
                             forEach(strings) { string ->
                                 text { content = string }
                             }

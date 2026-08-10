@@ -1,57 +1,57 @@
 package com.lightningkite.kiteui.dom
 
-expect abstract class EventTarget
-expect open class Event {
-    fun preventDefault()
-    fun stopPropagation()
-    fun stopImmediatePropagation()
-    open val target: EventTarget?
+public expect abstract class EventTarget
+public expect open class Event {
+    public fun preventDefault()
+    public fun stopPropagation()
+    public fun stopImmediatePropagation()
+    public open val target: EventTarget?
 }
-expect open class UIEvent: Event {
+public expect open class UIEvent: Event {
 }
-expect open class KeyboardEvent: UIEvent {
-    open val code: String
-    open val ctrlKey: Boolean
-    open val shiftKey: Boolean
-    open val altKey: Boolean
-    open val metaKey: Boolean
+public expect open class KeyboardEvent: UIEvent {
+    public open val code: String
+    public open val ctrlKey: Boolean
+    public open val shiftKey: Boolean
+    public open val altKey: Boolean
+    public open val metaKey: Boolean
 }
-expect open class WheelEvent: MouseEvent {
-    val deltaX: Double
-    val deltaY: Double
-    val deltaZ: Double
+public expect open class WheelEvent: MouseEvent {
+    public val deltaX: Double
+    public val deltaY: Double
+    public val deltaZ: Double
 }
-expect open class MouseEvent: UIEvent {
-    val pageX: Double
-    val pageY: Double
+public expect open class MouseEvent: UIEvent {
+    public val pageX: Double
+    public val pageY: Double
 }
-expect open class PointerEvent: MouseEvent {
-    val pointerId: Int
+public expect open class PointerEvent: MouseEvent {
+    public val pointerId: Int
 }
 
-expect abstract class Node: EventTarget {
-    fun replaceChild(node: Node, child: Node): Node
-    fun appendChild(node: Node): Node
-    open var nodeValue: String?
+public expect abstract class Node: EventTarget {
+    public fun replaceChild(node: Node, child: Node): Node
+    public fun appendChild(node: Node): Node
+    public open var nodeValue: String?
 }
-expect abstract class DOMElement: Node {
+public expect abstract class DOMElement: Node {
 //    open val tagName: String
 //    open var className: String  // class
 //    open var id: String  // id
 //    open var slot: String  // slot
-    fun getBoundingClientRect(): DOMRect
+    public fun getBoundingClientRect(): DOMRect
 }
-expect open class DOMRectReadOnly {
-    open val x: Double
-    open val y: Double
-    open val width: Double
-    open val height: Double
-    open val top: Double
-    open val right: Double
-    open val bottom: Double
-    open val left: Double
+public expect open class DOMRectReadOnly {
+    public open val x: Double
+    public open val y: Double
+    public open val width: Double
+    public open val height: Double
+    public open val top: Double
+    public open val right: Double
+    public open val bottom: Double
+    public open val left: Double
 }
-expect open class DOMRect : DOMRectReadOnly {
+public expect open class DOMRect : DOMRectReadOnly {
     override var x: Double
     override var y: Double
     override var width: Double

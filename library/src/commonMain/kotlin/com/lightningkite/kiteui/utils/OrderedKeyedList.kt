@@ -11,16 +11,16 @@ package com.lightningkite.kiteui.utils
  * - `remove(key)`: O(log n + k) where k = entries removed
  * - `set(key, value)`: O(log n + k) - replaces all entries with key
  */
-class OrderedKeyedList<K : Comparable<K>, V>(private val list: ArrayList<Entry<K, V>>) : List<OrderedKeyedList.Entry<K, V>> by list {
-    constructor() : this(ArrayList())
-    constructor(sizeHint: Int) : this(ArrayList(sizeHint))
-    constructor(init: Collection<Entry<K, V>>) : this(ArrayList(init))
-    constructor(vararg entries: Pair<K, V>) : this(entries.mapTo(ArrayList()) { Entry(it.first, it.second) })
+public class OrderedKeyedList<K : Comparable<K>, V>(private val list: ArrayList<Entry<K, V>>) : List<OrderedKeyedList.Entry<K, V>> by list {
+    public constructor() : this(ArrayList())
+    public constructor(sizeHint: Int) : this(ArrayList(sizeHint))
+    public constructor(init: Collection<Entry<K, V>>) : this(ArrayList(init))
+    public constructor(vararg entries: Pair<K, V>) : this(entries.mapTo(ArrayList()) { Entry(it.first, it.second) })
 
     /**
      * A key-value pair stored in the list.
      */
-    data class Entry<K : Comparable<K>, T>(
+    public data class Entry<K : Comparable<K>, T>(
         val key: K,
         val value: T
     )
@@ -37,7 +37,7 @@ class OrderedKeyedList<K : Comparable<K>, V>(private val list: ArrayList<Entry<K
      *
      * The operation is `O(log(n))`
      * */
-    fun add(key: K, value: V) {
+    public fun add(key: K, value: V) {
         if (list.isEmpty()) list.add(Entry(key, value))
         else list.add(
             insertIndexAfterLast(key),
@@ -64,14 +64,14 @@ class OrderedKeyedList<K : Comparable<K>, V>(private val list: ArrayList<Entry<K
      *
      * @return a view (not a copy) of the underlying list, so changes to the [OrderedKeyedList] will be reflected in the view.
      */
-    fun get(key: K): List<Entry<K, V>> = sublist(key) ?: emptyList()
+    public fun get(key: K): List<Entry<K, V>> = sublist(key) ?: emptyList()
 
     /**
      * Removes all entries with the specified [key].
      *
      * @return the number of entries removed.
      */
-    fun remove(key: K): Int {
+    public fun remove(key: K): Int {
         val list = sublist(key) ?: return 0
         val c = list.size
         list.clear()
@@ -83,7 +83,7 @@ class OrderedKeyedList<K : Comparable<K>, V>(private val list: ArrayList<Entry<K
      *
      * After this the only entry with [key] will be the provided [value]
      */
-    fun set(key: K, value: V) {
+    public fun set(key: K, value: V) {
         val list = sublist(key)
 
         if (list == null) {

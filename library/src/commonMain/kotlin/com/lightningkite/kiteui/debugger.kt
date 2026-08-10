@@ -2,22 +2,22 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.Element
 
-var debugMode: Boolean = false
+public var debugMode: Boolean = false
 
 @Deprecated("Use Element.Debugger.debugTarget", ReplaceWith("Element.Debugger.debugTarget"))
-var viewDebugTarget: Element? by Element.Debugger::debugTarget
+public var viewDebugTarget: Element? by Element.Debugger::debugTarget
 
-expect fun debugger(): Unit
-data class GCInfo(val usage: Long)
+public expect fun debugger(): Unit
+public data class GCInfo(val usage: Long)
 
-expect fun gc(): GCInfo
-expect fun cleanImageCache()
-expect fun gcReport()
-expect class WeakReference<T : Any>(referred: T) {
-    fun get(): T?
+public expect fun gc(): GCInfo
+public expect fun cleanImageCache()
+public expect fun gcReport()
+public expect class WeakReference<T : Any>(referred: T) {
+    public fun get(): T?
 }
 
-val leaks = ArrayList<WeakReference<*>>()
+public val leaks: MutableList<WeakReference<*>> = ArrayList<WeakReference<*>>()
 private var lastGc = clockMillis()
 private var lastGcReport = clockMillis()
 private val leakLog = LogRoot.tag("ElementLeaks")
@@ -37,7 +37,8 @@ private fun gcIfNotVeryRecent() {
     }
 }
 
-fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
+@Suppress("DEPRECATION")
+public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         get()?.let {
@@ -47,7 +48,8 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
     }
 }
 
-fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
+@Suppress("DEPRECATION")
+public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         if (get() == null) {
@@ -58,7 +60,8 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
     }
 }
 
-fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
+@Suppress("DEPRECATION")
+public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         get()?.let {
@@ -69,7 +72,8 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
     }
 }
 
-fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
+@Suppress("DEPRECATION")
+public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         if (get() == null) {
@@ -81,36 +85,36 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
     }
 }
 
-expect fun assertMainThread()
+public expect fun assertMainThread()
 
-expect fun Throwable.printStackTrace2()
-var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
-fun Throwable.report(context: String = "") = Throwable_report(this, context)
+public expect fun Throwable.printStackTrace2()
+public var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
+public fun Throwable.report(context: String = ""): Unit = Throwable_report(this, context)
 
-expect fun Any?.identityHashCode(): Int
+public expect fun Any?.identityHashCode(): Int
 
-inline fun Element.debugPrint(get: () -> String) {
+public inline fun Element.debugPrint(get: () -> String) {
     if (debugMode && Element.Debugger.debugTarget == this)
         Log.tag("viewDebugTarget").info(get())
 }
 
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
-typealias Console = Log
+public typealias Console = Log
 
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
-typealias ConsoleRoot = Log.Companion
+public typealias ConsoleRoot = Log.Companion
 
-enum class LogLevel { LOG, INFO, WARN, ERROR }
+public enum class LogLevel { LOG, INFO, WARN, ERROR }
 
 /** Observes log calls without owning the delegation chain. [LogRoot] is always called regardless. */
-fun interface LogInterceptor {
-    fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
+public fun interface LogInterceptor {
+    public fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
 }
 
-interface Log {
-    companion object: Log {
+public interface Log {
+    public companion object: Log {
         /** Interceptors that observe all [Log] calls. Each receives every call; [LogRoot] is always called regardless. */
-        val interceptors: MutableList<LogInterceptor> = mutableListOf()
+        public val interceptors: MutableList<LogInterceptor> = mutableListOf()
 
         override fun tag(tag: String): Log = InterceptedTaggedLog(tag)
 
@@ -132,11 +136,11 @@ interface Log {
         }
     }
 
-    fun tag(tag: String): Log
-    fun log(vararg entries: Any?)
-    fun error(vararg entries: Any?)
-    fun info(vararg entries: Any?)
-    fun warn(vararg entries: Any?)
+    public fun tag(tag: String): Log
+    public fun log(vararg entries: Any?)
+    public fun error(vararg entries: Any?)
+    public fun info(vararg entries: Any?)
+    public fun warn(vararg entries: Any?)
 }
 
 private class InterceptedTaggedLog(val tag: String) : Log {
@@ -160,16 +164,16 @@ private class InterceptedTaggedLog(val tag: String) : Log {
     }
 }
 
-fun Log.infoOrAbove(): Log = object : Log by this {
+public fun Log.infoOrAbove(): Log = object : Log by this {
     override fun log(vararg entries: Any?) {}
 }
 
-fun Log.warnOrAbove(): Log = object : Log by this {
+public fun Log.warnOrAbove(): Log = object : Log by this {
     override fun log(vararg entries: Any?) {}
     override fun info(vararg entries: Any?) {}
 }
 
-expect object LogRoot : Log {
+public expect object LogRoot : Log {
     override fun tag(tag: String): Log
     override fun log(vararg entries: Any?)
     override fun error(vararg entries: Any?)

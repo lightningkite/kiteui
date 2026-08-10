@@ -24,58 +24,56 @@ import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
+/**
+ * Capability of a native container that can host weighted/aligned children along a linear axis
+ * (i.e. a row or column). Implemented by [SimplifiedLinearLayout]. The `weight`/`align` modifiers
+ * check for this via `parent?.native as? LinearChildHost` instead of casting to the concrete
+ * container class, and silently no-op when the parent doesn't implement it - using weight/align
+ * outside a row or col is not a runtime error; enforcing that at compile time is a separate,
+ * deliberately deferred effort.
+ */
+public interface LinearChildHost {
+    public val isHorizontal: Boolean
+}
+
+/**
+ * Capability of layout params that can carry a weight for [LinearChildHost] distribution.
+ * Implemented by [SimplifiedLinearLayout.LayoutParams]. Mirrors [MaxSizeLayoutParams].
+ */
+public interface WeightedLayoutParams {
+    public var weight: Float
+}
+
+public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
-        try {
-            val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-            lp.weight = amount
-            if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                lp.width = 0
-            } else {
-                lp.height = 0
-            }
-        } catch (ex: Throwable) {
-            RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
-        }
+        val host = parent?.native as? LinearChildHost ?: return@beforeSetup
+        val lp = lparams
+        if (lp !is WeightedLayoutParams) return@beforeSetup
+        lp.weight = amount
+        if (host.isHorizontal) lp.width = 0 else lp.height = 0
     }
 }
 
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
+public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
-        val originalSize = try {
-            val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-            if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                lp.width
-            } else {
-                lp.height
-            }
-        } catch (ex: Throwable) {
-            RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
-            WRAP_CONTENT
-        }
+        val host = parent?.native as? LinearChildHost ?: return@beforeSetup
+        val lp = lparams
+        if (lp !is WeightedLayoutParams) return@beforeSetup
+        val originalSize = if (host.isHorizontal) lp.width else lp.height
 
         reactive {
-            try {
-                val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-                val amount = amount()
-                lp.weight = amount
-                if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                    lp.width = if (lp.weight != 0f) 0 else originalSize
-                } else {
-                    lp.height = if (lp.weight != 0f) 0 else originalSize
-                }
-            } catch (ex: Throwable) {
-                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
+            lp.weight = amount()
+            if (host.isHorizontal) {
+                lp.width = if (lp.weight != 0f) 0 else originalSize
+            } else {
+                lp.height = if (lp.weight != 0f) 0 else originalSize
             }
         }
     }
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
+public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
     return this@align.beforeSetup {
         val params = lparams
 
@@ -109,15 +107,16 @@ actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Alig
             params.gravity = horizontalGravity or verticalGravity
         else
             Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
-        if (horizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
+        val host = parent?.native as? LinearChildHost
+        if (horizontal == Align.Stretch && host?.isHorizontal != true) {
             params.width = MATCH_PARENT
-        } else if (params.width == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+        } else if (params.width == MATCH_PARENT && host?.isHorizontal == true) {
             // In a horizontal row, MATCH_PARENT width conflicts with weighted siblings - use WRAP_CONTENT instead
             params.width = WRAP_CONTENT
         }
-        if (vertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
+        if (vertical == Align.Stretch && host?.isHorizontal != false) {
             params.height = MATCH_PARENT
-        } else if (params.height == MATCH_PARENT && (parent?.native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.VERTICAL) {
+        } else if (params.height == MATCH_PARENT && host?.isHorizontal == false) {
             // In a vertical col, MATCH_PARENT height conflicts with weighted siblings - use WRAP_CONTENT instead
             params.height = WRAP_CONTENT
         }
@@ -125,16 +124,14 @@ actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Alig
 }
 
 @OptIn(InternalKiteUi::class)
-@ViewModifierDsl3
-actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
+public actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.() -> Unit): ElementWriter {
     return lazyInjectModifierWriter(setup) {
         ScrollView(context, horizontal = horizontal, vertical = vertical)
     }
 }
 
 @OptIn(InternalKiteUi::class)
-@ViewModifierDsl3
-actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
+public actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
@@ -189,8 +186,7 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
 }
 
 @OptIn(InternalKiteUi::class)
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
+public actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
         return lazyInjectModifierWriter {
             object : NativeContainerElement(context) {
@@ -216,8 +212,7 @@ actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): El
 }
 
 @OptIn(InternalKiteUi::class)
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
+public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
     return lazyInjectModifierWriter {
         object : NativeContainerElement(context) {
             override val native: ViewGroup = DesiredSizeView(context.activity).apply {
@@ -229,13 +224,13 @@ actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: Reacti
     }
 }
 
-interface MaxSizeLayoutParams {
-    var maxWidth: Int
-    var maxHeight: Int
+public interface MaxSizeLayoutParams {
+    public var maxWidth: Int
+    public var maxHeight: Int
 }
 
-class DesiredSizeView(context: Context) : ViewGroup(context) {
-    var constraints: SizeConstraints = SizeConstraints()
+public class DesiredSizeView(context: Context) : ViewGroup(context) {
+    public var constraints: SizeConstraints = SizeConstraints()
         set(value) {
             field = value
             requestLayout()
@@ -264,9 +259,9 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
         getChildAt(0).layout(paddingLeft, paddingTop, r - l - paddingRight, b - t - paddingBottom)
     }
 
-    val Int.measureSpecMode get() = MeasureSpec.getMode(this)
-    val Int.measureSpecSize get() = MeasureSpec.getSize(this)
-    fun Int.measureSpecConstrainMax(value: Int): Int = MeasureSpec.makeMeasureSpec(
+    public val Int.measureSpecMode: Int get() = MeasureSpec.getMode(this)
+    public val Int.measureSpecSize: Int get() = MeasureSpec.getSize(this)
+    public fun Int.measureSpecConstrainMax(value: Int): Int = MeasureSpec.makeMeasureSpec(
         if (measureSpecMode != MeasureSpec.UNSPECIFIED) measureSpecSize.coerceAtMost(value) else value,
         when (measureSpecMode) {
             MeasureSpec.UNSPECIFIED -> MeasureSpec.AT_MOST
@@ -276,26 +271,26 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
         }
     )
 
-    fun Int.measureSpecConstrainSet(value: Int): Int = MeasureSpec.makeMeasureSpec(
+    public fun Int.measureSpecConstrainSet(value: Int): Int = MeasureSpec.makeMeasureSpec(
         if (measureSpecMode == MeasureSpec.UNSPECIFIED) value
         else value.coerceAtMost(this.measureSpecSize),
 //        value,
         MeasureSpec.EXACTLY
     )
 
-    fun Int.measureSpecConstrain(min: Int?, max: Int?, set: Int?): Int {
+    public fun Int.measureSpecConstrain(min: Int?, max: Int?, set: Int?): Int {
         var out = this
         set?.let { out = out.measureSpecConstrainSet(it) }
         max?.let { out = out.measureSpecConstrainMax(it) }
         return out
     }
 
-    infix fun Int.measureSpecPlus(value: Int): Int = MeasureSpec.makeMeasureSpec(
+    public infix fun Int.measureSpecPlus(value: Int): Int = MeasureSpec.makeMeasureSpec(
         MeasureSpec.getSize(this) + value,
         MeasureSpec.getMode(this)
     )
 
-    val Int.measureSpecString: String
+    public val Int.measureSpecString: String
         get() = when (measureSpecMode) {
             MeasureSpec.UNSPECIFIED -> "UNSPECIFIED $measureSpecSize"
             MeasureSpec.EXACTLY -> "EXACTLY $measureSpecSize"
@@ -363,22 +358,24 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
     }
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.hintPopover(
+public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ElementWriter {
     return this@hintPopover.beforeSetup {
         native.setOnLongClickListener {
-            // TODO: implement popover
-            // toast(inner = setup)
+            // Reuses the same in-tree overlay popover MenuButton.opensMenu() is built on
+            // (Element.openPopover, openPopover.android.kt) rather than a PopupWindow/AlertDialog,
+            // so it gets the same theming, positioning against preferredDirection, and
+            // tap-outside-to-dismiss (via dismissBackground -> context.closePopovers()) for free -
+            // no separate window token to leak.
+            openPopover(preferredDirection, createMenu = setup)
             true
         }
     }
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.textPopover(message: String): ElementWriter {
+public actual fun ElementWriter.textPopover(message: String): ElementWriter {
     return beforeSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             native.tooltipText = message
@@ -387,8 +384,20 @@ actual fun ElementWriter.textPopover(message: String): ElementWriter {
 }
 
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
+/**
+ * The web target hands this to CSS; Android has to evaluate it, so it becomes an ordinary reactive
+ * condition over [AppState.windowInfo] and re-runs whenever the window changes - on rotation, on
+ * multi-window resize, on the soft keyboard opening.
+ *
+ * The initial value is computed up front rather than defaulting to hidden, so an element that
+ * should be visible does not flash out of existence on the first frame.
+ */
+public actual fun ElementWriter.CanAddShownWhen.shownForQuery(query: MediaQuery): ElementWriter.CanAddSizing =
+    shownWhen(default = query.matches(AppState.windowInfo.value, touchNativeDeviceTraits)) {
+        query.matches(AppState.windowInfo(), touchNativeDeviceTraits)
+    }
+
+public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return beforeSetup {
         shown = default
         var existingAnimator: ValueAnimator? = null
@@ -588,26 +597,24 @@ internal object TypedValueAnimator {
     }
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
+public actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
     beforeSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) native.isAccessibilityHeading = true
     }
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3
-actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
+public actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
     beforeSetup { native.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS }
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
+public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
 
 @InternalKiteUi
 internal actual fun ContainerElement.setupAsListContainer() {} // TalkBack infers list structure from content

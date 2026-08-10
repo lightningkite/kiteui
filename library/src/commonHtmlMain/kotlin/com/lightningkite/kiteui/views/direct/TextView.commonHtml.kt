@@ -8,13 +8,13 @@ import com.lightningkite.kiteui.views.*
 
 
 
-actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = content
     init {
         native.tag = "p"
         native.content = Typography.nbsp.toString()
     }
-    actual inline var content: String
+    public actual inline var content: String
         get() = native.content ?: ""
         set(value) {
             native.content = if(value.isEmpty()) Typography.nbsp.toString() else value
@@ -22,7 +22,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
 
     private var _align: Align? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value
@@ -37,7 +37,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
             Align.Stretch -> "justify"
         }
     }
-    actual var ellipsis: Boolean = true
+    public actual var ellipsis: Boolean = true
         set(value) {
             field = value
             native.style.textOverflow = if(value) "ellipsis" else "clip"
@@ -46,18 +46,18 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
             else
                 native.setStyleProperty("overflow", null)
         }
-    actual var wraps: Boolean = true
+    public actual var wraps: Boolean = true
         set(value) {
             field = value
             native.setStyleProperty("text-wrap", if(value) "wrap" else "nowrap")
             native.setStyleProperty("text-wrap-mode", if(value) "wrap" else "nowrap")
         }
-    actual var wordBreak: WordBreak
-        get() = TODO("Not yet implemented")
+    public actual var wordBreak: WordBreak = WordBreak.Normal
         set(value) {
+            field = value
             native.setStyleProperty("word-break", if(value == WordBreak.BreakAll) "break-all" else "normal")
         }
-    actual var lineClamp: Int? = null
+    public actual var lineClamp: Int? = null
         set(value) {
             field = value
             value?.let {
@@ -75,7 +75,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
         applyAlign(_align ?: theme.theme.font.align)
     }
 
-    actual fun setBasicHtmlContent(html: String) {
+    public actual fun setBasicHtmlContent(html: String) {
         native.style.whiteSpace = "pre-line"
         native.classes.add("kui-basic-html-content")
         native.innerHtmlUnsafe = html.parseMPNodes().onEach { it.secure() }.joinToString(" ")

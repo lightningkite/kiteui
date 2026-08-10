@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.safeInsets
 import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.context.reactive
 
-fun Element.applySafeInsets(left: Boolean = true, top: Boolean = true, right: Boolean = true, bottom: Boolean = true) {
+public fun Element.applySafeInsets(left: Boolean = true, top: Boolean = true, right: Boolean = true, bottom: Boolean = true) {
     val s = context.safeInsets
     reactive {
         val full = s()
@@ -19,7 +19,7 @@ fun Element.applySafeInsets(left: Boolean = true, top: Boolean = true, right: Bo
         )
     }
 }
-fun Element.applySafeInsets(mapper: ReactiveContext.(Edges)->Edges) {
+public fun Element.applySafeInsets(mapper: ReactiveContext.(Edges)->Edges) {
     val s = context.safeInsets
     reactive {
         val full = s()

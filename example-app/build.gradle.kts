@@ -52,14 +52,12 @@ kotlin {
         iosArm64()
         iosSimulatorArm64()
     }
-    js(IR) {
+    js {
         binaries.executable()
         browser()
     }
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
-        optIn.add("kotlinx.cinterop.BetaInteropApi")
-        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
         optIn.add("kotlin.time.ExperimentalTime")
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
@@ -88,6 +86,17 @@ kotlin {
         }
 
         if (onMac) {
+            // Opt in across the whole iOS hierarchy rather than on the native compilations. The
+            // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
+            // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also
+            // requires a source set's opt-ins to be a superset of those of the source sets it
+            // depends on, so the leaf target source sets must be covered too, not just iosMain.
+            matching { it.name.startsWith("ios") }.configureEach {
+                languageSettings {
+                    optIn("kotlinx.cinterop.BetaInteropApi")
+                    optIn("kotlinx.cinterop.ExperimentalForeignApi")
+                }
+            }
             val iosMain by getting {
             }
         }
@@ -189,6 +198,10 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            // Matches :library - see the same setting there for why. Kept in step deliberately:
+            // both modules compile commonTest sources against the same stubbed android.jar, so a
+            // test that logs must not be writable in one module and impossible in the other.
+            isReturnDefaultValues = true
         }
     }
     dependencies {
@@ -197,7 +210,7 @@ android {
 }
 
 fun env(name: String, profile: String) {
-    tasks.create("deployWeb${name}Init", Exec::class.java) {
+    tasks.register("deployWeb${name}Init", Exec::class.java) {
         group = "deploy"
         this.dependsOn("jsBundleProduction")
         this.environment("AWS_PROFILE", "$profile")
@@ -209,7 +222,7 @@ fun env(name: String, profile: String) {
         this.args("init")
         this.workingDir = file("terraform/$name")
     }
-    tasks.create("deployWeb${name}", Exec::class.java) {
+    tasks.register("deployWeb${name}", Exec::class.java) {
         group = "deploy"
         this.dependsOn("deployWeb${name}Init")
         this.environment("AWS_PROFILE", "$profile")

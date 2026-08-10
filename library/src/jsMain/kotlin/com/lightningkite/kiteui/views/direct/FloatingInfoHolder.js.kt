@@ -22,17 +22,17 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-actual class FloatingInfoHolder actual constructor(val source: Element) {
-    val maxDist = 32
-    var blockView: Element? = null
-    var closeView: Element? = null
-    var existingView: Element? = null
+public actual class FloatingInfoHolder actual constructor(public val source: Element, public val anchor: Element?) {
+    internal val maxDist = 32
+    internal var blockView: Element? = null
+    internal var closeView: Element? = null
+    internal var existingView: Element? = null
 
-    actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
-    var currentDirection: PopoverPreferredDirection = preferredDirection
-    actual var menuGenerator: Frame.() -> Unit = { space() }
+    public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
+    internal var currentDirection: PopoverPreferredDirection = preferredDirection
+    public actual var menuGenerator: Frame.() -> Unit = { space() }
 
-    fun closeButton() {
+    internal fun closeButton() {
         if (closeView != null) return
         val o = source.context.overlayFrame ?: return
         val v = existingView ?: return
@@ -45,7 +45,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
         }
     }
 
-    actual fun block() {
+    public actual fun block() {
         if (blockView != null) return
         val o = source.context.overlayFrame ?: return
         val v = existingView ?: return
@@ -74,7 +74,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
         )
     }
 
-    actual fun open() {
+    public actual fun open() {
         if (existingView != null) return
         var removeElementFromOverlay = {}
         // Held so it can be disconnected on teardown; a live ResizeObserver retains its target
@@ -112,7 +112,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                 fun reposition() {
                     native.onElement { e ->
                         e as HTMLElement
-                        val sourcePosition = source.native.element!!.getBoundingClientRect()
+                        val sourcePosition = (anchor ?: source).native.element!!.getBoundingClientRect()
                         val screen = document.body!!.getBoundingClientRect()
                         val size = e.getBoundingClientRect()
                         e.style.removeProperty("top")
@@ -286,7 +286,7 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
                 val mouseMove = { it: Event ->
                     it as MouseEvent
                     if (blockView == null && context.popoverKeepOpen <= 0) {
-                        val clientRect = (source.native.element as HTMLElement).getBoundingClientRect()
+                        val clientRect = ((anchor ?: source).native.element as HTMLElement).getBoundingClientRect()
                         val popUpRect = (native.element as HTMLElement).getBoundingClientRect()
                         val popUpDist = maxOf(
                             it.x - popUpRect.right,
@@ -307,11 +307,11 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
 
                 removeElementFromOverlay = {
                     blockView?.let {
-                        source.overlayFrame!!.removeChild(it)
+                        source.context.overlayFrame!!.removeChild(it)
                     }
                     blockView = null
                     closeView?.let {
-                        source.overlayFrame!!.removeChild(it)
+                        source.context.overlayFrame!!.removeChild(it)
                     }
                     closeView = null
                     window.removeEventListener("scroll", repos, true)
@@ -344,10 +344,10 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
         }
     }
 
-    actual fun close() {
+    public actual fun close() {
         source.context.closeSiblingPopovers()
     }
 }
 
-val DOMRect.centerY get() =  (top + bottom) / 2
-val DOMRect.centerX get() =  (left + right) / 2
+internal val DOMRect.centerY: Double get() =  (top + bottom) / 2
+internal val DOMRect.centerX: Double get() =  (left + right) / 2

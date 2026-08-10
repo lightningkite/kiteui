@@ -8,17 +8,17 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-interface RecyclerViewRendererSet<in T, out ID> {
-    fun id(item: T): ID
-    fun renderer(item: T): RecyclerViewRenderer<T>
+public interface RecyclerViewRendererSet<in T, out ID> {
+    public fun id(item: T): ID
+    public fun renderer(item: T): RecyclerViewRenderer<T>
 
-    object Empty : RecyclerViewRendererSet<Any?, Unit> {
+    public object Empty : RecyclerViewRendererSet<Any?, Unit> {
         override fun id(item: Any?): Unit = Unit
         override fun renderer(item: Any?): RecyclerViewRenderer<Any?> = RecyclerViewRenderer.Blank
     }
 
-    companion object {
-        fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Reactive<T>) -> Unit) =
+    public companion object {
+        public fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Reactive<T>) -> Unit): RecyclerViewRendererSet<T, ID> =
             object : RecyclerViewRendererSet<T, ID> {
                 override fun id(item: T): ID = id(item)
                 val r = object : RecyclerViewRenderer<T> {
@@ -32,10 +32,10 @@ interface RecyclerViewRendererSet<in T, out ID> {
                 override fun renderer(item: T): RecyclerViewRenderer<T> = r
             }
 
-        class MultiBuilder<T, ID> internal constructor(val id: (T)->ID) {
+        public class MultiBuilder<T, ID> internal constructor(public val id: (T)->ID) {
             internal val entries = ArrayList<Pair<(T)->Boolean, RecyclerViewRenderer<T>>>()
-            fun elementsMatching(predicate: (T)->Boolean): (T)->Boolean = predicate
-            infix fun ((T)->Boolean).renderedAs(renderer: ViewWriter.(data: Reactive<T>) -> Unit) {
+            public fun elementsMatching(predicate: (T)->Boolean): (T)->Boolean = predicate
+            public infix fun ((T)->Boolean).renderedAs(renderer: ViewWriter.(data: Reactive<T>) -> Unit) {
                 entries += this to object : RecyclerViewRenderer<T> {
                     override fun render(
                         viewWriter: ViewWriter,
@@ -54,9 +54,9 @@ interface RecyclerViewRendererSet<in T, out ID> {
             }
         }
 
-        fun <T, ID> multi(
+        public fun <T, ID> multi(
             id: (T) -> ID,
             builder: MultiBuilder<T, ID>.() -> Unit
-        ) = MultiBuilder(id).also(builder).build()
+        ): RecyclerViewRendererSet<T, ID> = MultiBuilder(id).also(builder).build()
     }
 }

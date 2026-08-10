@@ -9,7 +9,7 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 @OptIn(ExperimentalEncodingApi::class, ExperimentalForeignApi::class)
-actual suspend fun Element.driverScreenshot(): String {
+public actual suspend fun Element.driverScreenshot(): String {
     val view = native
     val bounds = view.bounds
     UIGraphicsBeginImageContextWithOptions(

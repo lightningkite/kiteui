@@ -2,6 +2,7 @@ Pods
 .gradle
 .idea
 .kotlin
+.kotlin-locks
 build
 *.xcworkspace
 *.hprof

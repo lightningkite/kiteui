@@ -5,10 +5,11 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
-    override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + formattedTextInputDriverActions()
     init {
         native.tag = "input"
         native.classes.add("editable")
@@ -25,7 +26,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
 
     private var formatter: (String) -> String = { it }
     private var isRawData: (Char) -> Boolean = { true }
-    actual fun format(
+    public actual fun format(
         isRawData: (Char) -> Boolean,
         formatter: (clean: String) -> String,
     ) {
@@ -33,7 +34,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         this.isRawData = isRawData
     }
 
-    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String>, BaseListenable() {
+    public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 repairFormatAndPosition(
@@ -56,18 +57,19 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
             set(value) {
                 val clean = value.filter(isRawData)
                 val formatted = formatter(clean)
-                if (native.attributes.valueString != formatted)
+                if (native.attributes.valueString != formatted) {
                     native.attributes.valueString = formatted
                     invokeAllListeners()
+                }
             }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             native.applyKeyboardHints(value)
         }
 
-    actual inline var hint: String
+    public actual inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
@@ -75,7 +77,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
 
     private var _align: Align? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value
@@ -97,6 +99,6 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
     }
 }
 
-expect val FormattedTextInput.selectionStart: Int?
-expect val FormattedTextInput.selectionEnd: Int?
-expect fun FormattedTextInput.setSelectionRange(start: Int, end: Int)
+public expect val FormattedTextInput.selectionStart: Int?
+public expect val FormattedTextInput.selectionEnd: Int?
+public expect fun FormattedTextInput.setSelectionRange(start: Int, end: Int)

@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.load
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.rem
@@ -23,7 +25,9 @@ import kotlin.time.Duration.Companion.seconds
  * Stops loading automatically when [loadMore] completes without the list growing.
  * Retries are allowed after errors.
  */
-fun <T, ID> RowOrCol.childrenLazyLoading(
+@InternalKiteUi
+@Deprecated("This will be marked as internal soon")
+public fun <T, ID> ContainerElement.childrenLazyLoading(
     scroll: ScrollingBehaviors,
     items: Reactive<List<T>>,
     id: (T) -> ID,
@@ -34,18 +38,20 @@ fun <T, ID> RowOrCol.childrenLazyLoading(
     var loadJob: Job? = null
     var sizeAtLoadStart = -1
 
-    forEachByIdWithoutAnimation(items, id, render = render)
+    renderListKeyed(items, id = id, animate = false, render = render)
 
-    val isVertical = this.vertical
     withoutLoadingAnimations {
         reactive {
             val list = items()
             val vp = scroll.viewport()
             val ct = scroll.content()
-            if(loadJob != null) return@reactive
+            if (loadJob != null) return@reactive
+            // If the last completed load didn't grow the list, don't trigger another one
+            // until something changes (e.g. an error resets sizeAtLoadStart to allow retry).
+            if (list.size == sizeAtLoadStart) return@reactive
 
-            val contentEnd = if (isVertical) ct.bottom else ct.right
-            val viewportEnd = if (isVertical) vp.bottom else vp.right
+            val contentEnd = if (scroll.vertical) ct.bottom else ct.right
+            val viewportEnd = if (scroll.vertical) vp.bottom else vp.right
             val distanceToEnd = contentEnd - viewportEnd
             if (distanceToEnd < threshold.viewUnits) {
                 sizeAtLoadStart = list.size
@@ -65,11 +71,42 @@ fun <T, ID> RowOrCol.childrenLazyLoading(
     }
 }
 
+public inline fun <T, ID, C : ContainerElement> ElementWriter.CanAddScrolling.renderLazyListIn(
+    container: ElementWriter.(C.() -> Unit) -> C,
+    items: Reactive<List<T>>,
+    noinline id: (T) -> ID,
+    threshold: Dimension = 20.rem,
+    noinline loadMore: suspend () -> Unit,
+    noinline render: ElementWriter.CanAddTheme.(Reactive<T>) -> Unit
+): C {
+    var setupCalled = false
+    lateinit var scroll: ScrollingBehaviors
+    val result = scrolling { scroll = this }.container {
+        setupCalled = true
+        @OptIn(InternalKiteUi::class)
+        @Suppress("DEPRECATION")
+        childrenLazyLoading(scroll, items, id, threshold, loadMore, render)
+    }
+    if (!setupCalled) context.handleException(
+        Exception("renderLazyListIn: container lambda did not call the setup lambda. Use a DSL function reference like ElementWriter::col or ElementWriter::row, or ensure your custom lambda invokes the passed setup function, e.g., { setup -> col { setup() } }"),
+        ExceptionHandler.Metadata(
+            source = result,
+            process = null,
+            foregroundProcess = null,
+            context = mapOf(
+                "container type" to result::class.toString(),
+                "items" to (items.state.getOrNull()?.toString() ?: "NotReady"),
+            )
+        )
+    )
+    return result
+}
+
 /**
  * Creates a scrolling column that renders children with lazy loading.
  * Convenience wrapper around [childrenLazyLoading] that creates the scrolling container.
  */
-fun <T, ID> ElementWriter.CanAddScrolling.lazyColumn(
+public fun <T, ID> ElementWriter.CanAddScrolling.lazyColumn(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     threshold: Dimension = 20.rem,
@@ -78,6 +115,8 @@ fun <T, ID> ElementWriter.CanAddScrolling.lazyColumn(
 ): RowOrCol {
     lateinit var scroll: ScrollingBehaviors
     return scrolling { scroll = this }.col {
+        @OptIn(InternalKiteUi::class)
+        @Suppress("DEPRECATION")
         childrenLazyLoading(scroll, items, id, threshold, loadMore, render)
     }
 }
@@ -86,7 +125,7 @@ fun <T, ID> ElementWriter.CanAddScrolling.lazyColumn(
  * Creates a scrolling row that renders children with lazy loading.
  * Convenience wrapper around [childrenLazyLoading] that creates the scrolling container.
  */
-fun <T, ID> ElementWriter.CanAddScrolling.lazyRow(
+public fun <T, ID> ElementWriter.CanAddScrolling.lazyRow(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     threshold: Dimension = 20.rem,
@@ -95,6 +134,8 @@ fun <T, ID> ElementWriter.CanAddScrolling.lazyRow(
 ): RowOrCol {
     lateinit var scroll: ScrollingBehaviors
     return scrollingHorizontally { scroll = this }.row {
+        @OptIn(InternalKiteUi::class)
+        @Suppress("DEPRECATION")
         childrenLazyLoading(scroll, items, id, threshold, loadMore, render)
     }
 }

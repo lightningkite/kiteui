@@ -18,10 +18,10 @@ import platform.CoreGraphics.*
 import platform.UIKit.*
 import platform.darwin.*
 
-actual class Canvas actual constructor(context: ElementContext) : NativeElement(context) {
-    override val native = CanvasView()
+public actual class Canvas actual constructor(context: ElementContext) : NativeElement(context) {
+    override val native: CanvasView = CanvasView()
 
-    actual var delegate: CanvasDelegate?
+    public actual var delegate: CanvasDelegate?
         get() = native.delegate
         set(value) {
             native.delegate = value
@@ -41,7 +41,7 @@ actual class Canvas actual constructor(context: ElementContext) : NativeElement(
 }
 
 
-class CanvasView : UIView(CGRectZero.readValue()) {
+public class CanvasView : UIView(CGRectZero.readValue()) {
     init {
         opaque = false
         setUserInteractionEnabled(true)
@@ -49,7 +49,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
     }
 
     @ObjCAction
-    fun gestureSink() {
+    public fun gestureSink() {
     }
 
     private var gestureRecognizer: UIGestureRecognizer? = object : UIGestureRecognizer(this@CanvasView, sel_registerName("gestureSink")),
@@ -90,7 +90,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
         }
     }
 
-    var delegate: CanvasDelegate? = null
+    internal var delegate: CanvasDelegate? = null
         set(value) {
             field?.invalidate = {}
             field = value
@@ -105,7 +105,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
         addGestureRecognizer(gestureRecognizer!!)
     }
 
-    fun terminate() {
+    internal fun terminate() {
         if(gestureRecognizer == null) return
         removeGestureRecognizer(gestureRecognizer!!)
         delegate = null

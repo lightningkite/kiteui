@@ -17,8 +17,9 @@ import kotlinx.coroutines.launch
 import platform.UIKit.UIModalPresentationOverFullScreen
 import platform.UIKit.UIViewController
 
-actual fun ElementContext.overlay(
+public actual fun ElementContext.overlay(
     modal: Boolean,
+    navClosable: Boolean,
     transition: ScreenTransitions,
     body: ContainerElement.(remove: () -> Unit) -> Unit
 ) {

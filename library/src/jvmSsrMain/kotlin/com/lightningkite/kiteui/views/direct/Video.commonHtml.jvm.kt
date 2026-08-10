@@ -6,14 +6,14 @@ import com.lightningkite.reactive.core.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-actual val RawVideoView.nativeTime: MutableReactive<Duration>
+public actual val RawVideoView.nativeTime: MutableReactive<Duration>
     get() = native.vprop(
         eventName = "timeupdate",
         get = { attributes["data-currentTime"]?.toDoubleOrNull()?.seconds ?: Duration.ZERO },
         set = { value -> setAttribute("data-currentTime", value.toString()) }
     )
 
-actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
+public actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
     get() = native.vprop(
         eventName = "timeupdate",
         get = { attributes.autoplay ?: (attributes["data-playing"]?.toBoolean() ?: false) },
@@ -23,15 +23,15 @@ actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
         }
     )
 
-actual val RawVideoView.nativeVolume: MutableReactive<Float>
+public actual val RawVideoView.nativeVolume: MutableReactive<Float>
     get() = native.vprop(
         eventName = "volumechange",
         get = { attributes["data-volume"]?.toFloatOrNull() ?: 1f },
         set = { value -> setAttribute("data-volume", value.toString()) }
     )
 
-actual fun RawVideoView.nativeLoad(url: String?) {
+public actual fun RawVideoView.nativeLoad(url: String?) {
     native.attributes.src = url
 }
-actual val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>> get() = listOf()
-actual val RawVideoView.nativeDuration: Reactive<Double?> get() = Reactive.Never
+public actual val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>> get() = listOf()
+public actual val RawVideoView.nativeDuration: Reactive<Double?> get() = Reactive.Never

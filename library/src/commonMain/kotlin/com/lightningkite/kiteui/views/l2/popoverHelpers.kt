@@ -13,12 +13,11 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-@ViewDsl
-fun ElementContext.toast(text: String, duration: Duration = 3.seconds) {
+public fun ElementContext.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) {
+public fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.CanAddTheme.() -> Unit) {
     overlay(false) {
         atBottomCenter.col {
             withoutAnimation {
@@ -40,8 +39,8 @@ fun ElementContext.toast(duration: Duration = 3.seconds, content: ElementWriter.
     }
 }
 
-fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddSizing.(close: ()->Unit) -> Unit) {
-    overlay(modal = true) { close ->
+public fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.CanAddSizing.(close: ()->Unit) -> Unit) {
+    overlay(modal = true, navClosable = dismissable) { close ->
         dismissBackground {
             debugName = "dialog-bg"
             onClick { if (dismissable) close() }
@@ -54,19 +53,14 @@ fun ElementContext.dialog(dismissable: Boolean = true, content: ElementWriter.Ca
     }
 }
 
-fun ElementContext.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> Unit) {
-    var willRemove: Element? = null
-    overlay {
+public fun ElementContext.rawPopover(
+    transition: ScreenTransitions,
+    navClosable: Boolean = true,
+    content: ViewWriter.() -> Unit
+) {
+    overlay(navClosable = navClosable, transition = transition) { close ->
         withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    it.animateOut(transition.reverse) {
-                        this@overlay.removeChild(it)
-                    }
-                }
-            }.run {
-                willRemove = beforeSetup { animateIn(transition.forward) }.produceAtMostOneView(content)
-            }
+            popoverWriter(close = close).produceAtMostOneView(content)
         }
     }
 }

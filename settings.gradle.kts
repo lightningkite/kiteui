@@ -13,13 +13,9 @@ pluginManagement {
 rootProject.name = "kiteui"
 
 include(":library")
-//include(":library-swing")
 include(":library-lottie")
-//include(":library-lottie-swing")
 include(":library-camera")
-//include(":library-camera-swing")
 include(":example-app")
-//include(":example-app-swing")
 include(":gradle-plugin")
 include(":test-utilities")
 include(":ai-driver-server")

@@ -17,11 +17,12 @@ import kotlinx.coroutines.launch
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import kotlin.time.Duration.Companion.milliseconds
 
 private var ElementContext.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon(null)
 
-actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
-    override val native = FrameLayout()
+public actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
+    override val native: FrameLayout = FrameLayout()
 
     // The system only keeps weak references to the following objects, so we must keep our own references for the
     // lifetime of the view
@@ -30,7 +31,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
     private var rightSwipeTarget: NSObject? = null
     private var rightSwipeRecognizer: UISwipeGestureRecognizer? = null
 
-    actual fun bottomSheet(
+    public actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
         draggable: Boolean,
@@ -54,9 +55,10 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         viewController.kiteUi(context.split(viewController)) {
             beforeSetup {
                 underlyingNativeElement.parent = this@CoordinatorFrame
-                launch {    // TODO: What the fuck
-                    while(true) {
-                        delay(100)
+                // Can confirm this is OK; automatically cleaned up properly.
+                launch {
+                    while (true) {
+                        delay(100.milliseconds)
                         underlyingNativeElement.refreshTheming()
                     }
                 }
@@ -105,7 +107,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         context.present(viewController)
     }
 
-    actual fun leftSlidingPanel(
+    public actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit,
@@ -145,7 +147,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         willRemove?.animateIn(transition.forward)
     }
 
-    actual fun rightSlidingPanel(
+    public actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit,
@@ -186,7 +188,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         willRemove?.animateIn(transition.forward)
     }
 
-    actual fun onLeftSwipe(action: suspend () -> Unit) {
+    public actual fun onLeftSwipe(action: suspend () -> Unit) {
         leftSwipeTarget = object : NSObject() {
             @ObjCAction
             fun handleLeftSwipe(sender: UISwipeGestureRecognizer) {
@@ -200,7 +202,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         native.userInteractionEnabled = true
     }
 
-    actual fun onRightSwipe(action: suspend () -> Unit) {
+    public actual fun onRightSwipe(action: suspend () -> Unit) {
         rightSwipeTarget = object : NSObject() {
             @ObjCAction
             fun handleRightSwipe(sender: UISwipeGestureRecognizer) {
@@ -216,11 +218,15 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
+    NativeInteractiveContainerElement(context) {
     actual override val underlyingNativeElement: CoordinatorDragHandle get() = this
-    override val native = FrameLayoutButton()
+    override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
-    init { setupControl() }
+
+    init {
+        setupControl()
+    }
 
     @OverrideOnly
     override fun onStartup() {

@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlin.coroutines.CoroutineContext
 
-actual fun ElementWriter.openBottomSheet(
+public actual fun ElementWriter.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,
     view: ElementWriter.CanAddTheme.() -> Unit

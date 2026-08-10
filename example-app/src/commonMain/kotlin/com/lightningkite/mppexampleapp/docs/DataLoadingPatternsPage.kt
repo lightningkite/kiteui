@@ -291,7 +291,7 @@ object DataLoadingPatternsPage : DocPage {
                             val currentTime = Signal(Clock.System.now())
 
                             // Update every 5 seconds
-                            reactiveScope {
+                            reactive {
                                 launch {
                                     while (true) {
                                         delay(5000)
@@ -375,7 +375,7 @@ object DataLoadingPatternsPage : DocPage {
                                 items
                             }
 
-                            reactiveScope {
+                            reactive {
                                 // Append new items to list
                                 allItems.value = allItems() + newItems()
                             }

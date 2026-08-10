@@ -11,76 +11,96 @@ import kotlinx.coroutines.CoroutineScope
 // by Claude - all rContextAddon defaults write to the root RContext so they're shared across the tree.
 // Explicit sets (via the setter) write to the local context, shadowing the root for that subtree.
 
-class ContextAddon<T>(val init: Init<T>) {
-    fun interface Init<out T> {
-        fun get(context: ElementContext, property: KProperty<*>): T
+public class ContextAddon<T>(public val init: Init<T>) {
+    public fun interface Init<out T> {
+        public fun get(context: ElementContext, property: KProperty<*>): T
 
-        data class Value<T>(val value: T) : Init<T> {
+        public data class Value<T>(val value: T) : Init<T> {
             override fun get(context: ElementContext, property: KProperty<*>): T = value
         }
-        data class Lazy<T>(val init: (ElementContext) -> T) : Init<T> {
+        public data class Lazy<T>(val init: (ElementContext) -> T) : Init<T> {
             override fun get(context: ElementContext, property: KProperty<*>): T = init(context)
         }
-        data object LateInit : Init<Nothing> {
+        public data object LateInit : Init<Nothing> {
             override fun get(context: ElementContext, property: KProperty<*>): Nothing =
                 throw IllegalStateException("late-init addon '${property.name}' has not been initialized.")
         }
     }
 
-    constructor(value: T) : this(Init.Value(value))
-    constructor(init: (ElementContext) -> T) : this(Init.Lazy(init))
+    public constructor(value: T) : this(Init.Value(value))
+    public constructor(init: (ElementContext) -> T) : this(Init.Lazy(init))
 
     @Suppress("UNCHECKED_CAST")
-    operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T =
+    public operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T =
         thisRef.addons.getOrPut(property.name) { init.get(thisRef, property) } as T
 
-    operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) {
+    public operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) {
         thisRef.addons[property.name] = value
     }
 }
 
-fun <T> contextAddon(init: T) = ContextAddon(init)
-fun <T> lateInitContextAddon() = ContextAddon<T>(ContextAddon.Init.LateInit)
-fun <T> lazyContextAddon(init: (ElementContext) -> T) = ContextAddon(init)
+public fun <T> contextAddon(init: T): ContextAddon<T> = ContextAddon(init)
+public fun <T> lateInitContextAddon(): ContextAddon<T> = ContextAddon<T>(ContextAddon.Init.LateInit)
+public fun <T> lazyContextAddon(init: (ElementContext) -> T): ContextAddon<T> = ContextAddon(init)
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("contextAddon(init)"))
-fun <T> rContextAddon(init: T) = contextAddon(init)
+public fun <T> rContextAddon(init: T): ContextAddon<T> = contextAddon(init)
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("lazyContextAddon(init)"))
-fun <T> rContextAddonGenerate(init: (ElementContext) -> T) = lazyContextAddon(init)
+public fun <T> rContextAddonGenerate(init: (ElementContext) -> T): ContextAddon<T> = lazyContextAddon(init)
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("lateInitContextAddon()"))
-fun <T> rContextAddonInit() = lateInitContextAddon<T>()
+public fun <T> rContextAddonInit(): ContextAddon<T> = lateInitContextAddon<T>()
 
-var ElementContext.safeInsets by lazyContextAddon<Reactive<Edges>> { Constant(Edges.ZERO) }
+public var ElementContext.safeInsets: Reactive<Edges> by lazyContextAddon<Reactive<Edges>> { Constant(Edges.ZERO) }
 
-var ElementContext.popoverParent by lazyContextAddon<ContainerElement?> { null }
-var ElementContext.popoverCloser by lazyContextAddon<(() -> Unit)?> { null }
-var ElementContext.popoverKeepOpen by lazyContextAddon { 0 }
+public var ElementContext.popoverParent: ContainerElement? by lazyContextAddon<ContainerElement?> { null }
+public var ElementContext.popoverCloser: (() -> Unit)? by lazyContextAddon<(() -> Unit)?> { null }
+public var ElementContext.popoverKeepOpen: Int by lazyContextAddon { 0 }
 
-fun ElementContext.closePopovers() {
+// Stack of dismiss lambdas for currently-open dismissable modal dialogs (topmost is last). Shared
+// app-wide because a lazyContextAddon's default is created once and stored on the ROOT context, so
+// every context in the tree resolves to the same list. This lets back handlers (Android system back,
+// browser back) dismiss the top dialog before navigating pages.
+private var ElementContext.dismissableDialogStack by lazyContextAddon { mutableListOf<() -> Unit>() }
+
+/** Registers [dismiss] as the topmost open dialog; returns a lambda that unregisters it on close. */
+public fun ElementContext.pushDismissableDialog(dismiss: () -> Unit): Release {
+    val stack = dismissableDialogStack
+    stack.add(dismiss)
+    return { stack.remove(dismiss) }
+}
+
+/** If a dismissable dialog is open, dismisses the topmost one and returns true; otherwise false. */
+public fun ElementContext.dismissTopDialog(): Boolean {
+    val top = dismissableDialogStack.removeLastOrNull() ?: return false
+    top()
+    return true
+}
+
+public fun ElementContext.closePopovers() {
     popoverCloser?.invoke()
     popoverCloser = null
     popoverParent?.context?.closePopovers()
 }
 
-fun ElementContext.closeThisPopover() {
+public fun ElementContext.closeThisPopover() {
     popoverCloser?.invoke()
     popoverCloser = null
     popoverParent?.context?.closeSiblingPopovers()
 }
 
-fun ElementContext.closeSiblingPopovers() {
+public fun ElementContext.closeSiblingPopovers() {
     popoverCloser?.invoke()
     popoverCloser = null
 }
 
-fun ElementContext.keepPopoverOpen(lifecycle: CoroutineScope) {
+public fun ElementContext.keepPopoverOpen(lifecycle: CoroutineScope) {
     popoverKeepOpen++
     lifecycle.onRemove { popoverKeepOpen-- }
 }
 
-fun ElementWriter.popoverWriter(
+public fun ElementWriter.popoverWriter(
     overlay: ElementWriter = this,
     popoverRoot: Boolean = false,
     close: () -> Unit
@@ -97,7 +117,7 @@ fun ElementWriter.popoverWriter(
     return writer
 }
 
-fun Element.popoverWriter(overlay: ElementWriter, popoverRoot: Boolean = false, close: () -> Unit): ViewWriter {
+public fun Element.popoverWriter(overlay: ElementWriter, popoverRoot: Boolean = false, close: () -> Unit): ViewWriter {
     context.popoverCloser?.invoke()
     context.popoverCloser = close
 
@@ -110,7 +130,7 @@ fun Element.popoverWriter(overlay: ElementWriter, popoverRoot: Boolean = false, 
     return writer
 }
 
-fun ContainerElement.popoverWriter(
+public fun ContainerElement.popoverWriter(
     overlay: ElementWriter = this,
     popoverRoot: Boolean = false,
     close: () -> Unit
@@ -134,15 +154,16 @@ fun ContainerElement.popoverWriter(
  * will appear under bottom sheets on iOS.
  *
  * @param modal `true` if this overlay is intended as a modal, meaning that it covers and _may_ prevent interaction with
- * the UI under the modal.
- *
- * Note that setting this value to true does not enforce modality, but it may opt the layout in
+ * the UI under the modal. Note that setting this value to true does not enforce modality, but it may opt the layout in
  * to a more appropriate presentation strategy used by the native view system. (This behavior could be enforced using
  * `dismissBackground`, for example.) Setting this value to `false` guarantees that the presentation strategy
  * *will not* prevent interaction with views below the overlay.
+ *
+ * @param navClosable if `true` this overlay will be closable with the platform's 'back' action.
  */
-expect fun ElementContext.overlay(
+public expect fun ElementContext.overlay(
     modal: Boolean = true,
+    navClosable: Boolean = modal,
     transition: ScreenTransitions = ScreenTransitions.Fade,
     body: ContainerElement.(remove: () -> Unit) -> Unit
 )

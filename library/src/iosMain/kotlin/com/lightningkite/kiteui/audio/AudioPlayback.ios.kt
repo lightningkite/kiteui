@@ -15,14 +15,14 @@ import platform.CoreAudioTypes.kAudioFormatFlagIsSignedInteger
  * Uses AVAudioPlayerNode to play streaming PCM16 audio.
  */
 @OptIn(ExperimentalForeignApi::class)
-actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
+public actual class AudioPlayback actual constructor(public actual val format: AudioFormat) {
     private val _isPlaying = Signal(false)
     private val _bufferedDurationMs = Signal(0L)
 
-    actual val isPlaying: Reactive<Boolean> = _isPlaying
-    actual val bufferedDurationMs: Reactive<Long> = _bufferedDurationMs
+    public actual val isPlaying: Reactive<Boolean> = _isPlaying
+    public actual val bufferedDurationMs: Reactive<Long> = _bufferedDurationMs
 
-    actual var volume: Float = 1f
+    public actual var volume: Float = 1f
         set(value) {
             field = value.coerceIn(0f, 1f)
             playerNode?.volume = field
@@ -74,7 +74,7 @@ actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
         }
     }
 
-    actual fun enqueue(data: ByteArray) {
+    public actual fun enqueue(data: ByteArray) {
         if (data.isEmpty()) return
         audioQueue.addLast(data)
         totalBufferedBytes += data.size
@@ -85,7 +85,7 @@ actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
         }
     }
 
-    actual fun start() {
+    public actual fun start() {
         if (audioEngine == null) {
             initAudioEngine()
         }
@@ -102,23 +102,23 @@ actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
         scheduleBuffers()
     }
 
-    actual fun stop() {
+    public actual fun stop() {
         playerNode?.stop()
         _isPlaying.value = false
         clearBuffer()
     }
 
-    actual fun clearBuffer() {
+    public actual fun clearBuffer() {
         audioQueue.clear()
         totalBufferedBytes = 0
         updateBufferedDuration()
     }
 
-    actual fun onBufferEmpty(action: () -> Unit) {
+    public actual fun onBufferEmpty(action: () -> Unit) {
         onBufferEmptyCallback = action
     }
 
-    actual fun release() {
+    public actual fun release() {
         stop()
         audioEngine?.stop()
         audioEngine = null

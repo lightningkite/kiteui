@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.utils
 
-actual fun getAppVersion(): String {
+public actual fun getAppVersion(): String {
     // todo
     return ""
 }

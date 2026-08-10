@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.views.*
 
 
-actual class Space actual constructor(context: ElementContext, multiplier: Double) : NativeElement(context) {
+public actual class Space actual constructor(context: ElementContext, multiplier: Double) : NativeElement(context) {
     init {
         native.tag = "span"
         native.classes.add("kiteui-space")

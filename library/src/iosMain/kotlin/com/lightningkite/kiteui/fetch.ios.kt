@@ -33,29 +33,17 @@ import kotlin.coroutines.resumeWithException
 // by Claude
 private val fetchLog = LogRoot.tag("fetch")
 
-val client = HttpClient {
+public val client: HttpClient = HttpClient {
     install(WebSockets)
     install(UserAgent) {
         agent = Platform.userAgent
     }
-    install(HttpCache) {
-//        publicStorage(object: CacheStorage {
-//            override suspend fun find(url: Url, varyKeys: Map<String, String>): CachedResponseData? {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override suspend fun findAll(url: Url): Set<CachedResponseData> {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override suspend fun store(url: Url, data: CachedResponseData) {
-//                TODO("Not yet implemented")
-//            }
-//        })
-    }
+    // Uses Ktor's default in-memory cache storage. Responses are therefore not retained across app
+    // launches; a disk-backed CacheStorage has never been written for iOS.
+    install(HttpCache)
 }
 
-actual suspend fun fetchRaw(
+public actual suspend fun fetchRaw(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -153,36 +141,36 @@ actual suspend fun fetchRaw(
     }
 }
 
-actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
+public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
-actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
-    actual fun append(name: String, value: String): Unit {
+public actual class HttpHeaders(public val map: MutableMap<String, List<String>>) {
+    public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
 
-    actual fun delete(name: String): Unit {
+    public actual fun delete(name: String): Unit {
         map.remove(name.lowercase())
     }
 
-    actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
-    actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
-    actual fun set(name: String, value: String): Unit {
+    public actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
+    public actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
+    public actual fun set(name: String, value: String): Unit {
         map[name.lowercase()] = listOf(value)
     }
 }
 
-actual class RequestResponse(val wraps: HttpResponse) {
-    actual val status: Short get() = wraps.status.value.toShort()
-    actual val ok: Boolean get() = wraps.status.isSuccess()
-    actual suspend fun text(): String {
+public actual class RequestResponse(public val wraps: HttpResponse) {
+    public actual val status: Short get() = wraps.status.value.toShort()
+    public actual val ok: Boolean get() = wraps.status.isSuccess()
+    public actual suspend fun text(): String {
         try {
             return wraps.bodyAsText()
         } catch (e: CancellationException) {
@@ -192,7 +180,7 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual suspend fun blob(): Blob {
+    public actual suspend fun blob(): Blob {
         try {
             return wraps.body<ByteArray>()
                 .let { Blob(it.toNSData(), wraps.contentType()?.toString() ?: "application/octet-stream") }
@@ -203,39 +191,39 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual val headers: HttpHeaders
+    public actual val headers: HttpHeaders
         get() = HttpHeaders(
             wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
-actual fun websocket(url: String): WebSocket {
+public actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(url)
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-class WebSocketWrapper(val url: String) : WebSocket {
-    val closeReason = Channel<CloseReason>()
-    val sending = Channel<Frame>(10)
-    var stayOn = true
-    val onOpen = ArrayList<() -> Unit>()
+public class WebSocketWrapper(public val url: String) : WebSocket {
+    public val closeReason: Channel<CloseReason> = Channel<CloseReason>()
+    public val sending: Channel<Frame> = Channel<Frame>(10)
+    public var stayOn: Boolean = true
+    public val onOpen: MutableList<() -> Unit> = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    val onClose = ArrayList<(Short) -> Unit>()
+    public val onClose: MutableList<(Short) -> Unit> = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    val onMessage = ArrayList<(String) -> Unit>()
+    public val onMessage: MutableList<(String) -> Unit> = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    val onBinaryMessage = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage: MutableList<(Blob) -> Unit> = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }
@@ -349,11 +337,11 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 }
 
-actual class Blob(val data: NSData, val type: String = "application/octet-stream")
-actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
+public actual class Blob(public val data: NSData, public val type: String = "application/octet-stream")
+public actual class FileReference(public val provider: NSItemProvider, public val suggestedType: UTType? = null)
 
 @OptIn(ExperimentalForeignApi::class)
-actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+public actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
     val nsData = bytes.usePinned { pinned ->
         NSData.dataWithBytes(pinned.addressOf(0), bytes.size.toULong())
     }
@@ -364,8 +352,8 @@ actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, file
 }
 
 
-actual fun Blob.mimeType(): String = type
-actual fun FileReference.mimeType(): String {
+public actual fun Blob.mimeType(): String = type
+public actual fun FileReference.mimeType(): String {
     // 1. Try the explicit suggested type
     // 2. Fallback to the first registered type in the provider
     // 3. Fallback to generic Data type
@@ -375,7 +363,7 @@ actual fun FileReference.mimeType(): String {
 
     return type.preferredMIMEType ?: "application/octet-stream"
 }
-actual fun FileReference.fileName(): String {
+public actual fun FileReference.fileName(): String {
     val type = suggestedType
         ?: (provider.registeredContentTypes.firstOrNull() as? UTType)
         ?: UTTypeData
@@ -396,14 +384,14 @@ actual fun FileReference.fileName(): String {
     }
 }
 
-fun String.nsdata(): NSData? =
+public fun String.nsdata(): NSData? =
     NSString.create(string = this).dataUsingEncoding(NSUTF8StringEncoding)
 
-fun NSData.string(): String? =
+public fun NSData.string(): String? =
     NSString.create(data = this, encoding = NSUTF8StringEncoding)?.toString()
 
 
-fun ByteArray.toNSData(): NSData = memScoped {
+public fun ByteArray.toNSData(): NSData = memScoped {
     NSData.create(
         bytes = allocArrayOf(this@toNSData),
         length = this@toNSData.size.toULong()
@@ -411,15 +399,15 @@ fun ByteArray.toNSData(): NSData = memScoped {
 }
 
 
-fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.toInt()).apply {
+public fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.toInt()).apply {
     usePinned {
         memcpy(it.addressOf(0), this@toByteArray.bytes, this@toByteArray.length)
     }
 }
 
-actual fun Blob.bytes(): Long = this.data.length.toLong()
-actual suspend fun Blob.toByteArray(): ByteArray = this.data.toByteArray()
-actual fun FileReference.bytes(): Long = -1L
+public actual fun Blob.bytes(): Long = this.data.length.toLong()
+public actual suspend fun Blob.toByteArray(): ByteArray = this.data.toByteArray()
+public actual fun FileReference.bytes(): Long = -1L
 
 //actual suspend fun Blob.byteArray(): ByteArray = data.toByteArray()
 //actual suspend fun FileReference.byteArray(): ByteArray {
@@ -435,8 +423,8 @@ actual fun FileReference.bytes(): Long = -1L
 //    }
 //}
 
-actual suspend fun Blob.text(): String = data.string()!!
-actual suspend fun FileReference.text(): String {
+public actual suspend fun Blob.text(): String = data.string()!!
+public actual suspend fun FileReference.text(): String {
     val mime = suggestedType
         ?: (provider.registeredContentTypes.firstOrNull() as? UTType ?: UTTypeData)
     // Type is dyn.age8u (null)
@@ -449,5 +437,5 @@ actual suspend fun FileReference.text(): String {
     }
 }
 
-actual fun String.toBlob(contentType: String): Blob = Blob(this.nsdata()!!, contentType)
-actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this.toNSData(), contentType)
+public actual fun String.toBlob(contentType: String): Blob = Blob(this.nsdata()!!, contentType)
+public actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this.toNSData(), contentType)

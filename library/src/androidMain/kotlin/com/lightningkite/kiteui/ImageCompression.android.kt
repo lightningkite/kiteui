@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import androidx.core.graphics.scale
 
-actual suspend fun ImageLocal.compressed(
+public actual suspend fun ImageLocal.compressed(
     maxWidth: Int,
     maxHeight: Int,
     quality: Float,

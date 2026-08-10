@@ -1,15 +1,11 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
 
 @Routable("foreach-by-id-test")
 object ForEachByIdTestPage : Page {
@@ -91,35 +87,29 @@ object ForEachByIdTestPage : Page {
 
             row {
                 expanding.card.col {
-                    h2("forEachById (animated)")
-                    col {
-                        forEachById(items, id = { it.id }) { item ->
-                            card.text {
-                                ::content { item().name }
-                                ::debugName { item().name }
-                            }
+                    h2("renderList (animated)")
+                    colOf(items, id = { it.id }) { item ->
+                        card.text {
+                            ::content { item().name }
+                            ::debugName { item().name }
                         }
                     }
                 }
                 expanding.card.col {
-                    h2("forEachByIdWithoutAnimation")
-                    col {
-                        forEachByIdWithoutAnimation(items, id = { it.id }) { item ->
-                            card.text {
-                                ::content { item().name }
-                                ::debugName { item().name }
-                            }
+                    h2("renderList (no animation)")
+                    colOf(items, id = { it.id }, animate = false) { item ->
+                        card.text {
+                            ::content { item().name }
+                            ::debugName { item().name }
                         }
                     }
                 }
                 expanding.card.col {
-                    h2("Reference (forEach)")
-                    col {
-                        forEach(items) { item ->
-                            card.text {
-                                content = item.name
-                                debugName = item.name
-                            }
+                    h2("Reference (renderList unkeyed)")
+                    colOf(items) { item ->
+                        card.text {
+                            ::content { item().name }
+                            ::debugName { item().name }
                         }
                     }
                 }

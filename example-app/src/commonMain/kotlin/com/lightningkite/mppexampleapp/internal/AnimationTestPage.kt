@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.internal
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
@@ -69,6 +70,8 @@ object AnimationTestPage : Page {
                 expanding.card.col {
                     h2("forEachAnimated Weighted Vertical")
                     expanding.col {
+                        @OptIn(InternalKiteUi::class)
+                        @Suppress("DEPRECATION")
                         forEachAnimated(remember {
                             map.entries.mapNotNull { if (it.value()) it.key else null }
                         }.debounce(10.milliseconds), preHidingModifiers = { expanding }) {
@@ -106,15 +109,15 @@ object AnimationTestPage : Page {
                 }
             }
             card.col {
-                h2("forEachAnimated Weighted Horizontal")
-                row {
-                    forEachAnimated(remember {
-                        map.entries.mapNotNull { if (it.value()) it.key else null }
-                    }.debounce(10.milliseconds), preHidingModifiers = { expanding }) {
-                        card.text {
-                            content = it
-                            debugName = content
-                        }
+                h2("rowOfExpensive Weighted Horizontal")
+                rowOfExpensive(
+                    remember { map.entries.mapNotNull { if (it.value()) it.key else null } }.debounce(10.milliseconds),
+                    animate = true,
+                    beforeModifier = { expanding },
+                ) {
+                    card.text {
+                        content = it
+                        debugName = content
                     }
                 }
             }
@@ -143,6 +146,6 @@ object AnimationTestPage : Page {
 
     private suspend fun ViewWriter.fakeLogin(email: Signal<String>) {
         fetch("fake-login/${email.await()}")
-        pageNavigator.navigate(ControlsPage)
+        context.pageNavigator.navigate(ControlsPage)
     }
 }

@@ -7,21 +7,24 @@ import androidx.core.view.WindowCompat
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.views.AndroidAppContext
 
-actual val Platform.Companion.current: Platform
+public actual val Platform.Companion.current: Platform
     get() = Platform.Android
-actual val Platform.Companion.probablyAppleUser: Boolean
+public actual val Platform.Companion.probablyAppleUser: Boolean
     get() = false
-actual val Platform.Companion.usesTouchscreen: Boolean
+public actual val Platform.Companion.usesTouchscreen: Boolean
     get() = true
-actual val Platform.Companion.userAgent: String
+public actual val Platform.Companion.userAgent: String
     get() = "Android ${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})"
 
 // by Claude - check if the app was built with debuggable flag
-actual val Platform.Companion.isDevelopment: Boolean
-    get() = (AndroidAppContext.applicationCtx?.applicationInfo?.flags ?: 0) and
+public actual val Platform.Companion.isDevelopment: Boolean
+    get() = (AndroidAppContext.applicationCtx.applicationInfo?.flags ?: 0) and
             ApplicationInfo.FLAG_DEBUGGABLE != 0
 
-actual fun setStatusBarColor(color: Color) {
+// Pre-API-30 devices (minSdk 23) have no WindowInsetsController, so the systemUiVisibility/
+// statusBarColor fallback path below necessarily uses deprecated View/Window APIs.
+@Suppress("DEPRECATION")
+public actual fun setStatusBarColor(color: Color) {
     val window = AndroidAppContext.activityCtx?.window
 
     // Check if we're on Android 11 (API 30) or higher for WindowInsetsController
@@ -37,7 +40,6 @@ actual fun setStatusBarColor(color: Color) {
         }
     } else {
         // For older versions, fallback to systemUiVisibility method
-        @Suppress("DEPRECATION")
         var flags = window?.decorView?.systemUiVisibility
         if (flags != null) {
             if (isColorDark(color.toInt())) {
@@ -53,7 +55,7 @@ actual fun setStatusBarColor(color: Color) {
     window?.statusBarColor = color.toInt()
 }
 
-fun isColorDark(color: Int) : Boolean {
+public fun isColorDark(color: Int) : Boolean {
     val darkness = 1 - (0.299 * android.graphics.Color.red(color) + 0.587 * android.graphics.Color.green(color) + 0.114 * android.graphics.Color.blue(color)) / 255
     return darkness >= 0.5
 }

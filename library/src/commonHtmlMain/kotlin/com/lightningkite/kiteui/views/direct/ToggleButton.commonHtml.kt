@@ -6,12 +6,13 @@ import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class ToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = toggleDriverValue()
-    override val driverActions get() = super.driverActions + toggleDriverActions()
-    val input = FutureElement().apply {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + toggleDriverActions()
+    internal val input: FutureElement = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
         attributes.type = "checkbox"
@@ -47,7 +48,7 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
         Frame.internalAddChildStack(this, index, element)
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = input.vprop(
+    public actual val checked: MutableReactiveValue<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value }
@@ -68,9 +69,11 @@ actual class ToggleButton actual constructor(context: ElementContext) : NativeIn
     }
 
     override var enabled: Boolean
-        get() = input.attributes.disabled != true
+        get() = (native.attributes.disabled != true || input.attributes.disabled != true)
         set(value) {
             input.attributes.disabled = !value
+            input.setAttribute("aria-disabled", if (value) null else "true")
+            native.attributes.disabled = !value
             native.setAttribute("aria-disabled", if (value) null else "true")
         }
 }

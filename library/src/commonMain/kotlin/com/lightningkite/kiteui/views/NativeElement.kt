@@ -148,7 +148,7 @@ import kotlin.jvm.JvmInline
  * @see NativeContainerElement for elements that contain children
  * @see Element for the base interface
  */
-expect abstract class NativeElement(context: ElementContext) : Element, NativeElementCommonCode {
+public expect abstract class NativeElement(context: ElementContext) : Element, NativeElementCommonCode {
     override var opacity: Double
 
     override var shown: Boolean
@@ -213,7 +213,7 @@ expect abstract class NativeElement(context: ElementContext) : Element, NativeEl
      *
      * @return Rectangle in screen coordinates, or null if unavailable
      */
-    fun screenRectangle(): Rect?
+    public fun screenRectangle(): Rect?
 
     /**
      * Returns the parent-relative rectangle occupied by this element.
@@ -223,10 +223,22 @@ expect abstract class NativeElement(context: ElementContext) : Element, NativeEl
      *
      * @return Rectangle in parent coordinates, or null if unavailable
      */
-    fun parentRectangle(): Rect?
+    public fun parentRectangle(): Rect?
 
     override var showOnPrint: Boolean
 }
+
+/**
+ * Casts a [NativeElementCommonCode] to [NativeElement], relying on the invariant documented on
+ * [NativeElementCommonCode] that it is only ever extended (via expect/actual) by [NativeElement].
+ *
+ * A plain `this as NativeElement` cast already fails fast (it's a `checkcast` on the JVM and
+ * equivalent on other backends), so this costs no more than that — it just replaces the bare
+ * `ClassCastException` with a message naming the actual invariant, in case it's ever violated.
+ */
+private fun NativeElementCommonCode.asNativeElementOrFail(): NativeElement =
+    this as? NativeElement
+        ?: error("$this is a NativeElementCommonCode but not a NativeElement — this violates the invariant that NativeElement is the only subclass of NativeElementCommonCode")
 
 /**
  * Shared platform-independent code for all native elements.
@@ -338,10 +350,10 @@ expect abstract class NativeElement(context: ElementContext) : Element, NativeEl
  * @see Element for the public interface
  * @see ThemePipeline for theme system details
  */
-abstract class NativeElementCommonCode internal constructor(override val context: ElementContext) : Element {
+public abstract class NativeElementCommonCode internal constructor(override val context: ElementContext) : Element {
     // This code is duplicated in every element throughout the entire view tree, so performance actually kinda matters.
 
-    override val underlyingNativeElement: NativeElement get() = this as NativeElement
+    override val underlyingNativeElement: NativeElement get() = asNativeElementOrFail()
 
     /**
      * The outermost wrapper element when using delegation, or `this` if not wrapped.
@@ -456,11 +468,20 @@ abstract class NativeElementCommonCode internal constructor(override val context
             )
         },
         context.ssrDispatcher ?: Dispatchers.Main.immediate,
-        this as StatusListener,
-        TelemetryContext(element = this as NativeElement)
+        // A *separate* StatusListener object, not `this`: the element must not be the object returned
+        // by coroutineContext[StatusListener], or its CoroutineScope identity and its StatusListener
+        // identity would be the same object, making `element.job` ambiguous (see Element.kt). Element
+        // is no longer a StatusListener; this object delegates to the element's own process watching.
+        object : StatusListener {
+            override fun watchBackgroundProcess(status: Reactive<*>): Release =
+                this@NativeElementCommonCode.watchBackgroundProcess(status)
+            override fun watchForegroundProcess(status: Reactive<*>): Release =
+                this@NativeElementCommonCode.watchForegroundProcess(status)
+        },
+        TelemetryContext(element = asNativeElementOrFail())
     )
 
-    var fullyStarted = false
+    public var fullyStarted: Boolean = false
         private set
 
     @OverrideOnly
@@ -472,7 +493,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
         debug { "new theme: ${theme.id}" }
     }
 
-    var isShutdown = false
+    public var isShutdown: Boolean = false
         private set
 
     @OverrideOnly
@@ -483,21 +504,41 @@ abstract class NativeElementCommonCode internal constructor(override val context
         if (Element.Debugger.countInstances) Element.Debugger.recordShutdown(this)
         if (Element.Debugger.leakDetect) leakDetect()
         parent = null
+        // Cross-element accessibility associations hold strong references to arbitrary elements;
+        // clearing them on shutdown prevents a dead element from retaining a whole other subtree.
+        labelFor = null
+        describedBy = null
     }
 
 
     // --- THEMING ---
 
     protected abstract fun nativeApplyTheme(theme: ThemeAndBack)
-    abstract fun refreshPadding()
+    public abstract fun refreshPadding()
 
-    override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
+    final override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
         protected set(value) {
             if (value == field) return
+            val previous = field
             field = value
             nativeApplyTheme(value)
             refreshPadding()
+            themeAndBackChanged(previous, value)
         }
+
+    /**
+     * Called after [themeAndBack] actually changes (the setter's dedup check passed and the new
+     * value has been applied natively).  Containers override this to cascade the change to their
+     * children.
+     *
+     * This hook exists so subclasses never override the [themeAndBack] property itself: a Kotlin
+     * `override var` with its own accessor introduces a *second* backing field, and writing
+     * `super.themeAndBack = value` from such an override updates only the superclass's hidden
+     * field while the virtual getter keeps reading the subclass's never-written one — silently
+     * freezing the element's observed theme at [Theme.placeholder]. The property is `final` to
+     * keep that trap closed.
+     */
+    protected open fun themeAndBackChanged(previous: ThemeAndBack, current: ThemeAndBack) {}
 
     final override var paddingByEdge: Edges? = null
         set(value) {
@@ -513,7 +554,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
         }
 
     /** The final computed padding combining theme padding, custom padding, and safe area insets */
-    val appliedPadding: Edges get() {
+    public val appliedPadding: Edges get() {
         if (!fullyStarted && debugMode) Log.warn("$this attempted to calculate applied padding before fully started.")
         return (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding } ?: Edges.ZERO).let { p ->
             safeAreaPadding?.let { p + it } ?: p
@@ -526,26 +567,26 @@ abstract class NativeElementCommonCode internal constructor(override val context
      * Strategy for determining the base theme of an element.
      * Default strategy inherits cascading theme from parent.
      */
-    fun interface GetBaseTheme {
-        fun get(element: Element): Theme
+    public fun interface GetBaseTheme {
+        public fun get(element: Element): Theme
 
-        companion object {
-            val fromParent = GetBaseTheme { element ->
+        public companion object {
+            public val fromParent: GetBaseTheme = GetBaseTheme { element ->
                 element.parent?.theme?.let { it.revert ?: it } ?: Theme.placeholder
             }
-            val fromParentNonCascading = GetBaseTheme { element -> element.parent?.theme ?: Theme.placeholder }
+            public val fromParentNonCascading: GetBaseTheme = GetBaseTheme { element -> element.parent?.theme ?: Theme.placeholder }
         }
     }
 
     @ExperimentalKiteUi
-    var themeBase: GetBaseTheme = GetBaseTheme.fromParent
+    public var themeBase: GetBaseTheme = GetBaseTheme.fromParent
         set(value) {
             field = value
             refreshTheming()
         }
 
     @ExperimentalKiteUi
-    var themePipeline: ThemePipeline = ThemePipeline(
+    public var themePipeline: ThemePipeline = ThemePipeline(
         ThemePipeline.Step.processingStatus to ThemePipeline.ThemeForElement.processingTheming
     )
 
@@ -562,14 +603,14 @@ abstract class NativeElementCommonCode internal constructor(override val context
      * Combines the base theme (typically from parent), theme choice (semantic modifiers like 'important'),
      * and state-based theming (loading/error states) to produce the final theme.
      */
-    fun refreshTheming() {
+    public fun refreshTheming() {
         debug { "refreshTheming" }
         if (!checkIsActive("refreshTheming")) return
         if (parent?.underlyingNativeElement?.currentlyActive() == false) {
             debug { "abandoning refreshTheming because parent $parent not started" }
             return
         }
-        val base = themeBase.get(this as NativeElement)
+        val base = themeBase.get(asNativeElementOrFail())
         debug {
             val source = when (themeBase) {
                 GetBaseTheme.fromParent -> ""
@@ -618,7 +659,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
                     releaseExceptionHandler = context.handleException(
                         exception,
                         ExceptionHandler.Metadata(
-                            source = this@NativeElementCommonCode,  // TODO: Get wrapper element somehow
+                            source = outermostElement,  // attribute to the wrapper, not the inner element (see outermostElement doc above)
                             process = process,
                             foregroundProcess = foreground
                         )
@@ -689,14 +730,16 @@ abstract class NativeElementCommonCode internal constructor(override val context
     private val internalBackgroundProcesses = Processes(foreground = false)
     private val internalForegroundProcesses = Processes(foreground = true)
 
-    override fun watchBackgroundProcess(status: Reactive<*>): Release = internalBackgroundProcesses.watch(status).also(::onRemove)
-    override fun watchForegroundProcess(status: Reactive<*>): Release = internalForegroundProcesses.watch(status).also(::onRemove)
+    // Plain methods now (Element is no longer a StatusListener); the StatusListener object in
+    // coroutineContext delegates here.
+    public fun watchBackgroundProcess(status: Reactive<*>): Release = internalBackgroundProcesses.watch(status).also(::onRemove)
+    public fun watchForegroundProcess(status: Reactive<*>): Release = internalForegroundProcesses.watch(status).also(::onRemove)
 
     /** Aggregate state of background processes (data loading, etc.) - affects loading semantics */
-    val backgroundProcesses: Reactive<*> get() = internalBackgroundProcesses
+    public val backgroundProcesses: Reactive<*> get() = internalBackgroundProcesses
 
     /** Aggregate state of foreground processes (button clicks, etc.) - affects working/error semantics */
-    val foregroundProcesses: Reactive<*> get() = internalForegroundProcesses
+    public val foregroundProcesses: Reactive<*> get() = internalForegroundProcesses
 
 
     // --- DEBUGGING & DRIVER ---
@@ -713,28 +756,31 @@ abstract class NativeElementCommonCode internal constructor(override val context
         outermostElement.debugName ?: (theme.id + ' ' + outermostElement::class.toString().removePrefix("class ") + "&" + outermostElement.identityHashCode().toString(16))
 
     @InternalKiteUi
-    open fun leakDetect() {
+    public open fun leakDetect() {
         WeakReference(this).checkLeakAfterDelay(1000)
     }
 
     @InternalKiteUi
-    inline fun debug(requireTarget: Boolean = true, text: () -> String) {
+    public inline fun debug(requireTarget: Boolean = true, text: () -> String) {
         if ((!requireTarget && debugMode) || Element.Debugger.debugTarget?.underlyingNativeElement === this) Log.tag("$this DEBUG").info(text())
     }
 
-    fun currentlyActive(): Boolean = fullyStarted && !isShutdown
+    public fun currentlyActive(): Boolean = fullyStarted && !isShutdown
 
     @InternalKiteUi
-    fun checkIsShutdown(name: String): Boolean {
+    public fun checkIsShutdown(name: String): Boolean {
         if (isShutdown) {
-            println("WARNING!! $this is shut down, but attempt to call $name was made")
+            // Surface via the logging system rather than a bare println. This still returns true so
+            // callers no-op; a teardown race (a reactive scope firing mid-disposal) can legitimately
+            // reach here, so we warn loudly rather than throw. See viewPath for the offending element.
+            Log.tag("NativeElement").warn("$name called on shut-down element ${viewPath()}")
             return true
         }
         return false
     }
 
     @InternalKiteUi
-    fun checkIsActive(name: String, requireTarget: Boolean = true): Boolean {
+    public fun checkIsActive(name: String, requireTarget: Boolean = true): Boolean {
         if (checkIsShutdown(name)) return false
         if (!fullyStarted) {
             debug(requireTarget) { "$name abandoned due to not fully started" }
@@ -800,8 +846,8 @@ abstract class NativeElementCommonCode internal constructor(override val context
      * @see ThemeDerivation for how themes are derived
      * @see NativeElementCommonCode.refreshTheming for where this is used
      */
-    class ThemePipeline(private val operations: OrderedKeyedList<Step, ThemeForElement>) {
-        constructor(vararg init: Pair<Step, ThemeForElement>) : this(
+    public class ThemePipeline(private val operations: OrderedKeyedList<Step, ThemeForElement>) {
+        public constructor(vararg init: Pair<Step, ThemeForElement>) : this(
             OrderedKeyedList(
                 init.mapTo(ArrayList()) { OrderedKeyedList.Entry(it.first, it.second) }
             )
@@ -817,12 +863,12 @@ abstract class NativeElementCommonCode internal constructor(override val context
          * is unique.
          */
         @JvmInline
-        value class Step(val order: Float) : Comparable<Step> {
+        public value class Step(public val order: Float) : Comparable<Step> {
             override fun compareTo(other: Step): Int = order.compareTo(other.order)
 
-            companion object {
+            public companion object {
                 /** Element's default styling - what the element chooses for itself */
-                val elementStyling = Step(0f)
+                public val elementStyling: Step = Step(0f)
 
                 /**
                  * User's static theme choice via modifiers like `card`, `important`
@@ -839,21 +885,21 @@ abstract class NativeElementCommonCode internal constructor(override val context
                 internal val dynamicChoice = Step(0.4f)
 
                 /** Themes from element's internal state (checked, selected, disabled, etc.) */
-                val elementStatus = Step(0.6f)
+                public val elementStatus: Step = Step(0.6f)
 
                 /** Automatic theming from loading/working/error states */
-                val processingStatus = Step(0.8f)
+                public val processingStatus: Step = Step(0.8f)
             }
         }
 
-        fun interface ThemeForElement {
-            fun get(element: Element): ThemeDerivation
+        public fun interface ThemeForElement {
+            public fun get(element: Element): ThemeDerivation
 
-            data class Constant(val theme: ThemeDerivation) : ThemeForElement {
+            public data class Constant(val theme: ThemeDerivation) : ThemeForElement {
                 override fun get(element: Element): ThemeDerivation = theme
             }
 
-            companion object {
+            public companion object {
                 /**
                  * The standard processing status theming operation.
                  *
@@ -865,7 +911,7 @@ abstract class NativeElementCommonCode internal constructor(override val context
                  *
                  * This gives automatic visual feedback for loading states and button clicks.
                  */
-                val processingTheming = ThemeForElement { element ->
+                public val processingTheming: ThemeForElement = ThemeForElement { element ->
                     val element = element.underlyingNativeElement
                     val t = element.foregroundProcesses.state.handle(
                         success = { ThemeDerivation.None },
@@ -885,11 +931,11 @@ abstract class NativeElementCommonCode internal constructor(override val context
                 }
             } ?: ThemeDerivation.None
 
-        fun get(step: Step, element: Element): ThemeDerivation = operations.get(step).foldOn(element)
+        public fun get(step: Step, element: Element): ThemeDerivation = operations.get(step).foldOn(element)
 
-        fun get(element: Element): ThemeDerivation = operations.foldOn(element)
+        public fun get(element: Element): ThemeDerivation = operations.foldOn(element)
 
-        fun apply(element: Element, theme: Theme): ThemeAndBack =
+        public fun apply(element: Element, theme: Theme): ThemeAndBack =
             operations.fold(null) { acc: ThemeAndBack?, (_, op) ->
                 when {
                     acc == null -> op.get(element).invoke(theme)
@@ -898,12 +944,12 @@ abstract class NativeElementCommonCode internal constructor(override val context
             } ?: theme.withoutBack
 
 
-        fun add(step: Step, op: ThemeForElement) = operations.add(step, op)
-        fun add(step: Step, theme: ThemeDerivation) = operations.add(step, ThemeForElement.Constant(theme))
+        public fun add(step: Step, op: ThemeForElement): Unit = operations.add(step, op)
+        public fun add(step: Step, theme: ThemeDerivation): Unit = operations.add(step, ThemeForElement.Constant(theme))
 
-        fun set(step: Step, op: ThemeForElement) = operations.set(step, op)
+        public fun set(step: Step, op: ThemeForElement): Unit = operations.set(step, op)
 
-        fun set(step: Step, theme: ThemeDerivation?) {
+        public fun set(step: Step, theme: ThemeDerivation?) {
             if (theme == null) operations.remove(step)
             else operations.set(step, ThemeForElement.Constant(theme))
         }
@@ -915,6 +961,6 @@ private const val SEV_NOT_READY = 1
 private const val SEV_OK = 0
 
 @InternalKiteUi
-fun Element.ensureOutermostElement() {
+public fun Element.ensureOutermostElement() {
     underlyingNativeElement.outermostElement = this
 }

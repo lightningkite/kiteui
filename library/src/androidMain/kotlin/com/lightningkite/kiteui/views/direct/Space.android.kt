@@ -9,8 +9,8 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 
-actual class Space actual constructor(context: ElementContext, val multiplier: Double): NativeElement(context) {
-    override val native = NSpace(context.activity)
+public actual class Space actual constructor(context: ElementContext, public val multiplier: Double): NativeElement(context) {
+    override val native: NSpace = NSpace(context.activity)
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
         native.mySuggestedMinimumWidth = (theme.theme.gap * multiplier).value.roundToInt()
@@ -18,13 +18,13 @@ actual class Space actual constructor(context: ElementContext, val multiplier: D
     }
 }
 
-class NSpace(context: Context): View(context) {
-    var mySuggestedMinimumWidth = 1
+public class NSpace(context: Context): View(context) {
+    internal var mySuggestedMinimumWidth: Int = 1
     override fun getSuggestedMinimumWidth(): Int {
         return mySuggestedMinimumWidth
     }
 
-    var mySuggestedMinimumHeight = 1
+    internal var mySuggestedMinimumHeight: Int = 1
     override fun getSuggestedMinimumHeight(): Int {
         return mySuggestedMinimumHeight
     }

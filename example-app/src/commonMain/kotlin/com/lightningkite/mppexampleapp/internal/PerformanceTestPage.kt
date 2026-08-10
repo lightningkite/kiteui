@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.internal
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.load
 import com.lightningkite.kiteui.models.*
@@ -38,6 +39,8 @@ object PerformanceTestPage : Page {
                 }
             }
             scrolling.col  {
+                @OptIn(InternalKiteUi::class)
+                @Suppress("DEPRECATION")
                 forEach(items) {
                     row {
                         icon { source = Icon.add }

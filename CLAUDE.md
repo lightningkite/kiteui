@@ -86,7 +86,7 @@ Substitute `:library:` for `:example-app:` to run library tests instead.
 ```bash
 # Run JS/Web version with Vite (development)
 # IMPORTANT: Always use Gradle tasks to run the dev server, NOT manual HTTP servers
-./gradlew :example-app:viteRun
+./gradlew :example-app:jsViteDev
 
 # Run JS/Web version (production build)
 # Use run configuration: "ExampleJSRun prod"
@@ -94,11 +94,11 @@ Substitute `:library:` for `:example-app:` to run library tests instead.
 # Run Android version
 # Use Android run configuration: "example-app"
 
-# Run JVM version
-./gradlew :example-app:jvmRun
+# Run JVM/SSR version
+./gradlew :example-app:ssrServerRun
 ```
 
-**Note for Claude:** When testing JS/Web changes, always use `./gradlew :example-app:viteRun` to start the dev server. Do NOT use Python HTTP servers or other manual servers - they don't handle SPA routing correctly.
+**Note for Claude:** When testing JS/Web changes, always use `./gradlew :example-app:jsViteDev` to start the dev server. Do NOT use Python HTTP servers or other manual servers - they don't handle SPA routing correctly.
 
 ### Publishing
 ```bash
@@ -150,10 +150,10 @@ Common containers: `row`, `col`, `frame`, `rowCollapsingToColumn`
 
 ### Modifiers
 
-Modifiers are applied with the `-` operator. Order matters: Position > Visibility > Scroll > Theme
+Modifiers are applied via dot-chaining on the writer. The type system enforces canonical order: alignment → weight → shownWhen → sizing → theme → scrolling → element.
 
 ```kotlin
-centered - scrolling - card - col {
+centered.card.scrolling.col {
     // content
 }
 ```
@@ -168,9 +168,9 @@ Common modifiers:
 
 KiteUI uses fine-grained reactivity, not recomposition:
 
-**Property** - Basic reactive container:
+**Signal** - Basic reactive container:
 ```kotlin
-val email = Property("")
+val email = Signal("")
 textInput { content bind email }
 ```
 
@@ -181,21 +181,21 @@ text {
 }
 ```
 
-**shared** - Cached computed value:
+**remember** - Cached computed value:
 ```kotlin
-val fullName = shared { "${firstName()} ${lastName()}" }
+val fullName = remember { "${firstName()} ${lastName()}" }
 ```
 
-**LazyProperty** - Computed value that can be overridden:
+**MutableRemember** - Computed value that can be overridden:
 ```kotlin
-val calculated = LazyProperty { base() * multiplier() }
+val calculated = MutableRemember { base() * multiplier() }
 calculated.value = 100.0  // Override
 calculated.reset()        // Back to calculation
 ```
 
-**LateInitProperty** - For values not available at declaration:
+**LateInitSignal** - For values not available at declaration:
 ```kotlin
-val userData = LateInitProperty<UserData>()
+val userData = LateInitSignal<UserData>()
 // Components show loading until value is set
 userData.value = fetchedData
 ```
@@ -205,8 +205,8 @@ userData.value = fetchedData
 Apply semantic themes via modifiers. Switching themes creates backgrounds/cards. Switching to the same theme does NOT create a card (use explicit `card` modifier).
 
 ```kotlin
-important - button { text("Important") }
-card - col { /* content */ }
+important.button { text("Important") }
+card.col { /* content */ }
 ```
 
 Theme switches should typically be applied to containers (`col`, `row`, `frame`, `button`), not individual elements.

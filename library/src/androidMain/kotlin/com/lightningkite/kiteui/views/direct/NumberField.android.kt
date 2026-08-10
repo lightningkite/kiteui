@@ -15,12 +15,13 @@ import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
-    override val driverActions get() = super.driverActions + numberInputDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + numberInputDriverActions()
 
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
             if(block) return@doAfterTextChanged
@@ -28,7 +29,6 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
             post {
                 val str = this.text.toString()
                 try {
-                    if (str == null) return@post
                     numberAutocommaRepair(
                         dirty = str,
                         selectionStart = selectionStart,
@@ -52,13 +52,13 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         super.nativeApplyTheme(theme)
         val theme = theme.theme
         _fontAndStyle = theme.font
-        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
         native.setTextColor(theme.foreground.colorInt())
         native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.font.font,
+                theme.font.font.toTypeface(),
                 theme.font.weight,
                 theme.font.italic
             )
@@ -69,8 +69,8 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         native.isAllCaps = theme.font.allCaps
         applyAlign(_align ?: theme.font.align)
     }
-    actual val content: MutableReactiveValue<Double?> = native.contentProperty().asDouble()
-    actual var keyboardHints: KeyboardHints
+    public actual val content: MutableReactiveValue<Double?> = native.contentProperty().asDouble()
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -87,7 +87,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         }
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
@@ -96,7 +96,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
         }
 
     @Suppress("UNCHECKED_CAST")
-    actual var range: ClosedRange<Double>?
+    public actual var range: ClosedRange<Double>?
         get() {
             return native.tag as? ClosedRange<Double>
         }
@@ -123,7 +123,7 @@ actual class NumberInput actual constructor(context: ElementContext) : NativeEle
     private var _align: Align? = null
     private var _fontAndStyle: FontAndStyle? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value

@@ -19,11 +19,12 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
-actual open class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual open class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
-    override val driverActions get() = super.driverActions + textInputDriverActions()
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + textInputDriverActions()
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         inputType = EditorInfo.TYPE_CLASS_TEXT
     }
 
@@ -36,7 +37,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.font.font,
+                theme.font.font.toTypeface(),
                 theme.font.weight,
                 theme.font.italic
             )
@@ -45,11 +46,11 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
                 (if(theme.font.underline) android.graphics.Paint.UNDERLINE_TEXT_FLAG else 0) or
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         useAllCaps = theme.font.allCaps
-        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
         applyAlign(_align ?: Align.Stretch)
     }
 
-    actual val content: MutableReactiveValue<String> = native.contentProperty()
+    public actual val content: MutableReactiveValue<String> = native.contentProperty()
 
     private var useSensitiveDotMask = false
         set(value) {
@@ -72,7 +73,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
         }
     }
 
-    actual var keyboardHints: KeyboardHints
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -90,7 +91,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
         }
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
@@ -100,7 +101,7 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
     private var _align: Align? = null
     private var _fontAndStyle: FontAndStyle? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value
@@ -127,12 +128,12 @@ actual open class TextInput actual constructor(context: ElementContext) : Native
 }
 
 
-abstract class EquatableByRef(val key: String, val ref: Any) {
+internal abstract class EquatableByRef(public val key: String, public val ref: Any) {
     override fun hashCode(): Int = key.hashCode() + ref.hashCode()
     override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
 }
 
-var EditText.keyboardHints: KeyboardHints
+internal var EditText.keyboardHints: KeyboardHints
     get() {
         return when (inputType) {
             InputType.TYPE_CLASS_NUMBER -> KeyboardHints(KeyboardCase.None, KeyboardType.Integer)

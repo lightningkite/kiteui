@@ -7,10 +7,10 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import kotlin.math.absoluteValue
 import kotlin.math.atan
 
-class CoordinatorLayoutWithGestures(context: Context) : CoordinatorLayout(context) {
+public class CoordinatorLayoutWithGestures(context: Context) : CoordinatorLayout(context) {
 
-    var onLeftSwipeAction: (() -> Unit)? = null
-    var onRightSwipeAction: (() -> Unit)? = null
+    internal var onLeftSwipeAction: (() -> Unit)? = null
+    internal var onRightSwipeAction: (() -> Unit)? = null
 
     private val gesturesEnabled: Boolean
         get() = onLeftSwipeAction != null || onRightSwipeAction != null

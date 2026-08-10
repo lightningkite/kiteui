@@ -12,7 +12,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 
-class PersistentProperty<T>(
+public class PersistentProperty<T>(
     private val key: String,
     defaultValue: T,
     private val serializer: KSerializer<T>,
@@ -39,7 +39,7 @@ class PersistentProperty<T>(
     }
 }
 
-inline fun <reified T> PersistentProperty(
+public inline fun <reified T> PersistentProperty(
     key: String,
     defaultValue: T
 ): PersistentProperty<T> = PersistentProperty(key, defaultValue, serializer())

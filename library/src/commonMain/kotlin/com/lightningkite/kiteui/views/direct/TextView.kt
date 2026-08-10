@@ -5,12 +5,12 @@ import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 
-expect class TextView(context: ElementContext) : NativeElement {
-    var content: String
-    var align: Align?
-    var ellipsis: Boolean
-    var wraps: Boolean
-    var wordBreak: WordBreak
-    var lineClamp: Int?
-    fun setBasicHtmlContent(html: String)
+public expect class TextView(context: ElementContext) : NativeElement {
+    public var content: String
+    public var align: Align?
+    public var ellipsis: Boolean
+    public var wraps: Boolean
+    public var wordBreak: WordBreak
+    public var lineClamp: Int?
+    public fun setBasicHtmlContent(html: String)
 }

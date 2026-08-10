@@ -9,7 +9,9 @@ private fun String.indexOf(startIndex: Int, vararg chars: Char): Int {
     }.minOrNull() ?: length
 }
 
-private val blockComment = Regex("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/")
+// Matches val/var as a keyword (word-boundary aware), avoiding false matches
+// inside longer identifiers like `private`, `invalidate`, etc.
+private val valOrVarKeyword = Regex("""\bva[lr]\b""")
 
 data class AnnotationMatch(
     val kind: Kind,
@@ -30,7 +32,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                 .map { it.trim() }
                 .filter { !it.startsWith("//") }
                 .joinToString("\n")
-                .replace(blockComment, "")
+                .stripBlockComments()
 
             val packageName = text.substringAfter("package ").substringBefore("\n").trim()
             var index = 0
@@ -93,33 +95,46 @@ internal fun generateAutoroutes(sources: File, out: File) {
 
                 val queryParams = when (match.kind) {
                     AnnotationMatch.Kind.Routable -> {
-                        val upperIndex = index
-                        val out = HashMap<String, String>()
-                        var index = upperIndex
-                        while (true) {
-                            val next = text.indexOf("@QueryParameter", index)
-                            if (next == -1) break
-                            index = next + 1
-                            val argStart = text.indexOf('(', next).let { if (it == -1) text.length else it }
-                            val hasExplicitName = (next + 15..argStart).none { !text[it].isWhitespace() }
-                            if (argStart == text.length) continue
-                            var annoArgs: List<String>? = null
-                            val beginLoookingForVa = if (hasExplicitName) {
-                                annoArgs = text.splitParens(startingAt = argStart)
-                                text.afterParens(startingAt = argStart)
-                            } else {
-                                index
+                        if (bodyStart == -1) {
+                            // No class body — no @QueryParameter properties are possible.
+                            emptyMap()
+                        } else {
+                            // Bound the scan to THIS class's body so that @QueryParameter
+                            // properties from a later class in the same file are not
+                            // mistakenly attributed to this one.
+                            val bodyEnd = text.afterBraces(startingAt = bodyStart)
+                            val upperIndex = index
+                            val out = HashMap<String, String>()
+                            var index = upperIndex
+                            while (true) {
+                                val next = text.indexOf("@QueryParameter", index)
+                                // Stop at end-of-file OR at the end of this class's body.
+                                if (next == -1 || next >= bodyEnd) break
+                                index = next + 1
+                                val argStart = text.indexOf('(', next).let { if (it == -1) text.length else it }
+                                val hasExplicitName = (next + 15..argStart).none { !text[it].isWhitespace() }
+                                if (argStart == text.length) continue
+                                var annoArgs: List<String>? = null
+                                val beginLoookingForVa = if (hasExplicitName) {
+                                    annoArgs = text.splitParens(startingAt = argStart)
+                                    text.afterParens(startingAt = argStart)
+                                } else {
+                                    index
+                                }
+                                // Use a word-boundary regex so `private val x` is not
+                                // misparsed as if `val` started at the "va" in "private".
+                                val valMatch = valOrVarKeyword.find(text, beginLoookingForVa)
+                                if (valMatch == null) continue
+                                val declstart = valMatch.range.first
+                                val nameStart = text.indexOf(' ', declstart) + 1
+                                if (nameStart == 0) continue  // indexOf returned -1 → +1 = 0 sentinel
+                                val nameEnd = text.indexOf(nameStart, ' ', ':')
+                                if (nameEnd == -1) continue
+                                val codename = text.substring(nameStart, nameEnd)
+                                out[codename] = annoArgs?.getOrNull(0) ?: codename
                             }
-                            val declstart = text.indexOf("va", beginLoookingForVa)
-                            if (declstart == -1) continue
-                            val nameStart = text.indexOf(' ', declstart) + 1
-                            if (nameStart == -1) continue
-                            val nameEnd = text.indexOf(nameStart, ' ', ':')
-                            if (nameEnd == -1) continue
-                            val codename = text.substring(nameStart, nameEnd)
-                            out[codename] = annoArgs?.getOrNull(0) ?: codename
+                            out
                         }
-                        out
                     }
 
                     AnnotationMatch.Kind.FallbackRoute -> emptyMap()
@@ -142,6 +157,32 @@ internal fun generateAutoroutes(sources: File, out: File) {
             out
         }
         .toList()
+
+    // Detect ambiguous/duplicate route templates. Two routes are considered
+    // duplicates when they have the same structural template (same segment count
+    // and constant values at each position) regardless of variable names, because
+    // the generated parser cannot distinguish between them at runtime.
+    val duplicateRoutes = allRoutables
+        .filter { !it.isFallback }
+        .groupBy { it.normalizedPath() }
+        .filter { it.value.size > 1 }
+    if (duplicateRoutes.isNotEmpty()) {
+        val details = duplicateRoutes.entries.joinToString("\n") { (path, screens) ->
+            "  \"$path\" is claimed by: ${screens.joinToString { it.name }}"
+        }
+        throw IllegalStateException("Ambiguous/duplicate route patterns detected:\n$details")
+    }
+
+    // Sort parsers for deterministic, specificity-first order so that more-specific
+    // routes (more constant segments, fewer variables) always beat less-specific ones
+    // regardless of filesystem walk order. Secondary sort is alphabetical by normalized
+    // path as a stable tiebreak.
+    val sortedParsers = allRoutables
+        .filter { !it.isFallback }
+        .sortedWith(compareBy(
+            { it.url.count { s -> s is Segment.Variable } },  // fewer variables = more specific = first
+            { it.normalizedPath() }                            // stable alphabetical tiebreak
+        ))
 
     val topPackage = allRoutables
         .takeIf { it.isNotEmpty() }
@@ -168,7 +209,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
             tab {
                 appendLine("parsers = listOf(")
                 tab {
-                    for (routable in allRoutables.filter { !it.isFallback }) {
+                    for (routable in sortedParsers) {
                         val route = routable.url
                         appendLine("label@{ ")
                         tab {
@@ -270,4 +311,17 @@ internal data class ScreenData(
 internal sealed class Segment {
     data class Constant(val value: String) : Segment()
     data class Variable(val name: String) : Segment()
+}
+
+/**
+ * Returns the route template with all variable names replaced by "{}".
+ * Two routes with the same normalizedPath are structurally ambiguous — the parser
+ * cannot distinguish them at runtime regardless of how variables are named.
+ * Also used as a stable tiebreak key when sorting parsers.
+ */
+internal fun ScreenData.normalizedPath(): String = url.joinToString("/") {
+    when (it) {
+        is Segment.Constant -> it.value
+        is Segment.Variable -> "{}"
+    }
 }

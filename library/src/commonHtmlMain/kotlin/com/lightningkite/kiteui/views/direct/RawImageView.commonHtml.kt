@@ -24,14 +24,14 @@ import kotlin.js.JsName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-actual abstract class RawImageViewLike(
+public actual abstract class RawImageViewLike(
     context: ElementContext,
-    actual val source: ImageSource,
-    actual val description: String,
-    actual val scaleType: ImageScaleType,
+    public actual val source: ImageSource,
+    public actual val description: String,
+    public actual val scaleType: ImageScaleType,
 ) : NativeElement(context) {
-    actual abstract val state: Reactive<Unit>
-    val _state = RawReactive<Unit>()
+    public actual abstract val state: Reactive<Unit>
+    internal val _state: RawReactive<Unit> = RawReactive<Unit>()
 
     // by Claude - track blob URLs created by createObjectURL so we can revoke them to prevent memory leaks
     private var currentBlobUrl: String? = null
@@ -56,12 +56,11 @@ actual abstract class RawImageViewLike(
             is ImageResource -> context.basePath + value.relativeUrl
             is ImageLocal -> createObjectURL(value.file).also { currentBlobUrl = it }
             is ImageVector -> value.vectorToSvgDataUrl()
-            else -> ""
         }
     }
 }
 
-actual class RawImageView actual constructor(
+public actual class RawImageView actual constructor(
     context: ElementContext,
     source: ImageSource,
     description: String,
@@ -78,7 +77,7 @@ actual class RawImageView actual constructor(
     init { nativeLoad(source.toUrl()) }
 }
 
-actual class SizelessRawImageView actual constructor(
+public actual class SizelessRawImageView actual constructor(
     context: ElementContext,
     source: ImageSource,
     description: String,
@@ -99,7 +98,7 @@ actual class SizelessRawImageView actual constructor(
         native.style.backgroundSize = when(scaleType) {
             ImageScaleType.Fit -> "contain"
             ImageScaleType.Crop -> "cover"
-            ImageScaleType.Stretch -> TODO("Not supported yet")
+            ImageScaleType.Stretch -> "100% 100%"
             ImageScaleType.NoScale -> "auto"
         }
         launch {
@@ -109,7 +108,7 @@ actual class SizelessRawImageView actual constructor(
     }
 }
 
-actual class RawImageViewZoomable actual constructor(
+public actual class RawImageViewZoomable actual constructor(
     context: ElementContext,
     source: ImageSource,
     description: String,
@@ -123,18 +122,18 @@ actual class RawImageViewZoomable actual constructor(
     }
     actual override val state: Reactive<Unit> = _state
     init { nativeLoad(source.toUrl()) }
-    actual val zoomState: MutableReactiveValue<ZoomState> = Signal(Unit)
+    public actual val zoomState: MutableReactiveValue<ZoomState> = Signal(Unit)
 }
 
 @JsName("createObjectURLBlob")
-expect fun createObjectURL(blob: Blob): String
+public expect fun createObjectURL(blob: Blob): String
 
 @JsName("createObjectURLFileReference")
-expect fun createObjectURL(fileReference: FileReference): String
+public expect fun createObjectURL(fileReference: FileReference): String
 
 // by Claude - revoke blob URLs to prevent memory leaks
-expect fun revokeObjectURL(url: String)
+public expect fun revokeObjectURL(url: String)
 
-expect fun RawImageViewLike.nativeLoad(url: String?)
+public expect fun RawImageViewLike.nativeLoad(url: String?)
 
-actual typealias ZoomState = Unit
+public actual typealias ZoomState = Unit

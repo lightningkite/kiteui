@@ -8,12 +8,12 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import kotlin.math.roundToInt
 
-actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+public actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
     override val native: NProgrammaticLayout = NProgrammaticLayout(context.activity).apply {
         rview = this@ProgrammaticLayout
     }
-    actual var delegate: ProgrammaticLayoutDelegate by native::delegate
-    actual fun invalidateLayout() {
+    public actual var delegate: ProgrammaticLayoutDelegate by native::delegate
+    public actual fun invalidateLayout() {
         native.silentRequestLayout()
     }
 
@@ -23,6 +23,8 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : Na
             native.spacingCurrentPx = gap?.px ?: theme.gap.px
         }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Will probably be removed in the future.")
     actual override val spacingForChildCornerRadii: Dimension
         get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 
@@ -40,20 +42,20 @@ actual class ProgrammaticLayout actual constructor(context: ElementContext) : Na
     }
 }
 
-class NProgrammaticLayout(context: Context) : ViewGroup(context) {
-    var spacingCurrentPx: Double = 0.0
-    var paddingTopCurrentPx: Double = 0.0
-    var paddingLeftCurrentPx: Double = 0.0
-    var paddingRightCurrentPx: Double = 0.0
-    var paddingBottomCurrentPx: Double = 0.0
+public class NProgrammaticLayout(context: Context) : ViewGroup(context) {
+    internal var spacingCurrentPx: Double = 0.0
+    internal var paddingTopCurrentPx: Double = 0.0
+    internal var paddingLeftCurrentPx: Double = 0.0
+    internal var paddingRightCurrentPx: Double = 0.0
+    internal var paddingBottomCurrentPx: Double = 0.0
     private var currentSize: Size = Size.Zero
 
-    var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
+    internal var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
             field = value
             silentRequestLayout()
         }
-    lateinit var rview: ProgrammaticLayout
+    internal lateinit var rview: ProgrammaticLayout
     private val inProgress = object : ProgrammingLayoutInProgress {
         override val within: Size
             get() = currentSize
@@ -106,7 +108,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         val r = delegate.measure(rview, inProgress, s)
         setMeasuredDimension(r.width.roundToInt(), r.height.roundToInt())
     }
-    val placed = HashSet<View>()
+    internal val placed: MutableSet<View> = HashSet<View>()
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if(r - l == 0 || b - t == 0) return
@@ -126,7 +128,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         }
     }
 
-    fun silentRequestLayout() {
+    internal fun silentRequestLayout() {
         if(isInLayout) return
         super.requestLayout()
     }

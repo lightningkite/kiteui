@@ -47,7 +47,7 @@ private class ThemedWriter(
  * consistent with other modifiers in KiteUI.
  * */
 @UnsafeModifier
-fun Element.applyDynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
+public fun Element.applyDynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
     var choice: ThemeDerivation = ThemeDerivation.None
     val native = underlyingNativeElement
 
@@ -63,44 +63,28 @@ fun Element.applyDynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?)
     }
 }
 
-@ViewModifierDsl3
-fun CanAddTheme.themed(theme: ThemeDerivation): CanAddTheme = ThemedWriter(this, theme)
+public fun CanAddTheme.themed(theme: ThemeDerivation): CanAddTheme = ThemedWriter(this, theme)
 
-@ViewModifierDsl3
-fun CanAddTheme.dynamicThemed(calculate: ReactiveContext.() -> ThemeDerivation?): CanAddTheme {
+public fun CanAddTheme.dynamicThemed(calculate: ReactiveContext.() -> ThemeDerivation?): CanAddTheme {
     @OptIn(UnsafeModifier::class)
     return beforeSetup { applyDynamicTheme(calculate) }
 }
 
-@ViewModifierDsl3
-inline val CanAddTheme.group: CanAddTheme get() = themed(GroupSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.card: CanAddTheme get() = themed(CardSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.fieldTheme: CanAddTheme get() = themed(FieldSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.buttonTheme: CanAddTheme get() = themed(ButtonSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.bar: CanAddTheme get() = themed(BarSemantic).asBanner
-@ViewModifierDsl3
-inline val CanAddTheme.nav: CanAddTheme get() = themed(NavSemantic).asNavigation
-@ViewModifierDsl3
-inline val CanAddTheme.important: CanAddTheme get() = themed(ImportantSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.critical: CanAddTheme get() = themed(CriticalSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.warning: CanAddTheme get() = themed(WarningSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.danger: CanAddTheme get() = themed(DangerSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.affirmative: CanAddTheme get() = themed(AffirmativeSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.emphasized: CanAddTheme get() = themed(EmphasizedSemantic)
-@ViewModifierDsl3
-inline val CanAddTheme.compact: CanAddTheme get() = themed(CompactSemantic)
+public inline val CanAddTheme.group: CanAddTheme get() = themed(GroupSemantic)
+public inline val CanAddTheme.card: CanAddTheme get() = themed(CardSemantic)
+public inline val CanAddTheme.fieldTheme: CanAddTheme get() = themed(FieldSemantic)
+public inline val CanAddTheme.buttonTheme: CanAddTheme get() = themed(ButtonSemantic)
+public inline val CanAddTheme.bar: CanAddTheme get() = themed(BarSemantic).asBanner
+public inline val CanAddTheme.nav: CanAddTheme get() = themed(NavSemantic).asNavigation
+public inline val CanAddTheme.important: CanAddTheme get() = themed(ImportantSemantic)
+public inline val CanAddTheme.critical: CanAddTheme get() = themed(CriticalSemantic)
+public inline val CanAddTheme.warning: CanAddTheme get() = themed(WarningSemantic)
+public inline val CanAddTheme.danger: CanAddTheme get() = themed(DangerSemantic)
+public inline val CanAddTheme.affirmative: CanAddTheme get() = themed(AffirmativeSemantic)
+public inline val CanAddTheme.emphasized: CanAddTheme get() = themed(EmphasizedSemantic)
+public inline val CanAddTheme.compact: CanAddTheme get() = themed(CompactSemantic)
 
-@ViewModifierDsl3
-val CanAddTheme.bold: CanAddTheme
+public val CanAddTheme.bold: CanAddTheme
     get() = themed(ThemeDerivation {
         it.copy(
             id = "bold",
@@ -108,16 +92,14 @@ val CanAddTheme.bold: CanAddTheme
         ).withoutBack
     })
 
-@ViewModifierDsl3
-fun CanAddTheme.textSize(size: Dimension): CanAddTheme = themed(ThemeDerivation {
+public fun CanAddTheme.textSize(size: Dimension): CanAddTheme = themed(ThemeDerivation {
     it.copy(
         id = "textSize${size.value.toString().filter { it.isLetterOrDigit() }}",
         font = it.font.copy(size = size)
     ).withoutBack
 })
 
-@ViewModifierDsl3
-val CanAddTheme.italic: CanAddTheme
+public val CanAddTheme.italic: CanAddTheme
     get() = themed(ThemeDerivation {
         it.copy(
             id = "italic",
@@ -125,8 +107,7 @@ val CanAddTheme.italic: CanAddTheme
         ).withoutBack
     })
 
-@ViewModifierDsl3
-val CanAddTheme.allCaps: CanAddTheme
+public val CanAddTheme.allCaps: CanAddTheme
     get() = themed(ThemeDerivation {
         it.copy(
             id = "allCaps",
@@ -134,8 +115,7 @@ val CanAddTheme.allCaps: CanAddTheme
         ).withoutBack
     })
 
-@ViewModifierDsl3
-val CanAddTheme.strikethrough: CanAddTheme
+public val CanAddTheme.strikethrough: CanAddTheme
     get() = themed(ThemeDerivation {
         it.copy(
             id = "strikethrough",
@@ -143,8 +123,7 @@ val CanAddTheme.strikethrough: CanAddTheme
         ).withoutBack
     })
 
-@ViewModifierDsl3
-val CanAddTheme.underline: CanAddTheme
+public val CanAddTheme.underline: CanAddTheme
     get() = themed(ThemeDerivation {
         it.copy(
             id = "underline",
@@ -152,8 +131,7 @@ val CanAddTheme.underline: CanAddTheme
         ).withoutBack
     })
 
-@ViewModifierDsl3
-fun CanAddTheme.withSpacing(multiplier: Double): CanAddTheme = themed(ThemeDerivation {
+public fun CanAddTheme.withSpacing(multiplier: Double): CanAddTheme = themed(ThemeDerivation {
     it.copy(
         id = "withgap${multiplier.toString().replace('.', '_')}",
         gap = it.gap * multiplier

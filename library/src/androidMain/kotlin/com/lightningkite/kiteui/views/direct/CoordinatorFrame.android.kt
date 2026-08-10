@@ -27,8 +27,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
-    override val native = CoordinatorLayoutWithGestures(context.activity)
+public actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
+    override val native: CoordinatorLayoutWithGestures = CoordinatorLayoutWithGestures(context.activity)
 
     override fun nativeWillAddChild(element: Element) {
         element.underlyingNativeElement.native.layoutParams = defaultLayoutParams()
@@ -43,7 +43,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
     @OptIn(UnsafeModifier::class)
-    actual fun bottomSheet(
+    public actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
         draggable: Boolean,
@@ -126,7 +126,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }
     }
 
-    actual fun leftSlidingPanel(
+    public actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
@@ -162,9 +162,17 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                         backToRemove?.underlyingNativeElement?.native?.alpha = slideOffset
                     }
                 })
-                //TODO: blocksBehind
-                native.setOnClickListener {
-                    Log.log("$this ($it) blocked the touch, because screw you")
+                // Swallow taps that land on the panel's own (possibly child-less) area so they
+                // can't fall through to the CoordinatorLayout sibling underneath - without this,
+                // tapping empty space inside the panel would hit whatever is behind it instead.
+                // Gated on blockBehind, matching the dismissBackground scrim above: a
+                // non-blocking panel (blockBehind = false) has no scrim AND lets taps on its own
+                // empty margins reach the app content behind it, same as a click that misses the
+                // panel entirely.
+                if (blockBehind) {
+                    native.setOnClickListener {
+                        Log.log("$this ($it) blocked the touch, because screw you")
+                    }
                 }
             }
             (lparams as? CoordinatorLayout.LayoutParams)?.gravity = Gravity.LEFT
@@ -176,7 +184,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }.content(control)
     }
 
-    actual fun rightSlidingPanel(
+    public actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
@@ -212,9 +220,13 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
                         backToRemove?.underlyingNativeElement?.native?.alpha = slideOffset
                     }
                 })
-                //TODO: blocksBehind
-                native.setOnClickListener {
-                    Log.log("$this ($it) blocked the touch, because screw you")
+                // See the matching comment in leftSlidingPanel: swallow taps on the panel's own
+                // empty area only when blockBehind is true, so it stays consistent with the
+                // dismissBackground scrim above rather than always blocking regardless of the flag.
+                if (blockBehind) {
+                    native.setOnClickListener {
+                        Log.log("$this ($it) blocked the touch, because screw you")
+                    }
                 }
             }
             (lparams as? CoordinatorLayout.LayoutParams)?.gravity = Gravity.RIGHT
@@ -226,17 +238,17 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }.content(control)
     }
 
-    actual fun onLeftSwipe(action: suspend () -> Unit) {
+    public actual fun onLeftSwipe(action: suspend () -> Unit) {
         native.onLeftSwipeAction = { launch { action() } }
     }
 
-    actual fun onRightSwipe(action: suspend () -> Unit) {
+    public actual fun onRightSwipe(action: suspend () -> Unit) {
         native.onRightSwipeAction = { launch { action() } }
     }
 }
 
 @OptIn(ExperimentalKiteUi::class)
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeElement(context) {
     actual override val underlyingNativeElement: CoordinatorDragHandle = this
 
     init {

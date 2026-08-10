@@ -20,9 +20,9 @@ import platform.Foundation.NSString
 import platform.Foundation.numberWithFloat
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.CATransform3DIdentity
-import platform.QuartzCore.CATransform3DMakeRotation
-import platform.QuartzCore.CATransform3DMakeScale
-import platform.QuartzCore.CATransform3DMakeTranslation
+import platform.QuartzCore.CATransform3DRotate
+import platform.QuartzCore.CATransform3DScale
+import platform.QuartzCore.CATransform3DTranslate
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
 import com.lightningkite.kiteui.models.LiveRegionMode
@@ -58,11 +58,11 @@ import kotlin.math.sin
 import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
 
-actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
-    abstract val native: UIView
+public actual abstract class NativeElement actual constructor(context: ElementContext) : NativeElementCommonCode(context) {
+    public abstract val native: UIView
     protected open val addChildTarget: UIView get() = native
 
-    var tag: Any? = null
+    public var tag: Any? = null
 
     // --- ACCESSIBILITY ---
 
@@ -111,7 +111,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
 
     /** Posts a screen-changed notification if this element is marked as a live region. */
-    fun postLiveRegionNotificationIfNeeded() {
+    public fun postLiveRegionNotificationIfNeeded() {
         if (accessibleLiveRegion != LiveRegionMode.None) {
             UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, native)
         }
@@ -119,7 +119,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
 
     actual override var showOnPrint: Boolean = true
 
-    var sizeConstraints: SizeConstraints?
+    public var sizeConstraints: SizeConstraints?
         get() = native.extensionSizeConstraints
         set(value) {
             native.extensionSizeConstraints = value
@@ -177,7 +177,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         native.informParentOfSizeChange()
     }
 
-    actual fun screenRectangle(): Rect? {
+    public actual fun screenRectangle(): Rect? {
         val windowView = native.window?.rootViewController?.view ?: return null
         val parent = native.superview ?: return null
         return windowView.convertRect(native.frame, fromView = parent).useContents {
@@ -190,7 +190,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
     }
 
-    actual fun parentRectangle(): Rect? {
+    public actual fun parentRectangle(): Rect? {
         return native.frame.useContents {
             Rect(
                 left = (origin.x),
@@ -232,11 +232,11 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
      * for subclasses of Element. In this way, themes with a back may be applied so that corner radius is respected
      * without drawing anything that would cover the content of the view.
      */
-    protected open val disableBackground = false
+    protected open val disableBackground: Boolean = false
 
-    class BlurBackgroundView : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
+    internal class BlurBackgroundView : UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
 
-    var effectBackground: BlurBackgroundView? = null
+    internal var effectBackground: BlurBackgroundView? = null
 
     actual override fun nativeApplyTheme(theme: ThemeAndBack) {
         native.clipsToBounds = theme.drawBackground
@@ -365,29 +365,27 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
 
             // Apply transformation if present
             theme.theme.transform?.let { transform ->
-                // Apply transformations to the native view's layer
+                // Compose all transformation components together, matching how
+                // Android (independent View properties) and Web (concatenated CSS
+                // transform string) combine translate/rotate/scale simultaneously,
+                // rather than only applying whichever one happens first.
+                var t = CATransform3DIdentity.readValue()
                 if (transform.translationX != 0.0 || transform.translationY != 0.0 || transform.translationZ != 0.0) {
-                    // Apply translation
-                    native.layer.transform = CATransform3DMakeTranslation(
-                        transform.translationX,
-                        transform.translationY,
-                        transform.translationZ
-                    )
-                } else if (transform.rotation != 0.0) {
-                    // Apply rotation (convert degrees to radians)
-                    val radians = transform.rotation * (PI / 180.0)
-                    native.layer.transform = CATransform3DMakeRotation(radians, 0.0, 0.0, 1.0)
-                } else if (transform.scaleX != 1.0 || transform.scaleY != 1.0) {
-                    // Apply scale
-                    native.layer.transform = CATransform3DMakeScale(
-                        transform.scaleX,
-                        transform.scaleY,
-                        1.0
-                    )
-                } else {
-                    // Default identity transform
-                    native.layer.transform = CATransform3DIdentity.readValue()
+                    t = CATransform3DTranslate(t, transform.translationX, transform.translationY, transform.translationZ)
                 }
+                if (transform.rotationX != 0.0) {
+                    t = CATransform3DRotate(t, transform.rotationX * (PI / 180.0), 1.0, 0.0, 0.0)
+                }
+                if (transform.rotationY != 0.0) {
+                    t = CATransform3DRotate(t, transform.rotationY * (PI / 180.0), 0.0, 1.0, 0.0)
+                }
+                if (transform.rotation != 0.0) {
+                    t = CATransform3DRotate(t, transform.rotation * (PI / 180.0), 0.0, 0.0, 1.0)
+                }
+                if (transform.scaleX != 1.0 || transform.scaleY != 1.0) {
+                    t = CATransform3DScale(t, transform.scaleX, transform.scaleY, 1.0)
+                }
+                native.layer.transform = t
             } ?: run {
                 // Reset transform if no transformation is specified
                 native.layer.transform = CATransform3DIdentity.readValue()
@@ -512,9 +510,9 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     }
 
 
-    var dropInteraction: UIDropInteraction? = null
-    var dropInteractionDelegate: DropInteractionDelegate? = null
-    var scrollViewDropInteraction: UIDropInteraction? = null
+    internal var dropInteraction: UIDropInteraction? = null
+    internal var dropInteractionDelegate: DropInteractionDelegate? = null
+    internal var scrollViewDropInteraction: UIDropInteraction? = null
 
     actual override var dropTargetDelegate: DropTargetDelegate? = null
         set(value) {
@@ -536,7 +534,7 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
         }
 
     // A private delegate class to handle drop events
-    class DropInteractionDelegate(view: Element) : NSObject(), UIDropInteractionDelegateProtocol {
+    internal class DropInteractionDelegate(view: Element) : NSObject(), UIDropInteractionDelegateProtocol {
         @OptIn(ExperimentalNativeApi::class)
         private val owner = WeakReference(view)
 
@@ -598,6 +596,6 @@ actual abstract class NativeElement actual constructor(context: ElementContext) 
     }
 }
 
-val Element.native: UIView get() = underlyingNativeElement.native
+public val Element.native: UIView get() = underlyingNativeElement.native
 
 

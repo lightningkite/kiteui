@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.kiteui.views.viewPath
 import kotlinx.coroutines.currentCoroutineContext
 import kotlin.coroutines.CoroutineContext
 
@@ -12,14 +13,14 @@ import kotlin.coroutines.CoroutineContext
  * Also read by `instrumentFetch` to set `traceparent` headers and `parentSpanId`
  * on HTTP spans.
  */
-class TelemetryContext(
-    val traceId: String = "",
-    val spanId: String = "",
-    val element: NativeElement? = null,
-    val sampled: Boolean = false,
+internal class TelemetryContext(
+    public val traceId: String = "",
+    public val spanId: String = "",
+    public val element: NativeElement? = null,
+    public val sampled: Boolean = false,
 ) : CoroutineContext.Element {
     override val key: CoroutineContext.Key<TelemetryContext> get() = Key
-    companion object Key : CoroutineContext.Key<TelemetryContext>
+    public companion object Key : CoroutineContext.Key<TelemetryContext>
 }
 
 internal fun CoroutineContext.traceId(): String =
