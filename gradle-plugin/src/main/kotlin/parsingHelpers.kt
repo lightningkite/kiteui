@@ -5,10 +5,12 @@ internal fun String.splitParens(
     start: Char = '(',
     end: Char = ')',
     startingAt: Int = 0,
+    filename: String? = null,
 ): List<String> {
     val result = mutableListOf<String>()
     var index = startingAt
-    if(this[index] != start) throw IllegalArgumentException()
+    val location = filename?.let { " in $it" } ?: ""
+    if(this[index] != start) throw IllegalArgumentException("Expected '$start' at index $index$location")
     var depth = 1
     val section = StringBuilder()
     while(++index < length) {
@@ -41,9 +43,11 @@ internal fun String.afterParens(
     start: Char = '(',
     end: Char = ')',
     startingAt: Int = 0,
+    filename: String? = null,
 ): Int {
     var index = startingAt
-    if(this[index] != start) throw IllegalArgumentException()
+    val location = filename?.let { " in $it" } ?: ""
+    if(this[index] != start) throw IllegalArgumentException("Expected '$start' at index $index$location")
     var depth = 1
     while(++index < length) {
         val current = this[index]
@@ -72,9 +76,10 @@ internal fun String.afterParens(
  *
  * Throws if the opening character is not '{' or if the opening brace is never closed.
  */
-internal fun String.afterBraces(startingAt: Int = 0): Int {
+internal fun String.afterBraces(startingAt: Int = 0, filename: String? = null): Int {
     var index = startingAt
-    require(this[index] == '{') { "Expected '{' at index $index, found '${this[index]}'" }
+    val location = filename?.let { " in $it" } ?: ""
+    require(this[index] == '{') { "Expected '{' at index $index, found '${this[index]}'$location" }
     var depth = 1
     while (++index < length) {
         when (this[index]) {
@@ -82,7 +87,7 @@ internal fun String.afterBraces(startingAt: Int = 0): Int {
             '}' -> if (--depth == 0) return index + 1
         }
     }
-    throw IllegalArgumentException("Unmatched '{' at index $startingAt")
+    throw IllegalArgumentException("Unmatched '{' at index $startingAt$location")
 }
 
 /**
@@ -141,6 +146,95 @@ internal fun String.isInsideStringLiteral(position: Int): Boolean {
     }
 
     return inString
+}
+
+/**
+ * Removes Kotlin line comments from source text without being fooled by comment markers
+ * that appear inside string or char literals.
+ *
+ * Tracks string-literal state to ensure that "//" inside strings is not mistaken for
+ * a comment marker. When a line comment is found outside a string, all characters up
+ * to the next newline are removed (including trailing whitespace before the comment),
+ * but the newline itself is preserved to maintain line structure.
+ */
+internal fun String.stripLineComments(): String {
+    val result = StringBuilder(length)
+    var i = 0
+    var inString = false
+    var stringDelimiter = '"'
+    var isTripleQuoted = false
+    var escapeNext = false
+    var inLineComment = false
+
+    while (i < length) {
+        if (inLineComment) {
+            if (this[i] == '\n' || this[i] == '\r') {
+                inLineComment = false
+                result.append(this[i])
+            }
+            i++
+            continue
+        }
+
+        if (!inString) {
+            // Check for start of a line comment
+            if (i + 1 < length && this[i] == '/' && this[i + 1] == '/') {
+                // Remove trailing whitespace before the comment
+                while (result.isNotEmpty() && (result.last() == ' ' || result.last() == '\t')) {
+                    result.deleteAt(result.length - 1)
+                }
+                inLineComment = true
+                i += 2
+                continue
+            }
+            // Check for start of triple-quoted string
+            if (i + 2 < length && this[i] == '"' && this[i + 1] == '"' && this[i + 2] == '"') {
+                inString = true
+                stringDelimiter = '"'
+                isTripleQuoted = true
+                result.append(this, i, i + 3)
+                i += 3
+                continue
+            }
+            // Check for start of regular string or char literal
+            if (this[i] == '"' || this[i] == '\'') {
+                inString = true
+                stringDelimiter = this[i]
+                isTripleQuoted = false
+                escapeNext = false
+                result.append(this[i])
+                i++
+                continue
+            }
+            result.append(this[i])
+            i++
+        } else {
+            // Inside a string
+            if (isTripleQuoted) {
+                // Check for end of triple-quoted string
+                if (i + 2 < length && this[i] == '"' && this[i + 1] == '"' && this[i + 2] == '"') {
+                    inString = false
+                    isTripleQuoted = false
+                    result.append(this, i, i + 3)
+                    i += 3
+                    continue
+                }
+            } else {
+                // Regular string/char handling
+                if (escapeNext) {
+                    escapeNext = false
+                } else if (this[i] == '\\') {
+                    escapeNext = true
+                } else if (this[i] == stringDelimiter) {
+                    inString = false
+                }
+            }
+            result.append(this[i])
+            i++
+        }
+    }
+
+    return result.toString()
 }
 
 /**
@@ -232,3 +326,10 @@ internal fun String.stripBlockComments(): String {
 
     return result.toString()
 }
+
+/**
+ * Removes both line comments and block comments from Kotlin source text.
+ * Applies line comment stripping first, then block comment stripping.
+ */
+internal fun String.stripComments(): String =
+    this.stripLineComments().stripBlockComments()

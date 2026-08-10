@@ -27,17 +27,18 @@ internal fun generateAutoroutes(sources: File, out: File) {
     val allRoutables = sources.walkTopDown()
         .filter { it.extension == "kt" }
         .flatMap { file ->
-            val out = ArrayList<ScreenData>()
-            val text = file.readLines()
-                .map { it.trim() }
-                .filter { !it.startsWith("//") }
-                .joinToString("\n")
-                .stripBlockComments()
+            try {
+                val out = ArrayList<ScreenData>()
+                val text = file.readText()
+                    .stripComments()
+                    .lines()
+                    .map { it.trim() }
+                    .joinToString("\n")
 
-            val packageName = text.substringAfter("package ").substringBefore("\n").trim()
-            var index = 0
+                val packageName = text.substringAfter("package ").substringBefore("\n").trim()
+                var index = 0
 
-            while (true) {
+                while (true) {
                 val routable = text.indexOf("@Routable", index).takeUnless { it == -1 }
                 val fallback = text.indexOf("@FallbackRoute", index).takeUnless { it == -1 }
 
@@ -90,7 +91,8 @@ internal fun generateAutoroutes(sources: File, out: File) {
                 val bodyStart = text.indexOf('{', classOrObjectMark)
                 val constructorParams =
                     if (constructorParamsStart == -1 || constructorParamsStart > bodyStart) listOf() else text.splitParens(
-                        startingAt = constructorParamsStart
+                        startingAt = constructorParamsStart,
+                        filename = file.name
                     )
 
                 val queryParams = when (match.kind) {
@@ -102,7 +104,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                             // Bound the scan to THIS class's body so that @QueryParameter
                             // properties from a later class in the same file are not
                             // mistakenly attributed to this one.
-                            val bodyEnd = text.afterBraces(startingAt = bodyStart)
+                            val bodyEnd = text.afterBraces(startingAt = bodyStart, filename = file.name)
                             val upperIndex = index
                             val out = HashMap<String, String>()
                             var index = upperIndex
@@ -116,8 +118,8 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 if (argStart == text.length) continue
                                 var annoArgs: List<String>? = null
                                 val beginLoookingForVa = if (hasExplicitName) {
-                                    annoArgs = text.splitParens(startingAt = argStart)
-                                    text.afterParens(startingAt = argStart)
+                                    annoArgs = text.splitParens(startingAt = argStart, filename = file.name)
+                                    text.afterParens(startingAt = argStart, filename = file.name)
                                 } else {
                                     index
                                 }
@@ -154,7 +156,10 @@ internal fun generateAutoroutes(sources: File, out: File) {
                     )
                 )
             }
-            out
+                out
+            } catch (e: Exception) {
+                throw IllegalStateException("Error parsing routes in file ${file.name}: ${e.message}", e)
+            }
         }
         .toList()
 

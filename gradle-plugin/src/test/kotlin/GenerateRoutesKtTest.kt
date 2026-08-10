@@ -187,4 +187,172 @@ class GenerateRoutesKtTest {
             result.contains("\"mode\""))
     }
 
+    // ---- Comment handling tests ---------------------------------------------------------
+
+    @Test
+    fun `line comments after annotations are properly ignored`() {
+        val source = """
+            package com.example
+
+            @Routable("first") // This is the first route
+            object FirstScreen {}
+
+            @Routable("second") // This is the second route
+            object SecondScreen {}
+        """.trimIndent()
+
+        val result = generateFromSources("Screens.kt" to source)
+
+        assertTrue("FirstScreen must be found", "FirstScreen" in result)
+        assertTrue("SecondScreen must be found", "SecondScreen" in result)
+        assertFalse("Line comments should not appear in generated code", "This is the first route" in result)
+        assertFalse("Line comments should not appear in generated code", "This is the second route" in result)
+    }
+
+    @Test
+    fun `line comments on query parameters are properly ignored`() {
+        val source = """
+            package com.example
+
+            @Routable("screen")
+            object ScreenWithComments {
+                @QueryParameter // The filter parameter
+                val filter: String = ""
+                @QueryParameter // The sort parameter
+                val sort: String = ""
+                fun init() {}
+            }
+        """.trimIndent()
+
+        val result = generateFromSources("Screens.kt" to source)
+
+        assertTrue("ScreenWithComments must be found", "ScreenWithComments" in result)
+        assertTrue("filter parameter must be found", "\"filter\"" in result)
+        assertTrue("sort parameter must be found", "\"sort\"" in result)
+        assertFalse("Comments should not appear in output", "The filter parameter" in result)
+    }
+
+    @Test
+    fun `block comments in class body are properly ignored`() {
+        val source = """
+            package com.example
+
+            @Routable("items/{id}")
+            class ItemScreen(val id: String) {
+                /* This is a block comment
+                   spanning multiple lines */
+                @QueryParameter
+                val filter: String = ""
+
+                fun load() { /* inline block comment */ }
+            }
+        """.trimIndent()
+
+        val result = generateFromSources("ItemScreen.kt" to source)
+
+        assertTrue("ItemScreen must be found", "ItemScreen" in result)
+        assertTrue("filter parameter must be found", "\"filter\"" in result)
+        assertFalse("Block comments should not appear", "This is a block comment" in result)
+    }
+
+    @Test
+    fun `route paths with URLs are preserved despite containing comment markers`() {
+        // URLs in string literals should not be treated as comments
+        val source = """
+            package com.example
+
+            @Routable("api/v1")
+            object ApiScreen {
+                fun getUrl() = "http://example.com" // Real URL
+                fun getPattern() = "image/*" /* MIME type */
+            }
+        """.trimIndent()
+
+        val result = generateFromSources("ApiScreen.kt" to source)
+
+        assertTrue("ApiScreen must be found", "ApiScreen" in result)
+        // The route path is in the generated parsers, check for the segment
+        assertTrue("Route path segments must be present", "\"api\"" in result || "api/v1" in result)
+    }
+
+    @Test
+    fun `commented out Routable annotations are ignored`() {
+        val source = """
+            package com.example
+
+            // @Routable("commented-out")
+            // object CommentedScreen {}
+
+            @Routable("active")
+            object ActiveScreen {}
+
+            /* @Routable("block-commented")
+               object BlockCommentedScreen {} */
+        """.trimIndent()
+
+        val result = generateFromSources("Screens.kt" to source)
+
+        assertTrue("ActiveScreen must be found", "ActiveScreen" in result)
+        assertFalse("Commented out route should not be found", "CommentedScreen" in result)
+        assertFalse("Block commented route should not be found", "BlockCommentedScreen" in result)
+        assertFalse("commented-out path should not appear", "\"commented-out\"" in result)
+        assertFalse("block-commented path should not appear", "\"block-commented\"" in result)
+    }
+
+    @Test
+    fun `mixed comments do not affect route generation`() {
+        val source = """
+            package com.example
+
+            // Header comment explaining this file
+            /* Block comment
+               with multiple lines */
+
+            @Routable("users/{userId}") // User detail page
+            class UserDetailPage(
+                val userId: String // The user ID
+            ) {
+                /* Query parameters section */
+                @QueryParameter // Tab selection
+                val tab: String = "profile" // default tab
+
+                // Method definitions
+                fun load() {
+                    val url = "http://api.example.com/users" // API endpoint
+                    /* TODO: Add error handling */
+                }
+            }
+        """.trimIndent()
+
+        val result = generateFromSources("UserDetailPage.kt" to source)
+
+        assertTrue("UserDetailPage must be found", "UserDetailPage" in result)
+        assertTrue("Route path must be preserved", "\"users\"" in result)
+        assertTrue("tab parameter must be found", "\"tab\"" in result)
+        assertFalse("Comments should not appear", "Header comment" in result)
+        assertFalse("Comments should not appear", "User detail page" in result)
+        assertFalse("Comments should not appear", "TODO" in result)
+    }
+
+    @Test
+    fun `triple-quoted strings with comment markers are preserved`() {
+        val source = """
+            package com.example
+
+            @Routable("docs")
+            object DocsScreen {
+                val example = ""${'"'}
+                    // This looks like a comment
+                    /* But it's actually part of the string */
+                    http://example.com
+                ""${'"'}
+            }
+        """.trimIndent()
+
+        val result = generateFromSources("DocsScreen.kt" to source)
+
+        assertTrue("DocsScreen must be found", "DocsScreen" in result)
+        assertTrue("Route generation must succeed", result.contains("parsers = listOf("))
+    }
+
 }
