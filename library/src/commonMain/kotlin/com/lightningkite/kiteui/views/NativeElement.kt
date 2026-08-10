@@ -637,7 +637,15 @@ public abstract class NativeElementCommonCode internal constructor(override val 
 
         override var state: ReactiveState<Unit> = ReactiveState(Unit)
             private set(value) {
-                if (field.raw !== value.raw) {
+                // Compares the states, not their `raw`s. `ReactiveState<Unit>.raw` is *statically* typed
+                // `Unit` here, and Kotlin/Native treats every expression of type `Unit` as the `Unit`
+                // singleton regardless of what the value class actually holds - so `field.raw !== value.raw`
+                // folded to false and this guard rejected every real change. On iOS that left every
+                // element's loading/working/error state frozen at "ready": no button spinners, no
+                // Working/LoadingSemantic theming. Value-class equality reads the underlying value and is
+                // correct on all platforms. (`BaseReactive` gets away with the same expression because its
+                // `T` is generic there, so the comparison is compiled against `Any?`.)
+                if (field != value) {
                     field = value
                     invokeAllListeners()
                     refreshTheming()
