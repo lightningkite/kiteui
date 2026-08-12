@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.dom
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.utils.isSafeLinkUrl
 
 // Depth past which nested markup is discarded rather than walked. secure() and toString() both
@@ -8,7 +9,10 @@ import com.lightningkite.kiteui.utils.isSafeLinkUrl
 // MarkdownParser, which takes the same kind of input.
 private const val MAX_NESTING_DEPTH = 100
 
-internal sealed interface MPNode {
+// Public so consumers can sanitize untrusted HTML before inserting it into the DOM; the only
+// other route is `innerHtmlUnsafe`, which by definition does no sanitization.
+@ExperimentalKiteUi
+public sealed interface MinimalHtmlNode {
     public fun secure()
 
     public companion object {
@@ -64,8 +68,8 @@ internal sealed interface MPNode {
     public data class Element(
         var tagName: String,
         val attributes: MutableMap<String, String> = HashMap(),
-        val children: MutableList<MPNode> = ArrayList()
-    ) : MPNode {
+        val children: MutableList<MinimalHtmlNode> = ArrayList()
+    ) : MinimalHtmlNode {
         override fun toString(): String {
             if(tagName == "br") return "<br>"
             return "<${tagName} ${attributes.entries.joinToString(" ") { "${it.key}=\"${escapeAttribute(it.value)}\"" }}>${
@@ -94,14 +98,15 @@ internal sealed interface MPNode {
         }
     }
 
-    public data class Text(val content: String) : MPNode {
+    public data class Text(val content: String) : MinimalHtmlNode {
         override fun toString(): String = content
         override fun secure() {}
     }
 }
 
-internal fun String.parseMPNodes(): List<MPNode> {
-    val stack = arrayListOf(MPNode.Element("*"))
+@ExperimentalKiteUi
+public fun String.parseMinimalHtmlNodes(): List<MinimalHtmlNode> {
+    val stack = arrayListOf(MinimalHtmlNode.Element("*"))
     starts(
         onTag = {
             it.analyzeTagInside { rawTagName, start, end, kvs ->
@@ -115,7 +120,7 @@ internal fun String.parseMPNodes(): List<MPNode> {
                 // after it shifts up a level too. Markup nested past 100 deep therefore comes out
                 // flattened and reshuffled, which is the intended trade against a stack overflow.
                 if (start && stack.size <= MAX_NESTING_DEPTH) {
-                    val newElement = MPNode.Element(tagName, attributes = kvs)
+                    val newElement = MinimalHtmlNode.Element(tagName, attributes = kvs)
                     stack.last().children.add(newElement)
                     stack.add(newElement)
                 }
@@ -132,7 +137,7 @@ internal fun String.parseMPNodes(): List<MPNode> {
             }
         },
         onContent = {
-            if (it.isNotBlank()) stack.last().children.add(MPNode.Text(it))
+            if (it.isNotBlank()) stack.last().children.add(MinimalHtmlNode.Text(it))
         }
     )
     return stack.first().children

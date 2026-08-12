@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.dom.analyzeTagInside
-import com.lightningkite.kiteui.dom.parseMPNodes
+import com.lightningkite.kiteui.dom.parseMinimalHtmlNodes
 import com.lightningkite.kiteui.dom.starts
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,7 +13,7 @@ class MicroparseTest {
             <script> TEE HEE HEE </script>
             <button onclick="DIE">HEEE HEE</button>
             <p> Test <br> Content </p>
-        """.trimIndent().parseMPNodes()
+        """.trimIndent().parseMinimalHtmlNodes()
         base.let { println(it) }
         base.forEach { it.secure() }
         base.let { println(it) }
@@ -22,7 +22,7 @@ class MicroparseTest {
     @Test fun malformed() {
         val base = """
             Something <
-        """.trimIndent().parseMPNodes()
+        """.trimIndent().parseMinimalHtmlNodes()
         base.let { println(it) }
         base.forEach { it.secure() }
         base.let { println(it) }
@@ -31,7 +31,7 @@ class MicroparseTest {
     @Test fun malformed2() {
         val base = """
             Yeah, it's a special <p> Hello World! </
-        """.trimIndent().parseMPNodes()
+        """.trimIndent().parseMinimalHtmlNodes()
         base.let { println(it) }
         base.forEach { it.secure() }
         base.let { println(it) }
@@ -40,13 +40,13 @@ class MicroparseTest {
     @Test fun full() {
         """
             <div class="UF5u5" other = "x" otheasr = "x" yet="another"><div class="ZHUJ9 _2SqQ">All the errors detected are listed below, from left to right, as they appear in the pattern.</div><div><span class="KrSXE w_XEF YmAvV">/</span> <span>An unescaped delimiter must be escaped; in most languages with a backslash (<span class="T0laQ"><span>\</span></span>)</span></div><div><span class="KrSXE w_XEF YmAvV">?</span> The preceding token is not quantifiable</div><div><span class="KrSXE w_XEF YmAvV">/</span> <span>An unescaped delimiter must be escaped; in most languages with a backslash (<span class="T0laQ"><span>\</span></span>)</span></div><div><span class="KrSXE w_XEF YmAvV">?</span> The preceding token is not quantifiable</div></div>
-        """.trimIndent().parseMPNodes().let { println(it) }
+        """.trimIndent().parseMinimalHtmlNodes().let { println(it) }
     }
 
     @Test fun simple() {
         """
             <p>Test</p>
-        """.trimIndent().parseMPNodes().let { println(it) }
+        """.trimIndent().parseMinimalHtmlNodes().let { println(it) }
     }
 
     @Test

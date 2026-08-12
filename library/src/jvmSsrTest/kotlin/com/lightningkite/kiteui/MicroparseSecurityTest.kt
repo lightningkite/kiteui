@@ -1,12 +1,12 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.dom.parseMPNodes
+import com.lightningkite.kiteui.dom.parseMinimalHtmlNodes
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Security properties of the [parseMPNodes] / secure() sanitizer.
+ * Security properties of the [parseMinimalHtmlNodes] / secure() sanitizer.
  *
  * This sanitizer is the only thing standing between caller-supplied HTML and the DOM:
  * TextView.setBasicHtmlContent (public API in commonMain) pipes its argument through
@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
 class MicroparseSecurityTest {
 
     private fun sanitize(html: String): String =
-        html.parseMPNodes().onEach { it.secure() }.joinToString(" ")
+        html.parseMinimalHtmlNodes().onEach { it.secure() }.joinToString(" ")
 
     @Test
     fun scriptTagsAreNeutralized() {
