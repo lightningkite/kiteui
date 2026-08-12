@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.views.ContainerElement
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewModifierDsl3
@@ -41,3 +42,10 @@ public fun ElementWriter.CanAddSizing.changingSizeConstraints(constraints: React
 
 @Deprecated("Import has moved", ReplaceWith("label(label, content)", "com.lightningkite.kiteui.views.l2.label"))
 public inline fun ElementWriter.label(label: String, content: LinearLayoutElement.() -> Unit): LabeledView = l2Label(label, content)
+
+@Deprecated("Use coordinatorFrame instead.")
+public expect fun ElementContext.openBottomSheet(
+    halfScreenRatio: Float = 0.5f,
+    dim: Boolean = true,
+    view: ElementWriter.CanAddTheme.() -> Unit
+)

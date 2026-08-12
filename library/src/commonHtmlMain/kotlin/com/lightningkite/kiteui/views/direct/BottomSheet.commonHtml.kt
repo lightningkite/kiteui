@@ -3,18 +3,19 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ScreenTransitions
+import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.closePopovers
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.rawPopover
 import com.lightningkite.kiteui.views.themed
 
-public actual fun ElementWriter.openBottomSheet(
+public actual fun ElementContext.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,
     view: ElementWriter.CanAddTheme.() -> Unit
 ){
-    context.rawPopover(ScreenTransitions.VerticalSlide) {
+    rawPopover(ScreenTransitions.VerticalSlide) {
         col {
             expanding.space()
             expanding.themed(DialogSemantic).col {

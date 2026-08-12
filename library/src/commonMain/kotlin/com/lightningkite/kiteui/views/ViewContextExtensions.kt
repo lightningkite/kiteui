@@ -54,10 +54,10 @@ public var ElementContext.popoverKeepOpen: Int by contextAddon(0)
 // app-wide because a lazyContextAddon's default is created once and stored on the ROOT context, so
 // every context in the tree resolves to the same list. This lets back handlers (Android system back,
 // browser back) dismiss the top dialog before navigating pages.
-private var ElementContext.dismissableDialogStack by lazyContextAddon { mutableListOf<() -> Unit>() }
+private val ElementContext.dismissableDialogStack by contextAddon(mutableListOf<() -> Unit>())
 
 /** Registers [dismiss] as the topmost open dialog; returns a lambda that unregisters it on close. */
-public fun ElementContext.pushDismissableDialog(dismiss: () -> Unit): Release {
+internal fun ElementContext.pushDismissableDialog(dismiss: () -> Unit): Release {
     val stack = dismissableDialogStack
     stack.add(dismiss)
     return { stack.remove(dismiss) }

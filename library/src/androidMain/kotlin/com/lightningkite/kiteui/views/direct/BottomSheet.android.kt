@@ -8,19 +8,19 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlin.coroutines.CoroutineContext
 
-public actual fun ElementWriter.openBottomSheet(
+public actual fun ElementContext.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,
     view: ElementWriter.CanAddTheme.() -> Unit
 ) {
-    val dialog = BottomSheetDialog(context.activity)
+    val dialog = BottomSheetDialog(activity)
     dialog.behavior.halfExpandedRatio = halfScreenRatio
-    val overlay = context.overlayFrame ?: return
+    val overlay = overlayFrame ?: return
     var createdView: Element? = null
     overlay.withoutAnimation {
         object : ViewWriter {
             override val coroutineContext: CoroutineContext = overlay.coroutineContext
-            override val context: ElementContext get() = this@openBottomSheet.context
+            override val context: ElementContext get() = this@openBottomSheet
 
             @OverrideOnly
             override fun willAddChild(element: Element) {

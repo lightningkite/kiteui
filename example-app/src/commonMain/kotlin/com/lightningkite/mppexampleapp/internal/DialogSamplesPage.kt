@@ -65,7 +65,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch Test Bottom Sheet Old" }
                 onClick {
-                    openBottomSheet {
+                    context.openBottomSheet {
                         col {
                             h2("Bottom sheet")
                             text("bottom text")
