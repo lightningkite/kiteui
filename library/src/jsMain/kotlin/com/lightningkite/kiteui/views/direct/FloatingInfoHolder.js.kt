@@ -34,7 +34,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
 
     internal fun closeButton() {
         if (closeView != null) return
-        val o = source.context.overlayFrame ?: return
+        val o = source.context.overlayFrame
         val v = existingView ?: return
         o.atTopEnd.button {
             closeView = this
@@ -47,7 +47,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
 
     public actual fun block() {
         if (blockView != null) return
-        val o = source.context.overlayFrame ?: return
+        val o = source.context.overlayFrame
         val v = existingView ?: return
         @OptIn(OverrideOnly::class)
         o.addChild(
@@ -80,7 +80,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
         // Held so it can be disconnected on teardown; a live ResizeObserver retains its target
         // element and the reposition closure, leaking the popover's DOM subtree otherwise.
         var resizeObserver: ResizeObserver? = null
-        val popoverWriter = source.popoverWriter(source.context.overlayFrame!!) {
+        val popoverWriter = source.popoverWriter(source.context.overlayFrame) {
             removeElementFromOverlay()
         }
         val startedFocused = source.native.element == document.activeElement
@@ -307,11 +307,11 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
 
                 removeElementFromOverlay = {
                     blockView?.let {
-                        source.context.overlayFrame!!.removeChild(it)
+                        source.context.overlayFrame.removeChild(it)
                     }
                     blockView = null
                     closeView?.let {
-                        source.context.overlayFrame!!.removeChild(it)
+                        source.context.overlayFrame.removeChild(it)
                     }
                     closeView = null
                     window.removeEventListener("scroll", repos, true)
@@ -332,7 +332,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                             .let { Duration.parseOrNull(it) ?: 0.25.seconds }
                             .let {
                                 window.setTimeout({
-                                    source.context.overlayFrame!!.removeChild(this)
+                                    source.context.overlayFrame.removeChild(this)
                                 }, it.inWholeMilliseconds.toInt())
                             }
                         e.style.opacity = "0"

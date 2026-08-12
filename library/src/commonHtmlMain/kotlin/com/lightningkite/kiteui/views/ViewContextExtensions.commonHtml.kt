@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.core.Release
@@ -11,10 +10,7 @@ public actual fun ElementContext.overlay(
     transition: ScreenTransitions,
     body: ContainerElement.(remove: () -> Unit) -> Unit
 ) {
-    with(overlayFrame ?: run {
-        Log.warn("WARN!! overlay abandoned because no overlayFrame set")
-        return
-    }) {
+    with(overlayFrame) {
         var willRemove: Element? = null
         var unregister: Release? = null
 

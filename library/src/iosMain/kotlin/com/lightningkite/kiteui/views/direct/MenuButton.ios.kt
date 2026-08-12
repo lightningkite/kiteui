@@ -28,7 +28,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
     public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         val openFn: () -> Unit = {
             var willRemove: Element? = null
-            val f = overlayFrame!!
+            val f = overlayFrame
             f.popoverWriter {
                 willRemove?.let { f.removeChild(it) }
                 willRemove = null

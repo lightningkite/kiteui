@@ -57,7 +57,7 @@ class OverlayCloseReentrancyTest {
         Robolectric.buildActivity(TestActivity::class.java).use { controller ->
             controller.setup()
             val context = controller.get().viewWriter.context
-            val overlayFrame = context.overlayFrame!!
+            val overlayFrame = context.overlayFrame
 
             var close: (() -> Unit)? = null
             // Animations stay disabled across close() too, not just the overlay() call: close() is

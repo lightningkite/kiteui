@@ -11,7 +11,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
 
     public actual fun open() {
         if (existingView != null) return
-        val overlay = source.context.overlayFrame ?: return
+        val overlay = source.context.overlayFrame
         with(source.popoverWriter(overlay) { close() }) {
             frame {
                 this@FloatingInfoHolder.existingView = this
@@ -25,6 +25,6 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
     public actual fun close() {
         val v = existingView ?: return
         existingView = null
-        source.context.overlayFrame?.removeChild(v)
+        source.context.overlayFrame.removeChild(v)
     }
 }

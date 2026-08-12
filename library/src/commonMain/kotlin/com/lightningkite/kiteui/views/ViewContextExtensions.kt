@@ -1,12 +1,13 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.identityHashCode
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.ScreenTransitions
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import kotlin.reflect.KProperty
+import com.lightningkite.reactive.context.onRemove
+import com.lightningkite.reactive.core.Constant
+import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.Release
 import kotlinx.coroutines.CoroutineScope
+import kotlin.reflect.KProperty
 
 // by Claude - all rContextAddon defaults write to the root RContext so they're shared across the tree.
 // Explicit sets (via the setter) write to the local context, shadowing the root for that subtree.
@@ -40,23 +41,14 @@ public class ContextAddon<T>(public val init: Init<T>) {
 }
 
 public fun <T> contextAddon(init: T): ContextAddon<T> = ContextAddon(init)
-public fun <T> lateInitContextAddon(): ContextAddon<T> = ContextAddon<T>(ContextAddon.Init.LateInit)
+public fun <T> lateInitContextAddon(): ContextAddon<T> = ContextAddon(ContextAddon.Init.LateInit)
 public fun <T> lazyContextAddon(init: (ElementContext) -> T): ContextAddon<T> = ContextAddon(init)
 
-@Deprecated("Renamed to reflect change in receiver", ReplaceWith("contextAddon(init)"))
-public fun <T> rContextAddon(init: T): ContextAddon<T> = contextAddon(init)
+public var ElementContext.safeInsets: Reactive<Edges> by contextAddon(Constant(Edges.ZERO))
 
-@Deprecated("Renamed to reflect change in receiver", ReplaceWith("lazyContextAddon(init)"))
-public fun <T> rContextAddonGenerate(init: (ElementContext) -> T): ContextAddon<T> = lazyContextAddon(init)
-
-@Deprecated("Renamed to reflect change in receiver", ReplaceWith("lateInitContextAddon()"))
-public fun <T> rContextAddonInit(): ContextAddon<T> = lateInitContextAddon<T>()
-
-public var ElementContext.safeInsets: Reactive<Edges> by lazyContextAddon<Reactive<Edges>> { Constant(Edges.ZERO) }
-
-public var ElementContext.popoverParent: ContainerElement? by lazyContextAddon<ContainerElement?> { null }
-public var ElementContext.popoverCloser: (() -> Unit)? by lazyContextAddon<(() -> Unit)?> { null }
-public var ElementContext.popoverKeepOpen: Int by lazyContextAddon { 0 }
+public var ElementContext.popoverParent: ContainerElement? by contextAddon(null)
+public var ElementContext.popoverCloser: (() -> Unit)? by contextAddon(null)
+public var ElementContext.popoverKeepOpen: Int by contextAddon(0)
 
 // Stack of dismiss lambdas for currently-open dismissable modal dialogs (topmost is last). Shared
 // app-wide because a lazyContextAddon's default is created once and stored on the ROOT context, so
@@ -72,7 +64,7 @@ public fun ElementContext.pushDismissableDialog(dismiss: () -> Unit): Release {
 }
 
 /** If a dismissable dialog is open, dismisses the topmost one and returns true; otherwise false. */
-public fun ElementContext.dismissTopDialog(): Boolean {
+internal fun ElementContext.dismissTopDialog(): Boolean {
     val top = dismissableDialogStack.removeLastOrNull() ?: return false
     top()
     return true

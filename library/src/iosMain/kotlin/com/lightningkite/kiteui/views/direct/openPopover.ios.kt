@@ -10,7 +10,7 @@ public actual fun Element.openPopover(
     createMenu: Frame.() -> Unit
 ) {
     var willRemove: Element? = null
-    val f = overlayFrame!!
+    val f = overlayFrame
     f.popoverWriter {
         willRemove?.let { f.removeChild(it) }
         willRemove = null

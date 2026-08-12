@@ -16,8 +16,8 @@ public actual fun Element.openPopover(
     createMenu: Frame.() -> Unit
 ) {
     var willRemove: Element? = null
-    popoverWriter(context.overlayFrame!!) {
-        willRemove?.let { context.overlayFrame!!.removeChild(it) }
+    popoverWriter(context.overlayFrame) {
+        willRemove?.let { context.overlayFrame.removeChild(it) }
     }.run {
         willRemove = dismissBackground {
             themeChoice += ThemeDerivation {

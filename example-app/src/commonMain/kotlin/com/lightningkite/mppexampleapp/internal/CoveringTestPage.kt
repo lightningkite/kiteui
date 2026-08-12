@@ -37,7 +37,7 @@ object CoveringTestPage : Page {
             card.button {
                 text("bottom sheet")
                 onClick {
-                    context.coordinatorFrame?.bottomSheet(blockBehind = false) { control ->
+                    context.coordinatorFrame.bottomSheet(blockBehind = false) { control ->
                         themed(DialogSemantic).col {
                             applySafeInsets()
                             centered.coordinatorDragHandle()

@@ -115,8 +115,7 @@ public fun MenuButton.menuDriverActions(
     click?.let { fn ->
         put("click") {
             fn()
-            context.overlayFrame?.driverChildren()?.lastOrNull()?.driverSnapshot()
-                ?: "opened"
+            context.overlayFrame.driverChildren().lastOrNull()?.driverSnapshot() ?: "opened"
         }
     }
 }

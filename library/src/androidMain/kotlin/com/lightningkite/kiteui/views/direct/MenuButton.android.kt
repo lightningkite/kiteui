@@ -17,10 +17,10 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
     public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         val openFn = {
             var willRemove: Element? = null
-            popoverWriter(context.overlayFrame!!) {
+            popoverWriter(context.overlayFrame) {
                 val r = willRemove
                 willRemove = null
-                r?.let { context.overlayFrame!!.removeChild(it) }
+                r?.let { context.overlayFrame.removeChild(it) }
 
             }.run {
                 willRemove = dismissBackground {

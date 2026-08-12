@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.space
+import com.lightningkite.kiteui.views.lateInitContextAddon
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 
@@ -49,6 +50,9 @@ public typealias ScreenNavigator = PageNavigator
 public var ElementWriter.pageNavigator: PageNavigator
     get() = context.pageNavigator
     set(value) { context.pageNavigator = value }
+
+@Deprecated("Now equivalent to pageNavigator", ReplaceWith("pageNavigator"))
+public var ElementContext.mainPageNavigator: PageNavigator by ElementContext::pageNavigator
 
 @Deprecated("Use directly through context", ReplaceWith("context.mainPageNavigator"))
 public var ElementWriter.mainPageNavigator: PageNavigator

@@ -76,7 +76,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch Test bottomSheet" }
                 onClick {
-                    context.coordinatorFrame!!.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) {
+                    context.coordinatorFrame.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) {
                         themed(DialogSemantic).col {
                             applySafeInsets()
                             centered.coordinatorDragHandle()
@@ -93,7 +93,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch Test leftSlidingPanel" }
                 onClick {
-                    context.coordinatorFrame!!.leftSlidingPanel {
+                    context.coordinatorFrame.leftSlidingPanel {
                         themed(DialogSemantic).col {
                             button {
                                 text("Close")
@@ -108,7 +108,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch Test rightSlidingPanel" }
                 onClick {
-                    context.coordinatorFrame!!.rightSlidingPanel {
+                    context.coordinatorFrame.rightSlidingPanel {
                         themed(DialogSemantic).col {
                             button {
                                 text("Close")

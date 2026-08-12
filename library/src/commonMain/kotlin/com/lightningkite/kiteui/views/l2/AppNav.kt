@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.views.beforeSetup
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.core.*
 
 public data class UserInfo(
@@ -234,5 +235,12 @@ public fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
             }
             beforeSetup { applySafeInsets(top = false) }.expanding.navigatorView(context.pageNavigator)
         }
+    }
+}
+
+public fun ViewWriter.navBottomBar(show: Reactive<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
+    nav.row {
+        ::shown { show() && !AppState.softInputOpen() }
+        navGroupTabs(remember { navElements() }) {}
     }
 }
