@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.views.closePopovers
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.rawPopover
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.kiteui.views.ElementContext
 
 public actual fun ElementContext.openBottomSheet(
     halfScreenRatio: Float,

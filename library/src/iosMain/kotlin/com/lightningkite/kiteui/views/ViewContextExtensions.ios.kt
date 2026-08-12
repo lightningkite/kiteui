@@ -52,7 +52,6 @@ public actual fun ElementContext.overlay(
         viewController.modalPresentationStyle = UIModalPresentationOverFullScreen
         viewController.kiteUi(split(viewController)) {
             beforeSetup { themeChoice = ThemeDerivation { theme.withoutBack } }.frame {
-                context.coordinatorFrame = null
                 context.overlayFrame = this
                 body {
                     this@kiteUi.context.dismissSelf()
