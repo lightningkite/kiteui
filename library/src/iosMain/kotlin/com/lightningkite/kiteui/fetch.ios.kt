@@ -10,6 +10,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.engine.darwin.DarwinHttpRequestException
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
@@ -136,9 +137,39 @@ public actual suspend fun fetchRaw(
             throw e
         } catch (e: Exception) {
             fetchLog.log("<X $method $url ${e::class.simpleName}: ${e.message}")
-            throw ConnectionException("Network request failed", e)
+            throw classifyFetchFailure(e)
         }
     }
+}
+
+/**
+ * NSURLError codes for refusals iOS makes on policy grounds. App Transport Security accounts for the
+ * first; the rest are certificates the system declined to accept. All are grouped as blocked because
+ * the verdict is reached before any traffic is exchanged and is identical on every attempt.
+ */
+private val blockedUrlErrorCodes: Set<Long> = setOf(
+    NSURLErrorAppTransportSecurityRequiresSecureConnection,
+    NSURLErrorSecureConnectionFailed,
+    NSURLErrorServerCertificateHasBadDate,
+    NSURLErrorServerCertificateUntrusted,
+    NSURLErrorServerCertificateHasUnknownRoot,
+    NSURLErrorServerCertificateNotYetValid,
+    NSURLErrorClientCertificateRejected,
+    NSURLErrorClientCertificateRequired,
+)
+
+/**
+ * Sorts a failed request into one the network might yet satisfy and one iOS has decided against.
+ *
+ * Ktor wraps engine failures at varying depths, so the whole cause chain is searched for the Darwin
+ * engine's exception, which carries the NSError the system actually produced.
+ */
+private fun classifyFetchFailure(e: Exception): FetchException {
+    val nsError = generateSequence<Throwable>(e) { it.cause }.take(10)
+        .filterIsInstance<DarwinHttpRequestException>().firstOrNull()?.origin
+    return if (nsError != null && nsError.domain == NSURLErrorDomain && nsError.code in blockedUrlErrorCodes)
+        RequestBlockedException("iOS refused the request: ${nsError.localizedDescription}", e)
+    else ConnectionException("Network request failed", e)
 }
 
 public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =

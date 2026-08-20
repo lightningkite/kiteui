@@ -209,6 +209,12 @@ android {
     }
 }
 
+// Serve the brand mark at /logo.svg (the web favicon) straight from the designer's file at the
+// repository root rather than a copy of it, so there is one logo to update.
+tasks.named<ProcessResources>("jsProcessResources") {
+    from(rootProject.file("logo.svg"))
+}
+
 fun env(name: String, profile: String) {
     tasks.register("deployWeb${name}Init", Exec::class.java) {
         group = "deploy"

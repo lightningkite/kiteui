@@ -1353,6 +1353,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
     private fun MediaQuery.render(): String = when(this) {
         // The transform is required: without it joinToString falls back to each child's toString(),
         // which emits the Kotlin data class rendering into the stylesheet and silently kills the query.
+        is MediaQuery.Not -> "(not ${query.render()})"
         is MediaQuery.And -> queries.joinToString(" and ", "(", ")") { it.render() }
         is MediaQuery.Or -> queries.joinToString(" or ", "(", ")") { it.render() }
         is MediaQuery.DisplayMode -> when(value){

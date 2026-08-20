@@ -6,9 +6,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Guards the two things about [ImageVector.kiteUiLogo] that are easy to break by nudging a
- * coordinate: the mark has to stay inside its view box on every platform, and it has to take the
- * color it is handed on every path.
+ * Guards what is easy to break by nudging the mark's coordinates or paints: [ImageVector.kiteUiLogo]
+ * has to stay inside its view box on every platform, take the color it is handed on every path, and
+ * ship in full brand color when it is handed none.
  */
 class KiteUiLogoTest : BaseUiTest() {
 
@@ -44,11 +44,22 @@ class KiteUiLogoTest : BaseUiTest() {
     fun takesTheColorItIsGiven() {
         val logo = ImageVector.kiteUiLogo(Color.white)
         for (path in logo.paths) {
-            assertTrue(
-                path.fillColor == Color.white || path.strokeColor == Color.white,
+            // Alpha is ignored: the far chevron stays half transparent whatever hue it is handed.
+            val hue = path.fillColor?.closestColor()?.withAlpha(1f) ?: path.strokeColor?.withAlpha(1f)
+            assertEquals(
+                Color.white, hue,
                 "path ${path.path.take(20)} kept a color other than the one it was given",
             )
         }
+    }
+
+    @Test
+    fun defaultsToTheBrandPalette() {
+        val fills = ImageVector.kiteUiLogo().paths.map { it.fillColor }
+        assertEquals(
+            fills.size, fills.distinct().size,
+            "the mark's shades collapsed into one - it is meant to ship in full brand color",
+        )
     }
 
     @Test

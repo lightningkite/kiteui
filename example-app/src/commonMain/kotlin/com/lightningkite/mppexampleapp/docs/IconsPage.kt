@@ -112,7 +112,7 @@ object IconsPage : DocPage {
 
             }
             h2("Logos")
-            text("KiteUI's own mark ships with the library as an ImageVector, so it stays sharp at any size and takes whatever color you hand it. The example app also carries Lightning Kite's mark, KiteUI's parent brand.")
+            text("KiteUI's own mark ships with the library as an ImageVector, so it stays sharp at any size. It draws in full brand color by default; hand it a color to flatten it to one hue for a background the golds would disappear into. The example app also carries Lightning Kite's mark, KiteUI's parent brand.")
             example(
                 """
                     centered.image {

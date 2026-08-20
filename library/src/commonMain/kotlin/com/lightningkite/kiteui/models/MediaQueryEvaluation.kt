@@ -54,6 +54,7 @@ internal fun MediaQuery.matches(
     // An empty `And` is vacuously true and an empty `Or` vacuously false - ordinary Boolean
     // algebra, which is also what Kotlin's all{}/any{} give us for free. CSS has no equivalent
     // to match here, since its grammar does not allow an empty condition list at all.
+    is MediaQuery.Not -> !query.matches(window, device)
     is MediaQuery.And -> queries.all { it.matches(window, device) }
     is MediaQuery.Or -> queries.any { it.matches(window, device) }
 

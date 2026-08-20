@@ -9,10 +9,14 @@ import com.lightningkite.readable.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.js.Promise
+import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
@@ -21,7 +25,13 @@ import org.khronos.webgl.set
 import org.w3c.dom.CloseEvent
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
+import org.w3c.dom.url.URL
 import org.w3c.fetch.Headers
+import org.w3c.fetch.NO_CORS
+import org.w3c.fetch.NO_STORE
+import org.w3c.fetch.RequestCache
+import org.w3c.fetch.RequestInit
+import org.w3c.fetch.RequestMode
 import org.w3c.fetch.Response
 import org.w3c.files.BlobPropertyBag
 import org.w3c.files.FilePropertyBag
@@ -40,8 +50,10 @@ public actual suspend fun fetchRaw(
     onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
     onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
 ): RequestResponse {
+    watchCspViolations()
     return suspendCancellableCoroutine { cont ->
         val request = XMLHttpRequest()
+        var cancelled = false
         onUploadProgress?.let { p ->
             request.upload.addEventListener("progress", { event ->
                 event as ProgressEvent
@@ -60,8 +72,9 @@ public actual suspend fun fetchRaw(
         request.onloadend = { ev ->
             if(request.status >= 100)
                 cont.resume(RequestResponse(request))
-            else
-                cont.resumeWithException(ConnectionException("Connection failed"))
+            else if(!cancelled)
+                // Diagnosing costs a round trip, so it happens only once the request has already failed.
+                AppScope.launch { cont.resumeWithException(diagnoseFailure(url)) }
         }
         when (body) {
             null -> request.send()
@@ -79,9 +92,99 @@ public actual suspend fun fetchRaw(
             }
         }
         cont.invokeOnCancellation {
+            cancelled = true
             request.abort()
         }
     }
+}
+
+/** How long [serverReachable] waits before concluding that nothing is answering. */
+private val reachabilityProbeTimeout = 5.seconds
+
+/** How many recent Content-Security-Policy refusals to remember; only the request in hand is ever matched. */
+private const val cspViolationsRemembered = 20
+
+/** Origins the page's Content-Security-Policy has refused to connect to, newest last. */
+private val cspRefusedOrigins: MutableList<String> = mutableListOf()
+private var watchingCspViolations = false
+
+/**
+ * Begins recording `connect-src` refusals, if not already doing so.
+ *
+ * A Content-Security-Policy refusal is the one platform block a browser announces outright, making
+ * it both definitive and free to consult. The event fires before the refused request's own loadend,
+ * so the listener has to be in place before the request goes out rather than once it has failed.
+ */
+private fun watchCspViolations() {
+    if (watchingCspViolations) return
+    watchingCspViolations = true
+    document.addEventListener("securitypolicyviolation", { event ->
+        val violation = event.asDynamic()
+        if (violation.effectiveDirective == "connect-src") {
+            if (cspRefusedOrigins.size >= cspViolationsRemembered) cspRefusedOrigins.removeAt(0)
+            cspRefusedOrigins.add(originOf(violation.blockedURI as String))
+        }
+    })
+}
+
+/**
+ * Works out why a request failed with no status.
+ *
+ * A browser reports a CORS rejection and a dead network identically - status 0, no headers, nothing
+ * in the exception - by design, so that a page cannot use failures to probe origins it has no access
+ * to. The real reason reaches the devtools console and nowhere a script can read it. These checks
+ * recover the distinction from the outside instead, cheapest and most certain first.
+ */
+private suspend fun diagnoseFailure(url: String): FetchException {
+    val origin = originOf(url)
+    if (origin in cspRefusedOrigins) return RequestBlockedException(
+        "This page's Content-Security-Policy does not allow connections to $origin"
+    )
+    if (mixedContentBlocked(url)) return RequestBlockedException(
+        "A page served over https may not request the insecure url $url"
+    )
+    // Only meaningful when false; `true` merely means an interface exists, not that it carries traffic.
+    if (!window.navigator.onLine) return ConnectionException("The device reports that it is offline")
+    return if (serverReachable(url)) RequestBlockedException(
+        "$origin is reachable but the browser refused the request, which points at a CORS policy that " +
+                "does not permit this origin (${window.location.origin}). The devtools console has the specifics."
+    ) else ConnectionException("Could not reach $url")
+}
+
+/** The scheme and authority of [url], resolved against the page so that relative urls work. */
+private fun originOf(url: String): String =
+    runCatching { URL(url, window.location.href).origin }.getOrDefault(url)
+
+/**
+ * Whether the server answers at all, ignoring whether we are allowed to read what it says.
+ *
+ * A `no-cors` request is exempt from the CORS check and yields an opaque response, so it completes
+ * whenever the server is reachable. It cannot report a status - a 500 resolves just as a 200 does -
+ * but reachability is the only question being asked. HEAD with no custom headers also guarantees no
+ * preflight, so the probe cannot fail for the same reason the original request did.
+ */
+private suspend fun serverReachable(url: String): Boolean = withTimeoutOrNull(reachabilityProbeTimeout) {
+    try {
+        window.fetch(url, RequestInit(method = "HEAD", mode = RequestMode.NO_CORS, cache = RequestCache.NO_STORE)).await()
+        true
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        false
+    }
+} ?: false
+
+/**
+ * Whether the browser will refuse [url] as mixed content. Worth checking separately because it is
+ * decided before anything is sent, so the probe above would report the server as unreachable.
+ */
+private fun mixedContentBlocked(url: String): Boolean {
+    if (window.location.protocol != "https:") return false
+    val parsed = runCatching { URL(url, window.location.href) }.getOrNull() ?: return false
+    if (parsed.protocol != "http:") return false
+    // Loopback counts as trustworthy and is exempt, which keeps local development working.
+    val host = parsed.hostname.lowercase()
+    return host != "localhost" && !host.endsWith(".localhost") && host != "127.0.0.1" && host != "[::1]" && host != "::1"
 }
 
 public actual fun httpHeaders(map: Map<String, String>): HttpHeaders = HttpHeaders().apply {

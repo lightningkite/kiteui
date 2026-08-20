@@ -18,7 +18,9 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.websocket.*
 import java.io.File
+import java.net.UnknownServiceException
 import java.nio.file.Files
+import javax.net.ssl.SSLException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -87,8 +89,29 @@ public actual suspend fun fetchRaw(
         throw e
     } catch (e: Exception) {
         fetchLog.log("<X $method $url ${e::class} ${e.message}")
-        throw ConnectionException("Network request failed", e)
+        throw classifyFetchFailure(e)
     }
+}
+
+/**
+ * Sorts a failed request into one the network might yet satisfy and one the JVM has decided against.
+ *
+ * Ktor wraps engine failures at varying depths, so the whole cause chain is considered.
+ */
+private fun classifyFetchFailure(e: Exception): FetchException {
+    val blocked = generateSequence<Throwable>(e) { it.cause }.take(10).firstOrNull {
+        when (it) {
+            // Raised when the client is configured to forbid the scheme, cleartext http being the usual case.
+            is UnknownServiceException -> true
+            // A rejected or pinned certificate. Grouped here because no amount of retrying changes the
+            // verdict, even though the cause is often a server whose certificate needs attention.
+            is SSLException -> true
+            else -> false
+        }
+    }
+    return if (blocked != null) RequestBlockedException(
+        "The request was refused: ${blocked::class.simpleName}: ${blocked.message}", e
+    ) else ConnectionException("Network request failed", e)
 }
 
 public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =

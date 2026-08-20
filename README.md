@@ -1,3 +1,5 @@
+<img src="logo.svg" alt="KiteUI" width="96">
+
 # KiteUI
 
 [![Maven Central Version](https://img.shields.io/maven-central/v/com.lightningkite.kiteui/library)](https://central.sonatype.com/artifact/com.lightningkite.kiteui/library)

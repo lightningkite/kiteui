@@ -20,6 +20,8 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.jvm.javaio.toByteReadChannel
 import io.ktor.websocket.*
 import java.net.UnknownHostException
+import java.net.UnknownServiceException
+import javax.net.ssl.SSLException
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -118,12 +120,35 @@ public actual suspend fun fetchRaw(
         } catch (e: Exception) {
             fetchLog.log("<X $method $url ${e::class.simpleName}: ${e.message}")
             if (attempt >= maxRetries || e !is UnknownHostException) {
-                throw ConnectionException("Network request failed", e)
+                throw classifyFetchFailure(e)
             }
             fetchLog.log("Retrying after 2 s...")
             delay(2.seconds)
         }
     }
+}
+
+/**
+ * Sorts a failed request into one the network might yet satisfy and one Android has decided against.
+ *
+ * Ktor wraps engine failures at varying depths, so the whole cause chain is considered.
+ */
+private fun classifyFetchFailure(e: Exception): FetchException {
+    val blocked = generateSequence<Throwable>(e) { it.cause }.take(10).firstOrNull {
+        when (it) {
+            // OkHttp reports a missing INTERNET permission this way.
+            is SecurityException -> true
+            // Raised when the network security config forbids the scheme, cleartext http being the usual case.
+            is UnknownServiceException -> true
+            // A rejected or pinned certificate. Grouped here because no amount of retrying changes the
+            // verdict, even though the cause is often a server whose certificate needs attention.
+            is SSLException -> true
+            else -> false
+        }
+    }
+    return if (blocked != null) RequestBlockedException(
+        "Android refused the request: ${blocked::class.simpleName}: ${blocked.message}", e
+    ) else ConnectionException("Network request failed", e)
 }
 
 public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =

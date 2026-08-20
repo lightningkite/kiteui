@@ -874,6 +874,7 @@ public operator fun Dimension.unaryMinus(): Dimension = this * -1
  * Corresponds to [media queries in CSS](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Media_queries/Using)
  */
 public sealed interface MediaQuery {
+    public data class Not(val query: MediaQuery): MediaQuery
     public data class And(val queries: Set<MediaQuery>): MediaQuery
     public data class Or(val queries: Set<MediaQuery>): MediaQuery
     public data class MinAspectRatio(val ratio: Double): MediaQuery
@@ -910,4 +911,11 @@ public sealed interface MediaQuery {
     public data class Pointer(val value: Option): MediaQuery {
         public enum class Option { None, Coarse, Fine }
     }
+
+    public fun MinOrEqualWidth(dimension: Dimension): MediaQuery = Not(MaxWidth(dimension))
+    public fun MaxOrEqualWidth(dimension: Dimension): MediaQuery = Not(MinWidth(dimension))
+    public fun MinOrEqualHeight(dimension: Dimension): MediaQuery = Not(MaxHeight(dimension))
+    public fun MaxOrEqualHeight(dimension: Dimension): MediaQuery = Not(MinHeight(dimension))
+    public fun MinOrEqualAspectRatio(ratio: Double): MediaQuery = Not(MaxAspectRatio(ratio))
+    public fun MaxOrEqualAspectRatio(ratio: Double): MediaQuery = Not(MinAspectRatio(ratio))
 }
