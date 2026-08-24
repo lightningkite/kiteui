@@ -42,7 +42,7 @@ import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 
 @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE", "UnsafeCastFromDynamic")
-public actual suspend fun fetchRaw(
+public actual suspend fun platformFetch(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -293,14 +293,14 @@ private val killAllSockets = BasicListenable().also {
         it.invokeAll()
     }
 }
-public actual fun websocket(url: String): WebSocket {
+public actual fun platformWebSocket(url: String): WebSocket {
     return WebSocketWrapper(org.w3c.dom.WebSocket(url))
 }
 
 public class WebSocketWrapper(public val native: org.w3c.dom.WebSocket, public val log: Log? = Log.tag("WS to ${native.url}").infoOrAbove()) : WebSocket {
     private val opened = Clock.System.now()
     private val stopListeningToDebugKill = killAllSockets.addListener {
-        println("Killing websocket to ${native.url} opened at $opened")
+        println("Killing webSocket to ${native.url} opened at $opened")
         native.close(3008)
     }
     override fun close(code: Short, reason: String): Unit = native.close(code, reason)

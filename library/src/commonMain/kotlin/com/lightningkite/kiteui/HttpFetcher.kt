@@ -26,7 +26,7 @@ public typealias ProgressCallback = (bytesComplete: Long, bytesExpectedOrNegativ
  * failures reproducible; the previous arrangement — a top-level `fetch` reading a global interceptor
  * list — could only be faked by mutating process-wide state, so tests hand-copied the stack instead.
  *
- * [websocket] belongs here alongside [fetch] because a test that can fake requests but not sockets
+ * [webSocket] belongs here alongside [fetch] because a test that can fake requests but not sockets
  * cannot exercise a reconnect.
  */
 public interface HttpFetcher {
@@ -39,8 +39,8 @@ public interface HttpFetcher {
         onDownloadProgress: ProgressCallback? = null,
     ): RequestResponse
 
-    /** The socket is not opened until it is used; see [retryWebsocket] for the reconnecting form. */
-    public fun websocket(url: String): WebSocket
+    /** The socket is not opened until it is used; see [retryWebSocket] for the reconnecting form. */
+    public fun webSocket(url: String): WebSocket
 
     public companion object {
         /**
@@ -60,7 +60,7 @@ public interface HttpFetcher {
     }
 }
 
-/** Delegates straight to the platform's `fetchRaw` and `websocket`. */
+/** Delegates straight to the platform's `fetchRaw` and `webSocket`. */
 private object PlatformHttpFetcher : HttpFetcher {
     override suspend fun fetch(
         url: String,
@@ -69,10 +69,10 @@ private object PlatformHttpFetcher : HttpFetcher {
         body: RequestBody?,
         onUploadProgress: ProgressCallback?,
         onDownloadProgress: ProgressCallback?,
-    ): RequestResponse = fetchRaw(url, method, headers, body, onUploadProgress, onDownloadProgress)
+    ): RequestResponse = platformFetch(url, method, headers, body, onUploadProgress, onDownloadProgress)
 
     // Qualified because the member would otherwise shadow the top-level expect function.
-    override fun websocket(url: String): WebSocket = com.lightningkite.kiteui.websocket(url)
+    override fun webSocket(url: String): WebSocket = com.lightningkite.kiteui.webSocket(url)
 }
 
 /**
@@ -99,7 +99,7 @@ private class GlobalInterceptorHttpFetcher(private val wrapped: HttpFetcher) : H
         body = body,
     ) { u, m, h, b -> wrapped.fetch(u, m, h, b, onUploadProgress, onDownloadProgress) }
 
-    override fun websocket(url: String): WebSocket = wrapped.websocket(url)
+    override fun webSocket(url: String): WebSocket = wrapped.webSocket(url)
 }
 
 /** Wraps each request in [interceptors], outermost first. */
@@ -122,7 +122,7 @@ private class InterceptedHttpFetcher(
         body = body,
     ) { u, m, h, b -> wrapped.fetch(u, m, h, b, onUploadProgress, onDownloadProgress) }
 
-    override fun websocket(url: String): WebSocket = wrapped.websocket(url)
+    override fun webSocket(url: String): WebSocket = wrapped.webSocket(url)
 }
 
 /**
@@ -165,7 +165,7 @@ private class HeaderCalculatingHttpFetcher(
         onDownloadProgress = onDownloadProgress,
     )
 
-    override fun websocket(url: String): WebSocket = wrapped.websocket(url)
+    override fun webSocket(url: String): WebSocket = wrapped.webSocket(url)
 }
 
 /** Builds the interceptor chain and invokes it. Shared by the two interceptor-applying fetchers. */

@@ -50,7 +50,7 @@ public suspend fun fetch(
     onDownloadProgress: ProgressCallback? = null,
 ): RequestResponse = HttpFetcher.default.fetch(url, method, headers, body, onUploadProgress, onDownloadProgress)
 
-public expect suspend fun fetchRaw(
+public expect suspend fun platformFetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
@@ -58,6 +58,10 @@ public expect suspend fun fetchRaw(
     onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
     onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
 ): RequestResponse
+
+@Deprecated("Use webSocket, the proper spelling", ReplaceWith("webSocket")) public fun websocket(url: String): WebSocket = webSocket(url)
+public expect fun platformWebSocket(url: String): WebSocket
+public fun webSocket(url: String): WebSocket = HttpFetcher.default.webSocket(url)
 
 /** Any failure to complete an HTTP request. Retry [ConnectionException]; do not retry [RequestBlockedException]. */
 public sealed class FetchException(message: String, cause: Exception? = null): Exception(message, cause)
@@ -171,8 +175,6 @@ public data class RequestBodyFile(val content: FileReference): RequestBody {
     override val type: String get() = content.mimeType()
     override val bytes: Long get() = content.bytes()
 }
-
-public expect fun websocket(url: String): WebSocket
 
 public interface WebSocket {
     public fun close(code: Short, reason: String)

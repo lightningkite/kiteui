@@ -36,24 +36,50 @@ public suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { 
     }
 }
 
+@Deprecated("Use retryWebSocket, the proper spelling", ReplaceWith("retryWebSocket"))
 public fun retryWebsocket(
     url: String,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
     log: Log? = null,
-): RetryWebsocket = retryWebsocket(
-    underlyingSocket = { websocket(url) },
+): RetryWebSocket = retryWebSocket(
+    underlyingSocket = { webSocket(url) },
     pingTime = pingTime,
     gate = gate,
     log = log
 )
 
+@Deprecated("Use retryWebSocket, the proper spelling", ReplaceWith("retryWebSocket"))
 public fun retryWebsocket(
     underlyingSocket: suspend () -> WebSocket,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
     log: Log? = null,
-): RetryWebsocket {
+): RetryWebSocket = retryWebSocket(
+    underlyingSocket = underlyingSocket,
+    pingTime = pingTime,
+    gate = gate,
+    log = log
+)
+
+public fun retryWebSocket(
+    url: String,
+    pingTime: Long,
+    gate: ConnectivityGate = Connectivity.fetchGate,
+    log: Log? = null,
+): RetryWebSocket = retryWebSocket(
+    underlyingSocket = { webSocket(url) },
+    pingTime = pingTime,
+    gate = gate,
+    log = log
+)
+
+public fun retryWebSocket(
+    underlyingSocket: suspend () -> WebSocket,
+    pingTime: Long,
+    gate: ConnectivityGate = Connectivity.fetchGate,
+    log: Log? = null,
+): RetryWebSocket {
     log?.log("Creating")
     var lastConnect = 0.0
     val connected = Signal(false).also {
@@ -130,7 +156,7 @@ public fun retryWebsocket(
         }
     }
 
-    return object : RetryWebsocket, CoroutineScope {
+    return object : RetryWebSocket, CoroutineScope {
 
         override val connected: Reactive<Boolean>
             get() = connected
@@ -210,7 +236,7 @@ public fun retryWebsocket(
     }
 }
 
-public fun <SEND, RECEIVE> RetryWebsocket.typed(
+public fun <SEND, RECEIVE> RetryWebSocket.typed(
     json: Json,
     send: KSerializer<SEND>,
     receive: KSerializer<RECEIVE>,
@@ -243,7 +269,8 @@ public fun <SEND, RECEIVE> RetryWebsocket.typed(
     }
 }
 
-public interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
+@Deprecated("RetryWebSocket", ReplaceWith("RetryWebSocket")) public typealias RetryWebsocket = RetryWebSocket
+public interface RetryWebSocket : WebSocket, TypedWebSocket<String, String> {
     public fun retryNow() {
 
     }

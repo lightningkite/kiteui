@@ -46,7 +46,7 @@ public object AiDriver {
         }
 
         val gate = ConnectivityGate()
-        val ws = retryWebsocket(
+        val ws = retryWebSocket(
             url = "ws://$host:$port?app=${encodeURIComponent(appName)}&platform=${encodeURIComponent(platform)}&postfix=${encodeURIComponent(postfix ?: "x")}",
             pingTime = 30_000,
             gate = gate,
@@ -75,7 +75,7 @@ public object AiDriver {
             }
         }
 
-        // Activate the WebSocket — retryWebsocket uses lazy connection via beginUse()
+        // Activate the WebSocket — retryWebSocket uses lazy connection via beginUse()
         ws.beginUse()
     }
 

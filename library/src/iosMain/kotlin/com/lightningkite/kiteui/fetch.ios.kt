@@ -44,7 +44,7 @@ public val client: HttpClient = HttpClient {
     install(HttpCache)
 }
 
-public actual suspend fun fetchRaw(
+public actual suspend fun platformFetch(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -227,7 +227,7 @@ public actual class RequestResponse(public val wraps: HttpResponse) {
             wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
-public actual fun websocket(url: String): WebSocket {
+public actual fun platformWebSocket(url: String): WebSocket {
     return WebSocketWrapper(url)
 }
 
