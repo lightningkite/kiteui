@@ -72,7 +72,7 @@ private object PlatformHttpFetcher : HttpFetcher {
     ): RequestResponse = platformFetch(url, method, headers, body, onUploadProgress, onDownloadProgress)
 
     // Qualified because the member would otherwise shadow the top-level expect function.
-    override fun webSocket(url: String): WebSocket = com.lightningkite.kiteui.webSocket(url)
+    override fun webSocket(url: String): WebSocket = platformWebSocket(url)
 }
 
 /**
