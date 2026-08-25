@@ -64,7 +64,9 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version = { ref = 
 ktor-client-okhttp-jvm = { module = "io.ktor:ktor-client-okhttp-jvm", version.ref = "ktorVersion" }
 ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version = { ref = "ktorVersion" } }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version = { ref = "ktorVersion" } }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version = { ref = "ktorVersion" } }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version = { ref = "ktorVersion" } }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version = { ref = "ktorVersion" } }
 ktx = { module = "androidx.core:core", version = { ref = "ktx" } }
 lightning-server-core = { module = "com.lightningkite.lightningserver:core", version.ref = "lightningServer" }
 lightning-server-engine-ktor = { module = "com.lightningkite.lightningserver:engine-ktor", version.ref = "lightningServer" }

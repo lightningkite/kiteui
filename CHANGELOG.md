@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+### WebSockets
+
+Found by the new cross-platform networking tests, all in the Ktor-backed implementations (JVM/SSR,
+Android, iOS). The browser implementation was already correct, which is what the tests compared
+against.
+
+- **`close()` was silently ignored when called soon after connecting.** The close request went to a
+  rendezvous channel via `trySend`, which fails unless the coroutine that owns the session happens to
+  be parked on a receive at that instant — and it is not yet parked while the `onOpen` handlers run.
+  Closing a socket as soon as it opened, as `retryWebSocket` does when it reconnects, did nothing.
+  The channel now buffers the first request.
+
+- **`onClose` reported code `0` instead of the real close code.** Ktor's session performs the closing
+  handshake itself and never hands the `Close` frame to `incoming`, so the code was read from a frame
+  that never arrived. It now comes from the session's own close reason, which is the code both peers
+  settled on in either direction.
+
+- **`send()` silently dropped messages past the tenth queued one.** The outgoing buffer held ten
+  frames and `trySend` discarded the rest, so a caller sending faster than the socket drained lost
+  messages without being told. The buffer is now unbounded.
+
+- **Binary frames were sent with `fin = false`,** announcing a fragmented message whose continuation
+  never came. They are now sent as the single complete frames they are.
+
+### Testing
+
+- **Networking tests now run on all four platforms against a local server.** `networkTest` in
+  `commonTest` replaces the per-platform harnesses; `:test-server` provides the HTTP and WebSocket
+  endpoints and is started and stopped by the build. See
+  [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md#networking-tests).
+
 ### AI Driver / Test Utilities
 
 - **`find` and `findClickable` now filter hidden views by default.** Previously, both functions walked the entire view tree including pages hidden in `SwapView`/navigator stacks, causing tests to interact with stale off-screen views. Pass `includeHidden = true` (or the `--hidden` flag in raw commands) to restore the old behavior.

@@ -24,6 +24,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import platform.Foundation.*
@@ -233,8 +234,24 @@ public actual fun platformWebSocket(url: String): WebSocket {
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 public class WebSocketWrapper(public val url: String) : WebSocket {
-    public val closeReason: Channel<CloseReason> = Channel<CloseReason>()
-    public val sending: Channel<Frame> = Channel<Frame>(10)
+    /**
+     * The close this socket has been asked to perform, handed to the coroutine that owns the
+     * session.
+     *
+     * Buffered and dropping later requests rather than a rendezvous channel: [close] cannot suspend,
+     * so on a rendezvous channel `trySend` fails unless that coroutine happens to be parked on a
+     * receive at that instant — and it is not yet parked while the `onOpen` handlers are running, so
+     * closing a socket as soon as it connects did nothing at all. The first request is the one that
+     * counts; a second close has nothing left to say.
+     */
+    public val closeReason: Channel<CloseReason> = Channel<CloseReason>(1, BufferOverflow.DROP_LATEST)
+
+    /**
+     * Frames waiting for the socket to be ready for them. Unbounded because [send] cannot suspend:
+     * with a bounded buffer `trySend` discards whatever overflows it, so a caller that sends faster
+     * than the socket drains loses messages and is never told.
+     */
+    public val sending: Channel<Frame> = Channel<Frame>(Channel.UNLIMITED)
     public var stayOn: Boolean = true
     public val onOpen: MutableList<() -> Unit> = ArrayList<() -> Unit>()
 
@@ -265,7 +282,6 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
         AppScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
-                    var onCloseFired = false
                     withContext(Dispatchers.Main) {
                         onOpen.forEach { it() }
                     }
@@ -278,20 +294,13 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
                         }
                     }
                     launch {
+                        // Only asks the session to close; the one report of it happens below, so that a
+                        // close this client began and one the server began are told the same way.
                         try {
-                            this@WebSocketWrapper.closeReason.receive().let { reason ->
-                                close(reason)
-                                withContext(Dispatchers.Main) {
-                                    if (!onCloseFired) {
-                                        onCloseFired = true
-                                        onClose.forEach { it(reason.code) }
-                                    }
-                                }
-                            }
+                            close(this@WebSocketWrapper.closeReason.receive())
                         } catch (e: ClosedReceiveChannelException) {
                         }
                     }
-                    var reason: CloseReason? = null
                     while (stayOn) {
                         try {
                             when (val x = incoming.receive()) {
@@ -309,10 +318,7 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
                                     }
                                 }
 
-                                is Frame.Close -> {
-                                    reason = x.readReason()
-                                    break
-                                }
+                                is Frame.Close -> break
 
                                 else -> {}
                             }
@@ -320,11 +326,14 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
                             break
                         }
                     }
+                    // The session's own `closeReason`, not this wrapper's channel of the same name.
+                    // Ktor's session performs the closing handshake itself and never hands the Close
+                    // frame to `incoming`, so the code is read here rather than in the loop above. It is
+                    // the code both peers settled on: a close this client asked for comes back echoed.
+                    // Null only when the connection ended without a handshake at all.
+                    val code = closeReason.await()?.code ?: 0
                     withContext(Dispatchers.Main) {
-                        if (!onCloseFired) {
-                            onCloseFired = true
-                            onClose.forEach { it(reason?.code ?: 0) }
-                        }
+                        onClose.forEach { it(code) }
                     }
                 }
             } catch (e: CancellationException) {
@@ -348,7 +357,7 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
     }
 
     override fun send(data: Blob) {
-        sending.trySend(Frame.Binary(false, data.data.toByteArray()))
+        sending.trySend(Frame.Binary(true, data.data.toByteArray()))
     }
 
     override fun onOpen(action: () -> Unit) {

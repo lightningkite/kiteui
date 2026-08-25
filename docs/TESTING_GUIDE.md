@@ -15,7 +15,8 @@ KiteUI includes a comprehensive cross-platform testing framework that allows you
 7. [Testing Reactive State](#testing-reactive-state)
 8. [Testing Pages](#testing-pages)
 9. [Best Practices](#best-practices)
-10. [Platform-Specific Considerations](#platform-specific-considerations)
+10. [Networking Tests](#networking-tests)
+11. [Platform-Specific Considerations](#platform-specific-considerations)
 
 ## Getting Started
 
@@ -460,6 +461,62 @@ fun handlesVeryLongText() = kiteUiTest { /* ... */ }
 @Test
 fun handlesNullValues() = kiteUiTest { /* ... */ }
 ```
+
+## Networking Tests
+
+`fetch` and `webSocket` are the least shared code in the library — four independent implementations
+over OkHttp, NSURLSession, the browser, and Android's stack — behind one interface. A test written
+once in `commonTest` and run on all four is the only thing that checks they agree, so that is where
+networking tests belong.
+
+### Writing one
+
+Use `networkTest`, not `runTest`:
+
+```kotlin
+class MyNetworkTest {
+    @Test
+    fun readsBody() = networkTest {
+        val response = fetch("${TestServer.http}/hello")
+        assertEquals(TestServer.helloBody, response.text())
+    }
+}
+```
+
+`networkTest` runs the body on real time with the platform's own event loop going, and fails it after
+30 seconds rather than hanging the build. `runTest` cannot be used here: its scheduler advances
+virtual time, so any timeout around a real socket expires before the first packet moves.
+
+Each target supplies what its networking needs to deliver callbacks — a main dispatcher on JVM and
+Android, an Android context, a pumped run loop on iOS, a promise on JS — in `NetworkTest.<target>.kt`.
+Nothing else in a test has to know which platform it is on.
+
+### The test server
+
+Tests talk to a local server, not a public one. `library/build.gradle.kts` starts a single
+`:test-server` process per build, waits for it to bind, and shuts it down when the last test task
+finishes; every test task shares it, `allTests` included. See `TestServer` in `commonTest` for the
+addresses and `test-server/` for what each endpoint answers.
+
+It is local for three reasons: the tests assert on things no public echo service offers (a chosen
+status code, a `Retry-After`, a close code, a server that hangs up mid-session); a suite that fails
+when the wifi does gets ignored; and plain `http`/`ws` on loopback keeps certificate handling — which
+differs on every platform and has nothing to do with what these tests measure — out of the picture.
+
+To add an endpoint, add it to `test-server/src/main/kotlin/.../EchoServer.kt` and mirror any constant
+the tests assert on into `TestServer`. Keep endpoints boring and predictable; anything stateful makes
+tests order-dependent.
+
+If port 18787 is taken, run with `-Pkiteui.testServerPort=<port>`; the build and the tests read it
+from the same place.
+
+### What to reach for
+
+- `TestServer.http` / `TestServer.ws` — the server.
+- `TestServer.refused` — an address on this machine that nothing is listening on, for the
+  connection-refused path.
+- `TestServer.httpWithoutCors` — the same endpoints without CORS headers. Only useful in `jsTest`,
+  where a browser's refusal has to be told apart from an unreachable server.
 
 ## Platform-Specific Considerations
 
