@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.colorInt
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 import kotlin.ranges.coerceAtMost
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -134,7 +135,11 @@ fun GradientDrawable.applyGradientRadiusListener(native: View): (() -> Unit)? {
     this.apply {
         if (Build.VERSION.SDK_INT >= VERSION_CODES.Q && gradientType == GradientDrawable.RADIAL_GRADIENT) {
             val l = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-                gradientRadius = native.width.coerceAtMost(native.height).toFloat() / 2
+                // Use the farthest-corner radius (half the diagonal) so the gradient bleeds
+                // to all edges/corners, matching the web platform's `farthest-corner` behavior.
+                val halfW = native.width / 2f
+                val halfH = native.height / 2f
+                gradientRadius = sqrt(halfW * halfW + halfH * halfH)
             }
             native.addOnLayoutChangeListener(l)
             return { native.removeOnLayoutChangeListener(l) }
