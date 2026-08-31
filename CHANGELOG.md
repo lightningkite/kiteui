@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Navigation
+
+- **Showing a page no longer focuses its first field.** `navigatorView` used to request focus on the
+  new page's first interactive element after every swap, which pops the soft keyboard on Android and
+  iOS the moment a screen appears. Nothing focuses page content automatically now; a page that wants
+  a field ready to type in calls `requestFocus` (or `requestFocusOrDescendant`) itself.
+
+- **Screen changes are announced to assistive technology instead.** `navigatorView` now calls the new
+  `Element.announceAsNewScreen(title)` on the page container after every swap, so a screen reader
+  follows the navigation without keyboard focus moving. Each platform uses its own idiom: DOM focus
+  on the container on web (via `tabindex="-1"`), a screen-changed notification on iOS, and an
+  accessibility pane title - taken from `Page.title` - on Android.
+
 ### WebSockets
 
 Found by the new cross-platform networking tests, all in the Ktor-backed implementations (JVM/SSR,

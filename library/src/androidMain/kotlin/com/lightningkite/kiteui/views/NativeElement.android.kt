@@ -309,6 +309,17 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         }
     }
 
+    actual override fun announceAsNewScreen(title: String) {
+        afterTimeout(16) {
+            // A pane is Android's model for a region that gets swapped out while the window stays
+            // put; TalkBack announces the new name whenever it changes. Moving TalkBack's focus by
+            // hand instead would require making this container a speakable node, which would then
+            // swallow the announcements of everything inside it.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) native.accessibilityPaneTitle = title
+            else @Suppress("DEPRECATION") native.announceForAccessibility(title)
+        }
+    }
+
     public actual fun screenRectangle(): Rect? {
         val r = android.graphics.Rect()
         native.getGlobalVisibleRect(r)

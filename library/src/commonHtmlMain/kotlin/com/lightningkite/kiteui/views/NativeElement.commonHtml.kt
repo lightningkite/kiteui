@@ -156,6 +156,16 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         }
     }
 
+    actual override fun announceAsNewScreen(title: String) {
+        // A container isn't focusable on its own; tabindex="-1" makes it focusable programmatically
+        // while keeping it out of the tab order. Screen readers read on from whatever it contains,
+        // which is why the title isn't needed here.
+        native.setAttribute("tabindex", "-1")
+        afterTimeout(16) {
+            native.focus()
+        }
+    }
+
     public actual fun screenRectangle(): Rect? {
         return native.screenRectangle()
     }

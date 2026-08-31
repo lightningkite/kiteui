@@ -222,6 +222,15 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         }
     }
 
+    actual override fun announceAsNewScreen(title: String) {
+        // VoiceOver moves to this view and reads from there, so the title isn't needed - the new
+        // content announces itself. This is focus for VoiceOver only; first responder is untouched,
+        // so no keyboard appears.
+        afterTimeout(16) {
+            UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, native)
+        }
+    }
+
 
     protected var previousLoadAnimationHandle: (() -> Unit)? = null
     protected var backgroundLayer: CAGradientLayerResizing? = null

@@ -408,6 +408,26 @@ public interface Element : KiteUiCoroutineScopeHelpers {
     public fun requestFocus()
 
     /**
+     * Announces this element as newly-shown content named [title] to assistive technology and moves
+     * the screen reader into it, without touching keyboard focus.
+     *
+     * A screen swap is otherwise invisible to a screen reader: the old content vanishes and the
+     * reading position stays wherever it was. [requestFocus] is not a substitute, since keyboard
+     * focus landing on a text field pops the soft keyboard on Android and iOS.
+     *
+     * Each platform uses its own idiom for this, so what the user hears differs:
+     * - **Web**: this element takes DOM focus (through `tabindex="-1"`, so it stays out of the tab
+     *   order) and the screen reader reads on from its content. [title] goes unused; the content
+     *   itself carries the name.
+     * - **iOS**: posts a screen-changed notification, which moves VoiceOver to this element and
+     *   reads from there. [title] goes unused for the same reason.
+     * - **Android**: names this element as an accessibility pane, which TalkBack announces by
+     *   [title] whenever that name changes - the platform's own model for a swapped-out screen.
+     *   Below API 28, where panes don't exist, [title] is announced directly instead.
+     */
+    public fun announceAsNewScreen(title: String)
+
+    /**
      * Human-readable name for debugging and logging.
      *
      * Shows up in debug output, error messages, and developer tools.

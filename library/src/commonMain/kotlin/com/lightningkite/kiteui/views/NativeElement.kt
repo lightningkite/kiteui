@@ -205,6 +205,8 @@ public expect abstract class NativeElement(context: ElementContext) : Element, N
 
     override fun requestFocus()
 
+    override fun announceAsNewScreen(title: String)
+
     /**
      * Returns the screen-relative rectangle occupied by this element.
      *

@@ -546,6 +546,12 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 outline: none;
             }
 
+            /* Containers focused only to move a screen reader (announceAsNewScreen) must not draw
+               the browser's focus ring around the whole screen. */
+            .kui[tabindex="-1"]:focus {
+                outline: none;
+            }
+
             button.kui, input.kui, textarea.kui, select.kui {
                 background: none;
                 border-width: 0px;

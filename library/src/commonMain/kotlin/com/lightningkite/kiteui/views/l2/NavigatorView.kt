@@ -7,7 +7,8 @@ import com.lightningkite.kiteui.models.LiveRegionMode
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
-import com.lightningkite.reactive.context.reactive
+import com.lightningkite.reactive.context.awaitOnce
+import kotlinx.coroutines.launch
 
 public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
     return swapView {
@@ -30,9 +31,14 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
                     context.pageNavigator = navigator
                     if (screen != null)
                         with(screen) { themed(MainContentSemantic).asMain.padded.render() }
-                    else null
+                    // Tell assistive technology the screen changed, which it can't otherwise
+                    // notice. Deliberately not requestFocus: keyboard focus landing on the new
+                    // page's first field pops the soft keyboard on Android and iOS. Pages that
+                    // want a focused field ask for it themselves.
+                    if (screen != null) launch {
+                        this@swapView.announceAsNewScreen(screen.title.awaitOnce())
+                    }
                 }
-                this@swapView.requestFocusOrDescendant()
             }
         )
     }

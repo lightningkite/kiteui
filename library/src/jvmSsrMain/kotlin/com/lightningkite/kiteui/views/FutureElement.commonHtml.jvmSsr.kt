@@ -49,7 +49,17 @@ public actual class FutureElement actual constructor() {
     }
 
     public actual fun click() {}
-    public actual fun focus() {}
+
+    /**
+     * Counts [focus] calls. Server-side rendering has no focus to move, so this is the only way for
+     * tests to observe that something asked for it.
+     */
+    public var focusCount: Int = 0
+        private set
+
+    public actual fun focus() {
+        focusCount++
+    }
     public actual fun blur() {}
     public actual fun screenRectangle(): Rect? = null
     public actual fun parentRectangle(): Rect? = null

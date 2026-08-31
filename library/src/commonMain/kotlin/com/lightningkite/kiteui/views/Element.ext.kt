@@ -61,7 +61,10 @@ public inline fun Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHe
 
 /**
  * Requests focus on this element, or on its first interactive descendant if this element
- * isn't interactive. Used by navigation to move focus to new page content.
+ * isn't interactive.
+ *
+ * Call this explicitly when a screen should open with a field ready to type in; nothing in
+ * KiteUI focuses page content on its own, because doing so pops the soft keyboard on mobile.
  */
 public fun Element.requestFocusOrDescendant() {
     if (this is InteractiveElement) {
