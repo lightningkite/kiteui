@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
@@ -13,6 +14,7 @@ import platform.darwin.NSObject
 import com.lightningkite.kiteui.views.AiDriver
 
 
+@OptIn(ExperimentalKiteUi::class)
 public actual class Select actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
@@ -27,6 +29,11 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
 
     init {
         setupControl()
+        // setupControl() registers ClickableSemantic (padding=true) at elementStyling for the touch
+        // target - see the Android Select/TextInput padding investigation. Select's WrapperView
+        // shouldn't add its own inset on top of whatever the field's own theme (fieldTheme etc.)
+        // provides, so cancel that entry back out.
+        themePipeline.set(ThemePipeline.Step.elementStyling, ThemeDerivation.None)
         native.addSubview(textField)
         textField.inputView = UIPickerView()
     }

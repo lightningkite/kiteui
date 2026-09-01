@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
@@ -17,9 +18,17 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.kiteui.views.AiDriver
 
+@OptIn(ExperimentalKiteUi::class)
 public actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
     override val driverActions: AiDriver.Actions get() = super.driverActions + formattedTextInputDriverActions()
+
+    init {
+        // NativeInteractiveElement unconditionally registers ClickableSemantic (padding=true) at
+        // elementStyling so buttons/spinners get a touch-target inset. FormattedTextInput only extends
+        // it for IME actions, not to look like a padded clickable control, so cancel that entry back out.
+        themePipeline.set(ThemePipeline.Step.elementStyling, ThemeDerivation.None)
+    }
 
     override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         var block = false

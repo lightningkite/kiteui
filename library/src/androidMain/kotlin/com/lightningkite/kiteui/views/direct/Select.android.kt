@@ -13,6 +13,7 @@ import android.widget.*
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.*
@@ -24,6 +25,7 @@ import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.CoroutineScope
 import com.lightningkite.kiteui.views.AiDriver
 
+@OptIn(ExperimentalKiteUi::class)
 public actual class Select actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
@@ -36,14 +38,17 @@ public actual class Select actual constructor(context: ElementContext): NativeIn
         isClickable = true
     }
 
-    override fun refreshPadding() {
-        native.setPaddingAll(0)
+    init {
+        // NativeInteractiveElement unconditionally registers ClickableSemantic (padding=true) at
+        // elementStyling so buttons get a touch-target inset. Select currently forces padding to 0
+        // in refreshPadding() regardless, but cancel this out anyway to keep themeAndBack.padding
+        // accurate for anything that inspects it before refreshPadding is revisited.
+        themePipeline.set(ThemePipeline.Step.elementStyling, ThemeDerivation.None)
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
-        native.setPaddingAll(0)
         native.setPopupBackgroundDrawable(theme.theme.backgroundDrawableWithoutCorners(null).apply {
             cornerRadius = 8.dp.value
             removeListener?.invoke()
@@ -78,40 +83,54 @@ public actual class Select actual constructor(context: ElementContext): NativeIn
         var suppressChange = false
         var list: List<T> = listOf()
 
+        // The collapsed selection sits inside the Select's own themed box (fieldTheme etc. supplies
+        // its padding), so it must render without its own inset - see the ClickableSemantic padding
+        // investigation. The open dropdown list isn't inside that box, so its rows keep `padded` for
+        // normal list-item spacing and touch targets.
+        fun itemView(position: Int, convertView: View?, applyPadding: Boolean): View {
+            if (convertView != null) {
+                (convertView as TextView).text = render(list[position])
+                return convertView
+            } else {
+                var newView: Element? = null
+                val writer = object: ViewWriter, CoroutineScope by this@Select {
+                    override val context: ElementContext get() = this@Select.context
+                    @OverrideOnly
+                    override fun willAddChild(element: Element) {
+                        element.underlyingNativeElement.parent = this@Select.parent
+                    }
+                    @OverrideOnly
+                    override fun addChild(element: Element) {
+                        newView = element
+                    }
+                }
+                with(writer) {
+                    (if (applyPadding) padded else this).text {
+                        content = render(list[position])
+                    }
+                }
+                return newView!!.native.also {
+                    it.layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    )
+                    // TextView defaults to top-aligned text; stretched to MATCH_PARENT height above,
+                    // it needs an explicit vertical gravity or the text sits at the top of the row/box
+                    // instead of centered - previously masked by `padded` sizing the box snugly around it.
+                    (it as? TextView)?.gravity = Gravity.CENTER_VERTICAL
+                }
+            }
+        }
+
         val adapter = object: BaseAdapter() {
             override fun getCount(): Int = list.size
             override fun getItem(position: Int): Any? = list.get(position)
             override fun getItemId(position: Int): Long = position.toLong()
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-                if (convertView != null) {
-                    (convertView as TextView).text = render(list[position])
-                    return convertView
-                } else {
-                    var newView: Element? = null
-                    val writer = object: ViewWriter, CoroutineScope by this@Select {
-                        override val context: ElementContext get() = this@Select.context
-                        @OverrideOnly
-                        override fun willAddChild(element: Element) {
-                            element.underlyingNativeElement.parent = this@Select.parent
-                        }
-                        @OverrideOnly
-                        override fun addChild(element: Element) {
-                            newView = element
-                        }
-                    }
-                    with(writer) {
-                        padded.text {
-                            content = render(list[position])
-                        }
-                    }
-                    return newView!!.native.also {
-                        it.layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                        )
-                    }
-                }
-            }
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View =
+                itemView(position, convertView, applyPadding = false)
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup?): View =
+                itemView(position, convertView, applyPadding = true)
         }
         native.adapter = adapter
         native.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
