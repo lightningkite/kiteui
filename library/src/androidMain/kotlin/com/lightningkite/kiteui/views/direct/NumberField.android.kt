@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
-import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
@@ -21,7 +20,6 @@ import com.lightningkite.kiteui.views.AiDriver
 public actual class NumberInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = numberInputDriverValue()
     override val driverActions: AiDriver.Actions get() = super.driverActions + numberInputDriverActions()
-
 
     override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
