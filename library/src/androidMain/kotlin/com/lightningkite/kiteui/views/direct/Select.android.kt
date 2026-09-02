@@ -13,7 +13,6 @@ import android.widget.*
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
-import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.*
@@ -25,7 +24,6 @@ import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.CoroutineScope
 import com.lightningkite.kiteui.views.AiDriver
 
-@OptIn(ExperimentalKiteUi::class)
 public actual class Select actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
@@ -36,14 +34,6 @@ public actual class Select actual constructor(context: ElementContext): NativeIn
     override val native: Spinner = Spinner(context.activity).apply {
         minimumHeight = 0
         isClickable = true
-    }
-
-    init {
-        // NativeInteractiveElement unconditionally registers ClickableSemantic (padding=true) at
-        // elementStyling so buttons get a touch-target inset. Select currently forces padding to 0
-        // in refreshPadding() regardless, but cancel this out anyway to keep themeAndBack.padding
-        // accurate for anything that inspects it before refreshPadding is revisited.
-        themePipeline.set(ThemePipeline.Step.elementStyling, ThemeDerivation.None)
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -84,9 +74,8 @@ public actual class Select actual constructor(context: ElementContext): NativeIn
         var list: List<T> = listOf()
 
         // The collapsed selection sits inside the Select's own themed box (fieldTheme etc. supplies
-        // its padding), so it must render without its own inset - see the ClickableSemantic padding
-        // investigation. The open dropdown list isn't inside that box, so its rows keep `padded` for
-        // normal list-item spacing and touch targets.
+        // its padding), so it must render without its own inset. The open dropdown list isn't inside
+        // that box, so its rows keep `padded` for normal list-item spacing and touch targets.
         fun itemView(position: Int, convertView: View?, applyPadding: Boolean): View {
             if (convertView != null) {
                 (convertView as TextView).text = render(list[position])

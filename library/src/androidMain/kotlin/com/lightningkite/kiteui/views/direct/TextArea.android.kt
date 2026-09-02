@@ -19,20 +19,12 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.kiteui.views.AiDriver
 
 
-@OptIn(ExperimentalKiteUi::class)
 public actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textAreaDriverValue()
     override val driverActions: AiDriver.Actions get() = super.driverActions + textAreaDriverActions()
     override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-    }
-
-    init {
-        // NativeInteractiveElement unconditionally registers ClickableSemantic (padding=true) at
-        // elementStyling so buttons/spinners get a touch-target inset. TextArea only extends it for
-        // IME actions, not to look like a padded clickable control, so cancel that entry back out.
-        themePipeline.set(ThemePipeline.Step.elementStyling, ThemeDerivation.None)
     }
 
     //TODO Need to change this to something that can make sense for android.

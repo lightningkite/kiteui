@@ -22,19 +22,11 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.kiteui.views.AiDriver
 
-@OptIn(ExperimentalKiteUi::class)
 public actual open class TextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textInputDriverValue()
     override val driverActions: AiDriver.Actions get() = super.driverActions + textInputDriverActions()
     override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         inputType = EditorInfo.TYPE_CLASS_TEXT
-    }
-
-    init {
-        // NativeInteractiveElement unconditionally registers ClickableSemantic (padding=true) at
-        // elementStyling so buttons/spinners get a touch-target inset. TextInput only extends it for
-        // IME actions, not to look like a padded clickable control, so cancel that entry back out.
-        themePipeline.set(ThemePipeline.Step.elementStyling, ThemeDerivation.None)
     }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
