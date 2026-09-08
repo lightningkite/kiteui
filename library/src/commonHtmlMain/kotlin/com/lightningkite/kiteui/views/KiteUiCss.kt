@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.Log
+import com.lightningkite.kiteui.LogLevel
 import com.lightningkite.kiteui.models.*
 import kotlin.math.roundToInt
 import kotlin.time.Duration
@@ -7,7 +9,11 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.measureTime
 
-public class KiteUiCss(public val dynamicCss: DynamicCss) {
+public class KiteUiCss(
+    public val dynamicCss: DynamicCss,
+    public val log: Log? = Log("KiteUiCss", LogLevel.WARN)
+) {
+
     init {
         // basis rules
         //language=CSS
@@ -41,7 +47,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             }
         """.trimIndent()
             )
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             Exception("Failed to add print ruleset", e).printStackTrace()
         }
         // Squircle/continuous corner shape support:
@@ -50,7 +56,8 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
         dynamicCss.rule(":root { --corner-shape-scale: 1; }")
         try {
             dynamicCss.rule("@supports (corner-shape: squircle) { :root:root { --corner-shape-scale: 3; } }")
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
         @Suppress("CssUnresolvedCustomProperty")
         dynamicCss.rule(
             """
@@ -758,13 +765,15 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             }
         """.trimIndent()
         )
-        for(h in Align.entries + listOf(null))
-            for(v in Align.entries + listOf(null))
-                dynamicCss.rule("""
+        for (h in Align.entries + listOf(null))
+            for (v in Align.entries + listOf(null))
+                dynamicCss.rule(
+                    """
                     .kui.snapTo-$h-$v > :not(:first-child) {
-                        scroll-snap-align: ${listOfNotNull(h, v).joinToString(" "){ it.name.lowercase() }}
+                        scroll-snap-align: ${listOfNotNull(h, v).joinToString(" ") { it.name.lowercase() }}
                     }
-                """.trimIndent())
+                """.trimIndent()
+                )
         try {
             dynamicCss.rule(
                 """progress.kui::-webkit-progress-value {
@@ -935,9 +944,9 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             return "none"
 
         return listOf(
-            "0px ${this.times(3.0/2).value} ${this.div(2).value} -${this.value} rgba(0, 0, 0, 0.2)",
+            "0px ${this.times(3.0 / 2).value} ${this.div(2).value} -${this.value} rgba(0, 0, 0, 0.2)",
             "0px ${this.value} ${this.value} 0px rgba(0, 0, 0, 0.14)",
-            "0px ${this.div(2).value} ${this.times(5.0/2).value} 0px rgba(0, 0, 0, 0.12)",
+            "0px ${this.div(2).value} ${this.times(5.0 / 2).value} 0px rgba(0, 0, 0, 0.12)",
         ).joinToString(", ")
     }
 
@@ -954,9 +963,105 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
     }
 
     private var cssGenTotal: Duration = 0.seconds
+
+    private sealed interface CollisionTracker {
+        fun declare(theme: Theme)
+        fun checkAndReport(theme: Theme)
+
+        class WarnOnce(val log: Log) : CollisionTracker {
+            val sources = HashMap<String, Theme>()
+            val reported = HashSet<String>()
+
+            override fun declare(theme: Theme) {
+                sources[theme.id] = theme
+            }
+
+            override fun checkAndReport(theme: Theme) {
+                val prior = sources[theme.id]
+                if (prior != null && prior !== theme && !prior.structurallyEquals(theme) &&
+                    reported.add(theme.id)
+                ) {
+                    log.warn(
+                        "Theme id collision on '${theme.id}': two different Themes share this id, so " +
+                                "both render with the CSS generated for the first one and the second one's " +
+                                "differences - including any semanticOverrides - are dropped. Give the themes " +
+                                "distinct ids (Theme.copy and the semantic helpers chain ids for you; " +
+                                "Theme.customize and the Theme constructor do not)."
+                    )
+                }
+            }
+        }
+
+        class CountWarnings(val log: Log) : CollisionTracker {
+            val sources = HashMap<String, Pair<Theme, Int>>()
+
+            override fun declare(theme: Theme) {
+                sources[theme.id] = theme to 0
+            }
+
+            override fun checkAndReport(theme: Theme) {
+                val (prior, count) = sources[theme.id] ?: return
+                if (prior !== theme && !prior.structurallyEquals(theme)) {
+                    if (count == 0) log.warn(
+                        "Theme id collision on '${theme.id}': two different Themes share this id, so " +
+                                "both render with the CSS generated for the first one and the second one's " +
+                                "differences - including any semanticOverrides - are dropped. Give the themes " +
+                                "distinct ids (Theme.copy and the semantic helpers chain ids for you; " +
+                                "Theme.customize and the Theme constructor do not)."
+                    )
+                    else log.info("'${theme.id}' additional collision found (count = $count)")
+                }
+                sources[theme.id] = (prior to count + 1)
+            }
+        }
+
+        class StacktraceOnce(val log: Log) : CollisionTracker {
+            val sources = HashMap<String, Pair<Theme, Exception>>()
+            val reported = HashSet<String>()
+
+            override fun declare(theme: Theme) {
+                sources[theme.id] = theme to Exception("Theme first declared here")
+            }
+
+            override fun checkAndReport(theme: Theme) {
+                val (prior, declaredAt) = sources[theme.id] ?: return
+                if (prior !== theme && !prior.structurallyEquals(theme) &&
+                    reported.add(theme.id)
+                ) {
+                    log.warn(
+                        "Theme id collision on '${theme.id}': two different Themes share this id, so " +
+                                "both render with the CSS generated for the first one and the second one's " +
+                                "differences - including any semanticOverrides - are dropped. Give the themes " +
+                                "distinct ids (Theme.copy and the semantic helpers chain ids for you; " +
+                                "Theme.customize and the Theme constructor do not).\n" +
+                                "First declared at:\n${declaredAt.stackTraceToString()}"
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Ids whose `t-<id>` class has already been generated. On the HTML targets a theme reaches
+     * the DOM as that one class, so [Theme.id] - not the Theme object - is the rendering identity,
+     * and the CSS behind an id is generated exactly once.
+     */
     private val themeInteractiveHandled = HashSet<String>()
+
+    private val collisions: CollisionTracker? = when (log?.level) {
+        LogLevel.LOG -> CollisionTracker.StacktraceOnce(log)
+        LogLevel.INFO -> CollisionTracker.CountWarnings(log)
+        LogLevel.WARN -> CollisionTracker.WarnOnce(log)
+        else -> null
+    }
+
     public fun themeInteractive(theme: Theme): String {
-        if (!themeInteractiveHandled.add(theme.id)) return theme.classes
+        if (!themeInteractiveHandled.add(theme.id)) {
+            collisions?.checkAndReport(theme)
+            return theme.classes
+        }
+        else collisions?.declare(theme)
+
         measureTime {
             theme.derivedFrom?.let { themeInteractive(it) }
             theme(theme)
@@ -1079,14 +1184,16 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
         val paddedSel = (if (includeMaybeTransition) sel(".kui.clickable") else sel(".kui.padded"))
 
         theme.diff(diff) { background }?.let {
-            if(diff?.background is FadingColor) addToCss(backSel, "animation", "none")
+            if (diff?.background is FadingColor) addToCss(backSel, "animation", "none")
             when (it) {
                 is Color -> {
                     addToCss(backSel, "background-color", it.toWeb())
                     addToCss(backSel, "background-image", "none")
                 }
+
                 is FadingColor -> {
-                    dynamicCss.rule("""
+                    dynamicCss.rule(
+                        """
                         @keyframes ${theme.id}-flickerAnimation {
                         0% {
                             background-color: ${it.base.toWeb()};
@@ -1098,7 +1205,8 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                             background-color: ${it.base.toWeb()};
                         }
                     }
-                    """.trimIndent())
+                    """.trimIndent()
+                    )
                     addToCss(backSel, "animation", "2s infinite ${theme.id}-flickerAnimation")
                     addToCss(backSel, "background-color", it.base.toWeb())
                     addToCss(backSel, "background-image", "none")
@@ -1185,7 +1293,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
         }
         theme.diff(diff) { blurBackground }?.let {
 
-            if(it.value != DimensionRaw.zero) {
+            if (it.value != DimensionRaw.zero) {
                 val filterValue = "blur(${it.value})"
                 if (filterValue.isNotEmpty()) {
                     addToCss(backSel, "backdrop-filter", filterValue)
@@ -1200,7 +1308,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             }
         }
         theme.diff(diff) { foreground }?.let {
-            addToCss(directSel, "color-scheme", if(it.closestColor().perceivedBrightness > 0.5) "dark" else "light")
+            addToCss(directSel, "color-scheme", if (it.closestColor().perceivedBrightness > 0.5) "dark" else "light")
             when (it) {
                 is Color -> addToCss(directSel, "color", it.toWeb())
                 is FadingColor -> addToCss(directSel, "color", it.base.toWeb())
@@ -1210,6 +1318,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                     addToCss(directSel, "-webkit-background-clip", "text")
                     addToCss(directSel, "-webkit-text-fill-color", "transparent")
                 }
+
                 is RadialGradient -> {
                     addToCss(directSel, "color", "radial-gradient(circle at center, ${joinGradientStops(it.stops)})")
                     addToCss(directSel, "background", "-webkit-radial-gradient(circle at center, ${joinGradientStops(it.stops)})")
@@ -1232,14 +1341,14 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 else -> addToCss(directSel, "--separator-color", it.closestColor().toWeb())
             }
         }
-        
+
         // theme.diff can't distinguish "unchanged" from "changed to null" since it flattens T?,
         // so the transform-cleared case is checked explicitly here.
         if (diff == null || diff.transform != theme.transform) {
             val it = theme.transform
             if (it != null) {
                 val transformParts = mutableListOf<String>()
-                
+
                 // Add translation transforms.
                 //
                 // All three components are always written. translate3d() takes exactly three
@@ -1252,7 +1361,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                         "translate3d(${it.translationX}px, ${it.translationY}px, ${it.translationZ}px)"
                     )
                 }
-                
+
                 // Add rotation transforms
                 if (it.rotation != 0.0) {
                     transformParts.add("rotate(${it.rotation}deg)")
@@ -1263,12 +1372,12 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 if (it.rotationY != 0.0) {
                     transformParts.add("rotateY(${it.rotationY}deg)")
                 }
-                
+
                 // Add scale transforms
                 if (it.scaleX != 1.0 || it.scaleY != 1.0) {
                     transformParts.add("scale(${it.scaleX}, ${it.scaleY})")
                 }
-                
+
                 if (transformParts.isNotEmpty()) {
                     addToCss(backSel, "transform", transformParts.joinToString(" "))
                 }
@@ -1291,7 +1400,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                 .$name.rowCollapsing { display: flex }
             """
             )
-            (-1..breakpoints.size-1).forEach { index ->
+            (-1..breakpoints.size - 1).forEach { index ->
                 val mediaQuery = listOfNotNull(
                     breakpoints.getOrNull(index)?.let {
                         "(min-width: ${it.value})"
@@ -1300,7 +1409,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
                         "(max-width: ${it.value})"
                     },
                 ).joinToString(" and ")
-                if(index.plus(2).rem(2) == 1) {
+                if (index.plus(2).rem(2) == 1) {
                     dynamicCss.rule(
                         """
                     @media $mediaQuery {
@@ -1356,13 +1465,13 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
     }
 
     internal val querySetHandled: MutableMap<MediaQuery, String> = HashMap()
-    private fun MediaQuery.render(): String = when(this) {
+    private fun MediaQuery.render(): String = when (this) {
         // The transform is required: without it joinToString falls back to each child's toString(),
         // which emits the Kotlin data class rendering into the stylesheet and silently kills the query.
         is MediaQuery.Not -> "(not ${query.render()})"
         is MediaQuery.And -> queries.joinToString(" and ", "(", ")") { it.render() }
         is MediaQuery.Or -> queries.joinToString(" or ", "(", ")") { it.render() }
-        is MediaQuery.DisplayMode -> when(value){
+        is MediaQuery.DisplayMode -> when (value) {
             MediaQuery.DisplayMode.Option.Browser -> "(display-mode: browser)"
             MediaQuery.DisplayMode.Option.Fullscreen -> "(display-mode: fullscreen)"
             MediaQuery.DisplayMode.Option.MinimalUI -> "(display-mode: minimal-ui)"
@@ -1370,20 +1479,24 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
             MediaQuery.DisplayMode.Option.Standalone -> "(display-mode: standalone)"
             MediaQuery.DisplayMode.Option.WindowControlsOverlay -> "(display-mode: window-controls-overlay)"
         }
-        is MediaQuery.Hover -> when(value){
+
+        is MediaQuery.Hover -> when (value) {
             MediaQuery.Hover.Option.None -> "(hover: none)"
             MediaQuery.Hover.Option.Hover -> "(hover: hover)"
         }
-        is MediaQuery.Pointer -> when(value){
+
+        is MediaQuery.Pointer -> when (value) {
             MediaQuery.Pointer.Option.None -> "(pointer: none)"
             MediaQuery.Pointer.Option.Coarse -> "(pointer: coarse)"
             MediaQuery.Pointer.Option.Fine -> "(pointer: fine)"
         }
-        is MediaQuery.Update -> when(value){
+
+        is MediaQuery.Update -> when (value) {
             MediaQuery.Update.Option.None -> "(update: none)"
             MediaQuery.Update.Option.Slow -> "(update: slow)"
             MediaQuery.Update.Option.Fast -> "(update: fast)"
         }
+
         is MediaQuery.MaxAspectRatio -> "(max-aspect-ratio: $ratio)"
         is MediaQuery.MinAspectRatio -> "(min-aspect-ratio: $ratio)"
         is MediaQuery.MaxHeight -> "(max-height: ${dimension.value})"
@@ -1391,6 +1504,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
         is MediaQuery.MinHeight -> "(min-height: ${dimension.value})"
         is MediaQuery.MinWidth -> "(min-width: ${dimension.value})"
     }
+
     /**
      * A class that hides its element unless [query] matches.
      *

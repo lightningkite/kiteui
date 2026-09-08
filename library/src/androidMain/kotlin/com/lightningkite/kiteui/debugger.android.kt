@@ -39,28 +39,39 @@ public actual fun Throwable.printStackTrace2(): Unit = printStackTrace()
 
 public actual object LogRoot: com.lightningkite.kiteui.Log {
     private val platform = PlatformLog("")
+    actual override val tag: String get() = platform.tag
     actual override fun tag(tag: String): com.lightningkite.kiteui.Log = platform.tag(tag)
+    actual override val level: com.lightningkite.kiteui.LogLevel get() = platform.level
+    actual override fun withLevel(level: com.lightningkite.kiteui.LogLevel): com.lightningkite.kiteui.Log = platform.withLevel(level)
     actual override fun log(vararg entries: Any?): Unit = platform.log(*entries)
-    actual override fun error(vararg entries: Any?): Unit = platform.error(*entries)
     actual override fun info(vararg entries: Any?): Unit = platform.info(*entries)
     actual override fun warn(vararg entries: Any?): Unit = platform.warn(*entries)
+    actual override fun error(vararg entries: Any?): Unit = platform.error(*entries)
 }
-private class PlatformLog(val tag: String): com.lightningkite.kiteui.Log {
-    override fun tag(tag: String): com.lightningkite.kiteui.Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
+private class PlatformLog(
+    override val tag: String,
+    override val level: com.lightningkite.kiteui.LogLevel = com.lightningkite.kiteui.LogLevel.LOG,
+): com.lightningkite.kiteui.Log {
+    override fun tag(tag: String): com.lightningkite.kiteui.Log =
+        PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag, level)
+    override fun withLevel(level: com.lightningkite.kiteui.LogLevel): com.lightningkite.kiteui.Log = PlatformLog(tag, level)
     override fun log(vararg entries: Any?) {
+        if (level < com.lightningkite.kiteui.LogLevel.LOG) return
         Log.d(tag, entries.joinToString(" "))
     }
 
-    override fun error(vararg entries: Any?) {
-        Log.e(tag, entries.joinToString(" "))
-    }
-
     override fun info(vararg entries: Any?) {
+        if (level < com.lightningkite.kiteui.LogLevel.INFO) return
         Log.i(tag, entries.joinToString(" "))
     }
 
     override fun warn(vararg entries: Any?) {
+        if (level < com.lightningkite.kiteui.LogLevel.WARN) return
         Log.w(tag, entries.joinToString(" "))
+    }
+
+    override fun error(vararg entries: Any?) {
+        Log.e(tag, entries.joinToString(" "))
     }
 }
 

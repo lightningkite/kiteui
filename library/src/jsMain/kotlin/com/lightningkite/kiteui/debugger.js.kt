@@ -31,28 +31,35 @@ public actual fun Throwable.printStackTrace2() {
 
 public actual object LogRoot: Log {
     private val platform = PlatformLog("")
+    actual override val tag: String get() = platform.tag
     actual override fun tag(tag: String): Log = platform.tag(tag)
+    actual override val level: LogLevel get() = platform.level
+    actual override fun withLevel(level: LogLevel): Log = platform.withLevel(level)
     actual override fun log(vararg entries: Any?): Unit = platform.log(*entries)
-    actual override fun error(vararg entries: Any?): Unit = platform.error(*entries)
     actual override fun info(vararg entries: Any?): Unit = platform.info(*entries)
     actual override fun warn(vararg entries: Any?): Unit = platform.warn(*entries)
+    actual override fun error(vararg entries: Any?): Unit = platform.error(*entries)
 }
-private class PlatformLog(val tag: String): Log {
-    override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
+private class PlatformLog(override val tag: String, override val level: LogLevel = LogLevel.LOG): Log {
+    override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag, level)
+    override fun withLevel(level: LogLevel): Log = PlatformLog(tag, level)
     override fun log(vararg entries: Any?) {
+        if (level < LogLevel.LOG) return
         console.log(tag, *entries)
     }
 
-    override fun error(vararg entries: Any?) {
-        console.error(tag, *entries)
-    }
-
     override fun info(vararg entries: Any?) {
+        if (level < LogLevel.INFO) return
         console.info(tag, *entries)
     }
 
     override fun warn(vararg entries: Any?) {
+        if (level < LogLevel.WARN) return
         console.warn(tag, *entries)
+    }
+
+    override fun error(vararg entries: Any?) {
+        console.error(tag, *entries)
     }
 }
 

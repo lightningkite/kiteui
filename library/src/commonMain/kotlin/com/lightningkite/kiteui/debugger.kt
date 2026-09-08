@@ -102,81 +102,100 @@ public inline fun Element.debugPrint(get: () -> String) {
 public typealias Console = Log
 
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
-public typealias ConsoleRoot = Log.Companion
+public typealias ConsoleRoot = Log.Default
 
-public enum class LogLevel { LOG, INFO, WARN, ERROR }
+public enum class LogLevel {
+    /** Something failed and needs attention; shown even by the most restrictive filters. */
+    ERROR,
+    /** Something is off but the app can keep going. */
+    WARN,
+    /** Notable, expected events worth surfacing to someone watching the log. */
+    INFO,
+    /** Routine or high-volume detail, useful for debugging but noisy in normal operation. */
+    LOG,
+}
 
-/** Observes log calls without owning the delegation chain. [LogRoot] is always called regardless. */
+/** Observes log calls without owning the delegation chain. Is only called if the log's current level would actually log.  */
 public fun interface LogInterceptor {
     public fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
 }
 
 public interface Log {
-    public companion object: Log {
-        /** Interceptors that observe all [Log] calls. Each receives every call; [LogRoot] is always called regardless. */
-        public val interceptors: MutableList<LogInterceptor> = mutableListOf()
-
-        override fun tag(tag: String): Log = InterceptedTaggedLog(tag)
-
-        override fun log(vararg entries: Any?) {
-            for (i in interceptors) i.intercept(LogLevel.LOG, "", entries)
-            LogRoot.log(*entries)
-        }
-        override fun error(vararg entries: Any?) {
-            for (i in interceptors) i.intercept(LogLevel.ERROR, "", entries)
-            LogRoot.error(*entries)
-        }
-        override fun info(vararg entries: Any?) {
-            for (i in interceptors) i.intercept(LogLevel.INFO, "", entries)
-            LogRoot.info(*entries)
-        }
-        override fun warn(vararg entries: Any?) {
-            for (i in interceptors) i.intercept(LogLevel.WARN, "", entries)
-            LogRoot.warn(*entries)
-        }
-    }
-
+    public val tag: String
     public fun tag(tag: String): Log
+
+    public val level: LogLevel
+    public fun withLevel(level: LogLevel): Log
+
     public fun log(vararg entries: Any?)
-    public fun error(vararg entries: Any?)
     public fun info(vararg entries: Any?)
     public fun warn(vararg entries: Any?)
+    public fun error(vararg entries: Any?)
+
+    public companion object Default : Log by InterceptedLog(LogRoot) {
+        /** Interceptors that observe all [Log] calls. Each receives every call; [LogRoot] is always called regardless. */
+        public val interceptors: MutableList<LogInterceptor> = mutableListOf()
+    }
 }
 
-private class InterceptedTaggedLog(val tag: String) : Log {
-    private val rootTagged = LogRoot.tag(tag)
-    override fun tag(tag: String): Log = InterceptedTaggedLog("${this.tag}/$tag")
-    override fun log(vararg entries: Any?) {
-        for (i in Log.interceptors) i.intercept(LogLevel.LOG, tag, entries)
-        rootTagged.log(*entries)
+public fun Log.output(level: LogLevel, vararg entries: Any?): Unit = when (level) {
+    LogLevel.ERROR -> error(*entries)
+    LogLevel.WARN -> warn(*entries)
+    LogLevel.INFO -> info(*entries)
+    LogLevel.LOG -> log(*entries)
+}
+
+public fun Log.atLevel(level: LogLevel): Boolean = this.level >= level
+
+public fun Log(tag: String, level: LogLevel = LogLevel.LOG): Log = Log.tag(tag).withLevel(level)
+
+/** Drops LOG. Composes with other `*OrAbove` filters by narrowing only, never widening a stricter one. */
+public fun Log.infoOrAbove(): Log = withLevel(minOf(level, LogLevel.INFO))
+
+/** Drops LOG and INFO. Composes with other `*OrAbove` filters by narrowing only, never widening a stricter one. */
+public fun Log.warnOrAbove(): Log = withLevel(minOf(level, LogLevel.WARN))
+
+
+
+private class InterceptedLog(private val wraps: Log) : Log {
+    override val tag: String get() = wraps.tag
+    override fun tag(tag: String): Log = InterceptedLog(wraps.tag(tag))
+
+    override val level: LogLevel get() = wraps.level
+    override fun withLevel(level: LogLevel): Log = InterceptedLog(wraps.withLevel(level))
+
+    private fun intercept(level: LogLevel, entries: Array<out Any?>) {
+        for (i in Log.interceptors) i.intercept(level, wraps.tag, entries)
     }
-    override fun error(vararg entries: Any?) {
-        for (i in Log.interceptors) i.intercept(LogLevel.ERROR, tag, entries)
-        rootTagged.error(*entries)
+
+    override fun log(vararg entries: Any?) {
+        if (wraps.level < LogLevel.LOG) return
+        intercept(LogLevel.LOG, entries)
+        wraps.log(*entries)
     }
     override fun info(vararg entries: Any?) {
-        for (i in Log.interceptors) i.intercept(LogLevel.INFO, tag, entries)
-        rootTagged.info(*entries)
+        if (wraps.level < LogLevel.INFO) return
+        intercept(LogLevel.INFO, entries)
+        wraps.info(*entries)
     }
     override fun warn(vararg entries: Any?) {
-        for (i in Log.interceptors) i.intercept(LogLevel.WARN, tag, entries)
-        rootTagged.warn(*entries)
+        if (wraps.level < LogLevel.WARN) return
+        intercept(LogLevel.WARN, entries)
+        wraps.warn(*entries)
     }
-}
-
-public fun Log.infoOrAbove(): Log = object : Log by this {
-    override fun log(vararg entries: Any?) {}
-}
-
-public fun Log.warnOrAbove(): Log = object : Log by this {
-    override fun log(vararg entries: Any?) {}
-    override fun info(vararg entries: Any?) {}
+    override fun error(vararg entries: Any?) {
+        intercept(LogLevel.ERROR, entries)
+        wraps.error(*entries)
+    }
 }
 
 public expect object LogRoot : Log {
+    override val tag: String
     override fun tag(tag: String): Log
+    override val level: LogLevel
+    override fun withLevel(level: LogLevel): Log
     override fun log(vararg entries: Any?)
-    override fun error(vararg entries: Any?)
     override fun info(vararg entries: Any?)
     override fun warn(vararg entries: Any?)
+    override fun error(vararg entries: Any?)
 }

@@ -1371,11 +1371,18 @@ public class Theme(
     }
 
     /**
-     * Field-by-field comparison of the properties that affect rendered output, ignoring [id],
-     * provenance ([derivedFrom]/[derivationId]/[revert]), and [semanticOverrides] (a map of
-     * closures, which aren't meaningfully comparable). Used only by [Debugger]'s id-collision
+     * Field-by-field comparison of the properties that affect rendered output, ignoring [id] and
+     * provenance ([derivedFrom]/[derivationId]/[revert]). Used only by [Debugger]'s id-collision
      * check - [equals] intentionally stays id-only for lookup performance; this is the
      * "would these two themes render the same?" check that backs it.
+     *
+     * [semanticOverrides] is part of the comparison. Two themes whose visual properties match but
+     * whose overrides differ do *not* render the same: every semantic derived from them differs,
+     * and on the HTML targets, where a theme reaches the DOM as a single class named after its
+     * [id], the second theme silently renders with the first one's CSS. The comparison is by
+     * override identity - the derivation lambdas can only be compared by reference, so two
+     * separately-written but equivalent override sets read as different. That direction is the
+     * safe one: it over-reports a collision rather than letting a real one through.
      */
     internal fun structurallyEquals(other: Theme): Boolean =
         font == other.font &&
@@ -1394,7 +1401,8 @@ public class Theme(
         transform == other.transform &&
         bodyTransitions == other.bodyTransitions &&
         dialogTransitions == other.dialogTransitions &&
-        transitionDuration == other.transitionDuration
+        transitionDuration == other.transitionDuration &&
+        semanticOverrides == other.semanticOverrides
 
     /**
      * Creates a customized copy of this theme with all specified properties.
@@ -1660,7 +1668,10 @@ public class Theme(
                 "Theme id collision: two structurally different Themes both use id '${theme.id}'. " +
                     "Themes must be derived through semantic derivation (Theme.copy, semantics, " +
                     "the withBack/withoutBack/alter helpers) so ids stay unique - look for a " +
-                    "manually-assigned or non-chained id, e.g. from Theme.customize."
+                    "manually-assigned or non-chained id, e.g. from Theme.customize. Differing " +
+                    "semanticOverrides count as a difference: on the HTML targets a theme reaches " +
+                    "the DOM as a single class named after its id, so the losing theme renders " +
+                    "with the winner's CSS and its overrides appear to do nothing."
             }
         }
 

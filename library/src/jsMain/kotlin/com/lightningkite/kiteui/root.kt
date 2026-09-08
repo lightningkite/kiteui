@@ -17,14 +17,25 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 
-private class Root(val beforeDocumentAppend: Element.() -> Unit) : ViewWriter, CoroutineScope by AppScope {
-    override val context: ElementContext = ElementContext(basePath).also {
-        @Suppress("DEPRECATION")
-        ExternalServices.baseContext = it
+private class Root(
+    logLevel: LogLevel? = if (Platform.isDevelopment) LogLevel.WARN else null,
+    val beforeDocumentAppend: Element.() -> Unit
+) : ViewWriter, CoroutineScope by AppScope {
+    override val context: ElementContext = run {
+        val dynamicCss = DynamicCss(basePath)
+        ElementContext(
+            basePath,
+            dynamicCss,
+            kiteUiCss = KiteUiCss(dynamicCss, logLevel?.let { Log("KiteUiCss", it) })
+        ).also {
+            @Suppress("DEPRECATION")
+            ExternalServices.baseContext = it
+        }
     }
 
     @OverrideOnly
-    override fun willAddChild(element: Element) {}
+    override fun willAddChild(element: Element) {
+    }
 
     @OverrideOnly
     override fun addChild(element: Element) {
@@ -33,14 +44,22 @@ private class Root(val beforeDocumentAppend: Element.() -> Unit) : ViewWriter, C
     }
 }
 
-public fun root(theme: Theme, app: ViewWriter.() -> Unit) {
-    Root {
+public fun root(
+    theme: Theme,
+    logLevel: LogLevel? = if (Platform.isDevelopment) LogLevel.WARN else null,
+    app: ViewWriter.() -> Unit
+) {
+    Root(logLevel) {
         themeChoice = ThemeDerivation.SetAsBase(theme)
     }.app()
 }
 
-public fun root(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
-    Root {
+public fun root(
+    theme: Reactive<Theme>,
+    logLevel: LogLevel? = if (Platform.isDevelopment) LogLevel.WARN else null,
+    app: ViewWriter.() -> Unit
+) {
+    Root(logLevel) {
         ::themeChoice {
             ThemeDerivation.SetAsBase(theme())
         }
@@ -69,10 +88,14 @@ public fun root(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
  * @param theme The application theme
  * @param app The application content builder
  */
-public fun hydrateRoot(theme: Theme, app: ViewWriter.() -> Unit) {
+public fun hydrateRoot(
+    theme: Theme,
+    logLevel: LogLevel? = if (Platform.isDevelopment) LogLevel.WARN else null,
+    app: ViewWriter.() -> Unit
+) {
     hydrateRootInternal(
         themeApplicator = { view -> view.themeChoice = ThemeDerivation.SetAsBase(theme) },
-        fallback = { root(theme, app) },
+        fallback = { root(theme, logLevel, app) },
         app = app
     )
 }
@@ -95,14 +118,18 @@ public fun hydrateRoot(theme: Theme, app: ViewWriter.() -> Unit) {
  * @param theme The reactive application theme
  * @param app The application content builder
  */
-public fun hydrateRoot(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
+public fun hydrateRoot(
+    theme: Reactive<Theme>,
+    logLevel: LogLevel? = if (Platform.isDevelopment) LogLevel.WARN else null,
+    app: ViewWriter.() -> Unit
+) {
     hydrateRootInternal(
         themeApplicator = { view ->
             with(view) {
                 ::themeChoice { ThemeDerivation.SetAsBase(theme()) }
             }
         },
-        fallback = { root(theme, app) },
+        fallback = { root(theme, logLevel, app) },
         setupDebugMode = true,
         app = app
     )
@@ -146,7 +173,8 @@ private fun hydrateRootInternal(
         override val context: ElementContext = elementContext
 
         @OverrideOnly
-        override fun willAddChild(element: Element) {}
+        override fun willAddChild(element: Element) {
+        }
 
         @OverrideOnly
         override fun addChild(element: Element) {
@@ -209,15 +237,19 @@ private fun hydrateRootInternal(
  * @param theme The application theme
  * @param app The application content builder
  */
-public fun smartRoot(theme: Theme, app: ViewWriter.() -> Unit) {
+public fun smartRoot(
+    theme: Theme,
+    logLevel: LogLevel? = if (Platform.isDevelopment) LogLevel.WARN else null,
+    app: ViewWriter.() -> Unit
+) {
     val ssrDataElement = document.getElementById("__SSR_DATA__")
     if (ssrDataElement != null) {
         console.log("[KiteUI Hydration] SSR data detected, starting hydration...")
-        hydrateRoot(theme, app)
+        hydrateRoot(theme, logLevel, app)
         // Note: Actual hydration completion is logged by HydrationContext.clear()
     } else {
         console.log("[KiteUI] Client-side rendering (no SSR data found)")
-        root(theme, app)
+        root(theme, logLevel, app)
     }
 }
 
@@ -228,15 +260,19 @@ public fun smartRoot(theme: Theme, app: ViewWriter.() -> Unit) {
  * @param theme The reactive application theme
  * @param app The application content builder
  */
-public fun smartRoot(theme: Reactive<Theme>, app: ViewWriter.() -> Unit) {
+public fun smartRoot(
+    theme: Reactive<Theme>,
+    logLevel: LogLevel? = if (Platform.isDevelopment) LogLevel.WARN else null,
+    app: ViewWriter.() -> Unit
+) {
     val ssrDataElement = document.getElementById("__SSR_DATA__")
     if (ssrDataElement != null) {
         console.log("[KiteUI Hydration] SSR data detected, starting hydration...")
-        hydrateRoot(theme, app)
+        hydrateRoot(theme, logLevel, app)
         // Note: Actual hydration completion is logged by HydrationContext.clear()
     } else {
         console.log("[KiteUI] Client-side rendering (no SSR data found)")
-        root(theme, app)
+        root(theme, logLevel, app)
     }
 }
 
