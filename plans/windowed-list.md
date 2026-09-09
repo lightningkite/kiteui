@@ -786,11 +786,71 @@ spacers, and scroll compensation lands late, arriving while the user may have sc
 It also needs re-entrancy bounding, since correcting resizes spacers and triggers another
 layout.
 
+**Stale extents after a cell changes size — fixed.** Nothing revisited a measurement once
+recorded, so a late-loading image left a wrong extent forever and the scroll extent drifted.
+`onContentSizeChange` watches the item container and reruns the correction pass. The platforms
+disagree about *when* to fire and it matters: a web ResizeObserver fires after layout, while
+iOS's existing `subviewDidChangeSizing` fires on invalidation, before layout, where every frame
+still holds its old size — measuring there records nothing. `LinearLayout` now notifies after
+laying out at a new size instead.
+
+**Scroll compensation on mobile — now tested.** Previously only the browser exercised it. Two
+contracts on both platforms: scrolling into the middle leaves a contiguous window big enough to
+cover the viewport, and deleting an item above the viewport leaves the same item under the
+user's eyes. Mutation-checked — disabling `restoreAnchor` shifts the top item from 500 to 501.
+
+**Server rendering — now verified.** Six contracts in `jvmSsrTest`, including that the count
+comes from `ssrItemCount` rather than anything measured (or hydration mismatches) and that
+nothing consults the viewport.
+
+**Accessibility container — fixed.** Cells were marked `asListItem` but nothing marked what
+contained them, so a screen reader saw list items belonging to no list. `asList` now applies to
+the item container, leaving the presentational spacers outside it.
+
+**Duplicate ids — now rejected** in development builds. Note that a throw inside a reactive does
+*not* reach whoever assigned the list; it reports through the exception handlers like any other
+reactive failure. A test asserting the caller sees it fails.
+
+**Platform scroll limits — now reported, not fixed.** `exceedsPlatformScrollLimit` plus a
+one-time warning. Android's limit is exact (`MEASURED_SIZE_MASK`, 24 bits); web and iOS take the
+conservative 2^24 bound, since guessing high means unreachable content.
+
+**Pooling — now guarded** on both mobile platforms, as counts rather than timings: neither
+Robolectric nor a simulator reproduces device timings well enough for a number to mean anything.
+
 ### Open
 
-**Mobile measurement cost is unbenchmarked.** Each cell now takes a real measure on the pass it
-appears. Recycler2 already pays this on every platform, and the web path is unchanged, but no
-mobile equivalent of the js pooling benchmark exists yet.
+**No real-device testing.** Everything is Robolectric and the simulator, both of which lie in
+known ways (see below). A device pass is not optional before shipping.
+
+**`ScrollExtentStrategy.Compressed` is still unwired** — the actual fix for the scroll limit.
+Wiring it means mapping between presented and content offsets through the compensation and
+anchoring paths, which is the code with the least margin, so it wants its own change.
+
+**No screen-reader verification.** The ARIA structure is asserted in the DOM, but nothing has
+been near VoiceOver or TalkBack. Android also loses focus on `nativeMoveChild`, because no
+public reordering primitive exists there.
+
+**iOS momentum deferral** for compensation is still unimplemented, and heterogeneous renderer
+types are still unsupported.
+
+**Recycler2's manual-review gate is stale.** `library/src/jsTest/kotlin/Recycler2Test.kt` guards
+`Recycler2.kt` and `ScrollView.commonHtml.js.kt` with `assertManualReview`, demanding a manual
+retest of recycler views and view pagers on Chrome, Safari and Firefox. It compares two literals
+that only `:library:testUpdateHashes` rewrites, so it does not fire on its own — it caught
+nothing when Spike A changed the placement path, which is why that sat unverified until it was
+backed out. The `@Deprecated` annotation still leaves the recorded hash stale. Bumping
+`reviewedHash` would claim a manual pass nobody ran, so it has not been bumped.
+
+**`:example-app` now emits 29 deprecation warnings across 15 files.** About half are Recycler2
+demo pages; the rest use `recyclerView` as an ordinary list, which is exactly the migration
+signal the deprecation exists to produce. Suppressing them would defeat it. The library itself
+compiles clean.
+
+**Not worth fixing, contrary to an earlier note here:** `restoreAnchor`'s O(n) `indexOfFirst`.
+`setItems` already walks every item whenever anything has been measured, so the scan is a
+constant factor on an O(n) operation, not a complexity class. Building an id→index map would
+cost the same O(n) it saves.
 
 ### Test-harness limits worth knowing
 
