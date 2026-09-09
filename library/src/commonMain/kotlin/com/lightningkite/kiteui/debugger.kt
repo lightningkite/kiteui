@@ -1,6 +1,11 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.Element
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 public var debugMode: Boolean = false
 
@@ -143,6 +148,37 @@ public fun Log.output(level: LogLevel, vararg entries: Any?): Unit = when (level
     LogLevel.WARN -> warn(*entries)
     LogLevel.INFO -> info(*entries)
     LogLevel.LOG -> log(*entries)
+}
+
+public inline fun Log.output(level: LogLevel, entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.AT_MOST_ONCE) }
+    when (level) {
+        LogLevel.ERROR -> error { entry() }
+        LogLevel.WARN -> warn { entry() }
+        LogLevel.INFO -> info { entry() }
+        LogLevel.LOG -> log { entry() }
+    }
+}
+
+/** Logs the result of [entry], only computing when the current log level is at [LogLevel.LOG]. */
+public inline fun Log.log(entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.AT_MOST_ONCE) }
+    if (atLevel(LogLevel.LOG)) log(entry())
+}
+/** Logs the result of [entry], only computing when the current log level is at or above [LogLevel.INFO]. */
+public inline fun Log.info(entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.AT_MOST_ONCE) }
+    if (atLevel(LogLevel.INFO)) info(entry())
+}
+/** Logs the result of [entry], only computing when the current log level is at or above [LogLevel.WARN]. */
+public inline fun Log.warn(entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.AT_MOST_ONCE) }
+    if (atLevel(LogLevel.WARN)) warn(entry())
+}
+/** Logs the result of [entry]. The entry is always computed because [LogLevel.ERROR] is the lowest log level. */
+public inline fun Log.error(entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.EXACTLY_ONCE) }
+    error(entry())
 }
 
 public fun Log.atLevel(level: LogLevel): Boolean = this.level >= level
