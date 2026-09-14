@@ -508,13 +508,22 @@ public actual fun NativeElement.nativeOnDrop(listener: DropTargetDelegate?) {
                 }
             }
             it.ondragenter = { e ->
-                if (listener.enter(e.toDragEvent())) {
+                // dragenter/dragleave bubble from descendants, so moving onto a child
+                // re-fires this handler even though the drag never left `it`. Only tell the
+                // delegate about it if we're actually arriving from outside
+                val relatedTarget = e.relatedTarget
+                val fromOutside = relatedTarget == null || !it.contains(relatedTarget as? org.w3c.dom.Node)
+                val shouldPreventDefault = if (fromOutside) listener.enter(e.toDragEvent()) else true
+                if (shouldPreventDefault) {
                     e.preventDefault()
                     e.stopPropagation()
                 }
             }
             it.ondragleave = { e ->
-                if (listener.exit(e.toDragEvent())) {
+                val relatedTarget = e.relatedTarget
+                val toOutside = relatedTarget == null || !it.contains(relatedTarget as? org.w3c.dom.Node)
+                val shouldPreventDefault = if (toOutside) listener.exit(e.toDragEvent()) else true
+                if (shouldPreventDefault) {
                     e.preventDefault()
                     e.stopPropagation()
                 }
