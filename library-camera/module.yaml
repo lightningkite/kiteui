@@ -1,0 +1,59 @@
+apply: [ //kmp.module-template.yaml, //publishing.module-template.yaml ]
+
+product:
+  type: kmp/lib
+  platforms: [ android, js, jvm, iosArm64, iosSimulatorArm64, iosX64 ]
+
+settings:
+  kotlin:
+    serialization: enabled
+  android:
+    namespace: com.lightningkite.kiteui.camera
+    minSdk: 21
+  publishing:
+    enabled: true
+    group: com.lightningkite.kiteui
+    artifactId: library-camera
+    version: 8.3.0-local
+
+dependencies:
+  - //library: exported
+
+dependencies@android:
+  - androidx.camera:camera-core:1.4.2: exported
+  - androidx.camera:camera-camera2:1.4.2: exported
+  - androidx.camera:camera-lifecycle:1.4.2: exported
+  - androidx.camera:camera-view:1.4.2: exported
+  - com.google.mlkit:barcode-scanning:17.3.0: exported
+
+# The Gradle build also declares `npm("barcode-detector", "3.0.8")` here. The Toolchain has no
+# npm dependency support, so the JS runtime dependency is not declared.
+dependencies@js:
+  - org.jetbrains.kotlin:kotlin-dom-api-compat:2.4.10
+
+settings@ios:
+  kotlin:
+    optIns:
+      - kotlinx.cinterop.BetaInteropApi
+      - kotlinx.cinterop.ExperimentalForeignApi
+    freeCompilerArgs: [ -module-name, "com.lightningkite.kiteui:library-camera", -Xexport-kdoc ]
+
+settings@jvm:
+  kotlin:
+    freeCompilerArgs: [ -module-name, "com.lightningkite.kiteui:library-camera" ]
+
+settings@js:
+  kotlin:
+    freeCompilerArgs: [ -Xir-module-name=com.lightningkite.kiteui:library-camera ]
+
+test-settings@jvm:
+  kotlin:
+    freeCompilerArgs: [ -module-name, library_camera_test ]
+
+test-settings@js:
+  kotlin:
+    freeCompilerArgs: [ -Xir-module-name=library_camera_test ]
+
+test-settings@ios:
+  kotlin:
+    freeCompilerArgs: [ -module-name, library_camera_test ]

@@ -1,0 +1,67 @@
+# Task wiring for the modules that enable this plugin.
+#
+# ${module.rootDir} is the directory of whichever module enables the plugin, so one shim serves
+# any number of consuming modules. Do not use ${module.kotlinJavaSources} here: it resolves to a
+# jvm-scoped fragment view (src + src@jvm) and silently omits src@js.
+#
+# The package name is fixed here rather than per module, because plugin.yaml has no per-module
+# settings in Toolchain 0.12.1. :example-app is the only consumer in this repo.
+tasks:
+  kiteuiResourcesCommon:
+    action: !com.lightningkite.kiteui.shim.kiteuiResourcesCommon
+      resources: ${module.rootDir}/resources
+      packageName: com.lightningkite.mppexampleapp
+      out: ${taskOutputDir}
+  kiteuiResourcesJs:
+    action: !com.lightningkite.kiteui.shim.kiteuiResourcesJs
+      resources: ${module.rootDir}/resources
+      packageName: com.lightningkite.mppexampleapp
+      copyTo: ${module.rootDir}/resources@js/common
+      publicCopyTo: ${module.rootDir}/resources@js/public/common
+      out: ${taskOutputDir}
+  kiteuiResourcesJvm:
+    action: !com.lightningkite.kiteui.shim.kiteuiResourcesJvm
+      resources: ${module.rootDir}/resources
+      packageName: com.lightningkite.mppexampleapp
+      gitIgnoreDir: ${module.rootDir}/resources@jvm/common
+      out: ${taskOutputDir}
+  kiteuiResourcesAndroid:
+    action: !com.lightningkite.kiteui.shim.kiteuiResourcesAndroid
+      resources: ${module.rootDir}/resources
+      packageName: com.lightningkite.mppexampleapp
+      androidResFolder: ${module.rootDir}/res
+      out: ${taskOutputDir}
+  kiteuiResourcesIos:
+    action: !com.lightningkite.kiteui.shim.kiteuiResourcesIos
+      resources: ${module.rootDir}/resources
+      packageName: com.lightningkite.mppexampleapp
+      outPlist: ${module.rootDir}/../example-app-ios/KiteUI Example App/Info.plist
+      outNonAssets: ${module.rootDir}/../example-app-ios/KiteUI Example App/resourcesFromCommon
+      outAssets: ${module.rootDir}/../example-app-ios/KiteUI Example App/Assets.xcassets
+      out: ${taskOutputDir}
+  kiteuiAutoRoutes:
+    action: !com.lightningkite.kiteui.shim.kiteuiAutoRoutes
+      sources: ${module.rootDir}/src
+      out: ${taskOutputDir}
+generated:
+  sources:
+    - language: kotlin
+      directory: ${tasks.kiteuiResourcesCommon.action.out}
+    - language: kotlin
+      fragment:
+        modifier: "@jvm"
+      directory: ${tasks.kiteuiResourcesJvm.action.out}
+    - language: kotlin
+      fragment:
+        modifier: "@js"
+      directory: ${tasks.kiteuiResourcesJs.action.out}
+    - language: kotlin
+      fragment:
+        modifier: "@android"
+      directory: ${tasks.kiteuiResourcesAndroid.action.out}
+    - language: kotlin
+      fragment:
+        modifier: "@ios"
+      directory: ${tasks.kiteuiResourcesIos.action.out}
+    - language: kotlin
+      directory: ${tasks.kiteuiAutoRoutes.action.out}

@@ -1,0 +1,15 @@
+# The echo server the cross-platform network tests talk to. Under Gradle a build service starts
+# it for the duration of a test run; the Toolchain has no build services, so it is started by
+# hand with `./kotlin run -m test-server`.
+product: jvm/app
+
+apply: [ //jvm.module-template.yaml ]
+
+settings:
+  jvm:
+    mainClass: com.lightningkite.kiteui.testserver.MainKt
+
+dependencies:
+  - io.ktor:ktor-server-netty:3.4.3
+  - io.ktor:ktor-server-cors:3.4.3
+  - io.ktor:ktor-server-websockets:3.4.3

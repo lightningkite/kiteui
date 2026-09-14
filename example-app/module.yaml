@@ -1,0 +1,49 @@
+# The Toolchain has no `kmp/app` product type: an application is one module per platform
+# (`android/app`, `ios/app`, `js/app`, `jvm/app`), each depending on a shared `kmp/lib`. This
+# module is that shared library. Producing the APK, the JS bundle and the iOS framework needs
+# thin per-platform app modules that do not exist yet -- see the migration notes.
+product:
+  type: kmp/lib
+  platforms: [ android, js, jvm, iosArm64, iosSimulatorArm64 ]
+
+apply: [ //kmp.module-template.yaml ]
+
+# Uses the repo's own code-generation plugin. Under the Toolchain a project may use a plugin
+# module it also defines, which is what removed the old buildSrc source-copying hack.
+plugins:
+  kiteui-plugin: enabled
+
+aliases:
+  - commonHtml: [ js, jvm ]
+  - commonInteractive: [ android, js, iosArm64, iosSimulatorArm64 ]
+
+settings:
+  kotlin:
+    serialization: enabled
+  android:
+    namespace: com.lightningkite.mppexampleapp
+    minSdk: 24
+    targetSdk: 36
+
+dependencies:
+  - //library: exported
+  - //library-lottie: exported
+  - //library-camera: exported
+
+dependencies@jvm:
+  - io.ktor:ktor-server-core:3.4.3
+  - io.ktor:ktor-server-netty:3.4.3
+  - org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2
+
+dependencies@js:
+  - org.jetbrains.kotlin:kotlin-dom-api-compat:2.4.10
+
+test-dependencies:
+  - org.jetbrains.kotlin:kotlin-test:2.4.10
+  - //test-utilities
+
+settings@ios:
+  kotlin:
+    optIns:
+      - kotlinx.cinterop.BetaInteropApi
+      - kotlinx.cinterop.ExperimentalForeignApi

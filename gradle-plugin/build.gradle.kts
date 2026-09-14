@@ -21,8 +21,8 @@ repositories {
     mavenCentral()
 }
 dependencies {
+    api(project(":codegen"))
     implementation(libs.kotlin.gradle.plugin.api)
-    implementation(libs.fontbox)
     testImplementation(libs.junit)
 }
 tasks.validatePlugins {

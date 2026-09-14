@@ -1,0 +1,19 @@
+product: jvm/app
+
+apply: [ //jvm.module-template.yaml ]
+
+settings:
+  jvm:
+    mainClass: com.lightningkite.kiteui.aidriver.MainKt
+  kotlin:
+    serialization: enabled
+    optIns: [ kotlin.time.ExperimentalTime ]
+
+dependencies:
+  - com.lightningkite.lightningserver:core:5.0.0
+  - com.lightningkite.lightningserver:engine-ktor:5.0.0
+  - com.lightningkite.lightningserver:typed:5.0.0
+  - io.ktor:ktor-server-netty:3.4.3
+
+test-dependencies:
+  - org.jetbrains.kotlin:kotlin-test:2.4.10

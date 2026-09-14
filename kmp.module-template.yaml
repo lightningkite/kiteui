@@ -1,0 +1,26 @@
+# Shared configuration for every multiplatform module in this repo.
+# `product.platforms` cannot live here (templates may not set `product`), so each module
+# repeats its platform list. `aliases` are likewise per-module: the same alias name covers
+# different platform sets in different modules.
+apply: [ //common.module-template.yaml ]
+
+settings:
+  kotlin:
+    optIns:
+      - kotlin.time.ExperimentalTime
+      - kotlin.uuid.ExperimentalUuidApi
+    freeCompilerArgs: [ -Xexpect-actual-classes ]
+  jvm:
+    # Matches what Gradle actually emitted, measured from the baseline jars rather than read off
+    # the build files: the jvm target has no explicit jvmTarget, so KGP used the Gradle JVM and
+    # produced major 61 (Java 17). Without this the Toolchain compiles against the JDK it
+    # provisions (25), producing bytecode no Gradle consumer on JDK 17/21 can read.
+    release: 17
+  publishing:
+    # Defaults to false, unlike Gradle, which publishes a sources jar for every target.
+    publishSources: true
+  android:
+    compileSdk: 36
+  # Gradle's KMP jvm target defaults to kotlin-test-junit (JUnit 4); the Toolchain defaults to
+  # JUnit 5. Match Gradle so existing org.junit.Test imports still resolve.
+  junit: junit-4

@@ -1,0 +1,16 @@
+# The shim that lets this repo's own modules use KiteUI code generation.
+#
+# The Kotlin Toolchain requires a plugin's @TaskAction functions to live in the plugin module's
+# own sources, so `src/` holds nothing but one-line delegations to :codegen. Downstream projects
+# vendor the same file; codegen ships it as a resource template and `kiteui-setup.sh` installs it.
+#
+# Unlike a Gradle plugin, this module needs no publishing: the Toolchain lets a project use a
+# plugin module it also defines. That is what removes the old `buildSrc`, which existed only
+# because Gradle cannot apply a plugin built in the same build -- and with it the hack that
+# copied :gradle-plugin's and :codegen's sources into buildSrc on every configuration.
+product: jvm/amper-plugin
+
+apply: [ //common.module-template.yaml ]
+
+dependencies:
+  - //codegen

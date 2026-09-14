@@ -1,0 +1,67 @@
+apply: [ //kmp.module-template.yaml, //publishing.module-template.yaml ]
+
+product:
+  type: kmp/lib
+  platforms: [ android, js, jvm, iosArm64, iosSimulatorArm64, iosX64 ]
+
+# The Gradle build's hand-built source sets. `commonInteractiveMain` is the platforms with real
+# UI rendering (SSR is excluded); `commonHtmlMain` is the DOM-ish ones. Both alias names also
+# appear in other modules of this repo over different platform sets, so they are derived here
+# rather than shared through a template.
+aliases:
+  - commonInteractive: [ android, js, iosArm64, iosSimulatorArm64, iosX64 ]
+  - commonHtml: [ js, jvm ]
+
+settings:
+  kotlin:
+    serialization: enabled
+  android:
+    namespace: com.lightningkite.kiteui.testing
+    minSdk: 21
+  publishing:
+    enabled: true
+    group: com.lightningkite.kiteui
+    artifactId: test-utilities
+    version: 8.3.0-local
+
+dependencies:
+  - //library: exported
+  - org.jetbrains.kotlin:kotlin-test:2.4.10
+
+dependencies@android:
+  - junit:junit:4.13.2: exported
+  - org.robolectric:robolectric:4.16.1: exported
+  - io.github.takahirom.roborazzi:roborazzi:1.59.0: exported
+
+dependencies@jvm:
+  - org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2
+
+dependencies@js:
+  - org.jetbrains.kotlin:kotlin-dom-api-compat:2.4.10
+
+settings@ios:
+  kotlin:
+    optIns:
+      - kotlinx.cinterop.BetaInteropApi
+      - kotlinx.cinterop.ExperimentalForeignApi
+    freeCompilerArgs: [ -module-name, "com.lightningkite.kiteui:test-utilities", -Xexport-kdoc ]
+
+settings@jvm:
+  kotlin:
+    freeCompilerArgs: [ -module-name, "com.lightningkite.kiteui:test-utilities" ]
+
+settings@js:
+  kotlin:
+    freeCompilerArgs: [ -Xir-module-name=com.lightningkite.kiteui:test-utilities ]
+
+test-settings@jvm:
+  kotlin:
+    freeCompilerArgs: [ -module-name, test_utilities_test ]
+
+test-settings@js:
+  kotlin:
+    freeCompilerArgs: [ -Xir-module-name=test_utilities_test ]
+
+test-settings@ios:
+  kotlin:
+    freeCompilerArgs: [ -module-name, test_utilities_test ]

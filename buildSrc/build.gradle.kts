@@ -17,11 +17,13 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)
     }
 }
-val src = file("../gradle-plugin/src/main/kotlin")
-val dest = file("src/main/kotlin")
-
-src.walkTopDown().filter { it.isFile }.forEach {
-    val out = dest.resolve(it.relativeTo(src))
-    out.parentFile.mkdirs()
-    it.copyTo(out, overwrite = true)
+// The plugin is self-hosted here so this repo's own example-app can use it without publishing.
+// Its logic now lives in :codegen, which buildSrc cannot depend on, so both source trees are copied.
+listOf(file("../gradle-plugin/src/main/kotlin"), file("../codegen/src/main/kotlin")).forEach { src ->
+    val dest = file("src/main/kotlin")
+    src.walkTopDown().filter { it.isFile }.forEach {
+        val out = dest.resolve(it.relativeTo(src))
+        out.parentFile.mkdirs()
+        it.copyTo(out, overwrite = true)
+    }
 }

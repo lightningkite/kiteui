@@ -8,6 +8,7 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.create
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import com.lightningkite.kiteui.codegen.Codegen
 import java.io.File
 
 interface KiteUiPluginExtension {
@@ -53,7 +54,7 @@ class KiteUiPlugin : Plugin<Project> {
             task.outputs.file(out)
             task.doLast {
                 if (resourceFolder.listFiles()?.isNotEmpty() == true) {
-                    resourcesCommon(resourceFolder, out, ext)
+                    Codegen.resourcesCommon(resourceFolder, ext.packageName, out)
                 }
             }
             tasks.matching { it.name == "compileCommonMainKotlinMetadata" }.configureEach { dependsOn(task) }
@@ -86,7 +87,7 @@ class KiteUiPlugin : Plugin<Project> {
             val resourceFolder = project.file("src/commonMain/resources")
             task.inputs.files(resourceFolder)
             task.doLast {
-                resourcesJs(listOf(gitIgnore, publicGitIgnore), resourceFolder, out, ext)
+                Codegen.resourcesJs(resourceFolder, ext.packageName, listOf(gitIgnore, publicGitIgnore), out)
             }
             tasks.matching { it.name == "compileKotlinJs" }.configureEach { dependsOn(task) }
             tasks.matching { it.name == "kspKotlinJs" }
@@ -105,7 +106,7 @@ class KiteUiPlugin : Plugin<Project> {
             val resourceFolder = project.file("src/commonMain/resources")
             task.inputs.files(resourceFolder)
             task.doLast {
-                resourcesJs(listOf(gitIgnore), resourceFolder, out, ext)
+                Codegen.resourcesJvm(resourceFolder, ext.packageName, listOf(gitIgnore), out)
             }
             tasks.matching { it.name == "compileKotlinJvm" }.configureEach { dependsOn(task) }
             tasks.matching { it.name == "kspKotlinJvm" }.configureEach { dependsOn(task) }
@@ -122,7 +123,7 @@ class KiteUiPlugin : Plugin<Project> {
             val resourceFolder = project.file("src/commonMain/resources")
             task.inputs.files(resourceFolder)
             task.doLast {
-                resourcesJs(listOf(gitIgnore), resourceFolder, out, ext)
+                Codegen.resourcesJvm(resourceFolder, ext.packageName, listOf(gitIgnore), out)
             }
             tasks.matching { it.name == "compileKotlinJvmSsr" }.configureEach { dependsOn(task) }
             tasks.matching { it.name == "kspKotlinJvmSsr" }.configureEach { dependsOn(task) }
@@ -151,7 +152,7 @@ class KiteUiPlugin : Plugin<Project> {
                 task.outputs.dir(outNonAssets)
                 task.outputs.file(outPlist)
                 task.doLast {
-                    resourcesIos(resourceFolder, outPlist, outNonAssets, outAssets, outKt, ext)
+                    Codegen.resourcesIos(resourceFolder, ext.packageName, outPlist, outNonAssets, outAssets, outKt)
                 }
             }
             tasks.matching {
@@ -184,7 +185,7 @@ class KiteUiPlugin : Plugin<Project> {
             task.outputs.file(outKt)
             // TODO: Manifest for tracking which files are under our control; git-ignore
             task.doLast {
-                resourcesAndroid(resourceFolder, androidResFolder, outKt, ext)
+                Codegen.resourcesAndroid(resourceFolder, ext.packageName, androidResFolder, outKt)
             }
             tasks.matching { it.name.startsWith("compile") && it.name.endsWith("KotlinAndroid", true) }
                 .configureEach { dependsOn(task) }
@@ -209,7 +210,7 @@ class KiteUiPlugin : Plugin<Project> {
             val out = project.file("build/generated/kiteui-common/autoroutes.kt")
             outputs.file(out)
             doLast {
-                generateAutoroutes(sources, out)
+                Codegen.autoRoutes(sources, out)
             }
             tasks.matching {
                 (it.name.contains("compile") &&

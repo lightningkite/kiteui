@@ -1,0 +1,27 @@
+# The KiteUI code generators, independent of any build tool.
+#
+# Two build integrations bind to this: :kiteui-plugin (and the identical shim downstream Toolchain
+# projects vendor), and the Gradle plugin in :gradle-plugin, which stays on Gradle because the
+# Toolchain cannot build or publish a Gradle plugin.
+product: jvm/lib
+
+apply: [ //jvm.module-template.yaml, //publishing.module-template.yaml ]
+
+dependencies:
+  - org.apache.pdfbox:fontbox:3.0.7
+
+test-dependencies:
+  - junit:junit:4.13.2
+
+settings:
+  publishing:
+    enabled: true
+    group: com.lightningkite.kiteui
+    artifactId: codegen
+    version: 8.3.0-local
+  kotlin:
+    freeCompilerArgs: [ -module-name, "com.lightningkite.kiteui:codegen" ]
+
+test-settings:
+  kotlin:
+    freeCompilerArgs: [ -module-name, codegen_test ]

@@ -1,0 +1,13 @@
+# Shared configuration for every JVM-only module in this repo.
+# `maven-like` keeps the existing src/main/kotlin + src/test/kotlin layout.
+apply: [ //common.module-template.yaml ]
+
+layout: maven-like
+
+settings:
+  jvm:
+    # Matches the major 61 (Java 17) bytecode the Gradle build emits for these modules.
+    release: 17
+  publishing:
+    publishSources: true
+  junit: junit-4

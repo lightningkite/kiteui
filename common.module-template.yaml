@@ -1,0 +1,8 @@
+# Repositories for every module in this repo. `project.yaml` rejects a `repositories:` section,
+# so shared repository configuration has to be a template that each module applies.
+repositories:
+  - id: mavenLocal
+    url: mavenLocal
+    publish: true
+  - https://lightningkite-maven.s3.us-west-2.amazonaws.com
+  - https://jitpack.io

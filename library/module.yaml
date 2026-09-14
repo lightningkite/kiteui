@@ -1,0 +1,133 @@
+apply: [ //kmp.module-template.yaml, //publishing.module-template.yaml ]
+
+product:
+  type: kmp/lib
+  platforms: [ android, js, jvm, iosArm64, iosSimulatorArm64, iosX64 ]
+
+# `commonHtmlMain` in the Gradle build: shared by `jsMain` and `jvmSsrMain`. Derived per module,
+# because the same alias name covers a different platform set in :test-utilities and :example-app.
+#
+# `commonJvmMain` gets no alias: it held no sources at all, only dependencies, and `jvmSsrMain`
+# was the one source set that depended on it -- so those dependencies are `dependencies@jvm` below.
+aliases:
+  - commonHtml: [ js, jvm ]
+
+settings:
+  kotlin:
+    serialization: enabled
+    # Restores Gradle's explicitApi(). Toolchain 0.12.1 has no settings.kotlin.explicitApi, so
+    # the raw flag is used; it would otherwise apply to test sources too, which explicitApi()
+    # never did -- hence the counter-flag in test-settings below.
+    freeCompilerArgs: [ -Xexplicit-api=strict ]
+  android:
+    namespace: com.lightningkite.kiteui
+    minSdk: 23
+  publishing:
+    enabled: true
+    group: com.lightningkite.kiteui
+    artifactId: library
+    version: 8.3.0-local
+
+dependencies:
+  - com.lightningkite:reactive:7.0.0-prerelease-64-02a1bce: exported
+  - org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0: exported
+  - org.jetbrains.kotlinx:kotlinx-serialization-properties:1.11.0: exported
+  - org.jetbrains.kotlinx:kotlinx-datetime:0.7.1: exported
+  - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2: exported
+  - com.lightningkite:kotlinx-serialization-uri:0.0.1-6: exported
+
+dependencies@android:
+  - androidx.appcompat:appcompat:1.7.1: exported
+  - androidx.core:core:1.18.0: exported
+  - androidx.swiperefreshlayout:swiperefreshlayout:1.2.0: exported
+  - com.google.android.material:material:1.13.0: exported
+  - androidx.transition:transition:1.7.0: exported
+  - androidx.cardview:cardview:1.0.0: exported
+  - com.jakewharton.timber:timber:5.0.1: exported
+  - com.github.bumptech.glide:glide:5.0.7: exported
+  - com.github.chrisbanes:PhotoView:2.3.0: exported
+  - io.ktor:ktor-client-core:3.4.3: exported
+  - io.ktor:ktor-client-cio:3.4.3: exported
+  - io.ktor:ktor-client-okhttp:3.4.3: exported
+  - io.ktor:ktor-client-websockets:3.4.3: exported
+  - androidx.media3:media3-exoplayer:1.10.0: exported
+  - androidx.media3:media3-ui:1.10.0: exported
+  - androidx.media3:media3-common:1.10.0: exported
+  - androidx.autofill:autofill:1.3.0: exported
+  - androidx.exifinterface:exifinterface:1.4.2: exported
+
+# The Gradle build put these on `commonJvmMain`, which only `jvmSsrMain` depended on, so `@jvm`
+# is the same set. `ktor-client-okhttp-jvm` came from the project-level `dependencies` block,
+# which in a KMP project applies to the jvm target only.
+dependencies@jvm:
+  - org.apache.commons:commons-lang3:3.20.0: exported
+  - io.ktor:ktor-client-core:3.4.3: exported
+  - io.ktor:ktor-client-okhttp:3.4.3: exported
+  - io.ktor:ktor-client-websockets:3.4.3: exported
+  - io.ktor:ktor-client-okhttp-jvm:3.4.3
+
+dependencies@ios:
+  - io.ktor:ktor-client-darwin:3.4.3
+  - io.ktor:ktor-client-websockets:3.4.3
+
+# The Toolchain does not add kotlin-dom-api-compat the way the Kotlin Gradle plugin does, so
+# without this every org.w3c.dom type is unresolvable on JS. KiteUI is DOM-heavy, so the JS
+# target does not compile at all without it. Declared per module rather than in the shared
+# template: a `dependencies@js` block in a template was observed reaching iOS resolutions too.
+dependencies@js:
+  - org.jetbrains.kotlin:kotlin-dom-api-compat:2.4.10
+
+test-dependencies:
+  - org.jetbrains.kotlin:kotlin-test:2.4.10
+  - org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2
+  - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2
+  - com.lightningkite.testing:kotlin-test-manual-runtime:0.0.9
+  - //test-utilities
+
+test-dependencies@android:
+  - junit:junit:4.13.2
+  - org.robolectric:robolectric:4.16.1
+  - io.github.takahirom.roborazzi:roborazzi:1.59.0
+
+# The iOS hierarchy opt-ins that the Gradle build applies through languageSettings.
+settings@ios:
+  kotlin:
+    optIns:
+      - kotlinx.cinterop.BetaInteropApi
+      - kotlinx.cinterop.ExperimentalForeignApi
+
+# Gradle names the Kotlin module "<group>:<artifact>", which determines the
+# META-INF/*.kotlin_module entry on JVM and the module name baked into JS and Klib output.
+# The Toolchain defaults to the module directory name, so it is restated per platform here.
+settings@jvm:
+  kotlin:
+    freeCompilerArgs: [ -module-name, "com.lightningkite.kiteui:library" ]
+
+settings@js:
+  kotlin:
+    freeCompilerArgs: [ -Xir-module-name=com.lightningkite.kiteui:library ]
+
+settings@ios:
+  kotlin:
+    freeCompilerArgs: [ -module-name, "com.lightningkite.kiteui:library", -Xexport-kdoc ]
+
+# test-settings appends to settings rather than replacing it, so explicit API is turned back off
+# for test sources by a later -Xexplicit-api flag.
+test-settings:
+  kotlin:
+    freeCompilerArgs: [ -Xexplicit-api=disable ]
+
+# settings@<platform> applies to test compilations too, so the module name above would otherwise
+# be given to the test output as well. On Apple targets that is fatal: main and test klibs end up
+# with the same `unique_name` and the KLIB resolver refuses to load both.
+test-settings@jvm:
+  kotlin:
+    freeCompilerArgs: [ -module-name, library_test ]
+
+test-settings@js:
+  kotlin:
+    freeCompilerArgs: [ -Xir-module-name=library_test ]
+
+test-settings@ios:
+  kotlin:
+    freeCompilerArgs: [ -module-name, library_test ]

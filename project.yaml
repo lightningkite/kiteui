@@ -1,0 +1,19 @@
+modules:
+  - ai-driver-server
+  - codegen
+  - example-app
+  - kiteui-plugin
+  - library
+  - library-camera
+  - library-lottie
+  - test-server
+  - test-utilities
+# gradle-plugin is deliberately absent: it is a Gradle plugin (`java-gradle-plugin` +
+# `kotlin-dsl`), which the Kotlin Toolchain cannot build or publish. It stays on Gradle and
+# depends on the published `com.lightningkite.kiteui:codegen` artifact that `codegen` produces.
+
+# The repo's own code-generation plugin, usable by the same build that defines it. This is what
+# makes `buildSrc` -- and its hack of copying :gradle-plugin's and :codegen's sources into it --
+# unnecessary under the Toolchain.
+plugins:
+  - ./kiteui-plugin

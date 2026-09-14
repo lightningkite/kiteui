@@ -1,0 +1,59 @@
+apply: [ //kmp.module-template.yaml, //publishing.module-template.yaml ]
+
+product:
+  type: kmp/lib
+  platforms: [ android, js, jvm, iosArm64, iosSimulatorArm64, iosX64 ]
+
+# commonHtmlMain in the Gradle build: shared by jsMain and jvmSsrMain.
+aliases:
+  - commonHtml: [ js, jvm ]
+
+settings:
+  kotlin:
+    serialization: enabled
+  android:
+    namespace: com.lightningkite.kiteui.lottie
+    minSdk: 21
+  publishing:
+    enabled: true
+    group: com.lightningkite.kiteui
+    artifactId: library-lottie
+    version: 8.3.0-local
+
+dependencies:
+  - //library: exported
+
+dependencies@android:
+  - com.airbnb.android:lottie:6.7.1: exported
+
+# The Gradle build also declares `npm("lottie-web", "5.12.2")` here. The Toolchain has no npm
+# dependency support, so the JS runtime dependency is not declared -- see the migration notes.
+dependencies@js:
+  - org.jetbrains.kotlin:kotlin-dom-api-compat:2.4.10
+
+settings@ios:
+  kotlin:
+    optIns:
+      - kotlinx.cinterop.BetaInteropApi
+      - kotlinx.cinterop.ExperimentalForeignApi
+    freeCompilerArgs: [ -module-name, "com.lightningkite.kiteui:library-lottie", -Xexport-kdoc ]
+
+settings@jvm:
+  kotlin:
+    freeCompilerArgs: [ -module-name, "com.lightningkite.kiteui:library-lottie" ]
+
+settings@js:
+  kotlin:
+    freeCompilerArgs: [ -Xir-module-name=com.lightningkite.kiteui:library-lottie ]
+
+test-settings@jvm:
+  kotlin:
+    freeCompilerArgs: [ -module-name, library_lottie_test ]
+
+test-settings@js:
+  kotlin:
+    freeCompilerArgs: [ -Xir-module-name=library_lottie_test ]
+
+test-settings@ios:
+  kotlin:
+    freeCompilerArgs: [ -module-name, library_lottie_test ]
