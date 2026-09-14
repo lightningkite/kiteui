@@ -725,7 +725,7 @@ public data object ButtonSemantic : Semantic("btn") {
  * maintaining visual consistency with non-interactive content.
  */
 public data object ClickableSemantic : Semantic("clk") {
-    override fun default(theme: Theme): ThemeAndBack = theme.withoutBackButPadding
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
 }
 
 /**

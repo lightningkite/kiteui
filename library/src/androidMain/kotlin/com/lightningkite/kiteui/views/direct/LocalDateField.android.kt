@@ -44,11 +44,13 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
         }
     }
 
+    private val textView = android.widget.TextView(context.activity)
+
     @OverrideOnly
     override fun onStartup() {
         super.onStartup()
         native.addView(
-            android.widget.TextView(context.activity).apply {
+            textView.apply {
                 reactive {
                     text = property()?.renderToString() ?: "Select"
                 }
@@ -56,5 +58,11 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
         )
     }
 
-    override fun nativeApplyTheme(theme: ThemeAndBack): Unit = super.applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.applyThemeWithRipple(theme)
+        val theme = theme.theme
+        textView.setTextColor(theme.foreground.colorInt())
+        textView.setTypeface(theme.font.typeface(context.activity))
+        textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
+    }
 }
