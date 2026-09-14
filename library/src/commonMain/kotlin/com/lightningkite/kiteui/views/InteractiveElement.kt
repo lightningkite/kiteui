@@ -50,6 +50,8 @@ expect abstract class NativeInteractiveElement(context: ElementContext) : Native
  */
 expect abstract class NativeInteractiveContainerElement(context: ElementContext) : NativeContainerElement, InteractiveElement {
     override var enabled: Boolean
+    open var accessibleExpanded: Boolean?
+    open var accessibleOpensDialog: Boolean
 }
 
 // ElementWithAction

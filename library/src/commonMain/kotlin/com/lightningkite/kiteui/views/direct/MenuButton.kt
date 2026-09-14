@@ -10,4 +10,5 @@ expect class MenuButton(context: ElementContext) : NativeInteractiveContainerEle
     fun opensMenu(createMenu: Frame.() -> Unit)
     var requireClick: Boolean
     var preferredDirection: PopoverPreferredDirection
+    var role: String
 }

@@ -16,8 +16,15 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
         tag = "input"
         attributes.type = "radio"
         classes.add("checkResponsive")
-        attributes.hidden = true
-        style.display = "none"
+        // Keep the native radio in the accessibility tree and keyboard-focusable, but hide it
+        // visually (display:none / visibility:hidden would remove it from the a11y tree).
+        setStyleProperty("position", "absolute")
+        setStyleProperty("opacity", "0")
+        setStyleProperty("width", "1px")
+        setStyleProperty("height", "1px")
+        setStyleProperty("margin", "-1px")
+        setStyleProperty("overflow", "hidden")
+        setStyleProperty("clip-path", "inset(50%)")
     }
 
     init {
@@ -25,21 +32,14 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
         native.classes.add("kiteui-stack")
         native.classes.add("checkResponsive")
         native.classes.add("clickable")
-        native.attributes.tabIndex = 0
-        native.addEventListener("keydown", { ev ->
-            ev as KeyboardEvent
-            if (ev.code == KeyCodes.space || ev.code == KeyCodes.enter) {
-                ev.preventDefault()
-            }
-        })
-        native.addEventListener("keyup", { ev ->
-            ev as KeyboardEvent
-            if (ev.code == KeyCodes.space || ev.code == KeyCodes.enter) {
-                input.click()
-                ev.preventDefault()
-            }
-        })
         native.appendChild(input)
+        input.addEventListener("keydown", { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.enter) {
+                ev.preventDefault()
+                input.click()
+            }
+        })
     }
 
     override fun nativeAddChild(index: Int, element: Element) {
@@ -59,19 +59,14 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
             input.attributes.disabled = !value
             input.setAttribute("aria-disabled", if (value) null else "true")
             native.attributes.disabled = !value
-            native.setAttribute("aria-disabled", if (value) null else "true")
         }
 
     init {
-        native.setAttribute("role", "radio")
-        native.setAttribute("aria-checked", "false")
         checked.addListener {
             if (checked.value) {
                 native.classes.add("checked")
-                native.setAttribute("aria-checked", "true")
             } else {
                 native.classes.remove("checked")
-                native.setAttribute("aria-checked", "false")
             }
         }
     }

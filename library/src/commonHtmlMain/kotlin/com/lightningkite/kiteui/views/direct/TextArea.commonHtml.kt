@@ -58,8 +58,12 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
                     textarea.attributes.autocomplete = "tel"
                 }
 
-                AutoComplete.OneTimeCode, null -> {
-                    textarea.attributes.autocomplete = "off"
+                AutoComplete.OneTimeCode -> {
+                    textarea.attributes.autocomplete = "one-time-code"
+                }
+
+                null -> {
+                    textarea.attributes.autocomplete = null
                 }
             }
         }

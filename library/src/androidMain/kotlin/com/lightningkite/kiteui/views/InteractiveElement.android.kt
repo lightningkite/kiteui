@@ -33,6 +33,9 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
             refreshTheming()
         }
 
+    actual open var accessibleExpanded: Boolean? = null
+    actual open var accessibleOpensDialog: Boolean = false
+
     init {
         themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
         themePipeline.add(ThemePipeline.Step.elementStatus, enabledTheming)

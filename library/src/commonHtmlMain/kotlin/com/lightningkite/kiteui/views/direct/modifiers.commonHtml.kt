@@ -19,6 +19,7 @@ actual fun ElementWriter.hintPopover(
 ): ElementWriter = beforeSetup {
     val floating = FloatingInfoHolder(this)
     floating.menuGenerator = setup
+    floating.popoverRole = "tooltip"
     floating.preferredDirection = preferredDirection
     native.addEventListener("contextmenu") {
         floating.open()

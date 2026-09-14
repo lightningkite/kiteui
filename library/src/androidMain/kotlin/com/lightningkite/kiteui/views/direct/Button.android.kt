@@ -22,6 +22,14 @@ actual class Button actual constructor(context: ElementContext): NativeContainer
         isClickable = true
     }
 
+    override var accessibleExpanded: Boolean?
+        get() = super.accessibleExpanded
+        set(value) {
+            super.accessibleExpanded = value
+        }
+
+    //TODO setup functionality for accessibleRole and accessibleHasPopup
+
     @OverrideOnly
     override fun onStartup() {
         super.onStartup()

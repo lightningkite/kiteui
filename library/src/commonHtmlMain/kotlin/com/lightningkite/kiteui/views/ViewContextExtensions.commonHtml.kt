@@ -14,6 +14,10 @@ actual fun ElementContext.overlay(
             beforeSetupContainer {
                 animateIn(transition.forward)
                 willRemove = this
+                if (modal) {
+                    native.setAttribute("role", "dialog")
+                    native.setAttribute("aria-modal", "true")
+                }
             }.body {
                 willRemove?.let {
                     it.animateOut(transition.reverse) {

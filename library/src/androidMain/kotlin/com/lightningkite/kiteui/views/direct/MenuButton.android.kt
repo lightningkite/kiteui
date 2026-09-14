@@ -13,6 +13,7 @@ actual class MenuButton actual constructor(context: ElementContext): NativeInter
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
+    actual var role: String = "menu"
 
     private var _openMenu: (() -> Unit)? = null
 

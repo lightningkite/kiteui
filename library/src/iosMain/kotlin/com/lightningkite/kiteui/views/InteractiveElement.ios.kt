@@ -54,6 +54,8 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
             control.enabled = value
         }
 
+    actual open var accessibleExpanded: Boolean? = null
+
     companion object {
         private val statusThemes = ThemePipeline.ThemeForElement { e ->
             val e = e.underlyingNativeElement as NativeInteractiveContainerElement

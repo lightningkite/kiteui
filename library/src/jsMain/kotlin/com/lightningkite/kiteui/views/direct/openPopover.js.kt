@@ -9,6 +9,7 @@ actual fun Element.openPopover(
 ) {
     val floating = FloatingInfoHolder(this)
     floating.menuGenerator = createMenu
+    floating.popoverRole = "menu"
     floating.open()
     floating.block()
 }
