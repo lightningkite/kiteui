@@ -1,0 +1,23 @@
+# Publishing configuration, deliberately isolated in its own template.
+#
+# The rolling-deploy chain rewrites the version below with a one-line sed. Keeping this
+# block out of the jvm/kmp templates guarantees this file declares exactly one version,
+# so that sed cannot silently rewrite the Kotlin compiler version as well.
+#
+# artifactId is omitted: it defaults to the module directory name, which already matches
+# every Gradle artifact name in this repo.
+
+repositories:
+  - id: mavenLocal
+    url: mavenLocal
+    publish: true
+
+settings:
+  publishing:
+    # Without this you get "No publish tasks were found", even with group,
+    # version and repository all set.
+    enabled: true
+    group: com.lightningkite.kiteui
+    version: 8.3.0-local
+    # Defaults to false, unlike Gradle, which publishes a sources jar for every target.
+    publishSources: true
