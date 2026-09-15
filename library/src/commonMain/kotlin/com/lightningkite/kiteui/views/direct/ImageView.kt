@@ -99,7 +99,7 @@ public class ImageView(private val frame: Frame) : Element by frame {
 
         lastRendered = info
 
-        if (info == null) {
+        if (info == null || info.sources.isEmpty()) {
             _shownInfo.state = ReactiveState(null)
             spinner.opacity = 0.0
             lastRender = null
