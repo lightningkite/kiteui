@@ -24,6 +24,9 @@ actual fun ElementContext.overlay(
                     }
                 }
             }
+            if (modal) {
+                willRemove?.trapFocus()
+            }
         }
     }
 }

@@ -30,6 +30,8 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         native.appendChild(this)
     }
 
+    override val formControlNative get() = textarea
+
     actual val content: MutableReactiveValue<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
 
     init {
