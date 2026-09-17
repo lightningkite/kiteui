@@ -363,8 +363,6 @@ public actual fun ElementWriter.hintPopover(
     setup: ViewWriter.() -> Unit,
 ): ElementWriter {
     return this@hintPopover.beforeSetup {
-        // Goes through extraLongClickHandler, not setOnLongClickListener directly, so this
-        // composes with dragData instead of one silently overwriting the other's listener.
         underlyingNativeElement.extraLongClickHandler = {
             // Reuses the same in-tree overlay popover MenuButton.opensMenu() is built on
             // (Element.openPopover, openPopover.android.kt) rather than a PopupWindow/AlertDialog,

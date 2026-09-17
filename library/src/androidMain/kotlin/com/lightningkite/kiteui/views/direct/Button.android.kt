@@ -48,8 +48,6 @@ public actual class Button actual constructor(context: ElementContext): NativeCo
                 action?.startAction(this)
             }
         }
-        // Goes through extraLongClickHandler, not setOnLongClickListener directly, so this
-        // composes with dragData instead of one silently overwriting the other's listener.
         extraLongClickHandler = {
             if (enabled) {
                 secondaryAction?.startAction(this)
