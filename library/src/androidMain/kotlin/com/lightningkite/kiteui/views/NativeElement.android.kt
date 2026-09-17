@@ -212,28 +212,54 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     }
 
     // drag 'n drop
+
+    /**
+     * Extra long-click handling to run alongside [dragData]'s drag-start, so that setting one
+     * doesn't clobber the other. Android has exactly one `OnLongClickListener` slot per view
+     *
+     * Returns true if it handled the click.
+     */
+    internal var extraLongClickHandler: (() -> Boolean)? = null
+        set(value) {
+            field = value
+            refreshLongClickListener()
+        }
+
+    private fun startDrag(value: DragData): Boolean {
+        val clipData = ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data))
+        val shadowBuilder = value.dragShadow?.let(::DragShadowBuilder)
+            ?: grabPoint?.let { GrabPointShadowBuilder(native, it) }
+            // No recorded touch means the drag was not started by one - the platform's
+            // centred shadow is as good a guess as any.
+            ?: View.DragShadowBuilder(native)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            native.startDragAndDrop(clipData, shadowBuilder, value, 0)
+        } else {
+            @Suppress("DEPRECATION")
+            native.startDrag(clipData, shadowBuilder, value, 0)
+        }
+        return true
+    }
+
+    private fun refreshLongClickListener() {
+        val drag = dragData
+        val extra = extraLongClickHandler
+        native.setOnLongClickListener(
+            if (drag == null && extra == null) null
+            else View.OnLongClickListener {
+                // Both get a chance to run - order matches historical precedence (drag data was
+                // the original sole occupant of this slot).
+                val dragHandled = drag?.let(::startDrag) ?: false
+                val extraHandled = extra?.invoke() ?: false
+                dragHandled || extraHandled
+            }
+        )
+    }
+
     actual override var dragData: DragData? = null
         set(value) {
             field = value
-            if (value == null) {
-                native.setOnLongClickListener(null)
-            } else {
-                native.setOnLongClickListener {
-                    val clipData = ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data))
-                    val shadowBuilder = value.dragShadow?.let(::DragShadowBuilder)
-                        ?: grabPoint?.let { GrabPointShadowBuilder(native, it) }
-                        // No recorded touch means the drag was not started by one - the platform's
-                        // centred shadow is as good a guess as any.
-                        ?: View.DragShadowBuilder(native)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        native.startDragAndDrop(clipData, shadowBuilder, value, 0)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        native.startDrag(clipData, shadowBuilder, value, 0)
-                    }
-                    true
-                }
-            }
+            refreshLongClickListener()
         }
 
     actual override var dropTargetDelegate: DropTargetDelegate? = null
