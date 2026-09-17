@@ -13,7 +13,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
-fun ElementWriter.navGroupColumn(
+public fun ElementWriter.navGroupColumn(
     elements: Reactive<List<NavElement>>,
     onNavigate: suspend () -> Unit = {},
     setup: LinearLayoutElement.() -> Unit = {}
@@ -35,7 +35,7 @@ private fun ElementWriter.CanAddTheme.selectedIfRouteMatches(it: NavLink): Eleme
 
 private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNavigate: suspend () -> Unit = {}) {
     themeChoice += ListSemantic
-    forEach(readable) {
+    renderListExpensive(readable, { this }) {
         fun ViewWriter.display(navElement: NavElement) {
             row {
                 centered.navElementIconAndCountHorizontal(navElement)
@@ -103,7 +103,7 @@ private fun ContainerElement.navGroupColumnInner(readable: Reactive<List<NavElem
     }
 }
 
-fun ElementWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainerElement.() -> Unit = {}): Unit {
+public fun ElementWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainerElement.() -> Unit = {}): Unit {
     row {
         navGroupActionsInner(elements)
         setup()
@@ -129,7 +129,7 @@ private fun ContainerElement.navGroupActionsInner(readable: Reactive<List<NavEle
         }
     }
     themeChoice += ListSemantic
-    forEach(readable) {
+    renderListExpensive(readable, { this }) {
         when (it) {
             is NavAction -> button {
                 shown = false
@@ -168,7 +168,7 @@ private fun ContainerElement.navGroupActionsInner(readable: Reactive<List<NavEle
     }
 }
 
-fun ElementWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}) {
+public fun ElementWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainerElement.() -> Unit = {}) {
     row {
         navGroupTopInner(readable)
         setup()
@@ -177,7 +177,7 @@ fun ElementWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: Conta
 
 private fun ContainerElement.navGroupTopInner(readable: Reactive<List<NavElement>>) {
     themeChoice += ListSemantic
-    forEach(readable) {
+    renderListExpensive(readable, { this }) {
         when (it) {
             is NavAction -> button {
                 shown = false
@@ -206,7 +206,7 @@ private fun ContainerElement.navGroupTopInner(readable: Reactive<List<NavElement
                 ::shown { it.hidden?.invoke() != true }
                 preferredDirection = PopoverPreferredDirection.belowRight
                 opensMenu {
-                    navGroupColumn(remember { it.children() }, { closePopovers() })
+                    navGroupColumn(remember { it.children() }, { context.closePopovers() })
                 }
                 text { ::content { it.title() } }
             }
@@ -222,7 +222,7 @@ private fun ContainerElement.navGroupTopInner(readable: Reactive<List<NavElement
     }
 }
 
-fun ElementWriter.navElementIconAndCount(navElement: NavElement): Unit {
+public fun ElementWriter.navElementIconAndCount(navElement: NavElement): Unit {
     frame {
         centered.icon {
             ::source { navElement.icon() }
@@ -241,7 +241,7 @@ fun ElementWriter.navElementIconAndCount(navElement: NavElement): Unit {
     }
 }
 
-fun ElementWriter.navElementIconAndCountHorizontal(navElement: NavElement): Unit {
+public fun ElementWriter.navElementIconAndCountHorizontal(navElement: NavElement): Unit {
     row {
         centered.icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
@@ -260,7 +260,7 @@ fun ElementWriter.navElementIconAndCountHorizontal(navElement: NavElement): Unit
     }
 }
 
-fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): Unit {
+public fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainerElement.() -> Unit): Unit {
     row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {
@@ -270,7 +270,7 @@ fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: Cont
             }
         }
         themeChoice += ListSemantic
-        forEach(readable, beforeListModifier = { expanding }) {
+        renderListExpensive(readable, beforeModifier = { expanding }) {
             when (it) {
                 is NavAction -> button {
                     shown = false
@@ -292,7 +292,7 @@ fun ElementWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: Cont
                     display(it)
                     preferredDirection = PopoverPreferredDirection.aboveCenter
                     opensMenu {
-                        navGroupColumn(remember { it.children() }, { closePopovers() })
+                        navGroupColumn(remember { it.children() }, { context.closePopovers() })
                     }
                 }
 

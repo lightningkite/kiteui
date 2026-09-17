@@ -12,14 +12,14 @@ import kotlin.js.json
  * JavaScript/Web implementation of AudioPlayback using Web Audio API.
  * Buffers incoming PCM16 audio and plays it through AudioBufferSourceNodes.
  */
-actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
+public actual class AudioPlayback actual constructor(public actual val format: AudioFormat) {
     private val _isPlaying = Signal(false)
     private val _bufferedDurationMs = Signal(0L)
 
-    actual val isPlaying: Reactive<Boolean> = _isPlaying
-    actual val bufferedDurationMs: Reactive<Long> = _bufferedDurationMs
+    public actual val isPlaying: Reactive<Boolean> = _isPlaying
+    public actual val bufferedDurationMs: Reactive<Long> = _bufferedDurationMs
 
-    actual var volume: Float = 1f
+    public actual var volume: Float = 1f
         set(value) {
             field = value.coerceIn(0f, 1f)
             gainNode?.gain?.value = field
@@ -31,7 +31,10 @@ actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
 
     // Buffer queue for audio data
     private val audioQueue = ArrayDeque<ByteArray>()
-    private var currentSourceNode: AudioBufferSourceNode? = null
+
+    // Every buffer scheduled since the last stop() - a single drain of audioQueue can
+    // schedule several nodes at once, so stop() must stop all of them, not just the latest.
+    private val scheduledSourceNodes = mutableListOf<AudioBufferSourceNode>()
     private var nextStartTime: Double = 0.0
     private var isScheduling = false
 
@@ -51,7 +54,7 @@ actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
         }
     }
 
-    actual fun enqueue(data: ByteArray) {
+    public actual fun enqueue(data: ByteArray) {
         if (data.isEmpty()) return
         audioQueue.addLast(data)
         updateBufferedDuration()
@@ -61,7 +64,7 @@ actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
         }
     }
 
-    actual fun start() {
+    public actual fun start() {
         if (audioContext == null) {
             initAudioContext()
         }
@@ -77,23 +80,23 @@ actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
         scheduleNextBuffer()
     }
 
-    actual fun stop() {
+    public actual fun stop() {
         _isPlaying.value = false
-        currentSourceNode?.stop()
-        currentSourceNode = null
+        scheduledSourceNodes.forEach { it.stop() }
+        scheduledSourceNodes.clear()
         clearBuffer()
     }
 
-    actual fun clearBuffer() {
+    public actual fun clearBuffer() {
         audioQueue.clear()
         updateBufferedDuration()
     }
 
-    actual fun onBufferEmpty(action: () -> Unit) {
+    public actual fun onBufferEmpty(action: () -> Unit) {
         onBufferEmptyCallback = action
     }
 
-    actual fun release() {
+    public actual fun release() {
         stop()
         try {
             audioContext?.close()
@@ -139,7 +142,7 @@ actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
             sourceNode.start(nextStartTime)
             nextStartTime += buffer.duration
 
-            currentSourceNode = sourceNode
+            scheduledSourceNodes.add(sourceNode)
         }
 
         isScheduling = false

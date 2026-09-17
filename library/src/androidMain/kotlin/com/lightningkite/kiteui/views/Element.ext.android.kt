@@ -6,11 +6,11 @@ import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.Element
 
-var animationsEnabled: Boolean = true
-actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled
-actual inline fun Element.withoutAnimation(action: () -> Unit) = native.withoutAnimation(action)
+public var animationsEnabled: Boolean = true
+public actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled
+public actual inline fun Element.withoutAnimation(action: () -> Unit): Unit = native.withoutAnimation(action)
 
-inline fun View.withoutAnimation(action: () -> Unit) {
+public inline fun View.withoutAnimation(action: () -> Unit) {
     if (!animationsEnabled) {
         action()
         return
@@ -23,7 +23,7 @@ inline fun View.withoutAnimation(action: () -> Unit) {
     }
 }
 
-inline fun View.debugPrint(get: () -> String) {
+public inline fun View.debugPrint(get: () -> String) {
     if (debugMode && Element.Debugger.debugTarget?.native == this)
         Log.tag("viewDebugTarget").info(get())
 }

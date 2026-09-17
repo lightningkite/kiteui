@@ -29,92 +29,92 @@ import kotlin.math.*
 /**
  * Data point for the graph.
  */
-data class Point(val x: Double, val y: Double)
+public data class Point(val x: Double, val y: Double)
 
 /**
  * Delegate class for drawing graphs on a Canvas.
  * This provides basic graphing functionality with customizable appearance.
  */
-open class GraphDelegate : CanvasDelegate() {
+public open class GraphDelegate : CanvasDelegate() {
     // Data to be displayed on the graph
-    var data: List<Point> = emptyList()
+    public var data: List<Point> = emptyList()
 
-    enum class PointShape {
+    public enum class PointShape {
         Square,
         Circle,
     }
 
     // Graph appearance properties
     private var _lineColor: Color? = null // Color.blue
-    var lineColor: Color
+    public var lineColor: Color
         get() = _lineColor ?: theme.foreground.closestColor()
         set(value) {
             _lineColor = value
         }
 
     private var _pointColor: Color? = null // Color.red
-    var pointColor: Color
+    public var pointColor: Color
         get() = _pointColor ?: theme.foreground.closestColor()
         set(value) {
             _pointColor = value
         }
 
     private var _gridColor: Color? = null // Color(0.8f, 0.8f, 0.8f, 1.0f)
-    var gridColor: Color
+    public var gridColor: Color
         get() = _gridColor ?: theme.background.closestColor().highlight(0.1f)
         set(value) {
             _gridColor = value
         }
 
     private var _axisColor: Color? = null // Color.black
-    var axisColor: Color
+    public var axisColor: Color
         get() = _axisColor ?: theme.foreground.closestColor()
         set(value) {
             _axisColor = value
         }
 
     private var _textColor: Color? = null // Color.black
-    var textColor: Color
+    public var textColor: Color
         get() = _textColor ?: theme.foreground.closestColor()
         set(value) {
             _textColor = value
         }
-    var showGrid: Boolean = true
-    var showPoints: Boolean = true
+    public var showGrid: Boolean = true
+    public var showPoints: Boolean = true
 
     private var _pointSize: Dimension? = null // 5.0.dp
-    var pointSize: Dimension
+    public var pointSize: Dimension
         get() = _pointSize ?: theme.padding.left
         set(value) { _pointSize = value }
     private var _pointShape: PointShape? = null // PointShape.Square
-    var pointShape: PointShape
+    public var pointShape: PointShape
         get() = _pointShape ?: PointShape.Square
         set(value) { _pointShape = value }
     private var _lineWidth: Dimension? = null // 2.0.dp
-    var lineWidth: Dimension
+    public var lineWidth: Dimension
         get() = _lineWidth ?: 1.dp
         set(value) {
             _lineWidth = value
         }
 
     private var _padding: Dimension? = null // 0.dp
-    var padding: Dimension
+    public var padding: Dimension
         get() = _padding ?: (theme.font.size * 4)
         set(value) {
             _padding = value
         }
 
     // Axis labels
-    var xAxisLabel: String = "X"
-    var yAxisLabel: String = "Y"
+    public var xAxisLabel: String = "X"
+    public var yAxisLabel: String = "Y"
 
-    var xAxisLabels: List<String>? = null
-    var yAxisLabels: List<String>? = null
+    public var xAxisLabels: List<String>? = null
+    public var yAxisLabels: List<String>? = null
 
     // Font sizes
-    var axisLabelFontSize: Dimension = 1.rem
-    var tickLabelFontSize: Dimension = 0.8.rem
-    var noDataMessageFontSize: Dimension = 2.rem
+    public var axisLabelFontSize: Dimension = 1.rem
+    public var tickLabelFontSize: Dimension = 0.8.rem
+    public var noDataMessageFontSize: Dimension = 2.rem
 
     // Calculate data bounds
     private val rawMinX get() = min(0.0, data.minOfOrNull { it.x } ?: 0.0)
@@ -134,18 +134,13 @@ open class GraphDelegate : CanvasDelegate() {
 
     private val xAxisLabelHeight = 2.5.rem.canvasUnits
     private val yAxisLabelWidth: Double
-        get() = (2 + (yAxisLabels?.maxOf { it.length } ?: run {
-            var longestLabelSize = 0
-            var y = ceil(minY / yStep) * yStep
-            while (y <= maxY) {
-                val nextLabelSize = formatNumber(y).length
-                if (nextLabelSize > longestLabelSize) {
-                    longestLabelSize = nextLabelSize
-                }
-                y += yStep
-            }
-            longestLabelSize
-        }) / 2.0).rem.canvasUnits
+        // Measured over the same tick positions that get drawn, so the reserved width cannot
+        // disagree with what ends up in it. This used to be a second copy of the stepping loop,
+        // which also meant it span forever whenever yStep came out as 0.
+        get() = (2 + (yAxisLabels?.maxOf { it.length }
+            ?: axisTicks(minY, maxY, yStep, rawMinY, null)
+                .maxOfOrNull { formatNumber(it.first).length }
+            ?: 0) / 2.0).rem.canvasUnits
 
     override fun draw(context: DrawingContext2D) {
         if (data.isEmpty()) {
@@ -318,8 +313,6 @@ open class GraphDelegate : CanvasDelegate() {
 
             // X-axis
             beginPath()
-            println("minX: $minX")
-            println("maxX: $maxX")
             moveTo(toCanvasX(minX), toCanvasY(0.0))
             lineTo(toCanvasX(maxX), toCanvasY(0.0))
             stroke()
@@ -335,8 +328,7 @@ open class GraphDelegate : CanvasDelegate() {
             font(tickLabelFontSize.canvasUnits, FontAndStyle(systemDefaultFont))
 
             // X-axis ticks and labels
-            var x = ceil(minX / xStep) * xStep
-            while (x <= maxX) {
+            for ((x, label) in axisTicks(minX, maxX, xStep, rawMinX, xAxisLabels)) {
                 val cx = toCanvasX(x)
 
                 // Draw tick
@@ -347,14 +339,11 @@ open class GraphDelegate : CanvasDelegate() {
 
                 // Draw label
                 textAlign(TextAlign.center)
-                drawText(xAxisLabels?.let { it[(x / xStep).roundToInt()] } ?: formatNumber(x), cx, height - paddingCanvas - xAxisLabelHeight + 1.rem.canvasUnits)
-
-                x += xStep
+                drawText(label ?: formatNumber(x), cx, height - paddingCanvas - xAxisLabelHeight + 1.rem.canvasUnits)
             }
 
             // Y-axis ticks and labels
-            var y = ceil(minY / yStep) * yStep
-            while (y <= maxY) {
+            for ((y, label) in axisTicks(minY, maxY, yStep, rawMinY, yAxisLabels)) {
                 val cy = toCanvasY(y)
 
                 // Draw tick
@@ -365,9 +354,7 @@ open class GraphDelegate : CanvasDelegate() {
 
                 // Draw label
                 textAlign(TextAlign.right)
-                drawText(yAxisLabels?.let { it[(y / yStep).roundToInt()] } ?: formatNumber(y), paddingCanvas + yAxisLabelWidth - 0.5.rem.canvasUnits, cy + 0.3.rem.canvasUnits)
-
-                y += yStep
+                drawText(label ?: formatNumber(y), paddingCanvas + yAxisLabelWidth - 0.5.rem.canvasUnits, cy + 0.3.rem.canvasUnits)
             }
         }
     }
@@ -418,8 +405,8 @@ open class GraphDelegate : CanvasDelegate() {
     }
 }
 
-class GraphCanvas(private val canvas: Canvas) : Element by canvas, GraphDelegate() {
-    constructor(context: ElementContext) : this(Canvas(context))
+public class GraphCanvas(private val canvas: Canvas) : Element by canvas, GraphDelegate() {
+    public constructor(context: ElementContext) : this(Canvas(context))
 
     init {
         canvas.delegate = this as GraphDelegate
@@ -430,7 +417,7 @@ class GraphCanvas(private val canvas: Canvas) : Element by canvas, GraphDelegate
  * Create a [GraphCanvas] with the given setup.
  */
 @OptIn(ExperimentalContracts::class)
-inline fun ElementWriter.graph(setup: GraphCanvas.() -> Unit = {}): GraphCanvas {
+public inline fun ElementWriter.graph(setup: GraphCanvas.() -> Unit = {}): GraphCanvas {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(GraphCanvas(context), setup)
 }
@@ -438,7 +425,7 @@ inline fun ElementWriter.graph(setup: GraphCanvas.() -> Unit = {}): GraphCanvas 
 /**
  * Extension function to create a line graph with the given data.
  */
-inline fun ElementWriter.lineGraph(
+public inline fun ElementWriter.lineGraph(
     data: List<Point>,
     setup: GraphCanvas.() -> Unit = {}
 ): GraphCanvas {
@@ -454,7 +441,7 @@ inline fun ElementWriter.lineGraph(
  */
 @JvmName("lineGraphFromYValues")
 @JsName("lineGraphFromYValues")
-inline fun ElementWriter.lineGraph(
+public inline fun ElementWriter.lineGraph(
     yValues: List<Double>,
     setup: GraphCanvas.() -> Unit = {}
 ): GraphCanvas {
@@ -467,9 +454,46 @@ inline fun ElementWriter.lineGraph(
  */
 @JvmName("lineGraphFromPairs")
 @JsName("lineGraphFromPairs")
-inline fun ElementWriter.lineGraph(
+public inline fun ElementWriter.lineGraph(
     points: List<Pair<Double, Double>>,
     setup: GraphCanvas.() -> Unit = {}
 ): GraphCanvas {
     return lineGraph(points.map { Point(it.first, it.second) }, setup)
+}
+
+/**
+ * The tick positions to draw on one axis between [from] and [to], each paired with its label.
+ *
+ * With no [labels] the ticks are round multiples of [step] from zero and every label is null,
+ * leaving the caller to format the number. With [labels] there is exactly one tick per label,
+ * anchored at [labelOrigin] - labels span the whole plotted range and are indexed from its minimum,
+ * which is not zero when the data extends below it.
+ *
+ * The distinction that makes this worth extracting: [from] and [to] pad the plotted range by 5% on
+ * *each* side, and that padding exceeds one step once there are 21 or more labels. A labelled axis
+ * therefore has to skip the positions below the first label and stop at the last, rather than
+ * indexing the list with whatever the arithmetic produces.
+ */
+internal fun axisTicks(
+    from: Double,
+    to: Double,
+    step: Double,
+    labelOrigin: Double,
+    labels: List<String>?,
+): List<Pair<Double, String?>> {
+    if (step <= 0.0 || !step.isFinite()) return emptyList()
+    val origin = if (labels != null) labelOrigin else 0.0
+    val result = ArrayList<Pair<Double, String?>>()
+    var position = origin + ceil((from - origin) / step) * step
+    while (position <= to) {
+        if (labels == null) {
+            result.add(position to null)
+        } else {
+            val index = ((position - origin) / step).roundToInt()
+            if (index >= labels.size) break
+            if (index >= 0) result.add(position to labels[index])
+        }
+        position += step
+    }
+    return result
 }

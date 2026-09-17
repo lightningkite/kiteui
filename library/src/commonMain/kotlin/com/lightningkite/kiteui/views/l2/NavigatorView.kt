@@ -1,18 +1,16 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.MainContentSemantic
-import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.models.LiveRegionMode
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
-import com.lightningkite.reactive.context.reactive
+import com.lightningkite.reactive.context.awaitOnce
+import kotlinx.coroutines.launch
 
-fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
+public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
     return swapView {
         debugName = "navigatorView"
         Element.Debugger.debugTarget = this
@@ -33,37 +31,13 @@ fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
                     context.pageNavigator = navigator
                     if (screen != null)
                         with(screen) { themed(MainContentSemantic).asMain.padded.render() }
-                    else null
-                }
-                this@swapView.requestFocusOrDescendant()
-            }
-        )
-    }
-}
-
-fun ViewWriter.navigatorViewDialog(): SwapView {
-    val n = dialogPageNavigator
-    return this.swapView {
-        debugName = "navigatorViewDialog"
-        ignoreInteraction = true
-        var lastStack = n.stack.value
-        this@swapView.swapping(
-            transition = {
-                val newStack = n.stack.value
-                val transitionSet = theme.dialogTransitions
-                when {
-                    newStack.size - lastStack.size > 0 -> transitionSet.forward
-                    newStack.size - lastStack.size < 0 && newStack.firstOrNull() == lastStack.firstOrNull() -> transitionSet.reverse
-                    else -> transitionSet.neutral
-                }.also { lastStack = newStack }
-            },
-            current = { n.currentPage<Page?>() },
-            views = { screen ->
-                with(split()) {
-                    context.pageNavigator = n
-                    if (screen != null)
-                        with(screen) { themed(DialogSemantic).render() }
-                    else null
+                    // Tell assistive technology the screen changed, which it can't otherwise
+                    // notice. Deliberately not requestFocus: keyboard focus landing on the new
+                    // page's first field pops the soft keyboard on Android and iOS. Pages that
+                    // want a focused field ask for it themselves.
+                    if (screen != null) launch {
+                        this@swapView.announceAsNewScreen(screen.title.awaitOnce())
+                    }
                 }
             }
         )

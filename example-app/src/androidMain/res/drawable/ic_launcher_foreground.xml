@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  KiteUI's mark, the same geometry as logo.svg at the repository root.
+
+  The group maps the logo's 1000-unit box onto the 108dp adaptive-icon canvas so the mark's
+  circumscribed circle comes to 64dp - just inside the 66dp that every launcher mask is
+  guaranteed to show, so no corner of the kite or the chevrons is ever clipped.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="108dp"
+        android:height="108dp"
+        android:viewportWidth="108"
+        android:viewportHeight="108">
+    <group
+            android:scaleX="0.0684"
+            android:scaleY="0.0684"
+            android:translateX="19.79"
+            android:translateY="19.79">
+        <path
+                android:fillColor="#FFC933"
+                android:pathData="M308.5,404.2 L540.9,117.3 L494.8,63.2 L227.2,393.6 L509.6,928.5 L545.4,852.7 Z"/>
+        <path
+                android:fillColor="#BF8C00"
+                android:fillAlpha="0.5"
+                android:pathData="M149.4,402.7 L381.8,115.7 L335.7,61.6 L68.1,392.1 L350.5,926.9 L386.3,851.2 Z"/>
+        <path
+                android:fillColor="#FDBA12"
+                android:pathData="M659.7,73.1 L392,403.5 L674.4,938.4 L931.9,392.8 Z"/>
+    </group>
+</vector>

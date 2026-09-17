@@ -9,17 +9,17 @@ import kotlin.native.runtime.GC
 import kotlin.native.runtime.NativeRuntimeApi
 import kotlin.reflect.KClass
 
-actual fun debugger() {
+public actual fun debugger() {
 }
 
 @OptIn(ExperimentalNativeApi::class)
-object ObjCountTrackers {
+public object ObjCountTrackers {
     private val allWeak = HashMap<KClass<*>, ArrayList<WeakReference<Any>>>()
-    val alive: Map<KClass<*>, Int> get() {
+    public val alive: Map<KClass<*>, Int> get() {
         allWeak.values.forEach { it.removeAll { it.get() == null } }
         return allWeak.mapValues { it.value.size }
     }
-    fun track(instance: Any) {
+    public fun track(instance: Any) {
         allWeak.getOrPut(instance::class) {
             Log.log("Tracking type ${instance::class.qualifiedName}")
             ArrayList()
@@ -28,7 +28,7 @@ object ObjCountTrackers {
 }
 
 @OptIn(NativeRuntimeApi::class, ExperimentalStdlibApi::class)
-actual fun gc(): GCInfo {
+public actual fun gc(): GCInfo {
     repeat(3) {
         GC.collect()
         NSRunLoop.currentRunLoop()
@@ -37,18 +37,18 @@ actual fun gc(): GCInfo {
     return GCInfo(GC.lastGCInfo!!.memoryUsageAfter["heap"]?.totalObjectsSizeBytes ?: -1L)
 }
 
-actual fun cleanImageCache() {
+public actual fun cleanImageCache() {
     ImageCache.imageCache.removeAllObjects()
     ImageCache.imageCacheSized.removeAllObjects()
 }
 
-actual fun gcReport() {
+public actual fun gcReport() {
     ObjCountTrackers.alive.entries.forEach {
         Log.log("${it.key.qualifiedName}.alive = ${it.value}")
     }
     ExtensionProperty.debug()
 }
 
-actual fun assertMainThread() {
+public actual fun assertMainThread() {
     if(!NSThread.isMainThread) throw Error("NOT MAIN THREAD!!!")
 }

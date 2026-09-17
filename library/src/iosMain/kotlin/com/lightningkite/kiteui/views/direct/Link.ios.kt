@@ -11,10 +11,11 @@ import platform.UIKit.UIAccessibilityTraitLink
 import platform.UIKit.UIControl
 import platform.UIKit.accessibilityTraits
 import platform.UIKit.setAccessibilityTraits
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class Link actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + linkDriverActions()
-    override val native = FrameLayoutButton()
+public actual class Link actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + linkDriverActions()
+    override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
 
     init {
@@ -35,9 +36,9 @@ actual class Link actual constructor(context: ElementContext): NativeContainerEl
         setupControl()
     }
 
-    actual var to: (() -> Page)? = null
-    actual var onNavigator: PageNavigator = context.mainPageNavigator
-    actual var newTab: Boolean = false
-    actual var resetsStack: Boolean = false
+    public actual var to: (() -> Page)? = null
+    public actual var onNavigator: PageNavigator = context.mainPageNavigator
+    public actual var newTab: Boolean = false
+    public actual var resetsStack: Boolean = false
 }
 

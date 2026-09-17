@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.lottie.models.LottieRemote
 import com.lightningkite.kiteui.lottie.models.LottieSource
 import com.lightningkite.kiteui.views.ElementWriter
-import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.write
 import kotlin.contracts.ExperimentalContracts
@@ -23,7 +22,6 @@ import kotlin.contracts.contract
  */
 @Untested
 @ExperimentalKiteUi
-@ViewDsl
 inline fun ElementWriter.lottie(
     source: LottieSource,
     description: String,
@@ -43,7 +41,6 @@ inline fun ElementWriter.lottie(
 @Untested
 @ExperimentalKiteUi
 @OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ElementWriter.lottie(
     url: String,
     description: String,

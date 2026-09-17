@@ -13,7 +13,7 @@ import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
 import javax.imageio.stream.MemoryCacheImageOutputStream
 
-actual suspend fun ImageLocal.compressed(
+public actual suspend fun ImageLocal.compressed(
     maxWidth: Int,
     maxHeight: Int,
     quality: Float

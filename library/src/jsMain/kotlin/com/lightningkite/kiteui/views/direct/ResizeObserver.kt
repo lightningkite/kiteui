@@ -6,24 +6,24 @@ import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
 
-external class ResizeObserver(callback: (Array<ResizeObserverEntry>, observer: ResizeObserver) -> Unit) {
-    fun disconnect()
-    fun observe(target: Element, options: ResizeObserverOptions = definedExternally)
-    fun unobserve(target: Element)
+public external class ResizeObserver(callback: (Array<ResizeObserverEntry>, observer: ResizeObserver) -> Unit) {
+    public fun disconnect()
+    public fun observe(target: Element, options: ResizeObserverOptions = definedExternally)
+    public fun unobserve(target: Element)
 }
 
-external interface ResizeObserverOptions {
-    val box: String
+public external interface ResizeObserverOptions {
+    public val box: String
 }
 
-external interface ResizeObserverEntry {
-    val target: Element
-    val contentRect: DOMRectReadOnly
-    val contentBoxSize: ResizeObserverEntryBoxSize
-    val borderBoxSize: ResizeObserverEntryBoxSize
+public external interface ResizeObserverEntry {
+    public val target: Element
+    public val contentRect: DOMRectReadOnly
+    public val contentBoxSize: ResizeObserverEntryBoxSize
+    public val borderBoxSize: ResizeObserverEntryBoxSize
 }
 
-external interface ResizeObserverEntryBoxSize {
-    val blockSize: Double
-    val inlineSize: Double
+public external interface ResizeObserverEntryBoxSize {
+    public val blockSize: Double
+    public val inlineSize: Double
 }

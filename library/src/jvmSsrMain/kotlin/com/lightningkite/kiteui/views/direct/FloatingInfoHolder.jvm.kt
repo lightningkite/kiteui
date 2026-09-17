@@ -4,15 +4,15 @@ import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.*
 
-actual class FloatingInfoHolder actual constructor(val source: Element) {
-    actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
-    actual var menuGenerator: Frame.() -> Unit = {}
-    actual var popoverRole: String? = null
+public actual class FloatingInfoHolder actual constructor(public val source: Element, public val anchor: Element?) {
+    public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
+    public actual var menuGenerator: Frame.() -> Unit = {}
+    public actual var popoverRole: String? = null
     private var existingView: Element? = null
 
-    actual fun open() {
+    public actual fun open() {
         if (existingView != null) return
-        val overlay = source.context.overlayFrame ?: return
+        val overlay = source.context.overlayFrame
         with(source.popoverWriter(overlay) { close() }) {
             frame {
                 this@FloatingInfoHolder.existingView = this
@@ -21,11 +21,11 @@ actual class FloatingInfoHolder actual constructor(val source: Element) {
         }
     }
 
-    actual fun block() {}
+    public actual fun block() {}
 
-    actual fun close() {
+    public actual fun close() {
         val v = existingView ?: return
         existingView = null
-        source.context.overlayFrame?.removeChild(v)
+        source.context.overlayFrame.removeChild(v)
     }
 }

@@ -10,33 +10,46 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
 
-expect class SoundEffectPool(concurrency: Int = 4) {
-    suspend fun preload(sound: AudioSource)
-    suspend fun play(sound: AudioSource): PlayingSoundEffect
-    fun unload(sound: AudioSource)
+public expect class SoundEffectPool(concurrency: Int = 4) {
+    public suspend fun preload(sound: AudioSource)
+    public suspend fun play(sound: AudioSource): PlayingSoundEffect
+    public fun unload(sound: AudioSource)
 }
 
-interface PlayingSoundEffect {
-    var volume: Float
-    var isPlaying: Boolean
-    fun stop()
+public interface PlayingSoundEffect {
+    public var volume: Float
+
+    /**
+     * Whether this sound is still going.
+     *
+     * **Android reports pausing and stopping but not a sound reaching its own end**, so it stays
+     * `true` after a clip finishes there. The platform's `SoundPool` exposes no completion callback
+     * of any kind, and there is nothing to poll either. Treat this as "not explicitly stopped"
+     * rather than "still audible" if you need a cross-platform answer; use [AudioSource.load] and
+     * [PlayableAudio.onComplete] where a real end-of-playback signal matters.
+     *
+     * Setting it to `false` pauses or stops on every platform. Setting it back to `true` resumes on
+     * Android but is ignored on web, where a finished source node cannot be restarted.
+     */
+    public var isPlaying: Boolean
+    public fun stop()
 }
 
-expect suspend fun AudioSource.load(): PlayableAudio
+public expect suspend fun AudioSource.load(): PlayableAudio
 
-interface PlayableAudio {
-    var volume: Float
-    var loop: Boolean
-    var isPlaying: Boolean
-    fun onComplete(action: () -> Unit)
-    fun stop()
-    fun play() {
+public interface PlayableAudio {
+    public var volume: Float
+    public var loop: Boolean
+    public var isPlaying: Boolean
+    public fun onComplete(action: () -> Unit)
+    public fun stop()
+    public fun play() {
         isPlaying = true
     }
-    val currentTime: MutableReactive<Duration>
+    public val currentTime: MutableReactive<Duration>
 }
 
-fun CalculationContext.backgroundAudio(
+public fun CoroutineScope.backgroundAudio(
     audio: AudioResource,
     backgroundVolume: Float,
     playBackgroundAudio: suspend () -> Boolean

@@ -15,12 +15,13 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = formattedTextInputDriverValue()
-    override val driverActions get() = super.driverActions + formattedTextInputDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + formattedTextInputDriverActions()
 
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
             if(block) return@doAfterTextChanged
@@ -28,7 +29,6 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
             post {
                 val str = this.text.toString()
                 try {
-                    if (str == null) return@post
                     repairFormatAndPosition(
                         dirty = str,
                         selectionStart = selectionStart,
@@ -57,7 +57,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.font.font,
+                theme.font.font.toTypeface(),
                 theme.font.weight,
                 theme.font.italic
             )
@@ -66,17 +66,17 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
                 (if(theme.font.underline) Paint.UNDERLINE_TEXT_FLAG else 0) or
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         useAllCaps = theme.font.allCaps
-        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
         applyAlign(_align ?: theme.font.align)
     }
 
     private var isRawData: (Char) -> Boolean = { true }
     private var formatter: (clean: String) -> String = { it }
-    actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
+    public actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
         this.isRawData = isRawData
         this.formatter = formatter
     }
-    actual val content: MutableReactiveValue<String> = native.contentProperty().lens(
+    public actual val content: MutableReactiveValue<String> = native.contentProperty().lens(
         get = { it.filter(isRawData) },
         set = { formatter(it.filter(isRawData)) }
     )
@@ -102,7 +102,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         }
     }
 
-    actual var keyboardHints: KeyboardHints
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -120,7 +120,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
         }
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
@@ -130,7 +130,7 @@ actual class FormattedTextInput actual constructor(context: ElementContext) : Na
     private var _align: Align? = null
     private var _fontAndStyle: FontAndStyle? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value

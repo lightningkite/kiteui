@@ -9,23 +9,23 @@ import platform.UIKit.*
 import kotlin.native.ref.WeakReference
 
 @OptIn(ExperimentalNativeApi::class)
-actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = content
-    override val native = UILabelWithLayerBackground(WeakReference(context))
-    val label get() = native.label
+    override val native: UILabelWithLayerBackground = UILabelWithLayerBackground(WeakReference(context))
+    internal val label: UILabel get() = native.label
 
     init {
         label.numberOfLines = 0
     }
 
-    actual var content: String = ""
+    public actual var content: String = ""
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
     private var _align: Align? = null
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value
@@ -47,18 +47,18 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
         }
     }
 
-    actual var ellipsis: Boolean
+    public actual var ellipsis: Boolean
         get() = label.lineBreakMode == NSLineBreakByTruncatingTail
         set(value) {
             label.lineBreakMode = if (value) NSLineBreakByTruncatingTail else NSLineBreakByClipping
         }
-    actual var wraps: Boolean
+    public actual var wraps: Boolean
         get() = label.numberOfLines == 0L
         set(value) {
             label.numberOfLines = if (value) 0 else 1
         }
 
-    var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -108,14 +108,14 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
         }
     }
 
-    actual var wordBreak: WordBreak = WordBreak.Normal
+    public actual var wordBreak: WordBreak = WordBreak.Normal
         set(value) {
             label.lineBreakMode = when (value) {
                 WordBreak.Normal -> NSLineBreakByWordWrapping
                 WordBreak.BreakAll -> NSLineBreakByCharWrapping
             }
         }
-    actual var lineClamp: Int? = null
+    public actual var lineClamp: Int? = null
         set(value) {
             field = value
             label.numberOfLines = value?.toLong() ?: 0L
@@ -132,7 +132,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
     }
 
     private var originalHtml: NSAttributedString? = null
-    actual fun setBasicHtmlContent(html: String) {
+    public actual fun setBasicHtmlContent(html: String) {
         val x = NSAttributedString.create(
             data = html.nsdata()!!,
             options = mapOf(
@@ -159,8 +159,8 @@ private val dynamicTypeScaleFactors = mapOf(
     UIContentSizeCategoryExtraExtraLarge to 1.31,
     UIContentSizeCategoryExtraExtraExtraLarge to 1.42,
 )
-const val ENABLE_DYNAMIC_TYPE = true
-fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
+internal const val ENABLE_DYNAMIC_TYPE: Boolean = true
+internal fun preferredScaleFactor(): Double = if (ENABLE_DYNAMIC_TYPE) {
     dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
 } else {
     1.0

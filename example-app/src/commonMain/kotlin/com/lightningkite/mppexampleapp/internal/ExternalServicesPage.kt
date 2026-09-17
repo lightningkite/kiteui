@@ -161,14 +161,14 @@ object ExternalServicesPage : Page {
                                 Brady Svedin,4632180951
                             """.trimIndent().toBlob("text/csv; charset=utf-8; header=present")
                                 )
-                                toast { text { content = "Check downloads for file kiteui_example.csv" } }
+                                context.toast { text { content = "Check downloads for file kiteui_example.csv" } }
                             }
                         }
                         card.button {
                             onClick {
                                 try {
                                     context.download("kiteui_example.txt", "Hello from KiteUI!".toBlob())
-                                    toast { text { content = "Check downloads for file kiteui_example.txt" } }
+                                    context.toast { text { content = "Check downloads for file kiteui_example.txt" } }
                                 } catch (e: Exception) {
                                     e.printStackTrace2()
                                 }
@@ -233,7 +233,7 @@ object ExternalServicesPage : Page {
                     }
 
                     sizeConstraints(height = 30.rem).image {
-                        rView::shown { photo() != null }
+                        ::shown { photo() != null }
                         ::source { photo()?.let { ImageLocal(it) } }
                         scaleType = ImageScaleType.Crop
                     }
@@ -247,7 +247,7 @@ object ExternalServicesPage : Page {
                         onClick {
                             try {
                                 val location = context.getCurrentPosition()
-                                dialog {
+                                context.dialog {
                                     col {
                                         text("Location")
                                         space()

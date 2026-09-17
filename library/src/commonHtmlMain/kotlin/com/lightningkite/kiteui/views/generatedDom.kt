@@ -1,573 +1,573 @@
 package com.lightningkite.kiteui.views
 
 
-expect /*inline*/ var FutureElementStyle.cssText: String?
-expect /*inline*/ var FutureElementStyle.cssFloat: String?
-expect /*inline*/ var FutureElementStyle.alignContent: String?
-expect /*inline*/ var FutureElementStyle.alignItems: String?
-expect /*inline*/ var FutureElementStyle.alignSelf: String?
-expect /*inline*/ var FutureElementStyle.animation: String?
-expect /*inline*/ var FutureElementStyle.animationDelay: String?
-expect /*inline*/ var FutureElementStyle.animationDirection: String?
-expect /*inline*/ var FutureElementStyle.animationDuration: String?
-expect /*inline*/ var FutureElementStyle.animationFillMode: String?
-expect /*inline*/ var FutureElementStyle.animationIterationCount: String?
-expect /*inline*/ var FutureElementStyle.animationName: String?
-expect /*inline*/ var FutureElementStyle.animationPlayState: String?
-expect /*inline*/ var FutureElementStyle.animationTimingFunction: String?
-expect /*inline*/ var FutureElementStyle.backfaceVisibility: String?
-expect /*inline*/ var FutureElementStyle.background: String?
-expect /*inline*/ var FutureElementStyle.backgroundAttachment: String?
-expect /*inline*/ var FutureElementStyle.backgroundClip: String?
-expect /*inline*/ var FutureElementStyle.backgroundColor: String?
-expect /*inline*/ var FutureElementStyle.backgroundImage: String?
-expect /*inline*/ var FutureElementStyle.backgroundOrigin: String?
-expect /*inline*/ var FutureElementStyle.backgroundPosition: String?
-expect /*inline*/ var FutureElementStyle.backgroundRepeat: String?
-expect /*inline*/ var FutureElementStyle.backgroundSize: String?
-expect /*inline*/ var FutureElementStyle.border: String?
-expect /*inline*/ var FutureElementStyle.borderBottom: String?
-expect /*inline*/ var FutureElementStyle.borderBottomColor: String?
-expect /*inline*/ var FutureElementStyle.borderBottomLeftRadius: String?
-expect /*inline*/ var FutureElementStyle.borderBottomRightRadius: String?
-expect /*inline*/ var FutureElementStyle.borderBottomStyle: String?
-expect /*inline*/ var FutureElementStyle.borderBottomWidth: String?
-expect /*inline*/ var FutureElementStyle.borderCollapse: String?
-expect /*inline*/ var FutureElementStyle.borderColor: String?
-expect /*inline*/ var FutureElementStyle.borderImage: String?
-expect /*inline*/ var FutureElementStyle.borderImageOutset: String?
-expect /*inline*/ var FutureElementStyle.borderImageRepeat: String?
-expect /*inline*/ var FutureElementStyle.borderImageSlice: String?
-expect /*inline*/ var FutureElementStyle.borderImageSource: String?
-expect /*inline*/ var FutureElementStyle.borderImageWidth: String?
-expect /*inline*/ var FutureElementStyle.borderLeft: String?
-expect /*inline*/ var FutureElementStyle.borderLeftColor: String?
-expect /*inline*/ var FutureElementStyle.borderLeftStyle: String?
-expect /*inline*/ var FutureElementStyle.borderLeftWidth: String?
-expect /*inline*/ var FutureElementStyle.borderRadius: String?
-expect /*inline*/ var FutureElementStyle.borderRight: String?
-expect /*inline*/ var FutureElementStyle.borderRightColor: String?
-expect /*inline*/ var FutureElementStyle.borderRightStyle: String?
-expect /*inline*/ var FutureElementStyle.borderRightWidth: String?
-expect /*inline*/ var FutureElementStyle.borderSpacing: String?
-expect /*inline*/ var FutureElementStyle.borderStyle: String?
-expect /*inline*/ var FutureElementStyle.borderTop: String?
-expect /*inline*/ var FutureElementStyle.borderTopColor: String?
-expect /*inline*/ var FutureElementStyle.borderTopLeftRadius: String?
-expect /*inline*/ var FutureElementStyle.borderTopRightRadius: String?
-expect /*inline*/ var FutureElementStyle.borderTopStyle: String?
-expect /*inline*/ var FutureElementStyle.borderTopWidth: String?
-expect /*inline*/ var FutureElementStyle.borderWidth: String?
-expect /*inline*/ var FutureElementStyle.bottom: String?
-expect /*inline*/ var FutureElementStyle.boxDecorationBreak: String?
-expect /*inline*/ var FutureElementStyle.boxShadow: String?
-expect /*inline*/ var FutureElementStyle.boxSizing: String?
-expect /*inline*/ var FutureElementStyle.breakAfter: String?
-expect /*inline*/ var FutureElementStyle.breakBefore: String?
-expect /*inline*/ var FutureElementStyle.breakInside: String?
-expect /*inline*/ var FutureElementStyle.captionSide: String?
-expect /*inline*/ var FutureElementStyle.clear: String?
-expect /*inline*/ var FutureElementStyle.clip: String?
-expect /*inline*/ var FutureElementStyle.color: String?
-expect /*inline*/ var FutureElementStyle.columnCount: String?
-expect /*inline*/ var FutureElementStyle.columnFill: String?
-expect /*inline*/ var FutureElementStyle.columnGap: String?
-expect /*inline*/ var FutureElementStyle.columnRule: String?
-expect /*inline*/ var FutureElementStyle.columnRuleColor: String?
-expect /*inline*/ var FutureElementStyle.columnRuleStyle: String?
-expect /*inline*/ var FutureElementStyle.columnRuleWidth: String?
-expect /*inline*/ var FutureElementStyle.columnSpan: String?
-expect /*inline*/ var FutureElementStyle.columnWidth: String?
-expect /*inline*/ var FutureElementStyle.columns: String?
-expect /*inline*/ var FutureElementStyle.content: String?
-expect /*inline*/ var FutureElementStyle.counterIncrement: String?
-expect /*inline*/ var FutureElementStyle.counterReset: String?
-expect /*inline*/ var FutureElementStyle.cursor: String?
-expect /*inline*/ var FutureElementStyle.direction: String?
-expect /*inline*/ var FutureElementStyle.display: String?
-expect /*inline*/ var FutureElementStyle.emptyCells: String?
-expect /*inline*/ var FutureElementStyle.filter: String?
-expect /*inline*/ var FutureElementStyle.flex: String?
-expect /*inline*/ var FutureElementStyle.flexBasis: String?
-expect /*inline*/ var FutureElementStyle.flexDirection: String?
-expect /*inline*/ var FutureElementStyle.flexFlow: String?
-expect /*inline*/ var FutureElementStyle.flexGrow: String?
-expect /*inline*/ var FutureElementStyle.flexShrink: String?
-expect /*inline*/ var FutureElementStyle.flexWrap: String?
-expect /*inline*/ var FutureElementStyle.font: String?
-expect /*inline*/ var FutureElementStyle.fontFamily: String?
-expect /*inline*/ var FutureElementStyle.fontFeatureSettings: String?
-expect /*inline*/ var FutureElementStyle.fontKerning: String?
-expect /*inline*/ var FutureElementStyle.fontLanguageOverride: String?
-expect /*inline*/ var FutureElementStyle.fontSize: String?
-expect /*inline*/ var FutureElementStyle.fontSizeAdjust: String?
-expect /*inline*/ var FutureElementStyle.fontStretch: String?
-expect /*inline*/ var FutureElementStyle.fontStyle: String?
-expect /*inline*/ var FutureElementStyle.fontSynthesis: String?
-expect /*inline*/ var FutureElementStyle.fontVariant: String?
-expect /*inline*/ var FutureElementStyle.fontVariantAlternates: String?
-expect /*inline*/ var FutureElementStyle.fontVariantCaps: String?
-expect /*inline*/ var FutureElementStyle.fontVariantEastAsian: String?
-expect /*inline*/ var FutureElementStyle.fontVariantLigatures: String?
-expect /*inline*/ var FutureElementStyle.fontVariantNumeric: String?
-expect /*inline*/ var FutureElementStyle.fontVariantPosition: String?
-expect /*inline*/ var FutureElementStyle.fontWeight: String?
-expect /*inline*/ var FutureElementStyle.hangingPunctuation: String?
-expect /*inline*/ var FutureElementStyle.height: String?
-expect /*inline*/ var FutureElementStyle.hyphens: String?
-expect /*inline*/ var FutureElementStyle.imageOrientation: String?
-expect /*inline*/ var FutureElementStyle.imageRendering: String?
-expect /*inline*/ var FutureElementStyle.imageResolution: String?
-expect /*inline*/ var FutureElementStyle.imeMode: String?
-expect /*inline*/ var FutureElementStyle.justifySelf: String?
-expect /*inline*/ var FutureElementStyle.justifyContent: String?
-expect /*inline*/ var FutureElementStyle.left: String?
-expect /*inline*/ var FutureElementStyle.letterSpacing: String?
-expect /*inline*/ var FutureElementStyle.lineBreak: String?
-expect /*inline*/ var FutureElementStyle.lineHeight: String?
-expect /*inline*/ var FutureElementStyle.listStyle: String?
-expect /*inline*/ var FutureElementStyle.listStyleImage: String?
-expect /*inline*/ var FutureElementStyle.listStylePosition: String?
-expect /*inline*/ var FutureElementStyle.listStyleType: String?
-expect /*inline*/ var FutureElementStyle.margin: String?
-expect /*inline*/ var FutureElementStyle.marginBottom: String?
-expect /*inline*/ var FutureElementStyle.marginLeft: String?
-expect /*inline*/ var FutureElementStyle.marginRight: String?
-expect /*inline*/ var FutureElementStyle.marginTop: String?
-expect /*inline*/ var FutureElementStyle.mark: String?
-expect /*inline*/ var FutureElementStyle.markAfter: String?
-expect /*inline*/ var FutureElementStyle.markBefore: String?
-expect /*inline*/ var FutureElementStyle.marks: String?
-expect /*inline*/ var FutureElementStyle.marqueeDirection: String?
-expect /*inline*/ var FutureElementStyle.marqueePlayCount: String?
-expect /*inline*/ var FutureElementStyle.marqueeSpeed: String?
-expect /*inline*/ var FutureElementStyle.marqueeStyle: String?
-expect /*inline*/ var FutureElementStyle.mask: String?
-expect /*inline*/ var FutureElementStyle.maskType: String?
-expect /*inline*/ var FutureElementStyle.maxHeight: String?
-expect /*inline*/ var FutureElementStyle.maxWidth: String?
-expect /*inline*/ var FutureElementStyle.minHeight: String?
-expect /*inline*/ var FutureElementStyle.minWidth: String?
-expect /*inline*/ var FutureElementStyle.navDown: String?
-expect /*inline*/ var FutureElementStyle.navIndex: String?
-expect /*inline*/ var FutureElementStyle.navLeft: String?
-expect /*inline*/ var FutureElementStyle.navRight: String?
-expect /*inline*/ var FutureElementStyle.navUp: String?
-expect /*inline*/ var FutureElementStyle.objectFit: String?
-expect /*inline*/ var FutureElementStyle.objectPosition: String?
-expect /*inline*/ var FutureElementStyle.opacity: String?
-expect /*inline*/ var FutureElementStyle.order: String?
-expect /*inline*/ var FutureElementStyle.orphans: String?
-expect /*inline*/ var FutureElementStyle.outline: String?
-expect /*inline*/ var FutureElementStyle.outlineColor: String?
-expect /*inline*/ var FutureElementStyle.outlineOffset: String?
-expect /*inline*/ var FutureElementStyle.outlineStyle: String?
-expect /*inline*/ var FutureElementStyle.outlineWidth: String?
-expect /*inline*/ var FutureElementStyle.overflowAnchor: String?
-expect /*inline*/ var FutureElementStyle.overflowWrap: String?
-expect /*inline*/ var FutureElementStyle.overflowX: String?
-expect /*inline*/ var FutureElementStyle.overflowY: String?
-expect /*inline*/ var FutureElementStyle.padding: String?
-expect /*inline*/ var FutureElementStyle.paddingBottom: String?
-expect /*inline*/ var FutureElementStyle.paddingLeft: String?
-expect /*inline*/ var FutureElementStyle.paddingRight: String?
-expect /*inline*/ var FutureElementStyle.paddingTop: String?
-expect /*inline*/ var FutureElementStyle.pageBreakAfter: String?
-expect /*inline*/ var FutureElementStyle.pageBreakBefore: String?
-expect /*inline*/ var FutureElementStyle.pageBreakInside: String?
-expect /*inline*/ var FutureElementStyle.perspective: String?
-expect /*inline*/ var FutureElementStyle.perspectiveOrigin: String?
-expect /*inline*/ var FutureElementStyle.phonemes: String?
-expect /*inline*/ var FutureElementStyle.position: String?
-expect /*inline*/ var FutureElementStyle.quotes: String?
-expect /*inline*/ var FutureElementStyle.resize: String?
-expect /*inline*/ var FutureElementStyle.rest: String?
-expect /*inline*/ var FutureElementStyle.restAfter: String?
-expect /*inline*/ var FutureElementStyle.restBefore: String?
-expect /*inline*/ var FutureElementStyle.right: String?
-expect /*inline*/ var FutureElementStyle.tabSize: String?
-expect /*inline*/ var FutureElementStyle.tableLayout: String?
-expect /*inline*/ var FutureElementStyle.textAlign: String?
-expect /*inline*/ var FutureElementStyle.textAlignLast: String?
-expect /*inline*/ var FutureElementStyle.textCombineUpright: String?
-expect /*inline*/ var FutureElementStyle.textDecoration: String?
-expect /*inline*/ var FutureElementStyle.textDecorationColor: String?
-expect /*inline*/ var FutureElementStyle.textDecorationLine: String?
-expect /*inline*/ var FutureElementStyle.textDecorationStyle: String?
-expect /*inline*/ var FutureElementStyle.textIndent: String?
-expect /*inline*/ var FutureElementStyle.textJustify: String?
-expect /*inline*/ var FutureElementStyle.textOrientation: String?
-expect /*inline*/ var FutureElementStyle.textOverflow: String?
-expect /*inline*/ var FutureElementStyle.textShadow: String?
-expect /*inline*/ var FutureElementStyle.textTransform: String?
-expect /*inline*/ var FutureElementStyle.textUnderlinePosition: String?
-expect /*inline*/ var FutureElementStyle.top: String?
-expect /*inline*/ var FutureElementStyle.transform: String?
-expect /*inline*/ var FutureElementStyle.transformOrigin: String?
-expect /*inline*/ var FutureElementStyle.transformStyle: String?
-expect /*inline*/ var FutureElementStyle.transition: String?
-expect /*inline*/ var FutureElementStyle.transitionDelay: String?
-expect /*inline*/ var FutureElementStyle.transitionDuration: String?
-expect /*inline*/ var FutureElementStyle.transitionProperty: String?
-expect /*inline*/ var FutureElementStyle.transitionTimingFunction: String?
-expect /*inline*/ var FutureElementStyle.unicodeBidi: String?
-expect /*inline*/ var FutureElementStyle.verticalAlign: String?
-expect /*inline*/ var FutureElementStyle.visibility: String?
-expect /*inline*/ var FutureElementStyle.voiceBalance: String?
-expect /*inline*/ var FutureElementStyle.voiceDuration: String?
-expect /*inline*/ var FutureElementStyle.voicePitch: String?
-expect /*inline*/ var FutureElementStyle.voicePitchRange: String?
-expect /*inline*/ var FutureElementStyle.voiceRate: String?
-expect /*inline*/ var FutureElementStyle.voiceStress: String?
-expect /*inline*/ var FutureElementStyle.voiceVolume: String?
-expect /*inline*/ var FutureElementStyle.whiteSpace: String?
-expect /*inline*/ var FutureElementStyle.widows: String?
-expect /*inline*/ var FutureElementStyle.width: String?
-expect /*inline*/ var FutureElementStyle.wordBreak: String?
-expect /*inline*/ var FutureElementStyle.wordSpacing: String?
-expect /*inline*/ var FutureElementStyle.wordWrap: String?
-expect /*inline*/ var FutureElementStyle.writingMode: String?
-expect /*inline*/ var FutureElementStyle.zIndex: String?
-expect /*inline*/ var FutureElementAttributes.accept: String?
-expect /*inline*/ var FutureElementAttributes.acceptCharset: String?
-expect /*inline*/ var FutureElementAttributes.accessKey: String?
-expect /*inline*/ var FutureElementAttributes.action: String?
-expect /*inline*/ var FutureElementAttributes.align: String?
-expect /*inline*/ var FutureElementAttributes.alignContent: String?
-expect /*inline*/ var FutureElementAttributes.alignItems: String?
-expect /*inline*/ var FutureElementAttributes.alignSelf: String?
-expect /*inline*/ var FutureElementAttributes.allow: String?
-expect /*inline*/ var FutureElementAttributes.alt: String?
-expect /*inline*/ var FutureElementAttributes.animation: String?
-expect /*inline*/ var FutureElementAttributes.animationDelay: String?
-expect /*inline*/ var FutureElementAttributes.animationDirection: String?
-expect /*inline*/ var FutureElementAttributes.animationDuration: String?
-expect /*inline*/ var FutureElementAttributes.animationFillMode: String?
-expect /*inline*/ var FutureElementAttributes.animationIterationCount: String?
-expect /*inline*/ var FutureElementAttributes.animationName: String?
-expect /*inline*/ var FutureElementAttributes.animationPlayState: String?
-expect /*inline*/ var FutureElementAttributes.animationTimingFunction: String?
-expect /*inline*/ var FutureElementAttributes.async: Boolean?
-expect /*inline*/ var FutureElementAttributes.autocomplete: String?
-expect /*inline*/ var FutureElementAttributes.autofocusBoolean: Boolean?
-expect /*inline*/ var FutureElementAttributes.autofocusString: String?
-expect /*inline*/ var FutureElementAttributes.autoplay: Boolean?
-expect /*inline*/ var FutureElementAttributes.backfaceVisibility: String?
-expect /*inline*/ var FutureElementAttributes.background: String?
-expect /*inline*/ var FutureElementAttributes.backgroundAttachment: String?
-expect /*inline*/ var FutureElementAttributes.backgroundClip: String?
-expect /*inline*/ var FutureElementAttributes.backgroundColor: String?
-expect /*inline*/ var FutureElementAttributes.backgroundImage: String?
-expect /*inline*/ var FutureElementAttributes.backgroundOrigin: String?
-expect /*inline*/ var FutureElementAttributes.backgroundPosition: String?
-expect /*inline*/ var FutureElementAttributes.backgroundRepeat: String?
-expect /*inline*/ var FutureElementAttributes.backgroundSize: String?
-expect /*inline*/ var FutureElementAttributes.bgColor: String?
-expect /*inline*/ var FutureElementAttributes.border: String?
-expect /*inline*/ var FutureElementAttributes.borderBottom: String?
-expect /*inline*/ var FutureElementAttributes.borderBottomColor: String?
-expect /*inline*/ var FutureElementAttributes.borderBottomLeftRadius: String?
-expect /*inline*/ var FutureElementAttributes.borderBottomRightRadius: String?
-expect /*inline*/ var FutureElementAttributes.borderBottomStyle: String?
-expect /*inline*/ var FutureElementAttributes.borderBottomWidth: String?
-expect /*inline*/ var FutureElementAttributes.borderCollapse: String?
-expect /*inline*/ var FutureElementAttributes.borderColor: String?
-expect /*inline*/ var FutureElementAttributes.borderImage: String?
-expect /*inline*/ var FutureElementAttributes.borderImageOutset: String?
-expect /*inline*/ var FutureElementAttributes.borderImageRepeat: String?
-expect /*inline*/ var FutureElementAttributes.borderImageSlice: String?
-expect /*inline*/ var FutureElementAttributes.borderImageSource: String?
-expect /*inline*/ var FutureElementAttributes.borderImageWidth: String?
-expect /*inline*/ var FutureElementAttributes.borderLeft: String?
-expect /*inline*/ var FutureElementAttributes.borderLeftColor: String?
-expect /*inline*/ var FutureElementAttributes.borderLeftStyle: String?
-expect /*inline*/ var FutureElementAttributes.borderLeftWidth: String?
-expect /*inline*/ var FutureElementAttributes.borderRadius: String?
-expect /*inline*/ var FutureElementAttributes.borderRight: String?
-expect /*inline*/ var FutureElementAttributes.borderRightColor: String?
-expect /*inline*/ var FutureElementAttributes.borderRightStyle: String?
-expect /*inline*/ var FutureElementAttributes.borderRightWidth: String?
-expect /*inline*/ var FutureElementAttributes.borderSpacing: String?
-expect /*inline*/ var FutureElementAttributes.borderStyle: String?
-expect /*inline*/ var FutureElementAttributes.borderTop: String?
-expect /*inline*/ var FutureElementAttributes.borderTopColor: String?
-expect /*inline*/ var FutureElementAttributes.borderTopLeftRadius: String?
-expect /*inline*/ var FutureElementAttributes.borderTopRightRadius: String?
-expect /*inline*/ var FutureElementAttributes.borderTopStyle: String?
-expect /*inline*/ var FutureElementAttributes.borderTopWidth: String?
-expect /*inline*/ var FutureElementAttributes.borderWidth: String?
-expect /*inline*/ var FutureElementAttributes.bottom: String?
-expect /*inline*/ var FutureElementAttributes.boxDecorationBreak: String?
-expect /*inline*/ var FutureElementAttributes.boxShadow: String?
-expect /*inline*/ var FutureElementAttributes.boxSizing: String?
-expect /*inline*/ var FutureElementAttributes.breakAfter: String?
-expect /*inline*/ var FutureElementAttributes.breakBefore: String?
-expect /*inline*/ var FutureElementAttributes.breakInside: String?
-expect /*inline*/ var FutureElementAttributes.buffered: String?
-expect /*inline*/ var FutureElementAttributes.captionSide: String?
-expect /*inline*/ var FutureElementAttributes.challenge: String?
-expect /*inline*/ var FutureElementAttributes.charset: String?
-expect /*inline*/ var FutureElementAttributes.checked: Boolean?
-expect /*inline*/ var FutureElementAttributes.cite: String?
-expect /*inline*/ var FutureElementAttributes.className: String?
-expect /*inline*/ var FutureElementAttributes.clear: String?
-expect /*inline*/ var FutureElementAttributes.clip: String?
-expect /*inline*/ var FutureElementAttributes.code: String?
-expect /*inline*/ var FutureElementAttributes.colSpan: Int?
-expect /*inline*/ var FutureElementAttributes.color: String?
-expect /*inline*/ var FutureElementAttributes.cols: Int?
-expect /*inline*/ var FutureElementAttributes.columnCount: String?
-expect /*inline*/ var FutureElementAttributes.columnFill: String?
-expect /*inline*/ var FutureElementAttributes.columnGap: String?
-expect /*inline*/ var FutureElementAttributes.columnRule: String?
-expect /*inline*/ var FutureElementAttributes.columnRuleColor: String?
-expect /*inline*/ var FutureElementAttributes.columnRuleStyle: String?
-expect /*inline*/ var FutureElementAttributes.columnRuleWidth: String?
-expect /*inline*/ var FutureElementAttributes.columnSpan: String?
-expect /*inline*/ var FutureElementAttributes.columnWidth: String?
-expect /*inline*/ var FutureElementAttributes.columns: String?
-expect /*inline*/ var FutureElementAttributes.content: String?
-expect /*inline*/ var FutureElementAttributes.controls: Boolean?
-expect /*inline*/ var FutureElementAttributes.coords: String?
-expect /*inline*/ var FutureElementAttributes.counterIncrement: String?
-expect /*inline*/ var FutureElementAttributes.counterReset: String?
-expect /*inline*/ var FutureElementAttributes.crossOrigin: String?
-expect /*inline*/ var FutureElementAttributes.csp: String?
-expect /*inline*/ var FutureElementAttributes.cssFloat: String?
-expect /*inline*/ var FutureElementAttributes.cssText: String?
-expect /*inline*/ var FutureElementAttributes.cursor: String?
-expect /*inline*/ var FutureElementAttributes.data: String?
-expect /*inline*/ var FutureElementAttributes.dateTime: String?
-expect /*inline*/ var FutureElementAttributes.default: Boolean?
-expect /*inline*/ var FutureElementAttributes.defer: Boolean?
-expect /*inline*/ var FutureElementAttributes.dir: String?
-expect /*inline*/ var FutureElementAttributes.dirName: String?
-expect /*inline*/ var FutureElementAttributes.direction: String?
-expect /*inline*/ var FutureElementAttributes.disabled: Boolean?
-expect /*inline*/ var FutureElementAttributes.display: String?
-expect /*inline*/ var FutureElementAttributes.download: String?
-expect /*inline*/ var FutureElementAttributes.draggable: Boolean?
-expect /*inline*/ var FutureElementAttributes.emptyCells: String?
-expect /*inline*/ var FutureElementAttributes.enctype: String?
-expect /*inline*/ var FutureElementAttributes.filter: String?
-expect /*inline*/ var FutureElementAttributes.flex: String?
-expect /*inline*/ var FutureElementAttributes.flexBasis: String?
-expect /*inline*/ var FutureElementAttributes.flexDirection: String?
-expect /*inline*/ var FutureElementAttributes.flexFlow: String?
-expect /*inline*/ var FutureElementAttributes.flexGrow: String?
-expect /*inline*/ var FutureElementAttributes.flexShrink: String?
-expect /*inline*/ var FutureElementAttributes.flexWrap: String?
-expect /*inline*/ var FutureElementAttributes.font: String?
-expect /*inline*/ var FutureElementAttributes.fontFamily: String?
-expect /*inline*/ var FutureElementAttributes.fontFeatureSettings: String?
-expect /*inline*/ var FutureElementAttributes.fontKerning: String?
-expect /*inline*/ var FutureElementAttributes.fontLanguageOverride: String?
-expect /*inline*/ var FutureElementAttributes.fontSize: String?
-expect /*inline*/ var FutureElementAttributes.fontSizeAdjust: String?
-expect /*inline*/ var FutureElementAttributes.fontStretch: String?
-expect /*inline*/ var FutureElementAttributes.fontStyle: String?
-expect /*inline*/ var FutureElementAttributes.fontSynthesis: String?
-expect /*inline*/ var FutureElementAttributes.fontVariant: String?
-expect /*inline*/ var FutureElementAttributes.fontVariantAlternates: String?
-expect /*inline*/ var FutureElementAttributes.fontVariantCaps: String?
-expect /*inline*/ var FutureElementAttributes.fontVariantEastAsian: String?
-expect /*inline*/ var FutureElementAttributes.fontVariantLigatures: String?
-expect /*inline*/ var FutureElementAttributes.fontVariantNumeric: String?
-expect /*inline*/ var FutureElementAttributes.fontVariantPosition: String?
-expect /*inline*/ var FutureElementAttributes.fontWeight: String?
-expect /*inline*/ var FutureElementAttributes.form: String?
-expect /*inline*/ var FutureElementAttributes.formAction: String?
-expect /*inline*/ var FutureElementAttributes.formEnctype: String?
-expect /*inline*/ var FutureElementAttributes.formMethod: String?
-expect /*inline*/ var FutureElementAttributes.formNoValidate: Boolean?
-expect /*inline*/ var FutureElementAttributes.formTarget: String?
-expect /*inline*/ var FutureElementAttributes.hangingPunctuation: String?
-expect /*inline*/ var FutureElementAttributes.headers: String?
-expect /*inline*/ var FutureElementAttributes.heightInt: Int?
-expect /*inline*/ var FutureElementAttributes.heightString: String?
-expect /*inline*/ var FutureElementAttributes.hidden: Boolean?
-expect /*inline*/ var FutureElementAttributes.high: Double?
-expect /*inline*/ var FutureElementAttributes.href: String?
-expect /*inline*/ var FutureElementAttributes.hreflang: String?
-expect /*inline*/ var FutureElementAttributes.htmlFor: String?
-expect /*inline*/ var FutureElementAttributes.httpEquiv: String?
-expect /*inline*/ var FutureElementAttributes.hyphens: String?
-expect /*inline*/ var FutureElementAttributes.id: String?
-expect /*inline*/ var FutureElementAttributes.imageOrientation: String?
-expect /*inline*/ var FutureElementAttributes.imageRendering: String?
-expect /*inline*/ var FutureElementAttributes.imageResolution: String?
-expect /*inline*/ var FutureElementAttributes.imeMode: String?
-expect /*inline*/ var FutureElementAttributes.inputMode: String?
-expect /*inline*/ var FutureElementAttributes.integrity: String?
-expect /*inline*/ var FutureElementAttributes.isMap: Boolean?
-expect /*inline*/ var FutureElementAttributes.justifyContent: String?
-expect /*inline*/ var FutureElementAttributes.keytype: String?
-expect /*inline*/ var FutureElementAttributes.kind: String?
-expect /*inline*/ var FutureElementAttributes.label: String?
-expect /*inline*/ var FutureElementAttributes.lang: String?
-expect /*inline*/ var FutureElementAttributes.left: String?
-expect /*inline*/ var FutureElementAttributes.letterSpacing: String?
-expect /*inline*/ var FutureElementAttributes.lineBreak: String?
-expect /*inline*/ var FutureElementAttributes.lineHeight: String?
-expect /*inline*/ var FutureElementAttributes.list: String?
-expect /*inline*/ var FutureElementAttributes.listStyle: String?
-expect /*inline*/ var FutureElementAttributes.listStyleImage: String?
-expect /*inline*/ var FutureElementAttributes.listStylePosition: String?
-expect /*inline*/ var FutureElementAttributes.listStyleType: String?
-expect /*inline*/ var FutureElementAttributes.loading: String?
-expect /*inline*/ var FutureElementAttributes.loopBoolean: Boolean?
-expect /*inline*/ var FutureElementAttributes.loopInt: Int?
-expect /*inline*/ var FutureElementAttributes.low: Double?
-expect /*inline*/ var FutureElementAttributes.margin: String?
-expect /*inline*/ var FutureElementAttributes.marginBottom: String?
-expect /*inline*/ var FutureElementAttributes.marginLeft: String?
-expect /*inline*/ var FutureElementAttributes.marginRight: String?
-expect /*inline*/ var FutureElementAttributes.marginTop: String?
-expect /*inline*/ var FutureElementAttributes.mark: String?
-expect /*inline*/ var FutureElementAttributes.markAfter: String?
-expect /*inline*/ var FutureElementAttributes.markBefore: String?
-expect /*inline*/ var FutureElementAttributes.marks: String?
-expect /*inline*/ var FutureElementAttributes.marqueeDirection: String?
-expect /*inline*/ var FutureElementAttributes.marqueePlayCount: String?
-expect /*inline*/ var FutureElementAttributes.marqueeSpeed: String?
-expect /*inline*/ var FutureElementAttributes.marqueeStyle: String?
-expect /*inline*/ var FutureElementAttributes.mask: String?
-expect /*inline*/ var FutureElementAttributes.maskType: String?
-expect /*inline*/ var FutureElementAttributes.maxDouble: Double?
-expect /*inline*/ var FutureElementAttributes.maxHeight: String?
-expect /*inline*/ var FutureElementAttributes.maxLength: Int?
-expect /*inline*/ var FutureElementAttributes.maxString: String?
-expect /*inline*/ var FutureElementAttributes.maxWidth: String?
-expect /*inline*/ var FutureElementAttributes.media: String?
-expect /*inline*/ var FutureElementAttributes.method: String?
-expect /*inline*/ var FutureElementAttributes.minDouble: Double?
-expect /*inline*/ var FutureElementAttributes.minHeight: String?
-expect /*inline*/ var FutureElementAttributes.minLength: Int?
-expect /*inline*/ var FutureElementAttributes.minString: String?
-expect /*inline*/ var FutureElementAttributes.minWidth: String?
-expect /*inline*/ var FutureElementAttributes.multiple: Boolean?
-expect /*inline*/ var FutureElementAttributes.muted: Boolean?
-expect /*inline*/ var FutureElementAttributes.name: String?
-expect /*inline*/ var FutureElementAttributes.navDown: String?
-expect /*inline*/ var FutureElementAttributes.navIndex: String?
-expect /*inline*/ var FutureElementAttributes.navLeft: String?
-expect /*inline*/ var FutureElementAttributes.navRight: String?
-expect /*inline*/ var FutureElementAttributes.navUp: String?
-expect /*inline*/ var FutureElementAttributes.noValidate: Boolean?
-expect /*inline*/ var FutureElementAttributes.nodeValue: String?
-expect /*inline*/ var FutureElementAttributes.objectFit: String?
-expect /*inline*/ var FutureElementAttributes.objectPosition: String?
-expect /*inline*/ var FutureElementAttributes.opacity: String?
-expect /*inline*/ var FutureElementAttributes.open: Boolean?
-expect /*inline*/ var FutureElementAttributes.optimum: Double?
-expect /*inline*/ var FutureElementAttributes.order: String?
-expect /*inline*/ var FutureElementAttributes.orphans: String?
-expect /*inline*/ var FutureElementAttributes.outline: String?
-expect /*inline*/ var FutureElementAttributes.outlineColor: String?
-expect /*inline*/ var FutureElementAttributes.outlineOffset: String?
-expect /*inline*/ var FutureElementAttributes.outlineStyle: String?
-expect /*inline*/ var FutureElementAttributes.outlineWidth: String?
-expect /*inline*/ var FutureElementAttributes.overflowWrap: String?
-expect /*inline*/ var FutureElementAttributes.overflowX: String?
-expect /*inline*/ var FutureElementAttributes.overflowY: String?
-expect /*inline*/ var FutureElementAttributes.padding: String?
-expect /*inline*/ var FutureElementAttributes.paddingBottom: String?
-expect /*inline*/ var FutureElementAttributes.paddingLeft: String?
-expect /*inline*/ var FutureElementAttributes.paddingRight: String?
-expect /*inline*/ var FutureElementAttributes.paddingTop: String?
-expect /*inline*/ var FutureElementAttributes.pageBreakAfter: String?
-expect /*inline*/ var FutureElementAttributes.pageBreakBefore: String?
-expect /*inline*/ var FutureElementAttributes.pageBreakInside: String?
-expect /*inline*/ var FutureElementAttributes.pattern: String?
-expect /*inline*/ var FutureElementAttributes.perspective: String?
-expect /*inline*/ var FutureElementAttributes.perspectiveOrigin: String?
-expect /*inline*/ var FutureElementAttributes.phonemes: String?
-expect /*inline*/ var FutureElementAttributes.ping: String?
-expect /*inline*/ var FutureElementAttributes.placeholder: String?
-expect /*inline*/ var FutureElementAttributes.playsInline: Boolean?
-expect /*inline*/ var FutureElementAttributes.position: String?
-expect /*inline*/ var FutureElementAttributes.poster: String?
-expect /*inline*/ var FutureElementAttributes.preload: String?
-expect /*inline*/ var FutureElementAttributes.quotes: String?
-expect /*inline*/ var FutureElementAttributes.readOnly: Boolean?
-expect /*inline*/ var FutureElementAttributes.referrerPolicy: String?
-expect /*inline*/ var FutureElementAttributes.referrerpolicy: String?
-expect /*inline*/ var FutureElementAttributes.rel: String?
-expect /*inline*/ var FutureElementAttributes.required: Boolean?
-expect /*inline*/ var FutureElementAttributes.resize: String?
-expect /*inline*/ var FutureElementAttributes.rest: String?
-expect /*inline*/ var FutureElementAttributes.restAfter: String?
-expect /*inline*/ var FutureElementAttributes.restBefore: String?
-expect /*inline*/ var FutureElementAttributes.reversed: Boolean?
-expect /*inline*/ var FutureElementAttributes.right: String?
-expect /*inline*/ var FutureElementAttributes.rowSpan: Int?
-expect /*inline*/ var FutureElementAttributes.rows: Int?
-expect /*inline*/ var FutureElementAttributes.sandbox: String?
-expect /*inline*/ var FutureElementAttributes.selected: Boolean?
-expect /*inline*/ var FutureElementAttributes.shape: String?
-expect /*inline*/ var FutureElementAttributes.size: Int?
-expect /*inline*/ var FutureElementAttributes.sizes: String?
-expect /*inline*/ var FutureElementAttributes.slot: String?
-expect /*inline*/ var FutureElementAttributes.span: Int?
-expect /*inline*/ var FutureElementAttributes.spellcheck: Boolean?
-expect /*inline*/ var FutureElementAttributes.src: String?
-expect /*inline*/ var FutureElementAttributes.srcdoc: String?
-expect /*inline*/ var FutureElementAttributes.srclang: String?
-expect /*inline*/ var FutureElementAttributes.srcset: String?
-expect /*inline*/ var FutureElementAttributes.start: Int?
-expect /*inline*/ var FutureElementAttributes.step: String?
-expect /*inline*/ var FutureElementAttributes.summary: String?
-expect /*inline*/ var FutureElementAttributes.tabIndex: Int?
-expect /*inline*/ var FutureElementAttributes.tabSize: String?
-expect /*inline*/ var FutureElementAttributes.tableLayout: String?
-expect /*inline*/ var FutureElementAttributes.target: String?
-expect /*inline*/ var FutureElementAttributes.textAlign: String?
-expect /*inline*/ var FutureElementAttributes.textAlignLast: String?
-expect /*inline*/ var FutureElementAttributes.textCombineUpright: String?
-expect /*inline*/ var FutureElementAttributes.textDecoration: String?
-expect /*inline*/ var FutureElementAttributes.textDecorationColor: String?
-expect /*inline*/ var FutureElementAttributes.textDecorationLine: String?
-expect /*inline*/ var FutureElementAttributes.textDecorationStyle: String?
-expect /*inline*/ var FutureElementAttributes.textIndent: String?
-expect /*inline*/ var FutureElementAttributes.textJustify: String?
-expect /*inline*/ var FutureElementAttributes.textOrientation: String?
-expect /*inline*/ var FutureElementAttributes.textOverflow: String?
-expect /*inline*/ var FutureElementAttributes.textShadow: String?
-expect /*inline*/ var FutureElementAttributes.textTransform: String?
-expect /*inline*/ var FutureElementAttributes.textUnderlinePosition: String?
-expect /*inline*/ var FutureElementAttributes.title: String?
-expect /*inline*/ var FutureElementAttributes.top: String?
-expect /*inline*/ var FutureElementAttributes.transform: String?
-expect /*inline*/ var FutureElementAttributes.transformOrigin: String?
-expect /*inline*/ var FutureElementAttributes.transformStyle: String?
-expect /*inline*/ var FutureElementAttributes.transition: String?
-expect /*inline*/ var FutureElementAttributes.transitionDelay: String?
-expect /*inline*/ var FutureElementAttributes.transitionDuration: String?
-expect /*inline*/ var FutureElementAttributes.transitionProperty: String?
-expect /*inline*/ var FutureElementAttributes.transitionTimingFunction: String?
-expect /*inline*/ var FutureElementAttributes.translate: Boolean?
-expect /*inline*/ var FutureElementAttributes.type: String?
-expect /*inline*/ var FutureElementAttributes.unicodeBidi: String?
-expect /*inline*/ var FutureElementAttributes.useMap: String?
-expect /*inline*/ var FutureElementAttributes.valueDouble: Double?
-expect /*inline*/ var FutureElementAttributes.valueInt: Int?
-expect /*inline*/ var FutureElementAttributes.valueString: String?
-expect /*inline*/ var FutureElementAttributes.verticalAlign: String?
-expect /*inline*/ var FutureElementAttributes.visibility: String?
-expect /*inline*/ var FutureElementAttributes.voiceBalance: String?
-expect /*inline*/ var FutureElementAttributes.voiceDuration: String?
-expect /*inline*/ var FutureElementAttributes.voicePitch: String?
-expect /*inline*/ var FutureElementAttributes.voicePitchRange: String?
-expect /*inline*/ var FutureElementAttributes.voiceRate: String?
-expect /*inline*/ var FutureElementAttributes.voiceStress: String?
-expect /*inline*/ var FutureElementAttributes.voiceVolume: String?
-expect /*inline*/ var FutureElementAttributes.whiteSpace: String?
-expect /*inline*/ var FutureElementAttributes.widows: String?
-expect /*inline*/ var FutureElementAttributes.widthInt: Int?
-expect /*inline*/ var FutureElementAttributes.widthString: String?
-expect /*inline*/ var FutureElementAttributes.wordBreak: String?
-expect /*inline*/ var FutureElementAttributes.wordSpacing: String?
-expect /*inline*/ var FutureElementAttributes.wordWrap: String?
-expect /*inline*/ var FutureElementAttributes.wrap: String?
-expect /*inline*/ var FutureElementAttributes.writingMode: String?
-expect /*inline*/ var FutureElementAttributes.zIndex: String?
+public expect /*inline*/ var FutureElementStyle.cssText: String?
+public expect /*inline*/ var FutureElementStyle.cssFloat: String?
+public expect /*inline*/ var FutureElementStyle.alignContent: String?
+public expect /*inline*/ var FutureElementStyle.alignItems: String?
+public expect /*inline*/ var FutureElementStyle.alignSelf: String?
+public expect /*inline*/ var FutureElementStyle.animation: String?
+public expect /*inline*/ var FutureElementStyle.animationDelay: String?
+public expect /*inline*/ var FutureElementStyle.animationDirection: String?
+public expect /*inline*/ var FutureElementStyle.animationDuration: String?
+public expect /*inline*/ var FutureElementStyle.animationFillMode: String?
+public expect /*inline*/ var FutureElementStyle.animationIterationCount: String?
+public expect /*inline*/ var FutureElementStyle.animationName: String?
+public expect /*inline*/ var FutureElementStyle.animationPlayState: String?
+public expect /*inline*/ var FutureElementStyle.animationTimingFunction: String?
+public expect /*inline*/ var FutureElementStyle.backfaceVisibility: String?
+public expect /*inline*/ var FutureElementStyle.background: String?
+public expect /*inline*/ var FutureElementStyle.backgroundAttachment: String?
+public expect /*inline*/ var FutureElementStyle.backgroundClip: String?
+public expect /*inline*/ var FutureElementStyle.backgroundColor: String?
+public expect /*inline*/ var FutureElementStyle.backgroundImage: String?
+public expect /*inline*/ var FutureElementStyle.backgroundOrigin: String?
+public expect /*inline*/ var FutureElementStyle.backgroundPosition: String?
+public expect /*inline*/ var FutureElementStyle.backgroundRepeat: String?
+public expect /*inline*/ var FutureElementStyle.backgroundSize: String?
+public expect /*inline*/ var FutureElementStyle.border: String?
+public expect /*inline*/ var FutureElementStyle.borderBottom: String?
+public expect /*inline*/ var FutureElementStyle.borderBottomColor: String?
+public expect /*inline*/ var FutureElementStyle.borderBottomLeftRadius: String?
+public expect /*inline*/ var FutureElementStyle.borderBottomRightRadius: String?
+public expect /*inline*/ var FutureElementStyle.borderBottomStyle: String?
+public expect /*inline*/ var FutureElementStyle.borderBottomWidth: String?
+public expect /*inline*/ var FutureElementStyle.borderCollapse: String?
+public expect /*inline*/ var FutureElementStyle.borderColor: String?
+public expect /*inline*/ var FutureElementStyle.borderImage: String?
+public expect /*inline*/ var FutureElementStyle.borderImageOutset: String?
+public expect /*inline*/ var FutureElementStyle.borderImageRepeat: String?
+public expect /*inline*/ var FutureElementStyle.borderImageSlice: String?
+public expect /*inline*/ var FutureElementStyle.borderImageSource: String?
+public expect /*inline*/ var FutureElementStyle.borderImageWidth: String?
+public expect /*inline*/ var FutureElementStyle.borderLeft: String?
+public expect /*inline*/ var FutureElementStyle.borderLeftColor: String?
+public expect /*inline*/ var FutureElementStyle.borderLeftStyle: String?
+public expect /*inline*/ var FutureElementStyle.borderLeftWidth: String?
+public expect /*inline*/ var FutureElementStyle.borderRadius: String?
+public expect /*inline*/ var FutureElementStyle.borderRight: String?
+public expect /*inline*/ var FutureElementStyle.borderRightColor: String?
+public expect /*inline*/ var FutureElementStyle.borderRightStyle: String?
+public expect /*inline*/ var FutureElementStyle.borderRightWidth: String?
+public expect /*inline*/ var FutureElementStyle.borderSpacing: String?
+public expect /*inline*/ var FutureElementStyle.borderStyle: String?
+public expect /*inline*/ var FutureElementStyle.borderTop: String?
+public expect /*inline*/ var FutureElementStyle.borderTopColor: String?
+public expect /*inline*/ var FutureElementStyle.borderTopLeftRadius: String?
+public expect /*inline*/ var FutureElementStyle.borderTopRightRadius: String?
+public expect /*inline*/ var FutureElementStyle.borderTopStyle: String?
+public expect /*inline*/ var FutureElementStyle.borderTopWidth: String?
+public expect /*inline*/ var FutureElementStyle.borderWidth: String?
+public expect /*inline*/ var FutureElementStyle.bottom: String?
+public expect /*inline*/ var FutureElementStyle.boxDecorationBreak: String?
+public expect /*inline*/ var FutureElementStyle.boxShadow: String?
+public expect /*inline*/ var FutureElementStyle.boxSizing: String?
+public expect /*inline*/ var FutureElementStyle.breakAfter: String?
+public expect /*inline*/ var FutureElementStyle.breakBefore: String?
+public expect /*inline*/ var FutureElementStyle.breakInside: String?
+public expect /*inline*/ var FutureElementStyle.captionSide: String?
+public expect /*inline*/ var FutureElementStyle.clear: String?
+public expect /*inline*/ var FutureElementStyle.clip: String?
+public expect /*inline*/ var FutureElementStyle.color: String?
+public expect /*inline*/ var FutureElementStyle.columnCount: String?
+public expect /*inline*/ var FutureElementStyle.columnFill: String?
+public expect /*inline*/ var FutureElementStyle.columnGap: String?
+public expect /*inline*/ var FutureElementStyle.columnRule: String?
+public expect /*inline*/ var FutureElementStyle.columnRuleColor: String?
+public expect /*inline*/ var FutureElementStyle.columnRuleStyle: String?
+public expect /*inline*/ var FutureElementStyle.columnRuleWidth: String?
+public expect /*inline*/ var FutureElementStyle.columnSpan: String?
+public expect /*inline*/ var FutureElementStyle.columnWidth: String?
+public expect /*inline*/ var FutureElementStyle.columns: String?
+public expect /*inline*/ var FutureElementStyle.content: String?
+public expect /*inline*/ var FutureElementStyle.counterIncrement: String?
+public expect /*inline*/ var FutureElementStyle.counterReset: String?
+public expect /*inline*/ var FutureElementStyle.cursor: String?
+public expect /*inline*/ var FutureElementStyle.direction: String?
+public expect /*inline*/ var FutureElementStyle.display: String?
+public expect /*inline*/ var FutureElementStyle.emptyCells: String?
+public expect /*inline*/ var FutureElementStyle.filter: String?
+public expect /*inline*/ var FutureElementStyle.flex: String?
+public expect /*inline*/ var FutureElementStyle.flexBasis: String?
+public expect /*inline*/ var FutureElementStyle.flexDirection: String?
+public expect /*inline*/ var FutureElementStyle.flexFlow: String?
+public expect /*inline*/ var FutureElementStyle.flexGrow: String?
+public expect /*inline*/ var FutureElementStyle.flexShrink: String?
+public expect /*inline*/ var FutureElementStyle.flexWrap: String?
+public expect /*inline*/ var FutureElementStyle.font: String?
+public expect /*inline*/ var FutureElementStyle.fontFamily: String?
+public expect /*inline*/ var FutureElementStyle.fontFeatureSettings: String?
+public expect /*inline*/ var FutureElementStyle.fontKerning: String?
+public expect /*inline*/ var FutureElementStyle.fontLanguageOverride: String?
+public expect /*inline*/ var FutureElementStyle.fontSize: String?
+public expect /*inline*/ var FutureElementStyle.fontSizeAdjust: String?
+public expect /*inline*/ var FutureElementStyle.fontStretch: String?
+public expect /*inline*/ var FutureElementStyle.fontStyle: String?
+public expect /*inline*/ var FutureElementStyle.fontSynthesis: String?
+public expect /*inline*/ var FutureElementStyle.fontVariant: String?
+public expect /*inline*/ var FutureElementStyle.fontVariantAlternates: String?
+public expect /*inline*/ var FutureElementStyle.fontVariantCaps: String?
+public expect /*inline*/ var FutureElementStyle.fontVariantEastAsian: String?
+public expect /*inline*/ var FutureElementStyle.fontVariantLigatures: String?
+public expect /*inline*/ var FutureElementStyle.fontVariantNumeric: String?
+public expect /*inline*/ var FutureElementStyle.fontVariantPosition: String?
+public expect /*inline*/ var FutureElementStyle.fontWeight: String?
+public expect /*inline*/ var FutureElementStyle.hangingPunctuation: String?
+public expect /*inline*/ var FutureElementStyle.height: String?
+public expect /*inline*/ var FutureElementStyle.hyphens: String?
+public expect /*inline*/ var FutureElementStyle.imageOrientation: String?
+public expect /*inline*/ var FutureElementStyle.imageRendering: String?
+public expect /*inline*/ var FutureElementStyle.imageResolution: String?
+public expect /*inline*/ var FutureElementStyle.imeMode: String?
+public expect /*inline*/ var FutureElementStyle.justifySelf: String?
+public expect /*inline*/ var FutureElementStyle.justifyContent: String?
+public expect /*inline*/ var FutureElementStyle.left: String?
+public expect /*inline*/ var FutureElementStyle.letterSpacing: String?
+public expect /*inline*/ var FutureElementStyle.lineBreak: String?
+public expect /*inline*/ var FutureElementStyle.lineHeight: String?
+public expect /*inline*/ var FutureElementStyle.listStyle: String?
+public expect /*inline*/ var FutureElementStyle.listStyleImage: String?
+public expect /*inline*/ var FutureElementStyle.listStylePosition: String?
+public expect /*inline*/ var FutureElementStyle.listStyleType: String?
+public expect /*inline*/ var FutureElementStyle.margin: String?
+public expect /*inline*/ var FutureElementStyle.marginBottom: String?
+public expect /*inline*/ var FutureElementStyle.marginLeft: String?
+public expect /*inline*/ var FutureElementStyle.marginRight: String?
+public expect /*inline*/ var FutureElementStyle.marginTop: String?
+public expect /*inline*/ var FutureElementStyle.mark: String?
+public expect /*inline*/ var FutureElementStyle.markAfter: String?
+public expect /*inline*/ var FutureElementStyle.markBefore: String?
+public expect /*inline*/ var FutureElementStyle.marks: String?
+public expect /*inline*/ var FutureElementStyle.marqueeDirection: String?
+public expect /*inline*/ var FutureElementStyle.marqueePlayCount: String?
+public expect /*inline*/ var FutureElementStyle.marqueeSpeed: String?
+public expect /*inline*/ var FutureElementStyle.marqueeStyle: String?
+public expect /*inline*/ var FutureElementStyle.mask: String?
+public expect /*inline*/ var FutureElementStyle.maskType: String?
+public expect /*inline*/ var FutureElementStyle.maxHeight: String?
+public expect /*inline*/ var FutureElementStyle.maxWidth: String?
+public expect /*inline*/ var FutureElementStyle.minHeight: String?
+public expect /*inline*/ var FutureElementStyle.minWidth: String?
+public expect /*inline*/ var FutureElementStyle.navDown: String?
+public expect /*inline*/ var FutureElementStyle.navIndex: String?
+public expect /*inline*/ var FutureElementStyle.navLeft: String?
+public expect /*inline*/ var FutureElementStyle.navRight: String?
+public expect /*inline*/ var FutureElementStyle.navUp: String?
+public expect /*inline*/ var FutureElementStyle.objectFit: String?
+public expect /*inline*/ var FutureElementStyle.objectPosition: String?
+public expect /*inline*/ var FutureElementStyle.opacity: String?
+public expect /*inline*/ var FutureElementStyle.order: String?
+public expect /*inline*/ var FutureElementStyle.orphans: String?
+public expect /*inline*/ var FutureElementStyle.outline: String?
+public expect /*inline*/ var FutureElementStyle.outlineColor: String?
+public expect /*inline*/ var FutureElementStyle.outlineOffset: String?
+public expect /*inline*/ var FutureElementStyle.outlineStyle: String?
+public expect /*inline*/ var FutureElementStyle.outlineWidth: String?
+public expect /*inline*/ var FutureElementStyle.overflowAnchor: String?
+public expect /*inline*/ var FutureElementStyle.overflowWrap: String?
+public expect /*inline*/ var FutureElementStyle.overflowX: String?
+public expect /*inline*/ var FutureElementStyle.overflowY: String?
+public expect /*inline*/ var FutureElementStyle.padding: String?
+public expect /*inline*/ var FutureElementStyle.paddingBottom: String?
+public expect /*inline*/ var FutureElementStyle.paddingLeft: String?
+public expect /*inline*/ var FutureElementStyle.paddingRight: String?
+public expect /*inline*/ var FutureElementStyle.paddingTop: String?
+public expect /*inline*/ var FutureElementStyle.pageBreakAfter: String?
+public expect /*inline*/ var FutureElementStyle.pageBreakBefore: String?
+public expect /*inline*/ var FutureElementStyle.pageBreakInside: String?
+public expect /*inline*/ var FutureElementStyle.perspective: String?
+public expect /*inline*/ var FutureElementStyle.perspectiveOrigin: String?
+public expect /*inline*/ var FutureElementStyle.phonemes: String?
+public expect /*inline*/ var FutureElementStyle.position: String?
+public expect /*inline*/ var FutureElementStyle.quotes: String?
+public expect /*inline*/ var FutureElementStyle.resize: String?
+public expect /*inline*/ var FutureElementStyle.rest: String?
+public expect /*inline*/ var FutureElementStyle.restAfter: String?
+public expect /*inline*/ var FutureElementStyle.restBefore: String?
+public expect /*inline*/ var FutureElementStyle.right: String?
+public expect /*inline*/ var FutureElementStyle.tabSize: String?
+public expect /*inline*/ var FutureElementStyle.tableLayout: String?
+public expect /*inline*/ var FutureElementStyle.textAlign: String?
+public expect /*inline*/ var FutureElementStyle.textAlignLast: String?
+public expect /*inline*/ var FutureElementStyle.textCombineUpright: String?
+public expect /*inline*/ var FutureElementStyle.textDecoration: String?
+public expect /*inline*/ var FutureElementStyle.textDecorationColor: String?
+public expect /*inline*/ var FutureElementStyle.textDecorationLine: String?
+public expect /*inline*/ var FutureElementStyle.textDecorationStyle: String?
+public expect /*inline*/ var FutureElementStyle.textIndent: String?
+public expect /*inline*/ var FutureElementStyle.textJustify: String?
+public expect /*inline*/ var FutureElementStyle.textOrientation: String?
+public expect /*inline*/ var FutureElementStyle.textOverflow: String?
+public expect /*inline*/ var FutureElementStyle.textShadow: String?
+public expect /*inline*/ var FutureElementStyle.textTransform: String?
+public expect /*inline*/ var FutureElementStyle.textUnderlinePosition: String?
+public expect /*inline*/ var FutureElementStyle.top: String?
+public expect /*inline*/ var FutureElementStyle.transform: String?
+public expect /*inline*/ var FutureElementStyle.transformOrigin: String?
+public expect /*inline*/ var FutureElementStyle.transformStyle: String?
+public expect /*inline*/ var FutureElementStyle.transition: String?
+public expect /*inline*/ var FutureElementStyle.transitionDelay: String?
+public expect /*inline*/ var FutureElementStyle.transitionDuration: String?
+public expect /*inline*/ var FutureElementStyle.transitionProperty: String?
+public expect /*inline*/ var FutureElementStyle.transitionTimingFunction: String?
+public expect /*inline*/ var FutureElementStyle.unicodeBidi: String?
+public expect /*inline*/ var FutureElementStyle.verticalAlign: String?
+public expect /*inline*/ var FutureElementStyle.visibility: String?
+public expect /*inline*/ var FutureElementStyle.voiceBalance: String?
+public expect /*inline*/ var FutureElementStyle.voiceDuration: String?
+public expect /*inline*/ var FutureElementStyle.voicePitch: String?
+public expect /*inline*/ var FutureElementStyle.voicePitchRange: String?
+public expect /*inline*/ var FutureElementStyle.voiceRate: String?
+public expect /*inline*/ var FutureElementStyle.voiceStress: String?
+public expect /*inline*/ var FutureElementStyle.voiceVolume: String?
+public expect /*inline*/ var FutureElementStyle.whiteSpace: String?
+public expect /*inline*/ var FutureElementStyle.widows: String?
+public expect /*inline*/ var FutureElementStyle.width: String?
+public expect /*inline*/ var FutureElementStyle.wordBreak: String?
+public expect /*inline*/ var FutureElementStyle.wordSpacing: String?
+public expect /*inline*/ var FutureElementStyle.wordWrap: String?
+public expect /*inline*/ var FutureElementStyle.writingMode: String?
+public expect /*inline*/ var FutureElementStyle.zIndex: String?
+public expect /*inline*/ var FutureElementAttributes.accept: String?
+public expect /*inline*/ var FutureElementAttributes.acceptCharset: String?
+public expect /*inline*/ var FutureElementAttributes.accessKey: String?
+public expect /*inline*/ var FutureElementAttributes.action: String?
+public expect /*inline*/ var FutureElementAttributes.align: String?
+public expect /*inline*/ var FutureElementAttributes.alignContent: String?
+public expect /*inline*/ var FutureElementAttributes.alignItems: String?
+public expect /*inline*/ var FutureElementAttributes.alignSelf: String?
+public expect /*inline*/ var FutureElementAttributes.allow: String?
+public expect /*inline*/ var FutureElementAttributes.alt: String?
+public expect /*inline*/ var FutureElementAttributes.animation: String?
+public expect /*inline*/ var FutureElementAttributes.animationDelay: String?
+public expect /*inline*/ var FutureElementAttributes.animationDirection: String?
+public expect /*inline*/ var FutureElementAttributes.animationDuration: String?
+public expect /*inline*/ var FutureElementAttributes.animationFillMode: String?
+public expect /*inline*/ var FutureElementAttributes.animationIterationCount: String?
+public expect /*inline*/ var FutureElementAttributes.animationName: String?
+public expect /*inline*/ var FutureElementAttributes.animationPlayState: String?
+public expect /*inline*/ var FutureElementAttributes.animationTimingFunction: String?
+public expect /*inline*/ var FutureElementAttributes.async: Boolean?
+public expect /*inline*/ var FutureElementAttributes.autocomplete: String?
+public expect /*inline*/ var FutureElementAttributes.autofocusBoolean: Boolean?
+public expect /*inline*/ var FutureElementAttributes.autofocusString: String?
+public expect /*inline*/ var FutureElementAttributes.autoplay: Boolean?
+public expect /*inline*/ var FutureElementAttributes.backfaceVisibility: String?
+public expect /*inline*/ var FutureElementAttributes.background: String?
+public expect /*inline*/ var FutureElementAttributes.backgroundAttachment: String?
+public expect /*inline*/ var FutureElementAttributes.backgroundClip: String?
+public expect /*inline*/ var FutureElementAttributes.backgroundColor: String?
+public expect /*inline*/ var FutureElementAttributes.backgroundImage: String?
+public expect /*inline*/ var FutureElementAttributes.backgroundOrigin: String?
+public expect /*inline*/ var FutureElementAttributes.backgroundPosition: String?
+public expect /*inline*/ var FutureElementAttributes.backgroundRepeat: String?
+public expect /*inline*/ var FutureElementAttributes.backgroundSize: String?
+public expect /*inline*/ var FutureElementAttributes.bgColor: String?
+public expect /*inline*/ var FutureElementAttributes.border: String?
+public expect /*inline*/ var FutureElementAttributes.borderBottom: String?
+public expect /*inline*/ var FutureElementAttributes.borderBottomColor: String?
+public expect /*inline*/ var FutureElementAttributes.borderBottomLeftRadius: String?
+public expect /*inline*/ var FutureElementAttributes.borderBottomRightRadius: String?
+public expect /*inline*/ var FutureElementAttributes.borderBottomStyle: String?
+public expect /*inline*/ var FutureElementAttributes.borderBottomWidth: String?
+public expect /*inline*/ var FutureElementAttributes.borderCollapse: String?
+public expect /*inline*/ var FutureElementAttributes.borderColor: String?
+public expect /*inline*/ var FutureElementAttributes.borderImage: String?
+public expect /*inline*/ var FutureElementAttributes.borderImageOutset: String?
+public expect /*inline*/ var FutureElementAttributes.borderImageRepeat: String?
+public expect /*inline*/ var FutureElementAttributes.borderImageSlice: String?
+public expect /*inline*/ var FutureElementAttributes.borderImageSource: String?
+public expect /*inline*/ var FutureElementAttributes.borderImageWidth: String?
+public expect /*inline*/ var FutureElementAttributes.borderLeft: String?
+public expect /*inline*/ var FutureElementAttributes.borderLeftColor: String?
+public expect /*inline*/ var FutureElementAttributes.borderLeftStyle: String?
+public expect /*inline*/ var FutureElementAttributes.borderLeftWidth: String?
+public expect /*inline*/ var FutureElementAttributes.borderRadius: String?
+public expect /*inline*/ var FutureElementAttributes.borderRight: String?
+public expect /*inline*/ var FutureElementAttributes.borderRightColor: String?
+public expect /*inline*/ var FutureElementAttributes.borderRightStyle: String?
+public expect /*inline*/ var FutureElementAttributes.borderRightWidth: String?
+public expect /*inline*/ var FutureElementAttributes.borderSpacing: String?
+public expect /*inline*/ var FutureElementAttributes.borderStyle: String?
+public expect /*inline*/ var FutureElementAttributes.borderTop: String?
+public expect /*inline*/ var FutureElementAttributes.borderTopColor: String?
+public expect /*inline*/ var FutureElementAttributes.borderTopLeftRadius: String?
+public expect /*inline*/ var FutureElementAttributes.borderTopRightRadius: String?
+public expect /*inline*/ var FutureElementAttributes.borderTopStyle: String?
+public expect /*inline*/ var FutureElementAttributes.borderTopWidth: String?
+public expect /*inline*/ var FutureElementAttributes.borderWidth: String?
+public expect /*inline*/ var FutureElementAttributes.bottom: String?
+public expect /*inline*/ var FutureElementAttributes.boxDecorationBreak: String?
+public expect /*inline*/ var FutureElementAttributes.boxShadow: String?
+public expect /*inline*/ var FutureElementAttributes.boxSizing: String?
+public expect /*inline*/ var FutureElementAttributes.breakAfter: String?
+public expect /*inline*/ var FutureElementAttributes.breakBefore: String?
+public expect /*inline*/ var FutureElementAttributes.breakInside: String?
+public expect /*inline*/ var FutureElementAttributes.buffered: String?
+public expect /*inline*/ var FutureElementAttributes.captionSide: String?
+public expect /*inline*/ var FutureElementAttributes.challenge: String?
+public expect /*inline*/ var FutureElementAttributes.charset: String?
+public expect /*inline*/ var FutureElementAttributes.checked: Boolean?
+public expect /*inline*/ var FutureElementAttributes.cite: String?
+public expect /*inline*/ var FutureElementAttributes.className: String?
+public expect /*inline*/ var FutureElementAttributes.clear: String?
+public expect /*inline*/ var FutureElementAttributes.clip: String?
+public expect /*inline*/ var FutureElementAttributes.code: String?
+public expect /*inline*/ var FutureElementAttributes.colSpan: Int?
+public expect /*inline*/ var FutureElementAttributes.color: String?
+public expect /*inline*/ var FutureElementAttributes.cols: Int?
+public expect /*inline*/ var FutureElementAttributes.columnCount: String?
+public expect /*inline*/ var FutureElementAttributes.columnFill: String?
+public expect /*inline*/ var FutureElementAttributes.columnGap: String?
+public expect /*inline*/ var FutureElementAttributes.columnRule: String?
+public expect /*inline*/ var FutureElementAttributes.columnRuleColor: String?
+public expect /*inline*/ var FutureElementAttributes.columnRuleStyle: String?
+public expect /*inline*/ var FutureElementAttributes.columnRuleWidth: String?
+public expect /*inline*/ var FutureElementAttributes.columnSpan: String?
+public expect /*inline*/ var FutureElementAttributes.columnWidth: String?
+public expect /*inline*/ var FutureElementAttributes.columns: String?
+public expect /*inline*/ var FutureElementAttributes.content: String?
+public expect /*inline*/ var FutureElementAttributes.controls: Boolean?
+public expect /*inline*/ var FutureElementAttributes.coords: String?
+public expect /*inline*/ var FutureElementAttributes.counterIncrement: String?
+public expect /*inline*/ var FutureElementAttributes.counterReset: String?
+public expect /*inline*/ var FutureElementAttributes.crossOrigin: String?
+public expect /*inline*/ var FutureElementAttributes.csp: String?
+public expect /*inline*/ var FutureElementAttributes.cssFloat: String?
+public expect /*inline*/ var FutureElementAttributes.cssText: String?
+public expect /*inline*/ var FutureElementAttributes.cursor: String?
+public expect /*inline*/ var FutureElementAttributes.data: String?
+public expect /*inline*/ var FutureElementAttributes.dateTime: String?
+public expect /*inline*/ var FutureElementAttributes.default: Boolean?
+public expect /*inline*/ var FutureElementAttributes.defer: Boolean?
+public expect /*inline*/ var FutureElementAttributes.dir: String?
+public expect /*inline*/ var FutureElementAttributes.dirName: String?
+public expect /*inline*/ var FutureElementAttributes.direction: String?
+public expect /*inline*/ var FutureElementAttributes.disabled: Boolean?
+public expect /*inline*/ var FutureElementAttributes.display: String?
+public expect /*inline*/ var FutureElementAttributes.download: String?
+public expect /*inline*/ var FutureElementAttributes.draggable: Boolean?
+public expect /*inline*/ var FutureElementAttributes.emptyCells: String?
+public expect /*inline*/ var FutureElementAttributes.enctype: String?
+public expect /*inline*/ var FutureElementAttributes.filter: String?
+public expect /*inline*/ var FutureElementAttributes.flex: String?
+public expect /*inline*/ var FutureElementAttributes.flexBasis: String?
+public expect /*inline*/ var FutureElementAttributes.flexDirection: String?
+public expect /*inline*/ var FutureElementAttributes.flexFlow: String?
+public expect /*inline*/ var FutureElementAttributes.flexGrow: String?
+public expect /*inline*/ var FutureElementAttributes.flexShrink: String?
+public expect /*inline*/ var FutureElementAttributes.flexWrap: String?
+public expect /*inline*/ var FutureElementAttributes.font: String?
+public expect /*inline*/ var FutureElementAttributes.fontFamily: String?
+public expect /*inline*/ var FutureElementAttributes.fontFeatureSettings: String?
+public expect /*inline*/ var FutureElementAttributes.fontKerning: String?
+public expect /*inline*/ var FutureElementAttributes.fontLanguageOverride: String?
+public expect /*inline*/ var FutureElementAttributes.fontSize: String?
+public expect /*inline*/ var FutureElementAttributes.fontSizeAdjust: String?
+public expect /*inline*/ var FutureElementAttributes.fontStretch: String?
+public expect /*inline*/ var FutureElementAttributes.fontStyle: String?
+public expect /*inline*/ var FutureElementAttributes.fontSynthesis: String?
+public expect /*inline*/ var FutureElementAttributes.fontVariant: String?
+public expect /*inline*/ var FutureElementAttributes.fontVariantAlternates: String?
+public expect /*inline*/ var FutureElementAttributes.fontVariantCaps: String?
+public expect /*inline*/ var FutureElementAttributes.fontVariantEastAsian: String?
+public expect /*inline*/ var FutureElementAttributes.fontVariantLigatures: String?
+public expect /*inline*/ var FutureElementAttributes.fontVariantNumeric: String?
+public expect /*inline*/ var FutureElementAttributes.fontVariantPosition: String?
+public expect /*inline*/ var FutureElementAttributes.fontWeight: String?
+public expect /*inline*/ var FutureElementAttributes.form: String?
+public expect /*inline*/ var FutureElementAttributes.formAction: String?
+public expect /*inline*/ var FutureElementAttributes.formEnctype: String?
+public expect /*inline*/ var FutureElementAttributes.formMethod: String?
+public expect /*inline*/ var FutureElementAttributes.formNoValidate: Boolean?
+public expect /*inline*/ var FutureElementAttributes.formTarget: String?
+public expect /*inline*/ var FutureElementAttributes.hangingPunctuation: String?
+public expect /*inline*/ var FutureElementAttributes.headers: String?
+public expect /*inline*/ var FutureElementAttributes.heightInt: Int?
+public expect /*inline*/ var FutureElementAttributes.heightString: String?
+public expect /*inline*/ var FutureElementAttributes.hidden: Boolean?
+public expect /*inline*/ var FutureElementAttributes.high: Double?
+public expect /*inline*/ var FutureElementAttributes.href: String?
+public expect /*inline*/ var FutureElementAttributes.hreflang: String?
+public expect /*inline*/ var FutureElementAttributes.htmlFor: String?
+public expect /*inline*/ var FutureElementAttributes.httpEquiv: String?
+public expect /*inline*/ var FutureElementAttributes.hyphens: String?
+public expect /*inline*/ var FutureElementAttributes.id: String?
+public expect /*inline*/ var FutureElementAttributes.imageOrientation: String?
+public expect /*inline*/ var FutureElementAttributes.imageRendering: String?
+public expect /*inline*/ var FutureElementAttributes.imageResolution: String?
+public expect /*inline*/ var FutureElementAttributes.imeMode: String?
+public expect /*inline*/ var FutureElementAttributes.inputMode: String?
+public expect /*inline*/ var FutureElementAttributes.integrity: String?
+public expect /*inline*/ var FutureElementAttributes.isMap: Boolean?
+public expect /*inline*/ var FutureElementAttributes.justifyContent: String?
+public expect /*inline*/ var FutureElementAttributes.keytype: String?
+public expect /*inline*/ var FutureElementAttributes.kind: String?
+public expect /*inline*/ var FutureElementAttributes.label: String?
+public expect /*inline*/ var FutureElementAttributes.lang: String?
+public expect /*inline*/ var FutureElementAttributes.left: String?
+public expect /*inline*/ var FutureElementAttributes.letterSpacing: String?
+public expect /*inline*/ var FutureElementAttributes.lineBreak: String?
+public expect /*inline*/ var FutureElementAttributes.lineHeight: String?
+public expect /*inline*/ var FutureElementAttributes.list: String?
+public expect /*inline*/ var FutureElementAttributes.listStyle: String?
+public expect /*inline*/ var FutureElementAttributes.listStyleImage: String?
+public expect /*inline*/ var FutureElementAttributes.listStylePosition: String?
+public expect /*inline*/ var FutureElementAttributes.listStyleType: String?
+public expect /*inline*/ var FutureElementAttributes.loading: String?
+public expect /*inline*/ var FutureElementAttributes.loopBoolean: Boolean?
+public expect /*inline*/ var FutureElementAttributes.loopInt: Int?
+public expect /*inline*/ var FutureElementAttributes.low: Double?
+public expect /*inline*/ var FutureElementAttributes.margin: String?
+public expect /*inline*/ var FutureElementAttributes.marginBottom: String?
+public expect /*inline*/ var FutureElementAttributes.marginLeft: String?
+public expect /*inline*/ var FutureElementAttributes.marginRight: String?
+public expect /*inline*/ var FutureElementAttributes.marginTop: String?
+public expect /*inline*/ var FutureElementAttributes.mark: String?
+public expect /*inline*/ var FutureElementAttributes.markAfter: String?
+public expect /*inline*/ var FutureElementAttributes.markBefore: String?
+public expect /*inline*/ var FutureElementAttributes.marks: String?
+public expect /*inline*/ var FutureElementAttributes.marqueeDirection: String?
+public expect /*inline*/ var FutureElementAttributes.marqueePlayCount: String?
+public expect /*inline*/ var FutureElementAttributes.marqueeSpeed: String?
+public expect /*inline*/ var FutureElementAttributes.marqueeStyle: String?
+public expect /*inline*/ var FutureElementAttributes.mask: String?
+public expect /*inline*/ var FutureElementAttributes.maskType: String?
+public expect /*inline*/ var FutureElementAttributes.maxDouble: Double?
+public expect /*inline*/ var FutureElementAttributes.maxHeight: String?
+public expect /*inline*/ var FutureElementAttributes.maxLength: Int?
+public expect /*inline*/ var FutureElementAttributes.maxString: String?
+public expect /*inline*/ var FutureElementAttributes.maxWidth: String?
+public expect /*inline*/ var FutureElementAttributes.media: String?
+public expect /*inline*/ var FutureElementAttributes.method: String?
+public expect /*inline*/ var FutureElementAttributes.minDouble: Double?
+public expect /*inline*/ var FutureElementAttributes.minHeight: String?
+public expect /*inline*/ var FutureElementAttributes.minLength: Int?
+public expect /*inline*/ var FutureElementAttributes.minString: String?
+public expect /*inline*/ var FutureElementAttributes.minWidth: String?
+public expect /*inline*/ var FutureElementAttributes.multiple: Boolean?
+public expect /*inline*/ var FutureElementAttributes.muted: Boolean?
+public expect /*inline*/ var FutureElementAttributes.name: String?
+public expect /*inline*/ var FutureElementAttributes.navDown: String?
+public expect /*inline*/ var FutureElementAttributes.navIndex: String?
+public expect /*inline*/ var FutureElementAttributes.navLeft: String?
+public expect /*inline*/ var FutureElementAttributes.navRight: String?
+public expect /*inline*/ var FutureElementAttributes.navUp: String?
+public expect /*inline*/ var FutureElementAttributes.noValidate: Boolean?
+public expect /*inline*/ var FutureElementAttributes.nodeValue: String?
+public expect /*inline*/ var FutureElementAttributes.objectFit: String?
+public expect /*inline*/ var FutureElementAttributes.objectPosition: String?
+public expect /*inline*/ var FutureElementAttributes.opacity: String?
+public expect /*inline*/ var FutureElementAttributes.open: Boolean?
+public expect /*inline*/ var FutureElementAttributes.optimum: Double?
+public expect /*inline*/ var FutureElementAttributes.order: String?
+public expect /*inline*/ var FutureElementAttributes.orphans: String?
+public expect /*inline*/ var FutureElementAttributes.outline: String?
+public expect /*inline*/ var FutureElementAttributes.outlineColor: String?
+public expect /*inline*/ var FutureElementAttributes.outlineOffset: String?
+public expect /*inline*/ var FutureElementAttributes.outlineStyle: String?
+public expect /*inline*/ var FutureElementAttributes.outlineWidth: String?
+public expect /*inline*/ var FutureElementAttributes.overflowWrap: String?
+public expect /*inline*/ var FutureElementAttributes.overflowX: String?
+public expect /*inline*/ var FutureElementAttributes.overflowY: String?
+public expect /*inline*/ var FutureElementAttributes.padding: String?
+public expect /*inline*/ var FutureElementAttributes.paddingBottom: String?
+public expect /*inline*/ var FutureElementAttributes.paddingLeft: String?
+public expect /*inline*/ var FutureElementAttributes.paddingRight: String?
+public expect /*inline*/ var FutureElementAttributes.paddingTop: String?
+public expect /*inline*/ var FutureElementAttributes.pageBreakAfter: String?
+public expect /*inline*/ var FutureElementAttributes.pageBreakBefore: String?
+public expect /*inline*/ var FutureElementAttributes.pageBreakInside: String?
+public expect /*inline*/ var FutureElementAttributes.pattern: String?
+public expect /*inline*/ var FutureElementAttributes.perspective: String?
+public expect /*inline*/ var FutureElementAttributes.perspectiveOrigin: String?
+public expect /*inline*/ var FutureElementAttributes.phonemes: String?
+public expect /*inline*/ var FutureElementAttributes.ping: String?
+public expect /*inline*/ var FutureElementAttributes.placeholder: String?
+public expect /*inline*/ var FutureElementAttributes.playsInline: Boolean?
+public expect /*inline*/ var FutureElementAttributes.position: String?
+public expect /*inline*/ var FutureElementAttributes.poster: String?
+public expect /*inline*/ var FutureElementAttributes.preload: String?
+public expect /*inline*/ var FutureElementAttributes.quotes: String?
+public expect /*inline*/ var FutureElementAttributes.readOnly: Boolean?
+public expect /*inline*/ var FutureElementAttributes.referrerPolicy: String?
+public expect /*inline*/ var FutureElementAttributes.referrerpolicy: String?
+public expect /*inline*/ var FutureElementAttributes.rel: String?
+public expect /*inline*/ var FutureElementAttributes.required: Boolean?
+public expect /*inline*/ var FutureElementAttributes.resize: String?
+public expect /*inline*/ var FutureElementAttributes.rest: String?
+public expect /*inline*/ var FutureElementAttributes.restAfter: String?
+public expect /*inline*/ var FutureElementAttributes.restBefore: String?
+public expect /*inline*/ var FutureElementAttributes.reversed: Boolean?
+public expect /*inline*/ var FutureElementAttributes.right: String?
+public expect /*inline*/ var FutureElementAttributes.rowSpan: Int?
+public expect /*inline*/ var FutureElementAttributes.rows: Int?
+public expect /*inline*/ var FutureElementAttributes.sandbox: String?
+public expect /*inline*/ var FutureElementAttributes.selected: Boolean?
+public expect /*inline*/ var FutureElementAttributes.shape: String?
+public expect /*inline*/ var FutureElementAttributes.size: Int?
+public expect /*inline*/ var FutureElementAttributes.sizes: String?
+public expect /*inline*/ var FutureElementAttributes.slot: String?
+public expect /*inline*/ var FutureElementAttributes.span: Int?
+public expect /*inline*/ var FutureElementAttributes.spellcheck: Boolean?
+public expect /*inline*/ var FutureElementAttributes.src: String?
+public expect /*inline*/ var FutureElementAttributes.srcdoc: String?
+public expect /*inline*/ var FutureElementAttributes.srclang: String?
+public expect /*inline*/ var FutureElementAttributes.srcset: String?
+public expect /*inline*/ var FutureElementAttributes.start: Int?
+public expect /*inline*/ var FutureElementAttributes.step: String?
+public expect /*inline*/ var FutureElementAttributes.summary: String?
+public expect /*inline*/ var FutureElementAttributes.tabIndex: Int?
+public expect /*inline*/ var FutureElementAttributes.tabSize: String?
+public expect /*inline*/ var FutureElementAttributes.tableLayout: String?
+public expect /*inline*/ var FutureElementAttributes.target: String?
+public expect /*inline*/ var FutureElementAttributes.textAlign: String?
+public expect /*inline*/ var FutureElementAttributes.textAlignLast: String?
+public expect /*inline*/ var FutureElementAttributes.textCombineUpright: String?
+public expect /*inline*/ var FutureElementAttributes.textDecoration: String?
+public expect /*inline*/ var FutureElementAttributes.textDecorationColor: String?
+public expect /*inline*/ var FutureElementAttributes.textDecorationLine: String?
+public expect /*inline*/ var FutureElementAttributes.textDecorationStyle: String?
+public expect /*inline*/ var FutureElementAttributes.textIndent: String?
+public expect /*inline*/ var FutureElementAttributes.textJustify: String?
+public expect /*inline*/ var FutureElementAttributes.textOrientation: String?
+public expect /*inline*/ var FutureElementAttributes.textOverflow: String?
+public expect /*inline*/ var FutureElementAttributes.textShadow: String?
+public expect /*inline*/ var FutureElementAttributes.textTransform: String?
+public expect /*inline*/ var FutureElementAttributes.textUnderlinePosition: String?
+public expect /*inline*/ var FutureElementAttributes.title: String?
+public expect /*inline*/ var FutureElementAttributes.top: String?
+public expect /*inline*/ var FutureElementAttributes.transform: String?
+public expect /*inline*/ var FutureElementAttributes.transformOrigin: String?
+public expect /*inline*/ var FutureElementAttributes.transformStyle: String?
+public expect /*inline*/ var FutureElementAttributes.transition: String?
+public expect /*inline*/ var FutureElementAttributes.transitionDelay: String?
+public expect /*inline*/ var FutureElementAttributes.transitionDuration: String?
+public expect /*inline*/ var FutureElementAttributes.transitionProperty: String?
+public expect /*inline*/ var FutureElementAttributes.transitionTimingFunction: String?
+public expect /*inline*/ var FutureElementAttributes.translate: Boolean?
+public expect /*inline*/ var FutureElementAttributes.type: String?
+public expect /*inline*/ var FutureElementAttributes.unicodeBidi: String?
+public expect /*inline*/ var FutureElementAttributes.useMap: String?
+public expect /*inline*/ var FutureElementAttributes.valueDouble: Double?
+public expect /*inline*/ var FutureElementAttributes.valueInt: Int?
+public expect /*inline*/ var FutureElementAttributes.valueString: String?
+public expect /*inline*/ var FutureElementAttributes.verticalAlign: String?
+public expect /*inline*/ var FutureElementAttributes.visibility: String?
+public expect /*inline*/ var FutureElementAttributes.voiceBalance: String?
+public expect /*inline*/ var FutureElementAttributes.voiceDuration: String?
+public expect /*inline*/ var FutureElementAttributes.voicePitch: String?
+public expect /*inline*/ var FutureElementAttributes.voicePitchRange: String?
+public expect /*inline*/ var FutureElementAttributes.voiceRate: String?
+public expect /*inline*/ var FutureElementAttributes.voiceStress: String?
+public expect /*inline*/ var FutureElementAttributes.voiceVolume: String?
+public expect /*inline*/ var FutureElementAttributes.whiteSpace: String?
+public expect /*inline*/ var FutureElementAttributes.widows: String?
+public expect /*inline*/ var FutureElementAttributes.widthInt: Int?
+public expect /*inline*/ var FutureElementAttributes.widthString: String?
+public expect /*inline*/ var FutureElementAttributes.wordBreak: String?
+public expect /*inline*/ var FutureElementAttributes.wordSpacing: String?
+public expect /*inline*/ var FutureElementAttributes.wordWrap: String?
+public expect /*inline*/ var FutureElementAttributes.wrap: String?
+public expect /*inline*/ var FutureElementAttributes.writingMode: String?
+public expect /*inline*/ var FutureElementAttributes.zIndex: String?

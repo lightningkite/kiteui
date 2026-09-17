@@ -11,10 +11,10 @@ import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import kotlin.math.min
 
 
-actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = NCanvas(context.activity)
+public actual class Canvas actual constructor(context: ElementContext): NativeElement(context) {
+    override val native: NCanvas = NCanvas(context.activity)
 
-    actual var delegate: CanvasDelegate?
+    public actual var delegate: CanvasDelegate?
         get() = native.delegate
         set(value) {
             native.delegate = value
@@ -29,14 +29,13 @@ actual class Canvas actual constructor(context: ElementContext): NativeElement(c
     }
 }
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NCanvas @JvmOverloads constructor(
+public class NCanvas @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
-    var delegate: CanvasDelegate? = null
+    internal var delegate: CanvasDelegate? = null
         set(value) {
             field?.invalidate = {}
             field = value
@@ -127,7 +126,8 @@ actual class NCanvas @JvmOverloads constructor(
     private val metrics = context.resources.displayMetrics
     override fun onDraw(canvas: android.graphics.Canvas) {
         super.onDraw(canvas)
-        delegate?.draw(DrawingContext2DImpl(canvas))
+        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        delegate?.draw(DrawingContext2DImpl(canvas, isRtl = isRtl))
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

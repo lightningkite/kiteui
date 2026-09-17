@@ -1,4 +1,6 @@
 // by Claude
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.lightningkite.kiteui.markdown
 
 import com.lightningkite.kiteui.ssr.SsrContext
@@ -7,6 +9,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.col
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.runBlocking

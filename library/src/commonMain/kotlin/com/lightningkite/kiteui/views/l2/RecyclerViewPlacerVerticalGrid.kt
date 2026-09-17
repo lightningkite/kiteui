@@ -4,27 +4,31 @@ import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.direct.col
 import kotlin.math.abs
 
 @Deprecated("Call directly instead", ReplaceWith("RecyclerViewPlacerVerticalGrid(columns, ratio)"))
-fun RecyclerViewPlacerVerticalTrueGrid(columns: Int, ratio: Double = 1.0) = RecyclerViewPlacerVerticalGrid(columns, ratio)
-class RecyclerViewPlacerVerticalGrid(
-    val columns: Int,
-    val ratio: Double? = null,
-    val sizeDoesNotChange: Boolean = false,
+public fun RecyclerViewPlacerVerticalTrueGrid(columns: Int, ratio: Double = 1.0): RecyclerViewPlacerVerticalGrid = RecyclerViewPlacerVerticalGrid(columns, ratio)
+public class RecyclerViewPlacerVerticalGrid(
+    public val columns: Int,
+    public val ratio: Double? = null,
+    public val sizeDoesNotChange: Boolean = false,
 ) :
     RecyclerViewPlacerGrid {
-    val sizeByType = HashMap<RecyclerViewRenderer<*>, Double>()
-    fun RecyclerViewPlaceable.height(cellSize: Double) = ratio?.let { cellSize * it }
+    init {
+        // See RecyclerViewPlacerHorizontalGrid: cellSize divides by this and the column-height
+        // measurements take maxOf over an empty list, so zero fails far from its cause.
+        require(columns > 0) { "RecyclerViewPlacerVerticalGrid needs at least one column, got $columns" }
+    }
+
+    internal val sizeByType: MutableMap<RecyclerViewRenderer<*>, Double> = HashMap<RecyclerViewRenderer<*>, Double>()
+    internal fun RecyclerViewPlaceable.height(cellSize: Double): Double = ratio?.let { cellSize * it }
         ?: sizeByType[type]
         ?: size.height.also { if(sizeDoesNotChange) sizeByType[type] = it }
-    fun RecyclerViewPlaceable.existingHeight(cellSize: Double) = ratio?.let { cellSize * it }
+    internal fun RecyclerViewPlaceable.existingHeight(cellSize: Double): Double = ratio?.let { cellSize * it }
         ?: sizeByType[type]
         ?: (bottom - top).also { if(sizeDoesNotChange) sizeByType[type] = it }
 
-    var log: Log? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
+    public var log: Log? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
     override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid = RecyclerViewPlacerVerticalGrid(count)
 
     override fun place(
@@ -146,23 +150,6 @@ class RecyclerViewPlacerVerticalGrid(
             }
             currentY -= max + gap
             currentIndex -= columns
-        }
-    }
-
-    override fun prebake(
-        prebakeRange: IntRange,
-        dataRange: IntRange,
-        writer: ViewWriter,
-        render: ViewWriter.(Int) -> Unit
-    ): Unit = with(writer) {
-        if (columns == 1) {
-            col {
-                prebakeRange.forEach {
-                    render(it)
-                }
-            }
-        } else {
-            TODO()
         }
     }
 }

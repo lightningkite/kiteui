@@ -8,7 +8,7 @@ import kotlinx.cinterop.convert
 import kotlinx.cinterop.usePinned
 import platform.CoreCrypto.*
 
-actual suspend fun ByteArray.sha1(): ByteArray {
+public actual suspend fun ByteArray.sha1(): ByteArray {
     val out = UByteArray(CC_SHA1_DIGEST_LENGTH)
     this.usePinned { inputPinned ->
         out.usePinned { outputPinned ->
@@ -17,7 +17,7 @@ actual suspend fun ByteArray.sha1(): ByteArray {
     }
     return out.asByteArray()
 }
-actual suspend fun ByteArray.sha256(): ByteArray {
+public actual suspend fun ByteArray.sha256(): ByteArray {
     val out = UByteArray(CC_SHA256_DIGEST_LENGTH)
     this.usePinned { inputPinned ->
         out.usePinned { outputPinned ->
@@ -26,7 +26,7 @@ actual suspend fun ByteArray.sha256(): ByteArray {
     }
     return out.asByteArray()
 }
-actual suspend fun ByteArray.sha512(): ByteArray {
+public actual suspend fun ByteArray.sha512(): ByteArray {
     val out = UByteArray(CC_SHA512_DIGEST_LENGTH)
     this.usePinned { inputPinned ->
         out.usePinned { outputPinned ->

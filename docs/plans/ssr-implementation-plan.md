@@ -156,7 +156,7 @@ class SsrRouter(
 ```kotlin
 // This won't have data in SSR:
 col {
-    val user = shared { api.fetchUser(id) }  // Async!
+    val user = remember { api.fetchUser(id) }  // Async!
     text { ::content { user().name } }  // Will be empty/loading
 }
 ```

@@ -6,7 +6,7 @@ import kotlinx.browser.window
 import kotlinx.serialization.Serializable
 
 
-actual object Build {
-    actual val version: String get() = window.asDynamic()?.version?.toString() ?: "Unknown"
-    actual val debug: Boolean get() = (window.asDynamic()?.debug as? Boolean) == true
+public actual object Build {
+    public actual val version: String get() = window.asDynamic()?.version?.toString() ?: "Unknown"
+    public actual val debug: Boolean get() = (window.asDynamic()?.debug as? Boolean) == true
 }

@@ -10,20 +10,20 @@ fontbox = "3.0.7"
 glide = "5.0.7"
 jinput = "2.0.10"
 junit = "4.13.2"
-kotlin = "2.3.20"
+kotlin = "2.4.10"
 kotlinxCoroutinesCore = "1.10.2"
 kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.11.0"
 ktorVersion = "3.4.3"
 ktx = "1.18.0"
 lightningServer = "5.0.0"
-lkGradleHelpers = "4.0.7"
+lkGradleHelpers = "4.1.1"
 lottie = "6.7.1"
 material = "1.13.0"
 media3Exoplayer = "1.10.0"
 miglayoutSwing = "11.4.3"
 photoview = "2.3.0"
-reactive = "6.0.0-prerelease-45"
+reactive = "7.0.0-prerelease-64-02a1bce"
 robolectric = "4.16.1"
 roborazzi = "1.59.0"
 roborazziVersion = "1.59.0"
@@ -34,7 +34,7 @@ transition = "1.7.0"
 uriEncoding = "0.0.1-6"
 vannitechPublishing = "0.36.0"
 jsPlainObjects = "2.3.0"
-kfc = "16.5.0"
+kfc = "19.13.0"
 
 
 [libraries]
@@ -64,7 +64,9 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version = { ref = 
 ktor-client-okhttp-jvm = { module = "io.ktor:ktor-client-okhttp-jvm", version.ref = "ktorVersion" }
 ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version = { ref = "ktorVersion" } }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version = { ref = "ktorVersion" } }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version = { ref = "ktorVersion" } }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version = { ref = "ktorVersion" } }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version = { ref = "ktorVersion" } }
 ktx = { module = "androidx.core:core", version = { ref = "ktx" } }
 lightning-server-core = { module = "com.lightningkite.lightningserver:core", version.ref = "lightningServer" }
 lightning-server-engine-ktor = { module = "com.lightningkite.lightningserver:engine-ktor", version.ref = "lightningServer" }

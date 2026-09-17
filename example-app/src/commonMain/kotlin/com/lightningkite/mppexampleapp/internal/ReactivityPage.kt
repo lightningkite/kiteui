@@ -28,7 +28,7 @@ object ReactivityPage : Page {
         val debounced = Signal("Debounced").debounceWrite(500.milliseconds)
         val dependency = Signal(0)
         val fetching = remember {
-            async(dependency()) { delay(1000) }
+            async("fetching", dependency()) { delay(1000) }
             "Loaded!"
         }
         scrolling.col {
@@ -57,12 +57,12 @@ object ReactivityPage : Page {
             }
 
             card.col {
-                h2 { content = "Using reactiveScope()" }
-                text { reactiveScope { content = "local = ${local()}" } }
-                text { reactiveScope { content = "persist = ${persist()}" } }
-                text { reactiveScope { content = "indirect = ${indirect()}" } }
-                text { reactiveScope { content = "debounced = ${debounced()}" } }
-                text { reactiveScope { content = "fetching = ${fetching()}" } }
+                h2 { content = "Using reactive()" }
+                text { reactive { content = "local = ${local()}" } }
+                text { reactive { content = "persist = ${persist()}" } }
+                text { reactive { content = "indirect = ${indirect()}" } }
+                text { reactive { content = "debounced = ${debounced()}" } }
+                text { reactive { content = "fetching = ${fetching()}" } }
             }
 
             card.col {

@@ -12,14 +12,16 @@ import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class TextArea actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = textAreaDriverValue()
-    override val driverActions get() = super.driverActions + textAreaDriverActions()
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + textAreaDriverActions()
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
     }
@@ -42,7 +44,7 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.font.font,
+                theme.font.font.toTypeface(),
                 theme.font.weight,
                 theme.font.italic
             )
@@ -51,11 +53,11 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
                 (if(theme.font.underline) android.graphics.Paint.UNDERLINE_TEXT_FLAG else 0) or
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.isAllCaps = theme.font.allCaps
-        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
     }
 
-    actual val content: MutableReactiveValue<String> = native.contentProperty()
-    actual var keyboardHints: KeyboardHints
+    public actual val content: MutableReactiveValue<String> = native.contentProperty()
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -63,14 +65,14 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
             native.keyboardHints = value
         }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
         set(value) {
             native.hint = value
         }
-    var align: Align
+    internal var align: Align
         get() {
             return when (native.gravity) {
                 Gravity.START -> Align.Start
@@ -94,11 +96,11 @@ actual class TextArea actual constructor(context: ElementContext) : NativeElemen
                 }
             }
         }
-    var textSize: Dimension
+    internal var textSize: Dimension
         get() {
             return Dimension(native.textSize)
         }
         set(value) {
-            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
+            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value)
         }
 }

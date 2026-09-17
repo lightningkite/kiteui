@@ -22,15 +22,16 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.CoroutineScope
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class Select actual constructor(context: ElementContext): NativeInteractiveElement(context) {
+public actual class Select actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     private var _driverSelectedDisplay: String? = null
     private var _driverSelectSetValue: (suspend (String) -> Unit)? = null
     override val driverValue: String? get() = _driverSelectedDisplay
-    override val driverActions get() = super.driverActions + buildMap {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + buildMap {
         _driverSelectSetValue?.let { setter -> put("setValue") { args: List<String> -> setter(args.joinToString(" ")); "OK" } }
     }
-    override val native = Spinner(context.activity).apply {
+    override val native: Spinner = Spinner(context.activity).apply {
         minimumHeight = 0
         isClickable = true
     }
@@ -69,7 +70,7 @@ actual class Select actual constructor(context: ElementContext): NativeInteracti
         background = layerDrawable
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
         render: (T) -> String
@@ -130,7 +131,7 @@ actual class Select actual constructor(context: ElementContext): NativeInteracti
                 }
             }
         }
-        reactiveScope {
+        reactive {
             list = data()
             adapter.notifyDataSetChanged()
             val currentlySelected = edits.once()
@@ -141,7 +142,7 @@ actual class Select actual constructor(context: ElementContext): NativeInteracti
                 suppressChange = false
             }
         }
-        reactiveScope {
+        reactive {
             val currentlySelected = edits()
             val index = list.indexOf(currentlySelected)
             if (index != -1 && !suppressChange) {
@@ -151,7 +152,7 @@ actual class Select actual constructor(context: ElementContext): NativeInteracti
             }
         }
         // Driver support: track selected display and allow setValue
-        reactiveScope {
+        reactive {
             _driverSelectedDisplay = render(edits())
         }
         _driverSelectSetValue = { displayText ->

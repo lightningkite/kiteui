@@ -32,7 +32,7 @@ import kotlin.coroutines.resume
 private val logger = LogRoot.tag("ExternalServices")
 private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
-class AndroidExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
+public class AndroidExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
 
     override fun openLink(url: String, newTab: Boolean) {
         AndroidAppContext.activityCtx?.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
@@ -58,7 +58,7 @@ class AndroidExternalServices(private val ctx: ElementContext) : ExternalService
         ) { _, _ -> }
     }
 
-    override suspend fun requestFile(mimeTypes: List<String>) = suspendCancellableCoroutine { cont ->
+    override suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
         // by Claude - fixed: was || which is always true; need && to check if mime type is neither image nor video
         if (mimeTypes.any { !it.startsWith("image/") && !it.startsWith("video/") }) {
             val od = ActivityResultContracts.OpenDocument()
@@ -83,7 +83,7 @@ class AndroidExternalServices(private val ctx: ElementContext) : ExternalService
         }
     }
 
-    override suspend fun requestFiles(mimeTypes: List<String>) = suspendCancellableCoroutine { cont ->
+    override suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> = suspendCancellableCoroutine { cont ->
         // by Claude - fixed: was || which is always true; need && to check if mime type is neither image nor video
         if (mimeTypes.any { !it.startsWith("image/") && !it.startsWith("video/") }) {
             val od = ActivityResultContracts.OpenDocument()
@@ -234,7 +234,7 @@ class AndroidExternalServices(private val ctx: ElementContext) : ExternalService
     }
 }
 
-actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = AndroidExternalServices(context)
+public actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = AndroidExternalServices(context)
 
 private suspend fun requestImageCamera(
     front: Boolean = false,
@@ -270,6 +270,7 @@ private fun downloadContinued(name: String, url: String) {
     val request = DownloadManager.Request(url.toUri())
         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
+    @Suppress("DEPRECATION")
     request.allowScanningByMediaScanner()
     (AndroidAppContext.applicationCtx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
 }

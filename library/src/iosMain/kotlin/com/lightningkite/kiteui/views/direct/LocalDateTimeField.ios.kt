@@ -8,27 +8,44 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
+import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.useContents
 import kotlinx.datetime.*
+import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSCalendar
 import platform.Foundation.NSDate
 import platform.Foundation.NSDateComponents
 import platform.Foundation.NSTimeZone
 import platform.Foundation.localTimeZone
 import platform.UIKit.*
+import platform.darwin.NSObject
+import platform.objc.sel_registerName
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
-    override val driverActions get() = super.driverActions + localDateDriverActions()
-    override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localDateDriverActions()
+    override val native: WrapperView = WrapperView()
+    internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalDate?>(null)
-    actual val content: MutableReactiveValue<LocalDate?> get() = _content
+    public actual val content: MutableReactiveValue<LocalDate?> get() = _content
 
-    actual var range: ClosedRange<LocalDate>? = null
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+    internal val trigger: ClearDoneTrigger<LocalDateField> = ClearDoneTrigger(
+        weakSelf = kotlin.native.ref.WeakReference(this),
+        onClear = { it.content.value = null },
+        onDone = { it.textField.resignFirstResponder(); it.action?.startAction(it) },
+    )
+
+    override fun nativeSetAction(action: Action?) {
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
+    }
+
+    public actual var range: ClosedRange<LocalDate>? = null
         set(value) {
             field = value
             val picker = textField.inputView as? UIDatePicker ?: return
@@ -48,7 +65,7 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
         }
 
     init {
-        // TODO: need a way to CLEAR the field.
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
         textField.inputView = UIDatePicker().apply {
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleInline)
             datePickerMode = UIDatePickerMode.UIDatePickerModeDate
@@ -62,7 +79,7 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -75,7 +92,7 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -84,22 +101,29 @@ actual class LocalDateField actual constructor(context: ElementContext) : Native
     }
 }
 
-actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
-    override val driverActions get() = super.driverActions + localTimeDriverActions()
-    override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localTimeDriverActions()
+    override val native: WrapperView = WrapperView()
+    internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalTime?>(null)
-    actual val content: MutableReactiveValue<LocalTime?> get() = _content
+    public actual val content: MutableReactiveValue<LocalTime?> get() = _content
+
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+    internal val trigger: ClearDoneTrigger<LocalTimeField> = ClearDoneTrigger(
+        weakSelf = kotlin.native.ref.WeakReference(this),
+        onClear = { it.content.value = null },
+        onDone = { it.textField.resignFirstResponder(); it.action?.startAction(it) },
+    )
 
     override fun nativeSetAction(action: Action?) {
-        textField.action = action
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
     }
 
-    actual var range: ClosedRange<LocalTime>? = null
+    public actual var range: ClosedRange<LocalTime>? = null
         set(value) {
             field = value
             val picker = textField.inputView as? UIDatePicker ?: return
@@ -116,6 +140,7 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
         }
 
     init {
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
         textField.inputView = UIDatePicker().apply {
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleWheels)
             datePickerMode = UIDatePickerMode.UIDatePickerModeTime
@@ -129,7 +154,7 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -142,7 +167,7 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -151,20 +176,28 @@ actual class LocalTimeField actual constructor(context: ElementContext) : Native
     }
 }
 
-actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
+public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
-    override val driverActions get() = super.driverActions + localDateTimeDriverActions()
-    override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localDateTimeDriverActions()
+    override val native: WrapperView = WrapperView()
+    internal val textField: TextFieldInput = TextFieldInput(this)
     override val control: UIControl get() = textField
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalDateTime?>(null)
-    actual val content: MutableReactiveValue<LocalDateTime?> get() = _content
+    public actual val content: MutableReactiveValue<LocalDateTime?> get() = _content
+
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+    internal val trigger: ClearDoneTrigger<LocalDateTimeField> = ClearDoneTrigger(
+        weakSelf = kotlin.native.ref.WeakReference(this),
+        onClear = { it.content.value = null },
+        onDone = { it.textField.resignFirstResponder(); it.action?.startAction(it) },
+    )
+
     override fun nativeSetAction(action: Action?) {
-        textField.action = action
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
     }
-    actual var range: ClosedRange<LocalDateTime>? = null
+    public actual var range: ClosedRange<LocalDateTime>? = null
         set(value) {
             field = value
             val picker = textField.inputView as? UIDatePicker ?: return
@@ -182,6 +215,7 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : Na
 
 
     init {
+        textField.inputAccessoryView = clearableToolbar(trigger, action?.title ?: "Done")
         textField.inputView = UIDatePicker().apply {
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleWheels)
             datePickerMode = UIDatePickerMode.UIDatePickerModeDateAndTime
@@ -195,7 +229,7 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : Na
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    internal var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -208,7 +242,7 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : Na
         fontAndStyle = theme.theme.font
     }
 
-    fun updateFont() {
+    internal fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -217,6 +251,53 @@ actual class LocalDateTimeField actual constructor(context: ElementContext) : Na
     }
 }
 
+
+/**
+ * Backs the Clear/Done buttons of [clearableToolbar] for [LocalDateField], [LocalTimeField]
+ * and [LocalDateTimeField]. Holds only a weak reference to the field to avoid a retain cycle
+ * (the field owns [textField], which owns the toolbar, which targets this object).
+ *
+ * `internal` (rather than an anonymous `NSObject`) so [clear]/[done] can be called directly as
+ * ordinary Kotlin functions from tests, instead of routing through UIKit's target/action
+ * selector dispatch.
+ */
+@OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+internal class ClearDoneTrigger<T : Any>(
+    private val weakSelf: kotlin.native.ref.WeakReference<T>,
+    private val onClear: (T) -> Unit,
+    private val onDone: (T) -> Unit,
+) : NSObject() {
+    @ObjCAction
+    fun clear() {
+        weakSelf.get()?.let(onClear)
+    }
+    @ObjCAction
+    fun done() {
+        weakSelf.get()?.let(onDone)
+    }
+}
+
+/**
+ * Builds an inputAccessoryView toolbar with Clear and Done buttons for [LocalDateField],
+ * [LocalTimeField] and [LocalDateTimeField]. UIDatePicker has no way to represent "no
+ * selection" once shown, so Clear is the only way for a user to null the content back out
+ * once they've picked a value.
+ */
+private fun clearableToolbar(target: NSObject, doneTitle: String): UIToolbar =
+    // Explicit frame prevents UnsatisfiableConstraints error when automatic constraints are set by the system
+    // https://stackoverflow.com/questions/54284029/uitoolbar-with-uibarbuttonitem-layoutconstraint-issue
+    UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
+        barStyle = UIBarStyleDefault
+        setTranslucent(true)
+        sizeToFit()
+        setItems(
+            listOf(
+                UIBarButtonItem(title = "Clear", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = target, action = sel_registerName("clear")),
+                UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
+                UIBarButtonItem(title = doneTitle, style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = target, action = sel_registerName("done")),
+            ), animated = false
+        )
+    }
 
 //NSDateComponents().date() depends on the calendar property being set.
 //If you don’t specify one (like NSCalendar.currentCalendar()), then date() can return null — because the system doesn’t know which calendar/timezone to use to interpret the components.

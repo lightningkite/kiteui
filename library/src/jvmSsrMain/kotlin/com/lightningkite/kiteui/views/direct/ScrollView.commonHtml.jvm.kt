@@ -11,12 +11,12 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlin.UnsupportedOperationException
 
-actual class ScrollingBehaviorImpl actual constructor(
-    val on: Element,
+public actual class ScrollingBehaviorImpl actual constructor(
+    public val on: Element,
     actual override val horizontal: Boolean,
     actual override val vertical: Boolean
 ) : ScrollingBehaviors {
-    val native = on.native
+    public val native: FutureElement = on.native
     init {
         if(horizontal) {
             native.classes += "scroll-horizontal"
@@ -72,7 +72,11 @@ actual class ScrollingBehaviorImpl actual constructor(
         native.classes += "suppress-overflow-anchors"
     }
 
+    /**
+     * No-op, like the [scrollTo] overloads above: server-side rendering emits markup once and has no
+     * scroll position to preserve. The recycler calls this while laying out, so throwing here took
+     * down any SSR page containing a recycler rather than reporting anything useful.
+     */
     actual override fun scrollToKeepAnimations(x: Double, y: Double) {
-        TODO("Not yet implemented")
     }
 }

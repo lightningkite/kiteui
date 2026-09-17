@@ -1,23 +1,28 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.Element
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
-var debugMode: Boolean = false
+public var debugMode: Boolean = false
 
 @Deprecated("Use Element.Debugger.debugTarget", ReplaceWith("Element.Debugger.debugTarget"))
-var viewDebugTarget: Element? by Element.Debugger::debugTarget
+public var viewDebugTarget: Element? by Element.Debugger::debugTarget
 
-expect fun debugger(): Unit
-data class GCInfo(val usage: Long)
+public expect fun debugger(): Unit
+public data class GCInfo(val usage: Long)
 
-expect fun gc(): GCInfo
-expect fun cleanImageCache()
-expect fun gcReport()
-expect class WeakReference<T : Any>(referred: T) {
-    fun get(): T?
+public expect fun gc(): GCInfo
+public expect fun cleanImageCache()
+public expect fun gcReport()
+public expect class WeakReference<T : Any>(referred: T) {
+    public fun get(): T?
 }
 
-val leaks = ArrayList<WeakReference<*>>()
+public val leaks: MutableList<WeakReference<*>> = ArrayList<WeakReference<*>>()
 private var lastGc = clockMillis()
 private var lastGcReport = clockMillis()
 private val leakLog = LogRoot.tag("ElementLeaks")
@@ -37,7 +42,8 @@ private fun gcIfNotVeryRecent() {
     }
 }
 
-fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
+@Suppress("DEPRECATION")
+public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         get()?.let {
@@ -47,7 +53,8 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
     }
 }
 
-fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
+@Suppress("DEPRECATION")
+public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         if (get() == null) {
@@ -58,7 +65,8 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
     }
 }
 
-fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
+@Suppress("DEPRECATION")
+public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         get()?.let {
@@ -69,7 +77,8 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
     }
 }
 
-fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
+@Suppress("DEPRECATION")
+public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         if (get() == null) {
@@ -81,98 +90,148 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
     }
 }
 
-expect fun assertMainThread()
+public expect fun assertMainThread()
 
-expect fun Throwable.printStackTrace2()
-var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
-fun Throwable.report(context: String = "") = Throwable_report(this, context)
+public expect fun Throwable.printStackTrace2()
+public var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
+public fun Throwable.report(context: String = ""): Unit = Throwable_report(this, context)
 
-expect fun Any?.identityHashCode(): Int
+public expect fun Any?.identityHashCode(): Int
 
-inline fun Element.debugPrint(get: () -> String) {
+public inline fun Element.debugPrint(get: () -> String) {
     if (debugMode && Element.Debugger.debugTarget == this)
         Log.tag("viewDebugTarget").info(get())
 }
 
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
-typealias Console = Log
+public typealias Console = Log
 
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
-typealias ConsoleRoot = Log.Companion
+public typealias ConsoleRoot = Log.Default
 
-enum class LogLevel { LOG, INFO, WARN, ERROR }
-
-/** Observes log calls without owning the delegation chain. [LogRoot] is always called regardless. */
-fun interface LogInterceptor {
-    fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
+public enum class LogLevel {
+    /** Something failed and needs attention; shown even by the most restrictive filters. */
+    ERROR,
+    /** Something is off but the app can keep going. */
+    WARN,
+    /** Notable, expected events worth surfacing to someone watching the log. */
+    INFO,
+    /** Routine or high-volume detail, useful for debugging but noisy in normal operation. */
+    LOG,
 }
 
-interface Log {
-    companion object: Log {
+/** Observes log calls without owning the delegation chain. Is only called if the log's current level would actually log.  */
+public fun interface LogInterceptor {
+    public fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
+}
+
+public interface Log {
+    public val tag: String
+    public fun tag(tag: String): Log
+
+    public val level: LogLevel
+    public fun withLevel(level: LogLevel): Log
+
+    public fun log(vararg entries: Any?)
+    public fun info(vararg entries: Any?)
+    public fun warn(vararg entries: Any?)
+    public fun error(vararg entries: Any?)
+
+    public companion object Default : Log by InterceptedLog(LogRoot) {
         /** Interceptors that observe all [Log] calls. Each receives every call; [LogRoot] is always called regardless. */
-        val interceptors: MutableList<LogInterceptor> = mutableListOf()
-
-        override fun tag(tag: String): Log = InterceptedTaggedLog(tag)
-
-        override fun log(vararg entries: Any?) {
-            for (i in interceptors) i.intercept(LogLevel.LOG, "", entries)
-            LogRoot.log(*entries)
-        }
-        override fun error(vararg entries: Any?) {
-            for (i in interceptors) i.intercept(LogLevel.ERROR, "", entries)
-            LogRoot.error(*entries)
-        }
-        override fun info(vararg entries: Any?) {
-            for (i in interceptors) i.intercept(LogLevel.INFO, "", entries)
-            LogRoot.info(*entries)
-        }
-        override fun warn(vararg entries: Any?) {
-            for (i in interceptors) i.intercept(LogLevel.WARN, "", entries)
-            LogRoot.warn(*entries)
-        }
+        public val interceptors: MutableList<LogInterceptor> = mutableListOf()
     }
-
-    fun tag(tag: String): Log
-    fun log(vararg entries: Any?)
-    fun error(vararg entries: Any?)
-    fun info(vararg entries: Any?)
-    fun warn(vararg entries: Any?)
 }
 
-private class InterceptedTaggedLog(val tag: String) : Log {
-    private val rootTagged = LogRoot.tag(tag)
-    override fun tag(tag: String): Log = InterceptedTaggedLog("${this.tag}/$tag")
-    override fun log(vararg entries: Any?) {
-        for (i in Log.interceptors) i.intercept(LogLevel.LOG, tag, entries)
-        rootTagged.log(*entries)
+public fun Log.output(level: LogLevel, vararg entries: Any?): Unit = when (level) {
+    LogLevel.ERROR -> error(*entries)
+    LogLevel.WARN -> warn(*entries)
+    LogLevel.INFO -> info(*entries)
+    LogLevel.LOG -> log(*entries)
+}
+
+public inline fun Log.output(level: LogLevel, entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.AT_MOST_ONCE) }
+    when (level) {
+        LogLevel.ERROR -> error { entry() }
+        LogLevel.WARN -> warn { entry() }
+        LogLevel.INFO -> info { entry() }
+        LogLevel.LOG -> log { entry() }
     }
-    override fun error(vararg entries: Any?) {
-        for (i in Log.interceptors) i.intercept(LogLevel.ERROR, tag, entries)
-        rootTagged.error(*entries)
+}
+
+/** Logs the result of [entry], only computing when the current log level is at [LogLevel.LOG]. */
+public inline fun Log.log(entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.AT_MOST_ONCE) }
+    if (atLevel(LogLevel.LOG)) log(entry())
+}
+/** Logs the result of [entry], only computing when the current log level is at or above [LogLevel.INFO]. */
+public inline fun Log.info(entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.AT_MOST_ONCE) }
+    if (atLevel(LogLevel.INFO)) info(entry())
+}
+/** Logs the result of [entry], only computing when the current log level is at or above [LogLevel.WARN]. */
+public inline fun Log.warn(entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.AT_MOST_ONCE) }
+    if (atLevel(LogLevel.WARN)) warn(entry())
+}
+/** Logs the result of [entry]. The entry is always computed because [LogLevel.ERROR] is the lowest log level. */
+public inline fun Log.error(entry: () -> Any?) {
+    contract { callsInPlace(entry, InvocationKind.EXACTLY_ONCE) }
+    error(entry())
+}
+
+public fun Log.atLevel(level: LogLevel): Boolean = this.level >= level
+
+public fun Log(tag: String, level: LogLevel = LogLevel.LOG): Log = Log.tag(tag).withLevel(level)
+
+/** Drops LOG. Composes with other `*OrAbove` filters by narrowing only, never widening a stricter one. */
+public fun Log.infoOrAbove(): Log = withLevel(minOf(level, LogLevel.INFO))
+
+/** Drops LOG and INFO. Composes with other `*OrAbove` filters by narrowing only, never widening a stricter one. */
+public fun Log.warnOrAbove(): Log = withLevel(minOf(level, LogLevel.WARN))
+
+
+
+private class InterceptedLog(private val wraps: Log) : Log {
+    override val tag: String get() = wraps.tag
+    override fun tag(tag: String): Log = InterceptedLog(wraps.tag(tag))
+
+    override val level: LogLevel get() = wraps.level
+    override fun withLevel(level: LogLevel): Log = InterceptedLog(wraps.withLevel(level))
+
+    private fun intercept(level: LogLevel, entries: Array<out Any?>) {
+        for (i in Log.interceptors) i.intercept(level, wraps.tag, entries)
+    }
+
+    override fun log(vararg entries: Any?) {
+        if (wraps.level < LogLevel.LOG) return
+        intercept(LogLevel.LOG, entries)
+        wraps.log(*entries)
     }
     override fun info(vararg entries: Any?) {
-        for (i in Log.interceptors) i.intercept(LogLevel.INFO, tag, entries)
-        rootTagged.info(*entries)
+        if (wraps.level < LogLevel.INFO) return
+        intercept(LogLevel.INFO, entries)
+        wraps.info(*entries)
     }
     override fun warn(vararg entries: Any?) {
-        for (i in Log.interceptors) i.intercept(LogLevel.WARN, tag, entries)
-        rootTagged.warn(*entries)
+        if (wraps.level < LogLevel.WARN) return
+        intercept(LogLevel.WARN, entries)
+        wraps.warn(*entries)
+    }
+    override fun error(vararg entries: Any?) {
+        intercept(LogLevel.ERROR, entries)
+        wraps.error(*entries)
     }
 }
 
-fun Log.infoOrAbove(): Log = object : Log by this {
-    override fun log(vararg entries: Any?) {}
-}
-
-fun Log.warnOrAbove(): Log = object : Log by this {
-    override fun log(vararg entries: Any?) {}
-    override fun info(vararg entries: Any?) {}
-}
-
-expect object LogRoot : Log {
+public expect object LogRoot : Log {
+    override val tag: String
     override fun tag(tag: String): Log
+    override val level: LogLevel
+    override fun withLevel(level: LogLevel): Log
     override fun log(vararg entries: Any?)
-    override fun error(vararg entries: Any?)
     override fun info(vararg entries: Any?)
     override fun warn(vararg entries: Any?)
+    override fun error(vararg entries: Any?)
 }

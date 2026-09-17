@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.textInput
 import com.lightningkite.kiteui.views.forEachUpdating
@@ -30,11 +29,9 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
 
     override fun ElementWriter.CanAddTheme.render() {
         col {
-            transitionId = id
             h1 { content = "Hello world!" }
             text {
                 content = "My item ID is ${id}"
-                transitionId = "itemid"
             }
             text {
                 content =
@@ -54,10 +51,8 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
                 }
             }
             h2 { content = "The list so far" }
-            col {
-                forEachUpdating(list) {
-                    text { ::content { it() } }
-                }
+            colOf(list) {
+                text { ::content { it() } }
             }
             h2 { content = "Add more" }
             textInput { content bind toAdd }
@@ -74,7 +69,6 @@ class ArgumentsExamplePage(val id: String, val id2: IdWrapper = IdWrapper(id)): 
                     else -> Resources.imagesLightningBackground
                 }
                 scaleType = ImageScaleType.Crop
-                transitionId = "Sample"
             }
         }
     }

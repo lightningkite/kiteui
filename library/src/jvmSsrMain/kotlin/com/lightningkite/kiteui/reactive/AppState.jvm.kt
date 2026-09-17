@@ -12,22 +12,22 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
 
-actual object AppState {
+public actual object AppState {
     internal val _animationFrame = BasicListenable()
-    actual val animationFrame: Listenable
+    public actual val animationFrame: Listenable
         get() = _animationFrame
     internal val _windowInfo = Signal(WindowStatistics(1920.px, 1080.px, 1f))
-    actual val windowInfo: ReactiveValue<WindowStatistics>
+    public actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo
     internal val _inForeground = Signal(true)
-    actual val inForeground: ReactiveValue<Boolean>
+    public actual val inForeground: ReactiveValue<Boolean>
         get() = _inForeground
     internal val _softInputOpen = Signal(false)
-    actual val softInputOpen: ReactiveValue<Boolean>
+    public actual val softInputOpen: ReactiveValue<Boolean>
         get() = _softInputOpen
 
-    actual fun keepScreenOn(scope: CoroutineScope) {
+    public actual fun keepScreenOn(scope: CoroutineScope) {
         // Nothing to do; we're server-side
     }
-    actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): ()->Unit = {}
+    public actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): ()->Unit = {}
 }

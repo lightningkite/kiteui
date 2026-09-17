@@ -8,7 +8,7 @@ package com.lightningkite.kiteui.telemetry
  * trace is garbage (iOS release with only memory addresses, or empty), falls back to
  * exception cause chain + normalized message.
  */
-object CrashFingerprint {
+internal object CrashFingerprint {
 
     private val addressPattern = Regex("0x[0-9a-fA-F]+")
     private val identityHashPattern = Regex("@[0-9a-f]{4,}")
@@ -18,7 +18,7 @@ object CrashFingerprint {
     private val uuidPattern = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
 
     /** Generates a 16-hex-char fingerprint for the given throwable. */
-    fun generate(throwable: Throwable): String {
+    public fun generate(throwable: Throwable): String {
         val chain = causeChain(throwable)
         val normalized = normalize(throwable.stackTraceToString())
 
@@ -35,7 +35,7 @@ object CrashFingerprint {
      * Builds a stable cause chain string like "IllegalStateException > IOException".
      * Works identically on all platforms since it only uses class names.
      */
-    fun causeChain(throwable: Throwable): String = buildString {
+    public fun causeChain(throwable: Throwable): String = buildString {
         var t: Throwable? = throwable
         var depth = 0
         while (t != null && depth < 10) {

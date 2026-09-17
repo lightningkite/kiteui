@@ -18,7 +18,7 @@ import kotlinx.serialization.serializer
 private data class Wrapper<T>(val value: T)
 
 @Deprecated("Properties cannot serialize value classes.")
-fun <T> Properties.encodeToStringMap(
+public fun <T> Properties.encodeToStringMap(
     serializer: KSerializer<T>,
     value: T,
     key: String,
@@ -34,7 +34,7 @@ fun <T> Properties.encodeToStringMap(
 }
 
 @Deprecated("Properties cannot serialize value classes.")
-fun <T> Properties.decodeFromStringMap(serializer: KSerializer<T>, key: String, source: Map<String, String>): T? {
+public fun <T> Properties.decodeFromStringMap(serializer: KSerializer<T>, key: String, source: Map<String, String>): T? {
     try {
         val filtered = source.filterKeys { it.startsWith(key) }.mapKeys { it.key.replaceFirst(key, "value") }
         if (filtered.isEmpty()) return null
@@ -46,7 +46,7 @@ fun <T> Properties.decodeFromStringMap(serializer: KSerializer<T>, key: String, 
 }
 
 @Deprecated("Properties cannot serialize value classes.")
-inline fun <reified T> Properties.decodeFromStringMap(
+public inline fun <reified T> Properties.decodeFromStringMap(
     key: String,
     source: Map<String, String>,
     into: MutableValue<T>
@@ -55,16 +55,16 @@ inline fun <reified T> Properties.decodeFromStringMap(
 }
 
 @Deprecated("Properties cannot serialize value classes.")
-inline fun <reified T> Properties.encodeToStringMap(value: T, key: String, out: MutableMap<String, String>) =
+public inline fun <reified T> Properties.encodeToStringMap(value: T, key: String, out: MutableMap<String, String>): Unit =
     encodeToStringMap(UrlProperties.serializersModule.serializer<T>(), value, key, out)
 
 @Deprecated("Properties cannot serialize value classes.")
-inline fun <reified T> Properties.decodeFromStringMap(key: String, source: Map<String, String>): T? =
+public inline fun <reified T> Properties.decodeFromStringMap(key: String, source: Map<String, String>): T? =
     decodeFromStringMap(UrlProperties.serializersModule.serializer<T>(), key, source)
 
 
 @Deprecated("Properties cannot serialize value classes.")
-fun <T> Properties.encodeToString(serializer: KSerializer<T>, value: T): String {
+public fun <T> Properties.encodeToString(serializer: KSerializer<T>, value: T): String {
     return if (serializer.descriptor.kind is StructureKind) {
         encodeToStringMap(serializer, value).entries.joinToString("&") { "${it.key}=${encodeURIComponent(it.value)}" }
     } else {
@@ -73,7 +73,7 @@ fun <T> Properties.encodeToString(serializer: KSerializer<T>, value: T): String 
 }
 
 @Deprecated("Properties cannot serialize value classes.")
-fun <T> Properties.decodeFromString(serializer: KSerializer<T>, value: String): T {
+public fun <T> Properties.decodeFromString(serializer: KSerializer<T>, value: String): T {
     if (serializer.descriptor.kind is StructureKind) {
         return decodeFromStringMap(serializer, value.split('&').associate {
             val index = it.indexOf('=')
@@ -87,9 +87,9 @@ fun <T> Properties.decodeFromString(serializer: KSerializer<T>, value: String): 
 }
 
 @Deprecated("Properties cannot serialize value classes.")
-inline fun <reified T> Properties.encodeToString(value: T): String =
+public inline fun <reified T> Properties.encodeToString(value: T): String =
     encodeToString(serializersModule.serializer(), value)
 
 @Deprecated("Properties cannot serialize value classes.")
-inline fun <reified T> Properties.decodeFromString(value: String): T =
+public inline fun <reified T> Properties.decodeFromString(value: String): T =
     decodeFromString(serializersModule.serializer(), value)

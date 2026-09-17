@@ -18,7 +18,7 @@ import kotlin.contracts.contract
  *
  * Automatically applied to [labels][label]
  * */
-data object LabelSemantic : Semantic("label") {
+public data object LabelSemantic : Semantic("label") {
     override fun default(theme: Theme): ThemeAndBack = theme[SubtextSemantic]
 }
 
@@ -27,18 +27,18 @@ data object LabelSemantic : Semantic("label") {
  *
  * Automatically applied to [labels][label]
  * */
-data object LabelGapSemantic : Semantic("labelgp") {
+public data object LabelGapSemantic : Semantic("labelgp") {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
         cascading = false,
         gap = theme.gap * 0.1
     )
 }
 
-class LabeledView(private val container: RowOrCol): LinearLayoutElement by container {
-    constructor(context: ElementContext) : this(RowOrCol(context))
+public class LabeledView(private val container: RowOrCol): LinearLayoutElement by container {
+    public constructor(context: ElementContext) : this(RowOrCol(context))
 
     private val label = atStart.themed(LabelSemantic).text()
-    var content: String by label::content
+    public var content: String by label::content
 
     init {
         themeChoice += LabelGapSemantic
@@ -66,12 +66,12 @@ internal fun Element.findFirstInteractiveDescendant(): InteractiveElement? {
     return null
 }
 
-inline fun ElementWriter.label(setup: LabeledView.() -> Unit = {}): LabeledView {
+public inline fun ElementWriter.label(setup: LabeledView.() -> Unit = {}): LabeledView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(LabeledView(context), setup)
 }
 
-inline fun ElementWriter.label(label: String, setup: LinearLayoutElement.() -> Unit): LabeledView {
+public inline fun ElementWriter.label(label: String, setup: LinearLayoutElement.() -> Unit): LabeledView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return label {
         content = label
@@ -79,7 +79,7 @@ inline fun ElementWriter.label(label: String, setup: LinearLayoutElement.() -> U
     }
 }
 
-inline fun ElementWriter.field(label: String, content: ElementWriter.CanAddTheme.() -> Unit): LabeledView {
+public inline fun ElementWriter.field(label: String, content: ElementWriter.CanAddTheme.() -> Unit): LabeledView {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     return label(label) {
         fieldTheme.content()

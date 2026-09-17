@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 
 
-actual class IconView actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class IconView actual constructor(context: ElementContext) : NativeElement(context) {
     init {
         native.tag = "div"
         native.setAttribute("role", "img")
@@ -12,7 +12,7 @@ actual class IconView actual constructor(context: ElementContext) : NativeElemen
         native.classes.add("icon")
     }
 
-    actual var source: Icon? = null
+    public actual var source: Icon? = null
         set(value) {
             field = value
             native.clearChildren()
@@ -48,7 +48,7 @@ actual class IconView actual constructor(context: ElementContext) : NativeElemen
             }
         }
 
-    actual var description: String? = null
+    public actual var description: String? = null
         set(value) {
             field = value
             if (value == "") {

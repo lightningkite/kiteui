@@ -32,15 +32,40 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.max
 
-abstract class KiteUiActivity : AppCompatActivity() {
-    open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
-    var savedInstanceState: Bundle? = null
+public abstract class KiteUiActivity : AppCompatActivity() {
+    public open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
+    public var savedInstanceState: Bundle? = null
 
-    abstract val mainNavigator : PageNavigator
+    /**
+     * Records where each gesture starts, in screen coordinates, for [lastTouchDownOnScreen].
+     *
+     * The activity is the only place that sees a touch before anything else: a `View`'s own
+     * `OnTouchListener` runs *after* child dispatch, so any child that consumes the event - an
+     * ordinary text view will - hides it from the container. Drag-and-drop needs the starting point
+     * to anchor its shadow, and a long press carries no coordinates of its own.
+     */
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (ev.actionMasked == android.view.MotionEvent.ACTION_DOWN) {
+            lastTouchDownOnScreen = android.graphics.Point(ev.rawX.toInt(), ev.rawY.toInt())
+        }
+        return super.dispatchTouchEvent(ev)
+    }
 
-    lateinit var root: Element
+    public companion object {
+        /**
+         * Screen coordinates of the most recent gesture start, or null before any touch.
+         *
+         * Deliberately process-wide rather than per-activity: there is only ever one gesture in
+         * flight, and the drag shadow is built from a `View` that has no route back to its activity.
+         */
+        internal var lastTouchDownOnScreen: android.graphics.Point? = null
+    }
+
+    public abstract val mainNavigator : PageNavigator
+
+    public lateinit var root: Element
     private val safeInsetsProperty = Signal(Edges.ZERO)
-    val viewWriter: ViewWriter = object: ViewWriter, CoroutineScope by this.lifecycleScope {
+    public val viewWriter: ViewWriter = object: ViewWriter, CoroutineScope by this.lifecycleScope {
         override val context: ElementContext = ElementContext(this@KiteUiActivity)
         init {
             context.safeInsets = safeInsetsProperty
@@ -86,7 +111,10 @@ abstract class KiteUiActivity : AppCompatActivity() {
         AndroidAppContext.activityCtx = this
 
         savedInstanceState?.getStringArray("navStack")?.let {
+            // If every saved route fails to parse (e.g. renamed/removed in an app update), fall back
+            // to the default route instead of leaving the navigator stack empty.
             mainNavigator.stack.value = it.mapNotNull { mainNavigator.routes.parse(UrlLikePath.fromUrlString(it)) }
+                .ifEmpty { listOf(mainNavigator.routes.fallback) }
         } ?: run {
             mainNavigator.stack.value = (mainNavigator.routes.parse(UrlLikePath(listOf(), mapOf())) ?: mainNavigator.routes.fallback).let(::listOf)
         }
@@ -96,6 +124,8 @@ abstract class KiteUiActivity : AppCompatActivity() {
         // Use modern back handling API instead of deprecated onBackPressed()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                // Dismiss the topmost open dismissable dialog before navigating pages.
+                if (viewWriter.context.dismissTopDialog()) return
                 if (!mainNavigator.goBack()) {
                     isEnabled = false
                     onBackPressedDispatcher.onBackPressed()
@@ -112,10 +142,10 @@ abstract class KiteUiActivity : AppCompatActivity() {
 
     private var currentNum = 0
     private val onResults = HashMap<Int, (Int, Intent?)->Unit>()
-    fun cancelOnResult(requestCode: Int) {
+    public fun cancelOnResult(requestCode: Int) {
         onResults.remove(requestCode)
     }
-    fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit): Int {
+    public fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit): Int {
         val requestCode = currentNum++
         onResults[requestCode] = onResult
         ActivityCompat.startActivityForResult(this, intent, requestCode, options)
@@ -128,18 +158,28 @@ abstract class KiteUiActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
     private val onPermissions = HashMap<Int, (PermissionResult)->Unit>()
-    fun cancelOnPermissions(requestCode: Int) {
+    public fun cancelOnPermissions(requestCode: Int) {
         onPermissions.remove(requestCode)
     }
-    data class PermissionResult(val map: Map<String, Int>) {
-        val accepted: Boolean get() = map.values.all { it == PackageManager.PERMISSION_GRANTED }
+    public data class PermissionResult(val map: Map<String, Int>) {
+        /**
+         * Whether every requested permission came back granted.
+         *
+         * An empty [map] is false, not true. Android delivers empty permission and grant arrays when
+         * it interrupts a request - a rotation, or the user tapping outside the dialog - and treating
+         * that as consent means a caller gating on this fails open. The already-granted shortcut in
+         * [requestPermissions] reports the permissions it checked for exactly this reason, so an
+         * empty map now only ever means "nothing came back".
+         */
+        val accepted: Boolean get() = map.isNotEmpty() && map.values.all { it == PackageManager.PERMISSION_GRANTED }
     }
-    fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit): Int {
+    public fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit): Int {
         val ungranted = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
         if(ungranted.isEmpty()) {
-            onResult(PermissionResult(mapOf()))
+            // Reports the permissions it checked rather than an empty map - see PermissionResult.accepted.
+            onResult(PermissionResult(permissions.associateWith { PackageManager.PERMISSION_GRANTED }))
             return -1
         }
         val requestCode = currentNum++
@@ -180,7 +220,9 @@ abstract class KiteUiActivity : AppCompatActivity() {
             val path = UrlLikePath(
                 segments = it.path?.split('/')?.filter { it.isNotBlank() } ?: listOf(),
                 parameters = it.query?.removePrefix("?")?.split('&')?.associate {
-                    it.decodeURLQueryComponent().substringBefore('=') to it.substringAfter('=', "").decodeURLQueryComponent()
+                    // Split on the raw '=' delimiter first, THEN decode each half; decoding before
+                    // splitting would let an encoded '=' (%3D) inside a value corrupt the key/value split.
+                    it.substringBefore('=').decodeURLQueryComponent() to it.substringAfter('=', "").decodeURLQueryComponent()
                 } ?: mapOf()
             )
             mainNavigator.routes.parse(path)?.let {

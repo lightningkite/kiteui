@@ -30,7 +30,7 @@ object DataPage : DocPage {
         "Signal",
         "PersistentProperty",
         "remember",
-        "reactiveScope",
+        "reactive",
         "reactivity",
         "::prop { }",
         "launch"

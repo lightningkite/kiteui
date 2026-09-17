@@ -77,7 +77,10 @@ expect class TestHarness() {
 
 /**
  * Helper function to run a test with automatic cleanup.
- * Automatically skips test if platform is not supported.
+ *
+ * Skips the test body on platforms where the harness is unsupported. Every current platform
+ * reports [TestHarness.supported] as true, so this only guards a platform added later; skipping
+ * keeps such a platform's build green rather than failing every interactive test at once.
  *
  * Example:
  * ```

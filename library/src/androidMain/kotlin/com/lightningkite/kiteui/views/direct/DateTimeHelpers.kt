@@ -7,7 +7,7 @@ import kotlinx.datetime.*
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-fun View.showDatePicker(
+public fun View.showDatePicker(
     start: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
     min: LocalDate? = null,
     max: LocalDate? = null,
@@ -16,14 +16,14 @@ fun View.showDatePicker(
     DatePickerDialog(context, { _, year, month, dayOfMonth ->
         val selected = LocalDate(year, month + 1, dayOfMonth)
         onResult(selected)
-    }, start.year, start.monthNumber - 1, start.dayOfMonth).apply {
+    }, start.year, start.month.number - 1, start.day).apply {
         min?.let { datePicker.minDate = it.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds() }
         max?.let { datePicker.maxDate = it.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds() }
         show()
     }
 }
 
-fun View.showTimePicker(
+public fun View.showTimePicker(
     start: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
     min: LocalTime? = null,
     max: LocalTime? = null,

@@ -23,7 +23,7 @@ internal fun Transformation.toCGAffineTransform(view: UIView): CValue<CGAffineTr
     return t
 }
 
-actual fun Element.animateIn(
+public actual fun Element.animateIn(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {
@@ -54,7 +54,7 @@ actual fun Element.animateIn(
     }
 }
 
-actual fun Element.animateOut(
+public actual fun Element.animateOut(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {

@@ -27,42 +27,42 @@ import com.lightningkite.reactive.core.Reactive
  */
 @ExperimentalKiteUi
 @Untested
-expect class AudioPlayback(format: AudioFormat = AudioFormat()) {
+public expect class AudioPlayback(format: AudioFormat = AudioFormat()) {
     /** The audio format being played */
-    val format: AudioFormat
+    public val format: AudioFormat
 
     /** Whether audio is currently playing */
-    val isPlaying: Reactive<Boolean>
+    public val isPlaying: Reactive<Boolean>
 
     /** Approximate buffered duration in milliseconds */
-    val bufferedDurationMs: Reactive<Long>
+    public val bufferedDurationMs: Reactive<Long>
 
     /** Volume from 0.0 to 1.0 */
-    var volume: Float
+    public var volume: Float
 
     /**
      * Enqueue audio data for playback.
      * Audio is buffered and played in order.
      * @param data PCM16 audio bytes to play
      */
-    fun enqueue(data: ByteArray)
+    public fun enqueue(data: ByteArray)
 
     /** Start playback of buffered audio */
-    fun start()
+    public fun start()
 
     /** Stop playback and clear buffer */
-    fun stop()
+    public fun stop()
 
     /** Clear buffer without stopping playback state */
-    fun clearBuffer()
+    public fun clearBuffer()
 
     /**
      * Register callback for when buffer becomes empty.
      * Useful for detecting end of stream or requesting more data.
      * @param action Callback invoked when buffer is empty
      */
-    fun onBufferEmpty(action: () -> Unit)
+    public fun onBufferEmpty(action: () -> Unit)
 
     /** Release all resources. Instance should not be used after calling this. */
-    fun release()
+    public fun release()
 }

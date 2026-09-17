@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.internal
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
@@ -32,7 +33,7 @@ object UltraBasicPage : Page {
             text("Wait...")
             launch {
                 delay(0.5.seconds)
-                pageNavigator.navigate(CounterPage)
+                context.pageNavigator.navigate(CounterPage)
             }
 //            button {
 //                text {
@@ -90,8 +91,8 @@ object LeakCheckerPage : Page {
         "justFrame" to { frame { } },
         "button" to { frame { button { text("hey"); onClick { } } } },
         "link" to { frame { link { text("hey"); onNavigate { }; to = { RootPage } } } },
-        "textField" to { frame { textField { content bind stringProp } } },
-        "numberField" to { frame { numberField { content bind doubleProp } } },
+        "textInput" to { frame { textInput { content bind stringProp } } },
+        "numberInput" to { frame { numberInput { content bind doubleProp } } },
         "textArea" to { frame { textArea { content bind stringProp } } },
         "select" to { frame { select { bind(Signal(0), Constant(listOf(1, 2, 3)), { it.toString() }) } } },
         "space" to { frame { space() } },
@@ -122,6 +123,7 @@ object LeakCheckerPage : Page {
 //        "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
     )
 
+    @OptIn(InternalKiteUi::class)
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val index = Signal(0)
         col {

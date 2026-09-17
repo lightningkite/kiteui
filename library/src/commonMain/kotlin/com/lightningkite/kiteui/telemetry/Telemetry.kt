@@ -36,23 +36,23 @@ import kotlinx.coroutines.launch
  * - Connectivity issues
  * - Warn/Error log records and exception reports
  */
-class Telemetry(val config: TelemetryConfig) {
+public class Telemetry(public val config: TelemetryConfig) {
 
     // ===== Instance state =====
 
-    val sessionId: String = spanId()
-    var currentTraceId: String = traceId()
+    internal val sessionId: String = spanId()
+    internal var currentTraceId: String = traceId()
         internal set
-    var currentSpanId: String = ""
+    internal var currentSpanId: String = ""
         internal set
 
     internal val exporter: TelemetryExporter = TelemetryExporter(config)
 
     /** Sampling decision made once per session (app launch). All traces in this session share the same decision. */
-    val currentTraceIsSampled: Boolean = Random.nextDouble() < config.traceSamplingRate
+    internal val currentTraceIsSampled: Boolean = Random.nextDouble() < config.traceSamplingRate
 
     /** Effective log severity — mutable to support [setVerboseLogging]. */
-    var logMinSeverity: OtlpSeverity = config.logMinSeverity
+    internal var logMinSeverity: OtlpSeverity = config.logMinSeverity
         private set
 
     private val log = LogRoot.tag("Telemetry")
@@ -124,7 +124,7 @@ class Telemetry(val config: TelemetryConfig) {
      * Separated from construction so tests can create instances without triggering
      * AppScope/lifecycle hooks.
      */
-    fun install(context: ElementContext, navigator: PageNavigator) {
+    public fun install(context: ElementContext, navigator: PageNavigator) {
         check(!installed) { "Telemetry.install() called twice. Call shutdown() first." }
         installed = true
 
@@ -229,7 +229,7 @@ class Telemetry(val config: TelemetryConfig) {
      * Removes all hooks installed by [install] and stops the flush loop.
      * Buffered data is NOT flushed — call [flush] first if you need to drain.
      */
-    fun shutdown() {
+    internal fun shutdown() {
         if (!installed) return
         installed = false
         fetchInterceptors.remove(installedFetchInterceptor)
@@ -263,7 +263,13 @@ class Telemetry(val config: TelemetryConfig) {
         val parentSpanId = ctx.spanId().ifEmpty { currentSpanId }
         val viewPath = ctx.viewPath()
 
-        val host = url.substringAfter("://").substringBefore("/").substringBefore("?")
+        // Strip credentials once, from the whole URL, rather than per attribute. The original fix
+        // sanitised only `host`, and the `url.path` attribute went on shipping `user:pass@` to the
+        // backend regardless. Doing it here means every attribute derived below is safe and a
+        // later-added attribute cannot quietly reintroduce the leak. `proceed` still receives the
+        // untouched `url`, because the request itself may genuinely need those credentials.
+        val telemetryUrl = url.withoutUserInfo()
+        val host = telemetryUrl.substringAfter("://").substringBefore("/").substringBefore("?")
 
         // Copy headers to avoid mutating the caller's HttpHeaders instance
         val outHeaders = httpHeaders(headers)
@@ -282,7 +288,7 @@ class Telemetry(val config: TelemetryConfig) {
             errorType = e::class.simpleName ?: "Unknown"
             val durationMs = clockMillis() - startMs
             val endNanos = nanosString()
-            recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType = errorType)
+            recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, telemetryUrl, host, viewPath, startNanos, endNanos, durationMs, errorType = errorType)
             throw e
         }
 
@@ -290,7 +296,7 @@ class Telemetry(val config: TelemetryConfig) {
         val endNanos = nanosString()
         val statusCode = response.status
         errorType = if (statusCode >= 500) "HTTP $statusCode" else null
-        recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, url, host, viewPath, startNanos, endNanos, durationMs, errorType, statusCode)
+        recordFetchTelemetry(fetchTraceId, fetchSpanId, parentSpanId, method, telemetryUrl, host, viewPath, startNanos, endNanos, durationMs, errorType, statusCode)
 
         return response
     }
@@ -430,22 +436,22 @@ class Telemetry(val config: TelemetryConfig) {
      * Temporarily enable verbose (DEBUG+) log shipping for investigation.
      * Call with `false` to restore the configured [TelemetryConfig.logMinSeverity].
      */
-    fun setVerboseLogging(enabled: Boolean) {
+    internal fun setVerboseLogging(enabled: Boolean) {
         logMinSeverity = if (enabled) OtlpSeverity.DEBUG else config.logMinSeverity
     }
 
     /** Record a custom counter metric. */
-    fun counter(name: String, value: Long = 1, attributes: List<OtlpKeyValue> = emptyList()) {
+    internal fun counter(name: String, value: Long = 1, attributes: List<OtlpKeyValue> = emptyList()) {
         exporter.incrementCounter(name, value, attributes)
     }
 
     /** Record a custom histogram metric value. */
-    fun histogram(name: String, value: Double, unit: String = "ms", attributes: List<OtlpKeyValue> = emptyList()) {
+    internal fun histogram(name: String, value: Double, unit: String = "ms", attributes: List<OtlpKeyValue> = emptyList()) {
         exporter.recordHistogram(name, value, unit, attributes)
     }
 
     /** Flush all buffered data immediately. Call before app termination or on background. */
-    suspend fun flush() {
+    internal suspend fun flush() {
         exporter.flushAll()
     }
 
@@ -540,17 +546,17 @@ class Telemetry(val config: TelemetryConfig) {
 
     // ===== ID Generation (companion — pure functions, no instance state) =====
 
-    companion object {
+    internal companion object {
         private const val hexChars = "0123456789abcdef"
 
         /** 32 hex chars (16 bytes) — W3C trace ID */
-        fun traceId(): String = randomHex(32)
+        public fun traceId(): String = randomHex(32)
 
         /** 16 hex chars (8 bytes) — W3C span ID */
-        fun spanId(): String = randomHex(16)
+        public fun spanId(): String = randomHex(16)
 
         /** Current time as nanoseconds-since-epoch string, suitable for OTLP timestamps. */
-        fun nanosString(): String {
+        public fun nanosString(): String {
             val millis = Clock.System.now().toEpochMilliseconds()
             return (millis * 1_000_000L).toString()
         }
@@ -581,4 +587,27 @@ internal class InteractionSpan(
 
     /** Ends the interaction span and records telemetry. Call from `finally`. */
     fun end() = onEnd()
+}
+
+/**
+ * Returns this URL with any `user:pass@` userinfo removed from its authority.
+ *
+ * Credentials embedded in a URL are still credentials once they reach a telemetry backend, where
+ * they are retained, indexed, and readable by anyone with dashboard access. Only the authority is
+ * examined, because a bare `@` is legal in a path or query and must survive untouched.
+ */
+private fun String.withoutUserInfo(): String {
+    val schemeEnd = indexOf("://")
+    if (schemeEnd < 0) return this
+    val authorityStart = schemeEnd + 3
+    var authorityEnd = length
+    for (i in authorityStart until length) {
+        if (this[i] == '/' || this[i] == '?' || this[i] == '#') {
+            authorityEnd = i
+            break
+        }
+    }
+    val at = lastIndexOf('@', authorityEnd - 1)
+    if (at < authorityStart) return this
+    return substring(0, authorityStart) + substring(at + 1)
 }

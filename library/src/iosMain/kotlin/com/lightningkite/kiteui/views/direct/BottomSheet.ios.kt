@@ -8,14 +8,15 @@ import com.lightningkite.kiteui.views.closePopovers
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.rawPopover
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.kiteui.views.ElementContext
 
-actual fun ElementWriter.openBottomSheet(
+public actual fun ElementContext.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,
     view: ElementWriter.CanAddTheme.() -> Unit
 ) {
     // TODO: native bottom sheet
-    context.rawPopover(ScreenTransitions.VerticalSlide) {
+    rawPopover(ScreenTransitions.VerticalSlide) {
         col {
             expanding.space()
             expanding.themed(DialogSemantic).col {

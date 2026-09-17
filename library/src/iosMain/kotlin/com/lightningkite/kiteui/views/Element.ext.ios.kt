@@ -10,21 +10,21 @@ import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
 import kotlin.time.DurationUnit
 
 
-var animationsEnabled: Boolean = true
-var isInAnimationBlock: Boolean = false
+public var animationsEnabled: Boolean = true
+public var isInAnimationBlock: Boolean = false
 
-actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled && !UIAccessibilityIsReduceMotionEnabled()
+public actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled && !UIAccessibilityIsReduceMotionEnabled()
 
-actual inline fun Element.withoutAnimation(action: () -> Unit) {
+public actual inline fun Element.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
 
-inline fun UIView.debugPrint(get: () -> String) {
+public inline fun UIView.debugPrint(get: () -> String) {
     if (debugMode && Element.Debugger.debugTarget?.native == this)
         Log.tag("viewDebugTarget").info(get())
 }
 
-inline fun UIView.withoutAnimation(action: () -> Unit) {
+public inline fun UIView.withoutAnimation(action: () -> Unit) {
     assertMainThread()
     val before = animationsEnabled
     try {
@@ -41,7 +41,7 @@ inline fun UIView.withoutAnimation(action: () -> Unit) {
     }
 }
 
-inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
+public inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
     if (animationsEnabled && !UIAccessibilityIsReduceMotionEnabled()) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.5) {
         val before = isInAnimationBlock
         isInAnimationBlock = true
@@ -55,7 +55,7 @@ inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
     }
 }
 
-inline fun Element.animateIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
+public inline fun Element.animateIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
     if (animationsEnabled && !UIAccessibilityIsReduceMotionEnabled()) UIView.animateWithDuration(
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
         completion = { onComplete() },
@@ -74,7 +74,7 @@ inline fun Element.animateIfAllowed(crossinline onComplete: () -> Unit = {}, cro
     }
 }
 
-inline fun Element.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
+public inline fun Element.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
     if (animationsEnabled && !UIAccessibilityIsReduceMotionEnabled()) UIView.transitionWithView(
         view = native,
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),

@@ -20,6 +20,8 @@ import com.lightningkite.reactive.extensions.flatten
 import com.lightningkite.reactive.lensing.lens
 import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 
 /**
@@ -37,10 +39,10 @@ import kotlin.coroutines.CoroutineContext
  * - [time], [playing], [volume]: reactive state mirroring the active player
  * - [showLoadingIndicator]: whether the built-in spinner is visible while loading
  */
-class VideoView(private val frame: Frame) : Element by frame {
-    constructor(context: ElementContext) : this(Frame(context))
+public class VideoView(private val frame: Frame) : Element by frame {
+    public constructor(context: ElementContext) : this(Frame(context))
 
-    data class Info(
+    public data class Info(
         val sources: List<VideoSource>,
         val scaleType: ImageScaleType,
         val description: String?
@@ -58,35 +60,35 @@ class VideoView(private val frame: Frame) : Element by frame {
         }
     }
 
-    val time: MutableReactive<Double> = current.lens { it?.time ?: Signal(0.0) }.flatten()
-    val playing: MutableReactive<Boolean> = current.lens { it?.playing ?: Signal(false) }.flatten()
-    val volume: MutableReactive<Float> = current.lens { it?.volume ?: Signal(0f) }.flatten()
-    var showControls: Boolean = false
+    public val time: MutableReactive<Double> = current.lens { it?.currentTime?.lens(get = { it.toDouble(DurationUnit.SECONDS) }, set = { it.seconds }) ?: Signal(0.0) }.flatten()
+    public val playing: MutableReactive<Boolean> = current.lens { it?.playing ?: Signal(false) }.flatten()
+    public val volume: MutableReactive<Float> = current.lens { it?.volume ?: Signal(0f) }.flatten()
+    public var showControls: Boolean = false
         set(value) {
             field = value
             current.value?.showControls = value
         }
-    var loop: Boolean = false
+    public var loop: Boolean = false
         set(value) {
             field = value
             current.value?.loop = value
         }
-    var info: Info? = null
+    public var info: Info? = null
         set(value) {
             field = value
             if (ready) refresh()
         }
-    var source: VideoSource?
+    public var source: VideoSource?
         get() = info?.sources?.firstOrNull()
         set(value) {
             info = info?.copy(sources = listOfNotNull(value)) ?: Info(listOfNotNull(value), ImageScaleType.Fit, null)
         }
-    var scaleType: ImageScaleType
+    public var scaleType: ImageScaleType
         get() = info?.scaleType ?: ImageScaleType.Fit
         set(value) {
             info = info?.copy(scaleType = value) ?: Info(listOf(), value, null)
         }
-    var description: String?
+    public var description: String?
         get() = info?.description
         set(value) {
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
@@ -104,13 +106,13 @@ class VideoView(private val frame: Frame) : Element by frame {
     private var lastRendered: Info? = null
     private var lastRender: List<RawVideoView>? = null
 
-    val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
+    public val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
 
-    val shownInfo = RawReactive<Info?>(ReactiveState(null))
-    var cannotBeCovered = false
+    public val shownInfo: RawReactive<Info?> = RawReactive<Info?>(ReactiveState(null))
+    public var cannotBeCovered: Boolean = false
 
     @OptIn(ExperimentalKiteUi::class)
-    fun refresh() {
+    public fun refresh() {
         if (!ready) return
         val info = info
         if (lastRendered != info) {
@@ -176,8 +178,8 @@ class VideoView(private val frame: Frame) : Element by frame {
         }
     }
 
-    var showLoadingIndicator: Boolean by activityIndicator::shown
+    public var showLoadingIndicator: Boolean by activityIndicator::shown
 
     @Deprecated("No longer needed", ReplaceWith("this"))
-    inline val rView: Element get() = this
+    public inline val rView: Element get() = this
 }

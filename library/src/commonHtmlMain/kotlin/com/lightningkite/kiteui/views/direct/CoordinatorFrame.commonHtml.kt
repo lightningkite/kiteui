@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 private var ElementContext.bottomSheetState: MutableReactive<BottomSheetState>? by contextAddon(null)
 
-actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
 
     init {
         native.tag = "div"
@@ -29,7 +29,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         Frame.internalAddChildStack(this, index, element)
     }
 
-    actual fun bottomSheet(
+    public actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
         draggable: Boolean,
@@ -66,7 +66,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }
     }
 
-    actual fun leftSlidingPanel(
+    public actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
@@ -104,7 +104,7 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }
     }
 
-    actual fun rightSlidingPanel(
+    public actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit
@@ -142,17 +142,17 @@ actual class CoordinatorFrame actual constructor(context: ElementContext) : Nati
         }
     }
 
-    actual fun onLeftSwipe(action: suspend () -> Unit) {
+    public actual fun onLeftSwipe(action: suspend () -> Unit) {
 
     }
 
-    actual fun onRightSwipe(action: suspend () -> Unit) {
+    public actual fun onRightSwipe(action: suspend () -> Unit) {
 
     }
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class CoordinatorDragHandle actual constructor(context: ElementContext) : NativeContainerElement(context) {
     actual override val underlyingNativeElement: CoordinatorDragHandle = this
 
     init {
@@ -167,7 +167,7 @@ actual class CoordinatorDragHandle actual constructor(context: ElementContext) :
         Frame.internalAddChildStack(this, index, element)
     }
 
-    val iconView = icon {
+    internal val iconView: IconView = icon {
         source = Icon.expand
     }
 

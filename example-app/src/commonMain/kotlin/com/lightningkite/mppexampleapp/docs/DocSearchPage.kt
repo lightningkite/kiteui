@@ -69,7 +69,7 @@ object DocSearchPage : Page {
                         }
                     }
                 }
-                expanding.onNext(ListSemantic).recyclerView {
+                expanding.themed(ListSemantic).recyclerView {
                     paddingByEdge = Edges(
                         left = 0.rem,
                         top = 0.rem,

@@ -8,19 +8,19 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElement
 
 
-expect class ProgrammaticLayout(context: ElementContext): NativeContainerElement, LinearLayoutElement {
+public expect class ProgrammaticLayout(context: ElementContext): NativeContainerElement, LinearLayoutElement {
     override var gap: Dimension?
-    var delegate: ProgrammaticLayoutDelegate
-    fun invalidateLayout()
+    public var delegate: ProgrammaticLayoutDelegate
+    public fun invalidateLayout()
 
     @Deprecated("Will probably be removed in the future.")
     override val spacingForChildCornerRadii: Dimension
 }
 
-interface ProgrammaticLayoutDelegate {
-    fun measure(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size): Size
-    fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size)
-    object AllFull: ProgrammaticLayoutDelegate {
+public interface ProgrammaticLayoutDelegate {
+    public fun measure(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size): Size
+    public fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size)
+    public object AllFull: ProgrammaticLayoutDelegate {
         override fun measure(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size): Size {
             return within
         }
@@ -30,15 +30,15 @@ interface ProgrammaticLayoutDelegate {
     }
 }
 
-interface ProgrammingLayoutInProgress {
-    val within: Size
-    val gap: Double
-    val padding: Double
-    val paddingTop: Double
-    val paddingLeft: Double
-    val paddingRight: Double
-    val paddingBottom: Double
-    fun measure(child: Element, sizeConstraint: Size): Size
-    fun place(child: Element, left: Double, top: Double, right: Double, bottom: Double)
-    fun existingPosition(child: Element): Rect
+public interface ProgrammingLayoutInProgress {
+    public val within: Size
+    public val gap: Double
+    public val padding: Double
+    public val paddingTop: Double
+    public val paddingLeft: Double
+    public val paddingRight: Double
+    public val paddingBottom: Double
+    public fun measure(child: Element, sizeConstraint: Size): Size
+    public fun place(child: Element, left: Double, top: Double, right: Double, bottom: Double)
+    public fun existingPosition(child: Element): Rect
 }

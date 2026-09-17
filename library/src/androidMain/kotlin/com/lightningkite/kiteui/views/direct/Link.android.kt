@@ -8,11 +8,12 @@ import com.lightningkite.kiteui.navigation.mainPageNavigator
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class Link actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + linkDriverActions()
-    override val native = FrameLayout(context.activity).apply {
+public actual class Link actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + linkDriverActions()
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
@@ -30,16 +31,16 @@ actual class Link actual constructor(context: ElementContext): NativeContainerEl
         }
     }
 
-    actual var to: (() -> Page)? = null
-    actual var newTab: Boolean = false
-    actual var onNavigator: PageNavigator = context.mainPageNavigator
-    actual var resetsStack: Boolean = false
+    public actual var to: (() -> Page)? = null
+    public actual var newTab: Boolean = false
+    public actual var onNavigator: PageNavigator = context.mainPageNavigator
+    public actual var resetsStack: Boolean = false
 
     override fun nativeSetAction(action: Action?) {
         native.contentDescription = accessibleLabel ?: action?.title
     }
 
-    override fun nativeApplyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun nativeApplyTheme(theme: ThemeAndBack): Unit = applyThemeWithRipple(theme)
 }
 
 

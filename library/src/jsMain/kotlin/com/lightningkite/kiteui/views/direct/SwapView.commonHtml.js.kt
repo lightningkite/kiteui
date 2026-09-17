@@ -7,7 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLElement
 
-actual fun SwapView.nativeSwap(
+public actual fun SwapView.nativeSwap(
     transition: ScreenTransition,
     createNewView: ViewWriter.() -> Unit
 ) {

@@ -23,11 +23,11 @@ import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 
-actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
+public actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = content
     override val native: android.widget.TextView = android.widget.TextView(context.activity)
 
-    actual var content: String
+    public actual var content: String
         get() {
             return native.text.toString()
         }
@@ -38,7 +38,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
     private var _align: Align? = null
     private var _fontAndStyle: FontAndStyle? = null
 
-    actual var align: Align?
+    public actual var align: Align?
         get() = _align
         set(value) {
             _align = value
@@ -59,17 +59,17 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
         }
     }
 
-    actual var ellipsis: Boolean = true
+    public actual var ellipsis: Boolean = true
         set(value) {
             field = value
             native.ellipsize = if (value) TextUtils.TruncateAt.END else TextUtils.TruncateAt.MARQUEE
         }
-    actual var wraps: Boolean = true
+    public actual var wraps: Boolean = true
         set(value) {
             field = value
             native.maxLines = if (value) Integer.MAX_VALUE else 1
         }
-    actual var wordBreak: WordBreak = WordBreak.Normal
+    public actual var wordBreak: WordBreak = WordBreak.Normal
         set(value) {
             field = value
             if(VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
@@ -79,7 +79,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
                 }
             }
         }
-    actual var lineClamp: Int? = null
+    public actual var lineClamp: Int? = null
         set(value) {
             field = value
             value?.let {
@@ -104,7 +104,7 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
     }
 
     @RequiresApi(VERSION_CODES.N)
-    actual fun setBasicHtmlContent(html: String) {
+    public actual fun setBasicHtmlContent(html: String) {
         if(html.contains("<a")) {
             native.movementMethod = LinkMovementMethod.getInstance()
         } else {
@@ -121,10 +121,10 @@ actual class TextView actual constructor(context: ElementContext) : NativeElemen
 
 
 private val typefaceCache = HashMap<FontAndStyle, Typeface>()
-fun FontAndStyle.typeface(context: Context) = typefaceCache.getOrPut(this) {
+public fun FontAndStyle.typeface(context: Context): Typeface = typefaceCache.getOrPut(this) {
     TypefaceCompat.create(
         context,
-        this.font,
+        this.font.toTypeface(),
         this.weight,
         this.italic
     )

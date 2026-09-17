@@ -269,7 +269,7 @@ object GettingStartedPage : DocPage {
                             button {
                                 text("Go to Cheat Sheet")
                                 onClick {
-                                    pageNavigator.navigate(CheatSheet)
+                                    context.pageNavigator.navigate(CheatSheet)
                                 }
                             }
                         """.trimIndent()
@@ -312,7 +312,7 @@ object GettingStartedPage : DocPage {
                     code {
                         content = """
                             // Navigate with parameter
-                            pageNavigator.navigate(UserDetailPage("123"))
+                            context.pageNavigator.navigate(UserDetailPage("123"))
                         """.trimIndent()
                     }
                 }

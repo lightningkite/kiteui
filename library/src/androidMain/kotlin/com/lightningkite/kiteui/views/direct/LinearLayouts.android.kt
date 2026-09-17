@@ -15,8 +15,8 @@ import kotlin.invoke
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
-    override val native = SlightlyModifiedLinearLayout(context.activity)
+public abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+    override val native: SlightlyModifiedLinearLayout = SlightlyModifiedLinearLayout(context.activity)
 
     override var gap: Dimension? = null
         set(value) {
@@ -30,28 +30,30 @@ abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContai
         native.gap = (gap ?: theme.theme.gap).value.roundToInt()
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Will probably be removed in the future.")
     override val spacingForChildCornerRadii: Dimension
         get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 }
 
-actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
+public actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
             if (vertical) ViewGroup.LayoutParams.MATCH_PARENT else ViewGroup.LayoutParams.WRAP_CONTENT,
             if (vertical) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT,
         )
 
-    actual var vertical: Boolean
+    public actual var vertical: Boolean
         get() = native.orientation == SimplifiedLinearLayout.VERTICAL
         set(value) {
             native.orientation = if (value) SimplifiedLinearLayout.VERTICAL else SimplifiedLinearLayout.HORIZONTAL
             native.gravity = if (value) Gravity.CENTER_HORIZONTAL else Gravity.CENTER_VERTICAL
         }
 
-    actual fun spacingOverrideBeforeNext(amount: Dimension) {}
+    public actual fun spacingOverrideBeforeNext(amount: Dimension) {}
 }
 
-actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : NativeLinearLayoutElement(context) {
+public actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : NativeLinearLayoutElement(context) {
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -77,8 +79,8 @@ actual class RowCollapsingToColumn actual constructor(context: ElementContext, b
     }
 }
 
-actual class RowWrapping actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
-    override val native = FlexboxLayout(context.activity)
+public actual class RowWrapping actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+    override val native: FlexboxLayout = FlexboxLayout(context.activity)
 
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         ViewGroup.LayoutParams(
@@ -100,6 +102,8 @@ actual class RowWrapping actual constructor(context: ElementContext) : NativeCon
         native.lineGap = (gap ?: theme.theme.gap).value.roundToInt()
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Will probably be removed in the future.")
     override val spacingForChildCornerRadii: Dimension
         get() = super<LinearLayoutElement>.spacingForChildCornerRadii
 }
@@ -108,7 +112,7 @@ actual class RowWrapping actual constructor(context: ElementContext) : NativeCon
 
 
 
-open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayout(context) {
+public open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayout(context) {
     override fun generateDefaultLayoutParams(): LayoutParams? {
         if (orientation == HORIZONTAL) {
             return LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -123,9 +127,9 @@ open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayo
  * A custom layout that implements flexbox-like wrapping behavior for Android.
  * This is similar to the FlexLayout used in the iOS implementation.
  */
-class FlexboxLayout(context: Context) : ViewGroup(context) {
-    var gap: Int = 0
-    var lineGap: Int = 0
+public class FlexboxLayout(context: Context) : ViewGroup(context) {
+    internal var gap: Int = 0
+    internal var lineGap: Int = 0
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)

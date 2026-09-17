@@ -9,8 +9,8 @@ import com.lightningkite.reactive.core.Listenable
 import com.lightningkite.reactive.core.ReactiveValue
 import com.lightningkite.reactive.core.Signal
 
-actual object Gamepads {
-    actual val maxGamepads: Int = 4
+public actual object Gamepads {
+    public actual val maxGamepads: Int = 4
     
     private val gamepadStates = Array(maxGamepads) { Signal(GamepadState.DISCONNECTED) }
     private val _connectedGamepads = Signal(emptyList<Int>())
@@ -22,13 +22,13 @@ actual object Gamepads {
     // Map from device ID to our index
     private val deviceIdToIndex = mutableMapOf<Int, Int>()
     
-    actual fun gamepad(index: Int): ReactiveValue<GamepadState> {
+    public actual fun gamepad(index: Int): ReactiveValue<GamepadState> {
         require(index in 0 until maxGamepads) { "Gamepad index $index out of range 0..$maxGamepads" }
         return gamepadStates[index]
     }
     
-    actual val connectedGamepads: ReactiveValue<List<Int>> get() = _connectedGamepads
-    actual val onConnectionChange: Listenable get() = _onConnectionChange
+    public actual val connectedGamepads: ReactiveValue<List<Int>> get() = _connectedGamepads
+    public actual val onConnectionChange: Listenable get() = _onConnectionChange
     
     private fun isGamepad(device: InputDevice): Boolean {
         val sources = device.sources
@@ -85,7 +85,7 @@ actual object Gamepads {
         }
     }
     
-    actual fun poll() {
+    public actual fun poll() {
         scanDevices()
     }
     
@@ -100,7 +100,7 @@ actual object Gamepads {
      * }
      * ```
      */
-    fun handleMotionEvent(event: MotionEvent): Boolean {
+    public fun handleMotionEvent(event: MotionEvent): Boolean {
         if ((event.source and InputDevice.SOURCE_JOYSTICK) != InputDevice.SOURCE_JOYSTICK &&
             (event.source and InputDevice.SOURCE_GAMEPAD) != InputDevice.SOURCE_GAMEPAD) {
             return false
@@ -134,7 +134,7 @@ actual object Gamepads {
      * }
      * ```
      */
-    fun handleKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+    public fun handleKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         return handleKeyEvent(keyCode, event.deviceId, true)
     }
     
@@ -149,7 +149,7 @@ actual object Gamepads {
      * }
      * ```
      */
-    fun handleKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+    public fun handleKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         return handleKeyEvent(keyCode, event.deviceId, false)
     }
     
@@ -180,14 +180,14 @@ actual object Gamepads {
         return true
     }
     
-    actual fun startPolling() {
+    public actual fun startPolling() {
         if (polling) return
         polling = true
         scanDevices()
         pollListenerRemove = AppState.animationFrame.addListener { poll() }
     }
     
-    actual fun stopPolling() {
+    public actual fun stopPolling() {
         polling = false
         pollListenerRemove?.invoke()
         pollListenerRemove = null

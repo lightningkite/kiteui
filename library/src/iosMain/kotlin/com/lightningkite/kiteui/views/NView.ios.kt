@@ -21,11 +21,11 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-typealias NView = UIView
+public typealias NView = UIView
 
 
 @Suppress("UNCHECKED_CAST")
-val UIView.spacingOverride: Signal<Dimension?>?
+public val UIView.spacingOverride: Signal<Dimension?>?
     get() = (this as? UIViewWithSpacingRulesProtocol)
         ?.getSpacingOverrideProperty()
         ?.let { it as? Signal<Dimension?> }

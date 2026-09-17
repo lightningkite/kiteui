@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-expect object Build {
-    val version: String
-    val debug: Boolean
+public expect object Build {
+    public val version: String
+    public val debug: Boolean
 }

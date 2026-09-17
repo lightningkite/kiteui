@@ -186,7 +186,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
  * @see ContainerElement for the public interface
  * @see NativeElement for the base element class
  */
-expect abstract class NativeContainerElement(context: ElementContext) : ContainerElement, NativeContainerElementCommonCode {
+public expect abstract class NativeContainerElement(context: ElementContext) : ContainerElement, NativeContainerElementCommonCode {
     /**
      * Adds a child element to the native view hierarchy at the specified index.
      *
@@ -334,21 +334,18 @@ expect abstract class NativeContainerElement(context: ElementContext) : Containe
  *
  * ## Theme Cascading Details
  *
- * Containers override [themeAndBack] to detect when the cascading theme changes:
+ * Containers override the [NativeElement.themeAndBackChanged] hook to detect when the cascading
+ * theme changes:
  *
  * ```kotlin
- * override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
- *     set(value) {
- *         val oldCascading = field.theme.let { it.revert ?: it }
- *         field = value
- *         nativeApplyTheme(value)
- *         refreshPadding()
- *         val newCascading = value.theme.let { it.revert ?: it }
- *         if (oldCascading != newCascading) {
- *             // Theme changed - tell all children to refresh
- *             for (child in children) child.underlyingNativeElement.refreshTheming()
- *         }
+ * final override fun themeAndBackChanged(previous: ThemeAndBack, current: ThemeAndBack) {
+ *     val oldCascading = previous.theme.let { it.revert ?: it }
+ *     val newCascading = current.theme.let { it.revert ?: it }
+ *     if (oldCascading != newCascading) {
+ *         // Cascading theme changed - tell all children to refresh
+ *         for (child in children) child.underlyingNativeElement.refreshTheming()
  *     }
+ * }
  * ```
  *
  * The `revert` property indicates the theme that children should inherit. If the new
@@ -364,7 +361,7 @@ expect abstract class NativeContainerElement(context: ElementContext) : Containe
  * @see ContainerElement for the public interface
  * @see NativeElement for the base element class
  */
-abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context), ContainerElement {
+public abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context), ContainerElement {
     override val underlyingNativeElement: NativeContainerElement get() = this as NativeContainerElement
 
     // --- CHILDREN ---
@@ -475,7 +472,7 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
     }
 
     /** Convenience wrapper - adds child at the end. See [addChild(Int, Element)][addChild]. */
-    override fun addChild(element: Element) = addChild(children.size, element)
+    override fun addChild(element: Element): Unit = addChild(children.size, element)
 
     override fun removeChild(index: Int) {
         if (checkIsShutdown("removeChild")) return
@@ -521,16 +518,20 @@ abstract class NativeContainerElementCommonCode internal constructor(context: El
 
     // --- THEMING ---
 
-    final override var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
-        set(value) {
-            if (value == field) return
-            val oldCascading = field.theme.let { it.revert ?: it }
-            field = value       // Do not call super.themeAndBack = value, it breaks everything for some reason
-            nativeApplyTheme(value)
-            refreshPadding()
-            val newCascading = value.theme.let { it.revert ?: it }
-            if (oldCascading != newCascading) {
-                for (child in children) child.underlyingNativeElement.refreshTheming()
-            }
+    /**
+     * Cascades theme changes to children.
+     *
+     * Children inherit this container's *cascading* theme ([Theme.revert] if present, otherwise
+     * the theme itself — see [GetBaseTheme.fromParent]). When that cascading theme changes, every
+     * child's computed theme is stale and must be recalculated; when it doesn't (e.g. only this
+     * container's own background/padding flags changed), children are unaffected and the walk is
+     * skipped.
+     */
+    final override fun themeAndBackChanged(previous: ThemeAndBack, current: ThemeAndBack) {
+        val oldCascading = previous.theme.let { it.revert ?: it }
+        val newCascading = current.theme.let { it.revert ?: it }
+        if (oldCascading != newCascading) {
+            for (child in children) child.underlyingNativeElement.refreshTheming()
         }
+    }
 }

@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 
-actual abstract class NativeContainerElement actual constructor(context: ElementContext) : NativeContainerElementCommonCode(context) {
+public actual abstract class NativeContainerElement actual constructor(context: ElementContext) : NativeContainerElementCommonCode(context) {
     abstract override val native: ViewGroup
 
     actual override fun nativeAddChild(index: Int, element: Element) {

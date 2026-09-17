@@ -10,11 +10,11 @@ import com.lightningkite.kiteui.views.NativeContainerElement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-expect class Link(context: ElementContext) : ElementWithSecondaryAction, NativeContainerElement {
-    var to: (() -> Page)?
-    var onNavigator: PageNavigator
-    var newTab: Boolean
-    var resetsStack: Boolean
+public expect class Link(context: ElementContext) : ElementWithSecondaryAction, NativeContainerElement {
+    public var to: (() -> Page)?
+    public var onNavigator: PageNavigator
+    public var newTab: Boolean
+    public var resetsStack: Boolean
 
     override var enabled: Boolean
 
@@ -25,7 +25,7 @@ expect class Link(context: ElementContext) : ElementWithSecondaryAction, NativeC
     override var secondaryAction: Action?
 }
 
-fun Link.onClick(
+public fun Link.onClick(
     label: String = "onClick",
     icon: Icon = Icon.send,
     frequencyCap: Duration? = 500.milliseconds,
@@ -35,9 +35,9 @@ fun Link.onClick(
 }
 
 /** Action that is triggered only when the link actually navigates (alias for [secondaryAction][Link.secondaryAction])*/
-var Link.onNavigateAction: Action? by Link::secondaryAction
+public var Link.onNavigateAction: Action? by Link::secondaryAction
 
-fun Link.onNavigate(
+public fun Link.onNavigate(
     label: String = "onNavigate",
     icon: Icon = Icon.send,
     frequencyCap: Duration? = 500.milliseconds,

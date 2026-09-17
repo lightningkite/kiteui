@@ -9,16 +9,17 @@ import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.AiDriver
 
 @OptIn(ExperimentalKiteUi::class)
-actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + buttonDriverActions()
-    val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
+public actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + buttonDriverActions()
+    internal val progress: ProgressBar = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0
         visibility = View.GONE
     }
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
 

@@ -8,34 +8,34 @@ import com.lightningkite.kiteui.models.Color
  * correct values based on the client's user agent during SSR rendering.
  * - by Claude
  */
-object SsrUserAgentContext {
+public object SsrUserAgentContext {
     @PublishedApi
-    internal val threadLocal = ThreadLocal<String?>()
+    internal val threadLocal: ThreadLocal<String?> = ThreadLocal<String?>()
 
     /**
      * Set the user agent for the current SSR request.
      * Call this at the start of SSR rendering.
      */
-    fun set(userAgent: String?) {
+    public fun set(userAgent: String?) {
         threadLocal.set(userAgent)
     }
 
     /**
      * Clear the user agent after SSR rendering completes.
      */
-    fun clear() {
+    public fun clear() {
         threadLocal.remove()
     }
 
     /**
      * Get the current user agent, or null if not in SSR context.
      */
-    fun get(): String? = threadLocal.get()
+    public fun get(): String? = threadLocal.get()
 
     /**
      * Execute a block with a specific user agent set.
      */
-    inline fun <T> withUserAgent(userAgent: String?, block: () -> T): T {
+    public inline fun <T> withUserAgent(userAgent: String?, block: () -> T): T {
         val previous = threadLocal.get()
         try {
             threadLocal.set(userAgent)
@@ -50,9 +50,9 @@ object SsrUserAgentContext {
     }
 }
 
-actual val Platform.Companion.current: Platform
+public actual val Platform.Companion.current: Platform
     get() = Platform.Desktop
-actual val Platform.Companion.probablyAppleUser: Boolean
+public actual val Platform.Companion.probablyAppleUser: Boolean
     get() = SsrUserAgentContext.get()?.let { ua ->
         // Match the same logic as JS: check for Mac/iPhone/iPod/iPad
         ua.contains("Mac", ignoreCase = true) ||
@@ -60,7 +60,7 @@ actual val Platform.Companion.probablyAppleUser: Boolean
         ua.contains("iPod", ignoreCase = true) ||
         ua.contains("iPad", ignoreCase = true)
     } ?: false
-actual val Platform.Companion.usesTouchscreen: Boolean
+public actual val Platform.Companion.usesTouchscreen: Boolean
     get() = SsrUserAgentContext.get()?.let { ua ->
         // Mobile devices typically have touchscreens
         ua.contains("iPhone", ignoreCase = true) ||
@@ -68,13 +68,14 @@ actual val Platform.Companion.usesTouchscreen: Boolean
         ua.contains("Android", ignoreCase = true) ||
         ua.contains("Mobile", ignoreCase = true)
     } ?: false
-actual val Platform.Companion.userAgent: String
+public actual val Platform.Companion.userAgent: String
     get() = SsrUserAgentContext.get()
         ?: "JVM ${Runtime.version()} ${System.getProperty("os.name") ?: "Unknown"}"
 
-// by Claude - SSR is always a development server
-actual val Platform.Companion.isDevelopment: Boolean
-    get() = true
+// Defaults to production (false) so stack traces/debug info from installDebugHandlers()
+// are never shown to real visitors unless the deploying app explicitly opts in.
+public actual val Platform.Companion.isDevelopment: Boolean
+    get() = System.getenv("KITEUI_DEVELOPMENT")?.toBoolean() ?: false
 
-actual fun setStatusBarColor(color: Color) {
+public actual fun setStatusBarColor(color: Color) {
 }

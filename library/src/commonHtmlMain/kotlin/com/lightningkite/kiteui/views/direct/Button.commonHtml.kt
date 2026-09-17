@@ -10,9 +10,10 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + buttonDriverActions()
+public actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + buttonDriverActions()
     override fun nativeSetAction(action: Action?) {
         (accessibleLabel ?: action?.title)?.takeIf { it.isNotBlank() }.let { native.setAttribute("aria-label", it) }
     }

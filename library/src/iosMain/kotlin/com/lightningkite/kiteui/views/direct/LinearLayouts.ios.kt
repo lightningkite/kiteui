@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.reactive
 
-abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
-    override val native = LinearLayout()
+public abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+    override val native: LinearLayout = LinearLayout()
 
     override var gap: Dimension? = null
         set(value) {
@@ -47,19 +47,19 @@ abstract class NativeLinearLayoutElement(context: ElementContext) : NativeContai
     }
 }
 
-actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
-    actual var vertical: Boolean
+public actual class RowOrCol actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
+    public actual var vertical: Boolean
         get() = native.horizontal.not()
         set(value) {
             native.horizontal = !value
         }
 
     @Deprecated(message = "This no longer works.")
-    actual fun spacingOverrideBeforeNext(amount: Dimension) {
+    public actual fun spacingOverrideBeforeNext(amount: Dimension) {
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : NativeLinearLayoutElement(context) {
+public actual class RowCollapsingToColumn actual constructor(context: ElementContext, breakpoints: List<Dimension>) : NativeLinearLayoutElement(context) {
     init {
         reactive {
             val w = AppState.windowInfo().width
@@ -75,8 +75,8 @@ actual class RowCollapsingToColumn actual constructor(context: ElementContext, b
     }
 }
 
-actual class RowWrapping actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
-    override val native = FlexLayout()
+public actual class RowWrapping actual constructor(context: ElementContext) : NativeContainerElement(context), LinearLayoutElement {
+    override val native: FlexLayout = FlexLayout()
 
     actual override var gap: Dimension? = null
         set(value) {

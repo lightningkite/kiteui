@@ -6,9 +6,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Deprecated("Safer alternative available that prevents memory leaks by respecting Element lifecycle", ReplaceWith("CoroutineScope.afterTimeout"))
-expect fun afterTimeout(milliseconds: Long, action: () -> Unit): () -> Unit
+public expect fun afterTimeout(milliseconds: Long, action: () -> Unit): () -> Unit
 
-inline fun CoroutineScope.afterTimeout(milliseconds: Long, crossinline action: () -> Unit): Release {
+public inline fun CoroutineScope.afterTimeout(milliseconds: Long, crossinline action: () -> Unit): Release {
     val job = launch {
         delay(milliseconds)
         action()

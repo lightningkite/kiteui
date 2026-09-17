@@ -15,22 +15,22 @@ import com.lightningkite.readable.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 
-actual object AppState {
+public actual object AppState {
     internal val _animationFrame = BasicListenable()
-    actual val animationFrame: Listenable
+    public actual val animationFrame: Listenable
         get() = _animationFrame
     internal val _windowInfo = Signal(WindowStatistics(Dimension(1920f), Dimension(1080f), 1f))
-    actual val windowInfo: ReactiveValue<WindowStatistics>
+    public actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo
     internal val _inForeground = Signal(true)
-    actual val inForeground: ReactiveValue<Boolean>
+    public actual val inForeground: ReactiveValue<Boolean>
         get() = _inForeground
     internal val _softInputOpen = Signal(false)
-    actual val softInputOpen: ReactiveValue<Boolean>
+    public actual val softInputOpen: ReactiveValue<Boolean>
         get() = _softInputOpen
 
     private var currentLockCount = 0
-    actual fun keepScreenOn(scope: CoroutineScope) {
+    public actual fun keepScreenOn(scope: CoroutineScope) {
         if(currentLockCount++ == 0) {
             try {
                 AndroidAppContext.activityCtx?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -46,5 +46,5 @@ actual object AppState {
             }
         }
     }
-    actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): ()->Unit = {}
+    public actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): ()->Unit = {}
 }

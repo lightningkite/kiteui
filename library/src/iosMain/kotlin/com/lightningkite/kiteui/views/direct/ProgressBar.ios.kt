@@ -9,8 +9,8 @@ import platform.QuartzCore.CALayer
 import platform.UIKit.*
 
 
-actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
-    override val native = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
+public actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
+    override val native: ResizeableProgressView = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
@@ -18,16 +18,16 @@ actual class ProgressBar actual constructor(context: ElementContext) : NativeEle
         native.progressLayer.tintColor = theme[CardSemantic].theme.foreground.closestColor().toUiColor()
     }
 
-    actual var ratio by native::progress
+    public actual var ratio: Float by native::progress
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
+public class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 
-    val progressLayer = ProgressCALayer().also {
+    internal val progressLayer: ProgressCALayer = ProgressCALayer().also {
         layer.insertSublayer(it, 0u)
     }
-    var progress by progressLayer::progress
+    internal var progress: Float by progressLayer::progress
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return size.useContents { CGSizeMake(width, 5.0) }
@@ -40,18 +40,18 @@ class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class ProgressCALayer : CALayer {
+public class ProgressCALayer : CALayer {
     @OverrideInit
-    constructor() : super()
+    public constructor() : super()
 
     @OverrideInit
-    constructor(coder: platform.Foundation.NSCoder) : super(coder)
+    public constructor(coder: platform.Foundation.NSCoder) : super(coder)
 
     @OverrideInit
-    constructor(layer: kotlin.Any) : super(layer)
+    public constructor(layer: kotlin.Any) : super(layer)
 
-    var tintColor: UIColor = UIColor.whiteColor
-    var progress: Float = 0f
+    internal var tintColor: UIColor = UIColor.whiteColor
+    internal var progress: Float = 0f
         set(value) {
             field = value
             setNeedsDisplay()

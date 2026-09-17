@@ -6,14 +6,14 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.core.*
 
-expect abstract class RawImageViewLike: NativeElement {
-    val source: ImageSource
-    val description: String
-    val scaleType: ImageScaleType
-    abstract val state: Reactive<Unit>
+public expect abstract class RawImageViewLike: NativeElement {
+    public val source: ImageSource
+    public val description: String
+    public val scaleType: ImageScaleType
+    public abstract val state: Reactive<Unit>
 }
 
-expect class RawImageView(
+public expect class RawImageView(
     context: ElementContext,
     source: ImageSource,
     description: String,
@@ -22,7 +22,7 @@ expect class RawImageView(
     override val state: Reactive<Unit>
 }
 
-expect class SizelessRawImageView(
+public expect class SizelessRawImageView(
     context: ElementContext,
     source: ImageSource,
     description: String,
@@ -31,13 +31,13 @@ expect class SizelessRawImageView(
     override val state: Reactive<Unit>
 }
 
-expect class RawImageViewZoomable(
+public expect class RawImageViewZoomable(
     context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
     override val state: Reactive<Unit>
-    val zoomState: MutableReactiveValue<ZoomState>
+    public val zoomState: MutableReactiveValue<ZoomState>
 }
-expect class ZoomState
+public expect class ZoomState

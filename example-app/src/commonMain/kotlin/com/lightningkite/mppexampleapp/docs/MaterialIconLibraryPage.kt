@@ -71,7 +71,7 @@ object MaterialIconLibraryPage : Page {
                 .toList()
         }.toReactive()
 
-        val filtered: Reactive<List<String>> = shared {
+        val filtered: Reactive<List<String>> = remember {
             val q = searchText().trim().lowercase()
             if (q.isEmpty()) allIcons() else allIcons().filter { it.contains(q) }
         }

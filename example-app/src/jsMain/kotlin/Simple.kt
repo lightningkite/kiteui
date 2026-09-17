@@ -33,14 +33,14 @@ import org.w3c.files.BlobPropertyBag
 
 fun main() {
     installLeakDebug()
-    var created: RView? = null
+    var created: Element? = null
     window.onerror = { a, b, c, d, e ->
         println("ON ERROR HANDLER $a $b $c $d $e")
         if (e is Exception) e.printStackTrace2()
     }
 
     smartRoot(appTheme) {
-        app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
+        app(PageNavigator { AutoRoutes })
 
         document.addEventListener("keydown", { e ->
             e as KeyboardEvent

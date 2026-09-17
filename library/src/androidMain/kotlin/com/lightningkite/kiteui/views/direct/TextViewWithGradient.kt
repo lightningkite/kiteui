@@ -7,9 +7,9 @@ import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.LinearGradient
 import com.lightningkite.kiteui.models.Paint
 
-class TextViewWithGradient(context: Context): AppCompatTextView(context) {
+internal class TextViewWithGradient(context: Context): AppCompatTextView(context) {
 
-    var kuiPaintForeground: Paint = Color.black
+    internal var kuiPaintForeground: Paint = Color.black
         set(f) {
             field = f
             when (f) {

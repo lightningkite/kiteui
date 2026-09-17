@@ -5,8 +5,6 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -15,6 +13,9 @@ import com.lightningkite.reactive.context.*
 import kotlinx.cinterop.*
 import platform.UIKit.UIAccessibilityTraitHeader
 import platform.UIKit.UIControlEventValueChanged
+import platform.UIKit.UIGestureRecognizer
+import platform.UIKit.UIGestureRecognizerState
+import platform.UIKit.UIGestureRecognizerStateBegan
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.UIRefreshControl
 import platform.UIKit.UITapGestureRecognizer
@@ -23,55 +24,80 @@ import platform.UIKit.accessibilityTraits
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-@ViewModifierDsl3
-actual fun ElementWriter.hintPopover(
+/**
+ * Backs [hintPopover]'s long-press gesture. Exposed with `internal` visibility specifically so
+ * tests can invoke [handleState] directly as an ordinary Kotlin call instead of routing through
+ * `NSObject.performSelector` (which segfaults for void-returning selectors in Kotlin/Native: it is
+ * typed to return `id` and Kotlin tries to retain whatever garbage happens to be in the return
+ * register) - or, worse, trying to force a real `UIGestureRecognizerState` transition on a fake
+ * recognizer, which UIKit's internal state machine silently ignores outside its own touch-delivery
+ * pipeline.
+ */
+internal class HintPopoverTrigger(
+    private val element: Element,
+    private val preferredDirection: PopoverPreferredDirection,
+    private val setup: ViewWriter.() -> Unit,
+) : NSObject() {
+    @ObjCAction
+    fun longPress(sender: UIGestureRecognizer) = handleState(sender.state)
+
+    internal fun handleState(state: UIGestureRecognizerState) {
+        // UILongPressGestureRecognizer is continuous and reports every state transition
+        // (began/changed/ended) for as long as the finger is down; only open on began so a
+        // single long-press opens a single popover instead of stacking one per transition.
+        if (state == UIGestureRecognizerStateBegan) {
+            element.openPopover(preferredDirection, createMenu = setup)
+        }
+    }
+}
+
+public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ElementWriter {
     return beforeSetup {
-        fun openDialog() {
-            // TODO: implement popover
-            // toast(inner = setup)
-        }
-
-        val actionHolder = object : NSObject() {
-            @ObjCAction
-            fun eventHandler() = openDialog()
-        }
-        val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
+        // Reuses the same in-tree overlay popover MenuButton.opensMenu() and openPopover.ios.kt are
+        // built on (Element.openPopover) rather than a UIPopoverPresentationController, so it gets
+        // the same theming, positioning against preferredDirection, and tap-outside-to-dismiss
+        // (via dismissBackground -> context.closePopovers()) for free.
+        val trigger = HintPopoverTrigger(this, preferredDirection, setup)
+        val rec = UILongPressGestureRecognizer(trigger, sel_registerName("longPress:"))
+        // Containers turn interaction off in their initialisers (see LinearLayout and FlexLayout)
+        // so they do not intercept touches meant for their children. A gesture recognizer on a view
+        // in that state is never sent anything, so attaching one without this line leaves the
+        // modifier completely inert - it fails silently, with the recognizer correctly installed.
+        native.userInteractionEnabled = true
         native.addGestureRecognizer(rec)
+        // UIGestureRecognizer does not retain its target; hold a strong ref for the element's
+        // lifetime (same trick as the UIRefreshControl target below).
+        underlyingNativeElement.tag = trigger
     }
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.textPopover(message: String): ElementWriter = hintPopover {
+public actual fun ElementWriter.textPopover(message: String): ElementWriter = hintPopover {
     themed(PopoverSemantic).text(message)
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
+public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         native.extensionWeight = amount
     }
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
+public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier {
     return beforeSetup {
         native::extensionWeight { amount() }
     }
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
+public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight {
     return beforeSetup {
         native.extensionHorizontalAlign = horizontal
         native.extensionVerticalAlign = vertical
     }
 }
 
-@ViewModifierDsl3
-actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
+public actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit
@@ -81,8 +107,7 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
     }
 }
 
-@ViewModifierDsl3
-actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
+public actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
@@ -122,13 +147,11 @@ actual inline fun ElementWriter.CanAddScrolling.__scrollsWithRefreshUncontracted
     scrollView
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
+public actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstraints): ElementWriter.CanAddTheme {
     return beforeSetup { native.extensionSizeConstraints = constraints }
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
+public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme {
     return beforeSetup {
         reactive {
             native.extensionSizeConstraints = constraints()
@@ -137,9 +160,21 @@ actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: Reacti
     }
 }
 
+/**
+ * The web target hands this to CSS; iOS has to evaluate it, so it becomes an ordinary reactive
+ * condition over [AppState.windowInfo] and re-runs whenever the window changes - on rotation, on
+ * split view, on a resized iPad window.
+ *
+ * The initial value is computed up front rather than defaulting to hidden, so an element that
+ * should be visible does not flash out of existence on the first frame.
+ */
+public actual fun ElementWriter.CanAddShownWhen.shownForQuery(query: MediaQuery): ElementWriter.CanAddSizing =
+    shownWhen(default = query.matches(AppState.windowInfo.value, touchNativeDeviceTraits)) {
+        query.matches(AppState.windowInfo(), touchNativeDeviceTraits)
+    }
+
 // End
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
+public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing {
     return beforeSetup {
         native.hidden = !default
         var runNumber = 0
@@ -194,24 +229,22 @@ actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition:
     }
 }
 
-@ViewModifierDsl3
-actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
+public actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme =
     beforeSetup { native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitHeader }
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asMain: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asNavigation: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asBanner: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asContentInfo: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asComplementary: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asSearch: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3
-actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
+public actual val ElementWriter.CanAddTheme.asPresentation: ElementWriter.CanAddTheme get() =
     beforeSetup { native.accessibilityElementsHidden = true }
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
+public actual val ElementWriter.CanAddTheme.asList: ElementWriter.CanAddTheme get() = this
 
-@ViewModifierDsl3 actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
+public actual val ElementWriter.CanAddListElementModifier.asListItem: ElementWriter.CanAddListElementModifier get() = this
 
 @InternalKiteUi
 internal actual fun ContainerElement.setupAsListContainer() {} // VoiceOver infers list structure from content

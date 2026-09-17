@@ -13,7 +13,7 @@ import kotlinx.browser.window
  * away and back a few times, then read `kiteuiLeak()` again. A total that fails to return to
  * baseline (and a per-class breakdown that keeps growing) pinpoints the leaking element type.
  */
-fun installLeakDebug() {
+public fun installLeakDebug() {
     val w = window.asDynamic()
     w.kiteuiLeakEnable = { ->
         Element.Debugger.countInstances = true

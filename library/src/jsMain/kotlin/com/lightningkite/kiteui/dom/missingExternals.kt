@@ -1,20 +1,20 @@
 package com.lightningkite.kiteui.dom
 
-external class ResizeObserver(callback: (Array<ResizeObserverEntry>, observer: ResizeObserver)->Unit) {
-    fun disconnect()
-    fun observe(target: DOMElement, options: ResizeObserverOptions = definedExternally)
-    fun unobserve(target: DOMElement)
+internal external class ResizeObserver(callback: (Array<ResizeObserverEntry>, observer: ResizeObserver)->Unit) {
+    public fun disconnect()
+    public fun observe(target: DOMElement, options: ResizeObserverOptions = definedExternally)
+    public fun unobserve(target: DOMElement)
 }
-external interface ResizeObserverOptions {
-    val box: String
+internal external interface ResizeObserverOptions {
+    public val box: String
 }
-external interface ResizeObserverEntry {
-    val target: DOMElement
-    val contentRect: DOMRectReadOnly
-    val contentBoxSize: ResizeObserverEntryBoxSize
-    val borderBoxSize: ResizeObserverEntryBoxSize
+internal external interface ResizeObserverEntry {
+    public val target: DOMElement
+    public val contentRect: DOMRectReadOnly
+    public val contentBoxSize: ResizeObserverEntryBoxSize
+    public val borderBoxSize: ResizeObserverEntryBoxSize
 }
-external interface ResizeObserverEntryBoxSize {
-    val blockSize: Double
-    val inlineSize: Double
+internal external interface ResizeObserverEntryBoxSize {
+    public val blockSize: Double
+    public val inlineSize: Double
 }

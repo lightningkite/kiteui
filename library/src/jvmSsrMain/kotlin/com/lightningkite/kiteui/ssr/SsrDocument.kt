@@ -11,13 +11,13 @@ import kotlinx.serialization.json.Json
  * val html = SsrDocument().render(result)
  * ```
  */
-class SsrDocument(
-    val lang: String = "en",
-    val charset: String = "UTF-8",
-    val baseHref: String? = null,
-    val additionalHeadContent: String = "",
-    val additionalBodyContent: String = "",
-    val includeResetCss: Boolean = true,
+public class SsrDocument(
+    internal val lang: String = "en",
+    internal val charset: String = "UTF-8",
+    internal val baseHref: String? = null,
+    internal val additionalHeadContent: String = "",
+    internal val additionalBodyContent: String = "",
+    internal val includeResetCss: Boolean = true,
 ) {
     /**
      * Render an SSR result to a complete HTML document.
@@ -26,7 +26,7 @@ class SsrDocument(
      * @param resourceData Optional map of resource key to serialized JSON data for client hydration
      * @return Complete HTML document string
      */
-    fun render(result: SsrResult, resourceData: Map<String, String> = emptyMap()): String = buildString {
+    internal fun render(result: SsrResult, resourceData: Map<String, String> = emptyMap()): String = buildString {
         appendLine("<!DOCTYPE html>")
         appendLine("<html lang=\"$lang\">")
         appendLine("<head>")
@@ -138,11 +138,11 @@ class SsrDocument(
 
     private fun escapeAttr(text: String): String = escapeHtml(text)
 
-    companion object {
+    internal companion object {
         /**
          * Minimal CSS reset based on Eric Meyer's reset.
          */
-        val RESET_CSS = """
+        internal val RESET_CSS: String = """
             /* CSS Reset */
             html, body, div, span, applet, object, iframe,
             h1, h2, h3, h4, h5, h6, p, blockquote, pre,

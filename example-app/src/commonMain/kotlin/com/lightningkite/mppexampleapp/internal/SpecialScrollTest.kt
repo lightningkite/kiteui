@@ -69,7 +69,7 @@ object SpecialScrollTest : Page {
                 checkbox { verticalScrollElement::scrollSnapStop { checked() } }
             }
             lateinit var horizontalScrollElement: ScrollingBehaviors
-            expanding.scrollsHorizontally {
+            expanding.scrollingHorizontally {
                 horizontalScrollElement = this
             }.row {
                 repeat(10) {

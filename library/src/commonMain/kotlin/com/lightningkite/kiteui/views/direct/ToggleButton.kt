@@ -5,6 +5,6 @@ import com.lightningkite.kiteui.views.NativeContainerElement
 import com.lightningkite.kiteui.views.NativeInteractiveContainerElement
 import com.lightningkite.reactive.core.*
 
-expect class ToggleButton(context: ElementContext) : NativeInteractiveContainerElement {
-    val checked: MutableReactiveValue<Boolean>
+public expect class ToggleButton(context: ElementContext) : NativeInteractiveContainerElement {
+    public val checked: MutableReactiveValue<Boolean>
 }

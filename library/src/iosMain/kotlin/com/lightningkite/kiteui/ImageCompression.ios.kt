@@ -11,7 +11,7 @@ import platform.UIKit.*
 import platform.UniformTypeIdentifiers.*
 import kotlin.coroutines.*
 
-actual suspend fun ImageLocal.compressed(
+public actual suspend fun ImageLocal.compressed(
     maxWidth: Int,
     maxHeight: Int,
     quality: Float,

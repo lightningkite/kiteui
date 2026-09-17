@@ -12,17 +12,22 @@ import platform.UIKit.accessibilityLabel
 import platform.UIKit.accessibilityTraits
 import platform.UIKit.setAccessibilityLabel
 import platform.UIKit.setAccessibilityTraits
+import com.lightningkite.kiteui.views.AiDriver
 
 @OptIn(ExperimentalKiteUi::class)
-actual class Button actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + buttonDriverActions()
-    override val native = FrameLayoutButton()
+public actual class Button actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + buttonDriverActions()
+    override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
 
     init {
         activityIndicator {
             opacity = 0.0
-            ::opacity.invoke { if (working()) 1.0 else 0.0 }
+            // `working` is a NativeElement extension, so an unqualified call here resolves against the
+            // innermost receiver - the ActivityIndicator - whose foreground process set is always empty
+            // (the action is watched on the button, and process state does not propagate between
+            // elements). The spinner has to read the button's state explicitly or it never shows.
+            ::opacity.invoke { if (this@Button.working()) 1.0 else 0.0 }
             native.extensionSizeConstraints = SizeConstraints(minWidth = null, minHeight = null)
         }
     }

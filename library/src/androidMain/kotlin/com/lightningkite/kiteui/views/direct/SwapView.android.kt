@@ -9,28 +9,29 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.context.*
+import kotlinx.coroutines.CoroutineScope
 
 
-actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
     actual override val underlyingNativeElement: SwapView get() = this
 
-    override val native = FrameLayout(context.activity)
+    override val native: FrameLayout = FrameLayout(context.activity)
 
     private var currentView: Element? = this.children.firstOrNull()
 
-    companion object {
-        val swapTimeMakeViewPerformance = PerformanceInfo("swapTimeMakeView")
-        val swapTimeAddViewsPerformance = PerformanceInfo("swapTimeAddViews")
+    public companion object {
+        internal val swapTimeMakeViewPerformance: PerformanceInfo = PerformanceInfo("swapTimeMakeView")
+        internal val swapTimeAddViewsPerformance: PerformanceInfo = PerformanceInfo("swapTimeAddViews")
     }
 
-    actual fun swap(
+    public actual fun swap(
         transition: ScreenTransition,
         createNewView: ViewWriter.() -> Unit,
     ) {
         native.visibility = View.VISIBLE
         val oldView = this.currentView
         var newViewHolder: Element? = null
-        val writer = object : ViewWriter, CalculationContext by this {
+        val writer = object : ViewWriter, CoroutineScope by this {
             override val context: ElementContext
                 get() = this@SwapView.context
 
@@ -55,10 +56,12 @@ actual class SwapView actual constructor(context: ElementContext) : NativeContai
         val newView = newViewHolder
         currentView = newView
         swapTimeAddViewsPerformance {
-            newView?.native?.layoutParams = newView?.native?.layoutParams?.also {
-                it.width = ViewGroup.LayoutParams.MATCH_PARENT
-                it.height = ViewGroup.LayoutParams.MATCH_PARENT
-            } ?: FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            newView?.native?.let { native ->
+                native.layoutParams = native.layoutParams?.also {
+                    it.width = ViewGroup.LayoutParams.MATCH_PARENT
+                    it.height = ViewGroup.LayoutParams.MATCH_PARENT
+                } ?: FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            }
             oldView?.let { old ->
                 old.animateOut(transition) {
                     removeChild(old)

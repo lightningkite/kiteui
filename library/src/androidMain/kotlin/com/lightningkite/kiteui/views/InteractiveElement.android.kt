@@ -10,7 +10,7 @@ private val enabledTheming = NativeElementCommonCode.ThemePipeline.ThemeForEleme
 }
 
 @OptIn(ExperimentalKiteUi::class)
-actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
+public actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
     actual override var enabled: Boolean
         get() = native.isEnabled
         set(value) {
@@ -25,7 +25,7 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
 }
 
 @OptIn(ExperimentalKiteUi::class)
-actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
+public actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
     actual override var enabled: Boolean
         get() = native.isEnabled
         set(value) {

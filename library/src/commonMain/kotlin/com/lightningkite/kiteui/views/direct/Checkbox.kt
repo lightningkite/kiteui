@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.*
 
-expect class Checkbox(context: ElementContext) : InteractiveElement, NativeElement {
+public expect class Checkbox(context: ElementContext) : InteractiveElement, NativeElement {
     override val underlyingNativeElement: Checkbox
     override var enabled: Boolean
-    val checked: MutableReactiveValue<Boolean>
+    public val checked: MutableReactiveValue<Boolean>
 }

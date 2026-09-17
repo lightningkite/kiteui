@@ -19,10 +19,10 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-class Ref<T>(var target: T?)
+public class Ref<T>(public var target: T?)
 
 
-inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: () -> Unit): Release {
+public inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: () -> Unit): Release {
     val actionHolder = object : NSObject() {
         @ObjCAction
         fun eventHandler() = action()
@@ -46,7 +46,7 @@ inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIC
 }
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
-fun NSObject.observe(key: String, action: () -> Unit): Release {
+public fun NSObject.observe(key: String, action: () -> Unit): Release {
     val observer = object : NSObject(), KeyValueObserverProtocol {
         override fun observeValueForKeyPath(
             keyPath: String?,
@@ -78,7 +78,7 @@ private class ObserveRemover(val source: WeakReference<NSObject>, val key: Strin
     }
 }
 
-fun UIControl.findNextFocus(): UIView? {
+internal fun UIControl.findNextFocus(): UIView? {
     return superview?.let {
         it.findNextParentFocus(startingAtIndex = it.subviews.indexOf(this) + 1)
     }
@@ -105,9 +105,9 @@ private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
     return null
 }
 
-val NextFocusDelegateShared = NextFocusDelegate()
+internal val NextFocusDelegateShared: NextFocusDelegate = NextFocusDelegate()
 
-class NextFocusDelegate : NSObject(), UITextFieldDelegateProtocol {
+internal class NextFocusDelegate : NSObject(), UITextFieldDelegateProtocol {
     override fun textFieldShouldReturn(textField: UITextField): Boolean {
         textField.findNextFocus()?.let {
             it.becomeFirstResponder()
