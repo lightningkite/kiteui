@@ -30,6 +30,9 @@ public actual fun ElementContext.overlay(
                     this@with.removeChild(it)
                 }
             }
+            if (modal) {
+                willRemove?.trapFocus()
+            }
         }
 
         withoutAnimation {

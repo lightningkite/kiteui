@@ -10,12 +10,20 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
     private var _openMenu: (() -> Unit)? = null
     override val driverActions: AiDriver.Actions get() = super.driverActions + menuDriverActions(click = _openMenu)
     internal val floating: FloatingInfoHolder = FloatingInfoHolder(this)
+    public actual var role: String = "menu"
+        get() = field
+        set(value) {
+            field = value
+            floating.popoverRole = value
+            native.setAttribute("aria-haspopup", value)
+        }
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
-        native.setAttribute("aria-haspopup", "dialog")
+        floating.popoverRole = role
+        native.setAttribute("aria-haspopup", role)
         native.setAttribute("aria-expanded", "false")
         native.addEventListener("click") {
             floating.open()

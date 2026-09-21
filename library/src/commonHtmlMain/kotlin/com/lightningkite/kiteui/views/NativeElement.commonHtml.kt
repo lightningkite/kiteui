@@ -55,6 +55,14 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
 
     // --- ACCESSIBILITY ---
 
+    /**
+     * The native element that represents the actual form control for accessibility associations
+     * (label/description). Defaults to [native], but composite controls that wrap their real
+     * input element - like [com.lightningkite.kiteui.views.direct.TextArea] - override this so
+     * that labels point at the inner control instead of the wrapper.
+     */
+    public open val formControlNative: FutureElement get() = native
+
     override var accessibleLabel: String?
         get() = super.accessibleLabel
         set(value) {
@@ -79,7 +87,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             val previous = super.labelFor
             super.labelFor = value
             if (value != null) {
-                val targetNative = value.underlyingNativeElement.native
+                val targetNative = value.underlyingNativeElement.formControlNative
                 if (targetNative.id == null) {
                     targetNative.id = "kiteui-a11y-${labelForIdCounter++}"
                 }
@@ -91,7 +99,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
                 }
             } else {
                 if(native.tag == "label") native.setAttribute("for", null)
-                else previous?.underlyingNativeElement?.native?.setAttribute("aria-labelledby", null)
+                else previous?.underlyingNativeElement?.formControlNative?.setAttribute("aria-labelledby", null)
             }
         }
 
@@ -104,9 +112,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
                 if (descNative.id == null) {
                     descNative.id = "kiteui-a11y-${labelForIdCounter++}"
                 }
-                native.setAttribute("aria-describedby", descNative.id)
+                formControlNative.setAttribute("aria-describedby", descNative.id)
             } else {
-                native.setAttribute("aria-describedby", null)
+                formControlNative.setAttribute("aria-describedby", null)
             }
         }
 

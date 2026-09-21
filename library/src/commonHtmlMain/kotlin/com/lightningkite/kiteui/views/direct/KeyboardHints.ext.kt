@@ -49,13 +49,19 @@ internal fun FutureElement.applyKeyboardHints(hints: KeyboardHints) {
             primaryAutocompleteValue = "tel"
         }
 
-        AutoComplete.OneTimeCode, null -> {
+        AutoComplete.OneTimeCode -> {
+            primaryAutocompleteValue = "one-time-code"
+        }
+
+        null -> {
             primaryAutocompleteValue = null
         }
     }
 
+    // When the app provides no autocomplete hint, leave the attribute unset so the browser applies
+    // its default (rather than forcing "off", which disables password-manager/autofill integration).
     attributes.autocomplete = listOfNotNull(
         primaryAutocompleteValue,
         "webauthn".takeIf { hints.includePasskeys }
-    ).joinToString(" ").takeIf { it.isNotEmpty() } ?: "off"
+    ).joinToString(" ").takeIf { it.isNotEmpty() }
 }

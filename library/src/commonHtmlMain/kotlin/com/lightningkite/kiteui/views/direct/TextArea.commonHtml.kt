@@ -31,6 +31,8 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         native.appendChild(this)
     }
 
+    override val formControlNative: FutureElement get() = textarea
+
     public actual val content: MutableReactiveValue<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
 
     init {
@@ -59,8 +61,12 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
                     textarea.attributes.autocomplete = "tel"
                 }
 
-                AutoComplete.OneTimeCode, null -> {
-                    textarea.attributes.autocomplete = "off"
+                AutoComplete.OneTimeCode -> {
+                    textarea.attributes.autocomplete = "one-time-code"
+                }
+
+                null -> {
+                    textarea.attributes.autocomplete = null
                 }
             }
         }
