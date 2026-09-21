@@ -126,5 +126,3 @@ lkLibrary(
 ) {
     description.set("KiteUI Camera and Barcode Scanning Support")
 }
-
-version = "8.3.1-my-test"
