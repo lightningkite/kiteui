@@ -19,4 +19,4 @@ package com.lightningkite.kiteui.views
  * - **iOS**: the element is marked `accessibilityViewIsModal` and a screen-changed notification is
  *   posted so VoiceOver moves into it.
  */
-expect fun Element.trapFocus()
+public expect fun Element.trapFocus()

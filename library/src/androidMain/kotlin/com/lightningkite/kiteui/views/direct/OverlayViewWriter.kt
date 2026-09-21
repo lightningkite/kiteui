@@ -10,11 +10,11 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.native
 import kotlin.coroutines.CoroutineContext
 
-class OverlayViewWriter(override val context: ElementContext,
+public class OverlayViewWriter(override val context: ElementContext,
                         override val coroutineContext: CoroutineContext
 ) : ViewWriter {
 
-    val windowManager = context.activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    public val windowManager: WindowManager = context.activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
     @OverrideOnly
     override fun willAddChild(element: Element) {

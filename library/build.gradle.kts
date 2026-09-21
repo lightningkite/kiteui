@@ -215,6 +215,8 @@ lkLibrary(
 ) {
     description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
 }
+
+version = "8.3.1-my-test"
 // ---------------------------------------------------------------------------------------------
 // Local echo server for the cross-platform network tests (see docs/TESTING_GUIDE.md).
 // ---------------------------------------------------------------------------------------------

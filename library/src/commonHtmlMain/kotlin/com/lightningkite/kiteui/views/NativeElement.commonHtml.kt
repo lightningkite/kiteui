@@ -61,7 +61,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
      * input element - like [com.lightningkite.kiteui.views.direct.TextArea] - override this so
      * that labels point at the inner control instead of the wrapper.
      */
-    open val formControlNative: FutureElement get() = native
+    public open val formControlNative: FutureElement get() = native
 
     override var accessibleLabel: String?
         get() = super.accessibleLabel

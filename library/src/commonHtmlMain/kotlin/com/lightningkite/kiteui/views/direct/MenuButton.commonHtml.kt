@@ -11,6 +11,12 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
     override val driverActions: AiDriver.Actions get() = super.driverActions + menuDriverActions(click = _openMenu)
     internal val floating: FloatingInfoHolder = FloatingInfoHolder(this)
     public actual var role: String = "menu"
+        get() = field
+        set(value) {
+            field = value
+            floating.popoverRole = value
+            native.setAttribute("aria-haspopup", value)
+        }
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"

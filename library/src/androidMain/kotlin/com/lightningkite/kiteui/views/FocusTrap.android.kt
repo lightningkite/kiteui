@@ -11,7 +11,7 @@ import com.lightningkite.reactive.context.onRemove
  * keyboard/D-pad focus and TalkBack cannot reach the content behind the modal. Focus is moved to
  * the first interactive descendant. All modified values are restored when this element is removed.
  */
-actual fun Element.trapFocus() {
+public actual fun Element.trapFocus() {
     val siblings = parent?.children?.filter { it !== this }.orEmpty()
     val saved = siblings.map { sibling ->
         val view = sibling.underlyingNativeElement.native

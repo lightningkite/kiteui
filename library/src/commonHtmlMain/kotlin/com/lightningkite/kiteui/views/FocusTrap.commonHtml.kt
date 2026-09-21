@@ -10,7 +10,7 @@ import com.lightningkite.reactive.context.onRemove
  * back to this element itself (given a `tabindex` so it can receive focus). Both the `inert`
  * markers and the previously focused element are restored when this element is removed.
  */
-actual fun Element.trapFocus() {
+public actual fun Element.trapFocus() {
     val siblings = parent?.children?.filter { it !== this }.orEmpty()
     val previouslyFocused = captureWebFocus()
     siblings.forEach { it.native.setAttribute("inert", "") }

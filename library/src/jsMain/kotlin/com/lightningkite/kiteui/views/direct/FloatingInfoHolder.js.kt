@@ -101,7 +101,6 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                 val menuId = "kiteui-menu-${Random.nextInt().toUInt()}"
                 native.id = menuId
                 source.native.setAttribute("aria-controls", menuId)
-                popoverRole?.let { native.setAttribute("role", it) }
                 native.setAttribute("aria-modal", if (popoverRole == "dialog") "true" else null)
                 // Update aria-expanded on the source element
                 source.native.setAttribute("aria-expanded", "true")
