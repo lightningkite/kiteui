@@ -16,7 +16,10 @@ import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import com.lightningkite.kiteui.dom.KeyboardEvent
+import org.w3c.dom.asList
+import org.w3c.dom.events.EventListener
 import org.w3c.dom.events.MouseEvent
+import kotlin.collections.filter
 import kotlin.math.min
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -101,7 +104,9 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                 val menuId = "kiteui-menu-${Random.nextInt().toUInt()}"
                 native.id = menuId
                 source.native.setAttribute("aria-controls", menuId)
-                native.setAttribute("aria-modal", if (popoverRole == "dialog") "true" else null)
+                popoverRole?.takeIf { popoverRole == "dialog" }?.let {
+                    native.setAttribute("role", it)
+                }
                 // Update aria-expanded on the source element
                 source.native.setAttribute("aria-expanded", "true")
                 var tx = 0.0
@@ -275,9 +280,34 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                 val repos = { ev: Event -> reposition() }
                 window.addEventListener("scroll", repos, true)
 
-                val escapeHandler = { ev: Event ->
-                    if ((ev as? KeyboardEvent)?.key == "Escape") {
+                (native.element as? Element)?.trapFocus()
+
+                val escapeHandler = eventListener@{ ev: Event ->
+                    val ev = ev as? KeyboardEvent
+                    if (ev?.key == "Escape") {
                         close()
+                    }
+                    if (ev?.key != "Tab") return@eventListener
+                    val focusable = native.element?.querySelectorAll(
+                        "a[href], button:not([disabled]), input:not([disabled]), " +
+                                "select:not([disabled]), textarea:not([disabled]), " +
+                                "[tabindex]:not([tabindex=\"-1\"])"
+                    )?.asList()?.filter { element ->
+                        val el = (element as? HTMLElement) ?: return@filter false
+                        val style = window.getComputedStyle(el)
+                        (style.display != "none" &&
+                                style.visibility != "hidden" &&
+                                el.getBoundingClientRect().height > 0)
+                    }
+                    val first = focusable?.get(0)
+                    val last = focusable?.get(focusable.size - 1)
+                    if (ev.shiftKey && document.activeElement == first) {
+                        ev.preventDefault()
+                        (last as? HTMLElement)?.focus()
+                    }
+                    else if (!ev.shiftKey && document.activeElement == last) {
+                        ev.preventDefault()
+                        (first as? HTMLElement)?.focus()
                     }
                     Unit
                 }

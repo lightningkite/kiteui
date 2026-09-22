@@ -15,7 +15,7 @@ import com.lightningkite.kiteui.views.AiDriver
 public actual class Button actual constructor(context: ElementContext): NativeContainerElementWithSecondaryAction(context) {
     override val driverActions: AiDriver.Actions get() = super.driverActions + buttonDriverActions()
     override fun nativeSetAction(action: Action?) {
-        (accessibleLabel ?: action?.title)?.takeIf { it.isNotBlank() }.let { native.setAttribute("aria-label", it) }
+        (accessibleLabel ?: action?.title)?.takeIf { it.isNotBlank() }?.let { native.setAttribute("aria-label", it) }
     }
 
     init {
