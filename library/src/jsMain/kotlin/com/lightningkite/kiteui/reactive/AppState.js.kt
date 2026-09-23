@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.dom.KeyboardEvent
+import com.lightningkite.kiteui.locale.LanguageCode
 import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.models.px
@@ -50,6 +51,12 @@ public actual object AppState {
     internal val _softInputOpen = Signal(false)
     public actual val softInputOpen: ReactiveValue<Boolean>
         get() = _softInputOpen
+
+    internal val _systemLanguages = Signal(currentSystemLanguages()).also { signal ->
+        window.addEventListener("languagechange", { _: Event -> signal.value = currentSystemLanguages() })
+    }
+    public actual val systemLanguages: ReactiveValue<List<LanguageCode>>
+        get() = _systemLanguages
 
     private var currentLock: WakeLockSentinel? = null
     private var currentLockCount = 0
@@ -115,6 +122,13 @@ public actual object AppState {
         window.addEventListener("keydown", l)
         return { window.removeEventListener("keydown", l) }
     }
+}
+
+/** [navigator.languages](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/languages), ordered by preference; falls back to the singular `navigator.language` when the browser doesn't support it. */
+private fun currentSystemLanguages(): List<LanguageCode> {
+    val languages = window.navigator.languages
+    return if (languages.isNotEmpty()) languages.map { LanguageCode(it) }
+    else listOf(LanguageCode(window.navigator.language))
 }
 
 public external interface WakeLockSentinel {

@@ -1,7 +1,11 @@
 package com.lightningkite.kiteui.reactive
 
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.view.WindowManager
+import androidx.core.os.ConfigurationCompat
 import com.lightningkite.kiteui.LogRoot
+import com.lightningkite.kiteui.locale.LanguageCode
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
@@ -28,6 +32,16 @@ public actual object AppState {
     internal val _softInputOpen = Signal(false)
     public actual val softInputOpen: ReactiveValue<Boolean>
         get() = _softInputOpen
+
+    internal val _systemLanguages = Signal(systemLanguagesFrom(Resources.getSystem().configuration))
+    public actual val systemLanguages: ReactiveValue<List<LanguageCode>>
+        get() = _systemLanguages
+
+    /** [ConfigurationCompat.getLocales], in preference order, converted to BCP 47 tags. Kept in sync with [Configuration] changes by [com.lightningkite.kiteui.KiteUiActivity]. */
+    internal fun systemLanguagesFrom(configuration: Configuration): List<LanguageCode> {
+        val locales = ConfigurationCompat.getLocales(configuration)
+        return (0 until locales.size()).mapNotNull { locales[it] }.map { LanguageCode(it.toLanguageTag()) }
+    }
 
     private var currentLockCount = 0
     public actual fun keepScreenOn(scope: CoroutineScope) {

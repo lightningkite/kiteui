@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import android.animation.ValueAnimator
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.KeyEvent
@@ -107,6 +108,7 @@ public abstract class KiteUiActivity : AppCompatActivity() {
             Dimension(resources.displayMetrics.heightPixels.toFloat()),
             resources.displayMetrics.density,
         )
+        AppState._systemLanguages.value = AppState.systemLanguagesFrom(resources.configuration)
         AndroidAppContext.applicationCtx = this.applicationContext
         AndroidAppContext.activityCtx = this
 
@@ -133,6 +135,11 @@ public abstract class KiteUiActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        AppState._systemLanguages.value = AppState.systemLanguagesFrom(newConfig)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

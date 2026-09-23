@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -19,6 +21,68 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
+
+
+/**
+ * [WaitGate] against a waiter that comes straight back for more.
+ *
+ * Whoever a gate resumes may continue on the resumer's own stack - [kotlinx.coroutines.Dispatchers.Main.immediate]
+ * reports no dispatch needed, and the socket retry loop resumed by [ConnectivityGate.abandon] goes
+ * straight back to awaiting - so the gate has to be able to hand back a waiter that immediately
+ * re-registers. Resuming while iterating the list it re-registers into feeds the loop its own new
+ * entry, endlessly and without ever suspending, which on a browser is a frozen page rather than a
+ * failed request.
+ *
+ * Both tests are bounded so a regression fails the build instead of hanging it.
+ */
+class WaitGateReentryTest {
+
+    /** Re-awaits on cancellation exactly as the socket retry loop does. */
+    private fun WaitGate.waiterThatComesBack(limit: Int, count: () -> Unit): Job =
+        CoroutineScope(Dispatchers.Unconfined).launch {
+            repeat(limit) {
+                count()
+                try {
+                    await()
+                } catch (e: CancellationException) {
+                    // Deliberately swallowed: abandon() delivers one of these to a healthy waiter.
+                }
+            }
+        }
+
+    @Test
+    fun abandoningAWaiterThatComesBackResumesItOnce() {
+        val gate = WaitGate()
+        var registrations = 0
+        val job = gate.waiterThatComesBack(50) { registrations++ }
+
+        gate.abandon()
+
+        assertEquals(2, registrations, "the waiter should have registered once more, not been fed its own re-registration")
+        job.cancel()
+    }
+
+    @Test
+    fun openingTheGateForAWaiterThatFailsAndComesBackResumesItOnce() {
+        val gate = WaitGate()
+        var registrations = 0
+        // The shape ConnectivityGate.run has: wait, attempt, and on failure close the gate again
+        // before waiting once more.  The close happens inside the waiter, so it lands while the
+        // resumer is still working through its list.
+        val job = CoroutineScope(Dispatchers.Unconfined).launch {
+            repeat(50) {
+                registrations++
+                gate.await()
+                gate.permit = false
+            }
+        }
+
+        gate.permit = true
+
+        assertEquals(2, registrations, "the waiter should have registered once more, not been fed its own re-registration")
+        job.cancel()
+    }
+}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConnectivityGateTest {

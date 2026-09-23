@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.locale.LanguageCode
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
@@ -15,6 +16,8 @@ import kotlinx.coroutines.CoroutineScope
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSRunLoop
 import platform.Foundation.NSRunLoopCommonModes
+import platform.Foundation.NSUserDefaults
+import platform.Foundation.NSUserDefaultsDidChangeNotification
 import platform.QuartzCore.CADisplayLink
 import platform.UIKit.UIApplication
 import platform.UIKit.UIKeyboardWillHideNotification
@@ -25,6 +28,19 @@ import platform.darwin.sel_registerName
 
 
 
+/**
+ * The user's preferred languages, ordered by preference.
+ *
+ * `NSLocale.preferredLanguages` is the documented API for this, but Kotlin/Native's bundled Foundation
+ * bindings don't expose it (nor `NSLocale.ISOLanguageCodes`) - both are class properties returning a
+ * generic `NSArray<NSString *>`, which this toolchain's cinterop stubs omit. `preferredLanguages` is
+ * itself documented as reading the `"AppleLanguages"` user default, so read that directly instead.
+ */
+private fun currentSystemLanguages(): List<LanguageCode> =
+    (NSUserDefaults.standardUserDefaults.arrayForKey("AppleLanguages") ?: emptyList<Any?>())
+        .filterIsInstance<String>()
+        .map { LanguageCode(it) }
+
 public actual object AppState {
     internal val _animationFrame = BasicListenable()
     public actual val animationFrame: Listenable
@@ -34,6 +50,12 @@ public actual object AppState {
         fun onFrame() {
             refreshWindowInfo()
             _animationFrame.invokeAll()
+        }
+    }
+    private val localeChangeHandle = object: NSObject() {
+        @ObjCAction
+        fun onLocaleChange() {
+            _systemLanguages.value = currentSystemLanguages()
         }
     }
 
@@ -73,6 +95,12 @@ public actual object AppState {
     }
     init {
         CADisplayLink.displayLinkWithTarget(handle, sel_registerName("onFrame")).addToRunLoop(NSRunLoop.currentRunLoop, forMode = NSRunLoopCommonModes)
+        NSNotificationCenter.defaultCenter.addObserver(
+            observer = localeChangeHandle,
+            selector = sel_registerName("onLocaleChange"),
+            name = NSUserDefaultsDidChangeNotification,
+            `object` = null
+        )
     }
     internal val _windowInfo = Signal(WindowStatistics(
         width = Dimension(UIScreen.mainScreen.bounds.useContents { size.width }),
@@ -87,6 +115,10 @@ public actual object AppState {
     public actual val inForeground: ReactiveValue<Boolean>
         get() = _inForeground
     public actual val softInputOpen: ReactiveValue<Boolean> get() = _SoftInputOpen
+
+    internal val _systemLanguages = Signal(currentSystemLanguages())
+    public actual val systemLanguages: ReactiveValue<List<LanguageCode>>
+        get() = _systemLanguages
 
     private var currentLockCount = 0
     public actual fun keepScreenOn(scope: CoroutineScope) {

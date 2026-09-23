@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.locale.LanguageCode
 import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.reactive.*
@@ -20,6 +21,7 @@ public expect object AppState {
     public val windowInfo: ReactiveValue<WindowStatistics>
     public val inForeground: ReactiveValue<Boolean>
     public val softInputOpen: ReactiveValue<Boolean>
+    public val systemLanguages: ReactiveValue<List<LanguageCode>>
     public fun keepScreenOn(scope: CoroutineScope)
     public fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): ()->Unit
 }

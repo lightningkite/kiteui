@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
 import org.w3c.dom.HTMLAudioElement
+import org.w3c.dom.events.Event
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import kotlin.time.Duration
@@ -28,7 +29,7 @@ public actual class SoundEffectPool actual constructor(concurrency: Int) {
 
     // Web doesn't need the provided limit from [concurrency], so we ignore it.
 
-    private val context = AudioContext()
+    private val context: AudioContext get() = SharedAudioContext.context
 
     public actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
         // An AudioBufferSourceNode can only be played once so we must create a new instance every time we want to play
@@ -134,6 +135,42 @@ public external class AudioContext() {
     /** "suspended", "running" or "closed". A context is created suspended. */
     public val state: String
     public fun resume(): Promise<Unit>
+    public fun addEventListener(event: String, listener: (Event) -> Unit)
+}
+
+/**
+ * The single [AudioContext] shared by every [SoundEffectPool] on web.
+ *
+ * Browsers create an AudioContext suspended and leave it that way until the page has user
+ * activation. A context per pool meant every pool needed its own gesture to unlock it, and a
+ * gesture anywhere else in the page did nothing for it. One shared context fixes that: it listens
+ * for the first gesture anywhere in the document and resumes itself there, so unlocking happens
+ * once and every pool benefits. It's built lazily, so nothing is constructed until audio is
+ * actually used.
+ */
+public object SharedAudioContext {
+    private val enabledChange = BasicListenable()
+
+    internal val context: AudioContext by lazy {
+        val ctx = AudioContext()
+        document.addEventListener("touchstart", { _ -> requestUnlock() })
+        document.addEventListener("click", { _ -> requestUnlock() })
+        document.addEventListener("mousedown", { _ -> requestUnlock() })
+        document.addEventListener("keydown", { _ -> requestUnlock() })
+        // Capture phase so a video's own "play" event, which does not bubble, still reaches us.
+        val playOptions = js("({capture: true})")
+        document.addEventListener("play", { _ -> requestUnlock() }, playOptions)
+        ctx.addEventListener("statechange") { enabledChange.invokeAll() }
+        ctx
+    }
+
+    /** Resumes the shared context if it's suspended. Safe to call from any gesture handler. */
+    public fun requestUnlock() {
+        if (context.state == "suspended") context.resume()
+    }
+
+    /** Whether the shared context can currently produce sound. Updates as it unlocks. */
+    public val enabled: Reactive<Boolean> = enabledChange.lensListenable { context.state == "running" }
 }
 
 public open external class AudioNode {
