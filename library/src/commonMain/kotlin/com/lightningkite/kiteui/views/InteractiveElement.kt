@@ -51,6 +51,7 @@ private fun NativeElement.rewatchAction(previousRelease: Release?, action: Actio
  */
 public expect abstract class NativeInteractiveElement(context: ElementContext) : NativeElement, InteractiveElement {
     override var enabled: Boolean
+    public open var required: Boolean
 }
 
 /**

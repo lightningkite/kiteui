@@ -22,6 +22,8 @@ public actual abstract class NativeInteractiveElement actual constructor(context
         themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
         themePipeline.add(ThemePipeline.Step.elementStatus, enabledTheming)
     }
+
+    public actual open var required: Boolean = false
 }
 
 @OptIn(ExperimentalKiteUi::class)

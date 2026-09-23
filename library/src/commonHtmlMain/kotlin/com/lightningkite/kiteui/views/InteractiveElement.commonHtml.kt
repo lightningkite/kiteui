@@ -7,6 +7,11 @@ public actual abstract class NativeInteractiveElement actual constructor(context
             native.attributes.disabled = !value
             native.setAttribute("aria-disabled", if (value) null else "true")
         }
+    public actual open var required: Boolean = false
+        set(value) {
+            field = value
+            native.setAttribute("aria-required", if (value) null else "true")
+        }
 }
 
 public actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
