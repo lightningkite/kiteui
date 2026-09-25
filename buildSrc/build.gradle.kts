@@ -5,11 +5,13 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.4.10")
-    implementation("org.apache.pdfbox:fontbox:2.0.27")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.4.20")
+    implementation("org.apache.pdfbox:fontbox:3.0.8")
 }
 kotlin {
     jvmToolchain(17)
+    // Build logic for this repo only. src/main/kotlin is a gitignored copy of the gradle-plugin sources (see below).
+    sourceSets.main { kotlin.srcDir("src/buildLogic/kotlin") }
 }
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     compilerOptions {

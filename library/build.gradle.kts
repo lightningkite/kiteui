@@ -1,21 +1,12 @@
 import com.lightningkite.deployhelpers.lkLibrary
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
-// KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
-// So we work around it on non mac machines with this check
-val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
-val iosTargetOverride = false
-
-val iosTarget = iosTargetOverride || onMac
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-//    alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlin.plugin.serialization)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.testing.manual)
     alias(libs.plugins.roborazzi)
     signing
@@ -35,14 +26,27 @@ kotlin {
     applyDefaultHierarchyTemplate()
     explicitApi()  // strict: missing visibility/return-type on public API is a compile error
 
-    androidTarget {
-        publishLibraryVariants("release")
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    android {
+        namespace = "com.lightningkite.kiteui"
+        testNamespace = "com.lightningkite.kiteui.test"
+        compileSdk = 36
+        minSdk = 23
+        enableCoreLibraryDesugaring = true
+        androidResources { enable = true }
+        withHostTest {
+            isIncludeAndroidResources = true
+            // Without this, any commonTest that reaches a logging path fails on Android with
+            // "Method w in android.util.Log not mocked" - the stubbed android.jar throws on every
+            // call. Common code legitimately logs (Routes.parse warns on an unparseable URL), so
+            // the alternative is that no shared test may exercise such a path at all. Returning
+            // defaults is scoped to unit tests; instrumented and Robolectric tests are unaffected.
+            isReturnDefaultValues = true
+        }
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
-    if (iosTarget) {
+    if (iosEnabled) {
         iosArm64()
         iosSimulatorArm64()
         iosX64()
@@ -64,7 +68,7 @@ kotlin {
     }
     sourceSets {
 
-        val commonMain by getting {
+        val commonMain = getByName("commonMain") {
             dependencies {
                 api(libs.reactive)
                 api(libs.kotlinx.serialization.json)
@@ -74,7 +78,7 @@ kotlin {
                 api(libs.kotlinx.serialization.uri)
             }
         }
-        val commonTest by getting {
+        val commonTest = getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test)
@@ -83,7 +87,7 @@ kotlin {
                 implementation(project(":test-utilities"))
             }
         }
-        val androidMain by getting {
+        val androidMain = getByName("androidMain") {
             dependencies {
                 api(libs.appcompat)
                 api(libs.ktx)
@@ -105,7 +109,7 @@ kotlin {
                 api(libs.exifinterface)
             }
         }
-        val androidUnitTest by getting {
+        val androidHostTest = getByName("androidHostTest") {
             dependencies {
                 implementation(libs.junit)
                 implementation(libs.robolectric)
@@ -114,98 +118,67 @@ kotlin {
             }
         }
 
-        if (iosTarget) {
-            // Opt in across the whole iOS hierarchy rather than on the native compilations. The
-            // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
-            // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also
-            // requires a source set's opt-ins to be a superset of those of the source sets it
-            // depends on, so the leaf target source sets must be covered too, not just iosMain.
-            matching { it.name.startsWith("ios") }.configureEach {
-                languageSettings {
-                    optIn("kotlinx.cinterop.BetaInteropApi")
-                    optIn("kotlinx.cinterop.ExperimentalForeignApi")
-                }
+        // Opt in across the whole iOS hierarchy rather than on the native compilations. The
+        // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
+        // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also
+        // requires a source set's opt-ins to be a superset of those of the source sets it
+        // depends on, so the leaf target source sets must be covered too, not just iosMain.
+        matching { it.name.startsWith("ios") }.configureEach {
+            languageSettings {
+                optIn("kotlinx.cinterop.BetaInteropApi")
+                optIn("kotlinx.cinterop.ExperimentalForeignApi")
             }
-            val iosMain by getting {
-                dependencies {
-                    implementation(libs.ktor.client.darwin)
-                    implementation(libs.ktor.client.websockets)
-                }
+        }
+        matching { it.name == "iosMain" }.configureEach {
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+                implementation(libs.ktor.client.websockets)
             }
         }
 
-        val commonJvmMain by creating {
+        val commonJvmMain = create("commonJvmMain") {
             dependsOn(commonMain)
             dependencies {
                 api(libs.commonsLang3)
                 api(libs.ktor.client.core)
                 api(libs.ktor.client.okhttp)
                 api(libs.ktor.client.websockets)
+                implementation(libs.ktor.client.okhttp.jvm)
             }
         }
 
-        val commonHtmlMain by creating {
+        val commonHtmlMain = create("commonHtmlMain") {
             dependsOn(commonMain)
         }
-        val jsMain by getting {
+        val jsMain = getByName("jsMain") {
             dependsOn(commonHtmlMain)
         }
     }
 
     jvm("jvmSsr")
     sourceSets {
-        val jvmSsrMain by getting {
+        val jvmSsrMain = getByName("jvmSsrMain") {
             dependsOn(get("commonJvmMain"))
             dependsOn(get("commonHtmlMain"))
         }
     }
 //    jvm("jvmSwing")
 //    sourceSets {
-//        val jvmSwingMain by getting {
+//        val jvmSwingMain = getByName("jvmSwingMain") {
 //        }
 //    }
 
-    if (iosTarget) {
-        targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().all {
-            compilations.getByName("main") {
-                val objcAddition by cinterops.creating {
-                    defFile(project.file("src/iosMain/def/objcAddition.def"))
-                }
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().all {
+        compilations.getByName("main") {
+            val objcAddition = cinterops.create("objcAddition") {
+                defFile(project.file("src/iosMain/def/objcAddition.def"))
             }
         }
     }
 }
 
-android {
-    namespace = "com.lightningkite.kiteui"
-    testNamespace = "com.lightningkite.kiteui.test"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 23
-    }
-    compileOptions {
-        isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    dependencies {
-        coreLibraryDesugaring(libs.desugar.jdk.libs)
-    }
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-            // Without this, any commonTest that reaches a logging path fails on Android with
-            // "Method w in android.util.Log not mocked" - the stubbed android.jar throws on every
-            // call. Common code legitimately logs (Routes.parse warns on an unparseable URL), so
-            // the alternative is that no shared test may exercise such a path at all. Returning
-            // defaults is scoped to unit tests; instrumented and Robolectric tests are unaffected.
-            isReturnDefaultValues = true
-        }
-    }
-}
 dependencies {
-    implementation(libs.ktor.client.okhttp.jvm)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
 lkLibrary(

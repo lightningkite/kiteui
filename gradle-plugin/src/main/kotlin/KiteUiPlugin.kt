@@ -186,9 +186,21 @@ class KiteUiPlugin : Plugin<Project> {
             task.doLast {
                 resourcesAndroid(resourceFolder, androidResFolder, outKt, ext)
             }
-            tasks.matching { it.name.startsWith("compile") && it.name.endsWith("KotlinAndroid", true) }
+            // compile*KotlinAndroid / generate*Resources come from com.android.application and com.android.library;
+            // com.android.kotlin.multiplatform.library names its tasks after the androidMain compilation instead.
+            tasks.matching {
+                (it.name.startsWith("compile") && it.name.endsWith("KotlinAndroid", true)) ||
+                        it.name == "compileAndroidMain"
+            }
                 .configureEach { dependsOn(task) }
-            tasks.matching { it.name.startsWith("generate", true) && it.name.endsWith("Resources", true) }
+            tasks.matching {
+                (it.name.startsWith("generate", true) && it.name.endsWith("Resources", true)) ||
+                        it.name in setOf(
+                    "parseAndroidMainLocalResources",
+                    "packageAndroidMainResources",
+                    "compileAndroidMainLibraryResources",
+                )
+            }
                 .configureEach { dependsOn(task) }
         }
 
