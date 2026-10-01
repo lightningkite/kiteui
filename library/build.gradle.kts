@@ -22,6 +22,10 @@ dokka {
     }
 }
 
+// Disabled: Dokka's ExtensionExtractorTransformer (2.2.0, still in 2.3.0-Beta) re-walks supertypes once per
+// source set with no visited set, which is exponential on the ElementWriter.CanAdd* chain and never finishes.
+tasks.matching { it.name.startsWith("dokkaGenerate") }.configureEach { enabled = false }
+
 kotlin {
     applyDefaultHierarchyTemplate()
     explicitApi()  // strict: missing visibility/return-type on public API is a compile error
