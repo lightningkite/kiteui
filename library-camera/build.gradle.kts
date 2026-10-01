@@ -1,43 +1,46 @@
 // by Claude
 import com.lightningkite.deployhelpers.lkLibrary
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 
-// KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
-// So we work around it on non mac machines with this check
-val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
-
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
-        alias(libs.plugins.kotlin.cocoapods)
-    }
+    alias(libs.plugins.kotlin.cocoapods) apply false
     alias(libs.plugins.kotlin.plugin.serialization)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidKmpLibrary)
     signing
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
 }
 
+// Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
+if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
+
 kotlin {
     applyDefaultHierarchyTemplate()
 
-    androidTarget {
-        publishLibraryVariants("release")
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    android {
+        namespace = "com.lightningkite.kiteui.camera"
+        compileSdk = 36
+        minSdk = 21
+        enableCoreLibraryDesugaring = true
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
-    if (onMac) {
+    if (iosEnabled) {
         iosArm64()
         iosSimulatorArm64()
         iosX64()
+        // No `cocoapods {}` accessor, since the plugin isn't applied in the plugins block.
+        (this as ExtensionAware).extensions.configure<CocoapodsExtension> {
+            summary = "KiteUI Camera and Barcode Scanning Support"
+            homepage = "https://github.com/lightningkite/kiteui"
+            version = "1.0"
+            ios.deploymentTarget = "14.0"
+        }
     }
-    js {
-        browser()
-    }
+    js { browser() }
     jvm("jvmSsr")
 
     compilerOptions {
@@ -46,25 +49,14 @@ kotlin {
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
 
-    if (onMac) {
-        // We have to manually call this because the shortcut isn't available when plugin is not applied and gradle will
-        // fail even behind the if check
-        (this as ExtensionAware).extensions.configure<CocoapodsExtension>("cocoapods", {
-            summary = "KiteUI Camera and Barcode Scanning Support"
-            homepage = "https://github.com/lightningkite/kiteui"
-            version = "1.0"
-            ios.deploymentTarget = "14.0"
-        })
-    }
-
     sourceSets {
-        val commonMain by getting {
+        val commonMain = getByName("commonMain") {
             dependencies {
                 api(project(":library"))
             }
         }
 
-        val androidMain by getting {
+        val androidMain = getByName("androidMain") {
             dependencies {
                 // CameraX
                 api("androidx.camera:camera-core:1.4.2")
@@ -76,47 +68,31 @@ kotlin {
             }
         }
 
-        if (onMac) {
-            // Opt in across the whole iOS hierarchy rather than on the native compilations. The
-            // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
-            // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also
-            // requires a source set's opt-ins to be a superset of those of the source sets it
-            // depends on, so the leaf target source sets must be covered too, not just iosMain.
-            matching { it.name.startsWith("ios") }.configureEach {
-                languageSettings {
-                    optIn("kotlinx.cinterop.BetaInteropApi")
-                    optIn("kotlinx.cinterop.ExperimentalForeignApi")
-                }
+        // Opt in across the whole iOS hierarchy rather than on the native compilations. The
+        // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
+        // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also
+        // requires a source set's opt-ins to be a superset of those of the source sets it
+        // depends on, so the leaf target source sets must be covered too, not just iosMain.
+        matching { it.name.startsWith("ios") }.configureEach {
+            languageSettings {
+                optIn("kotlinx.cinterop.BetaInteropApi")
+                optIn("kotlinx.cinterop.ExperimentalForeignApi")
             }
-            val iosMain by getting
         }
 
-        val jsMain by getting {
+        val jsMain = getByName("jsMain") {
             dependencies {
                 // Spec-compliant BarcodeDetector polyfill using ZXing WASM
                 implementation(npm("barcode-detector", "3.0.8"))
             }
         }
 
-        val jvmSsrMain by getting
+        val jvmSsrMain = getByName("jvmSsrMain")
     }
 }
 
-android {
-    namespace = "com.lightningkite.kiteui.camera"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 21
-    }
-    compileOptions {
-        isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    dependencies {
-        coreLibraryDesugaring(libs.desugar.jdk.libs)
-    }
+dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
 lkLibrary(

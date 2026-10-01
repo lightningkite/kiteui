@@ -37,6 +37,7 @@ This is a multi-module Gradle project:
     - `reactive/` - Reactive state management
     - `models/` - Theme, styling, and data models
 - **example-app/** - Demo application showcasing KiteUI features
+- **example-app-android/** - Android application shell that packages example-app into an APK (AGP 9 no longer allows `com.android.application` in a KMP module)
 - **gradle-plugin/** - Gradle plugin for KiteUI projects
 - **buildSrc/** - Build configuration utilities
 
@@ -64,7 +65,7 @@ See **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** for the full guide includ
 ./gradlew :example-app:jvmSsrTest
 
 # Android (Robolectric, no device needed)
-./gradlew :example-app:testDebugUnitTest
+./gradlew :example-app:testAndroidHostTest
 
 # iOS (requires running Simulator)
 ./gradlew :example-app:iosSimulatorArm64Test
@@ -77,7 +78,7 @@ See **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** for the full guide includ
 
 # Filter to a specific test class (JVM SSR and Android only)
 ./gradlew :example-app:jvmSsrTest --tests "*.MyTestClass"
-./gradlew :example-app:testDebugUnitTest --tests "*.MyTestClass"
+./gradlew :example-app:testAndroidHostTest --tests "*.MyTestClass"
 ```
 
 Substitute `:library:` for `:example-app:` to run library tests instead.
@@ -92,7 +93,7 @@ Substitute `:library:` for `:example-app:` to run library tests instead.
 # Use run configuration: "ExampleJSRun prod"
 
 # Run Android version
-# Use Android run configuration: "example-app"
+# Use Android run configuration: "example-app-android"
 
 # Run JVM/SSR version
 ./gradlew :example-app:ssrServerRun
