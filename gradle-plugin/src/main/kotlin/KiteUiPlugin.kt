@@ -223,11 +223,13 @@ class KiteUiPlugin : Plugin<Project> {
             doLast {
                 generateAutoroutes(sources, out)
             }
+            // compileAndroidMain is com.android.kotlin.multiplatform.library's Kotlin compile task.
             tasks.matching {
                 (it.name.contains("compile") &&
                         it.name.contains("Kotlin")) ||
                         (it.name.contains("ksp") &&
-                                it.name.contains("Kotlin"))
+                                it.name.contains("Kotlin")) ||
+                        it.name == "compileAndroidMain"
             }.configureEach { dependsOn(this@autoRoutes) }
         })
 
