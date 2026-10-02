@@ -110,6 +110,7 @@ kotlin {
                 api(project(":library"))
                 api(project(":library-lottie"))
                 api(project(":library-camera"))
+                api(project(":library-map"))
             }
         }
 

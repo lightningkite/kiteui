@@ -119,6 +119,7 @@ object RootPage : Page {
                 linkPage { AudioTestPage }
                 linkPage { CameraScannerTestPage }
                 linkPage { MarkdownDemoPage }
+                linkPage { MapViewTestPage }
 
                 sectionLabel("Animation")
                 linkPage { ShownWhenTransitionPage }

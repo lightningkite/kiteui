@@ -15,6 +15,7 @@ rootProject.name = "kiteui"
 include(":library")
 include(":library-lottie")
 include(":library-camera")
+include(":library-map")
 include(":example-app")
 include(":example-app-android")
 include(":gradle-plugin")
