@@ -43,7 +43,6 @@ kotlin {
         }
     }
     js { browser() }
-    jvm("jvmSsr")
 
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
@@ -55,6 +54,7 @@ kotlin {
         val commonMain = getByName("commonMain") {
             dependencies {
                 api(project(":library"))
+                api("com.lightningkite.services:data-shared:1.3.0-prerelease-86-c4aefa99")
             }
         }
 
@@ -84,8 +84,6 @@ kotlin {
                 implementation(npm("maplibre-gl", "6.12.0"))
             }
         }
-
-        val jvmSsrMain = getByName("jvmSsrMain")
     }
 }
 

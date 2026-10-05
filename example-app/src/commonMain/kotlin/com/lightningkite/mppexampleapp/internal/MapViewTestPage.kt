@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.map.Map
 import com.lightningkite.kiteui.map.mapView
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
@@ -11,6 +12,7 @@ import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.sizeConstraints
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.services.data.GeoCoordinate
 
 @Routable("/map-view-test")
 object MapViewTestPage : Page {
@@ -22,7 +24,8 @@ object MapViewTestPage : Page {
 
             sizeConstraints(height = 20.rem).frame {
                 mapView {
-
+                    style = Map.Style.Url("https://demotiles.maplibre.org/style.json")
+                    center = GeoCoordinate(90.0, 90.0)
                 }
             }
         }
