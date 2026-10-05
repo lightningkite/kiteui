@@ -45,7 +45,7 @@ kotlin {
         // Must match the KiteUI packageName above: the generated Resources.android.kt uses an unqualified R.
         namespace = "$group.mppexampleapp"
         testNamespace = "$group.mppexampleapp.test"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 24  // library-skia (Skiko) requires API 24+
         enableCoreLibraryDesugaring = true
         androidResources { enable = true }

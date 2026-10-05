@@ -1,9 +1,9 @@
 /**
  * External MapLibre TypeScript typedefs
  *
- * If the npm package version changes, this may become out of sync! Double check that
- * the current version of the linked source files are the same as the npm package
- * version in /library-map/build.gradle.kts before using this as the source of truth
+ * If the npm package version changes, this may become out of sync! Double check that the
+ * current version of each linked source file is the same as the npm package version in
+ * /library-map/build.gradle.kts before using this as the source of truth
  *
  * Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0
  */

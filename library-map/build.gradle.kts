@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kjsplain)
+    alias(libs.plugins.composeKotlin)
 }
 
 // Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
@@ -21,7 +22,7 @@ kotlin {
 
     android {
         namespace = "com.lightningkite.kiteui.map"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 21
         enableCoreLibraryDesugaring = true
         compilerOptions {
@@ -58,6 +59,10 @@ kotlin {
 
         val androidMain = getByName("androidMain") {
             dependencies {
+                implementation("androidx.compose.ui:ui:1.8.2")
+
+                implementation(libs.maplibre.compose.android)
+                runtimeOnly("org.maplibre.compose:maplibre-compose-runtime-vulkan-android:0.19.0")
             }
         }
 
