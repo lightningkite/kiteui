@@ -10,6 +10,7 @@ plugins {
     signing
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.kjsplain)
 }
 
 // Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
@@ -74,6 +75,7 @@ kotlin {
 
         val jsMain = getByName("jsMain") {
             dependencies {
+                implementation(npm("maplibre-gl", "6.12.0"))
             }
         }
 
