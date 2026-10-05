@@ -10,7 +10,6 @@ import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.VisualMediaSource
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.NativeElementCommonCode
 import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered
@@ -20,10 +19,8 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.flatten
 import com.lightningkite.reactive.lensing.lens
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
@@ -47,8 +44,9 @@ public class MediaView(private val frame: Frame) : Element by frame {
             (currentRawMediaView.value as? RawVideoView)?.showControls = showControls
             (currentRawMediaView.value as? RawVideoView)?.loop = loop
         }
-        onRemove(removeListener)
         onRemove {
+            removeListener()
+
             (currentRawMediaView.value as? RawVideoView)?.let { videoView ->
                 launch { videoView.playing set false }
             }
@@ -87,20 +85,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
 
     public var opaqueTransitions: Boolean = false
 
-    /**
-     * Controls the theme used for background drawing behind rendered media.
-     * Defaults to "never draw a themed background" behavior.
-     * To restore the original MediaView behavior (draw the background only
-     * when the frame's theme says so), set this to:
-     *
-     *   backgroundThemeDerivation = ThemeDerivation {
-     *       if (frame.themeAndBack.drawBackground) it.withBack else it.withoutBack
-     *   }
-     *
-     * Set before the first `refresh()` (i.e. before onStartup / info is assigned)
-     * for it to apply cleanly, since it's only read while building new renders.
-     */
-    public var backgroundThemeDerivation: ThemeDerivation = ThemeDerivation { it.withoutBack }
+    public var backgroundTheme: ThemeDerivation = ThemeDerivation { it.withoutBack }
 
     public var showControls: Boolean = false
         set(value) {
@@ -136,11 +121,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
     @OverrideOnly
     override fun onShutdown() {
         ready = false
-        // The parent removes this frame from its native hierarchy before calling
-        // onShutdown. Let the frame shut down its children without synchronously
-        // calling removeAllViews(): shutdown can be triggered during a layout pass,
-        // and mutating FrameLayout's native child array from inside onMeasure can
-        // make FrameLayout.onMeasure read a null child.
+
         lastRender = null
         retiredRenders.clear()
         frame.onShutdown()
@@ -186,8 +167,6 @@ public class MediaView(private val frame: Frame) : Element by frame {
                     removeChildrenLater(listOf(it))
                 }
             } else {
-                // Opaque: drop the old media as soon as the new one is ready — but never
-                // from inside the load callback itself (see removeChildrenLater).
                 removeChildrenLater(listOf(it))
             }
         }
@@ -201,20 +180,17 @@ public class MediaView(private val frame: Frame) : Element by frame {
         if (!ready) return
         val info = info
         if (lastRendered != info) {
-            // Determine if we are swapping to completely new media
             val keyChanged = lastRendered != null && info != null && lastRendered?.key != info.key
             val replacingPlaceholder = lastRendered?.isPlaceholder == true
             val shouldAnimateOut = keyChanged && !replacingPlaceholder
 
             lastRender?.let { renders ->
-                // 1. Unconditionally stop playback on outgoing media
                 renders.forEach { render ->
                     if (render is RawVideoView) {
                         launch { render.playing set false }
                     }
                 }
 
-                // 2. Only run the fade-out animations if we are actually swapping content
                 if (shouldAnimateOut) {
                     renders.forEach { render ->
                         render.opacity = 0.0
@@ -249,12 +225,11 @@ public class MediaView(private val frame: Frame) : Element by frame {
                             is ImageSource -> {
                                 add(
                                     frame.themed(
-                                        backgroundThemeDerivation
+                                        backgroundTheme
                                     ).rawImage(source, info.description ?: "", info.scaleType) {
                                         themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
                                         themeChoice
 
-                                        // 1. DO NOT start invisible if opaqueTransitions is true
                                         if (!self.opaqueTransitions) {
                                             opacity = 0.0
                                         }
@@ -263,7 +238,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                             this@rawImage.state.state().handle(
                                                 success = {
                                                     if (self.lastRendered == info) {
-                                                        // 2. DO NOT animate fade-in if opaqueTransitions is true
+                                                        //  DO NOT animate fade-in if opaqueTransitions is true
                                                         if (!self.opaqueTransitions) opacity = 1.0
 
                                                         self.lastRender?.take(sourceIndex)
@@ -275,12 +250,12 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                                     }
                                                 },
                                                 exception = {
+                                                    self.removeChildrenLater(listOf(this@rawImage))
                                                     if (self.lastRendered == info) {
                                                         self.activityIndicator.opacity = 0.0
                                                         self.shownInfo.state = ReactiveState.exception(it)
                                                         self.lastRendered = null
-                                                        // Load failed: don't leave the previous
-                                                        // render(s) stranded in retiredRenders.
+                                                        // Load failed: don't leave the previous render(s) stranded in retiredRenders.
                                                         self.removeRetiredRenders()
                                                         if (self.info !== info) {
                                                             self.refresh()
@@ -296,12 +271,11 @@ public class MediaView(private val frame: Frame) : Element by frame {
                             is VideoSource -> {
                                 add(
                                     frame.themed(
-                                        backgroundThemeDerivation
+                                        backgroundTheme
                                     ).rawVideo(source, info.description ?: "", info.scaleType) {
                                         themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
                                         themeChoice
 
-                                        // 3. DO NOT start invisible if opaqueTransitions is true
                                         if (!self.opaqueTransitions) {
                                             opacity = 0.0
                                         }
@@ -314,7 +288,6 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                                 success = {
                                                     if (self.lastRendered == info) {
                                                         launch {
-                                                            // (keep the audio volume fade-in)
                                                             val transitionTime = theme.transitionDuration * 3 / 4
                                                             val start = Clock.System.now()
                                                             while (Clock.System.now() - start < transitionTime) {
@@ -325,7 +298,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                                             volume set 1f
                                                         }
 
-                                                        // 4. DO NOT animate fade-in if opaqueTransitions is true
+                                                        //DO NOT animate fade-in if opaqueTransitions is true
                                                         if (!self.opaqueTransitions) opacity = 1.0
 
                                                         self.lastRender?.take(sourceIndex)
@@ -337,12 +310,12 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                                     }
                                                 },
                                                 exception = {
+                                                    self.removeChildrenLater(listOf(this@rawVideo))
                                                     if (self.lastRendered == info) {
                                                         self.activityIndicator.opacity = 0.0
                                                         self.shownInfo.state = ReactiveState.exception(it)
                                                         self.lastRendered = null
-                                                        // Load failed: don't leave the previous
-                                                        // render(s) stranded in retiredRenders.
+
                                                         self.removeRetiredRenders()
                                                         if (self.info !== info) {
                                                             self.refresh()
