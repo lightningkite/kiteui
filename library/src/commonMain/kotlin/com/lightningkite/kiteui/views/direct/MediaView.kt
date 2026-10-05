@@ -217,9 +217,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
                 // 2. Only run the fade-out animations if we are actually swapping content
                 if (shouldAnimateOut) {
                     renders.forEach { render ->
-                        if (!opaqueTransitions) {
-                            render.opacity = 0.0
-                        }
+                        render.opacity = 0.0
 
                         if (render is RawVideoView) {
                             launch {
