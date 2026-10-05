@@ -9,6 +9,7 @@ Pod::Spec.new do |spec|
     spec.vendored_frameworks      = 'build/cocoapods/framework/library_map.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '14.0'
+    spec.dependency 'MapLibre', '~> 6.0'
     if !Dir.exist?('build/cocoapods/framework/library_map.framework') || Dir.empty?('build/cocoapods/framework/library_map.framework')
         raise "
         Kotlin framework 'library_map' doesn't exist yet, so a proper Xcode project can't be generated.

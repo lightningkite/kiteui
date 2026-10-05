@@ -7,6 +7,7 @@ target 'KiteUI Example App' do
 
   # Pods for KiteUI Example App
   pod 'shared', :path => '../example-app/shared.podspec'
+  pod 'MapLibre', '~> 6.0'
 
   target 'KiteUI Example AppTests' do
     inherit! :search_paths

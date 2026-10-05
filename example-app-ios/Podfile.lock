@@ -1,16 +1,23 @@
 PODS:
+  - MapLibre (6.30.0)
   - shared (1.0)
 
 DEPENDENCIES:
+  - MapLibre (~> 6.0)
   - shared (from `../example-app/shared.podspec`)
+
+SPEC REPOS:
+  trunk:
+    - MapLibre
 
 EXTERNAL SOURCES:
   shared:
     :path: "../example-app/shared.podspec"
 
 SPEC CHECKSUMS:
+  MapLibre: 0612a7bd22d9e025c2aafa87bbea4f4685a1b15b
   shared: 63c62eaab398f1d2a30e3f73ae49c09cf25b6ac5
 
-PODFILE CHECKSUM: ce05072de80b96bb4f86451d773061742b362b11
+PODFILE CHECKSUM: 900315edf4eb620d1bef5d4db040149db4d201cf
 
 COCOAPODS: 1.16.2

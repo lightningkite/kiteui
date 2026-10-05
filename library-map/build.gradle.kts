@@ -40,9 +40,13 @@ kotlin {
             homepage = "https://github.com/lightningkite/kiteui"
             version = "1.0"
             ios.deploymentTarget = "14.0"
+            pod("MapLibre") {
+                version = "~> 6.0"
+            }
         }
     }
     js { browser() }
+    jvm("jvmSsr")
 
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
@@ -84,11 +88,43 @@ kotlin {
                 implementation(npm("maplibre-gl", "6.12.0"))
             }
         }
+
+        val jvmSsrMain = getByName("jvmSsrMain")
     }
 }
 
 composeCompiler {
     targetKotlinPlatforms.set(setOf(KotlinPlatformType.androidJvm))
+}
+
+if (iosEnabled) {
+    afterEvaluate {
+        val xcframeworkDir = file("build/cocoapods/synthetic/ios/Pods/MapLibre/MapLibre.xcframework")
+        val defFile = file("build/cocoapods/defs/MapLibre.def")
+
+        val patchMapLibreDef by tasks.registering {
+            dependsOn("generateDefMapLibre", "podInstallSyntheticIos")
+            doLast {
+                if (!defFile.exists()) return@doLast
+                val content = defFile.readText()
+                if ("-F" in content) return@doLast // already patched
+                val arm64 = xcframeworkDir.resolve("ios-arm64").absolutePath
+                val sim = xcframeworkDir.resolve("ios-arm64_x86_64-simulator").absolutePath
+                defFile.writeText(
+                    content.replace(
+                        "linkerOpts = -framework MapLibre",
+                        "linkerOpts.ios_arm64 = -framework MapLibre -F$arm64\n" +
+                        "linkerOpts.ios_simulator_arm64 = -framework MapLibre -F$sim\n" +
+                        "linkerOpts.ios_x64 = -framework MapLibre -F$sim"
+                    )
+                )
+            }
+        }
+
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.CInteropProcess>()
+            .matching { it.name.contains("MapLibre") }
+            .configureEach { dependsOn(patchMapLibreDef) }
+    }
 }
 
 dependencies {
