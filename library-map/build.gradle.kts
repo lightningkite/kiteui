@@ -1,5 +1,6 @@
 import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 
 plugins {
@@ -86,6 +87,10 @@ kotlin {
 
         val jvmSsrMain = getByName("jvmSsrMain")
     }
+}
+
+composeCompiler {
+    targetKotlinPlatforms.set(setOf(KotlinPlatformType.androidJvm))
 }
 
 dependencies {
