@@ -11,6 +11,12 @@ object Map {
     sealed interface Style {
         data class Url(val url: String) : Style
         data class Json(val json: kotlinx.serialization.json.Json): Style
+
+        companion object {
+            val Demo = Url("https://demotiles.maplibre.org/style.json")
+            val Debug = Url("https://demotiles.maplibre.org/debug-tiles/style.json")
+            val GlobeDemo = Url("https://demotiles.maplibre.org/globe.json")
+        }
     }
 
 

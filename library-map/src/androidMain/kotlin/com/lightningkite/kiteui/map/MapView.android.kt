@@ -17,7 +17,7 @@ import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.Position
 
 actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
-    actual var style: Map.Style? = null
+    actual var style: Map.Style? = Map.Style.Demo
         set(value) {
             field = value
             mapState.style.asMutable!!.baseStyle = value?.toBaseStyle() ?: BaseStyle.Empty

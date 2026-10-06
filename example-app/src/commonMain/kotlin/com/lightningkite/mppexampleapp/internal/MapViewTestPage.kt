@@ -12,13 +12,11 @@ import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.button
-import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.frame
-import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.padded
-import com.lightningkite.kiteui.views.direct.sizeConstraints
+import com.lightningkite.kiteui.views.direct.unpadded
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
@@ -30,30 +28,25 @@ object MapViewTestPage : Page {
     override val title: Reactive<String> = Constant("Map View Test")
 
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
-        col {
-            h1("Map View")
+        unpadded.frame {
+            val useBaseDemoTiles = Signal(true)
 
-            sizeConstraints(height = 40.rem).frame {
-                val useBaseDemoTiles = Signal(true)
-
-                mapView {
-                    ::style {
-                        // maplibre on mobile currently (unfortunately) only supports the Mercator projection
-                        val url = if (useBaseDemoTiles()) "https://demotiles.maplibre.org/style.json" else if (Platform.current == Platform.Web)
-                            "https://demotiles.maplibre.org/globe.json"
-                        else "https://tiles.openfreemap.org/styles/bright"
-                        Map.Style.Url(url)
-                    }
-                    center = GeoCoordinate(90.0, 90.0)
+            mapView {
+                ::style style@{
+                    if (useBaseDemoTiles()) return@style Map.Style.Demo
+                    if (Platform.current == Platform.Web) return@style Map.Style.GlobeDemo
+                    // MapLibre on mobile currently (unfortunately) only supports the Mercator projection, so I'm using a separate debug style instead
+                    Map.Style.Debug
                 }
+                center = GeoCoordinate(90.0, 90.0)
+            }
 
-                padded.frame {
-                    ignoreInteraction = true
+            padded.frame {
+                ignoreInteraction = true
 
-                    atTopStart.card.button {
-                        icon { ::source { if (useBaseDemoTiles() && Platform.current == Platform.Web) Icon.globe else Icon.map } }
-                        onClick { useBaseDemoTiles.modify { !it } }
-                    }
+                atTopStart.card.button {
+                    icon { ::source { if (useBaseDemoTiles() && Platform.current == Platform.Web) Icon.globe else Icon.map } }
+                    onClick { useBaseDemoTiles.modify { !it } }
                 }
             }
         }

@@ -10,11 +10,12 @@ import com.lightningkite.reactive.context.awaitOnce
 import com.lightningkite.reactive.core.LateInitSignal
 import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
+import kotlinx.browser.document
 
 actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
     val map = LateInitSignal<MapLibreMap>()
 
-    actual var style: Map.Style? = null
+    actual var style: Map.Style? = Map.Style.Demo
         get() {
             val map = map.state.getOrNull() ?: return field
             val styleUrl = map.getStyleUrl()?.let { Map.Style.Url(it) }
@@ -60,6 +61,8 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         native.tag = "div"
         native.id = "maplibre-map"
 
+        injectMapLibreCss()
+
         native.onElement { container ->
             map.value = MapLibreMap(
                 MapLibreMap.Options(
@@ -76,3 +79,14 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 @JsModule("maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url")
 @JsNonModule
 private external val maplibreWorkerUrl: String
+
+@JsModule("maplibre-gl/dist/maplibre-gl.css?inline")
+@JsNonModule
+private external val maplibreCss: String
+
+private var maplibreCssInjected = false
+private fun injectMapLibreCss() {
+    if (maplibreCssInjected) return
+    maplibreCssInjected = true
+    document.head!!.appendChild(document.createElement("style").apply { textContent = maplibreCss })
+}
