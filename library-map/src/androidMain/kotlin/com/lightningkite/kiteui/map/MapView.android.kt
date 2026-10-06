@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.services.data.GeoCoordinate
+import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraAnimation
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraUpdate
@@ -39,23 +40,27 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
     @JvmInline
     actual value class Camera(val view: MapView) {
         actual suspend fun easeTo(options: Map.EaseToOptions) {
-            view.mapState.animateCamera(
-                options.toCameraUpdate(),
-                CameraAnimation.Ease(
-                    duration = options.duration,
-                    easing = options.easing.toCubicBezier(),
-                ),
-            )
+            view.launch {
+                view.mapState.animateCamera(
+                    options.toCameraUpdate(),
+                    CameraAnimation.Ease(
+                        duration = options.duration,
+                        easing = options.easing.toCubicBezier(),
+                    ),
+                )
+            }
         }
 
         actual suspend fun flyTo(options: Map.FlyToOptions) {
-            view.mapState.animateCamera(
-                options.toCameraUpdate(),
-                CameraAnimation.Fly(
-                    duration = options.duration,
-                    easing = options.easing.toCubicBezier(),
-                ),
-            )
+            view.launch {
+                view.mapState.animateCamera(
+                    options.toCameraUpdate(),
+                    CameraAnimation.Fly(
+                        duration = options.duration,
+                        easing = options.easing.toCubicBezier(),
+                    ),
+                )
+            }
         }
     }
 

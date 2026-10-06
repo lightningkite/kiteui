@@ -42,7 +42,7 @@ object Map {
         override val zoom: Double? = null,
         override val bearing: Double? = null,
         override val duration: Duration,
-        override val easing: AnimationOptions.Easing.Default,
+        override val easing: AnimationOptions.Easing = AnimationOptions.Easing.Default,
     ) : CameraOptions, AnimationOptions
 
     data class FlyToOptions(
@@ -50,7 +50,7 @@ object Map {
         override val zoom: Double? = null,
         override val bearing: Double? = null,
         override val duration: Duration,
-        override val easing: AnimationOptions.Easing.Default,
+        override val easing: AnimationOptions.Easing = AnimationOptions.Easing.Default,
     ) : CameraOptions, AnimationOptions
 }
 

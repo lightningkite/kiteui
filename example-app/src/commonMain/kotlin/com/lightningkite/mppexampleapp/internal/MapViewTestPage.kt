@@ -16,12 +16,15 @@ import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.padded
+import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.unpadded
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.modify
 import com.lightningkite.services.data.GeoCoordinate
+import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 @Routable("/map-view-test")
 object MapViewTestPage : Page {
@@ -31,7 +34,7 @@ object MapViewTestPage : Page {
         unpadded.frame {
             val useBaseDemoTiles = Signal(true)
 
-            mapView {
+            val map = mapView {
                 ::style style@{
                     if (useBaseDemoTiles()) return@style Map.Style.Demo
                     if (Platform.current == Platform.Web) return@style Map.Style.GlobeDemo
@@ -41,12 +44,28 @@ object MapViewTestPage : Page {
                 center = GeoCoordinate(90.0, 90.0)
             }
 
-            padded.frame {
+            atTopStart.padded.row {
                 ignoreInteraction = true
 
-                atTopStart.card.button {
+                card.button {
                     icon { ::source { if (useBaseDemoTiles() && Platform.current == Platform.Web) Icon.globe else Icon.map } }
                     onClick { useBaseDemoTiles.modify { !it } }
+                }
+
+                card.button {
+                    icon(Icon.travelExplore, "Test Fly To")
+                    onClick {
+                        map.camera.flyTo(
+                            Map.FlyToOptions(
+                                center = GeoCoordinate(
+                                    Random.nextDouble(-90.0, 90.0),
+                                    Random.nextDouble(-180.0, 180.0)
+                                ),
+                                zoom = Random.nextDouble(0.0, 5.0),
+                                duration = Random.nextDouble(0.5, 3.0).seconds,
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -73,4 +92,15 @@ val Icon.Companion.map
         960,
         960,
         listOf("m612-120-263-93-179 71q-17 9-33.5-1T120-173v-558q0-13 7.5-23t19.5-15l202-71 263 92 178-71q17-8 33.5 1.5T840-788v565q0 11-7.5 19T814-192l-202 72Zm-34-75v-505l-196-66v505l196 66Zm60 0 142-47v-512l-142 54v505Zm-458-12 142-54v-505l-142 47v512Zm458-493v505-505Zm-316-66v505-505Z")
+    )
+
+val Icon.Companion.travelExplore
+    get() = Icon(
+        1.5.rem,
+        1.5.rem,
+        0,
+        -960,
+        960,
+        960,
+        listOf("M458-81q-79-4-148-37t-120-86.5Q139-258 109.5-329T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q149 0 259 94t135 236h-61q-17-84-71-150t-135-99v18q0 35-24 61t-59 26h-87v87q0 17-13.5 28T393-568h-83v88h110v125h-67L149-559q-5 20-7 39.5t-2 39.5q0 135 91 233t227 106v60Zm392-26L716-241q-21 15-45.5 23t-50.5 8q-71 0-120.5-49.5T450-380q0-71 49.5-120.5T620-550q71 0 120.5 49.5T790-380q0 26-8.5 50.5T759-283l134 133-43 43ZM698-302q32-32 32-78t-32-78q-32-32-78-32t-78 32q-32 32-32 78t32 78q32 32 78 32t78-32Z")
     )
