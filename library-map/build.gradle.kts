@@ -64,7 +64,8 @@ kotlin {
 
         val androidMain = getByName("androidMain") {
             dependencies {
-                implementation("androidx.compose.ui:ui:1.8.2")
+                implementation("androidx.compose.ui:ui:1.12.1")
+                implementation("androidx.compose.foundation:foundation:1.12.1")
 
                 implementation(libs.maplibre.compose.android)
                 runtimeOnly("org.maplibre.compose:maplibre-compose-runtime-vulkan-android:0.19.0")

@@ -13,6 +13,8 @@ import org.maplibre.compose.camera.CameraUpdate
 import org.maplibre.compose.camera.CubicBezier
 import org.maplibre.compose.map.DefaultMapRuntime
 import org.maplibre.compose.map.MaplibreMap
+import org.maplibre.compose.overlay.MapOverlay
+import org.maplibre.compose.overlay.include
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.Position
 
@@ -65,7 +67,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 
     override val native: View = ComposeView(context.activity).apply {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindowOrReleasedFromPool)
-        setContent { MaplibreMap(state = mapState) }
+        setContent { MaplibreMap(state = mapState) { include(MapOverlay.AttributionOnly) } }
     }
 }
 
