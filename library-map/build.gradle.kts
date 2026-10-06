@@ -27,7 +27,7 @@ kotlin {
         minSdk = 21
         enableCoreLibraryDesugaring = true
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_1_8)
+            jvmTarget.set(JvmTarget.JVM_11)
         }
     }
     if (iosEnabled) {
