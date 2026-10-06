@@ -41,7 +41,6 @@ object MapViewTestPage : Page {
                     // MapLibre on mobile currently (unfortunately) only supports the Mercator projection, so I'm using a separate debug style instead
                     Map.Style.Debug
                 }
-                center = GeoCoordinate(90.0, 90.0)
             }
 
             atTopStart.padded.row {
@@ -53,14 +52,16 @@ object MapViewTestPage : Page {
                 }
 
                 card.button {
-                    icon(Icon.travelExplore, "Test Fly To")
+                    icon(Icon.travelExplore, "Test Manual Center")
+                    onClick { map.center = Random.nextGeoCoordinate() }
+                }
+
+                card.button {
+                    icon(Icon.travel, "Test Fly To")
                     onClick {
                         map.camera.flyTo(
                             Map.FlyToOptions(
-                                center = GeoCoordinate(
-                                    Random.nextDouble(-90.0, 90.0),
-                                    Random.nextDouble(-180.0, 180.0)
-                                ),
+                                center = Random.nextGeoCoordinate(),
                                 zoom = Random.nextDouble(0.0, 5.0),
                                 duration = Random.nextDouble(0.5, 3.0).seconds,
                             )
@@ -71,6 +72,8 @@ object MapViewTestPage : Page {
         }
     }
 }
+
+fun Random.nextGeoCoordinate() = GeoCoordinate(nextDouble(-90.0, 90.0), nextDouble(-180.0, 180.0))
 
 val Icon.Companion.globe
     get() = Icon(
@@ -103,4 +106,15 @@ val Icon.Companion.travelExplore
         960,
         960,
         listOf("M458-81q-79-4-148-37t-120-86.5Q139-258 109.5-329T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q149 0 259 94t135 236h-61q-17-84-71-150t-135-99v18q0 35-24 61t-59 26h-87v87q0 17-13.5 28T393-568h-83v88h110v125h-67L149-559q-5 20-7 39.5t-2 39.5q0 135 91 233t227 106v60Zm392-26L716-241q-21 15-45.5 23t-50.5 8q-71 0-120.5-49.5T450-380q0-71 49.5-120.5T620-550q71 0 120.5 49.5T790-380q0 26-8.5 50.5T759-283l134 133-43 43ZM698-302q32-32 32-78t-32-78q-32-32-78-32t-78 32q-32 32-32 78t32 78q32 32 78 32t78-32Z")
+    )
+
+val Icon.Companion.travel
+    get() = Icon(
+        1.5.rem,
+        1.5.rem,
+        0,
+        -960,
+        960,
+        960,
+        listOf("m393-119-95-179-180-96 59-59 148 27 122-121-327-139 72-72 396 69 133-133q21-21 50.5-21t50.5 21q21 21 21 50.5T822-721L689-588l69 396-72 72-139-327-121 122 26 147-59 59Z")
     )

@@ -4,6 +4,9 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.write
+import com.lightningkite.reactive.context.reactive
+import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.Signal
 import com.lightningkite.services.data.GeoCoordinate
 import kotlin.time.Duration
 
@@ -52,6 +55,13 @@ object Map {
         override val duration: Duration,
         override val easing: AnimationOptions.Easing = AnimationOptions.Easing.Default,
     ) : CameraOptions, AnimationOptions
+
+    interface Feature<T> {
+        fun update(data: T)
+        fun remove()
+    }
+
+    interface Marker : Feature<GeoCoordinate>
 }
 
 expect class MapView(context: ElementContext) : NativeElement {
@@ -67,3 +77,21 @@ expect class MapView(context: ElementContext) : NativeElement {
 
 inline fun ElementWriter.mapView(setup: MapView.() -> Unit) =
     write(MapView(context), setup)
+
+
+/** Creates a reactive map feature */
+fun <T : Map.Feature<D>, D : Any> MapView.feature(data: Reactive<D?>, createFeature: MapView.(data: D) -> T) {
+    val feature = Signal<T?>(null)
+
+    reactive(reentrancyLimit = 1) {
+        val data = data()
+        if (data == null) {
+            feature()?.remove()
+            feature.value = null
+            return@reactive
+        }
+
+        feature()?.update(data)
+        if (feature() == null) feature.value = createFeature(data)
+    }
+}
