@@ -1,6 +1,8 @@
 package com.lightningkite.mppexampleapp.internal
 
+import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.map.Map
 import com.lightningkite.kiteui.map.mapView
 import com.lightningkite.kiteui.models.Icon
@@ -32,10 +34,16 @@ object MapViewTestPage : Page {
             h1("Map View")
 
             sizeConstraints(height = 40.rem).frame {
-                val globe = Signal(false)
+                val useBaseDemoTiles = Signal(true)
 
                 mapView {
-                    ::style { Map.Style.Url(if (globe()) "https://demotiles.maplibre.org/globe.json" else "https://demotiles.maplibre.org/style.json") }
+                    ::style {
+                        // maplibre on mobile currently (unfortunately) only supports the Mercator projection
+                        val url = if (useBaseDemoTiles()) "https://demotiles.maplibre.org/style.json" else if (Platform.current == Platform.Web)
+                            "https://demotiles.maplibre.org/globe.json"
+                        else "https://tiles.openfreemap.org/styles/bright"
+                        Map.Style.Url(url)
+                    }
                     center = GeoCoordinate(90.0, 90.0)
                 }
 
@@ -43,8 +51,8 @@ object MapViewTestPage : Page {
                     ignoreInteraction = true
 
                     atTopStart.card.button {
-                        icon { ::source { if (globe()) Icon.map else Icon.globe } }
-                        onClick { globe.modify { !it } }
+                        icon { ::source { if (useBaseDemoTiles() && Platform.current == Platform.Web) Icon.globe else Icon.map } }
+                        onClick { useBaseDemoTiles.modify { !it } }
                     }
                 }
             }
