@@ -73,6 +73,8 @@ expect class MapView(context: ElementContext) : NativeElement {
         suspend fun flyTo(options: Map.FlyToOptions)
     }
     val camera: Camera
+
+    fun createMarker(position: GeoCoordinate): Map.Marker
 }
 
 inline fun ElementWriter.mapView(setup: MapView.() -> Unit) =
@@ -80,8 +82,8 @@ inline fun ElementWriter.mapView(setup: MapView.() -> Unit) =
 
 
 /** Creates a reactive map feature */
-fun <T : Map.Feature<D>, D : Any> MapView.feature(data: Reactive<D?>, createFeature: MapView.(data: D) -> T) {
-    val feature = Signal<T?>(null)
+fun <FEATURE : Map.Feature<D>, D : Any> MapView.feature(data: Reactive<D?>, createFeature: MapView.(data: D) -> FEATURE) {
+    val feature = Signal<FEATURE?>(null)
 
     reactive(reentrancyLimit = 1) {
         val data = data()
@@ -95,3 +97,30 @@ fun <T : Map.Feature<D>, D : Any> MapView.feature(data: Reactive<D?>, createFeat
         if (feature() == null) feature.value = createFeature(data)
     }
 }
+
+/** Creates a reactive set of map features */
+fun <ITEM, FEATURE : Map.Feature<D>, D : Any> MapView.featureMany(
+    items: Reactive<Collection<ITEM>>,
+    toId: (it: ITEM) -> Int,
+    toData: (item: ITEM) -> D,
+    createFeature: MapView.(data: D) -> FEATURE
+) {
+    val features = Signal<Set<Pair<Int, Map.Feature<D>>>>(emptySet())
+
+    reactive(reentrancyLimit = 1) {
+        val items = items()
+        val currentMarkers = features()
+
+        val newPoints = items.filter { !currentMarkers.map { it.first }.contains(toId(it)) }
+        val newMarkers = newPoints.map { toId(it) to createFeature(toData(it)) }
+
+        val removeMarkers = currentMarkers.filter { !items.map(toId).contains(it.first) }
+        removeMarkers.forEach { it.second.remove() }
+
+        features.value = currentMarkers.filter { items.map(toId).contains(it.first) }.toSet() + newMarkers
+    }
+}
+
+fun MapView.mark(data: Reactive<GeoCoordinate?>) = feature(data) { createMarker(it) }
+fun <T> MapView.markMany(items: Reactive<Collection<T>>, toId: (it: T) -> Int, toData: (it: T) -> GeoCoordinate) =
+    featureMany(items, toId, toData) { createMarker(it) }

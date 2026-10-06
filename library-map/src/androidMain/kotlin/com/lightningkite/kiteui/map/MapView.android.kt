@@ -66,6 +66,10 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 
     actual val camera = Camera(this)
 
+    actual fun createMarker(position: GeoCoordinate): Map.Marker {
+        TODO("Not yet implemented")
+    }
+
     init {
         onRemove { mapState.close() }
     }

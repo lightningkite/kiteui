@@ -50,6 +50,22 @@ external class Map(options: Options) {
     }
 }
 
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L288 */
+external class Marker(options: Options? = definedExternally) {
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L391 */
+    fun addTo(map: Map): Marker
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L428 */
+    fun remove(): Marker
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L490 */
+    fun setLngLat(lngLat: LngLat): Marker
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L104 */
+    @JsPlainObject
+    interface Options
+}
+
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/camera.ts#L232 */
 @JsPlainObject
 external interface AnimationOptions {

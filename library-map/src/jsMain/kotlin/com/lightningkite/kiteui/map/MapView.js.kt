@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.map
 
 import com.lightningkite.kiteui.map.maplibre.EaseToOptions
 import com.lightningkite.kiteui.map.maplibre.FlyToOptions
+import com.lightningkite.kiteui.map.maplibre.Marker
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.map.maplibre.Map as MapLibreMap
@@ -11,6 +12,7 @@ import com.lightningkite.reactive.core.LateInitSignal
 import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.browser.document
+import kotlinx.coroutines.launch
 
 actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
     val map = LateInitSignal<MapLibreMap>()
@@ -35,25 +37,46 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 
     actual value class Camera(val view: MapView) {
         actual suspend fun easeTo(options: Map.EaseToOptions) {
-            view.map.awaitOnce().easeTo(EaseToOptions(
-                center = options.center?.toLngLat(),
-                zoom = options.zoom,
-                bearing = options.bearing,
-                duration = options.duration.inWholeMilliseconds.toDouble(),
-            ))
+            view.map.awaitOnce().easeTo(
+                EaseToOptions(
+                    center = options.center?.toLngLat(),
+                    zoom = options.zoom,
+                    bearing = options.bearing,
+                    duration = options.duration.inWholeMilliseconds.toDouble(),
+                )
+            )
         }
 
         actual suspend fun flyTo(options: Map.FlyToOptions) {
-            view.map.awaitOnce().flyTo(FlyToOptions(
-                center = options.center?.toLngLat(),
-                zoom = options.zoom,
-                bearing = options.bearing,
-                duration = options.duration.inWholeMilliseconds.toDouble(),
-            ))
+            view.map.awaitOnce().flyTo(
+                FlyToOptions(
+                    center = options.center?.toLngLat(),
+                    zoom = options.zoom,
+                    bearing = options.bearing,
+                    duration = options.duration.inWholeMilliseconds.toDouble(),
+                )
+            )
         }
     }
 
     actual val camera = Camera(this)
+
+    actual fun createMarker(position: GeoCoordinate) = object : Map.Marker {
+        val raw = Marker()
+
+        init {
+            raw.setLngLat(position.toLngLat())
+            launch { raw.addTo(map.awaitOnce()) }
+        }
+
+        override fun update(data: GeoCoordinate) {
+            raw.setLngLat(data.toLngLat())
+        }
+
+        override fun remove() {
+            raw.remove()
+        }
+    }
 
     init {
         setWorkerUrl(maplibreWorkerUrl)

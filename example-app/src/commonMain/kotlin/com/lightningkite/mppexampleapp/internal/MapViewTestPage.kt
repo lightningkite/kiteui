@@ -5,6 +5,8 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.map.Map
 import com.lightningkite.kiteui.map.mapView
+import com.lightningkite.kiteui.map.mark
+import com.lightningkite.kiteui.map.markMany
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
@@ -33,6 +35,8 @@ object MapViewTestPage : Page {
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
         unpadded.frame {
             val useBaseDemoTiles = Signal(true)
+            val markerPosition = Signal(GeoCoordinate(0.0, 0.0))
+            val markerCollection = Signal(listOf<Pair<Int, GeoCoordinate>>())
 
             val map = mapView {
                 ::style style@{
@@ -41,6 +45,9 @@ object MapViewTestPage : Page {
                     // MapLibre on mobile currently (unfortunately) only supports the Mercator projection, so I'm using a separate debug style instead
                     Map.Style.Debug
                 }
+
+                mark(markerPosition)
+                markMany(markerCollection, { it.first }) { it.second }
             }
 
             atTopStart.padded.row {
@@ -67,6 +74,21 @@ object MapViewTestPage : Page {
                             )
                         )
                     }
+                }
+
+                card.button {
+                    icon(Icon.globeLocationPin, "Test Update Marker")
+                    onClick { markerPosition.value = Random.nextGeoCoordinate() }
+                }
+
+                card.button {
+                    icon(Icon.addLocationAlt, "Add Marker")
+                    onClick { markerCollection.modify { it + (it.size to Random.nextGeoCoordinate()) } }
+                }
+
+                card.button {
+                    icon(Icon.wrongLocation, "Remove Marker")
+                    onClick { markerCollection.modify { it.drop(1) } }
                 }
             }
         }
@@ -117,4 +139,37 @@ val Icon.Companion.travel
         960,
         960,
         listOf("m393-119-95-179-180-96 59-59 148 27 122-121-327-139 72-72 396 69 133-133q21-21 50.5-21t50.5 21q21 21 21 50.5T822-721L689-588l69 396-72 72-139-327-121 122 26 147-59 59Z")
+    )
+
+val Icon.Companion.globeLocationPin
+    get() = Icon(
+        1.5.rem,
+        1.5.rem,
+        0,
+        -960,
+        960,
+        960,
+        listOf("M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q79 0 149.5 29T754-772q54 50 87 118.5T879-506q-15-9-30.5-15.5T816-533q-14-90-69.5-160.5T607-799v18q0 35-24 61t-59 26h-87v87q0 17-13.5 28T393-568h-83v88h297q-32 31-49.5 71T540-324q0 75 31.5 115.5T650-118q-40 19-82.5 28.5T480-80Zm-43-61v-82q-35 0-59-26t-24-61v-44L149-559q-5 20-7 39.5t-2 39.5q0 130 84.5 227T437-141Zm365.5-136.5Q820-295 820-320t-17-42.5Q786-380 761-380q-26 0-43.5 17.5T700-320q0 25 17.5 42.5T760-260q25 0 42.5-17.5ZM760-80q-3 0-16-11l-4-7q-22-38-55.5-67.5T627-232q-14-20-20.5-43.5T600-324q0-66 47-111t113-45q66 0 113 45t47 111q0 25-6.5 48.5T893-232q-24 37-57.5 66.5T780-98l-4 7q-2 5-6.5 8t-9.5 3Z")
+    )
+
+val Icon.Companion.addLocationAlt
+    get() = Icon(
+        1.5.rem,
+        1.5.rem,
+        0,
+        -960,
+        960,
+        960,
+        listOf("M480-80Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q17 0 32.5 1.5T544-874v62q-15-4-31-6t-33-2q-109.42 0-184.71 75.1Q220-669.79 220-552q0 75 65 173.5T480-159q133-121 196.5-219.5T740-552q0-8-.5-16t-1.5-16h61q1 8 1 16v16q0 100-79.5 217.5T480-80Zm49.5-430.59q20.5-20.59 20.5-49.5t-20.59-49.41q-20.59-20.5-49.5-20.5t-49.41 20.59q-20.5 20.59-20.5 49.5t20.59 49.41q20.59 20.5 49.5 20.5t49.41-20.59ZM480-560Zm252-84h60v-128h128v-60H792v-128h-60v128H604v60h128v128Z")
+    )
+
+val Icon.Companion.wrongLocation
+    get() = Icon(
+        1.5.rem,
+        1.5.rem,
+        0,
+        -960,
+        960,
+        960,
+        listOf("M480-80Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q16 0 32 2t32 5v61q-15.67-4-31.33-6-15.67-2-32.67-2-109.42 0-184.71 75.1Q220-669.79 220-552q0 75 65 173.5T480-159q133-121 196.5-219.5T740-552q0-8-.5-16t-1.5-16h60q1 8 1.5 16t.5 16q0 100-79.5 217.5T480-80Zm0-433Zm195-139 84-84 84 84 42-42-84-84 84-84-42-42-84 84-84-84-42 42 84 84-84 84 42 42ZM529.5-510.59q20.5-20.59 20.5-49.5t-20.59-49.41q-20.59-20.5-49.5-20.5t-49.41 20.59q-20.5 20.59-20.5 49.5t20.59 49.41q20.59 20.5 49.5 20.5t49.41-20.59Z")
     )
