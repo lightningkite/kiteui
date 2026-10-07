@@ -32,6 +32,9 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         actual var zoom by lateInit(PreInit::zoom, MapLibreMap::getZoom, MapLibreMap::setZoom)
         actual var minZoom by lateInit(PreInit::minZoom, MapLibreMap::getMinZoom, MapLibreMap::setMinZoom)
         actual var maxZoom by lateInit(PreInit::maxZoom, MapLibreMap::getMaxZoom, MapLibreMap::setMaxZoom)
+        actual var pitch by lateInit(PreInit::pitch, MapLibreMap::getPitch, MapLibreMap::setPitch)
+        actual var minPitch by lateInit(PreInit::minPitch, MapLibreMap::getMinPitch, MapLibreMap::setMinPitch)
+        actual var maxPitch by lateInit(PreInit::maxPitch, MapLibreMap::getMaxPitch, MapLibreMap::setMaxPitch)
 
         actual suspend fun easeTo(options: Map.EaseToOptions) {
             map.awaitOnce().easeTo(
@@ -39,6 +42,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
                     center = options.center?.toLngLat(),
                     zoom = options.zoom,
                     bearing = options.bearing,
+                    pitch = options.pitch,
                     duration = options.duration.inWholeMilliseconds.toDouble(),
                 )
             )
@@ -50,6 +54,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
                     center = options.center?.toLngLat(),
                     zoom = options.zoom,
                     bearing = options.bearing,
+                    pitch = options.pitch,
                     duration = options.duration.inWholeMilliseconds.toDouble(),
                 )
             )
@@ -83,11 +88,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 
         injectMapLibreCss()
 
-        native.onElement {
-            val maplibreMap = MapLibreMap(preInit.toOptions(it))
-            map.value = maplibreMap
-            console.log("Actual values: ", maplibreMap.getZoom(), maplibreMap.getMinZoom(), maplibreMap.getMaxZoom())
-        }
+        native.onElement { map.value = MapLibreMap(preInit.toOptions(it)) }
     }
 }
 
@@ -101,17 +102,21 @@ data class PreInit(
     var zoom: Double = 0.0,
     var minZoom: Double? = null,
     var maxZoom: Double? = null,
+    var pitch: Double = 0.0,
+    var minPitch: Double? = null,
+    var maxPitch: Double? = null,
 ) {
     fun toOptions(container: DOMElement): MapLibreMap.Options {
-        console.log("zooms", zoom, minZoom, maxZoom)
-
         return MapLibreMap.Options(
             container = container,
             style = style?.toUnion(),
             center = center.toLngLat(),
             zoom = zoom,
-            minZoom = minZoom ?: JsUndefined, // there is a MapLibre bug where null is incorrectly treated differently to undefined
-            maxZoom = maxZoom ?: JsUndefined, // for these two fields, and only during initialization. Don't ask how I know...
+            minZoom = minZoom ?: JsUndefined,
+            maxZoom = maxZoom ?: JsUndefined,
+            pitch = pitch,
+            minPitch = minPitch ?: JsUndefined,
+            maxPitch = maxPitch ?: JsUndefined,
         )
     }
 }
@@ -124,6 +129,7 @@ private class LateInit<T>(
 ) : ReadWriteProperty<Any, T> {
     override fun getValue(thisRef: Any, property: KProperty<*>) =
         mapView.map.state.getOrNull()?.run { getter() } ?: preInitProp.get(mapView.preInit)
+
     override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
         preInitProp.set(mapView.preInit, value)
         mapView.map.state.getOrNull()?.setter(value)

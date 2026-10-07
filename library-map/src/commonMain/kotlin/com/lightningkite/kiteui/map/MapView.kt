@@ -27,6 +27,7 @@ object Map {
         val center: GeoCoordinate?
         val zoom: Double?
         val bearing: Double?
+        val pitch: Double?
     }
 
     interface AnimationOptions {
@@ -44,6 +45,7 @@ object Map {
         override val center: GeoCoordinate? = null,
         override val zoom: Double? = null,
         override val bearing: Double? = null,
+        override val pitch: Double? = null,
         override val duration: Duration,
         override val easing: AnimationOptions.Easing = AnimationOptions.Easing.Default,
     ) : CameraOptions, AnimationOptions
@@ -52,6 +54,7 @@ object Map {
         override val center: GeoCoordinate? = null,
         override val zoom: Double? = null,
         override val bearing: Double? = null,
+        override val pitch: Double? = null,
         override val duration: Duration,
         override val easing: AnimationOptions.Easing = AnimationOptions.Easing.Default,
     ) : CameraOptions, AnimationOptions
@@ -72,6 +75,9 @@ expect class MapView(context: ElementContext) : NativeElement {
         var zoom: Double
         var minZoom: Double?
         var maxZoom: Double?
+        var pitch: Double
+        var minPitch: Double?
+        var maxPitch: Double?
 
         suspend fun easeTo(options: Map.EaseToOptions)
         suspend fun flyTo(options: Map.FlyToOptions)

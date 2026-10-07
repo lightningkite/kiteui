@@ -29,6 +29,7 @@ import org.maplibre.compose.camera.CubicBezier
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.expressions.value.SymbolAnchor
+import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.map.CameraConstraints
 import org.maplibre.compose.map.DefaultMapRuntime
@@ -95,13 +96,29 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         actual var minZoom: Double?
             get() = cameraConstraints.minZoom
             set(value) {
-                cameraConstraints = cameraConstraints.copy(minZoom = value ?: 0.0)
+                cameraConstraints = cameraConstraints.copy(minZoom = value ?: CameraConstraints().minZoom)
             }
 
         actual var maxZoom: Double?
             get() = cameraConstraints.maxZoom
             set(value) {
-                cameraConstraints = cameraConstraints.copy(maxZoom = value ?: 22.0)
+                cameraConstraints = cameraConstraints.copy(maxZoom = value ?: CameraConstraints().maxZoom)
+            }
+
+        actual var pitch: Double
+            get() = mapState.cameraPosition.tilt
+            set(value) = mapState.setCameraPosition(mapState.cameraPosition.copy(tilt = value))
+
+        actual var minPitch: Double?
+            get() = cameraConstraints.minPitch
+            set(value) {
+                cameraConstraints = cameraConstraints.copy(minPitch = value ?: CameraConstraints().minPitch)
+            }
+
+        actual var maxPitch: Double?
+            get() = cameraConstraints.maxPitch
+            set(value) {
+                cameraConstraints = cameraConstraints.copy(maxPitch = value ?: CameraConstraints().maxPitch)
             }
 
         actual suspend fun easeTo(options: Map.EaseToOptions) {
@@ -185,7 +202,7 @@ fun Map.CameraOptions.toCameraUpdate() = CameraUpdate(
     target = center?.toPosition(),
     zoom = zoom,
     bearing = bearing,
-    tilt = null,
+    tilt = pitch,
     padding = null,
 )
 

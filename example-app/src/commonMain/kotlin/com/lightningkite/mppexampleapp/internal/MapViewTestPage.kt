@@ -58,9 +58,28 @@ object MapViewTestPage : Page {
                     onClick { useBaseDemoTiles.modify { !it } }
                 }
 
+
                 card.button {
-                    icon(Icon.travelExplore, "Test Manual Center")
-                    onClick { map.camera.center = Random.nextGeoCoordinate() }
+                    icon(Icon.globeLocationPin, "Test Update Marker")
+                    onClick {
+                        val newPosition = Random.nextGeoCoordinate()
+                        markerPosition.value = newPosition
+                        map.camera.center = newPosition
+                    }
+                }
+
+                card.button {
+                    icon(Icon.travelExplore, "Test Ease To")
+                    onClick {
+                        map.camera.easeTo(
+                            Map.EaseToOptions(
+                                center = Random.nextGeoCoordinate(),
+                                zoom = Random.nextDouble(0.0, 5.0),
+                                pitch = Random.nextDouble(0.0, 60.0),
+                                duration = Random.nextDouble(0.5, 3.0).seconds,
+                            )
+                        )
+                    }
                 }
 
                 card.button {
@@ -69,19 +88,11 @@ object MapViewTestPage : Page {
                         map.camera.flyTo(
                             Map.FlyToOptions(
                                 center = Random.nextGeoCoordinate(),
-                                zoom = Random.nextDouble(0.0, 5.0),
-                                duration = Random.nextDouble(0.5, 3.0).seconds,
+                                zoom = Random.nextDouble(5.0, 10.0),
+                                pitch = Random.nextDouble(0.0, 60.0),
+                                duration = Random.nextDouble(5.0, 8.0).seconds,
                             )
                         )
-                    }
-                }
-
-                card.button {
-                    icon(Icon.globeLocationPin, "Test Update Marker")
-                    onClick {
-                        val newPosition = Random.nextGeoCoordinate()
-                        markerPosition.value = newPosition
-                        map.camera.easeTo(Map.EaseToOptions(center = newPosition, duration = 1.seconds))
                     }
                 }
 

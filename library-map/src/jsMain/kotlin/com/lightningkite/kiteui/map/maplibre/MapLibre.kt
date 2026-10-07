@@ -29,6 +29,12 @@ external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1130 */
     fun setZoom(zoom: Double, eventData: Any? = definedExternally)
 
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1308 */
+    fun getPitch(): Double
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1317 */
+    fun setPitch(pitch: Double, eventData: Any? = definedExternally)
+
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1480 */
     fun easeTo(options: EaseToOptions, eventData: Any? = definedExternally): Map
 
@@ -46,6 +52,18 @@ external class Map(options: Options) {
 
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1827 */
     fun setMaxZoom(maxZoom: Double? = definedExternally)
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1902 */
+    fun getMinPitch(): Double
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1871 */
+    fun setMinPitch(minPitch: Double? = definedExternally)
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1946 */
+    fun getMaxPitch(): Double
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1915 */
+    fun setMaxPitch(maxPitch: Double? = definedExternally)
 
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2338 */
     fun on(type: String, listener: Listener<Any>): Subscription
@@ -68,6 +86,9 @@ external class Map(options: Options) {
         val zoom: Double?
         val minZoom: Double?
         val maxZoom: Double?
+        val pitch: Double?
+        val minPitch: Double?
+        val maxPitch: Double?
     }
 }
 
@@ -92,6 +113,7 @@ external class Marker(options: Options? = definedExternally) {
 external interface AnimationOptions {
     val duration: Double?
     val easing: ((_: Double) -> Double)?
+
     //    val offset: PointLike?
     val essential: Boolean?
 }
