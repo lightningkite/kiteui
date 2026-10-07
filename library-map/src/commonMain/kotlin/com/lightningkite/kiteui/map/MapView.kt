@@ -30,6 +30,7 @@ expect class MapView(context: ElementContext) : NativeElement {
 
         suspend fun easeTo(options: Map.EaseToOptions)
         suspend fun flyTo(options: Map.FlyToOptions)
+        fun stopAnimation()
     }
     val camera: Camera
 

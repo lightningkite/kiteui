@@ -41,6 +41,9 @@ external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1517 */
     fun flyTo(options: FlyToOptions, eventData: Any? = definedExternally): Map
 
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1521 */
+    fun stop(): Map
+
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1807 */
     fun getMinZoom(): Double
 

@@ -21,11 +21,13 @@ import com.lightningkite.kiteui.views.direct.padded
 import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.scrollingHorizontally
 import com.lightningkite.kiteui.views.direct.unpadded
+import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.modify
 import com.lightningkite.services.data.GeoCoordinate
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
@@ -80,13 +82,21 @@ object MapViewTestPage : Page {
                     onClick { launch { map.camera.flyTo(Random.nextFlyToOptions()) } }
                 }
 
+                val multipartFlyToJob = Signal<Job?>(null)
                 card.button {
                     icon(Icon.planeContrails, "Test Multipart flyTo")
                     onClick {
-                        map.camera.flyTo(Random.nextFlyToOptions())
-                        map.camera.flyTo(Random.nextFlyToOptions())
-                        map.camera.flyTo(Random.nextFlyToOptions())
+                        multipartFlyToJob.value = launch {
+                            while (true) {
+                                map.camera.flyTo(Random.nextFlyToOptions())
+                            }
+                        }
                     }
+                }
+
+                card.button {
+                    icon(Icon.airplaneModeInactive, "Cancel Animation")
+                    onClick { map.camera.stopAnimation(); multipartFlyToJob()?.cancel() }
                 }
 
                 card.button {
@@ -115,15 +125,17 @@ fun Random.nextGeoCoordinate() = GeoCoordinate(nextDouble(-90.0, 90.0), nextDoub
 fun Random.nextEaseToOptions() = Map.EaseToOptions(
     center = nextGeoCoordinate(),
     zoom = nextDouble(0.0, 5.0),
+    bearing = nextDouble(0.0, 360.0),
     pitch = nextDouble(0.0, 60.0),
     duration = nextDouble(0.5, 3.0).seconds,
 )
 
 fun Random.nextFlyToOptions() = Map.FlyToOptions(
     center = nextGeoCoordinate(),
-    zoom = nextDouble(5.0, 10.0),
+    zoom = nextDouble(3.0, 8.0),
+    bearing = nextDouble(0.0, 360.0),
     pitch = nextDouble(0.0, 60.0),
-    duration = nextDouble(3.0, 5.0).seconds,
+    duration = nextDouble(2.0, 4.0).seconds,
 )
 
 val Icon.Companion.globe
@@ -212,4 +224,15 @@ val Icon.Companion.planeContrails
         960,
         960,
         listOf("m371-80-42-43 173-173 43 42L371-80Zm207 0-43-42 154-154 42 43L578-80ZM123-534l-43-43 153-153 43 43-153 153Zm0 206-43-42 174-174 43 42-174 174Zm648-26-99-247-97 98 20 97-34 34-68-121-121-68 34-34 98 20 97-97-247-99 45-42 297 47 98-99q7-7 16-10.5t19-3.5q10 0 19 3.5t17 11.5q8 7 11.5 16t3.5 18q0 10-4 19t-12 17l-98 98 47 297-42 45Z")
+    )
+
+val Icon.Companion.airplaneModeInactive
+    get() = Icon(
+        1.5.rem,
+        1.5.rem,
+        0,
+        -960,
+        960,
+        960,
+        listOf("m880-288-232-94-239-239v-188q0-29 21-50t50-21q29 0 50 21t21 50v188l329 231v102ZM480-139 285-80v-83l124-86v-172L80-288v-102l230-162L56-806l42-42L848-97l-42 41-255-255v62l123 86v83l-194-59Z")
     )

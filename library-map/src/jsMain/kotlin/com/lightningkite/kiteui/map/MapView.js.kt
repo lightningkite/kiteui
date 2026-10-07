@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.dom.DOMElement
 import com.lightningkite.kiteui.map.maplibre.EaseToOptions
 import com.lightningkite.kiteui.map.maplibre.FlyToOptions
 import com.lightningkite.kiteui.map.maplibre.Marker
+import com.lightningkite.kiteui.map.maplibre.Subscription
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.map.maplibre.Map as MapLibreMap
@@ -14,6 +15,8 @@ import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.browser.document
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 import kotlin.reflect.KMutableProperty1
 
 actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
@@ -35,27 +38,39 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         actual var maxPitch by lateInit(PreInit::maxPitch, MapLibreMap::getMaxPitch, MapLibreMap::setMaxPitch)
 
         actual suspend fun easeTo(options: Map.EaseToOptions) {
-            map.awaitOnce().easeTo(
-                EaseToOptions(
-                    center = options.center?.toLngLat(),
-                    zoom = options.zoom,
-                    bearing = options.bearing,
-                    pitch = options.pitch,
-                    duration = options.duration.inWholeMilliseconds.toDouble(),
+            val map = map.awaitOnce()
+            map.awaitAnimation { eventData ->
+                map.easeTo(
+                    EaseToOptions(
+                        center = options.center?.toLngLat(),
+                        zoom = options.zoom,
+                        bearing = options.bearing,
+                        pitch = options.pitch,
+                        duration = options.duration.inWholeMilliseconds.toDouble(),
+                    ),
+                    eventData,
                 )
-            )
+            }
         }
 
         actual suspend fun flyTo(options: Map.FlyToOptions) {
-            map.awaitOnce().flyTo(
-                FlyToOptions(
-                    center = options.center?.toLngLat(),
-                    zoom = options.zoom,
-                    bearing = options.bearing,
-                    pitch = options.pitch,
-                    duration = options.duration.inWholeMilliseconds.toDouble(),
+            val map = map.awaitOnce()
+            map.awaitAnimation { eventData ->
+                map.flyTo(
+                    FlyToOptions(
+                        center = options.center?.toLngLat(),
+                        zoom = options.zoom,
+                        bearing = options.bearing,
+                        pitch = options.pitch,
+                        duration = options.duration.inWholeMilliseconds.toDouble(),
+                    ),
+                    eventData,
                 )
-            )
+            }
+        }
+
+        actual fun stopAnimation() {
+            launch { map.awaitOnce().stop() }
         }
     }
 
@@ -91,6 +106,32 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 }
 
 
+
+private var nextAnimationId = 0
+
+/**
+ * MapLibre fires "moveend" when an animation finishes or is interrupted (by [MapLibreMap.stop], a new
+ * animation, or user interaction), merging the animation's eventData into the event. We tag each
+ * animation with a unique id so we only resume on the "moveend" belonging to this animation.
+ */
+private suspend fun MapLibreMap.awaitAnimation(start: (eventData: dynamic) -> Unit) =
+    suspendCancellableCoroutine { cont ->
+        val id = nextAnimationId++
+        val eventData: dynamic = js("({})")
+        eventData.kiteuiAnimationId = id
+        var subscription: Subscription? = null
+        subscription = on("moveend") { event ->
+            if (event.asDynamic().kiteuiAnimationId == id) {
+                subscription?.unsubscribe()
+                if (cont.isActive) cont.resume(Unit)
+            }
+        }
+        cont.invokeOnCancellation {
+            subscription?.unsubscribe()
+            stop()
+        }
+        start(eventData)
+    }
 
 internal fun PreInit.toOptions(container: DOMElement): MapLibreMap.Options {
     return MapLibreMap.Options(

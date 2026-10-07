@@ -21,6 +21,7 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
 import kotlin.coroutines.resume
 import kotlin.reflect.KMutableProperty1
+import kotlin.run
 import org.maplibre.android.maps.MapView as MapLibreMapView
 
 actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
@@ -61,11 +62,18 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
             }
         }
 
-        actual suspend fun flyTo(options: Map.FlyToOptions) {
-            val map = map.awaitOnce()
-            map.awaitAnimation {
-                map.animateCamera(options.toCameraUpdate(map), options.duration.inWholeMilliseconds.toInt(), it)
-            }
+        actual suspend fun flyTo(options: Map.FlyToOptions) = lateRun {
+            animateCamera(options.toCameraUpdate(this), options.duration.inWholeMilliseconds.toInt())
+        }
+
+//        actual suspend fun flyTo(options: Map.FlyToOptions) {
+//            map.awaitOnce()
+//                .let { it.animateCamera(options.toCameraUpdate(it), options.duration.inWholeMilliseconds.toInt()) }
+//            map.awaitOnce().fly
+//        }
+
+        actual fun stopAnimation() {
+            launch { map.awaitOnce().cancelTransitions() }
         }
     }
 
@@ -129,7 +137,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
     }
 }
 
-private suspend fun MapLibreMap.awaitAnimation(start: (MapLibreMap.CancelableCallback) -> Unit) =
+private suspend fun MapLibreMap.awaitAnimation(start: (MapLibreMap.CancelableCallback) -> Unit) {
     suspendCancellableCoroutine { cont ->
         start(object : MapLibreMap.CancelableCallback {
             override fun onCancel() {
@@ -142,13 +150,13 @@ private suspend fun MapLibreMap.awaitAnimation(start: (MapLibreMap.CancelableCal
         })
         cont.invokeOnCancellation { cancelTransitions() }
     }
+}
 
 private fun Map.Style?.toBuilder(): Style.Builder = when (this) {
     is Map.Style.Json -> Style.Builder().fromJson(json)
     is Map.Style.Url -> Style.Builder().fromUri(url)
     null -> Style.Builder().fromJson("""{"version":8,"sources":{},"layers":[]}""")
 }
-
 
 
 fun GeoCoordinate.toLatLng() = LatLng(latitude, longitude)
@@ -163,7 +171,6 @@ private fun Map.CameraOptions.toCameraUpdate(map: MapLibreMap): CameraUpdate =
             pitch?.let { tilt(it) }
         }.build()
     )
-
 
 
 internal fun PreInit.toOptions(map: MapLibreMap) {
@@ -184,3 +191,9 @@ private fun <T> MapView.lateInit(
     getter: MapLibreMap.() -> T,
     setter: MapLibreMap.(T) -> Unit,
 ) = LateInit(this, { map.state }, preInitProp, getter, setter)
+
+
+private suspend fun <T> MapView.lateRun(run: MapLibreMap.() -> T): T = map.awaitOnce().run()
+private fun MapView.lateRun(run: MapLibreMap.() -> Unit) {
+    map.state.getOrNull()?.run() ?: launch { map.awaitOnce().run() }
+}
