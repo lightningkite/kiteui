@@ -4,6 +4,7 @@ import android.view.View
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -29,6 +30,7 @@ import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.expressions.value.SymbolAnchor
 import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.map.CameraConstraints
 import org.maplibre.compose.map.DefaultMapRuntime
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.overlay.MapOverlay
@@ -42,18 +44,6 @@ import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 
 actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
-    actual var style: Map.Style? = Map.Style.Demo
-        set(value) {
-            field = value
-            mapState.style.asMutable!!.baseStyle = value?.toBaseStyle() ?: BaseStyle.Empty
-        }
-
-    actual var center: GeoCoordinate
-        get() = mapState.cameraPosition.target.let { GeoCoordinate(it.latitude, it.longitude) }
-        set(value) {
-            mapState.setCameraPosition(mapState.cameraPosition.copy(target = value.toPosition()))
-        }
-
     private val markers = mutableStateListOf<AndroidMarker>()
 
     private inner class AndroidMarker(position: GeoCoordinate) : Map.Marker {
@@ -69,7 +59,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
     }
 
     val mapState = DefaultMapRuntime.instance.createMapState(
-        baseStyle = style?.toBaseStyle() ?: BaseStyle.Empty,
+        baseStyle = Map.Style.Demo.toBaseStyle(),
         cameraPosition = CameraPosition(target = GeoCoordinate(0.0, 0.0).toPosition())
     ) {
         val markerSource = rememberGeoJsonSource(
@@ -85,11 +75,38 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         )
     }
 
-    @JvmInline
-    actual value class Camera(val view: MapView) {
+    var cameraConstraints by mutableStateOf(CameraConstraints())
+
+    actual var style: Map.Style?
+        get() = mapState.style.baseStyle.toMapStyle()
+        set(value) {
+            mapState.style.asMutable!!.baseStyle = value.toBaseStyle()
+        }
+
+    actual inner class Camera {
+        actual var center
+            get() = mapState.cameraPosition.target.toGeoCoordinate()
+            set(value) = mapState.setCameraPosition(mapState.cameraPosition.copy(target = value.toPosition()))
+
+        actual var zoom
+            get() = mapState.cameraPosition.zoom
+            set(value) = mapState.setCameraPosition(mapState.cameraPosition.copy(zoom = value))
+
+        actual var minZoom: Double?
+            get() = cameraConstraints.minZoom
+            set(value) {
+                cameraConstraints = cameraConstraints.copy(minZoom = value ?: 0.0)
+            }
+
+        actual var maxZoom: Double?
+            get() = cameraConstraints.maxZoom
+            set(value) {
+                cameraConstraints = cameraConstraints.copy(maxZoom = value ?: 22.0)
+            }
+
         actual suspend fun easeTo(options: Map.EaseToOptions) {
-            view.launch {
-                view.mapState.animateCamera(
+            launch {
+                mapState.animateCamera(
                     options.toCameraUpdate(),
                     CameraAnimation.Ease(
                         duration = options.duration,
@@ -100,8 +117,8 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         }
 
         actual suspend fun flyTo(options: Map.FlyToOptions) {
-            view.launch {
-                view.mapState.animateCamera(
+            launch {
+                mapState.animateCamera(
                     options.toCameraUpdate(),
                     CameraAnimation.Fly(
                         duration = options.duration,
@@ -112,7 +129,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         }
     }
 
-    actual val camera = Camera(this)
+    actual val camera = Camera()
 
     actual fun createMarker(position: GeoCoordinate): Map.Marker = AndroidMarker(position).also { markers += it }
 
@@ -123,7 +140,10 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
     override val native: View = ComposeView(context.activity).apply {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindowOrReleasedFromPool)
         setContent {
-            MaplibreMap(state = mapState) { include(MapOverlay.AttributionOnly) }
+            MaplibreMap(
+                state = mapState,
+                cameraConstraints = cameraConstraints,
+            ) { include(MapOverlay.AttributionOnly) }
         }
     }
 }
@@ -147,12 +167,19 @@ private object DefaultMarkerPin : Painter() {
     }
 }
 
-fun Map.Style.toBaseStyle() = when (this) {
+fun Map.Style?.toBaseStyle() = when (this) {
     is Map.Style.Json -> BaseStyle.Json("")
     is Map.Style.Url -> BaseStyle.Uri(url)
+    null -> BaseStyle.Empty
+}
+
+fun BaseStyle.toMapStyle() = when (this) {
+    is BaseStyle.Json -> Map.Style.Json(json)
+    is BaseStyle.Uri -> Map.Style.Url(uri)
 }
 
 fun GeoCoordinate.toPosition() = Position(longitude, latitude)
+fun Position.toGeoCoordinate() = GeoCoordinate(latitude, longitude)
 
 fun Map.CameraOptions.toCameraUpdate() = CameraUpdate(
     target = center?.toPosition(),

@@ -13,7 +13,7 @@ import kotlin.time.Duration
 object Map {
     sealed interface Style {
         data class Url(val url: String) : Style
-        data class Json(val json: kotlinx.serialization.json.Json): Style
+        data class Json(val json: String): Style
 
         companion object {
             val Demo = Url("https://demotiles.maplibre.org/style.json")
@@ -66,9 +66,13 @@ object Map {
 
 expect class MapView(context: ElementContext) : NativeElement {
     var style: Map.Style?
-    var center: GeoCoordinate
 
-    value class Camera(private val view: MapView) {
+    inner class Camera {
+        var center: GeoCoordinate
+        var zoom: Double
+        var minZoom: Double?
+        var maxZoom: Double?
+
         suspend fun easeTo(options: Map.EaseToOptions)
         suspend fun flyTo(options: Map.FlyToOptions)
     }

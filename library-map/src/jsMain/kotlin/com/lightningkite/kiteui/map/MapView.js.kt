@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.map
 
+import com.lightningkite.kiteui.dom.DOMElement
 import com.lightningkite.kiteui.map.maplibre.EaseToOptions
 import com.lightningkite.kiteui.map.maplibre.FlyToOptions
 import com.lightningkite.kiteui.map.maplibre.Marker
@@ -13,31 +14,27 @@ import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.browser.document
 import kotlinx.coroutines.launch
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty
 
 actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
     val map = LateInitSignal<MapLibreMap>()
 
-    actual var style: Map.Style? = Map.Style.Demo
-        get() {
-            val map = map.state.getOrNull() ?: return field
-            val styleUrl = map.getStyleUrl()?.let { Map.Style.Url(it) }
-            return styleUrl ?: Map.Style.Json(map.getStyle())
-        }
-        set(value) {
-            field = value
-            map.state.getOrNull()?.setStyle(value?.toUnion())
-        }
+    val preInit = PreInit()
 
-    actual var center = GeoCoordinate(0.0, 0.0)
-        get() = map.state.getOrNull()?.getCenter()?.toGeoCoordinate() ?: field
-        set(value) {
-            field = value
-            map.state.getOrNull()?.setCenter(value.toLngLat())
-        }
+    actual var style by lateInit(PreInit::style, {
+        getStyleUrl()?.let { Map.Style.Url(it) } //?: Map.Style.Json(getStyle().toString())
+    }) { setStyle(it?.toUnion()) }
 
-    actual value class Camera(val view: MapView) {
+    actual inner class Camera {
+        actual var center by lateInit(PreInit::center, { getCenter().toGeoCoordinate() }) { setCenter(it.toLngLat()) }
+        actual var zoom by lateInit(PreInit::zoom, MapLibreMap::getZoom, MapLibreMap::setZoom)
+        actual var minZoom by lateInit(PreInit::minZoom, MapLibreMap::getMinZoom, MapLibreMap::setMinZoom)
+        actual var maxZoom by lateInit(PreInit::maxZoom, MapLibreMap::getMaxZoom, MapLibreMap::setMaxZoom)
+
         actual suspend fun easeTo(options: Map.EaseToOptions) {
-            view.map.awaitOnce().easeTo(
+            map.awaitOnce().easeTo(
                 EaseToOptions(
                     center = options.center?.toLngLat(),
                     zoom = options.zoom,
@@ -48,7 +45,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         }
 
         actual suspend fun flyTo(options: Map.FlyToOptions) {
-            view.map.awaitOnce().flyTo(
+            map.awaitOnce().flyTo(
                 FlyToOptions(
                     center = options.center?.toLngLat(),
                     zoom = options.zoom,
@@ -59,7 +56,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         }
     }
 
-    actual val camera = Camera(this)
+    actual val camera = Camera()
 
     actual fun createMarker(position: GeoCoordinate) = object : Map.Marker {
         val raw = Marker()
@@ -86,17 +83,58 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 
         injectMapLibreCss()
 
-        native.onElement { container ->
-            map.value = MapLibreMap(
-                MapLibreMap.Options(
-                    container = container,
-                    style = style?.toUnion(),
-                    center = center.toLngLat(),
-                )
-            )
+        native.onElement {
+            val maplibreMap = MapLibreMap(preInit.toOptions(it))
+            map.value = maplibreMap
+            console.log("Actual values: ", maplibreMap.getZoom(), maplibreMap.getMinZoom(), maplibreMap.getMaxZoom())
         }
     }
 }
+
+/**
+ * The MapLibre map cannot be initialized immediately because it requires a DOMElement, so we need to
+ * keep track of state changes that happen before initialization and forward those to the initializer.
+ */
+data class PreInit(
+    var style: Map.Style? = Map.Style.Demo,
+    var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
+    var zoom: Double = 0.0,
+    var minZoom: Double? = null,
+    var maxZoom: Double? = null,
+) {
+    fun toOptions(container: DOMElement): MapLibreMap.Options {
+        console.log("zooms", zoom, minZoom, maxZoom)
+
+        return MapLibreMap.Options(
+            container = container,
+            style = style?.toUnion(),
+            center = center.toLngLat(),
+            zoom = zoom,
+            minZoom = minZoom ?: JsUndefined, // there is a MapLibre bug where null is incorrectly treated differently to undefined
+            maxZoom = maxZoom ?: JsUndefined, // for these two fields, and only during initialization. Don't ask how I know...
+        )
+    }
+}
+
+private class LateInit<T>(
+    val mapView: MapView,
+    val preInitProp: KMutableProperty1<PreInit, T>,
+    val getter: MapLibreMap.() -> T,
+    val setter: MapLibreMap.(T) -> Unit,
+) : ReadWriteProperty<Any, T> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        mapView.map.state.getOrNull()?.run { getter() } ?: preInitProp.get(mapView.preInit)
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
+        preInitProp.set(mapView.preInit, value)
+        mapView.map.state.getOrNull()?.setter(value)
+    }
+}
+
+private fun <T> MapView.lateInit(
+    preInitProp: KMutableProperty1<PreInit, T>,
+    getter: MapLibreMap.() -> T,
+    setter: MapLibreMap.(T) -> Unit,
+) = LateInit(this, preInitProp, getter, setter)
 
 /** Vite bundles MapLibre's worker script in a place MapLibre doesn't expect, so we have to override this */
 @JsModule("maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url")

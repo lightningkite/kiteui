@@ -5,6 +5,8 @@ import com.lightningkite.kiteui.map.maplibre.LngLat
 import com.lightningkite.services.data.GeoCoordinate
 import com.lightningkite.kiteui.map.maplibre.Map as MapLibreMap
 
+val JsUndefined = js("undefined")
+
 /** Util for https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/events.ts#L233 */
 fun MapLibreMap.onStyleData(callback: () -> Unit) = on("styledata", callback as Listener<Any>)
 

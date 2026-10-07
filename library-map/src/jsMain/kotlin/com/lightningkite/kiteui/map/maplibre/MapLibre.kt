@@ -23,11 +23,29 @@ external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1054 */
     fun setCenter(center: LngLat, eventData: Any? = definedExternally)
 
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1116 */
+    fun getZoom(): Double
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1130 */
+    fun setZoom(zoom: Double, eventData: Any? = definedExternally)
+
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1480 */
     fun easeTo(options: EaseToOptions, eventData: Any? = definedExternally): Map
 
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1517 */
     fun flyTo(options: FlyToOptions, eventData: Any? = definedExternally): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1807 */
+    fun getMinZoom(): Double
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1774 */
+    fun setMinZoom(minZoom: Double? = definedExternally)
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1858 */
+    fun getMaxZoom(): Double
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1827 */
+    fun setMaxZoom(maxZoom: Double? = definedExternally)
 
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2338 */
     fun on(type: String, listener: Listener<Any>): Subscription
@@ -36,7 +54,7 @@ external class Map(options: Options) {
     fun setStyle(style: Any?, options: Any? = definedExternally)
 
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2822 */
-    fun getStyle(): kotlinx.serialization.json.Json
+    fun getStyle(): Any
 
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2838 */
     fun getStyleUrl(): String?
@@ -44,9 +62,12 @@ external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L84 */
     @JsPlainObject
     interface Options {
-        val container: Element?
+        val container: Element
         val style: Any?
         val center: LngLat?
+        val zoom: Double?
+        val minZoom: Double?
+        val maxZoom: Double?
     }
 }
 

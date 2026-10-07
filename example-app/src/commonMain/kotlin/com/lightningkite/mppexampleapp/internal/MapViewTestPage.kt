@@ -60,7 +60,7 @@ object MapViewTestPage : Page {
 
                 card.button {
                     icon(Icon.travelExplore, "Test Manual Center")
-                    onClick { map.center = Random.nextGeoCoordinate() }
+                    onClick { map.camera.center = Random.nextGeoCoordinate() }
                 }
 
                 card.button {
@@ -78,7 +78,11 @@ object MapViewTestPage : Page {
 
                 card.button {
                     icon(Icon.globeLocationPin, "Test Update Marker")
-                    onClick { markerPosition.value = Random.nextGeoCoordinate() }
+                    onClick {
+                        val newPosition = Random.nextGeoCoordinate()
+                        markerPosition.value = newPosition
+                        map.camera.easeTo(Map.EaseToOptions(center = newPosition, duration = 1.seconds))
+                    }
                 }
 
                 card.button {
@@ -89,6 +93,14 @@ object MapViewTestPage : Page {
                 card.button {
                     icon(Icon.wrongLocation, "Remove Marker")
                     onClick { markerCollection.modify { it.drop(1) } }
+                }
+
+                card.button {
+                    icon(Icon.collapse, "Test Constraints")
+                    onClick {
+                        map.camera.minZoom = Random.nextDouble(0.0, 8.0)
+                        map.camera.maxZoom = Random.nextDouble(12.0, 22.0)
+                    }
                 }
             }
         }
