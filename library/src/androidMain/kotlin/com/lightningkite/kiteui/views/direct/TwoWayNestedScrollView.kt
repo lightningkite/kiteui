@@ -2301,10 +2301,12 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
     override fun dispatchDraw(canvas: Canvas) {
         val shadowExtentInt = maxNeumorphicShadowExtent(this).toInt()
         val saveCount = canvas.save()
+        // Let Neumorphic shadows from descendant containers extend past the horizontal viewport,
+        // but bound that overflow to their measured extent. Without shadows, this clips at the edge.
         canvas.clipRect(
-            Int.MIN_VALUE,
+            scrollX + paddingLeft - shadowExtentInt,
             scrollY + paddingTop - shadowExtentInt,
-            Int.MAX_VALUE,
+            scrollX + width - paddingRight + shadowExtentInt,
             scrollY + height - paddingBottom + shadowExtentInt
         )
         for (i in 0 until childCount) {
