@@ -14,14 +14,12 @@ import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.browser.document
 import kotlinx.coroutines.launch
-import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty
 
 actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
     val map = LateInitSignal<MapLibreMap>()
 
-    val preInit = PreInit()
+    internal actual val preInit = PreInit()
 
     actual var style by lateInit(PreInit::style, {
         getStyleUrl()?.let { Map.Style.Url(it) } //?: Map.Style.Json(getStyle().toString())
@@ -92,55 +90,29 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
     }
 }
 
-/**
- * The MapLibre map cannot be initialized immediately because it requires a DOMElement, so we need to
- * keep track of state changes that happen before initialization and forward those to the initializer.
- */
-data class PreInit(
-    var style: Map.Style? = Map.Style.Demo,
-    var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
-    var zoom: Double = 0.0,
-    var minZoom: Double? = null,
-    var maxZoom: Double? = null,
-    var pitch: Double = 0.0,
-    var minPitch: Double? = null,
-    var maxPitch: Double? = null,
-) {
-    fun toOptions(container: DOMElement): MapLibreMap.Options {
-        return MapLibreMap.Options(
-            container = container,
-            style = style?.toUnion(),
-            center = center.toLngLat(),
-            zoom = zoom,
-            minZoom = minZoom ?: JsUndefined,
-            maxZoom = maxZoom ?: JsUndefined,
-            pitch = pitch,
-            minPitch = minPitch ?: JsUndefined,
-            maxPitch = maxPitch ?: JsUndefined,
-        )
-    }
-}
 
-private class LateInit<T>(
-    val mapView: MapView,
-    val preInitProp: KMutableProperty1<PreInit, T>,
-    val getter: MapLibreMap.() -> T,
-    val setter: MapLibreMap.(T) -> Unit,
-) : ReadWriteProperty<Any, T> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        mapView.map.state.getOrNull()?.run { getter() } ?: preInitProp.get(mapView.preInit)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
-        preInitProp.set(mapView.preInit, value)
-        mapView.map.state.getOrNull()?.setter(value)
-    }
+internal fun PreInit.toOptions(container: DOMElement): MapLibreMap.Options {
+    return MapLibreMap.Options(
+        container = container,
+        style = style?.toUnion(),
+        center = center.toLngLat(),
+        zoom = zoom,
+        minZoom = minZoom ?: JsUndefined,
+        maxZoom = maxZoom ?: JsUndefined,
+        pitch = pitch,
+        minPitch = minPitch ?: JsUndefined,
+        maxPitch = maxPitch ?: JsUndefined,
+    )
 }
 
 private fun <T> MapView.lateInit(
     preInitProp: KMutableProperty1<PreInit, T>,
     getter: MapLibreMap.() -> T,
     setter: MapLibreMap.(T) -> Unit,
-) = LateInit(this, preInitProp, getter, setter)
+) = LateInit(this, { map.state }, preInitProp, getter, setter)
+
+
 
 /** Vite bundles MapLibre's worker script in a place MapLibre doesn't expect, so we have to override this */
 @JsModule("maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url")

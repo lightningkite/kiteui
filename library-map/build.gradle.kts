@@ -1,6 +1,5 @@
 import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 
 plugins {
@@ -12,7 +11,6 @@ plugins {
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kjsplain)
-    alias(libs.plugins.composeKotlin)
 }
 
 // Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
@@ -64,11 +62,7 @@ kotlin {
 
         val androidMain = getByName("androidMain") {
             dependencies {
-                implementation("androidx.compose.ui:ui:1.12.1")
-                implementation("androidx.compose.foundation:foundation:1.12.1")
-
-                implementation(libs.maplibre.compose.android)
-                runtimeOnly("org.maplibre.compose:maplibre-compose-runtime-vulkan-android:0.19.0")
+                implementation(libs.maplibre.android)
             }
         }
 
@@ -92,10 +86,6 @@ kotlin {
 
         val jvmSsrMain = getByName("jvmSsrMain")
     }
-}
-
-composeCompiler {
-    targetKotlinPlatforms.set(setOf(KotlinPlatformType.androidJvm))
 }
 
 if (iosEnabled) {

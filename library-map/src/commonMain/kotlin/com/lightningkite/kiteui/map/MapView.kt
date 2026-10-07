@@ -6,9 +6,40 @@ import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.write
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.services.data.GeoCoordinate
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty
 import kotlin.time.Duration
+
+expect class MapView(context: ElementContext) : NativeElement {
+    var style: Map.Style?
+
+    internal val preInit: PreInit
+
+    inner class Camera {
+        var center: GeoCoordinate
+        var zoom: Double
+        var minZoom: Double?
+        var maxZoom: Double?
+        var pitch: Double
+        var minPitch: Double?
+        var maxPitch: Double?
+
+        suspend fun easeTo(options: Map.EaseToOptions)
+        suspend fun flyTo(options: Map.FlyToOptions)
+    }
+    val camera: Camera
+
+    fun createMarker(position: GeoCoordinate): Map.Marker
+}
+
+inline fun ElementWriter.mapView(setup: MapView.() -> Unit) =
+    write(MapView(context), setup)
+
+
 
 object Map {
     sealed interface Style {
@@ -67,28 +98,6 @@ object Map {
     interface Marker : Feature<GeoCoordinate>
 }
 
-expect class MapView(context: ElementContext) : NativeElement {
-    var style: Map.Style?
-
-    inner class Camera {
-        var center: GeoCoordinate
-        var zoom: Double
-        var minZoom: Double?
-        var maxZoom: Double?
-        var pitch: Double
-        var minPitch: Double?
-        var maxPitch: Double?
-
-        suspend fun easeTo(options: Map.EaseToOptions)
-        suspend fun flyTo(options: Map.FlyToOptions)
-    }
-    val camera: Camera
-
-    fun createMarker(position: GeoCoordinate): Map.Marker
-}
-
-inline fun ElementWriter.mapView(setup: MapView.() -> Unit) =
-    write(MapView(context), setup)
 
 
 /** Creates a reactive map feature */
@@ -134,3 +143,37 @@ fun <ITEM, FEATURE : Map.Feature<D>, D : Any> MapView.featureMany(
 fun MapView.mark(data: Reactive<GeoCoordinate?>) = feature(data) { createMarker(it) }
 fun <T> MapView.markMany(items: Reactive<Collection<T>>, toId: (it: T) -> Int, toData: (it: T) -> GeoCoordinate) =
     featureMany(items, toId, toData) { createMarker(it) }
+
+
+
+/**
+ * The MapLibre map is not initialized immediately on android and web, so we need to keep track
+ * of state changes that happen before initialization (e.i., in the KiteUI initializer, which
+ * runs first) and forward those to the initializer.
+ */
+internal data class PreInit(
+    var style: Map.Style? = Map.Style.Demo,
+    var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
+    var zoom: Double = 0.0,
+    var minZoom: Double? = null,
+    var maxZoom: Double? = null,
+    var pitch: Double = 0.0,
+    var minPitch: Double? = null,
+    var maxPitch: Double? = null,
+)
+
+internal class LateInit<T, M>(
+    val mapView: MapView,
+    val getMapState: MapView.() -> ReactiveState<M>,
+    val preInitProp: KMutableProperty1<PreInit, T>,
+    val getter: M.() -> T,
+    val setter: M.(T) -> Unit,
+) : ReadWriteProperty<Any, T> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        mapView.getMapState().getOrNull()?.run { getter() } ?: preInitProp.get(mapView.preInit)
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
+        preInitProp.set(mapView.preInit, value)
+        mapView.getMapState().getOrNull()?.setter(value)
+    }
+}
