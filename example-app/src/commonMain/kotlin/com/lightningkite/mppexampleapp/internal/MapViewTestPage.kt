@@ -19,12 +19,14 @@ import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.padded
 import com.lightningkite.kiteui.views.direct.row
+import com.lightningkite.kiteui.views.direct.scrollingHorizontally
 import com.lightningkite.kiteui.views.direct.unpadded
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.modify
 import com.lightningkite.services.data.GeoCoordinate
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
@@ -50,7 +52,7 @@ object MapViewTestPage : Page {
                 markMany(markerCollection, { it.first }) { it.second }
             }
 
-            atTopStart.padded.row {
+            atTopStart.padded.scrollingHorizontally.row {
                 ignoreInteraction = true
 
                 card.button {
@@ -70,29 +72,20 @@ object MapViewTestPage : Page {
 
                 card.button {
                     icon(Icon.travelExplore, "Test Ease To")
-                    onClick {
-                        map.camera.easeTo(
-                            Map.EaseToOptions(
-                                center = Random.nextGeoCoordinate(),
-                                zoom = Random.nextDouble(0.0, 5.0),
-                                pitch = Random.nextDouble(0.0, 60.0),
-                                duration = Random.nextDouble(0.5, 3.0).seconds,
-                            )
-                        )
-                    }
+                    onClick { launch { map.camera.easeTo(Random.nextEaseToOptions()) } }
                 }
 
                 card.button {
                     icon(Icon.travel, "Test Fly To")
+                    onClick { launch { map.camera.flyTo(Random.nextFlyToOptions()) } }
+                }
+
+                card.button {
+                    icon(Icon.planeContrails, "Test Multipart flyTo")
                     onClick {
-                        map.camera.flyTo(
-                            Map.FlyToOptions(
-                                center = Random.nextGeoCoordinate(),
-                                zoom = Random.nextDouble(5.0, 10.0),
-                                pitch = Random.nextDouble(0.0, 60.0),
-                                duration = Random.nextDouble(5.0, 8.0).seconds,
-                            )
-                        )
+                        map.camera.flyTo(Random.nextFlyToOptions())
+                        map.camera.flyTo(Random.nextFlyToOptions())
+                        map.camera.flyTo(Random.nextFlyToOptions())
                     }
                 }
 
@@ -119,6 +112,19 @@ object MapViewTestPage : Page {
 }
 
 fun Random.nextGeoCoordinate() = GeoCoordinate(nextDouble(-90.0, 90.0), nextDouble(-180.0, 180.0))
+fun Random.nextEaseToOptions() = Map.EaseToOptions(
+    center = nextGeoCoordinate(),
+    zoom = nextDouble(0.0, 5.0),
+    pitch = nextDouble(0.0, 60.0),
+    duration = nextDouble(0.5, 3.0).seconds,
+)
+
+fun Random.nextFlyToOptions() = Map.FlyToOptions(
+    center = nextGeoCoordinate(),
+    zoom = nextDouble(5.0, 10.0),
+    pitch = nextDouble(0.0, 60.0),
+    duration = nextDouble(3.0, 5.0).seconds,
+)
 
 val Icon.Companion.globe
     get() = Icon(
@@ -195,4 +201,15 @@ val Icon.Companion.wrongLocation
         960,
         960,
         listOf("M480-80Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q16 0 32 2t32 5v61q-15.67-4-31.33-6-15.67-2-32.67-2-109.42 0-184.71 75.1Q220-669.79 220-552q0 75 65 173.5T480-159q133-121 196.5-219.5T740-552q0-8-.5-16t-1.5-16h60q1 8 1.5 16t.5 16q0 100-79.5 217.5T480-80Zm0-433Zm195-139 84-84 84 84 42-42-84-84 84-84-42-42-84 84-84-84-42 42 84 84-84 84 42 42ZM529.5-510.59q20.5-20.59 20.5-49.5t-20.59-49.41q-20.59-20.5-49.5-20.5t-49.41 20.59q-20.5 20.59-20.5 49.5t20.59 49.41q20.59 20.5 49.5 20.5t49.41-20.59Z")
+    )
+
+val Icon.Companion.planeContrails
+    get() = Icon(
+        1.5.rem,
+        1.5.rem,
+        0,
+        -960,
+        960,
+        960,
+        listOf("m371-80-42-43 173-173 43 42L371-80Zm207 0-43-42 154-154 42 43L578-80ZM123-534l-43-43 153-153 43 43-153 153Zm0 206-43-42 174-174 43 42-174 174Zm648-26-99-247-97 98 20 97-34 34-68-121-121-68 34-34 98 20 97-97-247-99 45-42 297 47 98-99q7-7 16-10.5t19-3.5q10 0 19 3.5t17 11.5q8 7 11.5 16t3.5 18q0 10-4 19t-12 17l-98 98 47 297-42 45Z")
     )
