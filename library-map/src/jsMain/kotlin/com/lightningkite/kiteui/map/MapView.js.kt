@@ -37,36 +37,28 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         actual var minPitch by lateInit(PreInit::minPitch, MapLibreMap::getMinPitch, MapLibreMap::setMinPitch)
         actual var maxPitch by lateInit(PreInit::maxPitch, MapLibreMap::getMaxPitch, MapLibreMap::setMaxPitch)
 
-        actual suspend fun easeTo(options: Map.EaseToOptions) {
-            val map = map.awaitOnce()
-            map.awaitAnimation { eventData ->
-                map.easeTo(
-                    EaseToOptions(
-                        center = options.center?.toLngLat(),
-                        zoom = options.zoom,
-                        bearing = options.bearing,
-                        pitch = options.pitch,
-                        duration = options.duration.inWholeMilliseconds.toDouble(),
-                    ),
-                    eventData,
+        actual fun easeTo(options: Map.EaseToOptions) = lateRun {
+            easeTo(
+                EaseToOptions(
+                    center = options.center?.toLngLat(),
+                    zoom = options.zoom,
+                    bearing = options.bearing,
+                    pitch = options.pitch,
+                    duration = options.duration.inWholeMilliseconds.toDouble(),
                 )
-            }
+            )
         }
 
-        actual suspend fun flyTo(options: Map.FlyToOptions) {
-            val map = map.awaitOnce()
-            map.awaitAnimation { eventData ->
-                map.flyTo(
-                    FlyToOptions(
-                        center = options.center?.toLngLat(),
-                        zoom = options.zoom,
-                        bearing = options.bearing,
-                        pitch = options.pitch,
-                        duration = options.duration.inWholeMilliseconds.toDouble(),
-                    ),
-                    eventData,
+        actual fun flyTo(options: Map.FlyToOptions) = lateRun {
+            flyTo(
+                FlyToOptions(
+                    center = options.center?.toLngLat(),
+                    zoom = options.zoom,
+                    bearing = options.bearing,
+                    pitch = options.pitch,
+                    duration = options.duration.inWholeMilliseconds.toDouble(),
                 )
-            }
+            )
         }
 
         actual fun stopAnimation() {
@@ -106,33 +98,6 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 }
 
 
-
-private var nextAnimationId = 0
-
-/**
- * MapLibre fires "moveend" when an animation finishes or is interrupted (by [MapLibreMap.stop], a new
- * animation, or user interaction), merging the animation's eventData into the event. We tag each
- * animation with a unique id so we only resume on the "moveend" belonging to this animation.
- */
-private suspend fun MapLibreMap.awaitAnimation(start: (eventData: dynamic) -> Unit) =
-    suspendCancellableCoroutine { cont ->
-        val id = nextAnimationId++
-        val eventData: dynamic = js("({})")
-        eventData.kiteuiAnimationId = id
-        var subscription: Subscription? = null
-        subscription = on("moveend") { event ->
-            if (event.asDynamic().kiteuiAnimationId == id) {
-                subscription?.unsubscribe()
-                if (cont.isActive) cont.resume(Unit)
-            }
-        }
-        cont.invokeOnCancellation {
-            subscription?.unsubscribe()
-            stop()
-        }
-        start(eventData)
-    }
-
 internal fun PreInit.toOptions(container: DOMElement): MapLibreMap.Options {
     return MapLibreMap.Options(
         container = container,
@@ -153,6 +118,9 @@ private fun <T> MapView.lateInit(
     setter: MapLibreMap.(T) -> Unit,
 ) = LateInit(this, { map.state }, preInitProp, getter, setter)
 
+private fun MapView.lateRun(run: MapLibreMap.() -> Unit) {
+    map.state.getOrNull()?.run() ?: launch { map.awaitOnce().run() }
+}
 
 
 /** Vite bundles MapLibre's worker script in a place MapLibre doesn't expect, so we have to override this */

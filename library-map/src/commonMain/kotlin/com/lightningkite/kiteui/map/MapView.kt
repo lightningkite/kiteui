@@ -28,10 +28,11 @@ expect class MapView(context: ElementContext) : NativeElement {
         var minPitch: Double?
         var maxPitch: Double?
 
-        suspend fun easeTo(options: Map.EaseToOptions)
-        suspend fun flyTo(options: Map.FlyToOptions)
+        fun easeTo(options: Map.EaseToOptions)
+        fun flyTo(options: Map.FlyToOptions)
         fun stopAnimation()
     }
+
     val camera: Camera
 
     fun createMarker(position: GeoCoordinate): Map.Marker
@@ -41,11 +42,10 @@ inline fun ElementWriter.mapView(setup: MapView.() -> Unit) =
     write(MapView(context), setup)
 
 
-
 object Map {
     sealed interface Style {
         data class Url(val url: String) : Style
-        data class Json(val json: String): Style
+        data class Json(val json: String) : Style
 
         companion object {
             val Demo = Url("https://demotiles.maplibre.org/style.json")
@@ -100,9 +100,11 @@ object Map {
 }
 
 
-
 /** Creates a reactive map feature */
-fun <FEATURE : Map.Feature<D>, D : Any> MapView.feature(data: Reactive<D?>, createFeature: MapView.(data: D) -> FEATURE) {
+fun <FEATURE : Map.Feature<D>, D : Any> MapView.feature(
+    data: Reactive<D?>,
+    createFeature: MapView.(data: D) -> FEATURE
+) {
     val feature = Signal<FEATURE?>(null)
 
     reactive(reentrancyLimit = 1) {
@@ -144,7 +146,6 @@ fun <ITEM, FEATURE : Map.Feature<D>, D : Any> MapView.featureMany(
 fun MapView.mark(data: Reactive<GeoCoordinate?>) = feature(data) { createMarker(it) }
 fun <T> MapView.markMany(items: Reactive<Collection<T>>, toId: (it: T) -> Int, toData: (it: T) -> GeoCoordinate) =
     featureMany(items, toId, toData) { createMarker(it) }
-
 
 
 /**

@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.ElementWriter
+import com.lightningkite.kiteui.views.atBottomStart
 import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.button
@@ -28,6 +29,7 @@ import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.modify
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
@@ -54,7 +56,7 @@ object MapViewTestPage : Page {
                 markMany(markerCollection, { it.first }) { it.second }
             }
 
-            atTopStart.padded.scrollingHorizontally.row {
+            (if (Platform.current == Platform.Web) atTopStart else atBottomStart).padded.scrollingHorizontally.row {
                 ignoreInteraction = true
 
                 card.button {
@@ -88,7 +90,9 @@ object MapViewTestPage : Page {
                     onClick {
                         multipartFlyToJob.value = launch {
                             while (true) {
-                                map.camera.flyTo(Random.nextFlyToOptions())
+                                val options = Random.nextFlyToOptions()
+                                map.camera.flyTo(options)
+                                delay(options.duration)
                             }
                         }
                     }

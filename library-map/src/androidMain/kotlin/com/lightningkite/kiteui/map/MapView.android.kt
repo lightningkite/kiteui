@@ -50,27 +50,17 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         actual var minPitch by lateInit(PreInit::minPitch, { minPitch }) { setMinPitchPreference(it ?: 0.0) }
         actual var maxPitch by lateInit(PreInit::maxPitch, { maxPitch }) { setMaxPitchPreference(it ?: 90.0) }
 
-        actual suspend fun easeTo(options: Map.EaseToOptions) {
-            val map = map.awaitOnce()
-            map.awaitAnimation {
-                map.easeCamera(
-                    options.toCameraUpdate(map),
-                    options.duration.inWholeMilliseconds.toInt(),
-                    options.easing != Map.AnimationOptions.Easing.Linear,
-                    it,
-                )
-            }
+        actual fun easeTo(options: Map.EaseToOptions) = lateRun {
+            easeCamera(
+                options.toCameraUpdate(this),
+                options.duration.inWholeMilliseconds.toInt(),
+                options.easing != Map.AnimationOptions.Easing.Linear,
+            )
         }
 
-        actual suspend fun flyTo(options: Map.FlyToOptions) = lateRun {
+        actual fun flyTo(options: Map.FlyToOptions) = lateRun {
             animateCamera(options.toCameraUpdate(this), options.duration.inWholeMilliseconds.toInt())
         }
-
-//        actual suspend fun flyTo(options: Map.FlyToOptions) {
-//            map.awaitOnce()
-//                .let { it.animateCamera(options.toCameraUpdate(it), options.duration.inWholeMilliseconds.toInt()) }
-//            map.awaitOnce().fly
-//        }
 
         actual fun stopAnimation() {
             launch { map.awaitOnce().cancelTransitions() }
@@ -137,27 +127,12 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
     }
 }
 
-private suspend fun MapLibreMap.awaitAnimation(start: (MapLibreMap.CancelableCallback) -> Unit) {
-    suspendCancellableCoroutine { cont ->
-        start(object : MapLibreMap.CancelableCallback {
-            override fun onCancel() {
-                if (cont.isActive) cont.resume(Unit)
-            }
-
-            override fun onFinish() {
-                if (cont.isActive) cont.resume(Unit)
-            }
-        })
-        cont.invokeOnCancellation { cancelTransitions() }
-    }
-}
 
 private fun Map.Style?.toBuilder(): Style.Builder = when (this) {
     is Map.Style.Json -> Style.Builder().fromJson(json)
     is Map.Style.Url -> Style.Builder().fromUri(url)
     null -> Style.Builder().fromJson("""{"version":8,"sources":{},"layers":[]}""")
 }
-
 
 fun GeoCoordinate.toLatLng() = LatLng(latitude, longitude)
 fun LatLng.toGeoCoordinate() = GeoCoordinate(latitude, longitude)
@@ -192,8 +167,6 @@ private fun <T> MapView.lateInit(
     setter: MapLibreMap.(T) -> Unit,
 ) = LateInit(this, { map.state }, preInitProp, getter, setter)
 
-
-private suspend fun <T> MapView.lateRun(run: MapLibreMap.() -> T): T = map.awaitOnce().run()
 private fun MapView.lateRun(run: MapLibreMap.() -> Unit) {
     map.state.getOrNull()?.run() ?: launch { map.awaitOnce().run() }
 }
