@@ -36,6 +36,8 @@ expect class MapView(context: ElementContext) : NativeElement {
     val camera: Camera
 
     fun createMarker(position: GeoCoordinate): Map.Marker
+
+    fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit)
 }
 
 inline fun ElementWriter.mapView(setup: MapView.() -> Unit) =

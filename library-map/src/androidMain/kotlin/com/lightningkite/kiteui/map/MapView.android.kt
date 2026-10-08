@@ -93,6 +93,10 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         }
     }
 
+    actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
+        addOnMapClickListener { callback(it.toGeoCoordinate()); true }
+    }
+
     override val native: View = run {
         MapLibre.getInstance(context.activity)
         MapLibreMapView(context.activity)

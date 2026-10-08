@@ -19,5 +19,6 @@ fun Map.Style.toUnion() = when (this) {
     is Map.Style.Url -> url
 }
 
+fun geoCoordinateFromLngLat(lngLat: LngLat) = GeoCoordinate(lngLat.lat, lngLat.lng)
 fun LngLat.toGeoCoordinate() = GeoCoordinate(lat, lng)
 fun GeoCoordinate.toLngLat() = LngLat(longitude, latitude)

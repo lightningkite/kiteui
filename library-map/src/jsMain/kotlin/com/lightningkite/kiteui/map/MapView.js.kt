@@ -85,6 +85,10 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         }
     }
 
+    actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
+        on("click") { callback(geoCoordinateFromLngLat(it.asDynamic().lngLat)) }
+    }
+
     init {
         setWorkerUrl(maplibreWorkerUrl)
 

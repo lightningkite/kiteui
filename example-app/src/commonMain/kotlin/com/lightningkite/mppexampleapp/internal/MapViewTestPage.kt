@@ -54,6 +54,8 @@ object MapViewTestPage : Page {
 
                 mark(markerPosition)
                 markMany(markerCollection, { it.first }) { it.second }
+
+                onClick { markerPosition.value = it }
             }
 
             (if (Platform.current == Platform.Web) atTopStart else atBottomStart).padded.scrollingHorizontally.row {
