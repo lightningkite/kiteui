@@ -57,85 +57,85 @@ enum class I_SWEAR_ON_MY_JOB {
 }
 
 
-    /**
-     * The MapLibre map is not initialized immediately on android and web, so we need to keep track
-     * of state changes that happen before initialization (e.i., in the KiteUI initializer, which
-     * runs first) and forward those to the initializer.
-     */
-    internal data class PreInit(
-        override var style: Style? = Style.Demo,
+/**
+ * The MapLibre map is not initialized immediately on android and web, so we need to keep track
+ * of state changes that happen before initialization (e.i., in the KiteUI initializer, which
+ * runs first) and forward those to the initializer.
+ */
+internal data class PreInit(
+    override var style: Style? = Style.Demo,
 
-        // Camera
-        override var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
-        override var zoom: Double = 0.0,
-        override var minZoom: Double? = null,
-        override var maxZoom: Double? = null,
-        override var pitch: Double = 0.0,
-        override var minPitch: Double? = null,
-        override var maxPitch: Double? = null,
-    ) : BaseProperties, CameraProperties
+    // Camera
+    override var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
+    override var zoom: Double = 0.0,
+    override var minZoom: Double? = null,
+    override var maxZoom: Double? = null,
+    override var pitch: Double = 0.0,
+    override var minPitch: Double? = null,
+    override var maxPitch: Double? = null,
+) : BaseProperties, CameraProperties
 
-    internal class LateInit<T, M>(
-        val mapView: MapView,
-        val getMapState: MapView.() -> ReactiveState<M>,
-        val preInitProp: KMutableProperty1<PreInit, T>,
-        val getter: M.() -> T,
-        val setter: M.(T) -> Unit,
-    ) : ReadWriteProperty<Any, T> {
-        override fun getValue(thisRef: Any, property: KProperty<*>) =
-            mapView.getMapState().getOrNull()?.run { getter() } ?: preInitProp.get(mapView.preInit)
+internal class LateInit<T, M>(
+    val mapView: MapView,
+    val getMapState: MapView.() -> ReactiveState<M>,
+    val preInitProp: KMutableProperty1<PreInit, T>,
+    val getter: M.() -> T,
+    val setter: M.(T) -> Unit,
+) : ReadWriteProperty<Any, T> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        mapView.getMapState().getOrNull()?.run { getter() } ?: preInitProp.get(mapView.preInit)
 
-        override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
-            preInitProp.set(mapView.preInit, value)
-            mapView.getMapState().getOrNull()?.setter(value)
-        }
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
+        preInitProp.set(mapView.preInit, value)
+        mapView.getMapState().getOrNull()?.setter(value)
     }
+}
 
-    sealed interface Style {
-        data class Url(val url: String) : Style
-        data class Json(val json: String) : Style
+sealed interface Style {
+    data class Url(val url: String) : Style
+    data class Json(val json: String) : Style
 
-        companion object {
-            val Demo = Url("https://demotiles.maplibre.org/style.json")
-            val Debug = Url("https://demotiles.maplibre.org/debug-tiles/style.json")
-            val GlobeDemo = Url("https://demotiles.maplibre.org/globe.json")
-        }
+    companion object {
+        val Demo = Url("https://demotiles.maplibre.org/style.json")
+        val Debug = Url("https://demotiles.maplibre.org/debug-tiles/style.json")
+        val GlobeDemo = Url("https://demotiles.maplibre.org/globe.json")
     }
+}
 
-    interface BaseProperties {
-        var style: Style?
-    }
+interface BaseProperties {
+    var style: Style?
+}
 
-    interface CameraProperties {
-        var center: GeoCoordinate
-        var zoom: Double
-        var minZoom: Double?
-        var maxZoom: Double?
-        var pitch: Double
-        var minPitch: Double?
-        var maxPitch: Double?
-    }
+interface CameraProperties {
+    var center: GeoCoordinate
+    var zoom: Double
+    var minZoom: Double?
+    var maxZoom: Double?
+    var pitch: Double
+    var minPitch: Double?
+    var maxPitch: Double?
+}
 
-    interface Camera : CameraProperties {
-        fun ease(animateTo: AnimateTo)
-        fun fly(animateTo: AnimateTo)
-        fun stopAnimation()
+interface Camera : CameraProperties {
+    fun ease(animateTo: AnimateTo)
+    fun fly(animateTo: AnimateTo)
+    fun stopAnimation()
 
-        data class AnimateTo(
-            val center: GeoCoordinate? = null,
-            val zoom: Double? = null,
-            val bearing: Double? = null,
-            val pitch: Double? = null,
-            val duration: Duration,
-        )
-    }
+    data class AnimateTo(
+        val center: GeoCoordinate? = null,
+        val zoom: Double? = null,
+        val bearing: Double? = null,
+        val pitch: Double? = null,
+        val duration: Duration,
+    )
+}
 
-    interface Feature<T> {
-        fun update(data: T)
-        fun remove()
-    }
+interface Feature<T> {
+    fun update(data: T)
+    fun remove()
+}
 
-    interface Marker : Feature<GeoCoordinate>
+interface Marker : Feature<GeoCoordinate>
 
 
 /** Creates a reactive map feature */
