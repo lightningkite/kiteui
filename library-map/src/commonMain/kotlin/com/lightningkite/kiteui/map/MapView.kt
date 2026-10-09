@@ -59,7 +59,7 @@ enum class I_SWEAR_ON_MY_JOB {
 
 /**
  * The MapLibre map is not initialized immediately on android and web, so we need to keep track
- * of state changes that happen before initialization (e.i., in the KiteUI initializer, which
+ * of state changes that happen before initialization (e.g., in the KiteUI initializer, which
  * runs first) and forward those to the initializer.
  */
 internal data class PreInit(
@@ -137,7 +137,6 @@ interface Feature<T> {
 
 interface Marker : Feature<GeoCoordinate>
 
-
 /** Creates a reactive map feature */
 fun <F : Feature<D>, D : Any> MapView.feature(data: Reactive<D?>, createFeature: MapView.(data: D) -> F) {
     val feature = Signal<F?>(null)
@@ -181,5 +180,3 @@ fun <ITEM, F : Feature<D>, D : Any> MapView.featureMany(
 fun MapView.mark(data: Reactive<GeoCoordinate?>) = feature(data) { createMarker(it) }
 fun <T> MapView.markMany(items: Reactive<Collection<T>>, toId: (it: T) -> Int, toData: (it: T) -> GeoCoordinate) =
     featureMany(items, toId, toData) { createMarker(it) }
-
-
