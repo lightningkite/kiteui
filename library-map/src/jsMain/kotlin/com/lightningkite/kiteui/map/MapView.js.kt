@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kotlin.reflect.KMutableProperty1
 
 actual class MapView actual constructor(
-    context: ElementContext, val interactive: Boolean
+    context: ElementContext, val disableAttribution: I_SWEAR_ON_MY_JOB?, val interactive: Boolean
 ) : NativeElement(context), Map.BaseProperties {
     internal actual val preInit = PreInit()
     val map = LateInitSignal<MapLibreMap>()
@@ -90,16 +90,20 @@ actual class MapView actual constructor(
 
         injectMapLibreCss()
 
-        native.onElement { map.value = MapLibreMap(preInit.toOptions(it, interactive)) }
+        native.onElement { map.value = MapLibreMap(preInit.toOptions(it, disableAttribution, interactive)) }
     }
 }
 
 
-internal fun PreInit.toOptions(container: DOMElement, interactive: Boolean): MapLibreMap.Options {
+internal fun PreInit.toOptions(
+    container: DOMElement,
+    disableAttribution: I_SWEAR_ON_MY_JOB?,
+    interactive: Boolean,
+): MapLibreMap.Options {
     return MapLibreMap.Options(
         container = container,
-        style = style?.toUnion(),
         interactive = interactive,
+        style = style?.toUnion(),
 
         center = center.toLngLat(),
         zoom = zoom,
@@ -108,7 +112,7 @@ internal fun PreInit.toOptions(container: DOMElement, interactive: Boolean): Map
         pitch = pitch,
         minPitch = minPitch ?: JsUndefined,
         maxPitch = maxPitch ?: JsUndefined,
-    )
+    ).also { if (disableAttribution != null) it.attributionControl = false }
 }
 
 actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {

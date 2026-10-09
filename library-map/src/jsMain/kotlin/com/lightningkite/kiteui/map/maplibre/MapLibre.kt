@@ -85,6 +85,7 @@ external class Map(options: Options) {
         val container: Element
         val style: Any?
         val interactive: Boolean?
+        var attributionControl: Any?
 
         val center: LngLat?
         val zoom: Double?

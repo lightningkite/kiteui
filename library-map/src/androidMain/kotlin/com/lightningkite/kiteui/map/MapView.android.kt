@@ -23,7 +23,7 @@ import kotlin.run
 import org.maplibre.android.maps.MapView as MapLibreMapView
 
 actual class MapView actual constructor(
-    context: ElementContext, val interactive: Boolean
+    context: ElementContext, val disableAttribution: I_SWEAR_ON_MY_JOB?, val interactive: Boolean
 ) : NativeElement(context), Map.BaseProperties {
     internal actual val preInit = PreInit()
     val map = LateInitSignal<MapLibreMap>()
@@ -112,6 +112,8 @@ actual class MapView actual constructor(
 
         getMapAsync {
             preInit.toOptions(it)
+            it.uiSettings.isAttributionEnabled = disableAttribution == null
+            it.uiSettings.isLogoEnabled = false
             it.uiSettings.isCompassEnabled = false
             it.uiSettings.setAllGesturesEnabled(interactive)
             map.value = it

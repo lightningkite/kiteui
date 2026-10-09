@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.current
+import com.lightningkite.kiteui.map.I_SWEAR_ON_MY_JOB
 import com.lightningkite.kiteui.map.Map
 import com.lightningkite.kiteui.map.mapView
 import com.lightningkite.kiteui.map.mark
@@ -45,11 +46,12 @@ object MapViewTestPage : Page {
             val markerPosition = Signal(GeoCoordinate(0.0, 0.0))
             val markerCollection = Signal(listOf<Pair<Int, GeoCoordinate>>())
 
-            val map = mapView {
+            val map = mapView(I_SWEAR_ON_MY_JOB.I_DO_NOT_NEED_ATTRIBUTION) {
                 ::style style@{
                     if (useBaseDemoTiles()) return@style Map.Style.Demo
                     if (Platform.current == Platform.Web) return@style Map.Style.GlobeDemo
-                    // MapLibre on mobile currently (unfortunately) only supports the Mercator projection, so I'm using a separate debug style instead
+                    // MapLibre on mobile currently (unfortunately) only supports the Mercator projection,
+                    // so I'm using a separate debug style instead. It's a useful style in its own right.
                     Map.Style.Debug
                 }
 

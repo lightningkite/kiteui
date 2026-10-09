@@ -14,7 +14,8 @@ import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
 import kotlin.time.Duration
 
-expect class MapView(context: ElementContext, interactive: Boolean) : NativeElement, Map.BaseProperties {
+expect class MapView(context: ElementContext, disableAttribution: I_SWEAR_ON_MY_JOB?, interactive: Boolean) :
+    NativeElement, Map.BaseProperties {
     internal val preInit: PreInit
 
     override var style: Map.Style?
@@ -23,10 +24,35 @@ expect class MapView(context: ElementContext, interactive: Boolean) : NativeElem
     fun createMarker(position: GeoCoordinate): Map.Marker
 }
 
-inline fun ElementWriter.mapView(interactive: Boolean = true, setup: MapView.() -> Unit) =
-    write(MapView(context, interactive), setup)
+inline fun ElementWriter.mapView(
+    disableAttribution: I_SWEAR_ON_MY_JOB? = null,
+    interactive: Boolean = true,
+    setup: MapView.() -> Unit,
+) = write(MapView(context, disableAttribution, interactive), setup)
 
 expect fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit)
+
+/**
+ * Yes, this is supposed to be attention grabbing.
+ *
+ * You really need to handle attribution correctly, as it's potentially a legal issue. Check
+ * all the third-party map APIs you are using and what kind of attribution they require, if any.
+ * MapLibre itself does not require attribution, as it's licensed under 3-Clause BSD.
+ *
+ * Setting this doesn't actually do anything behind the scenes. It's just a form of in-code docs.
+ *
+ * As an example, basemaps obtained from `Map.Style.Url()` commonly require attribution.
+ */
+enum class I_SWEAR_ON_MY_JOB {
+    /**
+     * Choose this if you have checked and verified that none of the third party APIs that you
+     * are using require attribution.
+     */
+    I_DO_NOT_NEED_ATTRIBUTION,
+
+    /** Choose this if you are handling attribution manually elsewhere in the app. */
+    I_AM_HANDLING_IT_MYSELF,
+}
 
 object Map {
     sealed interface Style {
