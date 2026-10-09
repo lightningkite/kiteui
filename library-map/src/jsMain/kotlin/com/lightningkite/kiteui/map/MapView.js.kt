@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.dom.DOMElement
 import com.lightningkite.kiteui.map.maplibre.EaseToOptions
 import com.lightningkite.kiteui.map.maplibre.FlyToOptions
 import com.lightningkite.kiteui.map.maplibre.Marker
-import com.lightningkite.kiteui.map.maplibre.Subscription
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.map.maplibre.Map as MapLibreMap
@@ -15,29 +14,28 @@ import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.browser.document
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
 import kotlin.reflect.KMutableProperty1
 
-actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
+actual class MapView actual constructor(
+    context: ElementContext, val interactive: Boolean
+) : NativeElement(context), Map.BaseProperties {
+    internal actual val preInit = PreInit()
     val map = LateInitSignal<MapLibreMap>()
 
-    internal actual val preInit = PreInit()
-
-    actual var style by lateInit(PreInit::style, {
+    actual override var style by lateInit(PreInit::style, {
         getStyleUrl()?.let { Map.Style.Url(it) } //?: Map.Style.Json(getStyle().toString())
     }) { setStyle(it?.toUnion()) }
 
-    actual inner class Camera {
-        actual var center by lateInit(PreInit::center, { getCenter().toGeoCoordinate() }) { setCenter(it.toLngLat()) }
-        actual var zoom by lateInit(PreInit::zoom, MapLibreMap::getZoom, MapLibreMap::setZoom)
-        actual var minZoom by lateInit(PreInit::minZoom, MapLibreMap::getMinZoom, MapLibreMap::setMinZoom)
-        actual var maxZoom by lateInit(PreInit::maxZoom, MapLibreMap::getMaxZoom, MapLibreMap::setMaxZoom)
-        actual var pitch by lateInit(PreInit::pitch, MapLibreMap::getPitch, MapLibreMap::setPitch)
-        actual var minPitch by lateInit(PreInit::minPitch, MapLibreMap::getMinPitch, MapLibreMap::setMinPitch)
-        actual var maxPitch by lateInit(PreInit::maxPitch, MapLibreMap::getMaxPitch, MapLibreMap::setMaxPitch)
+    actual val camera = object : Map.Camera {
+        override var center by lateInit(PreInit::center, { getCenter().toGeoCoordinate() }) { setCenter(it.toLngLat()) }
+        override var zoom by lateInit(PreInit::zoom, MapLibreMap::getZoom, MapLibreMap::setZoom)
+        override var minZoom by lateInit(PreInit::minZoom, MapLibreMap::getMinZoom, MapLibreMap::setMinZoom)
+        override var maxZoom by lateInit(PreInit::maxZoom, MapLibreMap::getMaxZoom, MapLibreMap::setMaxZoom)
+        override var pitch by lateInit(PreInit::pitch, MapLibreMap::getPitch, MapLibreMap::setPitch)
+        override var minPitch by lateInit(PreInit::minPitch, MapLibreMap::getMinPitch, MapLibreMap::setMinPitch)
+        override var maxPitch by lateInit(PreInit::maxPitch, MapLibreMap::getMaxPitch, MapLibreMap::setMaxPitch)
 
-        actual fun easeTo(options: Map.EaseToOptions) = lateRun {
+        override fun easeTo(options: Map.EaseToOptions) = lateRun {
             easeTo(
                 EaseToOptions(
                     center = options.center?.toLngLat(),
@@ -49,7 +47,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
             )
         }
 
-        actual fun flyTo(options: Map.FlyToOptions) = lateRun {
+        override fun flyTo(options: Map.FlyToOptions) = lateRun {
             flyTo(
                 FlyToOptions(
                     center = options.center?.toLngLat(),
@@ -61,12 +59,10 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
             )
         }
 
-        actual fun stopAnimation() {
+        override fun stopAnimation() {
             launch { map.awaitOnce().stop() }
         }
     }
-
-    actual val camera = Camera()
 
     actual fun createMarker(position: GeoCoordinate) = object : Map.Marker {
         val raw = Marker()
@@ -85,9 +81,6 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
         }
     }
 
-    actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
-        on("click") { callback(geoCoordinateFromLngLat(it.asDynamic().lngLat)) }
-    }
 
     init {
         setWorkerUrl(maplibreWorkerUrl)
@@ -97,15 +90,17 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 
         injectMapLibreCss()
 
-        native.onElement { map.value = MapLibreMap(preInit.toOptions(it)) }
+        native.onElement { map.value = MapLibreMap(preInit.toOptions(it, interactive)) }
     }
 }
 
 
-internal fun PreInit.toOptions(container: DOMElement): MapLibreMap.Options {
+internal fun PreInit.toOptions(container: DOMElement, interactive: Boolean): MapLibreMap.Options {
     return MapLibreMap.Options(
         container = container,
         style = style?.toUnion(),
+        interactive = interactive,
+
         center = center.toLngLat(),
         zoom = zoom,
         minZoom = minZoom ?: JsUndefined,
@@ -114,6 +109,10 @@ internal fun PreInit.toOptions(container: DOMElement): MapLibreMap.Options {
         minPitch = minPitch ?: JsUndefined,
         maxPitch = maxPitch ?: JsUndefined,
     )
+}
+
+actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
+    on("click") { callback(geoCoordinateFromLngLat(it.asDynamic().lngLat)) }
 }
 
 private fun <T> MapView.lateInit(

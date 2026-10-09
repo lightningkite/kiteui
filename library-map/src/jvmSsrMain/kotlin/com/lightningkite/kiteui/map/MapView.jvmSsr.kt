@@ -2,16 +2,26 @@ package com.lightningkite.kiteui.map
 
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
-import com.lightningkite.reactive.core.LateInitSignal
 import com.lightningkite.services.data.GeoCoordinate
 
-actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
+actual class MapView actual constructor(
+    context: ElementContext, val interactive: Boolean
+) : NativeElement(context), Map.BaseProperties {
     init {
         native.tag = "div"
         native.classes.add("map-view-ssr-placeholder")
     }
 
-    actual val api: LateInitSignal<Map.Api> get() = TODO("Not yet implemented")
-    actual var style: Map.Style? = null
-    actual var center: GeoCoordinate = GeoCoordinate(0.0, 0.0)
+    actual override var style: Map.Style? = null
+    internal actual val preInit: PreInit
+        get() = TODO("Not yet implemented")
+    actual val camera: Map.Camera
+        get() = TODO("Not yet implemented")
+
+    actual fun createMarker(position: GeoCoordinate): Map.Marker {
+        TODO("Not yet implemented")
+    }
+}
+
+actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) {
 }

@@ -9,7 +9,6 @@ import com.lightningkite.reactive.core.LateInitSignal
 import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import org.maplibre.android.MapLibre
 import org.maplibre.android.annotations.Marker
 import org.maplibre.android.annotations.MarkerOptions
@@ -19,38 +18,31 @@ import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
-import kotlin.coroutines.resume
 import kotlin.reflect.KMutableProperty1
 import kotlin.run
 import org.maplibre.android.maps.MapView as MapLibreMapView
 
-actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
+actual class MapView actual constructor(
+    context: ElementContext, val interactive: Boolean
+) : NativeElement(context), Map.BaseProperties {
+    internal actual val preInit = PreInit()
     val map = LateInitSignal<MapLibreMap>()
 
-    internal actual val preInit = PreInit()
+    actual override var style by lateInit(PreInit::style, { style.toMapStyle() }) { setStyle(it.toBuilder()) }
 
-    private fun ifReady(action: MapLibreMap.() -> Unit) {
-        map.state.getOrNull()?.action()
-    }
+    actual val camera = object : Map.Camera {
+        override var center by lateInit(
+            PreInit::center, {
+                cameraPosition.target?.toGeoCoordinate() ?: GeoCoordinate(0.0, 0.0)
+            }) { moveCamera(CameraUpdateFactory.newLatLng(it.toLatLng())) }
+        override var zoom by lateInit(PreInit::zoom, { zoom }) { moveCamera(CameraUpdateFactory.zoomTo(it)) }
+        override var minZoom by lateInit(PreInit::minZoom, { minZoomLevel }) { setMinZoomPreference(it ?: 0.0) }
+        override var maxZoom by lateInit(PreInit::maxZoom, { maxZoomLevel }) { setMaxZoomPreference(it ?: 22.0) }
+        override var pitch by lateInit(PreInit::pitch, { cameraPosition.tilt }) { CameraUpdateFactory.tiltTo(it) }
+        override var minPitch by lateInit(PreInit::minPitch, { minPitch }) { setMinPitchPreference(it ?: 0.0) }
+        override var maxPitch by lateInit(PreInit::maxPitch, { maxPitch }) { setMaxPitchPreference(it ?: 90.0) }
 
-    actual var style: Map.Style? = Map.Style.Demo
-        set(value) {
-            field = value
-            ifReady { setStyle(value.toBuilder()) }
-        }
-
-    actual inner class Camera {
-        actual var center by lateInit(PreInit::center, {
-            cameraPosition.target?.toGeoCoordinate() ?: GeoCoordinate(0.0, 0.0)
-        }) { moveCamera(CameraUpdateFactory.newLatLng(it.toLatLng())) }
-        actual var zoom by lateInit(PreInit::zoom, { zoom }) { moveCamera(CameraUpdateFactory.zoomTo(it)) }
-        actual var minZoom by lateInit(PreInit::minZoom, { minZoomLevel }) { setMinZoomPreference(it ?: 0.0) }
-        actual var maxZoom by lateInit(PreInit::maxZoom, { maxZoomLevel }) { setMaxZoomPreference(it ?: 22.0) }
-        actual var pitch by lateInit(PreInit::pitch, { cameraPosition.tilt }) { CameraUpdateFactory.tiltTo(it) }
-        actual var minPitch by lateInit(PreInit::minPitch, { minPitch }) { setMinPitchPreference(it ?: 0.0) }
-        actual var maxPitch by lateInit(PreInit::maxPitch, { maxPitch }) { setMaxPitchPreference(it ?: 90.0) }
-
-        actual fun easeTo(options: Map.EaseToOptions) = lateRun {
+        override fun easeTo(options: Map.EaseToOptions) = lateRun {
             easeCamera(
                 options.toCameraUpdate(this),
                 options.duration.inWholeMilliseconds.toInt(),
@@ -58,16 +50,14 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
             )
         }
 
-        actual fun flyTo(options: Map.FlyToOptions) = lateRun {
+        override fun flyTo(options: Map.FlyToOptions) = lateRun {
             animateCamera(options.toCameraUpdate(this), options.duration.inWholeMilliseconds.toInt())
         }
 
-        actual fun stopAnimation() {
+        override fun stopAnimation() {
             launch { map.awaitOnce().cancelTransitions() }
         }
     }
-
-    actual val camera = Camera()
 
     actual fun createMarker(position: GeoCoordinate) = object : Map.Marker {
         var current = position
@@ -88,13 +78,9 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 
         override fun remove() {
             removed = true
-            raw?.let { r -> ifReady { removeMarker(r) } }
+//            raw?.let { r -> ifReady { removeMarker(r) } }
             raw = null
         }
-    }
-
-    actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
-        addOnMapClickListener { callback(it.toGeoCoordinate()); true }
     }
 
     override val native: View = run {
@@ -126,11 +112,21 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
 
         getMapAsync {
             preInit.toOptions(it)
+            it.uiSettings.isCompassEnabled = false
+            it.uiSettings.setAllGesturesEnabled(interactive)
             map.value = it
         }
     }
 }
 
+actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
+    addOnMapClickListener { callback(it.toGeoCoordinate()); true }
+}
+
+private fun Style?.toMapStyle(): Map.Style {
+    if (this == null) return Map.Style.Json("{}")
+    return Map.Style.Url(uri)
+}
 
 private fun Map.Style?.toBuilder(): Style.Builder = when (this) {
     is Map.Style.Json -> Style.Builder().fromJson(json)
@@ -141,24 +137,19 @@ private fun Map.Style?.toBuilder(): Style.Builder = when (this) {
 fun GeoCoordinate.toLatLng() = LatLng(latitude, longitude)
 fun LatLng.toGeoCoordinate() = GeoCoordinate(latitude, longitude)
 
-private fun Map.CameraOptions.toCameraUpdate(map: MapLibreMap): CameraUpdate =
-    CameraUpdateFactory.newCameraPosition(
-        CameraPosition.Builder(map.cameraPosition).apply {
-            center?.let { target(it.toLatLng()) }
-            zoom?.let { zoom(it) }
-            bearing?.let { bearing(it) }
-            pitch?.let { tilt(it) }
-        }.build()
-    )
+private fun Map.CameraOptions.toCameraUpdate(map: MapLibreMap): CameraUpdate = CameraUpdateFactory.newCameraPosition(
+    CameraPosition.Builder(map.cameraPosition).apply {
+        center?.let { target(it.toLatLng()) }
+        zoom?.let { zoom(it) }
+        bearing?.let { bearing(it) }
+        pitch?.let { tilt(it) }
+    }.build()
+)
 
 
 internal fun PreInit.toOptions(map: MapLibreMap) {
     map.setStyle(style.toBuilder())
-    map.cameraPosition = CameraPosition.Builder()
-        .target(center.toLatLng())
-        .zoom(zoom)
-        .tilt(pitch)
-        .build()
+    map.cameraPosition = CameraPosition.Builder().target(center.toLatLng()).zoom(zoom).tilt(pitch).build()
     minZoom?.let { map.setMinZoomPreference(it) }
     maxZoom?.let { map.setMaxZoomPreference(it) }
     minPitch?.let { map.setMinPitchPreference(it) }

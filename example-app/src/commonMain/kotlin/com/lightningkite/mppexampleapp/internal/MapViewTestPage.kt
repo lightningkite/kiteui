@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.map.Map
 import com.lightningkite.kiteui.map.mapView
 import com.lightningkite.kiteui.map.mark
 import com.lightningkite.kiteui.map.markMany
+import com.lightningkite.kiteui.map.onClick
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page

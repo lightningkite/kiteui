@@ -14,35 +14,19 @@ import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
 import kotlin.time.Duration
 
-expect class MapView(context: ElementContext) : NativeElement {
-    var style: Map.Style?
-
+expect class MapView(context: ElementContext, interactive: Boolean) : NativeElement, Map.BaseProperties {
     internal val preInit: PreInit
 
-    inner class Camera {
-        var center: GeoCoordinate
-        var zoom: Double
-        var minZoom: Double?
-        var maxZoom: Double?
-        var pitch: Double
-        var minPitch: Double?
-        var maxPitch: Double?
-
-        fun easeTo(options: Map.EaseToOptions)
-        fun flyTo(options: Map.FlyToOptions)
-        fun stopAnimation()
-    }
-
-    val camera: Camera
+    override var style: Map.Style?
+    val camera: Map.Camera
 
     fun createMarker(position: GeoCoordinate): Map.Marker
-
-    fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit)
 }
 
-inline fun ElementWriter.mapView(setup: MapView.() -> Unit) =
-    write(MapView(context), setup)
+inline fun ElementWriter.mapView(interactive: Boolean = true, setup: MapView.() -> Unit) =
+    write(MapView(context, interactive), setup)
 
+expect fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit)
 
 object Map {
     sealed interface Style {
@@ -56,6 +40,25 @@ object Map {
         }
     }
 
+    interface BaseProperties {
+        var style: Style?
+    }
+
+    interface CameraProperties {
+        var center: GeoCoordinate
+        var zoom: Double
+        var minZoom: Double?
+        var maxZoom: Double?
+        var pitch: Double
+        var minPitch: Double?
+        var maxPitch: Double?
+    }
+
+    interface Camera : CameraProperties {
+        fun easeTo(options: Map.EaseToOptions)
+        fun flyTo(options: Map.FlyToOptions)
+        fun stopAnimation()
+    }
 
     interface CameraOptions {
         val center: GeoCoordinate?
@@ -156,15 +159,17 @@ fun <T> MapView.markMany(items: Reactive<Collection<T>>, toId: (it: T) -> Int, t
  * runs first) and forward those to the initializer.
  */
 internal data class PreInit(
-    var style: Map.Style? = Map.Style.Demo,
-    var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
-    var zoom: Double = 0.0,
-    var minZoom: Double? = null,
-    var maxZoom: Double? = null,
-    var pitch: Double = 0.0,
-    var minPitch: Double? = null,
-    var maxPitch: Double? = null,
-)
+    override var style: Map.Style? = Map.Style.Demo,
+
+    // Camera
+    override var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
+    override var zoom: Double = 0.0,
+    override var minZoom: Double? = null,
+    override var maxZoom: Double? = null,
+    override var pitch: Double = 0.0,
+    override var minPitch: Double? = null,
+    override var maxPitch: Double? = null,
+) : Map.BaseProperties, Map.CameraProperties
 
 internal class LateInit<T, M>(
     val mapView: MapView,

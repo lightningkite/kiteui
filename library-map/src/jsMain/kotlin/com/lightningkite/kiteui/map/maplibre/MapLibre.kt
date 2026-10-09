@@ -7,8 +7,7 @@
  *
  * Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0
  */
-@file:JsModule("maplibre-gl")
-@file:JsNonModule
+@file:JsModule("maplibre-gl") @file:JsNonModule
 
 package com.lightningkite.kiteui.map.maplibre
 
@@ -85,6 +84,8 @@ external class Map(options: Options) {
     interface Options {
         val container: Element
         val style: Any?
+        val interactive: Boolean?
+
         val center: LngLat?
         val zoom: Double?
         val minZoom: Double?
