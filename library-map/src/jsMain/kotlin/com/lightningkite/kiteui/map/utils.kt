@@ -14,9 +14,9 @@ val JsUndefined = js("undefined")
 /** Util for https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/events.ts#L233 */
 fun MapLibreMap.onStyleData(callback: () -> Unit) = on("styledata", callback as Listener<Any>)
 
-fun Map.Style.toUnion() = when (this) {
-    is Map.Style.Json -> json
-    is Map.Style.Url -> url
+fun Style.toUnion() = when (this) {
+    is Style.Json -> json
+    is Style.Url -> url
 }
 
 fun geoCoordinateFromLngLat(lngLat: LngLat) = GeoCoordinate(lngLat.lat, lngLat.lng)

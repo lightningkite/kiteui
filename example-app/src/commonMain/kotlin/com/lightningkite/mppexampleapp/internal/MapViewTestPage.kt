@@ -3,8 +3,9 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.current
+import com.lightningkite.kiteui.map.Camera
 import com.lightningkite.kiteui.map.I_SWEAR_ON_MY_JOB
-import com.lightningkite.kiteui.map.Map
+import com.lightningkite.kiteui.map.Style
 import com.lightningkite.kiteui.map.mapView
 import com.lightningkite.kiteui.map.mark
 import com.lightningkite.kiteui.map.markMany
@@ -48,11 +49,11 @@ object MapViewTestPage : Page {
 
             val map = mapView(I_SWEAR_ON_MY_JOB.I_DO_NOT_NEED_ATTRIBUTION) {
                 ::style style@{
-                    if (useBaseDemoTiles()) return@style Map.Style.Demo
-                    if (Platform.current == Platform.Web) return@style Map.Style.GlobeDemo
+                    if (useBaseDemoTiles()) return@style Style.Demo
+                    if (Platform.current == Platform.Web) return@style Style.GlobeDemo
                     // MapLibre on mobile currently (unfortunately) only supports the Mercator projection,
                     // so I'm using a separate debug style instead. It's a useful style in its own right.
-                    Map.Style.Debug
+                    Style.Debug
                 }
 
                 mark(markerPosition)
@@ -81,22 +82,22 @@ object MapViewTestPage : Page {
 
                 card.button {
                     icon(Icon.travelExplore, "Test Ease To")
-                    onClick { launch { map.camera.easeTo(Random.nextEaseToOptions()) } }
+                    onClick { launch { map.camera.ease(Random.nextAnimateTo()) } }
                 }
 
                 card.button {
                     icon(Icon.travel, "Test Fly To")
-                    onClick { launch { map.camera.flyTo(Random.nextFlyToOptions()) } }
+                    onClick { launch { map.camera.fly(Random.nextAnimateTo()) } }
                 }
 
-                val multipartFlyToJob = Signal<Job?>(null)
+                val multipartAnimateJob = Signal<Job?>(null)
                 card.button {
                     icon(Icon.planeContrails, "Test Multipart flyTo")
                     onClick {
-                        multipartFlyToJob.value = launch {
+                        multipartAnimateJob.value = launch {
                             while (true) {
-                                val options = Random.nextFlyToOptions()
-                                map.camera.flyTo(options)
+                                val options = Random.nextAnimateTo()
+                                map.camera.fly(options)
                                 delay(options.duration)
                             }
                         }
@@ -105,7 +106,7 @@ object MapViewTestPage : Page {
 
                 card.button {
                     icon(Icon.airplaneModeInactive, "Cancel Animation")
-                    onClick { map.camera.stopAnimation(); multipartFlyToJob()?.cancel() }
+                    onClick { map.camera.stopAnimation(); multipartAnimateJob()?.cancel() }
                 }
 
                 card.button {
@@ -131,15 +132,8 @@ object MapViewTestPage : Page {
 }
 
 fun Random.nextGeoCoordinate() = GeoCoordinate(nextDouble(-90.0, 90.0), nextDouble(-180.0, 180.0))
-fun Random.nextEaseToOptions() = Map.EaseToOptions(
-    center = nextGeoCoordinate(),
-    zoom = nextDouble(0.0, 5.0),
-    bearing = nextDouble(0.0, 360.0),
-    pitch = nextDouble(0.0, 60.0),
-    duration = nextDouble(0.5, 3.0).seconds,
-)
 
-fun Random.nextFlyToOptions() = Map.FlyToOptions(
+fun Random.nextAnimateTo() = Camera.AnimateTo(
     center = nextGeoCoordinate(),
     zoom = nextDouble(3.0, 8.0),
     bearing = nextDouble(0.0, 360.0),

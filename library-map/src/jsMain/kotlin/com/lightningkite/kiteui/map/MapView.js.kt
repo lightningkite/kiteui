@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.map
 import com.lightningkite.kiteui.dom.DOMElement
 import com.lightningkite.kiteui.map.maplibre.EaseToOptions
 import com.lightningkite.kiteui.map.maplibre.FlyToOptions
-import com.lightningkite.kiteui.map.maplibre.Marker
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.map.maplibre.Map as MapLibreMap
@@ -18,15 +17,15 @@ import kotlin.reflect.KMutableProperty1
 
 actual class MapView actual constructor(
     context: ElementContext, val disableAttribution: I_SWEAR_ON_MY_JOB?, val interactive: Boolean
-) : NativeElement(context), Map.BaseProperties {
+) : NativeElement(context), BaseProperties {
     internal actual val preInit = PreInit()
     val map = LateInitSignal<MapLibreMap>()
 
     actual override var style by lateInit(PreInit::style, {
-        getStyleUrl()?.let { Map.Style.Url(it) } //?: Map.Style.Json(getStyle().toString())
+        getStyleUrl()?.let { Style.Url(it) } //?: Map.Style.Json(getStyle().toString())
     }) { setStyle(it?.toUnion()) }
 
-    actual val camera = object : Map.Camera {
+    actual val camera = object : Camera {
         override var center by lateInit(PreInit::center, { getCenter().toGeoCoordinate() }) { setCenter(it.toLngLat()) }
         override var zoom by lateInit(PreInit::zoom, MapLibreMap::getZoom, MapLibreMap::setZoom)
         override var minZoom by lateInit(PreInit::minZoom, MapLibreMap::getMinZoom, MapLibreMap::setMinZoom)
@@ -35,26 +34,26 @@ actual class MapView actual constructor(
         override var minPitch by lateInit(PreInit::minPitch, MapLibreMap::getMinPitch, MapLibreMap::setMinPitch)
         override var maxPitch by lateInit(PreInit::maxPitch, MapLibreMap::getMaxPitch, MapLibreMap::setMaxPitch)
 
-        override fun easeTo(options: Map.EaseToOptions) = lateRun {
+        override fun ease(animateTo: Camera.AnimateTo) = lateRun {
             easeTo(
                 EaseToOptions(
-                    center = options.center?.toLngLat(),
-                    zoom = options.zoom,
-                    bearing = options.bearing,
-                    pitch = options.pitch,
-                    duration = options.duration.inWholeMilliseconds.toDouble(),
+                    center = animateTo.center?.toLngLat(),
+                    zoom = animateTo.zoom,
+                    bearing = animateTo.bearing,
+                    pitch = animateTo.pitch,
+                    duration = animateTo.duration.inWholeMilliseconds.toDouble(),
                 )
             )
         }
 
-        override fun flyTo(options: Map.FlyToOptions) = lateRun {
+        override fun fly(animateTo: Camera.AnimateTo) = lateRun {
             flyTo(
                 FlyToOptions(
-                    center = options.center?.toLngLat(),
-                    zoom = options.zoom,
-                    bearing = options.bearing,
-                    pitch = options.pitch,
-                    duration = options.duration.inWholeMilliseconds.toDouble(),
+                    center = animateTo.center?.toLngLat(),
+                    zoom = animateTo.zoom,
+                    bearing = animateTo.bearing,
+                    pitch = animateTo.pitch,
+                    duration = animateTo.duration.inWholeMilliseconds.toDouble(),
                 )
             )
         }
@@ -64,8 +63,8 @@ actual class MapView actual constructor(
         }
     }
 
-    actual fun createMarker(position: GeoCoordinate) = object : Map.Marker {
-        val raw = Marker()
+    actual fun createMarker(position: GeoCoordinate) = object : Marker {
+        val raw = com.lightningkite.kiteui.map.maplibre.Marker()
 
         init {
             raw.setLngLat(position.toLngLat())

@@ -15,13 +15,13 @@ import kotlin.reflect.KProperty
 import kotlin.time.Duration
 
 expect class MapView(context: ElementContext, disableAttribution: I_SWEAR_ON_MY_JOB?, interactive: Boolean) :
-    NativeElement, Map.BaseProperties {
+    NativeElement, BaseProperties {
     internal val preInit: PreInit
 
-    override var style: Map.Style?
-    val camera: Map.Camera
+    override var style: Style?
+    val camera: Camera
 
-    fun createMarker(position: GeoCoordinate): Map.Marker
+    fun createMarker(position: GeoCoordinate): Marker
 }
 
 inline fun ElementWriter.mapView(
@@ -32,14 +32,16 @@ inline fun ElementWriter.mapView(
 
 expect fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit)
 
+
 /**
- * Yes, this is supposed to be attention grabbing.
+ * Yes, this is meant to be attention grabbing.
  *
  * You really need to handle attribution correctly, as it's potentially a legal issue. Check
  * all the third-party map APIs you are using and what kind of attribution they require, if any.
  * MapLibre itself does not require attribution, as it's licensed under 3-Clause BSD.
  *
- * Setting this doesn't actually do anything behind the scenes. It's just a form of in-code docs.
+ * Setting this doesn't actually do anything behind the scenes. It's just a form of in-code docs
+ * (and a way to make it slightly harder to forget to handle it).
  *
  * As an example, basemaps obtained from `Map.Style.Url()` commonly require attribution.
  */
@@ -51,10 +53,44 @@ enum class I_SWEAR_ON_MY_JOB {
     I_DO_NOT_NEED_ATTRIBUTION,
 
     /** Choose this if you are handling attribution manually elsewhere in the app. */
-    I_AM_HANDLING_IT_MYSELF,
+    I_AM_HANDLING_ATTRIBUTION,
 }
 
-object Map {
+
+    /**
+     * The MapLibre map is not initialized immediately on android and web, so we need to keep track
+     * of state changes that happen before initialization (e.i., in the KiteUI initializer, which
+     * runs first) and forward those to the initializer.
+     */
+    internal data class PreInit(
+        override var style: Style? = Style.Demo,
+
+        // Camera
+        override var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
+        override var zoom: Double = 0.0,
+        override var minZoom: Double? = null,
+        override var maxZoom: Double? = null,
+        override var pitch: Double = 0.0,
+        override var minPitch: Double? = null,
+        override var maxPitch: Double? = null,
+    ) : BaseProperties, CameraProperties
+
+    internal class LateInit<T, M>(
+        val mapView: MapView,
+        val getMapState: MapView.() -> ReactiveState<M>,
+        val preInitProp: KMutableProperty1<PreInit, T>,
+        val getter: M.() -> T,
+        val setter: M.(T) -> Unit,
+    ) : ReadWriteProperty<Any, T> {
+        override fun getValue(thisRef: Any, property: KProperty<*>) =
+            mapView.getMapState().getOrNull()?.run { getter() } ?: preInitProp.get(mapView.preInit)
+
+        override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
+            preInitProp.set(mapView.preInit, value)
+            mapView.getMapState().getOrNull()?.setter(value)
+        }
+    }
+
     sealed interface Style {
         data class Url(val url: String) : Style
         data class Json(val json: String) : Style
@@ -81,46 +117,18 @@ object Map {
     }
 
     interface Camera : CameraProperties {
-        fun easeTo(options: Map.EaseToOptions)
-        fun flyTo(options: Map.FlyToOptions)
+        fun ease(animateTo: AnimateTo)
+        fun fly(animateTo: AnimateTo)
         fun stopAnimation()
+
+        data class AnimateTo(
+            val center: GeoCoordinate? = null,
+            val zoom: Double? = null,
+            val bearing: Double? = null,
+            val pitch: Double? = null,
+            val duration: Duration,
+        )
     }
-
-    interface CameraOptions {
-        val center: GeoCoordinate?
-        val zoom: Double?
-        val bearing: Double?
-        val pitch: Double?
-    }
-
-    interface AnimationOptions {
-        val duration: Duration?
-        val easing: Easing
-
-        sealed interface Easing {
-            object Default : Easing
-            object Linear : Easing
-            data class CubicBezier(val x1: Double, val y1: Double, val x2: Double, val y2: Double) : Easing
-        }
-    }
-
-    data class EaseToOptions(
-        override val center: GeoCoordinate? = null,
-        override val zoom: Double? = null,
-        override val bearing: Double? = null,
-        override val pitch: Double? = null,
-        override val duration: Duration,
-        override val easing: AnimationOptions.Easing = AnimationOptions.Easing.Default,
-    ) : CameraOptions, AnimationOptions
-
-    data class FlyToOptions(
-        override val center: GeoCoordinate? = null,
-        override val zoom: Double? = null,
-        override val bearing: Double? = null,
-        override val pitch: Double? = null,
-        override val duration: Duration,
-        override val easing: AnimationOptions.Easing = AnimationOptions.Easing.Default,
-    ) : CameraOptions, AnimationOptions
 
     interface Feature<T> {
         fun update(data: T)
@@ -128,15 +136,11 @@ object Map {
     }
 
     interface Marker : Feature<GeoCoordinate>
-}
 
 
 /** Creates a reactive map feature */
-fun <FEATURE : Map.Feature<D>, D : Any> MapView.feature(
-    data: Reactive<D?>,
-    createFeature: MapView.(data: D) -> FEATURE
-) {
-    val feature = Signal<FEATURE?>(null)
+fun <F : Feature<D>, D : Any> MapView.feature(data: Reactive<D?>, createFeature: MapView.(data: D) -> F) {
+    val feature = Signal<F?>(null)
 
     reactive(reentrancyLimit = 1) {
         val data = data()
@@ -152,13 +156,13 @@ fun <FEATURE : Map.Feature<D>, D : Any> MapView.feature(
 }
 
 /** Creates a reactive set of map features */
-fun <ITEM, FEATURE : Map.Feature<D>, D : Any> MapView.featureMany(
+fun <ITEM, F : Feature<D>, D : Any> MapView.featureMany(
     items: Reactive<Collection<ITEM>>,
     toId: (it: ITEM) -> Int,
     toData: (item: ITEM) -> D,
-    createFeature: MapView.(data: D) -> FEATURE
+    createFeature: MapView.(data: D) -> F
 ) {
-    val features = Signal<Set<Pair<Int, Map.Feature<D>>>>(emptySet())
+    val features = Signal<Set<Pair<Int, Feature<D>>>>(emptySet())
 
     reactive(reentrancyLimit = 1) {
         val items = items()
@@ -179,36 +183,3 @@ fun <T> MapView.markMany(items: Reactive<Collection<T>>, toId: (it: T) -> Int, t
     featureMany(items, toId, toData) { createMarker(it) }
 
 
-/**
- * The MapLibre map is not initialized immediately on android and web, so we need to keep track
- * of state changes that happen before initialization (e.i., in the KiteUI initializer, which
- * runs first) and forward those to the initializer.
- */
-internal data class PreInit(
-    override var style: Map.Style? = Map.Style.Demo,
-
-    // Camera
-    override var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
-    override var zoom: Double = 0.0,
-    override var minZoom: Double? = null,
-    override var maxZoom: Double? = null,
-    override var pitch: Double = 0.0,
-    override var minPitch: Double? = null,
-    override var maxPitch: Double? = null,
-) : Map.BaseProperties, Map.CameraProperties
-
-internal class LateInit<T, M>(
-    val mapView: MapView,
-    val getMapState: MapView.() -> ReactiveState<M>,
-    val preInitProp: KMutableProperty1<PreInit, T>,
-    val getter: M.() -> T,
-    val setter: M.(T) -> Unit,
-) : ReadWriteProperty<Any, T> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) =
-        mapView.getMapState().getOrNull()?.run { getter() } ?: preInitProp.get(mapView.preInit)
-
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
-        preInitProp.set(mapView.preInit, value)
-        mapView.getMapState().getOrNull()?.setter(value)
-    }
-}

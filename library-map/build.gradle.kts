@@ -62,7 +62,8 @@ kotlin {
 
         val androidMain = getByName("androidMain") {
             dependencies {
-                implementation(libs.maplibre.android)
+                implementation(libs.maplibre.android.core)
+                implementation(libs.maplibre.android.annotation)
             }
         }
 
