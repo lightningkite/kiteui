@@ -29,6 +29,7 @@ import kotlin.time.DurationUnit
 public class MediaView(private val frame: Frame) : Element by frame {
     public constructor(context: ElementContext) : this(Frame(context))
 
+
     public data class Info(
         val sources: List<VisualMediaSource>,
         val scaleType: ImageScaleType,
@@ -46,17 +47,6 @@ public class MediaView(private val frame: Frame) : Element by frame {
         }
         onRemove {
             removeListener()
-
-            (currentRawMediaView.value as? RawVideoView)?.let { videoView ->
-                launch { videoView.playing set false }
-            }
-
-            lastRender?.forEach { render ->
-                if (render is RawVideoView) launch { render.playing set false }
-            }
-            retiredRenders.forEach { render ->
-                if (render is RawVideoView) launch { render.playing set false }
-            }
         }
     }
 
@@ -162,7 +152,6 @@ public class MediaView(private val frame: Frame) : Element by frame {
         retiredRenders.clear()
         renders.forEach {
             if (frame.areAnimationsEnabled && !opaqueTransitions) {
-                // For crossfades, wait exactly the transition duration (removed the + 500ms hack)
                 afterTimeout(it.theme.transitionDuration.inWholeMilliseconds) {
                     removeChildrenLater(listOf(it))
                 }
@@ -172,9 +161,32 @@ public class MediaView(private val frame: Frame) : Element by frame {
         }
     }
 
+    /**
+     * Fades the video's volume to zero, then pauses it. The video keeps playing during the fade
+     * so the audio change is audible.
+     */
+    private fun fadeOutVideo(video: RawVideoView) {
+        launch {
+            val transitionTime = video.theme.transitionDuration * 3 / 4
+            val start = Clock.System.now()
+            val startVolume = video.volume()
+            while (Clock.System.now() - start < transitionTime) {
+                delay(1.seconds / 30)
+                val t = ((Clock.System.now() - start) / transitionTime).toFloat().coerceIn(0f, 1f)
+                video.volume set startVolume * (1f - t)
+            }
+            video.volume set 0f
+            video.playing set false
+        }
+    }
+
     public val shownInfo: RawReactive<Info?> = RawReactive<Info?>(ReactiveState(null))
     public var cannotBeCovered: Boolean = false
 
+    /**
+     * Re-renders from [info]. Call this directly to retry after a failed load: a failure clears
+     * the record of what was shown, but reassigning an equal [info] is a no-op.
+     */
     @OptIn(ExperimentalKiteUi::class)
     public fun refresh() {
         if (!ready) return
@@ -182,33 +194,15 @@ public class MediaView(private val frame: Frame) : Element by frame {
         if (lastRendered != info) {
             val keyChanged = lastRendered != null && info != null && lastRendered?.key != info.key
             val replacingPlaceholder = lastRendered?.isPlaceholder == true
-            val shouldAnimateOut = keyChanged && !replacingPlaceholder
+            val animateOut = keyChanged && !replacingPlaceholder && !opaqueTransitions
 
             lastRender?.let { renders ->
                 renders.forEach { render ->
                     if (render is RawVideoView) {
-                        launch { render.playing set false }
+                        if (animateOut) fadeOutVideo(render)
+                        else launch { render.playing set false }
                     }
-                }
-
-                if (shouldAnimateOut) {
-                    renders.forEach { render ->
-                        render.opacity = 0.0
-
-                        if (render is RawVideoView) {
-                            launch {
-                                val transitionTime = render.theme.transitionDuration * 3 / 4
-                                val start = Clock.System.now()
-                                val startVolume = render.volume()
-                                while (Clock.System.now() - start < transitionTime) {
-                                    delay(1.seconds / 30)
-                                    val t = ((Clock.System.now() - start) / transitionTime).toFloat().coerceIn(0f, 1f)
-                                    render.volume set startVolume * (1f - t)
-                                }
-                                render.volume set 0f
-                            }
-                        }
-                    }
+                    if (animateOut) render.opacity = 0.0
                 }
                 retiredRenders.addAll(renders)
             }
@@ -216,125 +210,126 @@ public class MediaView(private val frame: Frame) : Element by frame {
             shownInfo.state = ReactiveState.notReady
             lastRendered = info
             activityIndicator.opacity = 1.0
-            lastRender = info?.let { info ->
-                val self = this@MediaView
 
-                buildList {
-                    for ((sourceIndex, source) in info.sources.withIndex()) {
-                        when (source) {
-                            is ImageSource -> {
-                                add(
-                                    frame.themed(
-                                        backgroundTheme
-                                    ).rawImage(source, info.description ?: "", info.scaleType) {
-                                        themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
-                                        themeChoice
-
-                                        if (!self.opaqueTransitions) {
-                                            opacity = 0.0
-                                        }
-
-                                        reactive {
-                                            this@rawImage.state.state().handle(
-                                                success = {
-                                                    if (self.lastRendered == info) {
-                                                        //  DO NOT animate fade-in if opaqueTransitions is true
-                                                        if (!self.opaqueTransitions) opacity = 1.0
-
-                                                        self.lastRender?.take(sourceIndex)
-                                                            ?.let(self::removeChildrenLater)
-                                                        self.removeRetiredRenders()
-                                                        self.activityIndicator.opacity = 0.0
-                                                        self.shownInfo.state = ReactiveState(info)
-                                                        self.currentRawMediaView.value = this@rawImage
-                                                    }
-                                                },
-                                                exception = {
-                                                    self.removeChildrenLater(listOf(this@rawImage))
-                                                    if (self.lastRendered == info) {
-                                                        self.activityIndicator.opacity = 0.0
-                                                        self.shownInfo.state = ReactiveState.exception(it)
-                                                        self.lastRendered = null
-                                                        // Load failed: don't leave the previous render(s) stranded in retiredRenders.
-                                                        self.removeRetiredRenders()
-                                                        if (self.info !== info) {
-                                                            self.refresh()
-                                                        }
-                                                    }
-                                                },
-                                                notReady = {}
-                                            )
-                                        }
-                                    })
-                            }
-
-                            is VideoSource -> {
-                                add(
-                                    frame.themed(
-                                        backgroundTheme
-                                    ).rawVideo(source, info.description ?: "", info.scaleType) {
-                                        themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
-                                        themeChoice
-
-                                        if (!self.opaqueTransitions) {
-                                            opacity = 0.0
-                                        }
-
-                                        launch { volume set 0f }
-                                        this.showControls = this@MediaView.showControls
-                                        this.loop = this@MediaView.loop
-                                        reactive {
-                                            this@rawVideo.state.state().handle(
-                                                success = {
-                                                    if (self.lastRendered == info) {
-                                                        launch {
-                                                            val transitionTime = theme.transitionDuration * 3 / 4
-                                                            val start = Clock.System.now()
-                                                            while (Clock.System.now() - start < transitionTime) {
-                                                                delay(1.seconds / 30)
-                                                                volume set ((Clock.System.now() - start) / transitionTime).toFloat()
-                                                                    .coerceIn(0f, 1f)
-                                                            }
-                                                            volume set 1f
-                                                        }
-
-                                                        //DO NOT animate fade-in if opaqueTransitions is true
-                                                        if (!self.opaqueTransitions) opacity = 1.0
-
-                                                        self.lastRender?.take(sourceIndex)
-                                                            ?.let(self::removeChildrenLater)
-                                                        self.removeRetiredRenders()
-                                                        self.activityIndicator.opacity = 0.0
-                                                        self.shownInfo.state = ReactiveState(info)
-                                                        self.currentRawMediaView.value = this@rawVideo
-                                                    }
-                                                },
-                                                exception = {
-                                                    self.removeChildrenLater(listOf(this@rawVideo))
-                                                    if (self.lastRendered == info) {
-                                                        self.activityIndicator.opacity = 0.0
-                                                        self.shownInfo.state = ReactiveState.exception(it)
-                                                        self.lastRendered = null
-
-                                                        self.removeRetiredRenders()
-                                                        if (self.info !== info) {
-                                                            self.refresh()
-                                                        }
-                                                    }
-                                                },
-                                                notReady = {}
-                                            )
-                                        }
-                                    })
-                            }
-                        }
-                    }
-                }
-            } ?: run {
+            if (info == null) {
                 removeRetiredRenders()
                 this@MediaView.shownInfo.state = ReactiveState(null)
                 activityIndicator.opacity = 0.0
-                null
+            } else {
+                val self = this@MediaView
+                // Published before the loop so a synchronous success can see the sources built so far.
+                val renders = ArrayList<Element>()
+                lastRender = renders
+
+                for ((sourceIndex, source) in info.sources.withIndex()) {
+                    when (source) {
+                        is ImageSource -> {
+                            renders.add(
+                                frame.themed(
+                                    backgroundTheme
+                                ).rawImage(source, info.description ?: "", info.scaleType) {
+                                    themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+                                    themeChoice
+
+                                    if (!self.opaqueTransitions) {
+                                        opacity = 0.0
+                                    }
+
+                                    reactive {
+                                        this@rawImage.state.state().handle(
+                                            success = {
+                                                if (self.lastRendered == info) {
+                                                    //  DO NOT animate fade-in if opaqueTransitions is true
+                                                    if (!self.opaqueTransitions) opacity = 1.0
+
+                                                    self.lastRender?.take(sourceIndex)
+                                                        ?.let(self::removeChildrenLater)
+                                                    self.removeRetiredRenders()
+                                                    self.activityIndicator.opacity = 0.0
+                                                    self.shownInfo.state = ReactiveState(info)
+                                                    self.currentRawMediaView.value = this@rawImage
+                                                }
+                                            },
+                                            exception = {
+                                                self.removeChildrenLater(listOf(this@rawImage))
+                                                if (self.lastRendered == info) {
+                                                    self.activityIndicator.opacity = 0.0
+                                                    self.shownInfo.state = ReactiveState.exception(it)
+                                                    self.lastRendered = null
+                                                    // Load failed: don't leave the previous render(s) stranded in retiredRenders.
+                                                    self.removeRetiredRenders()
+                                                    if (self.info !== info) {
+                                                        self.refresh()
+                                                    }
+                                                }
+                                            },
+                                            notReady = {}
+                                        )
+                                    }
+                                })
+                        }
+
+                        is VideoSource -> {
+                            renders.add(
+                                frame.themed(
+                                    backgroundTheme
+                                ).rawVideo(source, info.description ?: "", info.scaleType) {
+                                    themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+                                    themeChoice
+
+                                    if (!self.opaqueTransitions) {
+                                        opacity = 0.0
+                                    }
+
+                                    launch { volume set 0f }
+                                    this.showControls = this@MediaView.showControls
+                                    this.loop = this@MediaView.loop
+                                    reactive {
+                                        this@rawVideo.state.state().handle(
+                                            success = {
+                                                if (self.lastRendered == info) {
+                                                    launch {
+                                                        val transitionTime = theme.transitionDuration * 3 / 4
+                                                        val start = Clock.System.now()
+                                                        while (Clock.System.now() - start < transitionTime) {
+                                                            delay(1.seconds / 30)
+                                                            volume set ((Clock.System.now() - start) / transitionTime).toFloat()
+                                                                .coerceIn(0f, 1f)
+                                                        }
+                                                        volume set 1f
+                                                    }
+
+                                                    //DO NOT animate fade-in if opaqueTransitions is true
+                                                    if (!self.opaqueTransitions) opacity = 1.0
+
+                                                    self.lastRender?.take(sourceIndex)
+                                                        ?.let(self::removeChildrenLater)
+                                                    self.removeRetiredRenders()
+                                                    self.activityIndicator.opacity = 0.0
+                                                    self.shownInfo.state = ReactiveState(info)
+                                                    self.currentRawMediaView.value = this@rawVideo
+                                                }
+                                            },
+                                            exception = {
+                                                self.removeChildrenLater(listOf(this@rawVideo))
+                                                if (self.lastRendered == info) {
+                                                    self.activityIndicator.opacity = 0.0
+                                                    self.shownInfo.state = ReactiveState.exception(it)
+                                                    self.lastRendered = null
+
+                                                    self.removeRetiredRenders()
+                                                    if (self.info !== info) {
+                                                        self.refresh()
+                                                    }
+                                                }
+                                            },
+                                            notReady = {}
+                                        )
+                                    }
+                                })
+                        }
+                    }
+                }
             }
         }
     }

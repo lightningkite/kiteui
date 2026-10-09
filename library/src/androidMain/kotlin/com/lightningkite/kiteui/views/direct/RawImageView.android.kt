@@ -98,6 +98,14 @@ internal class DeferredGlideSizeCallbacks {
     }
 }
 
+private fun measuredSize(widthSpec: Int, heightSpec: Int): Pair<Int, Int>? {
+    val width =
+        if (MeasureSpec.getMode(widthSpec) > 0) MeasureSpec.getSize(widthSpec) else AppState.windowInfo.value.width.value.toInt()
+    val height =
+        if (MeasureSpec.getMode(heightSpec) > 0) MeasureSpec.getSize(heightSpec) else AppState.windowInfo.value.height.value.toInt()
+    return if (width != 0 && height != 0) width to height else null
+}
+
 public actual abstract class RawImageViewLike constructor(
     context: ElementContext,
     public actual val source: ImageSource,
@@ -203,13 +211,7 @@ public actual class RawImageView actual constructor(
                     widthMeasureSpecLast = widthMeasureSpec
                     heightMeasureSpecLast = heightMeasureSpec
                     if (sizeReadyCallbacks.hasCallbacks) {
-                        val width =
-                            if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
-                        val height =
-                            if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(
-                                heightMeasureSpecLast
-                            ) else AppState.windowInfo.value.height.value.toInt()
-                        if (width != 0 && height != 0) {
+                        measuredSize(widthMeasureSpecLast, heightMeasureSpecLast)?.let { (width, height) ->
                             sizeReadyCallbacks.dispatch(width, height)
                         }
                     }
@@ -230,22 +232,14 @@ public actual class RawImageView actual constructor(
 
             @SuppressLint("MissingSuperCall")
             override fun getSize(cb: SizeReadyCallback) {
-                if (widthMeasureSpecLast != 0) {
-                    val width =
-                        if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
-                    val height =
-                        if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
-                    if (width != 0 && height != 0) {
-                        if (measureDepth > 0 || isInLayout) {
-                            sizeReadyCallbacks.addWithSize(cb, width, height)
-                        } else {
-                            cb.onSizeReady(width, height)
-                        }
-                    } else {
-                        sizeReadyCallbacks.add(cb)
-                    }
-                } else {
+                val size =
+                    if (widthMeasureSpecLast != 0) measuredSize(widthMeasureSpecLast, heightMeasureSpecLast) else null
+                if (size == null) {
                     sizeReadyCallbacks.add(cb)
+                } else if (measureDepth > 0 || isInLayout) {
+                    sizeReadyCallbacks.addWithSize(cb, size.first, size.second)
+                } else {
+                    cb.onSizeReady(size.first, size.second)
                 }
             }
 
@@ -350,13 +344,7 @@ public actual class SizelessRawImageView actual constructor(
                     widthMeasureSpecLast = widthMeasureSpec
                     heightMeasureSpecLast = heightMeasureSpec
                     if (sizeReadyCallbacks.hasCallbacks) {
-                        val width =
-                            if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
-                        val height =
-                            if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(
-                                heightMeasureSpecLast
-                            ) else AppState.windowInfo.value.height.value.toInt()
-                        if (width != 0 && height != 0) {
+                        measuredSize(widthMeasureSpecLast, heightMeasureSpecLast)?.let { (width, height) ->
                             sizeReadyCallbacks.dispatch(width, height)
                         }
                     }
@@ -387,22 +375,14 @@ public actual class SizelessRawImageView actual constructor(
 
             @SuppressLint("MissingSuperCall")
             override fun getSize(cb: SizeReadyCallback) {
-                if (widthMeasureSpecLast != 0) {
-                    val width =
-                        if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
-                    val height =
-                        if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
-                    if (width != 0 && height != 0) {
-                        if (measureDepth > 0 || isInLayout) {
-                            sizeReadyCallbacks.addWithSize(cb, width, height)
-                        } else {
-                            cb.onSizeReady(width, height)
-                        }
-                    } else {
-                        sizeReadyCallbacks.add(cb)
-                    }
-                } else {
+                val size =
+                    if (widthMeasureSpecLast != 0) measuredSize(widthMeasureSpecLast, heightMeasureSpecLast) else null
+                if (size == null) {
                     sizeReadyCallbacks.add(cb)
+                } else if (measureDepth > 0 || isInLayout) {
+                    sizeReadyCallbacks.addWithSize(cb, size.first, size.second)
+                } else {
+                    cb.onSizeReady(size.first, size.second)
                 }
             }
 
