@@ -16,6 +16,13 @@ plugins {
 // Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
 if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
 
+val generateMapLibreStyle by tasks.registering(GenerateMapLibreStyle::class) {
+    specFile.set(layout.projectDirectory.file("maplibre-style-spec/v8.json"))
+    layerTypes.set(listOf("circle", "fill", "line", "symbol"))
+    packageName.set("com.lightningkite.kiteui.map.style")
+    outputDir.set(layout.buildDirectory.dir("generated/maplibreStyle/commonMain/kotlin"))
+}
+
 kotlin {
     applyDefaultHierarchyTemplate()
 
@@ -54,9 +61,12 @@ kotlin {
 
     sourceSets {
         val commonMain = getByName("commonMain") {
+            kotlin.srcDir(generateMapLibreStyle)
             dependencies {
                 api(project(":library"))
                 api("com.lightningkite.services:data-shared:1.3.0-prerelease-86-c4aefa99")
+                api(libs.spatialk.geojson)
+                api(libs.kotlinx.serialization.json)
             }
         }
 

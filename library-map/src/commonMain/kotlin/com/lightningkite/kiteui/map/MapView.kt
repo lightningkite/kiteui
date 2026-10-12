@@ -4,24 +4,27 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.write
-import com.lightningkite.reactive.context.reactive
-import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
-import com.lightningkite.reactive.core.Signal
 import com.lightningkite.services.data.GeoCoordinate
+import com.lightningkite.kiteui.map.style.LayerWithSource
+import org.maplibre.spatialk.geojson.GeoJsonObject
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
 import kotlin.time.Duration
+import kotlin.uuid.Uuid
 
-expect class MapView(context: ElementContext, disableAttribution: I_SWEAR_ON_MY_JOB?, interactive: Boolean) :
-    NativeElement, BaseProperties {
+/** A MapLibre wrapper. Supports Android, iOS, and Web. */
+expect class MapView(
+    context: ElementContext, disableAttribution: I_SWEAR_ON_MY_JOB?, interactive: Boolean
+) : NativeElement, BaseProperties {
     internal val preInit: PreInit
 
-    override var style: Style?
-    val camera: Camera
+    override var style: Style
+    val sources: MutableMap<Uuid, GeoJsonObject>
+    val layers: MutableMap<Uuid, LayerWithSource>
 
-    fun createMarker(position: GeoCoordinate): Marker
+    val camera: Camera
 }
 
 inline fun ElementWriter.mapView(
@@ -63,7 +66,7 @@ enum class I_SWEAR_ON_MY_JOB {
  * runs first) and forward those to the initializer.
  */
 internal data class PreInit(
-    override var style: Style? = Style.Demo,
+    override var style: Style = Style.Demo,
 
     // Camera
     override var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
@@ -74,6 +77,56 @@ internal data class PreInit(
     override var minPitch: Double? = null,
     override var maxPitch: Double? = null,
 ) : BaseProperties, CameraProperties
+
+internal class StyleDataMap<K, V : Any>(
+    private val onPut: (key: K, old: V?, new: V) -> Unit,
+    private val onRemove: (key: K, old: V) -> Unit,
+) : AbstractMutableMap<K, V>() {
+    private val backing = LinkedHashMap<K, V>()
+
+    override val size: Int get() = backing.size
+    override fun get(key: K): V? = backing[key]
+    override fun containsKey(key: K): Boolean = backing.containsKey(key)
+    override fun put(key: K, value: V): V? = backing.put(key, value).also { onPut(key, it, value) }
+    override fun remove(key: K): V? = backing.remove(key)?.also { onRemove(key, it) }
+
+    override val entries: MutableSet<MutableMap.MutableEntry<K, V>> = object : AbstractMutableSet<MutableMap.MutableEntry<K, V>>() {
+        override val size: Int get() = backing.size
+        override fun add(element: MutableMap.MutableEntry<K, V>): Boolean = put(element.key, element.value) != element.value
+
+        override fun iterator(): MutableIterator<MutableMap.MutableEntry<K, V>> = object : MutableIterator<MutableMap.MutableEntry<K, V>> {
+            private val inner = backing.entries.iterator()
+            private var last: MutableMap.MutableEntry<K, V>? = null
+
+            override fun hasNext() = inner.hasNext()
+
+            override fun next(): MutableMap.MutableEntry<K, V> {
+                val entry = inner.next().also { last = it }
+                return object : MutableMap.MutableEntry<K, V> {
+                    override val key get() = entry.key
+                    override val value get() = entry.value
+                    override fun setValue(newValue: V) = put(entry.key, newValue)!!
+                }
+            }
+
+            override fun remove() {
+                val removed = checkNotNull(last) { "next() has not been called" }
+                val (key, value) = removed.key to removed.value
+                inner.remove()
+                last = null
+                onRemove(key, value)
+            }
+        }
+    }
+}
+
+/** Logs instead of throwing, so one bad source or layer doesn't keep the rest off the map. */
+internal inline fun attemptMapChange(description: String, action: () -> Unit): Unit? = try {
+    action()
+} catch (e: Exception) {
+    println("MapView: failed to $description: $e")
+    null
+}
 
 internal class LateInit<T, M>(
     val mapView: MapView,
@@ -103,7 +156,7 @@ sealed interface Style {
 }
 
 interface BaseProperties {
-    var style: Style?
+    var style: Style
 }
 
 interface CameraProperties {
@@ -129,54 +182,3 @@ interface Camera : CameraProperties {
         val duration: Duration,
     )
 }
-
-interface Feature<T> {
-    fun update(data: T)
-    fun remove()
-}
-
-interface Marker : Feature<GeoCoordinate>
-
-/** Creates a reactive map feature */
-fun <F : Feature<D>, D : Any> MapView.feature(data: Reactive<D?>, createFeature: MapView.(data: D) -> F) {
-    val feature = Signal<F?>(null)
-
-    reactive(reentrancyLimit = 1) {
-        val data = data()
-        if (data == null) {
-            feature()?.remove()
-            feature.value = null
-            return@reactive
-        }
-
-        feature()?.update(data)
-        if (feature() == null) feature.value = createFeature(data)
-    }
-}
-
-/** Creates a reactive set of map features */
-fun <ITEM, F : Feature<D>, D : Any> MapView.featureMany(
-    items: Reactive<Collection<ITEM>>,
-    toId: (it: ITEM) -> Int,
-    toData: (item: ITEM) -> D,
-    createFeature: MapView.(data: D) -> F
-) {
-    val features = Signal<Set<Pair<Int, Feature<D>>>>(emptySet())
-
-    reactive(reentrancyLimit = 1) {
-        val items = items()
-        val currentMarkers = features()
-
-        val newPoints = items.filter { !currentMarkers.map { it.first }.contains(toId(it)) }
-        val newMarkers = newPoints.map { toId(it) to createFeature(toData(it)) }
-
-        val removeMarkers = currentMarkers.filter { !items.map(toId).contains(it.first) }
-        removeMarkers.forEach { it.second.remove() }
-
-        features.value = currentMarkers.filter { items.map(toId).contains(it.first) }.toSet() + newMarkers
-    }
-}
-
-fun MapView.mark(data: Reactive<GeoCoordinate?>) = feature(data) { createMarker(it) }
-fun <T> MapView.markMany(items: Reactive<Collection<T>>, toId: (it: T) -> Int, toData: (it: T) -> GeoCoordinate) =
-    featureMany(items, toId, toData) { createMarker(it) }

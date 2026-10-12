@@ -1,9 +1,17 @@
 /**
  * External MapLibre TypeScript typedefs
  *
- * If the npm package version changes, this may become out of sync! Double check that the
+ * If the npm package version changes, this may become out-of-sync! Double check that the
  * current version of each linked source file is the same as the npm package version in
- * /library-map/build.gradle.kts before using this as the source of truth
+ * /library-map/build.gradle.kts before using this as the source of truth.
+ *
+ * If these versions are out-of-sync, please update them to match. It should just take a
+ * find-and-replace to update the tagged version. The referenced line numbers will take
+ * more effort though, so don't worry too much about those. It should be easy enough to
+ * find the typedef as long as the file it is defined in hasn't changed.
+ *
+ * If you are working on this and notice a link that is incorrect AND you have the correct
+ * reference on hand, please update it!
  *
  * Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0
  */
@@ -13,6 +21,7 @@ package com.lightningkite.kiteui.map.maplibre
 
 import kotlinx.js.JsPlainObject
 import org.w3c.dom.Element
+import kotlin.js.Promise
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L592 */
 external class Map(options: Options) {
@@ -74,10 +83,34 @@ external class Map(options: Options) {
     fun setStyle(style: Any?, options: Any? = definedExternally)
 
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2822 */
-    fun getStyle(): Any
+    fun getStyle(): StyleSpecification
 
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2838 */
     fun getStyleUrl(): String?
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2912 */
+    fun addSource(id: String, source: SourceSpecification): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2931 */
+    fun isSourceLoaded(id: String): Boolean
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3066 */
+    fun removeSource(id: String): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3093 */
+    fun getSource(id: String): Source?
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3502 */
+    fun addLayer(layer: AddLayerObject, beforeId: String? = definedExternally): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3520 */
+    fun moveLayer(id: String, beforeId: String? = definedExternally): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3538 */
+    fun removeLayer(id: String): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3557 */
+    fun getLayer(id: String): StyleLayer?
 
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L84 */
     @JsPlainObject
@@ -96,6 +129,75 @@ external class Map(options: Options) {
         val maxPitch: Double?
     }
 }
+
+
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/source.ts#L31 */
+external interface Source
+
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/style/style_layer.ts */
+external interface StyleLayer
+
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/geojson_source.ts#L165 */
+abstract external class GeoJSONSource : Source {
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/geojson_source.ts#L297 */
+    fun setData(data: Any)
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/geojson_source.ts#L317 */
+    fun updateData(diff: Diff): Promise<Unit>
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/geojson_source.ts#L334 */
+    fun getData(): Promise<Any>
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/geojson_source_diff.ts#L10 */
+    @JsPlainObject
+    interface Diff {
+        val removeAll: Boolean?
+        val remove: List<String>?
+        val add: List<Any>?
+        val update: List<FeatureDiff>?
+
+        /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/geojson_source_diff.ts#L33 */
+        @JsPlainObject
+        interface FeatureDiff {
+            val id: String
+            val newGeometry: Any?
+            val removeAllProperties: Boolean?
+            val removeProperties: List<String>?
+            val addOrUpdateProperties: List<KeyValuePair>
+
+            @JsPlainObject
+            interface KeyValuePair {
+                val key: String
+                val value: Any
+            }
+        }
+    }
+}
+
+/**
+ * Generated from reference defined at https://github.com/maplibre/maplibre-style-spec/blob/v26.4.4/src/reference/v8.json
+ * Docs: https://maplibre.org/maplibre-style-spec/
+ */
+@JsPlainObject
+external interface StyleSpecification
+
+/**
+ * Generated from reference defined at https://github.com/maplibre/maplibre-style-spec/blob/v26.4.4/src/reference/v8.json
+ * Docs: https://maplibre.org/maplibre-style-spec/sources/
+ */
+@JsPlainObject
+external interface SourceSpecification
+
+/**
+ * Generated from reference defined at https://github.com/maplibre/maplibre-style-spec/blob/v26.4.4/src/reference/v8.json
+ * Docs: https://maplibre.org/maplibre-style-spec/layers/
+ */
+@JsPlainObject
+external interface LayerSpecification
+
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/style/style.ts#L199 */
+@JsPlainObject
+external interface AddLayerObject : LayerSpecification
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L288 */
 external class Marker(options: Options? = definedExternally) {

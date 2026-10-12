@@ -10,14 +10,43 @@ import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.coroutines.launch
 import org.maplibre.android.MapLibre
-import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdate
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.style.expressions.Expression
+import org.maplibre.android.style.layers.BackgroundLayer
+import org.maplibre.android.style.layers.CircleLayer
+import org.maplibre.android.style.layers.ColorReliefLayer
+import org.maplibre.android.style.layers.FillExtrusionLayer
+import org.maplibre.android.style.layers.FillLayer
+import org.maplibre.android.style.layers.HeatmapLayer
+import org.maplibre.android.style.layers.HillshadeLayer
+import org.maplibre.android.style.layers.Layer
+import org.maplibre.android.style.layers.LayoutPropertyValue
+import org.maplibre.android.style.layers.LineLayer
+import org.maplibre.android.style.layers.PaintPropertyValue
+import org.maplibre.android.style.layers.PropertyValue
+import org.maplibre.android.style.layers.RasterLayer
+import org.maplibre.android.style.layers.SymbolLayer
+import org.maplibre.android.style.sources.GeoJsonSource
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.float
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import com.lightningkite.kiteui.map.style.LayerWithSource
+import org.maplibre.spatialk.geojson.GeoJsonObject
+import org.maplibre.spatialk.geojson.toJson
 import kotlin.reflect.KMutableProperty1
 import kotlin.run
+import kotlin.uuid.Uuid
 import org.maplibre.android.maps.Style as MapLibreStyle
 import org.maplibre.android.maps.MapView as MapLibreMapView
 
@@ -27,7 +56,86 @@ actual class MapView actual constructor(
     internal actual val preInit = PreInit()
     val map = LateInitSignal<MapLibreMap>()
 
-    actual override var style by lateInit(PreInit::style, { style.toMapStyle() }) { setStyle(it.toBuilder()) }
+    actual override var style by lateInit(PreInit::style, {
+        style.toMapStyle()
+    }) {
+        loadedStyle = null
+        setStyle(it.toBuilder(), ::onStyleLoaded)
+    }
+
+    private var loadedStyle: MapLibreStyle? = null
+
+    actual val sources: MutableMap<Uuid, GeoJsonObject> = StyleDataMap(::onSourcePut, ::onSourceRemove)
+    actual val layers: MutableMap<Uuid, LayerWithSource> = StyleDataMap(::onLayerPut, ::onLayerRemove)
+
+    private fun onSourcePut(id: Uuid, old: GeoJsonObject?, data: GeoJsonObject) {
+        val style = loadedStyle ?: return
+        if (!style.hasSource(id)) {
+            style.addGeoJsonSource(id, data)
+            style.addMissingLayers { it.source == id }
+        } else if (old !== data) {
+            attemptMapChange("update source $id") {
+                style.getSourceAs<GeoJsonSource>(id.toString())!!.setGeoJson(data.toJson())
+            }
+        }
+    }
+
+    private fun onSourceRemove(id: Uuid, old: GeoJsonObject) {
+        val style = loadedStyle ?: return
+        // MapLibre won't remove a source while layers use it. They're re-added if the source comes back.
+        for ((layerId, layer) in layers) {
+            if (layer.source == id) style.removeLayerIfPresent(layerId)
+        }
+        if (style.hasSource(id)) attemptMapChange("remove source $id") { style.removeSource(id.toString()) }
+    }
+
+    private fun onLayerPut(id: Uuid, old: LayerWithSource?, layer: LayerWithSource) {
+        val style = loadedStyle ?: return
+        if (old == layer && style.hasLayer(id)) return
+        // MapLibre can't replace a layer in place, but removal is synchronous, so re-adding works.
+        style.removeLayerIfPresent(id)
+        // A new key is last in the map, so its layer goes on top. A replaced one keeps its position.
+        style.addStyleLayer(id, layer, beforeId = if (old == null) null else style.nextLayerAbove(id))
+    }
+
+    private fun onLayerRemove(id: Uuid, old: LayerWithSource) {
+        loadedStyle?.removeLayerIfPresent(id)
+    }
+
+    private fun onStyleLoaded(style: MapLibreStyle) {
+        loadedStyle = style
+        for ((id, data) in sources) style.addGeoJsonSource(id, data)
+        style.addMissingLayers { true }
+    }
+
+    private fun MapLibreStyle.hasSource(id: Uuid) = getSource(id.toString()) != null
+    private fun MapLibreStyle.hasLayer(id: Uuid) = getLayer(id.toString()) != null
+
+    private fun MapLibreStyle.addGeoJsonSource(id: Uuid, data: GeoJsonObject) = attemptMapChange("add source $id") {
+        addSource(GeoJsonSource(id.toString(), data.toJson()))
+    }
+
+    private fun MapLibreStyle.addStyleLayer(id: Uuid, layer: LayerWithSource, beforeId: Uuid?): Boolean {
+        if (!hasSource(layer.source)) return false
+        return attemptMapChange("add layer $id") {
+            val nativeLayer = layerFromJson(id.toString(), layer.toJson())
+            if (beforeId == null) addLayer(nativeLayer) else addLayerBelow(nativeLayer, beforeId.toString())
+        } != null
+    }
+
+    private fun MapLibreStyle.removeLayerIfPresent(id: Uuid) {
+        if (hasLayer(id)) attemptMapChange("remove layer $id") { removeLayer(id.toString()) }
+    }
+
+    private fun MapLibreStyle.nextLayerAbove(id: Uuid): Uuid? =
+        this@MapView.layers.keys.asSequence().dropWhile { it != id }.drop(1).firstOrNull { hasLayer(it) }
+
+    private fun MapLibreStyle.addMissingLayers(predicate: (LayerWithSource) -> Boolean) {
+        var above: Uuid? = null
+        for ((id, layer) in this@MapView.layers.entries.reversed()) {
+            if (hasLayer(id) || (predicate(layer) && addStyleLayer(id, layer, above))) above = id
+        }
+    }
 
     actual val camera = object : Camera {
         override var center by lateInit(
@@ -52,30 +160,6 @@ actual class MapView actual constructor(
 
         override fun stopAnimation() {
             launch { map.awaitOnce().cancelTransitions() }
-        }
-    }
-
-    actual fun createMarker(position: GeoCoordinate) = object : Marker {
-        var current = position
-        var raw: org.maplibre.android.annotations.Marker? = null
-        var removed = false
-
-        init {
-            launch {
-                val map = map.awaitOnce()
-                if (!removed) raw = map.addMarker(MarkerOptions().position(current.toLatLng()))
-            }
-        }
-
-        override fun update(data: GeoCoordinate) {
-            current = data
-            raw?.setPosition(data.toLatLng())
-        }
-
-        override fun remove() {
-            removed = true
-//            raw?.let { r -> ifReady { removeMarker(r) } }
-            raw = null
         }
     }
 
@@ -107,7 +191,7 @@ actual class MapView actual constructor(
         })
 
         getMapAsync {
-            preInit.toOptions(it)
+            preInit.toOptions(it, ::onStyleLoaded)
             it.uiSettings.isAttributionEnabled = disableAttribution == null
             it.uiSettings.isLogoEnabled = false
             it.uiSettings.isCompassEnabled = false
@@ -145,13 +229,61 @@ private fun Camera.AnimateTo.toCameraUpdate(map: MapLibreMap): CameraUpdate = Ca
 )
 
 
-internal fun PreInit.toOptions(map: MapLibreMap) {
-    map.setStyle(style.toBuilder())
+internal fun PreInit.toOptions(map: MapLibreMap, onStyleLoaded: (MapLibreStyle) -> Unit) {
+    map.setStyle(style.toBuilder(), onStyleLoaded)
     map.cameraPosition = CameraPosition.Builder().target(center.toLatLng()).zoom(zoom).tilt(pitch).build()
     minZoom?.let { map.setMinZoomPreference(it) }
     maxZoom?.let { map.setMaxZoomPreference(it) }
     minPitch?.let { map.setMinPitchPreference(it) }
     maxPitch?.let { map.setMaxPitchPreference(it) }
+}
+
+private fun layerFromJson(id: String, json: JsonObject): Layer {
+    val type = json["type"]?.jsonPrimitive?.content
+    val source = json["source"]?.jsonPrimitive?.content ?: ""
+    val layer = when (type) {
+        "background" -> BackgroundLayer(id)
+        "circle" -> CircleLayer(id, source)
+        "color-relief" -> ColorReliefLayer(id, source)
+        "fill" -> FillLayer(id, source)
+        "fill-extrusion" -> FillExtrusionLayer(id, source)
+        "heatmap" -> HeatmapLayer(id, source)
+        "hillshade" -> HillshadeLayer(id, source)
+        "line" -> LineLayer(id, source)
+        "raster" -> RasterLayer(id, source)
+        "symbol" -> SymbolLayer(id, source)
+        else -> throw IllegalArgumentException("Unsupported layer type '$type'")
+    }
+
+    json["minzoom"]?.let { layer.minZoom = it.jsonPrimitive.float }
+    json["maxzoom"]?.let { layer.maxZoom = it.jsonPrimitive.float }
+
+    json["filter"]?.let {
+        val filter = Expression.Converter.convert(it.toString())
+        when (layer) {
+            is CircleLayer -> layer.setFilter(filter)
+            is FillLayer -> layer.setFilter(filter)
+            is FillExtrusionLayer -> layer.setFilter(filter)
+            is HeatmapLayer -> layer.setFilter(filter)
+            is LineLayer -> layer.setFilter(filter)
+            is SymbolLayer -> layer.setFilter(filter)
+            else -> throw IllegalArgumentException("Layer type '$type' does not support filters")
+        }
+    }
+
+    val properties = ArrayList<PropertyValue<*>>()
+    json["paint"]?.jsonObject?.forEach { (name, value) -> properties += PaintPropertyValue(name, value.toNativeValue()) }
+    json["layout"]?.jsonObject?.forEach { (name, value) -> properties += LayoutPropertyValue(name, value.toNativeValue()) }
+    layer.setProperties(*properties.toTypedArray())
+
+    return layer
+}
+
+private fun JsonElement.toNativeValue(): Any? = when (this) {
+    JsonNull -> null
+    is JsonArray -> Array(size) { this[it].toNativeValue() }
+    is JsonObject -> HashMap(mapValues { it.value.toNativeValue() })
+    is JsonPrimitive -> if (isString) content else booleanOrNull ?: double
 }
 
 private fun <T> MapView.lateInit(

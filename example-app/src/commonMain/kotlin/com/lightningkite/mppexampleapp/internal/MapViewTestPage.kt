@@ -8,8 +8,11 @@ import com.lightningkite.kiteui.map.I_SWEAR_ON_MY_JOB
 import com.lightningkite.kiteui.map.Style
 import com.lightningkite.kiteui.map.mapView
 import com.lightningkite.kiteui.map.mark
-import com.lightningkite.kiteui.map.markMany
+import com.lightningkite.kiteui.map.markAll
 import com.lightningkite.kiteui.map.onClick
+import com.lightningkite.kiteui.map.style.CircleLayer
+import com.lightningkite.kiteui.map.style.const
+import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
@@ -45,7 +48,7 @@ object MapViewTestPage : Page {
         unpadded.frame {
             val useBaseDemoTiles = Signal(true)
             val markerPosition = Signal(GeoCoordinate(0.0, 0.0))
-            val markerCollection = Signal(listOf<Pair<Int, GeoCoordinate>>())
+            val markerCollection = Signal(listOf<GeoCoordinate>())
 
             val map = mapView(I_SWEAR_ON_MY_JOB.I_DO_NOT_NEED_ATTRIBUTION) {
                 ::style style@{
@@ -56,8 +59,15 @@ object MapViewTestPage : Page {
                     Style.Debug
                 }
 
-                mark(markerPosition)
-                markMany(markerCollection, { it.first }) { it.second }
+                mark(markerPosition, listOf(Constant(CircleLayer(
+                    color = const(Color.blue),
+                    radius = const(10.0),
+                ))))
+
+                markAll(markerCollection, listOf(Constant(CircleLayer(
+                    color = const(Color.red),
+                    radius = const(10.0),
+                ))))
 
                 onClick { markerPosition.value = it }
             }
@@ -111,7 +121,7 @@ object MapViewTestPage : Page {
 
                 card.button {
                     icon(Icon.addLocationAlt, "Add Marker")
-                    onClick { markerCollection.modify { it + (it.size to Random.nextGeoCoordinate()) } }
+                    onClick { markerCollection.modify { it + Random.nextGeoCoordinate() } }
                 }
 
                 card.button {

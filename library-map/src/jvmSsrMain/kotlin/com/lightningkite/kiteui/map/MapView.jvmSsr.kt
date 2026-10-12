@@ -2,7 +2,10 @@ package com.lightningkite.kiteui.map
 
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.kiteui.map.style.LayerWithSource
 import com.lightningkite.services.data.GeoCoordinate
+import org.maplibre.spatialk.geojson.GeoJsonObject
+import kotlin.uuid.Uuid
 
 actual class MapView actual constructor(
     context: ElementContext, val interactive: Boolean
@@ -11,6 +14,9 @@ actual class MapView actual constructor(
         native.tag = "div"
         native.classes.add("map-view-ssr-placeholder")
     }
+
+    actual val sources: MutableMap<Uuid, GeoJsonObject> = LinkedHashMap()
+    actual val layers: MutableMap<Uuid, LayerWithSource> = LinkedHashMap()
 
     actual override var style: Map.Style? = null
     internal actual val preInit: PreInit
