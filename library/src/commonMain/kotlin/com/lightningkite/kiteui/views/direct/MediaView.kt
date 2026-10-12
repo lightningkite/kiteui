@@ -15,6 +15,7 @@ import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.theme
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.flatten
@@ -33,9 +34,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
     public data class Info(
         val sources: List<VisualMediaSource>,
         val scaleType: ImageScaleType,
-        val description: String?,
-        val key: Any? = null,
-        val isPlaceholder: Boolean = false
+        val description: String?
     )
 
     public val currentRawMediaView: Signal<Element?> = Signal<Element?>(null)
@@ -120,7 +119,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
     private var lastRendered: Info? = null
     private var lastRender: List<Element>? = null
     private val retiredRenders = ArrayList<Element>()
-
+    private var shownSource: VisualMediaSource? = null
     public val activityIndicator: ActivityIndicator = frame.centered.activityIndicator { opacity = 0.0 }
 
     private fun removeChildIfPresent(element: Element) {
@@ -143,22 +142,57 @@ public class MediaView(private val frame: Frame) : Element by frame {
     }
 
     /**
-     * Flushes anything sitting in retiredRenders. Safe to call multiple times
-     * (e.g. once from a success handler, and again defensively from an
-     * exception handler) since it clears the list up front.
+     * Removes renders that a newly revealed render has replaced. Non-opaque swaps keep them
+     * visible underneath until the new render has faded in, so the background never shows.
      */
-    private fun removeRetiredRenders() {
-        val renders = retiredRenders.toList()
+    private fun removeSuperseded(elements: List<Element>) {
+        if (elements.isEmpty()) return
+        if (opaqueTransitions || !frame.areAnimationsEnabled) {
+            removeChildrenLater(elements)
+        } else {
+            afterTimeout(theme.transitionDuration.inWholeMilliseconds) {
+                removeChildrenLater(elements)
+            }
+        }
+    }
+
+    /**
+     * Flushes anything sitting in retiredRenders. Safe to call multiple times
+     * since it clears the list up front.
+     */
+    private fun removeRetiredRenders(transitionOut: Boolean = false, fadeVisual: Boolean = false) {
+        val renders = retiredRenders.distinct()
         retiredRenders.clear()
         renders.forEach {
-            if (frame.areAnimationsEnabled && !opaqueTransitions) {
-                afterTimeout(it.theme.transitionDuration.inWholeMilliseconds) {
-                    removeChildrenLater(listOf(it))
-                }
+            if (transitionOut && !opaqueTransitions && frame.areAnimationsEnabled) {
+                if (it is RawVideoView) fadeOutVideo(it)
+                if (fadeVisual) it.opacity = 0.0
+                removeSuperseded(listOf(it))
             } else {
+                if (it is RawVideoView) launch { it.playing set false }
+                it.visible = false
                 removeChildrenLater(listOf(it))
             }
         }
+    }
+
+    /**
+     * Keep only the currently displayed element while another source set loads. Other candidates
+     * from previous source sets can no longer become visible and should not accumulate in the
+     * frame or in [retiredRenders].
+     */
+    private fun discardRetiredRendersExceptCurrent() {
+        val current = currentRawMediaView.value
+        val keepCurrent = current != null && retiredRenders.any { it === current }
+        val obsolete = retiredRenders.filter { it !== current }
+        retiredRenders.clear()
+        // The current element may occur more than once if a previous render list was reused.
+        if (keepCurrent) retiredRenders.add(current)
+        obsolete.forEach {
+            if (it is RawVideoView) launch { it.playing set false }
+            it.visible = false
+        }
+        removeChildrenLater(obsolete)
     }
 
     /**
@@ -191,35 +225,56 @@ public class MediaView(private val frame: Frame) : Element by frame {
     public fun refresh() {
         if (!ready) return
         val info = info
-        if (lastRendered != info) {
-            val keyChanged = lastRendered != null && info != null && lastRendered?.key != info.key
-            val replacingPlaceholder = lastRendered?.isPlaceholder == true
-            val animateOut = keyChanged && !replacingPlaceholder && !opaqueTransitions
-
+        val hasContentToClear = info == null &&
+                (lastRender != null || retiredRenders.isNotEmpty() || currentRawMediaView.value != null)
+        if (lastRendered != info || hasContentToClear) {
             lastRender?.let { renders ->
-                renders.forEach { render ->
-                    if (render is RawVideoView) {
-                        if (animateOut) fadeOutVideo(render)
-                        else launch { render.playing set false }
-                    }
-                    if (animateOut) render.opacity = 0.0
-                }
                 retiredRenders.addAll(renders)
             }
             lastRender = null
+            discardRetiredRendersExceptCurrent()
             shownInfo.state = ReactiveState.notReady
             lastRendered = info
             activityIndicator.opacity = 1.0
 
-            if (info == null) {
-                removeRetiredRenders()
+            if (info == null || info.sources.isEmpty()) {
+                removeRetiredRenders(transitionOut = true, fadeVisual = true)
                 this@MediaView.shownInfo.state = ReactiveState(null)
+                shownSource = null
+                currentRawMediaView.value = null
                 activityIndicator.opacity = 0.0
             } else {
                 val self = this@MediaView
                 // Published before the loop so a synchronous success can see the sources built so far.
                 val renders = ArrayList<Element>()
                 lastRender = renders
+                // Never downgrade: if the source already on screen is still in this info, only sources at
+                // or above its index may replace it. Otherwise any source may be revealed first.
+                val shownIndex = shownSource?.let { shown -> info.sources.indexOfFirst { it == shown } } ?: -1
+                var revealedIndex = shownIndex - 1
+                val firstEligibleSourceIndex = shownIndex.coerceAtLeast(0)
+                val eligibleSourceCount = info.sources.size - firstEligibleSourceIndex
+                val failedSources = HashSet<Int>()
+
+                fun handleSourceFailure(sourceIndex: Int, element: Element, exception: Exception) {
+                    // A displayed view may fail after it was revealed. Keep it in place rather than
+                    // turning a recoverable media error into a blank frame.
+                    if (self.currentRawMediaView.value !== element) {
+                        if (element is RawVideoView) launch { element.playing set false }
+                        self.removeChildrenLater(listOf(element))
+                    }
+
+                    // A failure of one candidate must not invalidate the remaining candidates.
+                    // Only report the whole source set as failed after every eligible candidate fails.
+                    if (self.lastRendered == info && sourceIndex >= firstEligibleSourceIndex) {
+                        failedSources.add(sourceIndex)
+                        if (failedSources.size >= eligibleSourceCount) {
+                            self.activityIndicator.opacity = 0.0
+                            self.shownInfo.state = ReactiveState.exception(exception)
+                            self.lastRendered = null
+                        }
+                    }
+                }
 
                 for ((sourceIndex, source) in info.sources.withIndex()) {
                     when (source) {
@@ -231,37 +286,34 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                     themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
                                     themeChoice
 
-                                    if (!self.opaqueTransitions) {
-                                        opacity = 0.0
+                                    if (self.opaqueTransitions) {
+                                        visible = false
+                                    } else {
+                                        withoutAnimation { opacity = 0.0 }
                                     }
 
                                     reactive {
                                         this@rawImage.state.state().handle(
                                             success = {
-                                                if (self.lastRendered == info) {
-                                                    //  DO NOT animate fade-in if opaqueTransitions is true
-                                                    if (!self.opaqueTransitions) opacity = 1.0
+                                                if (self.lastRendered == info && sourceIndex > revealedIndex) {
+                                                    revealedIndex = sourceIndex
+                                                    self.removeRetiredRenders(transitionOut = true)
+                                                    if (self.opaqueTransitions) visible = true
+                                                    else opacity = 1.0
 
-                                                    self.lastRender?.take(sourceIndex)
-                                                        ?.let(self::removeChildrenLater)
-                                                    self.removeRetiredRenders()
+                                                    self.removeSuperseded(
+                                                        self.lastRender?.take(sourceIndex) ?: emptyList()
+                                                    )
                                                     self.activityIndicator.opacity = 0.0
                                                     self.shownInfo.state = ReactiveState(info)
+                                                    self.shownSource = source
                                                     self.currentRawMediaView.value = this@rawImage
+                                                } else if (self.currentRawMediaView.value !== this@rawImage) {
+                                                    self.removeChildrenLater(listOf(this@rawImage))
                                                 }
                                             },
                                             exception = {
-                                                self.removeChildrenLater(listOf(this@rawImage))
-                                                if (self.lastRendered == info) {
-                                                    self.activityIndicator.opacity = 0.0
-                                                    self.shownInfo.state = ReactiveState.exception(it)
-                                                    self.lastRendered = null
-                                                    // Load failed: don't leave the previous render(s) stranded in retiredRenders.
-                                                    self.removeRetiredRenders()
-                                                    if (self.info !== info) {
-                                                        self.refresh()
-                                                    }
-                                                }
+                                                handleSourceFailure(sourceIndex, this@rawImage, it)
                                             },
                                             notReady = {}
                                         )
@@ -277,8 +329,10 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                     themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
                                     themeChoice
 
-                                    if (!self.opaqueTransitions) {
-                                        opacity = 0.0
+                                    if (self.opaqueTransitions) {
+                                        visible = false
+                                    } else {
+                                        withoutAnimation { opacity = 0.0 }
                                     }
 
                                     launch { volume set 0f }
@@ -287,7 +341,12 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                     reactive {
                                         this@rawVideo.state.state().handle(
                                             success = {
-                                                if (self.lastRendered == info) {
+                                                if (self.lastRendered == info && sourceIndex > revealedIndex) {
+                                                    revealedIndex = sourceIndex
+                                                    self.removeRetiredRenders(transitionOut = true)
+                                                    if (self.opaqueTransitions) visible = true
+                                                    else opacity = 1.0
+
                                                     launch {
                                                         val transitionTime = theme.transitionDuration * 3 / 4
                                                         val start = Clock.System.now()
@@ -299,29 +358,19 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                                         volume set 1f
                                                     }
 
-                                                    //DO NOT animate fade-in if opaqueTransitions is true
-                                                    if (!self.opaqueTransitions) opacity = 1.0
-
-                                                    self.lastRender?.take(sourceIndex)
-                                                        ?.let(self::removeChildrenLater)
-                                                    self.removeRetiredRenders()
+                                                    self.removeSuperseded(
+                                                        self.lastRender?.take(sourceIndex) ?: emptyList()
+                                                    )
                                                     self.activityIndicator.opacity = 0.0
                                                     self.shownInfo.state = ReactiveState(info)
+                                                    self.shownSource = source
                                                     self.currentRawMediaView.value = this@rawVideo
+                                                } else if (self.currentRawMediaView.value !== this@rawVideo) {
+                                                    self.removeChildrenLater(listOf(this@rawVideo))
                                                 }
                                             },
                                             exception = {
-                                                self.removeChildrenLater(listOf(this@rawVideo))
-                                                if (self.lastRendered == info) {
-                                                    self.activityIndicator.opacity = 0.0
-                                                    self.shownInfo.state = ReactiveState.exception(it)
-                                                    self.lastRendered = null
-
-                                                    self.removeRetiredRenders()
-                                                    if (self.info !== info) {
-                                                        self.refresh()
-                                                    }
-                                                }
+                                                handleSourceFailure(sourceIndex, this@rawVideo, it)
                                             },
                                             notReady = {}
                                         )
