@@ -6,12 +6,16 @@ import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.map.Camera
 import com.lightningkite.kiteui.map.I_SWEAR_ON_MY_JOB
 import com.lightningkite.kiteui.map.Style
+import com.lightningkite.kiteui.map.circle
 import com.lightningkite.kiteui.map.mapView
-import com.lightningkite.kiteui.map.mark
-import com.lightningkite.kiteui.map.markAll
+import com.lightningkite.kiteui.map.line
+import com.lightningkite.kiteui.map.lineString
+import com.lightningkite.kiteui.map.multiPoint
 import com.lightningkite.kiteui.map.onClick
-import com.lightningkite.kiteui.map.style.CircleLayer
-import com.lightningkite.kiteui.map.style.const
+import com.lightningkite.kiteui.map.source
+import com.lightningkite.kiteui.map.point
+import com.lightningkite.kiteui.map.style.layerValue
+import com.lightningkite.kiteui.map.style.onClick
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
@@ -59,15 +63,36 @@ object MapViewTestPage : Page {
                     Style.Debug
                 }
 
-                mark(markerPosition, listOf(Constant(CircleLayer(
-                    color = const(Color.blue),
-                    radius = const(10.0),
-                ))))
+                source(markerPosition.point) {
+                    circle {
+                        color = Color.blue.layerValue
+                        radius = 10.layerValue
 
-                markAll(markerCollection, listOf(Constant(CircleLayer(
-                    color = const(Color.red),
-                    radius = const(10.0),
-                ))))
+                        onClick {  }
+                    }
+
+                    onClick {  }
+                }
+
+                source(markerCollection.multiPoint) {
+                    circle {
+                        color = Color.red.layerValue
+                        radius = 10.layerValue
+
+                        onClick {  }
+                    }
+                }
+
+                source(markerCollection.lineString) {
+                    line {
+                        color = Color.green.layerValue
+                        width = 10.layerValue
+
+                        onClick {  }
+                    }
+
+                    onClick {  }
+                }
 
                 onClick { markerPosition.value = it }
             }

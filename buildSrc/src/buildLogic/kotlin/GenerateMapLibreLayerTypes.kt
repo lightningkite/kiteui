@@ -2,7 +2,6 @@ import groovy.json.JsonSlurper
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
@@ -15,12 +14,9 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Generates typed MapLibre layer classes from the MapLibre style spec (`v8.json`).
  *
- * For each layer type in [layerTypes] (e.g. `circle`), this generates two data classes with one
- * `Expression<T>?` constructor property per paint and layout property:
- * - `CircleLayer`, implementing the hand-written `Layer` interface, which has no source. This is the
- *   one most code should use.
- * - `CircleLayerWithSource`, implementing `LayerWithSource`, which adds the source and can be
- *   encoded to style spec JSON.
+ * For each layer type in the spec (e.g. `circle`), this generates a data class (`CircleLayer`)
+ * implementing the hand-written `Layer` interface, with the source and one mutable
+ * `Expression<T>?` property per paint and layout property.
  *
  * Enum-typed properties get enum classes. Enums used by a single layer type are nested in its
  * class without the layer's name (`CircleLayer.PitchAlignment`); enums shared between layer types
@@ -30,14 +26,10 @@ import org.gradle.api.tasks.TaskAction
  * surfaces any missing value types immediately.
  */
 @CacheableTask
-abstract class GenerateMapLibreStyle : DefaultTask() {
+abstract class GenerateMapLibreLayerTypes : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val specFile: RegularFileProperty
-
-    /** Style spec layer types to generate, e.g. `circle`, `fill-extrusion`. */
-    @get:Input
-    abstract val layerTypes: ListProperty<String>
 
     @get:Input
     abstract val packageName: Property<String>
@@ -49,15 +41,23 @@ abstract class GenerateMapLibreStyle : DefaultTask() {
     fun generate() {
         @Suppress("UNCHECKED_CAST")
         val spec = JsonSlurper().parse(specFile.get().asFile) as Map<String, Any?>
-        val layerTypes = layerTypes.get()
+        @Suppress("UNCHECKED_CAST")
+        val layerTypeSpecs =
+            (spec["layer"] as Map<String, Map<String, Any?>>)["type"]!!["values"] as Map<String, Map<String, Any?>>
+        val layerTypes = layerTypeSpecs.keys
         val pkg = packageName.get()
 
         val properties = layerTypes.flatMap { layerType ->
-            listOf("paint", "layout").flatMap { group ->
+            val groupSpecs = listOf("paint", "layout").associateWith { group ->
                 @Suppress("UNCHECKED_CAST")
-                val groupSpec = spec["${group}_$layerType"] as? Map<String, Map<String, Any?>>
+                spec["${group}_$layerType"] as? Map<String, Map<String, Any?>>
                     ?: error("The style spec has no '${group}_$layerType'")
-                groupSpec.map { (name, propertySpec) -> StyleProperty(layerType, group, name, propertySpec) }
+            }
+            val layerPropertyNames = groupSpecs.values.flatMap { it.keys }.toSet()
+            groupSpecs.flatMap { (group, groupSpec) ->
+                groupSpec.map { (name, propertySpec) ->
+                    StyleProperty(layerType, group, name, propertySpec, layerPropertyNames)
+                }
             }
         }.filter { it.supportedAnywhere }
 
@@ -78,9 +78,7 @@ abstract class GenerateMapLibreStyle : DefaultTask() {
 
         for (layerType in layerTypes) {
             val className = layerClassName(layerType)
-            @Suppress("UNCHECKED_CAST")
-            val typeDoc = ((spec["layer"] as Map<String, Map<String, Any?>>)["type"]!!["values"] as Map<String, Map<String, Any?>>)[layerType]
-                ?.get("doc") as? String
+            val typeDoc = layerTypeSpecs.getValue(layerType)["doc"] as? String
             val layerProperties = properties.filter { it.layerType == layerType }
             val nestedEnums = enums.values.distinct().filter { it.ownerLayerType == layerType }.sortedBy { it.name }
             val needsAnchorOffset = layerProperties.any { it.type == "variableAnchorOffsetCollection" }
@@ -94,44 +92,22 @@ abstract class GenerateMapLibreStyle : DefaultTask() {
                 appendLine("import kotlin.uuid.Uuid")
                 appendLine()
 
-                // The layer without a source
                 appendKdoc(
-                    "${typeDoc ?: "A $layerType layer."}\n\nThis has no source; use [withSource] or " +
-                        "[${className}WithSource] to give it one.\n\nSee https://maplibre.org/maplibre-style-spec/layers/#$layerType",
-                    "",
+                    "${typeDoc ?: "A $layerType layer."}\n\nSee https://maplibre.org/maplibre-style-spec/layers/#$layerType",
+                    ""
                 )
                 appendLine("data class $className(")
-                appendCommonConstructorProperties(layerProperties, enums)
-                appendLine(") : Layer {")
-                appendLine("    override fun withSource(source: Uuid): ${className}WithSource = ${className}WithSource(")
-                appendLine("        source = source,")
-                appendCopiedProperties(layerProperties)
-                appendLine("    )")
-                for (enum in nestedEnums) {
-                    appendLine()
-                    appendEnum(enum, "    ")
-                }
-                if (needsAnchorOffset) {
-                    val anchor = enums.getValue(ANCHOR_OFFSET_ANCHOR_PROPERTY).reference
-                    appendLine()
-                    appendLine("    /** An anchor paired with the text offset to use when the label is placed at it. */")
-                    appendLine("    data class AnchorOffset(val anchor: $anchor, val offset: Offset)")
-                }
-                appendLine("}")
-                appendLine()
-
-                // The layer with a source
-                appendKdoc("A [$className] that draws [source].", "")
-                appendLine("data class ${className}WithSource(")
+                appendLine("    /** The id of the source this layer draws, as a key of `MapView.sources`. */")
                 appendLine("    override val source: Uuid,")
-                appendCommonConstructorProperties(layerProperties, enums)
-                appendLine(") : LayerWithSource {")
-                appendLine("    override fun withoutSource(): $className = $className(")
-                appendCopiedProperties(layerProperties)
-                appendLine("    )")
-                appendLine()
+                appendLine("    override var filter: Expression<Boolean>? = null,")
+                appendLine("    override var minZoom: Number? = null,")
+                appendLine("    override var maxZoom: Number? = null,")
+                for (property in layerProperties) {
+                    appendKdoc(property.kdoc(), "    ")
+                    appendLine("    var ${property.kotlinName}: Expression<${property.kotlinType(enums)}>? = null,")
+                }
+                appendLine(") : Layer {")
                 appendLine("    override fun toJson(): JsonObject = layerJson(")
-                appendLine("        type = \"$layerType\",")
                 appendLine("        paint = mapOf(")
                 for (property in layerProperties.filter { it.group == "paint" }) {
                     appendLine("            \"${property.name}\" to ${property.kotlinName},")
@@ -143,6 +119,16 @@ abstract class GenerateMapLibreStyle : DefaultTask() {
                 }
                 appendLine("        ),")
                 appendLine("    )")
+                for (enum in nestedEnums) {
+                    appendLine()
+                    appendEnum(enum, "    ")
+                }
+                if (needsAnchorOffset) {
+                    val anchor = enums.getValue(ANCHOR_OFFSET_ANCHOR_PROPERTY).reference
+                    appendLine()
+                    appendLine("    /** An anchor paired with the text offset to use when the label is placed at it. */")
+                    appendLine("    data class AnchorOffset(val anchor: $anchor, val offset: Point)")
+                }
                 appendLine("}")
             })
         }
@@ -178,11 +164,21 @@ abstract class GenerateMapLibreStyle : DefaultTask() {
         return result
     }
 
-    private class StyleProperty(val layerType: String, val group: String, val name: String, val spec: Map<String, Any?>) {
+    private class StyleProperty(
+        val layerType: String,
+        val group: String,
+        val name: String,
+        val spec: Map<String, Any?>,
+        /** The names of all properties of [layerType], to avoid shortening one into another. */
+        layerPropertyNames: Set<String>,
+    ) {
         val type = spec["type"] as String
 
-        /** The name without the layer prefix. `symbol` properties keep their `icon-` and `text-` prefixes. */
-        val shortName = name.removePrefix("$layerType-")
+        /**
+         * The name without the layer prefix, unless that is another property's name (`raster-resampling`
+         * vs. `resampling`). `symbol` properties keep their `icon-` and `text-` prefixes.
+         */
+        val shortName = name.removePrefix("$layerType-").takeUnless { it != name && it in layerPropertyNames } ?: name
 
         val kotlinName = camelCase(shortName)
 
@@ -210,7 +206,7 @@ abstract class GenerateMapLibreStyle : DefaultTask() {
         val supportedAnywhere get() = unsupportedOn.size < 3
 
         fun kotlinType(enums: Map<String, StyleEnum>): String = when (type) {
-            "number" -> "Double"
+            "number" -> "Number"
             "boolean" -> "Boolean"
             "string" -> "String"
             "color" -> "Color"
@@ -218,37 +214,39 @@ abstract class GenerateMapLibreStyle : DefaultTask() {
             "formatted" -> "Formatted"
             "resolvedImage" -> "ResolvedImage"
             "padding" -> "Padding"
+            "numberArray" -> "List<Number>"
+            "colorArray" -> "List<Color>"
             "variableAnchorOffsetCollection" -> "List<${layerClassName(layerType)}.AnchorOffset>"
             "array" -> when (val itemType = spec["value"]) {
                 "number" -> when (spec["length"]?.toString()?.toInt()) {
-                    2 -> "Offset"
+                    2 -> "Point"
                     4 -> "Padding"
-                    null -> "List<Double>"
+                    null -> "List<Number>"
                     else -> error("Unsupported number array length for $name")
                 }
+
                 "string" -> "List<String>"
                 "enum" -> "List<${enums.getValue(name).reference}>"
                 else -> error("Unsupported array item type '$itemType' for $name")
             }
+
             else -> error("Unsupported style spec type '$type' for $name")
         }
 
-        fun kdoc(): String = buildString {
-            append(spec["doc"] as? String ?: "")
-            val details = buildList {
-                spec["default"]?.let { add("Default: `${formatJson(it)}`") }
-                spec["units"]?.let { add("Units: $it") }
-                spec["minimum"]?.let { add("Minimum: $it") }
-                spec["maximum"]?.let { add("Maximum: $it") }
-                when (spec["property-type"]) {
-                    "data-constant" -> add("Can't depend on feature data")
-                    "color-ramp" -> add("Evaluated per point along the line with `lineProgress()`")
-                }
-                if (unsupportedOn.isNotEmpty()) add("**Not supported on ${unsupportedOn.joinToString()}**")
+        fun kdoc(): String = buildList {
+            add("Style spec: [`$name`](https://maplibre.org/maplibre-style-spec/layers/#$name)")
+            spec["doc"]?.let { add(it) }
+            spec["requires"]?.let { add("Requires: $it") }
+            spec["default"]?.let { add("Default: `${formatJson(it)}`") }
+            spec["units"]?.let { add("Units: $it") }
+            spec["minimum"]?.let { add("Minimum: $it") }
+            spec["maximum"]?.let { add("Maximum: $it") }
+            when (spec["property-type"]) {
+                "data-constant" -> add("Can't depend on feature data")
+                "color-ramp" -> add("Evaluated per point along the line with `lineProgress()`")
             }
-            if (details.isNotEmpty()) append("\n\n" + details.joinToString("\n\n"))
-            append("\n\nStyle spec: `$name`")
-        }
+            if (unsupportedOn.isNotEmpty()) add("**Not supported on ${unsupportedOn.joinToString()}**")
+        }.joinToString("\n\n")
     }
 
     private companion object {
@@ -261,7 +259,9 @@ abstract class GenerateMapLibreStyle : DefaultTask() {
         const val HEADER = "// Generated by GenerateMapLibreStyle from the MapLibre style spec. Do not edit."
 
         fun layerClassName(layerType: String) = pascalCase(layerType) + "Layer"
-        fun pascalCase(name: String) = name.split('-', '_').joinToString("") { it.replaceFirstChar(Char::uppercaseChar) }
+        fun pascalCase(name: String) =
+            name.split('-', '_').joinToString("") { it.replaceFirstChar(Char::uppercaseChar) }
+
         fun camelCase(name: String) = pascalCase(name).replaceFirstChar(Char::lowercaseChar)
 
         fun formatJson(value: Any?): String = when (value) {
@@ -284,23 +284,6 @@ abstract class GenerateMapLibreStyle : DefaultTask() {
                 appendLine("$indent    ${pascalCase(value)}(\"$value\"),")
             }
             appendLine("$indent}")
-        }
-
-        fun StringBuilder.appendCommonConstructorProperties(properties: List<StyleProperty>, enums: Map<String, StyleEnum>) {
-            appendLine("    override val filter: Expression<Boolean>? = null,")
-            appendLine("    override val minZoom: Double? = null,")
-            appendLine("    override val maxZoom: Double? = null,")
-            for (property in properties) {
-                appendKdoc(property.kdoc(), "    ")
-                appendLine("    val ${property.kotlinName}: Expression<${property.kotlinType(enums)}>? = null,")
-            }
-        }
-
-        fun StringBuilder.appendCopiedProperties(properties: List<StyleProperty>) {
-            appendLine("        filter = filter,")
-            appendLine("        minZoom = minZoom,")
-            appendLine("        maxZoom = maxZoom,")
-            for (property in properties) appendLine("        ${property.kotlinName} = ${property.kotlinName},")
         }
     }
 }

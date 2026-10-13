@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.map.style
 
+import com.lightningkite.kiteui.map.style.literalArray
 import com.lightningkite.kiteui.models.Color
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -36,7 +37,12 @@ private fun <T> op(name: String, vararg args: Any): Expression<T> = Expression(J
     }
 }))
 
-/** Arrays must be wrapped in `literal`, or MapLibre would read them as expressions. */
+val Color.layerValue get(): Expression<Color> = Expression(JsonPrimitive(toWeb()))
+val String.layerValue get(): Expression<String> = Expression(JsonPrimitive(this))
+val Boolean.layerValue get(): Expression<Boolean> = Expression(JsonPrimitive(this))
+val Number.layerValue get(): Expression<Number> = Expression(JsonPrimitive(this))
+val Point.layerValue get(): Expression<Point> = literalArray(listOf(JsonPrimitive(x), JsonPrimitive(y)))
+
 private fun <T> literalArray(items: List<JsonElement>): Expression<T> = op("literal", JsonArray(items))
 
 // Constants
@@ -47,7 +53,7 @@ fun const(value: Boolean): Expression<Boolean> = Expression(JsonPrimitive(value)
 fun const(value: String): Expression<String> = Expression(JsonPrimitive(value))
 fun const(value: Color): Expression<Color> = Expression(JsonPrimitive(value.toWeb()))
 fun <E : StyleEnum> const(value: E): Expression<E> = Expression(value.json)
-fun const(value: Offset): Expression<Offset> = literalArray(listOf(JsonPrimitive(value.x), JsonPrimitive(value.y)))
+fun const(value: Point): Expression<Point> = literalArray(listOf(JsonPrimitive(value.x), JsonPrimitive(value.y)))
 fun const(value: Padding): Expression<Padding> =
     literalArray(listOf(value.top, value.right, value.bottom, value.left).map(::JsonPrimitive))
 

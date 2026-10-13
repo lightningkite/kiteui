@@ -16,9 +16,10 @@ plugins {
 // Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
 if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
 
-val generateMapLibreStyle by tasks.registering(GenerateMapLibreStyle::class) {
+val generateMapLibreLayerTypes = tasks.register<GenerateMapLibreLayerTypes>("generateMapLibreLayerTypes") {
+    description = "Regenerate the MapLibre layer types from "
+
     specFile.set(layout.projectDirectory.file("maplibre-style-spec/v8.json"))
-    layerTypes.set(listOf("circle", "fill", "line", "symbol"))
     packageName.set("com.lightningkite.kiteui.map.style")
     outputDir.set(layout.buildDirectory.dir("generated/maplibreStyle/commonMain/kotlin"))
 }
@@ -61,7 +62,7 @@ kotlin {
 
     sourceSets {
         val commonMain = getByName("commonMain") {
-            kotlin.srcDir(generateMapLibreStyle)
+            kotlin.srcDir(generateMapLibreLayerTypes)
             dependencies {
                 api(project(":library"))
                 api("com.lightningkite.services:data-shared:1.3.0-prerelease-86-c4aefa99")
@@ -104,7 +105,7 @@ if (iosEnabled) {
         val xcframeworkDir = file("build/cocoapods/synthetic/ios/Pods/MapLibre/MapLibre.xcframework")
         val defFile = file("build/cocoapods/defs/MapLibre.def")
 
-        val patchMapLibreDef by tasks.registering {
+        val patchMapLibreDef = tasks.register("patchMapLibreDef") {
             dependsOn("generateDefMapLibre", "podInstallSyntheticIos")
             doLast {
                 if (!defFile.exists()) return@doLast

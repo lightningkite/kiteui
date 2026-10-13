@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.write
 import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.services.data.GeoCoordinate
-import com.lightningkite.kiteui.map.style.LayerWithSource
+import com.lightningkite.kiteui.map.style.Layer
 import org.maplibre.spatialk.geojson.GeoJsonObject
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty1
@@ -22,7 +22,7 @@ expect class MapView(
 
     override var style: Style
     val sources: MutableMap<Uuid, GeoJsonObject>
-    val layers: MutableMap<Uuid, LayerWithSource>
+    val layers: MutableMap<Uuid, Layer>
 
     val camera: Camera
 }

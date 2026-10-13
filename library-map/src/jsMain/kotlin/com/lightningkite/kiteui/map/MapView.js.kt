@@ -16,7 +16,7 @@ import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.browser.document
 import kotlinx.coroutines.launch
-import com.lightningkite.kiteui.map.style.LayerWithSource
+import com.lightningkite.kiteui.map.style.Layer
 import org.maplibre.spatialk.geojson.GeoJsonObject
 import org.maplibre.spatialk.geojson.toJson
 import kotlin.reflect.KMutableProperty1
@@ -37,11 +37,8 @@ actual class MapView actual constructor(
 
     private var loadedMap: MapLibreMap? = null
 
-    actual val sources: MutableMap<Uuid, GeoJsonObject> = StyleDataMap(::onSourcePut, ::onSourceRemove)
-    actual val layers: MutableMap<Uuid, LayerWithSource> = StyleDataMap(::onLayerPut, ::onLayerRemove)
-
-    private fun onSourcePut(id: Uuid, old: GeoJsonObject?, data: GeoJsonObject) {
-        val map = loadedMap ?: return
+    actual val sources: MutableMap<Uuid, GeoJsonObject> = StyleDataMap({ id, old, data ->
+        val map = loadedMap ?: return@StyleDataMap
         if (!map.hasSource(id)) {
             map.addGeoJsonSource(id, data)
             map.addMissingLayers { it.source == id }
@@ -50,32 +47,19 @@ actual class MapView actual constructor(
                 map.getSource(id.toString()).unsafeCast<GeoJSONSource>().setData(JSON.parse(data.toJson()))
             }
         }
-    }
-
-    private fun onSourceRemove(id: Uuid, old: GeoJsonObject) {
-        val map = loadedMap ?: return
+    }) { id, old ->
+        val map = loadedMap ?: return@StyleDataMap
         for ((layerId, layer) in layers) {
             if (layer.source == id) map.removeLayerIfPresent(layerId)
         }
         if (map.hasSource(id)) attemptMapChange("remove source $id") { map.removeSource(id.toString()) }
     }
 
-    private fun onLayerPut(id: Uuid, old: LayerWithSource?, layer: LayerWithSource) {
-        val map = loadedMap ?: return
-        if (old == layer && map.hasLayer(id)) return
+    actual val layers: MutableMap<Uuid, Layer> = StyleDataMap({ id, old, layer ->
+        val map = loadedMap ?: return@StyleDataMap
         map.removeLayerIfPresent(id)
         map.addStyleLayer(id, layer, beforeId = if (old == null) null else map.nextLayerAbove(id))
-    }
-
-    private fun onLayerRemove(id: Uuid, old: LayerWithSource) {
-        loadedMap?.removeLayerIfPresent(id)
-    }
-
-    private fun onStyleLoaded(map: MapLibreMap) {
-        loadedMap = map
-        for ((id, data) in sources) map.addGeoJsonSource(id, data)
-        map.addMissingLayers { true }
-    }
+    }) { id, old -> loadedMap?.removeLayerIfPresent(id) }
 
     private fun MapLibreMap.hasSource(id: Uuid) = getSource(id.toString()) != null
     private fun MapLibreMap.hasLayer(id: Uuid) = getLayer(id.toString()) != null
@@ -87,7 +71,7 @@ actual class MapView actual constructor(
         })
     }
 
-    private fun MapLibreMap.addStyleLayer(id: Uuid, layer: LayerWithSource, beforeId: Uuid?): Boolean {
+    private fun MapLibreMap.addStyleLayer(id: Uuid, layer: Layer, beforeId: Uuid?): Boolean {
         if (!hasSource(layer.source)) return false
         return attemptMapChange("add layer $id") {
             val spec = JSON.parse<AddLayerObject>(layer.toJson().toString())
@@ -103,7 +87,7 @@ actual class MapView actual constructor(
     private fun MapLibreMap.nextLayerAbove(id: Uuid): Uuid? =
         this@MapView.layers.keys.asSequence().dropWhile { it != id }.drop(1).firstOrNull { hasLayer(it) }
 
-    private fun MapLibreMap.addMissingLayers(predicate: (LayerWithSource) -> Boolean) {
+    private fun MapLibreMap.addMissingLayers(predicate: (Layer) -> Boolean) {
         var above: Uuid? = null
         for ((id, layer) in this@MapView.layers.entries.reversed()) {
             if (hasLayer(id) || (predicate(layer) && addStyleLayer(id, layer, above))) above = id
@@ -158,7 +142,11 @@ actual class MapView actual constructor(
 
         native.onElement {
             map.value = MapLibreMap(preInit.toOptions(it, disableAttribution, interactive)).apply {
-                on("style.load") { onStyleLoaded(this) }
+                on("style.load") {
+                    loadedMap = this
+                    for ((id, data) in sources) addGeoJsonSource(id, data)
+                    addMissingLayers { true }
+                }
             }
         }
     }

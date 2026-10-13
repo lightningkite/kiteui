@@ -4,7 +4,7 @@ import cocoapods.MapLibre.*
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.core.LateInitSignal
-import com.lightningkite.kiteui.map.style.LayerWithSource
+import com.lightningkite.kiteui.map.style.Layer
 import com.lightningkite.services.data.GeoCoordinate
 import org.maplibre.spatialk.geojson.GeoJsonObject
 import kotlin.uuid.Uuid
@@ -21,7 +21,7 @@ actual class MapView actual constructor(context: ElementContext) : NativeElement
     actual val api: LateInitSignal<Map.Api> get() = TODO("Not yet implemented")
 
     actual val sources: MutableMap<Uuid, GeoJsonObject> = LinkedHashMap()
-    actual val layers: MutableMap<Uuid, LayerWithSource> = LinkedHashMap()
+    actual val layers: MutableMap<Uuid, Layer> = LinkedHashMap()
 
     actual var style: Map.Style? = null
 //        set(value) {
