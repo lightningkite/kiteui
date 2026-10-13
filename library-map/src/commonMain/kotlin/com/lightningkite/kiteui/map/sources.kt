@@ -18,17 +18,15 @@ import org.maplibre.spatialk.geojson.LineStringGeometry
 import org.maplibre.spatialk.geojson.MultiGeometry
 import org.maplibre.spatialk.geojson.MultiLineString
 import org.maplibre.spatialk.geojson.MultiPoint
-import org.maplibre.spatialk.geojson.MultiPolygon
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.PointGeometry
-import org.maplibre.spatialk.geojson.Polygon
 import org.maplibre.spatialk.geojson.PolygonGeometry
 import org.maplibre.spatialk.geojson.Position
 import org.maplibre.spatialk.geojson.SingleGeometry
 import org.maplibre.spatialk.geojson.dsl.buildFeature
 import kotlin.uuid.Uuid
 
-class Source<G : Geometry> internal constructor(val mapView: MapView, val geometry: Reactive<G>) {
+class Source<G : Geometry> internal constructor(val mapView: MapView, val geometry: Reactive<G?>) {
     val id = Uuid.random()
 
     init {
@@ -50,7 +48,7 @@ class Source<G : Geometry> internal constructor(val mapView: MapView, val geomet
     }
 }
 
-fun <G : Geometry> MapView.source(geometry: Reactive<G>, setup: Source<G>.() -> Unit = {}) =
+fun <G : Geometry> MapView.source(geometry: Reactive<G?>, setup: Source<G>.() -> Unit = {}) =
     Source(this, geometry).apply(setup)
 
 fun Source<*>.onClick(callback: () -> Unit) {}
@@ -91,15 +89,17 @@ fun <G> Source<G>.fillExtrusion(setup: FillExtrusionLayer.() -> Unit)
 fun <G, D> Source<G>.fillExtrusion(from: Reactive<D>, setup: FillExtrusionLayer.(D) -> Unit)
         where G : PolygonGeometry = layer(::FillExtrusionLayer, from, setup)
 
-val Reactive<GeoCoordinate>.point: Reactive<Point> get() = lens { it.toPoint() }
-val Reactive<Collection<GeoCoordinate>>.multiPoint: Reactive<MultiPoint> get() = lens { MultiPoint(it.map { it.toPosition() }) }
-val Reactive<List<GeoCoordinate>>.lineString: Reactive<LineString> get() = lens { LineString(it.map { it.toPosition() }) }
-val Reactive<Collection<List<GeoCoordinate>>>.multiLineString: Reactive<MultiLineString>
-    get() = lens { MultiLineString(it.map { it.map { it.toPosition() } }) }
-val Reactive<List<List<GeoCoordinate>>>.polygon: Reactive<Polygon>
-    get() = lens { Polygon(it.map { it.map { it.toPosition() } }) }
-val Reactive<Collection<List<List<GeoCoordinate>>>>.multiPolygon: Reactive<MultiPolygon>
-    get() = lens { MultiPolygon(it.map { it.map { it.map { it.toPosition() } } }) }
+val GeoCoordinate.position get() = Position(longitude, latitude)
+val GeoCoordinate.point get() = Point(position)
+val Collection<GeoCoordinate>.multiPoint get() = MultiPoint(map { it.position })
+val List<GeoCoordinate>.lineString get() = if (size < 2) null else LineString(map { it.position })
+val Collection<List<GeoCoordinate>>.multiLineString get() = MultiLineString(mapNotNull { if (size < 2) null else it.map { it.position } })
 
-fun GeoCoordinate.toPosition() = Position(longitude, latitude)
-fun GeoCoordinate.toPoint() = Point(toPosition())
+val Reactive<GeoCoordinate>.point get() = lens { it.point }
+val Reactive<GeoCoordinate?>.point get() = lens { it?.point }
+val Reactive<Collection<GeoCoordinate>>.multiPoint get() = lens { it.multiPoint }
+val Reactive<Collection<GeoCoordinate>?>.multiPoint get() = lens { it?.multiPoint }
+val Reactive<List<GeoCoordinate>>.lineString get() = lens { it.lineString }
+val Reactive<List<GeoCoordinate>?>.lineString get() = lens { it?.lineString }
+val Reactive<Collection<List<GeoCoordinate>>>.multiLineString get() = lens { it.multiLineString }
+val Reactive<Collection<List<GeoCoordinate>>?>.multiLineString get() = lens { it?.multiLineString }
