@@ -69,6 +69,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
     public var description: String?
         get() = info?.description
         set(value) {
+            opaqueTransitions
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
         }
 
@@ -160,7 +161,11 @@ public class MediaView(private val frame: Frame) : Element by frame {
      * Flushes anything sitting in retiredRenders. Safe to call multiple times
      * since it clears the list up front.
      */
-    private fun removeRetiredRenders(transitionOut: Boolean = false, fadeVisual: Boolean = false) {
+    private fun removeRetiredRenders(
+        transitionOut: Boolean = false,
+        fadeVisual: Boolean = false,
+        alreadyWithoutAnimation: Boolean = false,
+    ) {
         val renders = retiredRenders.distinct()
         retiredRenders.clear()
         renders.forEach {
@@ -170,7 +175,8 @@ public class MediaView(private val frame: Frame) : Element by frame {
                 removeSuperseded(listOf(it))
             } else {
                 if (it is RawVideoView) launch { it.playing set false }
-                it.visible = false
+                if (alreadyWithoutAnimation) it.visible = false
+                else it.withoutAnimation { it.visible = false }
                 removeChildrenLater(listOf(it))
             }
         }
@@ -190,7 +196,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
         if (keepCurrent) retiredRenders.add(current)
         obsolete.forEach {
             if (it is RawVideoView) launch { it.playing set false }
-            it.visible = false
+            it.withoutAnimation { it.visible = false }
         }
         removeChildrenLater(obsolete)
     }
@@ -287,7 +293,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                     themeChoice
 
                                     if (self.opaqueTransitions) {
-                                        visible = false
+                                        withoutAnimation { visible = false }
                                     } else {
                                         withoutAnimation { opacity = 0.0 }
                                     }
@@ -297,9 +303,22 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                             success = {
                                                 if (self.lastRendered == info && sourceIndex > revealedIndex) {
                                                     revealedIndex = sourceIndex
-                                                    self.removeRetiredRenders(transitionOut = true)
-                                                    if (self.opaqueTransitions) visible = true
-                                                    else opacity = 1.0
+                                                    if (self.opaqueTransitions) {
+                                                        // Reveal the loaded replacement before hiding the old
+                                                        // render. On iOS, hiding first can commit a frame with
+                                                        // neither image visible, even though both changes are
+                                                        // animation-free.
+                                                        withoutAnimation {
+                                                            visible = true
+                                                            self.removeRetiredRenders(
+                                                                transitionOut = true,
+                                                                alreadyWithoutAnimation = true,
+                                                            )
+                                                        }
+                                                    } else {
+                                                        self.removeRetiredRenders(transitionOut = true)
+                                                        opacity = 1.0
+                                                    }
 
                                                     self.removeSuperseded(
                                                         self.lastRender?.take(sourceIndex) ?: emptyList()
@@ -330,7 +349,7 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                     themeChoice
 
                                     if (self.opaqueTransitions) {
-                                        visible = false
+                                        withoutAnimation { visible = false }
                                     } else {
                                         withoutAnimation { opacity = 0.0 }
                                     }
@@ -343,9 +362,20 @@ public class MediaView(private val frame: Frame) : Element by frame {
                                             success = {
                                                 if (self.lastRendered == info && sourceIndex > revealedIndex) {
                                                     revealedIndex = sourceIndex
-                                                    self.removeRetiredRenders(transitionOut = true)
-                                                    if (self.opaqueTransitions) visible = true
-                                                    else opacity = 1.0
+                                                    if (self.opaqueTransitions) {
+                                                        // Keep this swap atomic for UIKit, where separate
+                                                        // alpha commits can expose the background for a frame.
+                                                        withoutAnimation {
+                                                            visible = true
+                                                            self.removeRetiredRenders(
+                                                                transitionOut = true,
+                                                                alreadyWithoutAnimation = true,
+                                                            )
+                                                        }
+                                                    } else {
+                                                        self.removeRetiredRenders(transitionOut = true)
+                                                        opacity = 1.0
+                                                    }
 
                                                     launch {
                                                         val transitionTime = theme.transitionDuration * 3 / 4
