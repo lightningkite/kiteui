@@ -1,21 +1,87 @@
 package com.lightningkite.kiteui.views.direct
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.*
-import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.core.*
-import kotlinx.datetime.*
-import kotlin.time.Duration
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import com.lightningkite.kiteui.views.AiDriver
+import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeElementWithAction
+import com.lightningkite.kiteui.views.toCompose
+import com.lightningkite.kiteui.views.toTextStyle
+import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.context.reactive
+import com.lightningkite.reactive.core.MutableReactiveValue
+import com.lightningkite.reactive.core.Signal
+import kotlinx.datetime.LocalDate
 
+// Typed as yyyy-mm-dd; like the web's date input, content stays null until the text is a whole, valid date.
+// TODO: Compose backend: a date picker popover limited to range, once openPopover exists.
 public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
-    init { throw NotImplementedError("Compose backend: LocalDateField is not implemented yet") }
+    override val driverValue: String? get() = localDateDriverValue()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + localDateDriverActions()
 
     public actual val content: MutableReactiveValue<LocalDate?> = Signal(null)
+    // As on the web, typed dates aren't held to the range.
     public actual var range: ClosedRange<LocalDate>? = null
 
+    private var field by mutableStateOf(TextFieldValue(""))
+
+    private fun parse(text: String): LocalDate? =
+        if (text.length == 10) try { LocalDate.parse(text) } catch (e: IllegalArgumentException) { null } else null
+
+    init {
+        reactive {
+            val date = content()
+            // Partly typed text parses to null too; leave it alone while that null comes back around.
+            if (date != parse(field.text)) field = (date?.toString() ?: "").let { TextFieldValue(it, TextRange(it.length)) }
+        }
+    }
+
     @Composable
-    override fun Content(modifier: Modifier) {}
+    override fun Content(modifier: Modifier) {
+        interactions.Track()
+        val theme = currentTheme.theme
+        val color = theme.foreground.closestColor()
+        val style = theme.font.toTextStyle(color.toCompose())
+        BasicTextField(
+            value = field,
+            onValueChange = { typed ->
+                field = if (typed.text == field.text) typed else typed.reformatted(Char::isDigit) { digits ->
+                    buildString {
+                        digits.take(8).forEachIndexed { i, digit ->
+                            if (i == 4 || i == 6) append('-')
+                            append(digit)
+                        }
+                    }
+                }
+                content.value = parse(field.text)
+            },
+            modifier = modifier,
+            enabled = enabled && !ignoreInteraction,
+            singleLine = true,
+            textStyle = style,
+            cursorBrush = SolidColor(color.toCompose()),
+            interactionSource = interactions.source,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
+            keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalDateField) }),
+            decorationBox = { inner ->
+                Box {
+                    if (field.text.isEmpty()) BasicText("yyyy-mm-dd", style = style.copy(color = color.withAlpha(0.5f).toCompose()))
+                    inner()
+                }
+            },
+        )
+    }
 }
