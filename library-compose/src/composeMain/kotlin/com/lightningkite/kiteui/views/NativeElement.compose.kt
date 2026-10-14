@@ -20,6 +20,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.boundsInWindow
@@ -56,6 +58,8 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     public var weight: Float? by mutableStateOf(null)
     public var sizeConstraints: SizeConstraints? by mutableStateOf(null)
     internal var scrolling: ScrollingBehaviorImpl? = null
+    // Set by popovers that open or close on hover: called with true when the pointer enters, false when it leaves.
+    internal var onHoverChange: ((Boolean) -> Unit)? by mutableStateOf(null)
 
     protected var currentTheme: ThemeAndBack by mutableStateOf(Theme.placeholder.withBack)
         private set
@@ -149,6 +153,18 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         sizeConstraints?.let { m = m.sized(it) }
         // Like the web's visibility:hidden, an invisible element can't be interacted with.
         if (visible) m = m.then(inputModifier())
+        if (visible) onHoverChange?.let { onHover ->
+            m = m.pointerInput(onHover) {
+                awaitPointerEventScope {
+                    while (true) {
+                        when (awaitPointerEvent().type) {
+                            PointerEventType.Enter -> onHover(true)
+                            PointerEventType.Exit -> onHover(false)
+                        }
+                    }
+                }
+            }
+        }
         if (!visible || opacity != 1.0) m = m.graphicsLayer(alpha = if (visible) opacity.toFloat() else 0f)
         label?.let { m = m.semantics { contentDescription = it } }
         paneTitle?.let { m = m.semantics { paneTitle = it } }

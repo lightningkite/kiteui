@@ -3,7 +3,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
-import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.AppState
@@ -71,14 +70,20 @@ internal fun enableScrolling(element: Element, vertical: Boolean, horizontal: Bo
     return ScrollingBehaviorImpl(native, horizontal = horizontal, vertical = vertical).also { native.scrolling = it }
 }
 
-// TODO: hover tooltips.  Until then these are dropped, with a warning so it's not mistaken for working.
+// The web also opens these on contextmenu (a right click or long press); hovering covers that on a desktop.
 public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
-): ElementWriter = beforeSetup { Log.warn("Compose backend: hintPopover is not implemented yet") }
+): ElementWriter = beforeSetup {
+    val native = underlyingNativeElement
+    check(native.onHoverChange == null) { "$native already opens a popover on hover" }
+    val popover = Popover(source = this, anchor = this)
+    native.onHoverChange = { hovered -> if (hovered) popover.open(preferredDirection, setup) else popover.close() }
+}
 
-public actual fun ElementWriter.textPopover(message: String): ElementWriter =
-    beforeSetup { Log.warn("Compose backend: textPopover is not implemented yet") }
+public actual fun ElementWriter.textPopover(message: String): ElementWriter = hintPopover {
+    themed(PopoverSemantic).text(message)
+}
 
 // TODO: accessibility semantics for landmarks and headings.
 public actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme = this
