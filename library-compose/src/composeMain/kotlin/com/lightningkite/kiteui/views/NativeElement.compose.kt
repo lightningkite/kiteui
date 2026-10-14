@@ -33,6 +33,8 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import kotlinx.coroutines.launch
@@ -220,7 +222,8 @@ private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, 
         }
     }
     val placeable = measurable.measure(own)
-    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+    // Coerced because intrinsic measurement reports the content's own size, ignoring explicit ones.
+    layout(own.constrainWidth(placeable.width), own.constrainHeight(placeable.height)) { placeable.place(0, 0) }
 }
 
 private val Float.dp: Dp get() = Dp(this)
