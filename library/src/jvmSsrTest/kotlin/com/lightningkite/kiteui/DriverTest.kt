@@ -8,6 +8,13 @@ import com.lightningkite.kiteui.testing.parseFindLine
 import com.lightningkite.kiteui.testing.uiTest
 import com.lightningkite.kiteui.views.DriverActionException
 import com.lightningkite.kiteui.models.DropTargetDelegate
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.navigation.RouteRendered
+import com.lightningkite.kiteui.navigation.Routes
+import com.lightningkite.kiteui.navigation.UrlLikePath
+import com.lightningkite.kiteui.views.handleCommand
+import kotlinx.coroutines.test.runTest
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.Signal
 import kotlin.test.Test
@@ -326,6 +333,25 @@ class DriverTest {
         assertFailsWith<DriverActionException>("URL without navigator should throw") {
             url()
         }
+    }
+
+    @Test
+    fun urlOfHomePageIsNotBlank() = runTest {
+        val home = Page.Direct("Home") {}
+        val other = Page.Direct("Other") {}
+        val navigator = PageNavigator {
+            Routes(
+                parsers = listOf(),
+                renderers = mapOf(Page.Direct::class to {
+                    RouteRendered(UrlLikePath(if (it == home) listOf() else listOf("other"), mapOf()), listOf())
+                }),
+            )
+        }
+        navigator.navigate(home)
+        // The relay ignores blank replies, so "" would make the driver time out.
+        assertEquals("/", handleCommand("url", null, navigator))
+        navigator.navigate(other)
+        assertEquals("/other", handleCommand("url", null, navigator))
     }
 
     @Test
