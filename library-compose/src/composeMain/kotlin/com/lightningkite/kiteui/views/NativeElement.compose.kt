@@ -20,6 +20,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.boundsInWindow
@@ -149,6 +150,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         sizeConstraints?.let { m = m.sized(it) }
         // Like the web's visibility:hidden, an invisible element can't be interacted with.
         if (visible) m = m.then(inputModifier())
+        // As on the web, an element takes the pointer over its bounds so it doesn't reach what's behind
+        // (a dialog card over a page), unless it ignores interaction (its children still take it).
+        if (visible && !ignoreInteraction) m = m.pointerInput(Unit) {}
         if (!visible || opacity != 1.0) m = m.graphicsLayer(alpha = if (visible) opacity.toFloat() else 0f)
         label?.let { m = m.semantics { contentDescription = it } }
         paneTitle?.let { m = m.semantics { paneTitle = it } }

@@ -15,6 +15,9 @@ import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.views.direct.ScrollingBehaviors
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
@@ -46,7 +49,9 @@ internal class ScrollingBehaviorImpl(
     override val directlyInteractingWithScroller: Reactive<Boolean> get() = _interacting
 
     init {
-        element.launch {
+        // Not element.launch: an element's coroutine context lists the element's Job ahead of the coroutine's own,
+        // which Flow's context check rejects ("Flow invariant is violated").  This scope still ends with the element.
+        CoroutineScope(Dispatchers.Main.immediate + Job(element.coroutineContext[Job])).launch {
             snapshotFlow {
                 val x = horizontalState.value / density
                 val y = verticalState.value / density
