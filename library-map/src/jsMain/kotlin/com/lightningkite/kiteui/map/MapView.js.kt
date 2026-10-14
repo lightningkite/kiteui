@@ -27,72 +27,42 @@ actual class MapView actual constructor(
 ) : NativeElement(context), BaseProperties {
     internal actual val preInit = PreInit()
     val map = LateInitSignal<MapLibreMap>()
+    var isStyleLoaded = false
 
     actual override var style by lateInit(PreInit::style, {
         getStyleUrl()?.let { Style.Url(it) } ?: Style.Json(getStyle().toString())
-    }) {
-        loadedMap = null
-        setStyle(it.toUnion(), js("{diff: false}"))
+    }) { setStyle(it.toUnion(), js("{diff: false}")); isStyleLoaded = false }
+
+    actual val sources: MutableMap<Uuid, GeoJsonObject> = StyleDataMap({ id, data ->
+        val map = map.state.getOrNull() ?: return@StyleDataMap
+        if (!isStyleLoaded) return@StyleDataMap
+        val existing = map.getSource(id.toString())?.unsafeCast<GeoJSONSource>()
+
+        if (existing != null) return@StyleDataMap existing.setData(JSON.parse(data.toJson()))
+        map.addSource(id.toString(), data.toSourceSpecification())
+    }) { if (isStyleLoaded) map.state.getOrNull()?.removeSource(it.toString()) }
+
+    actual val layers: MutableMap<Uuid, Layer?> = StyleDataMap({ id, layer ->
+        val map = map.state.getOrNull() ?: return@StyleDataMap
+        if (!isStyleLoaded) return@StyleDataMap
+        val beforeIndex = layers.keys.indexOf(id).let { if (0 <= it && it < layers.size - 1) it + 1 else null }
+        val beforeId = beforeIndex?.let { layers.keys.toList()[it] }?.toString()
+
+        if (map.getLayer(id.toString()) != null) map.removeLayer(id.toString())
+        map.addLayer(layer.toAddLayerObject(id), beforeId = beforeId)
+    }) { if (isStyleLoaded) map.state.getOrNull()?.removeLayer(it.toString()) }
+
+    private fun GeoJsonObject.toSourceSpecification() = js("{}").unsafeCast<SourceSpecification>().also {
+        it.asDynamic().type = "geojson"
+        it.asDynamic().data = JSON.parse(toJson())
     }
 
-    private var loadedMap: MapLibreMap? = null
-
-    actual val sources: MutableMap<Uuid, GeoJsonObject> = StyleDataMap({ id, old, data ->
-        val map = loadedMap ?: return@StyleDataMap
-        if (!map.hasSource(id)) {
-            map.addGeoJsonSource(id, data)
-            map.addMissingLayers { it.source == id }
-        } else if (old !== data) {
-            attemptMapChange("update source $id") {
-                map.getSource(id.toString()).unsafeCast<GeoJSONSource>().setData(JSON.parse(data.toJson()))
-            }
-        }
-    }) { id, old ->
-        val map = loadedMap ?: return@StyleDataMap
-        for ((layerId, layer) in layers) {
-            if (layer.source == id) map.removeLayerIfPresent(layerId)
-        }
-        if (map.hasSource(id)) attemptMapChange("remove source $id") { map.removeSource(id.toString()) }
-    }
-
-    actual val layers: MutableMap<Uuid, Layer> = StyleDataMap({ id, old, layer ->
-        val map = loadedMap ?: return@StyleDataMap
-        map.removeLayerIfPresent(id)
-        map.addStyleLayer(id, layer, beforeId = if (old == null) null else map.nextLayerAbove(id))
-    }) { id, old -> loadedMap?.removeLayerIfPresent(id) }
-
-    private fun MapLibreMap.hasSource(id: Uuid) = getSource(id.toString()) != null
-    private fun MapLibreMap.hasLayer(id: Uuid) = getLayer(id.toString()) != null
-
-    private fun MapLibreMap.addGeoJsonSource(id: Uuid, data: GeoJsonObject) = attemptMapChange("add source $id") {
-        addSource(id.toString(), js("{}").unsafeCast<SourceSpecification>().also {
-            it.asDynamic().type = "geojson"
-            it.asDynamic().data = JSON.parse(data.toJson())
-        })
-    }
-
-    private fun MapLibreMap.addStyleLayer(id: Uuid, layer: Layer, beforeId: Uuid?): Boolean {
-        if (!hasSource(layer.source)) return false
-        return attemptMapChange("add layer $id") {
-            val spec = JSON.parse<AddLayerObject>(layer.toJson().toString())
-            spec.asDynamic().id = id.toString()
-            addLayer(spec, beforeId?.toString())
-        } != null
-    }
-
-    private fun MapLibreMap.removeLayerIfPresent(id: Uuid) {
-        if (hasLayer(id)) attemptMapChange("remove layer $id") { removeLayer(id.toString()) }
-    }
-
-    private fun MapLibreMap.nextLayerAbove(id: Uuid): Uuid? =
-        this@MapView.layers.keys.asSequence().dropWhile { it != id }.drop(1).firstOrNull { hasLayer(it) }
-
-    private fun MapLibreMap.addMissingLayers(predicate: (Layer) -> Boolean) {
-        var above: Uuid? = null
-        for ((id, layer) in this@MapView.layers.entries.reversed()) {
-            if (hasLayer(id) || (predicate(layer) && addStyleLayer(id, layer, above))) above = id
-        }
-    }
+    val emptySourceId = Uuid.random()
+    private fun Layer?.toAddLayerObject(id: Uuid): AddLayerObject = if (this == null) {
+        val id = id.toString()
+        val sourceId = emptySourceId.toString()
+        js("{id: id, type: 'symbol', source: sourceId}")
+    } else JSON.parse<AddLayerObject>(toJson().toString()).also { it.asDynamic().id = id.toString() }
 
     actual val camera = object : Camera {
         override var center by lateInit(PreInit::center, { getCenter().toGeoCoordinate() }) { setCenter(it.toLngLat()) }
@@ -143,9 +113,10 @@ actual class MapView actual constructor(
         native.onElement {
             map.value = MapLibreMap(preInit.toOptions(it, disableAttribution, interactive)).apply {
                 on("style.load") {
-                    loadedMap = this
-                    for ((id, data) in sources) addGeoJsonSource(id, data)
-                    addMissingLayers { true }
+                    isStyleLoaded = true
+                    addSource(emptySourceId.toString(), js("{type: 'geojson', data: {type: 'FeatureCollection', features: []}}"))
+                    sources.forEach { (id, source) -> addSource(id.toString(), source.toSourceSpecification()) }
+                    layers.forEach { (id, layer) -> addLayer(layer.toAddLayerObject(id)) }
                 }
             }
         }

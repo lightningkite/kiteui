@@ -22,7 +22,7 @@ expect class MapView(
 
     override var style: Style
     val sources: MutableMap<Uuid, GeoJsonObject>
-    val layers: MutableMap<Uuid, Layer>
+    val layers: MutableMap<Uuid, Layer?>
 
     val camera: Camera
 }
@@ -78,31 +78,31 @@ internal data class PreInit(
     override var maxPitch: Double? = null,
 ) : BaseProperties, CameraProperties
 
-internal class StyleDataMap<K, V : Any>(
-    private val onPut: (key: K, old: V?, new: V) -> Unit,
-    private val onRemove: (key: K, old: V) -> Unit,
-) : AbstractMutableMap<K, V>() {
-    private val backing = LinkedHashMap<K, V>()
+internal class StyleDataMap<V>(
+    private val onPut: (key: Uuid,  new: V) -> Unit,
+    private val onRemove: (key: Uuid) -> Unit,
+) : AbstractMutableMap<Uuid, V>() {
+    private val backing = LinkedHashMap<Uuid, V>()
 
     override val size: Int get() = backing.size
-    override fun get(key: K): V? = backing[key]
-    override fun containsKey(key: K): Boolean = backing.containsKey(key)
-    override fun put(key: K, value: V): V? = backing.put(key, value).also { onPut(key, it, value) }
-    override fun remove(key: K): V? = backing.remove(key)?.also { onRemove(key, it) }
+    override fun get(key: Uuid): V? = backing[key]
+    override fun containsKey(key: Uuid): Boolean = backing.containsKey(key)
+    override fun put(key: Uuid, value: V): V? = backing.put(key, value).also { onPut(key, value) }
+    override fun remove(key: Uuid): V? = backing.remove(key)?.also { onRemove(key) }
 
-    override val entries: MutableSet<MutableMap.MutableEntry<K, V>> = object : AbstractMutableSet<MutableMap.MutableEntry<K, V>>() {
+    override val entries: MutableSet<MutableMap.MutableEntry<Uuid, V>> = object : AbstractMutableSet<MutableMap.MutableEntry<Uuid, V>>() {
         override val size: Int get() = backing.size
-        override fun add(element: MutableMap.MutableEntry<K, V>): Boolean = put(element.key, element.value) != element.value
+        override fun add(element: MutableMap.MutableEntry<Uuid, V>): Boolean = put(element.key, element.value) != element.value
 
-        override fun iterator(): MutableIterator<MutableMap.MutableEntry<K, V>> = object : MutableIterator<MutableMap.MutableEntry<K, V>> {
+        override fun iterator(): MutableIterator<MutableMap.MutableEntry<Uuid, V>> = object : MutableIterator<MutableMap.MutableEntry<Uuid, V>> {
             private val inner = backing.entries.iterator()
-            private var last: MutableMap.MutableEntry<K, V>? = null
+            private var last: MutableMap.MutableEntry<Uuid, V>? = null
 
             override fun hasNext() = inner.hasNext()
 
-            override fun next(): MutableMap.MutableEntry<K, V> {
+            override fun next(): MutableMap.MutableEntry<Uuid, V> {
                 val entry = inner.next().also { last = it }
-                return object : MutableMap.MutableEntry<K, V> {
+                return object : MutableMap.MutableEntry<Uuid, V> {
                     override val key get() = entry.key
                     override val value get() = entry.value
                     override fun setValue(newValue: V) = put(entry.key, newValue)!!
@@ -114,18 +114,10 @@ internal class StyleDataMap<K, V : Any>(
                 val (key, value) = removed.key to removed.value
                 inner.remove()
                 last = null
-                onRemove(key, value)
+                onRemove(key)
             }
         }
     }
-}
-
-/** Logs instead of throwing, so one bad source or layer doesn't keep the rest off the map. */
-internal inline fun attemptMapChange(description: String, action: () -> Unit): Unit? = try {
-    action()
-} catch (e: Exception) {
-    println("MapView: failed to $description: $e")
-    null
 }
 
 internal class LateInit<T, M>(

@@ -88,6 +88,9 @@ external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2838 */
     fun getStyleUrl(): String?
 
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2867 */
+    fun isStyleLoaded(): Boolean
+
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2912 */
     fun addSource(id: String, source: SourceSpecification): Map
 

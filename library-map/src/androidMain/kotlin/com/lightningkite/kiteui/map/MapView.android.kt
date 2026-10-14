@@ -23,7 +23,7 @@ import org.maplibre.android.style.layers.FillExtrusionLayer
 import org.maplibre.android.style.layers.FillLayer
 import org.maplibre.android.style.layers.HeatmapLayer
 import org.maplibre.android.style.layers.HillshadeLayer
-import org.maplibre.android.style.layers.Layer
+import org.maplibre.android.style.layers.Layer as MapLibreLayer
 import org.maplibre.android.style.layers.LayoutPropertyValue
 import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.PaintPropertyValue
@@ -41,7 +41,7 @@ import kotlinx.serialization.json.double
 import kotlinx.serialization.json.float
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import com.lightningkite.kiteui.map.style.Layer as StyleLayer
+import com.lightningkite.kiteui.map.style.Layer
 import org.maplibre.spatialk.geojson.GeoJsonObject
 import org.maplibre.spatialk.geojson.toJson
 import kotlin.reflect.KMutableProperty1
@@ -56,85 +56,40 @@ actual class MapView actual constructor(
     internal actual val preInit = PreInit()
     val map = LateInitSignal<MapLibreMap>()
 
-    actual override var style by lateInit(PreInit::style, {
-        style.toMapStyle()
-    }) {
-        loadedStyle = null
+    actual override var style by lateInit(PreInit::style, { style.toMapStyle() }) {
         setStyle(it.toBuilder(), ::onStyleLoaded)
+        preInit.style = it
     }
 
-    private var loadedStyle: MapLibreStyle? = null
+    actual val sources: MutableMap<Uuid, GeoJsonObject> = StyleDataMap({ id, data ->
+        val style = map.state.getOrNull()?.style ?: return@StyleDataMap
+        val existing = style.getSourceAs<GeoJsonSource>(id.toString())
 
-    actual val sources: MutableMap<Uuid, GeoJsonObject> = StyleDataMap(::onSourcePut, ::onSourceRemove)
-    actual val layers: MutableMap<Uuid, StyleLayer> = StyleDataMap(::onLayerPut, ::onLayerRemove)
+        if (existing != null) return@StyleDataMap existing.setGeoJson(data.toJson())
+        style.addSource(GeoJsonSource(id.toString(), data.toJson()))
+    }) { map.state.getOrNull()?.style?.removeSource(it.toString()) }
 
-    private fun onSourcePut(id: Uuid, old: GeoJsonObject?, data: GeoJsonObject) {
-        val style = loadedStyle ?: return
-        if (!style.hasSource(id)) {
-            style.addGeoJsonSource(id, data)
-            style.addMissingLayers { it.source == id }
-        } else if (old !== data) {
-            attemptMapChange("update source $id") {
-                style.getSourceAs<GeoJsonSource>(id.toString())!!.setGeoJson(data.toJson())
-            }
-        }
-    }
+    actual val layers: MutableMap<Uuid, Layer?> = StyleDataMap({ id, layer ->
+        val style = map.state.getOrNull()?.style ?: return@StyleDataMap
+        val beforeIndex = layers.keys.indexOf(id).let { if (0 <= it && it < layers.size - 1) it + 1 else null }
+        val beforeId = beforeIndex?.let { layers.keys.toList()[it] }?.toString()
 
-    private fun onSourceRemove(id: Uuid, old: GeoJsonObject) {
-        val style = loadedStyle ?: return
-        // MapLibre won't remove a source while layers use it. They're re-added if the source comes back.
-        for ((layerId, layer) in layers) {
-            if (layer.source == id) style.removeLayerIfPresent(layerId)
-        }
-        if (style.hasSource(id)) attemptMapChange("remove source $id") { style.removeSource(id.toString()) }
-    }
+        style.removeLayer(id.toString())
+        val nativeLayer = layer.toMapLibreLayer(id.toString())
+        if (beforeId == null) return@StyleDataMap style.addLayer(nativeLayer)
+        style.addLayerBelow(nativeLayer, beforeId)
+    }) { map.state.getOrNull()?.style?.removeLayer(it.toString()) }
 
-    private fun onLayerPut(id: Uuid, old: StyleLayer?, layer: StyleLayer) {
-        val style = loadedStyle ?: return
-        // MapLibre can't replace a layer in place, but removal is synchronous, so re-adding works.
-        style.removeLayerIfPresent(id)
-        // A new key is last in the map, so its layer goes on top. A replaced one keeps its position.
-        style.addStyleLayer(id, layer, beforeId = if (old == null) null else style.nextLayerAbove(id))
-    }
-
-    private fun onLayerRemove(id: Uuid, old: StyleLayer) {
-        loadedStyle?.removeLayerIfPresent(id)
-    }
-
+    val emptySourceId = Uuid.random()
     private fun onStyleLoaded(style: MapLibreStyle) {
-        loadedStyle = style
-        for ((id, data) in sources) style.addGeoJsonSource(id, data)
-        style.addMissingLayers { true }
+        style.addSource(GeoJsonSource(emptySourceId.toString()))
+        sources.forEach { (id, source) -> style.addSource(GeoJsonSource(id.toString(), source.toJson())) }
+        layers.forEach { (id, layer) -> style.addLayer(layer.toMapLibreLayer(id.toString())) }
     }
 
-    private fun MapLibreStyle.hasSource(id: Uuid) = getSource(id.toString()) != null
-    private fun MapLibreStyle.hasLayer(id: Uuid) = getLayer(id.toString()) != null
-
-    private fun MapLibreStyle.addGeoJsonSource(id: Uuid, data: GeoJsonObject) = attemptMapChange("add source $id") {
-        addSource(GeoJsonSource(id.toString(), data.toJson()))
-    }
-
-    private fun MapLibreStyle.addStyleLayer(id: Uuid, layer: StyleLayer, beforeId: Uuid?): Boolean {
-        if (!hasSource(layer.source)) return false
-        return attemptMapChange("add layer $id") {
-            val nativeLayer = layerFromJson(id.toString(), layer.toJson())
-            if (beforeId == null) addLayer(nativeLayer) else addLayerBelow(nativeLayer, beforeId.toString())
-        } != null
-    }
-
-    private fun MapLibreStyle.removeLayerIfPresent(id: Uuid) {
-        if (hasLayer(id)) attemptMapChange("remove layer $id") { removeLayer(id.toString()) }
-    }
-
-    private fun MapLibreStyle.nextLayerAbove(id: Uuid): Uuid? =
-        this@MapView.layers.keys.asSequence().dropWhile { it != id }.drop(1).firstOrNull { hasLayer(it) }
-
-    private fun MapLibreStyle.addMissingLayers(predicate: (StyleLayer) -> Boolean) {
-        var above: Uuid? = null
-        for ((id, layer) in this@MapView.layers.entries.reversed()) {
-            if (hasLayer(id) || (predicate(layer) && addStyleLayer(id, layer, above))) above = id
-        }
-    }
+    private fun Layer?.toMapLibreLayer(id: String): MapLibreLayer = if (this == null) {
+        SymbolLayer(id, emptySourceId.toString())
+    } else layerFromJson(id, toJson())
 
     actual val camera = object : Camera {
         override var center by lateInit(
@@ -237,7 +192,7 @@ internal fun PreInit.toOptions(map: MapLibreMap, onStyleLoaded: (MapLibreStyle) 
     maxPitch?.let { map.setMaxPitchPreference(it) }
 }
 
-private fun layerFromJson(id: String, json: JsonObject): Layer {
+private fun layerFromJson(id: String, json: JsonObject): MapLibreLayer {
     val type = json["type"]?.jsonPrimitive?.content
     val source = json["source"]?.jsonPrimitive?.content ?: ""
     val layer = when (type) {
@@ -271,8 +226,18 @@ private fun layerFromJson(id: String, json: JsonObject): Layer {
     }
 
     val properties = ArrayList<PropertyValue<*>>()
-    json["paint"]?.jsonObject?.forEach { (name, value) -> properties += PaintPropertyValue(name, value.toNativeValue()) }
-    json["layout"]?.jsonObject?.forEach { (name, value) -> properties += LayoutPropertyValue(name, value.toNativeValue()) }
+    json["paint"]?.jsonObject?.forEach { (name, value) ->
+        properties += PaintPropertyValue(
+            name,
+            value.toNativeValue()
+        )
+    }
+    json["layout"]?.jsonObject?.forEach { (name, value) ->
+        properties += LayoutPropertyValue(
+            name,
+            value.toNativeValue()
+        )
+    }
     layer.setProperties(*properties.toTypedArray())
 
     return layer

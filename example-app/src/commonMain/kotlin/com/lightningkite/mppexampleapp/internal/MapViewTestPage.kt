@@ -6,9 +6,9 @@ import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.map.Camera
 import com.lightningkite.kiteui.map.I_SWEAR_ON_MY_JOB
 import com.lightningkite.kiteui.map.Style
-import com.lightningkite.kiteui.map.circle
+import com.lightningkite.kiteui.map.addCircle
 import com.lightningkite.kiteui.map.mapView
-import com.lightningkite.kiteui.map.line
+import com.lightningkite.kiteui.map.addLine
 import com.lightningkite.kiteui.map.lineString
 import com.lightningkite.kiteui.map.multiPoint
 import com.lightningkite.kiteui.map.onClick
@@ -34,9 +34,11 @@ import com.lightningkite.kiteui.views.direct.scrollingHorizontally
 import com.lightningkite.kiteui.views.direct.unpadded
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.core.Constant
+import com.lightningkite.reactive.core.LateInitSignal
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.modify
+import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -53,6 +55,7 @@ object MapViewTestPage : Page {
             val useBaseDemoTiles = Signal(true)
             val markerPosition = Signal(GeoCoordinate(0.0, 0.0))
             val markerCollection = Signal(listOf<GeoCoordinate>())
+            val toggleLayerVisible = LateInitSignal<Unit>()
 
             val map = mapView(I_SWEAR_ON_MY_JOB.I_DO_NOT_NEED_ATTRIBUTION) {
                 ::style style@{
@@ -64,7 +67,8 @@ object MapViewTestPage : Page {
                 }
 
                 source(markerPosition.point) {
-                    circle {
+                    addCircle {
+//                        visibility = const(Visibility.Visible)
                         color = Color.blue.layerValue
                         radius = 10.layerValue
 
@@ -74,17 +78,8 @@ object MapViewTestPage : Page {
                     onClick {  }
                 }
 
-                source(markerCollection.multiPoint) {
-                    circle {
-                        color = Color.red.layerValue
-                        radius = 10.layerValue
-
-                        onClick {  }
-                    }
-                }
-
                 source(markerCollection.lineString) {
-                    line {
+                    addLine {
                         color = Color.green.layerValue
                         width = 10.layerValue
 
@@ -93,6 +88,17 @@ object MapViewTestPage : Page {
 
                     onClick {  }
                 }
+
+
+                source(markerCollection.multiPoint) {
+                    addCircle {
+                        color = Color.red.layerValue
+                        radius = 10.layerValue
+
+                        onClick {  }
+                    }
+                }
+
 
                 onClick { markerPosition.value = it }
             }
@@ -159,6 +165,13 @@ object MapViewTestPage : Page {
                     onClick {
                         map.camera.minZoom = Random.nextDouble(0.0, 8.0)
                         map.camera.maxZoom = Random.nextDouble(12.0, 22.0)
+                    }
+                }
+
+                card.button {
+                    icon(Icon.menu, "Test Toggle Layer")
+                    onClick {
+                        toggleLayerVisible.value = Unit
                     }
                 }
             }
