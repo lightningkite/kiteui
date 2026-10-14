@@ -567,7 +567,7 @@ fun longPressOpensMenu() = kiteUiTest {
 
 ```bash
 ./gradlew :library:jsTest          # JavaScript/Web
-./gradlew :library:androidUnitTest # Android
+./gradlew :library:testAndroidHostTest # Android
 ./gradlew :library:iosX64Test      # iOS Simulator
 ```
 

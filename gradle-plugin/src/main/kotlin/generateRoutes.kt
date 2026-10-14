@@ -228,12 +228,22 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                     else -> {}
                                 }
                             }
+                            // UrlLikePath.segments/.parameters hold RAW (already percent-decoded) values -
+                            // see UrlLikePath.fromParts()/render() and UrlLikePathTest. DefaultUriFormat's
+                            // decodeFromString(Map)/decodeFromStringMap expect their input to still be
+                            // percent-encoded (they call decodeURIComponent internally - see UriFormat.kt).
+                            // So raw values coming out of UrlLikePath must be re-encoded before handing them
+                            // to DefaultUriFormat, or every decode is silently skipped/garbled for values
+                            // that happen to contain '%', '&', etc.
                             if (routable.isObject) {
                                 appendLine(routable.name)
                                 appendLine(".apply {")
                                 tab {
+                                    if (routable.queryParams.isNotEmpty()) {
+                                        appendLine("val encodedParameters = it.parameters.mapValues { (_, v) -> encodeURIComponent(v) }")
+                                    }
                                     for ((key, property) in routable.queryParams) {
-                                        appendLine("if (DefaultUriFormat.mapContainsKey(it.parameters, \"$key\")) $property valueSet DefaultUriFormat.decodeFromStringMap(\"$key\", it.parameters)")
+                                        appendLine("if (DefaultUriFormat.mapContainsKey(it.parameters, \"$key\")) $property valueSet DefaultUriFormat.decodeFromStringMap(\"$key\", encodedParameters)")
                                     }
                                 }
                                 appendLine("}")
@@ -243,7 +253,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                     for ((index, part) in route.withIndex()) {
                                         when (part) {
                                             is Segment.Variable -> {
-                                                appendLine("${part.name} = DefaultUriFormat.decodeFromString(it.segments[$index]),")
+                                                appendLine("${part.name} = DefaultUriFormat.decodeFromString(encodeURIComponent(it.segments[$index])),")
                                             }
 
                                             else -> {}
@@ -252,8 +262,11 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 }
                                 appendLine(").apply {")
                                 tab {
+                                    if (routable.queryParams.isNotEmpty()) {
+                                        appendLine("val encodedParameters = it.parameters.mapValues { (_, v) -> encodeURIComponent(v) }")
+                                    }
                                     for ((key, property) in routable.queryParams) {
-                                        appendLine("if (DefaultUriFormat.mapContainsKey(it.parameters, \"$key\")) $property valueSet DefaultUriFormat.decodeFromStringMap(\"$key\", it.parameters)")
+                                        appendLine("if (DefaultUriFormat.mapContainsKey(it.parameters, \"$key\")) $property valueSet DefaultUriFormat.decodeFromStringMap(\"$key\", encodedParameters)")
                                     }
                                 }
                                 appendLine("}")
@@ -270,7 +283,10 @@ internal fun generateAutoroutes(sources: File, out: File) {
                         val rendered = route.joinToString(", ") { seg ->
                             when (seg) {
                                 is Segment.Constant -> "\"${seg.value}\""
-                                is Segment.Variable -> "DefaultUriFormat.encodeToString(it.${seg.name})"
+                                // DefaultUriFormat.encodeToString already percent-encodes; UrlLikePath.render()
+                                // percent-encodes segments too (see UrlLikePath docs above), so decode here to
+                                // hand render() the raw value it expects - otherwise '%20' etc. becomes '%2520'.
+                                is Segment.Variable -> "decodeURIComponent(DefaultUriFormat.encodeToString(it.${seg.name}))"
                             }
                         }
                         appendLine("${routable.name}::class to label@{")
@@ -283,7 +299,9 @@ internal fun generateAutoroutes(sources: File, out: File) {
                             appendLine("RouteRendered(UrlLikePath(")
                             tab {
                                 appendLine("segments = listOf($rendered),")
-                                appendLine("parameters = params")
+                                // DefaultUriFormat.encodeToStringMap already percent-encodes each value it
+                                // writes; decode here so UrlLikePath gets the raw values its render() expects.
+                                appendLine("parameters = params.mapValues { decodeURIComponent(it.value) }")
                             }
                             appendLine("), listOf(${routable.queryParams.keys.joinToString { param -> "it.${param}" }}))")
                         }

@@ -34,7 +34,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization) apply false
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.testing.manual) apply false
-    alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.androidKmpLibrary) apply false
     alias(libs.plugins.vannitechPublishing) apply false
     alias(libs.plugins.dokka) apply false
 }
