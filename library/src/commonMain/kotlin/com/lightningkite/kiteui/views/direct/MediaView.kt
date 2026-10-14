@@ -69,7 +69,6 @@ public class MediaView(private val frame: Frame) : Element by frame {
     public var description: String?
         get() = info?.description
         set(value) {
-            opaqueTransitions
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
         }
 
@@ -278,6 +277,13 @@ public class MediaView(private val frame: Frame) : Element by frame {
                             self.activityIndicator.opacity = 0.0
                             self.shownInfo.state = ReactiveState.exception(exception)
                             self.lastRendered = null
+                            // If what's on screen belongs to a previous info, it's the wrong media; clear it
+                            // rather than leave it looking like this info's content.
+                            if (shownIndex < 0 && revealedIndex < 0) {
+                                self.removeRetiredRenders(transitionOut = true, fadeVisual = true)
+                                self.shownSource = null
+                                self.currentRawMediaView.value = null
+                            }
                         }
                     }
                 }
