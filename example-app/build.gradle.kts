@@ -1,6 +1,5 @@
 import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
@@ -8,21 +7,19 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import java.util.*
 
-// KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
-// So we work around it on non mac machines with this check
-val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
-
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
-        alias(libs.plugins.kotlin.cocoapods)
-    }
+    alias(libs.plugins.kotlin.cocoapods) apply false
     alias(libs.plugins.kotlin.plugin.serialization)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.roborazzi)
     alias(libs.plugins.kjsplain)
     alias(libs.plugins.kfc)
 }
+
+// Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
+if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
+
 apply<KiteUiPlugin>()
 configure<KiteUiPluginExtension> {
     this.packageName = "com.lightningkite.mppexampleapp"
@@ -30,10 +27,10 @@ configure<KiteUiPluginExtension> {
 }
 
 rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
-    rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
+    rootProject.the<YarnRootExtension>().yarnLockMismatchReportProperty =
         YarnLockMismatchReport.WARNING // NONE | FAIL
-    rootProject.the<YarnRootExtension>().reportNewYarnLock = true
-    rootProject.the<YarnRootExtension>().yarnLockAutoReplace = true
+    rootProject.the<YarnRootExtension>().reportNewYarnLockProperty = true
+    rootProject.the<YarnRootExtension>().yarnLockAutoReplaceProperty = true
 }
 
 group = "com.lightningkite"
@@ -42,109 +39,33 @@ version = "1.0-SNAPSHOT"
 kotlin {
     applyDefaultHierarchyTemplate()
 
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    // The installable Android app lives in :example-app-android - AGP 9 doesn't allow com.android.application in a
+    // KMP module.
+    android {
+        // Must match the KiteUI packageName above: the generated Resources.android.kt uses an unqualified R.
+        namespace = "$group.mppexampleapp"
+        testNamespace = "$group.mppexampleapp.test"
+        compileSdk = 36
+        minSdk = 24  // library-skia (Skiko) requires API 24+
+        enableCoreLibraryDesugaring = true
+        androidResources { enable = true }
+        withHostTest {
+            isIncludeAndroidResources = true
+            // Matches :library - see the same setting there for why. Kept in step deliberately:
+            // both modules compile commonTest sources against the same stubbed android.jar, so a
+            // test that logs must not be writable in one module and impossible in the other.
+            isReturnDefaultValues = true
+        }
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    if (onMac) {
+
+    if (iosEnabled) {
         iosArm64()
         iosSimulatorArm64()
-    }
-    js {
-        binaries.executable()
-        browser()
-    }
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-        optIn.add("kotlin.time.ExperimentalTime")
-        optIn.add("kotlin.uuid.ExperimentalUuidApi")
-    }
-
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                api(project(":library"))
-                api(project(":library-lottie"))
-                api(project(":library-camera"))
-            }
-        }
-
-        val commonHtmlMain by creating {
-            dependsOn(commonMain)
-        }
-
-        val jsMain by getting {
-            dependsOn(commonHtmlMain)
-            dependencies {
-                implementation(devNpm("webpack-bundle-analyzer", "4.10.2"))
-            }
-        }
-
-        val androidMain by getting {
-        }
-
-        if (onMac) {
-            // Opt in across the whole iOS hierarchy rather than on the native compilations. The
-            // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
-            // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also
-            // requires a source set's opt-ins to be a superset of those of the source sets it
-            // depends on, so the leaf target source sets must be covered too, not just iosMain.
-            matching { it.name.startsWith("ios") }.configureEach {
-                languageSettings {
-                    optIn("kotlinx.cinterop.BetaInteropApi")
-                    optIn("kotlinx.cinterop.ExperimentalForeignApi")
-                }
-            }
-            val iosMain by getting {
-            }
-        }
-
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-                implementation(project(":test-utilities"))
-            }
-        }
-
-        val commonInteractiveTest by creating() {
-            dependsOn(commonTest)
-        }
-        val jsTest by getting {
-            dependsOn(commonInteractiveTest)
-        }
-        val androidUnitTest by getting {
-            dependsOn(commonInteractiveTest)
-        }
-        if (onMac) {
-            val iosTest by getting {
-                dependsOn(commonInteractiveTest)
-            }
-        }
-    }
-
-    jvm("jvmSsr")
-    sourceSets {
-        val jvmSsrMain by getting {
-            dependsOn(get("commonHtmlMain"))
-            dependencies {
-                implementation(libs.ktor.server.core)
-                implementation(libs.ktor.server.netty)
-                implementation(libs.kotlinx.coroutines.swing) // Provides Dispatchers.Main for JVM
-            }
-        }
-    }
-//    jvm("jvmSwing")
-//    sourceSets {
-//        val jvmSwingMain by getting {
-//        }
-//    }
-
-    if (onMac) {
-        // We have to manually call this because the shortcut isn't available when plugin is not applied and gradle will
-        // fail even behind the if check
-        (this as ExtensionAware).extensions.configure<CocoapodsExtension>("cocoapods", {
+        // No `cocoapods {}` accessor, since the plugin isn't applied in the plugins block.
+        (this as ExtensionAware).extensions.configure<CocoapodsExtension> {
             // Required properties
             // Specify the required Pod version here. Otherwise, the Gradle project version is used.
             version = "1.0"
@@ -170,43 +91,95 @@ kotlin {
             // Maps custom Xcode configuration to NativeBuildType
             xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
             xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
-        })
-    }
-}
-
-android {
-    namespace = "$group.mppexampleapp"
-    testNamespace = "$group.mppexampleapp.test"
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    compileSdk = 36
-
-    defaultConfig {
-        applicationId = "com.lightningkite.kiteuiexample"
-        minSdk = 24  // library-skia (Skiko) requires API 24+
-        targetSdk = 36
-        versionCode = 1
-        versionName = project.version.toString()
-
-        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
-    }
-    compileOptions {
-        // Flag to enable support for the new language APIs
-        isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-            // Matches :library - see the same setting there for why. Kept in step deliberately:
-            // both modules compile commonTest sources against the same stubbed android.jar, so a
-            // test that logs must not be writable in one module and impossible in the other.
-            isReturnDefaultValues = true
         }
     }
-    dependencies {
-        coreLibraryDesugaring(libs.desugar.jdk.libs)
+
+    js {
+        binaries.executable()
+        browser()
     }
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+    }
+
+    sourceSets {
+        val commonMain = getByName("commonMain") {
+            dependencies {
+                api(project(":library"))
+                api(project(":library-lottie"))
+                api(project(":library-camera"))
+            }
+        }
+
+        val commonHtmlMain = create("commonHtmlMain") {
+            dependsOn(commonMain)
+        }
+
+        val jsMain = getByName("jsMain") {
+            dependsOn(commonHtmlMain)
+            dependencies {
+                implementation(devNpm("webpack-bundle-analyzer", "4.10.2"))
+            }
+        }
+
+        val androidMain = getByName("androidMain") {
+        }
+
+        // Opt in across the whole iOS hierarchy rather than on the native compilations. The
+        // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
+        // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also
+        // requires a source set's opt-ins to be a superset of those of the source sets it
+        // depends on, so the leaf target source sets must be covered too, not just iosMain.
+        matching { it.name.startsWith("ios") }.configureEach {
+            languageSettings {
+                optIn("kotlinx.cinterop.BetaInteropApi")
+                optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            }
+        }
+
+        val commonTest = getByName("commonTest") {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(project(":test-utilities"))
+            }
+        }
+
+        val commonInteractiveTest = create("commonInteractiveTest") {
+            dependsOn(commonTest)
+        }
+        val jsTest = getByName("jsTest") {
+            dependsOn(commonInteractiveTest)
+        }
+        val androidHostTest = getByName("androidHostTest") {
+            dependsOn(commonInteractiveTest)
+        }
+        matching { it.name == "iosTest" }.configureEach {
+            dependsOn(commonInteractiveTest)
+        }
+    }
+
+    jvm("jvmSsr")
+    sourceSets {
+        val jvmSsrMain = getByName("jvmSsrMain") {
+            dependsOn(get("commonHtmlMain"))
+            dependencies {
+                implementation(libs.ktor.server.core)
+                implementation(libs.ktor.server.netty)
+                implementation(libs.kotlinx.coroutines.swing) // Provides Dispatchers.Main for JVM
+            }
+        }
+    }
+//    jvm("jvmSwing")
+//    sourceSets {
+//        val jvmSwingMain = getByName("jvmSwingMain") {
+//        }
+//    }
+}
+
+dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
 // Serve the brand mark at /logo.svg (the web favicon) straight from the designer's file at the

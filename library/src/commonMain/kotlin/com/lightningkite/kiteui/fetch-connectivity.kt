@@ -25,10 +25,16 @@ public class WaitGate(permit: Boolean = false) {
         set(value) {
             field = value
             if (value) {
-                for (continuation in continuations) {
+                // Taken and cleared before any of them runs.  A continuation resumed here may
+                // continue on this very stack - Dispatchers.Main.immediate reports no dispatch
+                // needed, so it does - and if it comes straight back to await() it appends to this
+                // list.  Resuming while iterating it would then hand the loop the entry it just
+                // made, forever, with no suspension in between: the page simply stops.
+                val resuming = continuations.toList()
+                continuations.clear()
+                for (continuation in resuming) {
                     continuation.resume(Unit)
                 }
-                continuations.clear()
             }
         }
     public fun permitOnce() {
@@ -44,10 +50,12 @@ public class WaitGate(permit: Boolean = false) {
         }
     }
     public fun abandon() {
-        for (continuation in continuations) {
+        // Taken and cleared first, for the reason given in [permit]'s setter.
+        val resuming = continuations.toList()
+        continuations.clear()
+        for (continuation in resuming) {
             continuation.resumeWithException(CancellationException("abandoned as requested"))
         }
-        continuations.clear()
     }
 }
 

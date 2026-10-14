@@ -2,7 +2,6 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.Element
-import com.lightningkite.kiteui.views.KiteUiCss
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.native
@@ -314,11 +313,14 @@ class SemanticOverridesCssTest {
     // 3. The identity trap - the reason overrides can look like they do nothing on web
     // -------------------------------------------------------------------------
 
-    /** Mounts both themes under one root, which is what an app actually has. */
-    private fun mountBoth(first: Theme, second: Theme): Pair<Element, Element> {
+    /**
+     * Mounts both themes under one root, which is what an app actually has. [logLevel] is the
+     * root's KiteUiCss log level; null turns its diagnostics off.
+     */
+    private fun mountBoth(first: Theme, second: Theme, logLevel: LogLevel? = null): Pair<Element, Element> {
         lateinit var a: Element
         lateinit var b: Element
-        root(first) {
+        root(first, logLevel) {
             col {
                 themed(S1).col { a = this; text("first") }
                 themed(ThemeDerivation.Set(second)).col {
@@ -375,88 +377,79 @@ class SemanticOverridesCssTest {
         assertEquals(RED_RGB, overriddenEl.backgroundColor, "the overridden theme paints its override")
     }
 
-    /**
-     * Runs [block] with [KiteUiCss.log] set to [cssLog], collecting everything KiteUiCss logs at
-     * [level] or above. Restores the previous log afterwards.
-     */
-    private fun collectingCssLog(
-        level: LogLevel = LogLevel.LOG,
-        cssLog: Log? = Log.tag("KiteUiCss"),
-        block: () -> Unit,
-    ): List<String> {
-        val collected = mutableListOf<String>()
+    private data class Logged(val level: LogLevel, val message: String)
+
+    /** Runs [block], collecting everything KiteUiCss logs while it runs. */
+    private fun collectingCssLog(block: () -> Unit): List<Logged> {
+        val collected = mutableListOf<Logged>()
         val interceptor = LogInterceptor { seen, tag, entries ->
-            if (seen >= level && tag.contains("KiteUiCss")) collected.add(entries.joinToString(" "))
+            if (tag.contains("KiteUiCss")) collected.add(Logged(seen, entries.joinToString(" ")))
         }
-        val previousLog = KiteUiCss.log
-        KiteUiCss.log = cssLog
         Log.interceptors.add(interceptor)
         try {
             block()
         } finally {
             Log.interceptors.remove(interceptor)
-            KiteUiCss.log = previousLog
         }
         return collected
     }
 
     /** The colliding pair used by the log tests: same id, different overrides. */
-    private fun mountCollision(id: String) {
+    private fun mountCollision(id: String, logLevel: LogLevel?) {
         val plain = Theme(id = id, background = Color.white)
         val overridden = Theme(
             id = id,
             background = Color.white,
             semanticOverrides = SemanticOverrides(S1.override { it.withBack(background = red) }),
         )
-        mountBoth(plain, overridden)
+        mountBoth(plain, overridden, logLevel)
     }
 
     @Test
     fun aCollidingIdIsReportedInsteadOfFailingSilently() {
         // The collision above has no other symptom, so the CSS layer names it.
         val id = "cssLog${serial++}"
-        val messages = collectingCssLog { mountCollision(id) }
+        val messages = collectingCssLog { mountCollision(id, LogLevel.WARN) }
         assertTrue(
-            messages.any { it.contains("Theme id collision") && it.contains(id) },
+            messages.any { it.message.contains("Theme id collision") && it.message.contains(id) },
             "the CSS layer must name the colliding id; messages were $messages",
         )
     }
 
     @Test
-    fun aCollisionIsReportedAtDebugLevelAndNotAsAWarning() {
-        // It describes how an app is put together, not a runtime fault, so it must not reach a
-        // log that only wants warnings and errors.
+    fun aCollisionIsReportedAsAWarning() {
+        // A collision silently drops the second theme's styling, so it has to reach a log that
+        // only wants warnings and errors - which is what `root` uses by default in development.
         val id = "cssLevel${serial++}"
-        val aboveDebug = collectingCssLog(level = LogLevel.INFO) { mountCollision(id) }
+        val messages = collectingCssLog { mountCollision(id, LogLevel.WARN) }
         assertTrue(
-            aboveDebug.none { it.contains("Theme id collision") },
-            "nothing above LogLevel.LOG may be emitted; got $aboveDebug",
+            messages.any { it.level == LogLevel.WARN && it.message.contains("Theme id collision") },
+            "the collision must be reported at LogLevel.WARN; got $messages",
         )
     }
 
     @Test
-    fun theDefaultLogDoesNotAcceptDebugMessages_soNothingIsReported() {
-        assertFalse(
-            KiteUiCss.log?.atLevel(LogLevel.LOG) ?: false,
-            "CSS diagnostics must be opt-in - tracking them costs a retained Theme per generated class",
+    fun aVerboseLogAlsoSaysWhereTheFirstThemeWasDeclared() {
+        val id = "cssVerbose${serial++}"
+        val messages = collectingCssLog { mountCollision(id, LogLevel.LOG) }
+        assertTrue(
+            messages.any { it.message.contains("Theme id collision") && it.message.contains("First declared at") },
+            "at LogLevel.LOG the report must include where the first theme was declared; got $messages",
         )
-        val id = "cssQuiet${serial++}"
-        val messages = collectingCssLog(cssLog = KiteUiCss.log) { mountCollision(id) }
-        assertTrue(messages.isEmpty(), "with the default log KiteUiCss must stay quiet; got $messages")
     }
 
     @Test
-    fun aLogFilteredToWarnOrAboveAlsoTurnsDiagnosticsOff() {
+    fun anErrorOnlyLogTurnsDiagnosticsOff() {
         val id = "cssFiltered${serial++}"
-        val messages = collectingCssLog(cssLog = Log.tag("KiteUiCss").warnOrAbove()) { mountCollision(id) }
-        assertTrue(messages.isEmpty(), "a warn-or-above log must switch KiteUiCss off; got $messages")
+        val messages = collectingCssLog { mountCollision(id, LogLevel.ERROR) }
+        assertTrue(messages.isEmpty(), "an error-only log must switch KiteUiCss diagnostics off; got $messages")
     }
 
     @Test
-    fun theCompanionLogCanBeSilencedEntirely() {
+    fun aNullLogLevelSilencesItEntirely() {
         val id = "cssSilent${serial++}"
-        val messages = collectingCssLog(cssLog = null) { mountCollision(id) }
-        assertTrue(messages.isEmpty(), "setting KiteUiCss.log to null must silence it; got $messages")
+        val messages = collectingCssLog { mountCollision(id, null) }
+        assertTrue(messages.isEmpty(), "a root with no log level must keep KiteUiCss silent; got $messages")
     }
 
     @Test
@@ -465,14 +458,14 @@ class SemanticOverridesCssTest {
         lateinit var second: Element
         val messages = collectingCssLog {
             val theme = freshTheme(S1.override { it.withBack(background = red) })
-            val pair = mountBoth(theme, theme)
+            val pair = mountBoth(theme, theme, LogLevel.WARN)
             first = pair.first
             second = pair.second
         }
         assertEquals(RED_RGB, first.backgroundColor, "first mount renders the override")
         assertEquals(RED_RGB, second.backgroundColor, "so does the second - reusing the class is the normal case")
         assertTrue(
-            messages.none { it.contains("Theme id collision") },
+            messages.none { it.message.contains("Theme id collision") },
             "re-rendering the same theme must not be reported as a collision; messages were $messages",
         )
     }
@@ -487,7 +480,7 @@ class SemanticOverridesCssTest {
                 background = Color.white,
                 semanticOverrides = SemanticOverrides(S1.override { it.withBack(background = red) }),
             )
-            root(plain) {
+            root(plain, LogLevel.WARN) {
                 col {
                     themed(S1).col { text("first") }
                     themed(ThemeDerivation.Set(overridden)).col {
@@ -498,7 +491,7 @@ class SemanticOverridesCssTest {
         }
         // Both the base theme and the theme S1 derives from it collide, so two ids are named -
         // but each exactly once, however many elements carry them.
-        val collisionMessages = messages.filter { it.contains("Theme id collision") }
+        val collisionMessages = messages.map { it.message }.filter { it.contains("Theme id collision") }
         assertEquals(
             collisionMessages.size, collisionMessages.distinct().size,
             "each colliding id must be named once, not once per element; messages were $messages",
