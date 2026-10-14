@@ -52,12 +52,13 @@ public class Interactions internal constructor(private val element: NativeElemen
             }
         }
         // Leaving composition cancels the collector, which can miss the matching Exit/Release.
+        // It also happens when the element was removed, which leaves nothing to re-theme.
         DisposableEffect(source) {
             onDispose {
                 hovered = false
                 pressed = false
                 focused = false
-                element.refreshTheming()
+                if (!element.isShutdown) element.refreshTheming()
             }
         }
     }

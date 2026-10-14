@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.lightningkite.kiteui.OverrideOnly
@@ -30,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import javax.swing.Timer
 
@@ -126,5 +128,29 @@ public fun kiteUiWindow(
     val root = runBlocking(Dispatchers.Main) { KiteUiRoot(appId, theme, app) }
     application {
         Window(onCloseRequest = { root.close(); exitApplication() }, title = title) { root.Content() }
+    }
+}
+
+/**
+ * Runs a KiteUI app with no window, drawing it offscreen at [width] x [height] pixels until the process ends.
+ * For driving the app with the AI driver where no display is available (CI, sandboxes).
+ */
+public fun kiteUiHeadless(
+    appId: String,
+    theme: ReactiveContext.() -> Theme,
+    width: Int = 1280,
+    height: Int = 800,
+    app: ViewWriter.() -> Unit,
+) {
+    // Must be set before anything touches AWT (Dispatchers.Main is the Swing thread), or AWT looks for a display.
+    System.setProperty("java.awt.headless", "true")
+    runBlocking(Dispatchers.Main) {
+        val root = KiteUiRoot(appId, theme, app)
+        val scene = ImageComposeScene(width, height) { root.Content() }
+        // Nothing else drives frames without a window; the root's screenshots read the last one drawn.
+        while (true) {
+            scene.render(System.nanoTime())
+            delay(16)
+        }
     }
 }

@@ -20,6 +20,7 @@ import com.lightningkite.kiteui.views.toTextStyle
 internal expect fun parseBasicHtml(html: String): AnnotatedString
 
 public actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
+    override val driverValue: String? get() = content
     private var text: AnnotatedString by mutableStateOf(AnnotatedString(""))
 
     public actual var content: String
