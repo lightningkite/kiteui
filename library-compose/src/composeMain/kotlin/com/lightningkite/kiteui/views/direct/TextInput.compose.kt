@@ -49,7 +49,6 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
         val color = theme.foreground.closestColor()
         val hints = keyboardHints
         val style = theme.font.toTextStyle(color.toCompose(), align ?: theme.font.align)
-        val password = hints.autocomplete == AutoComplete.Password || hints.autocomplete == AutoComplete.NewPassword
         BasicTextField(
             value = text,
             onValueChange = {
@@ -62,25 +61,8 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
             textStyle = style,
             cursorBrush = SolidColor(color.toCompose()),
             interactionSource = interactions.source,
-            visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
-            keyboardOptions = KeyboardOptions(
-                capitalization = when (hints.case) {
-                    KeyboardCase.None -> KeyboardCapitalization.None
-                    KeyboardCase.Letters -> KeyboardCapitalization.Characters
-                    KeyboardCase.Words -> KeyboardCapitalization.Words
-                    KeyboardCase.Sentences -> KeyboardCapitalization.Sentences
-                },
-                autoCorrectEnabled = hints.autocorrect,
-                keyboardType = when {
-                    password -> ComposeKeyboardType.Password
-                    hints.type == KeyboardType.Email -> ComposeKeyboardType.Email
-                    hints.type == KeyboardType.Phone -> ComposeKeyboardType.Phone
-                    hints.type == KeyboardType.Text -> ComposeKeyboardType.Text
-                    hints.type.allowDecimal -> ComposeKeyboardType.Decimal
-                    else -> ComposeKeyboardType.Number
-                },
-                imeAction = if (action != null) ImeAction.Done else ImeAction.Default,
-            ),
+            visualTransformation = if (hints.isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@TextInput) }),
             decorationBox = { field ->
                 Box {
@@ -91,3 +73,25 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
         )
     }
 }
+
+internal val KeyboardHints.isPassword: Boolean
+    get() = autocomplete == AutoComplete.Password || autocomplete == AutoComplete.NewPassword
+
+internal fun KeyboardHints.toKeyboardOptions(imeAction: ImeAction): KeyboardOptions = KeyboardOptions(
+    capitalization = when (case) {
+        KeyboardCase.None -> KeyboardCapitalization.None
+        KeyboardCase.Letters -> KeyboardCapitalization.Characters
+        KeyboardCase.Words -> KeyboardCapitalization.Words
+        KeyboardCase.Sentences -> KeyboardCapitalization.Sentences
+    },
+    autoCorrectEnabled = autocorrect,
+    keyboardType = when {
+        isPassword -> ComposeKeyboardType.Password
+        type == KeyboardType.Email -> ComposeKeyboardType.Email
+        type == KeyboardType.Phone -> ComposeKeyboardType.Phone
+        type == KeyboardType.Text -> ComposeKeyboardType.Text
+        type.allowDecimal -> ComposeKeyboardType.Decimal
+        else -> ComposeKeyboardType.Number
+    },
+    imeAction = imeAction,
+)
