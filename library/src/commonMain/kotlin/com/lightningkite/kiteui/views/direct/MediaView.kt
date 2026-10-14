@@ -69,7 +69,6 @@ public class MediaView(private val frame: Frame) : Element by frame {
     public var description: String?
         get() = info?.description
         set(value) {
-            opaqueTransitions
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
         }
 
@@ -143,42 +142,30 @@ public class MediaView(private val frame: Frame) : Element by frame {
     }
 
     /**
-     * Removes renders that a newly revealed render has replaced. Non-opaque swaps keep them
-     * visible underneath until the new render has faded in, so the background never shows.
-     */
-    private fun removeSuperseded(elements: List<Element>) {
-        if (elements.isEmpty()) return
-        if (opaqueTransitions || !frame.areAnimationsEnabled) {
-            removeChildrenLater(elements)
-        } else {
-            afterTimeout(theme.transitionDuration.inWholeMilliseconds) {
-                removeChildrenLater(elements)
-            }
-        }
-    }
-
-    /**
      * Flushes anything sitting in retiredRenders. Safe to call multiple times
      * since it clears the list up front.
+     *
+     * Dissolves keep the renders visible underneath until the new render has faded in, so the
+     * background never shows; [fade] also fades them out, for when nothing replaces them.
      */
-    private fun removeRetiredRenders(
-        transitionOut: Boolean = false,
-        fadeVisual: Boolean = false,
-        alreadyWithoutAnimation: Boolean = false,
-    ) {
-        val renders = retiredRenders.distinct()
+    private fun removeRetiredRenders(fade: Boolean = false) {
+        val renders = retiredRenders.distinct().filter { r -> frame.children.any { it === r } }
         retiredRenders.clear()
-        renders.forEach {
-            if (transitionOut && !opaqueTransitions && frame.areAnimationsEnabled) {
+        if (renders.isEmpty()) return
+        if (!opaqueTransitions && frame.areAnimationsEnabled) {
+            renders.forEach {
                 if (it is RawVideoView) fadeOutVideo(it)
-                if (fadeVisual) it.opacity = 0.0
-                removeSuperseded(listOf(it))
-            } else {
-                if (it is RawVideoView) launch { it.playing set false }
-                if (alreadyWithoutAnimation) it.visible = false
-                else it.withoutAnimation { it.visible = false }
-                removeChildrenLater(listOf(it))
+                if (fade) it.opacity = 0.0
             }
+            afterTimeout(theme.transitionDuration.inWholeMilliseconds) {
+                removeChildrenLater(renders)
+            }
+        } else {
+            renders.forEach {
+                if (it is RawVideoView) launch { it.playing set false }
+                it.withoutAnimation { it.visible = false }
+            }
+            removeChildrenLater(renders)
         }
     }
 
@@ -244,170 +231,123 @@ public class MediaView(private val frame: Frame) : Element by frame {
             activityIndicator.opacity = 1.0
 
             if (info == null || info.sources.isEmpty()) {
-                removeRetiredRenders(transitionOut = true, fadeVisual = true)
-                this@MediaView.shownInfo.state = ReactiveState(null)
+                removeRetiredRenders(fade = true)
+                shownInfo.state = ReactiveState(null)
                 shownSource = null
                 currentRawMediaView.value = null
                 activityIndicator.opacity = 0.0
-            } else {
-                val self = this@MediaView
-                // Published before the loop so a synchronous success can see the sources built so far.
-                val renders = ArrayList<Element>()
-                lastRender = renders
-                // Never downgrade: if the source already on screen is still in this info, only sources at
-                // or above its index may replace it. Otherwise any source may be revealed first.
-                val shownIndex = shownSource?.let { shown -> info.sources.indexOfFirst { it == shown } } ?: -1
-                var revealedIndex = shownIndex - 1
-                val firstEligibleSourceIndex = shownIndex.coerceAtLeast(0)
-                val eligibleSourceCount = info.sources.size - firstEligibleSourceIndex
-                val failedSources = HashSet<Int>()
+                return
+            }
 
-                fun handleSourceFailure(sourceIndex: Int, element: Element, exception: Exception) {
-                    // A displayed view may fail after it was revealed. Keep it in place rather than
-                    // turning a recoverable media error into a blank frame.
-                    if (self.currentRawMediaView.value !== element) {
-                        if (element is RawVideoView) launch { element.playing set false }
-                        self.removeChildrenLater(listOf(element))
-                    }
+            // Never downgrade: if the source already on screen is still in this info, only it and the
+            // sources after it are loaded. Otherwise every source is a candidate.
+            val shownIndex = shownSource?.let { shown -> info.sources.indexOfFirst { it == shown } } ?: -1
+            val candidates = info.sources.drop(shownIndex.coerceAtLeast(0))
+            // Published before the loop so a synchronous success can see the renders built so far.
+            val renders = ArrayList<Element>()
+            lastRender = renders
+            var revealedIndex = -1
+            val failed = HashSet<Int>()
 
-                    // A failure of one candidate must not invalidate the remaining candidates.
-                    // Only report the whole source set as failed after every eligible candidate fails.
-                    if (self.lastRendered == info && sourceIndex >= firstEligibleSourceIndex) {
-                        failedSources.add(sourceIndex)
-                        if (failedSources.size >= eligibleSourceCount) {
-                            self.activityIndicator.opacity = 0.0
-                            self.shownInfo.state = ReactiveState.exception(exception)
-                            self.lastRendered = null
-                        }
+            fun prepare(element: Element) {
+                if (opaqueTransitions) element.withoutAnimation { element.visible = false }
+                else element.withoutAnimation { element.opacity = 0.0 }
+            }
+
+            fun onLoaded(index: Int, source: VisualMediaSource, element: Element) {
+                if (lastRendered != info || index <= revealedIndex) {
+                    if (currentRawMediaView.value !== element) removeChildrenLater(listOf(element))
+                    return
+                }
+                revealedIndex = index
+                retiredRenders.addAll(renders.take(index))
+                if (opaqueTransitions) {
+                    // Reveal the loaded replacement before hiding the old render, in one transaction.
+                    // On iOS, hiding first can commit a frame with neither image visible, even though
+                    // both changes are animation-free.
+                    element.withoutAnimation {
+                        element.visible = true
+                        removeRetiredRenders()
                     }
+                } else {
+                    removeRetiredRenders()
+                    element.opacity = 1.0
+                }
+                if (element is RawVideoView) element.launch {
+                    val transitionTime = element.theme.transitionDuration * 3 / 4
+                    val start = Clock.System.now()
+                    while (Clock.System.now() - start < transitionTime) {
+                        delay(1.seconds / 30)
+                        element.volume set ((Clock.System.now() - start) / transitionTime).toFloat()
+                            .coerceIn(0f, 1f)
+                    }
+                    element.volume set 1f
+                }
+                activityIndicator.opacity = 0.0
+                shownInfo.state = ReactiveState(info)
+                shownSource = source
+                currentRawMediaView.value = element
+            }
+
+            fun onFailed(index: Int, element: Element, exception: Exception) {
+                // A displayed view may fail after it was revealed. Keep it in place rather than
+                // turning a recoverable media error into a blank frame.
+                if (currentRawMediaView.value !== element) {
+                    if (element is RawVideoView) launch { element.playing set false }
+                    removeChildrenLater(listOf(element))
                 }
 
-                for ((sourceIndex, source) in info.sources.withIndex()) {
-                    when (source) {
-                        is ImageSource -> {
-                            renders.add(
-                                frame.themed(
-                                    backgroundTheme
-                                ).rawImage(source, info.description ?: "", info.scaleType) {
-                                    themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
-                                    themeChoice
+                // A failure of one candidate must not invalidate the remaining candidates.
+                // Only report the whole source set as failed after every candidate fails.
+                if (lastRendered != info) return
+                failed.add(index)
+                if (failed.size < candidates.size) return
+                activityIndicator.opacity = 0.0
+                shownInfo.state = ReactiveState.exception(exception)
+                lastRendered = null
+                // If what's on screen belongs to a previous info, it's the wrong media; clear it
+                // rather than leave it looking like this info's content.
+                if (shownIndex < 0 && revealedIndex < 0) {
+                    removeRetiredRenders(fade = true)
+                    shownSource = null
+                    currentRawMediaView.value = null
+                }
+            }
 
-                                    if (self.opaqueTransitions) {
-                                        withoutAnimation { visible = false }
-                                    } else {
-                                        withoutAnimation { opacity = 0.0 }
-                                    }
-
-                                    reactive {
-                                        this@rawImage.state.state().handle(
-                                            success = {
-                                                if (self.lastRendered == info && sourceIndex > revealedIndex) {
-                                                    revealedIndex = sourceIndex
-                                                    if (self.opaqueTransitions) {
-                                                        // Reveal the loaded replacement before hiding the old
-                                                        // render. On iOS, hiding first can commit a frame with
-                                                        // neither image visible, even though both changes are
-                                                        // animation-free.
-                                                        withoutAnimation {
-                                                            visible = true
-                                                            self.removeRetiredRenders(
-                                                                transitionOut = true,
-                                                                alreadyWithoutAnimation = true,
-                                                            )
-                                                        }
-                                                    } else {
-                                                        self.removeRetiredRenders(transitionOut = true)
-                                                        opacity = 1.0
-                                                    }
-
-                                                    self.removeSuperseded(
-                                                        self.lastRender?.take(sourceIndex) ?: emptyList()
-                                                    )
-                                                    self.activityIndicator.opacity = 0.0
-                                                    self.shownInfo.state = ReactiveState(info)
-                                                    self.shownSource = source
-                                                    self.currentRawMediaView.value = this@rawImage
-                                                } else if (self.currentRawMediaView.value !== this@rawImage) {
-                                                    self.removeChildrenLater(listOf(this@rawImage))
-                                                }
-                                            },
-                                            exception = {
-                                                handleSourceFailure(sourceIndex, this@rawImage, it)
-                                            },
-                                            notReady = {}
-                                        )
-                                    }
-                                })
+            for ((index, source) in candidates.withIndex()) {
+                renders += when (source) {
+                    is ImageSource -> frame.themed(backgroundTheme)
+                        .rawImage(source, info.description ?: "", info.scaleType) {
+                            themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+                            themeChoice
+                            prepare(this)
+                            reactive {
+                                this@rawImage.state.state().handle(
+                                    success = { onLoaded(index, source, this@rawImage) },
+                                    exception = { onFailed(index, this@rawImage, it) },
+                                    notReady = {}
+                                )
+                            }
                         }
 
-                        is VideoSource -> {
-                            renders.add(
-                                frame.themed(
-                                    backgroundTheme
-                                ).rawVideo(source, info.description ?: "", info.scaleType) {
-                                    themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
-                                    themeChoice
-
-                                    if (self.opaqueTransitions) {
-                                        withoutAnimation { visible = false }
-                                    } else {
-                                        withoutAnimation { opacity = 0.0 }
-                                    }
-
-                                    launch { volume set 0f }
-                                    this.showControls = this@MediaView.showControls
-                                    this.loop = this@MediaView.loop
-                                    reactive {
-                                        this@rawVideo.state.state().handle(
-                                            success = {
-                                                if (self.lastRendered == info && sourceIndex > revealedIndex) {
-                                                    revealedIndex = sourceIndex
-                                                    if (self.opaqueTransitions) {
-                                                        // Keep this swap atomic for UIKit, where separate
-                                                        // alpha commits can expose the background for a frame.
-                                                        withoutAnimation {
-                                                            visible = true
-                                                            self.removeRetiredRenders(
-                                                                transitionOut = true,
-                                                                alreadyWithoutAnimation = true,
-                                                            )
-                                                        }
-                                                    } else {
-                                                        self.removeRetiredRenders(transitionOut = true)
-                                                        opacity = 1.0
-                                                    }
-
-                                                    launch {
-                                                        val transitionTime = theme.transitionDuration * 3 / 4
-                                                        val start = Clock.System.now()
-                                                        while (Clock.System.now() - start < transitionTime) {
-                                                            delay(1.seconds / 30)
-                                                            volume set ((Clock.System.now() - start) / transitionTime).toFloat()
-                                                                .coerceIn(0f, 1f)
-                                                        }
-                                                        volume set 1f
-                                                    }
-
-                                                    self.removeSuperseded(
-                                                        self.lastRender?.take(sourceIndex) ?: emptyList()
-                                                    )
-                                                    self.activityIndicator.opacity = 0.0
-                                                    self.shownInfo.state = ReactiveState(info)
-                                                    self.shownSource = source
-                                                    self.currentRawMediaView.value = this@rawVideo
-                                                } else if (self.currentRawMediaView.value !== this@rawVideo) {
-                                                    self.removeChildrenLater(listOf(this@rawVideo))
-                                                }
-                                            },
-                                            exception = {
-                                                handleSourceFailure(sourceIndex, this@rawVideo, it)
-                                            },
-                                            notReady = {}
-                                        )
-                                    }
-                                })
+                    is VideoSource -> frame.themed(backgroundTheme)
+                        .rawVideo(source, info.description ?: "", info.scaleType) {
+                            themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading
+                            themeChoice
+                            prepare(this)
+                            launch { volume set 0f }
+                            this.showControls = this@MediaView.showControls
+                            this.loop = this@MediaView.loop
+                            reactive {
+                                this@rawVideo.state.state().handle(
+                                    success = { onLoaded(index, source, this@rawVideo) },
+                                    exception = { onFailed(index, this@rawVideo, it) },
+                                    notReady = {}
+                                )
+                            }
                         }
-                    }
+
+                    else -> continue
                 }
             }
         }
