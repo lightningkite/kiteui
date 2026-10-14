@@ -13,9 +13,13 @@ pluginManagement {
 rootProject.name = "kiteui"
 
 include(":library")
+include(":library-compose")
 include(":library-lottie")
 include(":library-camera")
+include(":library-lottie-compose")
+include(":library-camera-compose")
 include(":example-app")
+include(":example-app-desktop")
 include(":example-app-android")
 include(":gradle-plugin")
 include(":test-utilities")

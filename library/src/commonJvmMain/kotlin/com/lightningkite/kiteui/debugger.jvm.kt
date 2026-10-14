@@ -17,9 +17,6 @@ public actual fun gcReport() {}
 
 public actual typealias WeakReference<T> = WeakReference<T>
 
-public actual fun assertMainThread() {
-}
-
 public actual fun Throwable.printStackTrace2(): Unit = printStackTrace()
 
 public actual object LogRoot: Log {
