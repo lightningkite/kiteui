@@ -19,6 +19,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.PlatformStorage
+import com.lightningkite.kiteui.assertMainThread
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
@@ -65,6 +66,8 @@ public class KiteUiRoot(
     private val animationFrames = Timer(16) { AppState._animationFrame.invokeAll() }
 
     init {
+        // Elements built off the main thread race their own reactive setup, which runs on it.
+        assertMainThread()
         PlatformStorage.appId = appId
         current = this
         writer.app()

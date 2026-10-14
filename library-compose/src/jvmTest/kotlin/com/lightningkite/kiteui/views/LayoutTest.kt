@@ -7,6 +7,8 @@ import androidx.compose.ui.unit.width
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.Signal
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -16,7 +18,7 @@ class LayoutTest {
     private val theme = Theme.flat2("test", 0.6.turns)
 
     private fun ComposeUiTest.show(app: ViewWriter.() -> Unit): KiteUiRoot {
-        val root = KiteUiRoot("kiteui-compose-test", { theme }, app)
+        val root = runBlocking(Dispatchers.Main) { KiteUiRoot("kiteui-compose-test", { theme }, app) }
         setContent { root.Content() }
         waitForIdle()
         return root
@@ -66,8 +68,8 @@ class LayoutTest {
         }
         onNodeWithText("Swapped in", useUnmergedTree = true).assertDoesNotExist()
         visible.value = true
-        waitForIdle()
-        onNodeWithText("Swapped in", useUnmergedTree = true).assertExists()
+        // shownWhen reacts on the Swing thread, which waitForIdle doesn't track.
+        waitUntil { onAllNodesWithText("Swapped in", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
         root.close()
     }
 }

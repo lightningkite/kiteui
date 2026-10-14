@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.turns
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import javax.imageio.ImageIO
@@ -21,21 +22,23 @@ class RenderTest {
     fun loginLikePage() = runComposeUiTest {
         val name = Signal("")
         val greeting = Signal("Nobody greeted yet")
-        val root = KiteUiRoot("kiteui-compose-test", { theme }) {
-            col {
-                text("Sign in")
-                card.col {
-                    text("Name")
-                    textInput {
-                        hint = "Your name"
-                        content bind name
+        val root = runBlocking(Dispatchers.Main) {
+            KiteUiRoot("kiteui-compose-test", { theme }) {
+                col {
+                    text("Sign in")
+                    card.col {
+                        text("Name")
+                        textInput {
+                            hint = "Your name"
+                            content bind name
+                        }
+                        important.button {
+                            text("Greet")
+                            onClick { greeting.value = "Hello, ${name.value}!" }
+                        }
                     }
-                    important.button {
-                        text("Greet")
-                        onClick { greeting.value = "Hello, ${name.value}!" }
-                    }
+                    text { ::content { greeting() } }
                 }
-                text { ::content { greeting() } }
             }
         }
         setContent { root.Content() }

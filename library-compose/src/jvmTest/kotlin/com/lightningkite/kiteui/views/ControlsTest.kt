@@ -19,6 +19,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import javax.imageio.ImageIO
@@ -32,10 +33,12 @@ class ControlsTest {
     private val theme = Theme.flat2("test", 0.6.turns)
 
     private fun ComposeUiTest.show(app: ViewWriter.() -> Unit): KiteUiRoot {
-        val root = KiteUiRoot("kiteui-compose-test", { theme }) {
-            frame {
-                context.overlayFrame = this
-                app()
+        val root = runBlocking(Dispatchers.Main) {
+            KiteUiRoot("kiteui-compose-test", { theme }) {
+                frame {
+                    context.overlayFrame = this
+                    app()
+                }
             }
         }
         setContent { root.Content() }
