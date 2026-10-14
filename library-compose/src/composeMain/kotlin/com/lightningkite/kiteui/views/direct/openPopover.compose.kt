@@ -92,6 +92,12 @@ internal class PopoverLayer(
     var blocking by mutableStateOf(false)
     private var popoverBounds = IntRect.Zero
 
+    // The layer covers the whole overlay: when not blocking, the pointer must reach what's under it
+    // (including the anchor, whose hover keeps a hover popover open).  When blocking it handles taps itself.
+    init {
+        ignoreInteraction = true
+    }
+
     // TODO: Escape to close, focusing the popover's first focusable child, and following the anchor when it scrolls.
     @Composable
     override fun Content(modifier: Modifier) {

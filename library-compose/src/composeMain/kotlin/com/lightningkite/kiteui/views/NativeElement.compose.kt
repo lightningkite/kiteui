@@ -167,6 +167,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
                 }
             }
         }
+        // As on the web, an element takes the pointer over its bounds so it doesn't reach what's behind
+        // (a dialog card over a page), unless it ignores interaction (its children still take it).
+        if (visible && !ignoreInteraction) m = m.pointerInput(Unit) {}
         if (!visible || opacity != 1.0) m = m.graphicsLayer(alpha = if (visible) opacity.toFloat() else 0f)
         label?.let { m = m.semantics { contentDescription = it } }
         paneTitle?.let { m = m.semantics { paneTitle = it } }
@@ -190,13 +193,13 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
 }
 
 /**
- * Explicit sizes win over the parent's constraints, as in CSS.  When the parent asks for more (a stretched
- * slot), Compose centers the smaller result in it, which matches Android.
+ * Explicit sizes are capped by the space the parent has, as Android does.  When the parent asks for more
+ * (a stretched slot), Compose centers the smaller result in it, which also matches Android.
  */
 private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, incoming ->
     fun Dimension?.toPx(): Int? = this?.let { it.value.dp.roundToPx() }
-    val width = c.width.toPx()
-    val height = c.height.toPx()
+    val width = c.width.toPx()?.coerceAtMost(incoming.maxWidth)
+    val height = c.height.toPx()?.coerceAtMost(incoming.maxHeight)
     val maxWidth = width ?: minOf(incoming.maxWidth, c.maxWidth.toPx() ?: Constraints.Infinity)
     val maxHeight = height ?: minOf(incoming.maxHeight, c.maxHeight.toPx() ?: Constraints.Infinity)
     var own = Constraints(

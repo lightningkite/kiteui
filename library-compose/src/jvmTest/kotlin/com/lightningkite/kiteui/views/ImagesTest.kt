@@ -65,7 +65,7 @@ class ImagesTest {
     fun stopServer() = server.stop(0)
 
     private fun ComposeUiTest.show(app: ViewWriter.() -> Unit): KiteUiRoot {
-        val root = KiteUiRoot("kiteui-compose-test", { theme }, app)
+        val root = runBlocking(Dispatchers.Main) { KiteUiRoot("kiteui-compose-test", { theme }, app) }
         setContent { root.Content() }
         waitForIdle()
         return root
@@ -173,18 +173,21 @@ class ImagesTest {
     fun remoteImagesAreCachedPerStrategy() = runComposeUiTest {
         val current = Signal<ImageRemote?>(null)
         var view: RawImageView? = null
+        var shown: ImageRemote? = null
         val root = show {
             swapping(current = { current() }) { source ->
+                shown = source
+                view = null
                 if (source != null) rawImage(source, "remote") { view = this }
             }
         }
+        // Swaps run on the Swing thread, which waitForIdle doesn't track, so wait for each one to happen.
         fun load(source: ImageRemote) {
             // Through null, since swapping to an equal source does nothing.
             current.value = null
-            waitForIdle()
-            view = null
+            waitUntil { shown == null }
             current.value = source
-            waitUntil(timeoutMillis = 10_000) { view?.state?.state?.ready == true }
+            waitUntil(timeoutMillis = 10_000) { shown == source && view?.state?.state?.ready == true }
         }
         fun requestCount() = synchronized(requests) { requests.size }
 

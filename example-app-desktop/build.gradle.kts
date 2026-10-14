@@ -1,5 +1,6 @@
 import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
+import java.time.Duration
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -69,6 +70,7 @@ tasks.named<ProcessResources>("jvmProcessResources") {
 
 tasks.named<Test>("jvmTest") {
     systemProperty("java.awt.headless", "true")
+    timeout.set(Duration.ofMinutes(5))
 }
 
 tasks.register<JavaExec>("run") {
