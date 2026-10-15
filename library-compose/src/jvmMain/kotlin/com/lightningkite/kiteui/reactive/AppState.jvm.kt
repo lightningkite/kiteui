@@ -21,7 +21,7 @@ public actual object AppState {
     public actual val systemLanguages: ReactiveValue<List<LanguageCode>> =
         Constant(listOf(LanguageCode(Locale.getDefault().toLanguageTag())))
 
-    // Desktop screens don't sleep the way phones do while an app is in front.
+    // TODO: keep the display awake (e.g. during video); needs an OS power assertion, which the JDK has no API for.
     public actual fun keepScreenOn(scope: CoroutineScope) {}
 
     internal val keyboardHandlers = ArrayList<(KeyCodeWithModifiers) -> Boolean>()
