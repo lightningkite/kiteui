@@ -37,6 +37,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.withWrite
+import io.github.kdroidfilter.composemediaplayer.InitialPlayerState
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerSurface
 import io.github.kdroidfilter.composemediaplayer.createVideoPlayerState
 import kotlinx.coroutines.CancellationException
@@ -74,7 +75,7 @@ public actual class RawVideoView actual constructor(
         onRemove { player.dispose() }
         launch {
             try {
-                player.openUri(source.toPlayerUri())
+                player.openUri(source.toPlayerUri(), InitialPlayerState.PAUSE)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
