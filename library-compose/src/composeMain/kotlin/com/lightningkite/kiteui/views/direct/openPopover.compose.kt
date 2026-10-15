@@ -12,9 +12,11 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.round
+import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.PopoverSemantic
 import com.lightningkite.kiteui.models.Rect
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.coroutines.launch
@@ -46,7 +48,13 @@ internal class Popover(private val source: Element, private val anchor: Element)
     fun open(direction: PopoverPreferredDirection, createMenu: Frame.() -> Unit) {
         if (layer != null) return
         val overlay = source.context.overlayFrame
+        // Like the web, Escape closes every open popover, so this one leaves the key for the others.
+        val stopEscape = AppState.onUniversalKeyboard {
+            if (it.code == KeyCodes.escape) close()
+            false
+        }
         source.popoverWriter(overlay) {
+            stopEscape()
             layer?.let { overlay.removeChild(it) }
             layer = null
         }.run {
@@ -98,7 +106,7 @@ internal class PopoverLayer(
         ignoreInteraction = true
     }
 
-    // TODO: Escape to close, focusing the popover's first focusable child, and following the anchor when it scrolls.
+    // TODO: focusing the popover's first focusable child, and following the anchor when it scrolls.
     @Composable
     override fun Content(modifier: Modifier) {
         val density = LocalDensity.current.density

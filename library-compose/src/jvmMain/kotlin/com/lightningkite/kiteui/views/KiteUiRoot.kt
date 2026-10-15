@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,15 +14,31 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.ImageComposeScene
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.ImageComposeScene
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.PlatformStorage
 import com.lightningkite.kiteui.assertMainThread
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.KeyCodeWithModifiers
+import com.lightningkite.kiteui.models.KeyCodes
+import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.WindowStatistics
@@ -76,6 +93,38 @@ public class KiteUiRoot(
         animationFrames.start()
     }
 
+    /** The app's main navigator, which `appBase` binds here.  Back and closing the window go through it. */
+    internal var navigator: PageNavigator? = null
+
+    // Like Android's back button: the top dialog closes before any page does.
+    private fun back() {
+        if (!context.dismissTopDialog()) navigator?.goBack()
+    }
+
+    /**
+     * Passes a key the focused element didn't use on to [AppState.onUniversalKeyboard]'s handlers, then to back
+     * navigation (Alt+Left, as in browsers).  The window calls this; nothing in the composition can, since
+     * Compose only delivers keys there while something is focused.
+     */
+    public fun onKeyEvent(event: KeyEvent): Boolean {
+        if (event.type != KeyEventType.KeyDown) return false
+        val key = KeyCodeWithModifiers(
+            code = event.key.keyCode,
+            alt = event.isAltPressed,
+            ctrl = event.isCtrlPressed,
+            shift = event.isShiftPressed,
+            meta = event.isMetaPressed,
+        )
+        // A copy, since handlers may unregister themselves (or others) when called.
+        if (AppState.keyboardHandlers.toList().any { it(key) }) return true
+        if (key == KeyCodeWithModifiers(KeyCodes.left, alt = true)) {
+            back()
+            return true
+        }
+        return false
+    }
+
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     public fun Content() {
         val density = LocalDensity.current.density
@@ -85,6 +134,7 @@ public class KiteUiRoot(
         root?.underlyingNativeElement?.Render(
             Modifier
                 .fillMaxSize()
+                .onPointerEvent(PointerEventType.Press) { if (it.button == PointerButton.Back) back() }
                 .onSizeChanged {
                     AppState._windowInfo.value = WindowStatistics(Dimension(it.width / density), Dimension(it.height / density), density)
                 }
@@ -127,7 +177,21 @@ public fun kiteUiWindow(
     // Elements must be created on the main (Swing event) thread.
     val root = runBlocking(Dispatchers.Main) { KiteUiRoot(appId, theme, app) }
     application {
-        Window(onCloseRequest = { root.close(); exitApplication() }, title = title) { root.Content() }
+        Window(
+            onCloseRequest = {
+                // Like the web's beforeunload: a page with unsaved changes gets to ask first.
+                if (root.navigator?.allowNavigate != false) {
+                    root.close()
+                    exitApplication()
+                }
+            },
+            title = title,
+            onKeyEvent = root::onKeyEvent,
+        ) {
+            val focused = LocalWindowInfo.current.isWindowFocused
+            LaunchedEffect(focused) { AppState._inForeground.value = focused }
+            root.Content()
+        }
     }
 }
 

@@ -24,6 +24,9 @@ public actual object AppState {
     // Desktop screens don't sleep the way phones do while an app is in front.
     public actual fun keepScreenOn(scope: CoroutineScope) {}
 
-    // TODO: route window key events here; Android doesn't support this either yet.
-    public actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): () -> Unit = {}
+    internal val keyboardHandlers = ArrayList<(KeyCodeWithModifiers) -> Boolean>()
+    public actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): () -> Unit {
+        keyboardHandlers.add(handler)
+        return { keyboardHandlers.remove(handler) }
+    }
 }
