@@ -29,7 +29,8 @@ import kotlinx.datetime.LocalDateTime
 
 // Typed as yyyy-mm-dd hh:mm (24-hour); like the web's datetime-local input, content stays null until the text is a
 // whole, valid date and time.
-// TODO: Compose backend: a date and time picker popover limited to range, once openPopover exists.
+// TODO: Compose backend: a picker.  The web's native input opens a month-grid calendar beside hour and minute
+//  columns from an icon at the field's end, with values outside range disabled; build it on openPopover.
 public actual class LocalDateTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateTimeDriverValue()
     override val driverActions: AiDriver.Actions get() = super.driverActions + localDateTimeDriverActions()

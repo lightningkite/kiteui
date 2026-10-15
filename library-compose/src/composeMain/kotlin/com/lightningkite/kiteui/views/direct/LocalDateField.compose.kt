@@ -28,7 +28,8 @@ import com.lightningkite.reactive.core.Signal
 import kotlinx.datetime.LocalDate
 
 // Typed as yyyy-mm-dd; like the web's date input, content stays null until the text is a whole, valid date.
-// TODO: Compose backend: a date picker popover limited to range, once openPopover exists.
+// TODO: Compose backend: a picker.  The web's native input opens a month-grid calendar from an icon at the
+//  field's end, with days outside range disabled; build it on openPopover, with arrow keys moving the day.
 public actual class LocalDateField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localDateDriverValue()
     override val driverActions: AiDriver.Actions get() = super.driverActions + localDateDriverActions()
