@@ -97,7 +97,7 @@ internal data class CanvasState(
 
 // HTML canvas 2D on a Compose [DrawScope], in its pixels.  As in HTML, the current [path] is kept in canvas
 // pixels: each point is transformed as it's added, so changing the transform part-way through a path works.
-internal class ComposeDrawingContext2D(
+public class ComposeDrawingContext2D(
     internal val scope: DrawScope,
     internal val textMeasurer: TextMeasurer,
 ) : DrawingContext2D() {
@@ -118,9 +118,9 @@ internal class ComposeDrawingContext2D(
         state = state.copy(transform = state.transform * TransformMatrix(a, b, c, d, e, f))
     }
 
-    override fun scale(x: Double, y: Double) = transform(x, 0.0, 0.0, y, 0.0, 0.0)
-    override fun rotate(angle: Double) = transform(cos(angle), sin(angle), -sin(angle), cos(angle), 0.0, 0.0)
-    override fun translate(x: Double, y: Double) = transform(1.0, 0.0, 0.0, 1.0, x, y)
+    override fun scale(x: Double, y: Double): Unit = transform(x, 0.0, 0.0, y, 0.0, 0.0)
+    override fun rotate(angle: Double): Unit = transform(cos(angle), sin(angle), -sin(angle), cos(angle), 0.0, 0.0)
+    override fun translate(x: Double, y: Double): Unit = transform(1.0, 0.0, 0.0, 1.0, x, y)
 
     override var globalAlpha: Double
         get() = state.globalAlpha
@@ -144,21 +144,21 @@ internal class ComposeDrawingContext2D(
         get() = state.lineDashOffset
         set(value) { state = state.copy(lineDashOffset = value) }
 
-    override fun clearRect(x: Double, y: Double, w: Double, h: Double) = withState {
+    override fun clearRect(x: Double, y: Double, w: Double, h: Double): Unit = withState {
         // Ignores alpha, shadow and compositing, as in HTML.
         drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), ComposePaint().apply { blendMode = BlendMode.Clear })
     }
 
-    override fun fillRect(x: Double, y: Double, w: Double, h: Double) = withState {
+    override fun fillRect(x: Double, y: Double, w: Double, h: Double): Unit = withState {
         drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), paint(stroke = false))
     }
 
-    override fun strokeRect(x: Double, y: Double, w: Double, h: Double) = withState {
+    override fun strokeRect(x: Double, y: Double, w: Double, h: Double): Unit = withState {
         drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), paint(stroke = true))
     }
 
-    override fun beginPath() = path.reset()
-    override fun closePath() = path.close()
+    override fun beginPath(): Unit = path.reset()
+    override fun closePath(): Unit = path.close()
 
     override fun moveTo(x: Double, y: Double) {
         val p = state.transform.map(x, y)
@@ -193,7 +193,7 @@ internal class ComposeDrawingContext2D(
         moveTo(x, y)
     }
 
-    override fun stroke() = withState { drawPath(pathInUserSpace(), paint(stroke = true)) }
+    override fun stroke(): Unit = withState { drawPath(pathInUserSpace(), paint(stroke = true)) }
 
     internal fun fill(rule: PathFillType) = withState {
         drawPath(pathInUserSpace().apply { fillType = rule }, paint(stroke = false))
