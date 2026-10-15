@@ -187,13 +187,13 @@ public actual class RawImageView actual constructor(
             delay(10)
             try {
                 val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
-                _state.state = ReactiveState(Unit)
                 native.image = img
                 // Start animating if this is an animated image (e.g., GIF)
                 if (img?.images != null) {
                     native.startAnimating()
                 }
                 native.informParentOfSizeChange()
+                _state.state = ReactiveState(Unit)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -227,13 +227,13 @@ public actual class SizelessRawImageView actual constructor(
             delay(10)
             try {
                 val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
-                _state.state = ReactiveState(Unit)
                 native.image = img
                 // Start animating if this is an animated image (e.g., GIF)
                 if (img?.images != null) {
                     native.startAnimating()
                 }
                 native.informParentOfSizeChange()
+                _state.state = ReactiveState(Unit)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -378,12 +378,12 @@ public actual class RawImageViewZoomable actual constructor(
             delay(10)
             try {
                 val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
-                _state.state = ReactiveState(Unit)
                 imageView.image = img
                 // Start animating if this is an animated image (e.g., GIF)
                 if (img?.images != null) {
                     imageView.startAnimating()
                 }
+                _state.state = ReactiveState(Unit)
             } catch (e: Exception) {
                 _state.state = ReactiveState.exception(e)
             }
