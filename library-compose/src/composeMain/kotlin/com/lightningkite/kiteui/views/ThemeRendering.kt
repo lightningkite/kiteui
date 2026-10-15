@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 
 public fun Color.toCompose(): ComposeColor = ComposeColor(red, green, blue, alpha)
 
+internal val Theme.hintColor: ComposeColor get() = foreground.closestColor().withAlpha(0.5f).toCompose()
+
 public fun Paint.toBrush(): Brush = when (this) {
     is Color -> SolidColor(toCompose())
     // TODO: animate between base and alternate; animations are out of scope for now.

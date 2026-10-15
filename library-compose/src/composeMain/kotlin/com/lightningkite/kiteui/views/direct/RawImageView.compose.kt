@@ -104,17 +104,18 @@ public actual abstract class RawImageViewLike(
         role = Role.Image
     }.drawBehind {
         if (painter == null) return@drawBehind
-        val contentScale = when (scaleType) {
-            ImageScaleType.Fit -> ContentScale.Fit
-            ImageScaleType.Crop -> ContentScale.Crop
-            ImageScaleType.Stretch -> ContentScale.FillBounds
-            ImageScaleType.NoScale -> ContentScale.None
-        }
-        val drawnSize = painter.intrinsicSize * contentScale.computeScaleFactor(painter.intrinsicSize, size)
+        val drawnSize = painter.intrinsicSize * scaleType.toContentScale().computeScaleFactor(painter.intrinsicSize, size)
         translate((size.width - drawnSize.width) / 2, (size.height - drawnSize.height) / 2) {
             with(painter) { draw(drawnSize) }
         }
     }
+}
+
+internal fun ImageScaleType.toContentScale(): ContentScale = when (this) {
+    ImageScaleType.Fit -> ContentScale.Fit
+    ImageScaleType.Crop -> ContentScale.Crop
+    ImageScaleType.Stretch -> ContentScale.FillBounds
+    ImageScaleType.NoScale -> ContentScale.None
 }
 
 public actual class RawImageView actual constructor(context: ElementContext, source: ImageSource, description: String, scaleType: ImageScaleType) : RawImageViewLike(context, source, description, scaleType) {

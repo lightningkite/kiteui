@@ -20,6 +20,7 @@ import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
+import com.lightningkite.kiteui.views.hintColor
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
 import com.lightningkite.reactive.context.invoke
@@ -78,7 +79,7 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@FormattedTextInput) }),
             decorationBox = { inner ->
                 Box {
-                    if (field.text.isEmpty()) BasicText(hint, style = style.copy(color = color.withAlpha(0.5f).toCompose()))
+                    if (field.text.isEmpty()) BasicText(hint, style = style.copy(color = theme.hintColor))
                     inner()
                 }
             },

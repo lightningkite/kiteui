@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
+import com.lightningkite.kiteui.views.hintColor
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
 import com.lightningkite.reactive.context.invoke
@@ -83,7 +84,7 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalDateTimeField) }),
             decorationBox = { inner ->
                 Box {
-                    if (field.text.isEmpty()) BasicText("yyyy-mm-dd hh:mm", style = style.copy(color = color.withAlpha(0.5f).toCompose()))
+                    if (field.text.isEmpty()) BasicText("yyyy-mm-dd hh:mm", style = style.copy(color = theme.hintColor))
                     inner()
                 }
             },

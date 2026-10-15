@@ -20,6 +20,7 @@ import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
+import com.lightningkite.kiteui.views.hintColor
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
 import com.lightningkite.reactive.context.invoke
@@ -66,7 +67,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
             keyboardOptions = keyboardHints.toKeyboardOptions(imeAction = ImeAction.Default),
             decorationBox = { field ->
                 Box {
-                    if (text.isEmpty()) BasicText(hint, style = style.copy(color = color.withAlpha(0.5f).toCompose()))
+                    if (text.isEmpty()) BasicText(hint, style = style.copy(color = theme.hintColor))
                     field()
                 }
             },
