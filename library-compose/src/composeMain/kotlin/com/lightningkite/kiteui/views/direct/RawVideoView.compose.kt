@@ -41,9 +41,6 @@ import io.github.kdroidfilter.composemediaplayer.InitialPlayerState
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerSurface
 import io.github.kdroidfilter.composemediaplayer.createVideoPlayerState
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -82,14 +79,12 @@ public actual class RawVideoView actual constructor(
                 loadState.state = ReactiveState.exception(e)
             }
         }
-        // Not element.launch: see ScrollingBehaviorImpl.  This scope still ends with the element.
-        val scope = CoroutineScope(Dispatchers.Main.immediate + Job(coroutineContext[Job]))
-        scope.launch {
+        launch {
             snapshotFlow { player.error }.collect { error ->
                 if (error != null) loadState.state = ReactiveState.exception(Exception("Failed to load video $source: $error"))
             }
         }
-        scope.launch {
+        launch {
             snapshotFlow { player.hasMedia && !player.isLoading }.collect { ready ->
                 if (!ready) return@collect
                 loadState.state = ReactiveState(Unit)
@@ -99,13 +94,13 @@ public actual class RawVideoView actual constructor(
                 }
             }
         }
-        scope.launch { snapshotFlow { player.currentTime }.collect { position.value = it.seconds } }
-        scope.launch { snapshotFlow { player.isPlaying }.collect { isPlaying.value = it } }
-        scope.launch { snapshotFlow { player.duration.takeIf { it > 0 } }.collect { duration.value = it } }
-        scope.launch { snapshotFlow { player.volume }.collect { currentVolume.value = it } }
+        launch { snapshotFlow { player.currentTime }.collect { position.value = it.seconds } }
+        launch { snapshotFlow { player.isPlaying }.collect { isPlaying.value = it } }
+        launch { snapshotFlow { player.duration.takeIf { it > 0 } }.collect { duration.value = it } }
+        launch { snapshotFlow { player.volume }.collect { currentVolume.value = it } }
         // The macOS player never calls onPlaybackEnded, so watch for playback stopping at the end instead.
         // With loop on, the player seeks back to the start without stopping, so like the web's "ended" this doesn't fire.
-        scope.launch {
+        launch {
             snapshotFlow { !player.isPlaying && player.duration > 0 && player.currentTime >= player.duration }.collect { ended ->
                 if (ended) completed.invokeAll()
             }
@@ -165,6 +160,7 @@ public actual class RawVideoView actual constructor(
     // A minimal stand-in for the browser's controls: play/pause and a seek bar.
     @Composable
     private fun Controls() {
+        val takesInput = takesInput
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
             Row(
                 Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.5f)).padding(8.dp),
@@ -174,7 +170,7 @@ public actual class RawVideoView actual constructor(
                 Spacer(
                     Modifier
                         .size(20.dp)
-                        .clickable { launch { playing.set(!player.isPlaying) } }
+                        .clickable(enabled = takesInput) { launch { playing.set(!player.isPlaying) } }
                         .drawBehind {
                             if (player.isPlaying) {
                                 val bar = Size(size.width / 3, size.height)
@@ -194,7 +190,8 @@ public actual class RawVideoView actual constructor(
                     Modifier
                         .weight(1f)
                         .height(20.dp)
-                        .pointerInput(Unit) {
+                        .pointerInput(takesInput) {
+                            if (!takesInput) return@pointerInput
                             fun seekTo(x: Float) = player.seekTo((x / size.width).coerceIn(0f, 1f) * 1000)
                             awaitEachGesture {
                                 val down = awaitFirstDown()

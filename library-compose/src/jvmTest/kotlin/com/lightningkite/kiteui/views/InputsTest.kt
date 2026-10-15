@@ -1,7 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
@@ -10,33 +8,15 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
-import java.io.File
-import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalTestApi::class)
 class InputsTest {
-    private val theme = Theme.flat2("test", 0.6.turns)
-
-    private fun ComposeUiTest.show(app: ViewWriter.() -> Unit): KiteUiRoot {
-        // Built on the main thread, as kiteUiWindow does.
-        val root = runBlocking(Dispatchers.Main) { KiteUiRoot("kiteui-compose-test", { theme }, app) }
-        setContent { root.Content() }
-        waitForIdle()
-        return root
-    }
-
-    private fun save(image: ImageBitmap, name: String) {
-        val out = File(System.getProperty("user.dir"), "build/shots").apply { mkdirs() }
-        ImageIO.write(image.toAwtImage(), "png", File(out, "$name.png"))
-    }
-
     private fun ComposeUiTest.field(index: Int) = onAllNodes(hasSetTextAction())[index]
 
     // `bind` syncs through coroutines on the main dispatcher, which waitForIdle doesn't wait for.
@@ -49,10 +29,10 @@ class InputsTest {
     }
 
     @Test
-    fun textAreaTakesLinesAndSubmitsOnEnter() = runComposeUiTest {
+    fun textAreaTakesLinesAndSubmitsOnEnter() = runKiteUiTest {
         val notes = Signal("")
         var submitted = 0
-        val root = show {
+        showKiteUi {
             col {
                 fieldTheme.textArea {
                     hint = "Notes"
@@ -68,13 +48,12 @@ class InputsTest {
         field(0).assertTextEquals("one\ntwo")
         notes.value = "replaced"
         awaitText(0, "replaced")
-        root.close()
     }
 
     @Test
-    fun numberInputFormatsAndParses() = runComposeUiTest {
+    fun numberInputFormatsAndParses() = runKiteUiTest {
         val amount = Signal<Double?>(null)
-        val root = show { col { fieldTheme.numberInput { content bind amount } } }
+        showKiteUi { col { fieldTheme.numberInput { content bind amount } } }
         field(0).performTextInput("1234.5")
         awaitValue(amount, 1234.5)
         field(0).assertTextEquals("1,234.5")
@@ -82,27 +61,25 @@ class InputsTest {
         awaitText(0, "98,765")
         field(0).performTextClearance()
         awaitValue(amount, null)
-        root.close()
     }
 
     @Test
-    fun formattedTextInputKeepsRawData() = runComposeUiTest {
+    fun formattedTextInputKeepsRawData() = runKiteUiTest {
         val phone = Signal("")
-        val root = show { col { fieldTheme.phoneNumberInput { content bind phone } } }
+        showKiteUi { col { fieldTheme.phoneNumberInput { content bind phone } } }
         field(0).performTextInput("5551234567")
         awaitValue(phone, "5551234567")
         field(0).assertTextEquals("(555) 123-4567")
         phone.value = "8015550000"
         awaitText(0, "(801) 555-0000")
-        root.close()
     }
 
     @Test
-    fun dateAndTimeFieldsParseWhatIsTyped() = runComposeUiTest {
+    fun dateAndTimeFieldsParseWhatIsTyped() = runKiteUiTest {
         val date = Signal<LocalDate?>(null)
         val time = Signal<LocalTime?>(null)
         val dateTime = Signal<LocalDateTime?>(null)
-        val root = show {
+        showKiteUi {
             col {
                 fieldTheme.localDateField { content bind date }
                 fieldTheme.localTimeField { content bind time }
@@ -135,14 +112,13 @@ class InputsTest {
         awaitText(0, "1999-12-31")
         awaitText(1, "23:05")
         awaitText(2, "")
-        root.close()
     }
 
     @Test
-    fun selectOpensAListAndChooses() = runComposeUiTest {
+    fun selectOpensAListAndChooses() = runKiteUiTest {
         val fruit = Signal("Banana")
         lateinit var element: Select
-        val root = show {
+        showKiteUi {
             col {
                 element = fieldTheme.select { bind(fruit, Constant(listOf("Apple", "Banana", "Cherry"))) { it } }
                 text("Below")
@@ -150,7 +126,7 @@ class InputsTest {
         }
         onNodeWithText("Banana").performClick()
         waitForIdle()
-        save(onAllNodes(isPopup())[0].captureToImage(), "select-open")
+        saveScreenshot(onAllNodes(isPopup())[0].captureToImage(), "select-open")
         onNodeWithText("Cherry").performClick()
         awaitValue(fruit, "Cherry")
         onAllNodes(isPopup()).assertCountEquals(0)
@@ -172,13 +148,12 @@ class InputsTest {
         assertEquals("Apple", element.driverValue)
         runBlocking { element.driverActions.getValue("setValue")(listOf("Cherry")) }
         awaitValue(fruit, "Cherry")
-        root.close()
     }
 
     @Test
-    fun autoCompleteSuggestsAndChooses() = runComposeUiTest {
+    fun autoCompleteSuggestsAndChooses() = runKiteUiTest {
         val fruit = Signal("")
-        val root = show {
+        showKiteUi {
             col {
                 fieldTheme.autoCompleteTextField {
                     suggestions = listOf("Apple", "Grape", "Cherry")
@@ -191,17 +166,16 @@ class InputsTest {
         onNodeWithText("Apple").assertExists()
         onNodeWithText("Grape").assertExists()
         onNodeWithText("Cherry").assertDoesNotExist()
-        save(onAllNodes(isPopup())[0].captureToImage(), "autocomplete-open")
+        saveScreenshot(onAllNodes(isPopup())[0].captureToImage(), "autocomplete-open")
         onNodeWithText("Grape").performClick()
         awaitValue(fruit, "Grape")
         field(0).assertTextEquals("Grape")
         onAllNodes(isPopup()).assertCountEquals(0)
-        root.close()
     }
 
     @Test
-    fun formScreenshot() = runComposeUiTest {
-        val root = show {
+    fun formScreenshot() = runKiteUiTest {
+        val root = showKiteUi {
             col {
                 text("Inputs")
                 fieldTheme.textArea { hint = "Notes" }
@@ -216,7 +190,6 @@ class InputsTest {
             }
         }
         awaitText(1, "1,234.5")
-        save(runBlocking { root.screenshot() }, "inputs")
-        root.close()
+        saveScreenshot(root, "inputs")
     }
 }

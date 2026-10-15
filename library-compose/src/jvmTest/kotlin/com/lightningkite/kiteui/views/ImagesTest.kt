@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.*
 import androidx.compose.ui.unit.Dp
@@ -18,9 +17,7 @@ import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.awt.image.BufferedImage
-import java.io.File
 import java.net.InetSocketAddress
-import javax.imageio.ImageIO
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -31,8 +28,6 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class ImagesTest {
-    private val theme = Theme.flat2("test", 0.6.turns)
-
     // 40x20: left half red, right half blue, with a 10x10 green square in the top-left corner.
     private val png = javaClass.classLoader.getResourceAsStream("common/images/test-pattern.png")!!.use { it.readBytes() }
     private val vector = ImageVector(
@@ -64,24 +59,10 @@ class ImagesTest {
     @AfterTest
     fun stopServer() = server.stop(0)
 
-    private fun ComposeUiTest.show(app: ViewWriter.() -> Unit): KiteUiRoot {
-        val root = runBlocking(Dispatchers.Main) { KiteUiRoot("kiteui-compose-test", { theme }, app) }
-        setContent { root.Content() }
-        waitForIdle()
-        return root
-    }
-
     private fun ComposeUiTest.waitForLoad(views: List<RawImageViewLike>) {
         waitUntil(timeoutMillis = 10_000) { views.all { it.state.state.ready } }
         views.forEach { check(it.state.state.success) { "${it.description} failed: ${it.state.state}" } }
         waitForIdle()
-    }
-
-    private fun ComposeUiTest.screenshot(root: KiteUiRoot, name: String): BufferedImage {
-        val image = runBlocking { root.screenshot() }.toAwtImage()
-        val out = File(System.getProperty("user.dir"), "build/shots").apply { mkdirs() }
-        ImageIO.write(image, "png", File(out, "$name.png"))
-        return image
     }
 
     // The main colour at a point within [box], as 'R', 'G', 'B', 'W' (white), 'K' (black), or '-' for anything else.
@@ -101,7 +82,7 @@ class ImagesTest {
     }
 
     @Test
-    fun everySourceDrawsWithEveryScaleType() = runComposeUiTest {
+    fun everySourceDrawsWithEveryScaleType() = runKiteUiTest {
         val sources = listOf(
             "raw" to ImageRaw(png.toBlob("image/png")),
             "resource" to ImageResource("common/images/test-pattern.png"),
@@ -110,7 +91,7 @@ class ImagesTest {
             "vector" to vector,
         )
         val views = mutableListOf<RawImageViewLike>()
-        val root = show {
+        val root = showKiteUi {
             col {
                 for ((name, source) in sources) row {
                     for (scaleType in ImageScaleType.entries) {
@@ -120,7 +101,7 @@ class ImagesTest {
             }
         }
         waitForLoad(views)
-        val shot = screenshot(root, "image-sources")
+        val shot = saveScreenshot(root, "image-sources")
 
         for ((name, _) in sources) {
             fun box(scaleType: ImageScaleType) = onNodeWithContentDescription("$name $scaleType").getUnclippedBoundsInRoot()
@@ -137,14 +118,13 @@ class ImagesTest {
             val noScale = box(ImageScaleType.NoScale)
             assertEquals("KGB", "${shot.colorAt(root, noScale, 5.dp, 5.dp)}${shot.colorAt(root, noScale, 12.dp, 22.dp)}${shot.colorAt(root, noScale, 45.dp, 35.dp)}", "$name NoScale")
         }
-        root.close()
     }
 
     @Test
-    fun imagesSizeLikeAnImgElement() = runComposeUiTest {
+    fun imagesSizeLikeAnImgElement() = runKiteUiTest {
         val views = mutableListOf<RawImageViewLike>()
         val resource = ImageResource("common/images/test-pattern.png")
-        val root = show {
+        val root = showKiteUi {
             col {
                 centered.rawImage(resource, "natural") { views += this }
                 rawImage(resource, "stretched") { views += this }
@@ -153,7 +133,7 @@ class ImagesTest {
             }
         }
         waitForLoad(views)
-        screenshot(root, "image-sizes")
+        saveScreenshot(root, "image-sizes")
 
         val natural = onNodeWithContentDescription("natural").getUnclippedBoundsInRoot()
         assertEquals(40.dp, natural.width)
@@ -166,15 +146,14 @@ class ImagesTest {
         assertEquals(20.dp, vectorNatural.height)
         val sizeless = onNodeWithContentDescription("sizeless").getUnclippedBoundsInRoot()
         assertEquals(0.dp, sizeless.width)
-        root.close()
     }
 
     @Test
-    fun remoteImagesAreCachedPerStrategy() = runComposeUiTest {
+    fun remoteImagesAreCachedPerStrategy() = runKiteUiTest {
         val current = Signal<ImageRemote?>(null)
         var view: RawImageView? = null
         var shown: ImageRemote? = null
-        val root = show {
+        showKiteUi {
             swapping(current = { current() }) { source ->
                 shown = source
                 view = null
@@ -207,13 +186,12 @@ class ImagesTest {
 
         load(ImageRemote("$baseUrl/missing.png", UrlCacheStrategy.None))
         assertTrue(view!!.state.state.exception != null, "A 404 fails the load")
-        root.close()
     }
 
     @Test
-    fun zoomableImageZoomsAndPans() = runComposeUiTest {
+    fun zoomableImageZoomsAndPans() = runKiteUiTest {
         var zoomable: RawImageViewZoomable? = null
-        val root = show {
+        val root = showKiteUi {
             col {
                 sizeConstraints(width = 200.px, height = 100.px).rawImageZoomable(ImageResource("common/images/test-pattern.png"), "zoomable") {
                     zoomable = this
@@ -236,16 +214,15 @@ class ImagesTest {
         // On the main thread, where the view applies it.
         runBlocking(Dispatchers.Main) { view.zoomState.value = ZoomState(scale = 3f) }
         waitForIdle()
-        val shot = screenshot(root, "image-zoomed")
+        val shot = saveScreenshot(root, "image-zoomed")
         // At 3x from the top-left corner, the green square covers the left 150 of the view.
         val box = node.getUnclippedBoundsInRoot()
         assertEquals('G', shot.colorAt(root, box, 100.dp, 50.dp))
         assertEquals('R', shot.colorAt(root, box, 190.dp, 50.dp))
-        root.close()
     }
 
     @Test
-    fun canvasDrawsTheHtmlCanvasApi() = runComposeUiTest {
+    fun canvasDrawsTheHtmlCanvasApi() = runKiteUiTest {
         var draws = 0
         val pointerDowns = mutableListOf<Pair<Double, Double>>()
         val measurements = mutableMapOf<String, Any>()
@@ -376,7 +353,7 @@ class ImagesTest {
             }
         }
         var canvas: Canvas? = null
-        val root = show {
+        val root = showKiteUi {
             col {
                 sizeConstraints(width = 440.px, height = 290.px).canvas {
                     this.delegate = delegate
@@ -384,7 +361,7 @@ class ImagesTest {
                 }
             }
         }
-        val shot = screenshot(root, "canvas")
+        val shot = saveScreenshot(root, "canvas")
         val bounds = canvas!!.screenRectangle()!!
         val box = DpRect(bounds.left.toFloat().dp, bounds.top.toFloat().dp, bounds.right.toFloat().dp, bounds.bottom.toFloat().dp)
         // Canvas coordinates are pixels.
@@ -414,6 +391,5 @@ class ImagesTest {
         onRoot().performTouchInput { click(Offset((box.left.value + 100) * root.density, (box.top.value + 50) * root.density)) }
         waitForIdle()
         assertEquals(listOf(100.0 * root.density to 50.0 * root.density), pointerDowns)
-        root.close()
     }
 }

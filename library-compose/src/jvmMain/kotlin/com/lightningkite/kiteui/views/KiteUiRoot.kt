@@ -5,6 +5,7 @@ package com.lightningkite.kiteui.views
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -128,9 +129,11 @@ public class KiteUiRoot(
     @Composable
     public fun Content() {
         val density = LocalDensity.current.density
-        this.density = density
         val layer = rememberGraphicsLayer()
-        this.layer = layer
+        SideEffect {
+            this.density = density
+            this.layer = layer
+        }
         root?.underlyingNativeElement?.Render(
             Modifier
                 .fillMaxSize()

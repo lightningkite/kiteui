@@ -50,48 +50,50 @@ public actual class Canvas actual constructor(context: ElementContext) : NativeE
     override fun Content(modifier: Modifier) {
         val textMeasurer = rememberTextMeasurer()
         val focusRequester = remember { FocusRequester() }
-        Spacer(
-            modifier
-                // An HTML canvas's default size.
-                .size(300.dp, 150.dp)
-                .onSizeChanged { delegate?.onResize(it.width.toDouble(), it.height.toDouble()) }
-                .onKeyEvent {
-                    val delegate = delegate ?: return@onKeyEvent false
-                    when (it.type) {
-                        KeyEventType.KeyDown -> delegate.onKeyDown(it.key.keyCode)
-                        KeyEventType.KeyUp -> delegate.onKeyUp(it.key.keyCode)
-                        else -> false
-                    }
+        // An HTML canvas's default size.
+        var m = modifier
+            .size(300.dp, 150.dp)
+            .onSizeChanged { delegate?.onResize(it.width.toDouble(), it.height.toDouble()) }
+        if (takesInput) m = m
+            .onKeyEvent {
+                val delegate = delegate ?: return@onKeyEvent false
+                when (it.type) {
+                    KeyEventType.KeyDown -> delegate.onKeyDown(it.key.keyCode)
+                    KeyEventType.KeyUp -> delegate.onKeyUp(it.key.keyCode)
+                    else -> false
                 }
-                // Focusable like the web's canvas (tabIndex), which a click also focuses.
-                .focusRequester(focusRequester)
-                .focusable()
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            if (event.type == PointerEventType.Press) focusRequester.requestFocus()
-                            val delegate = delegate ?: continue
-                            val width = size.width.toDouble()
-                            val height = size.height.toDouble()
-                            for (change in event.changes) {
-                                val id = change.id.value.toInt()
-                                val x = change.position.x.toDouble()
-                                val y = change.position.y.toDouble()
-                                val handled = when (event.type) {
-                                    PointerEventType.Press -> delegate.onPointerDown(id, x, y, width, height)
-                                    PointerEventType.Move -> delegate.onPointerMove(id, x, y, width, height)
-                                    PointerEventType.Release -> delegate.onPointerUp(id, x, y, width, height)
-                                    // The web cancels on pointerleave too.
-                                    PointerEventType.Exit -> delegate.onPointerCancel(id, x, y, width, height)
-                                    PointerEventType.Scroll -> delegate.onWheel(change.scrollDelta.x.toDouble(), change.scrollDelta.y.toDouble(), 0.0)
-                                    else -> false
-                                }
-                                if (handled) change.consume()
+            }
+            // Focusable like the web's canvas (tabIndex), which a click also focuses.
+            .focusRequester(focusRequester)
+            .focusable()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.type == PointerEventType.Press) focusRequester.requestFocus()
+                        val delegate = delegate ?: continue
+                        val width = size.width.toDouble()
+                        val height = size.height.toDouble()
+                        for (change in event.changes) {
+                            val id = change.id.value.toInt()
+                            val x = change.position.x.toDouble()
+                            val y = change.position.y.toDouble()
+                            val handled = when (event.type) {
+                                PointerEventType.Press -> delegate.onPointerDown(id, x, y, width, height)
+                                PointerEventType.Move -> delegate.onPointerMove(id, x, y, width, height)
+                                PointerEventType.Release -> delegate.onPointerUp(id, x, y, width, height)
+                                // The web cancels on pointerleave too.
+                                PointerEventType.Exit -> delegate.onPointerCancel(id, x, y, width, height)
+                                PointerEventType.Scroll -> delegate.onWheel(change.scrollDelta.x.toDouble(), change.scrollDelta.y.toDouble(), 0.0)
+                                else -> false
                             }
+                            if (handled) change.consume()
                         }
                     }
                 }
+            }
+        Spacer(
+            m
                 // Offscreen, so clearing makes pixels transparent rather than clearing through to the window.
                 .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen, clip = true)
                 .drawBehind {

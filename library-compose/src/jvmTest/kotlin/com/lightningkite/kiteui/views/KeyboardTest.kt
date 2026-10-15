@@ -22,21 +22,13 @@ import kotlin.test.assertTrue
 // Building KeyEvents is internal Compose API; the window builds them in the app.
 @OptIn(ExperimentalTestApi::class, InternalComposeUiApi::class)
 class KeyboardTest {
-    private val theme = Theme.flat2("test", 0.6.turns)
-
     private fun keyDown(key: Key, alt: Boolean = false, ctrl: Boolean = false) =
         KeyEvent(key, KeyEventType.KeyDown, isAltPressed = alt, isCtrlPressed = ctrl)
 
     private fun ComposeUiTest.showApp(content: ContainerElement.() -> Unit): Pair<KiteUiRoot, PageNavigator> {
         val home = Page.Direct("Home") { text("Home page") }
         val navigator = PageNavigator { Routes(parsers = listOf(), renderers = mapOf(), fallback = home) }
-        val root = runBlocking(Dispatchers.Main) {
-            KiteUiRoot("kiteui-compose-test", { theme }) {
-                appBase(navigator) { content() }
-            }
-        }
-        setContent { root.Content() }
-        waitForIdle()
+        val root = showKiteUi { appBase(navigator) { content() } }
         return root to navigator
     }
 
@@ -51,7 +43,7 @@ class KeyboardTest {
     }
 
     @Test
-    fun universalKeyboardHandlersGetKeysWithModifiers() = runComposeUiTest {
+    fun universalKeyboardHandlersGetKeysWithModifiers() = runKiteUiTest {
         val (root, _) = showApp { text("Content") }
         val seen = ArrayList<KeyCodeWithModifiers>()
         val stop = runBlocking(Dispatchers.Main) {
@@ -72,11 +64,10 @@ class KeyboardTest {
             root.onKeyEvent(keyDown(Key.S, ctrl = true))
         }
         assertEquals(2, seen.size, "a stopped handler hears nothing")
-        root.close()
     }
 
     @Test
-    fun altLeftClosesTheTopDialogThenGoesBack() = runComposeUiTest {
+    fun altLeftClosesTheTopDialogThenGoesBack() = runKiteUiTest {
         lateinit var frame: ContainerElement
         val (root, navigator) = showApp { frame = this }
         runBlocking(Dispatchers.Main) {
@@ -98,22 +89,20 @@ class KeyboardTest {
 
         runBlocking(Dispatchers.Main) { root.onKeyEvent(keyDown(Key.DirectionLeft, alt = true)) }
         assertEquals(1, navigator.stack.value.size)
-        root.close()
     }
 
     @Test
-    fun mouseBackButtonGoesBack() = runComposeUiTest {
+    fun mouseBackButtonGoesBack() = runKiteUiTest {
         val (root, navigator) = showApp { text("Content") }
         runBlocking(Dispatchers.Main) { navigator.navigate(Page.Direct("Second") { text("Second page") }) }
         assertEquals(2, navigator.stack.value.size)
         onRoot().performMouseInput { press(MouseButton(3)); release(MouseButton(3)) }
         waitForIdle()
         assertEquals(1, navigator.stack.value.size)
-        root.close()
     }
 
     @Test
-    fun escapeClosesPopovers() = runComposeUiTest {
+    fun escapeClosesPopovers() = runKiteUiTest {
         lateinit var anchor: Element
         val (root, _) = showApp { anchor = text("Anchor") }
         runBlocking(Dispatchers.Main) { anchor.openPopover(PopoverPreferredDirection.belowRight) { text("Popover content") } }
@@ -121,11 +110,10 @@ class KeyboardTest {
         onNodeWithText("Popover content").assertExists()
         runBlocking(Dispatchers.Main) { root.onKeyEvent(keyDown(Key.Escape)) }
         waitUntilDoesNotExist(hasText("Popover content"))
-        root.close()
     }
 
     @Test
-    fun focusedCanvasGetsKeys() = runComposeUiTest {
+    fun focusedCanvasGetsKeys() = runKiteUiTest {
         val events = ArrayList<String>()
         val (root, _) = showApp {
             canvas {
@@ -140,6 +128,5 @@ class KeyboardTest {
         onNode(isFocused()).performKeyInput { pressKey(Key.A) }
         waitForIdle()
         assertEquals(listOf("down ${KeyCodes.letter('a')}", "up ${KeyCodes.letter('a')}"), events)
-        root.close()
     }
 }

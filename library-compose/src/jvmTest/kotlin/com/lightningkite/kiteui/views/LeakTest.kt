@@ -1,9 +1,6 @@
 package com.lightningkite.kiteui.views
 
 import androidx.compose.ui.test.*
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.flat2
-import com.lightningkite.kiteui.models.turns
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -14,26 +11,20 @@ import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
 class LeakTest {
-    private val theme = Theme.flat2("test", 0.6.turns)
-
     @Test
-    fun swappedOutElementsAreCollected() = runComposeUiTest {
+    fun swappedOutElementsAreCollected() = runKiteUiTest {
         val page = Signal(0)
-        val root = runBlocking(Dispatchers.Main) {
-            KiteUiRoot("kiteui-compose-test", { theme }) {
-                swapView {
-                    swapping(current = { page() }) {
-                        scrolling.col {
-                            text("Page $it")
-                            button { text("Click"); onClick { } }
-                            textInput { }
-                        }
+        val root = showKiteUi {
+            swapView {
+                swapping(current = { page() }) {
+                    scrolling.col {
+                        text("Page $it")
+                        button { text("Click"); onClick { } }
+                        textInput { }
                     }
                 }
             }
         }
-        setContent { root.Content() }
-        waitForIdle()
 
         val removed = ArrayList<WeakReference<Element>>()
         fun collect(element: Element) {
@@ -47,7 +38,7 @@ class LeakTest {
         onNodeWithText("Page 1").assertExists()
 
         repeat(10) {
-            if (removed.all { it.get() == null }) return@runComposeUiTest
+            if (removed.all { it.get() == null }) return@runKiteUiTest
             System.gc()
             Thread.sleep(50)
         }

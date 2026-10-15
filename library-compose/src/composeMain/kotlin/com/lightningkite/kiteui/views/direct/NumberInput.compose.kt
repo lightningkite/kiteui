@@ -51,7 +51,6 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val theme = currentTheme.theme
         val color = theme.foreground.closestColor()
         val hints = keyboardHints
@@ -74,7 +73,7 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
                 content.value = parse(field.text)
             },
             modifier = modifier,
-            enabled = enabled && !ignoreInteraction,
+            enabled = enabled && takesInput,
             singleLine = true,
             textStyle = style,
             cursorBrush = SolidColor(color.toCompose()),

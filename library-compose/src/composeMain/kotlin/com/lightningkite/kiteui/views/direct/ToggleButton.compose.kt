@@ -37,14 +37,13 @@ public actual class ToggleButton actual constructor(context: ElementContext) : N
         value = isChecked,
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled && !ignoreInteraction,
+        enabled = enabled,
         role = Role.Button,
         onValueChange = { checked.value = it },
     )
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         Layout(content = { ShownChildren() }, modifier = modifier, measurePolicy = FrameMeasurePolicy)
     }
 }

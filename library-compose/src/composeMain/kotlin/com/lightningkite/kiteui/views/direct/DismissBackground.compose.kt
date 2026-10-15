@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -30,8 +30,9 @@ public actual class DismissBackground actual constructor(context: ElementContext
         onClick = action
     }
 
+    // Not clickable: like the web's div, the background is no Tab stop.
     override fun inputModifier(): Modifier = onClick?.let { action ->
-        Modifier.clickable(interactionSource = null, indication = null) { launch { action() } }
+        Modifier.pointerInput(action) { detectTapGestures { launch { action() } } }
     } ?: Modifier
 
     @Composable

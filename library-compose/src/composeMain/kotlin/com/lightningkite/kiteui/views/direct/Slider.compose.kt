@@ -86,7 +86,7 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
     override fun refreshPadding() {}
 
     override fun inputModifier(): Modifier {
-        if (!enabled || ignoreInteraction) return Modifier
+        if (!enabled) return Modifier
         val keyStep = step ?: ((max - min) / 100)
         return Modifier
             .semantics {
@@ -122,7 +122,6 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val color = currentTheme.theme.foreground.closestColor().toCompose()
         val fraction = (displayed - min) / (max - min)
         // 8rem is about a browser's default range input width; stretched sliders fill their slot instead.

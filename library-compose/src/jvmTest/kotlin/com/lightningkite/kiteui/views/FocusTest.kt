@@ -2,9 +2,6 @@ package com.lightningkite.kiteui.views
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.*
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.flat2
-import com.lightningkite.kiteui.models.turns
 import com.lightningkite.kiteui.views.direct.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -14,24 +11,18 @@ import kotlin.test.assertNotEquals
 
 @OptIn(ExperimentalTestApi::class)
 class FocusTest {
-    private val theme = Theme.flat2("test", 0.6.turns)
-
     // Like the web's :focus-visible: clicking a button doesn't show focus, clicking into a text field does.
     @Test
-    fun clickShowsFocusOnTextFieldsOnly() = runComposeUiTest {
+    fun clickShowsFocusOnTextFieldsOnly() = runKiteUiTest {
         lateinit var button: Button
         lateinit var field: TextInput
-        val root = runBlocking(Dispatchers.Main) {
-            KiteUiRoot("kiteui-compose-test", { theme }) {
-                col {
-                    button = button { text("Press") }
-                    field = textInput { hint = "Field" }
-                    text("Elsewhere")
-                }
+        showKiteUi {
+            col {
+                button = button { text("Press") }
+                field = textInput { hint = "Field" }
+                text("Elsewhere")
             }
         }
-        setContent { root.Content() }
-        waitForIdle()
         fun Element.themeId() = underlyingNativeElement.themeAndBack.theme.id
 
         val buttonResting = button.themeId()
@@ -46,6 +37,45 @@ class FocusTest {
         onNodeWithText("Elsewhere").performMouseInput { moveTo(center) }
         waitForIdle()
         assertNotEquals(fieldResting, field.themeId(), "A clicked text field should look focused")
-        root.close()
+    }
+
+    @Test
+    fun requestFocusFocusesAFieldOnScreen() = runKiteUiTest {
+        lateinit var field: TextInput
+        showKiteUi { col { field = textInput { hint = "Field" } } }
+        runBlocking(Dispatchers.Main) { field.requestFocus() }
+        onNode(hasSetTextAction()).assertIsFocused()
+    }
+
+    // As on the web, focusing an element that isn't on screen does nothing, then or once it's shown.
+    @Test
+    fun requestFocusLapsesForElementsNotOnScreen() = runKiteUiTest {
+        lateinit var unshown: TextInput
+        lateinit var invisible: TextInput
+        showKiteUi {
+            col {
+                unshown = textInput {
+                    hint = "Unshown"
+                    shown = false
+                }
+                invisible = textInput {
+                    hint = "Invisible"
+                    visible = false
+                }
+            }
+        }
+        runBlocking(Dispatchers.Main) {
+            unshown.requestFocus()
+            invisible.requestFocus()
+        }
+        waitForIdle()
+        Thread.sleep(300)
+        runBlocking(Dispatchers.Main) {
+            unshown.shown = true
+            invisible.visible = true
+        }
+        waitForIdle()
+        onAllNodes(hasSetTextAction()).assertCountEquals(2)
+        onAllNodes(isFocused()).assertCountEquals(0)
     }
 }

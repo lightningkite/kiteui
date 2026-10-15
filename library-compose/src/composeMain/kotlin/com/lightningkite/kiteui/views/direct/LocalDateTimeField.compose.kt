@@ -53,7 +53,6 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val theme = currentTheme.theme
         val color = theme.foreground.closestColor()
         val style = theme.font.toTextStyle(color.toCompose())
@@ -75,7 +74,7 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
                 content.value = parse(field.text)
             },
             modifier = modifier,
-            enabled = enabled && !ignoreInteraction,
+            enabled = enabled && takesInput,
             singleLine = true,
             textStyle = style,
             cursorBrush = SolidColor(color.toCompose()),

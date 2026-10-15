@@ -149,23 +149,24 @@ public actual class RawImageViewZoomable actual constructor(context: ElementCont
     @Composable
     override fun Content(modifier: Modifier) {
         val painter = painter()
-        Layout(
-            modifier
-                .clipToBounds()
-                .pointerInput(Unit) {
-                    detectTransformGestures { centroid, pan, factor, _ -> zoomState.value = zoom.zoomed(centroid, pan, factor, size) }
-                }
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            if (event.type != PointerEventType.Scroll) continue
-                            val change = event.changes.first()
-                            zoomState.value = zoom.zoomed(change.position, Offset.Zero, 1.25f.pow(-change.scrollDelta.y), size)
-                            change.consume()
-                        }
+        var m = modifier.clipToBounds()
+        if (takesInput) m = m
+            .pointerInput(Unit) {
+                detectTransformGestures { centroid, pan, factor, _ -> zoomState.value = zoom.zoomed(centroid, pan, factor, size) }
+            }
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.type != PointerEventType.Scroll) continue
+                        val change = event.changes.first()
+                        zoomState.value = zoom.zoomed(change.position, Offset.Zero, 1.25f.pow(-change.scrollDelta.y), size)
+                        change.consume()
                     }
                 }
+            }
+        Layout(
+            m
                 .graphicsLayer {
                     transformOrigin = TransformOrigin(0f, 0f)
                     scaleX = zoom.scale

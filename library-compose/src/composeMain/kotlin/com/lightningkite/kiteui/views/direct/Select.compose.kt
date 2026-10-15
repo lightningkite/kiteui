@@ -64,13 +64,12 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
     override fun inputModifier(): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled && !ignoreInteraction,
+        enabled = enabled,
         onClick = { open = !open },
     )
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val theme = currentTheme.theme
         val color = theme.foreground.closestColor().toCompose()
         // Min constraints pass through so that, when the select is stretched, the arrow sits at its end.

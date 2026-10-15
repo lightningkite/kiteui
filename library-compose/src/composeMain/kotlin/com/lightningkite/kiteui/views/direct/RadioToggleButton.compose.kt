@@ -37,14 +37,13 @@ public actual class RadioToggleButton actual constructor(context: ElementContext
         selected = isChecked,
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled && !ignoreInteraction,
+        enabled = enabled,
         role = Role.RadioButton,
         onClick = { checked.value = true },
     )
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         Layout(content = { ShownChildren() }, modifier = modifier, measurePolicy = FrameMeasurePolicy)
     }
 }

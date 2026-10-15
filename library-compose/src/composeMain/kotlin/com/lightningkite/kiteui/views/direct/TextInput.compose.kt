@@ -44,7 +44,6 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val theme = currentTheme.theme
         val color = theme.foreground.closestColor()
         val hints = keyboardHints
@@ -56,7 +55,7 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
                 content.value = it
             },
             modifier = modifier,
-            enabled = enabled && !ignoreInteraction,
+            enabled = enabled && takesInput,
             singleLine = true,
             textStyle = style,
             cursorBrush = SolidColor(color.toCompose()),

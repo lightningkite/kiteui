@@ -56,7 +56,6 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val theme = currentTheme.theme
         val color = theme.foreground.closestColor()
         val hints = keyboardHints
@@ -69,7 +68,7 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
                 content.value = field.text.filter(isRawData)
             },
             modifier = modifier,
-            enabled = enabled && !ignoreInteraction,
+            enabled = enabled && takesInput,
             singleLine = true,
             textStyle = style,
             cursorBrush = SolidColor(color.toCompose()),

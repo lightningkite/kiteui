@@ -140,7 +140,6 @@ public actual class CoordinatorDragHandle actual constructor(context: ElementCon
 
     private val iconView: IconView = icon { source = Icon.expand }
     private var sheet: BottomSheet? = null
-    private var density = 1f
     private val dragging = DraggableState { sheet!!.dragBy(it / density) }
 
     @OverrideOnly
@@ -155,7 +154,6 @@ public actual class CoordinatorDragHandle actual constructor(context: ElementCon
 
     override fun inputModifier(): Modifier {
         val sheet = sheet ?: return Modifier
-        val enabled = enabled && !ignoreInteraction
         var m = Modifier.clickable(interactions.source, indication = null, enabled = enabled) {
             sheet.state.value = when (sheet.state.value) {
                 BottomSheetState.EXPANDED -> BottomSheetState.PARTIALLY_EXPANDED
@@ -169,8 +167,6 @@ public actual class CoordinatorDragHandle actual constructor(context: ElementCon
 
     @Composable
     override fun Content(modifier: Modifier) {
-        density = LocalDensity.current.density
-        interactions.Track()
         Layout(content = { ShownChildren() }, modifier = modifier, measurePolicy = FrameMeasurePolicy)
     }
 }

@@ -44,7 +44,6 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val theme = currentTheme.theme
         val color = theme.foreground.closestColor()
         val hints = keyboardHints
@@ -59,7 +58,7 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
                 suggesting = true
             },
             modifier = modifier.onFocusChanged { if (!it.isFocused) suggesting = false },
-            enabled = enabled && !ignoreInteraction,
+            enabled = enabled && takesInput,
             singleLine = true,
             textStyle = style,
             cursorBrush = SolidColor(color.toCompose()),
