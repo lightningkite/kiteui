@@ -93,6 +93,8 @@ Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of ph
   - `rem` is a fixed 16dp.  `KiteUiRoot` must be built on the main (Swing) thread.
 - Media: `RawVideoView` uses ComposeMediaPlayer (opened paused: its default autoplays; macOS never calls `onPlaybackEnded`, so completion is detected from position).  Audio uses `javax.sound` (WAV/AIFF/AU only).  Playback can't be verified in the sandbox: run `MediaTest` on a real Mac.  Linux needs GStreamer installed.
 
+- **Desktop vs web comparison** (`docs/compare/index.html`, untracked, 106 routes): layout, theming and components match the web closely.  Remaining differences are expected: font (the web loads Montserrat; desktop uses the system font, so text is slightly narrower and shorter), pre-formatted code blocks scroll instead of wrapping, and remote images can't load in the sandbox.  Fixed from the comparison: weights fill a minimum size (scrolling rows centering their content), bare progress bars.
+
 ### Known issues and TODOs
 
 - **Element leaks**: a heap dump traced retained pages to Compose UI 1.12.1 reusing modifier lists across nodes (`NodeChain` differ buffers), not to KiteUI.  Bounded, but the example app's leak detector warns.  Retest on the next Compose release; report upstream if it persists.
