@@ -10,6 +10,7 @@ import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import com.lightningkite.kiteui.models.Align
+import kotlin.math.roundToInt
 
 // KiteUI's layout rules, as the web and Android backends implement them:
 // - Children stretch on an axis unless aligned otherwise.  "Stretch" means the container's size on that axis,
@@ -83,7 +84,8 @@ internal val FrameMeasurePolicy: MeasurePolicy = object : MeasurePolicy {
 /** A row or column.  [gap] is in pixels and goes between children. */
 internal fun linearMeasurePolicy(vertical: Boolean, gap: Int, ignoreWeights: Boolean): MeasurePolicy = object : MeasurePolicy {
     // Written in main/cross terms; only these helpers know the orientation.
-    fun IntrinsicMeasurable.weight() = if (ignoreWeights) 0f else element.weight ?: 0f
+    // A shownWhen collapse shrinks a weighted child's weight, as the web animates flex-grow.
+    fun IntrinsicMeasurable.weight() = if (ignoreWeights) 0f else element.animatedWeight * (1f - element.collapsedFraction)
     fun IntrinsicMeasurable.crossStretches() = (if (vertical) element.horizontalAlign else element.verticalAlign).stretches()
     fun IntrinsicMeasurable.crossAlign() = if (vertical) element.horizontalAlign else element.verticalAlign
     fun IntrinsicMeasurable.naturalMain(cross: Int) = if (vertical) maxIntrinsicHeight(cross) else maxIntrinsicWidth(cross)
@@ -92,22 +94,29 @@ internal fun linearMeasurePolicy(vertical: Boolean, gap: Int, ignoreWeights: Boo
     fun Placeable.cross() = if (vertical) width else height
     fun constraints(mainMin: Int, mainMax: Int, crossMin: Int, crossMax: Int) =
         if (vertical) Constraints(crossMin, crossMax, mainMin, mainMax) else Constraints(mainMin, mainMax, crossMin, crossMax)
-    fun totalGap(count: Int) = gap * (count - 1).coerceAtLeast(0)
+    // A collapsing child takes a gap with it, as the web's negative margins do.
+    fun gaps(children: List<IntrinsicMeasurable>) =
+        (gap * (children.size - 1 - children.sumOf { it.element.collapsedFraction.toDouble() })).roundToInt().coerceAtLeast(0)
 
     /**
      * Each child's main-axis size: its [natural] size, or, when there's a fixed amount of [available] space,
      * a weighted child's share of what the others leave.  Shared out in order, so rounding lands on the last.
+     * A weight animating to or from 0 also keeps part of the natural size (see [NativeElement.naturalPart]).
      */
     fun mainSizes(children: List<IntrinsicMeasurable>, available: Int, natural: (Int) -> Int): IntArray {
-        fun weighted(i: Int) = available != Infinity && children[i].weight() > 0f
-        val sizes = IntArray(children.size) { i -> if (weighted(i)) 0 else natural(i) }
-        var remaining = if (available == Infinity) 0 else (available - sizes.sum() - totalGap(children.size)).coerceAtLeast(0)
-        var weightLeft = children.indices.filter(::weighted).sumOf { children[it].weight().toDouble() }.toFloat()
+        fun weight(i: Int) = if (available == Infinity) 0f else children[i].weight()
+        val sizes = IntArray(children.size) { i ->
+            val part = if (weight(i) > 0f) children[i].element.naturalPart else 1f
+            if (part > 0f) (natural(i) * part).roundToInt() else 0
+        }
+        var remaining = if (available == Infinity) 0 else (available - sizes.sum() - gaps(children)).coerceAtLeast(0)
+        var weightLeft = children.indices.sumOf { weight(it).toDouble() }.toFloat()
         for (i in children.indices) {
-            if (!weighted(i)) continue
-            val w = children[i].weight()
-            sizes[i] = (remaining * (w / weightLeft)).toInt()
-            remaining -= sizes[i]
+            val w = weight(i)
+            if (w <= 0f) continue
+            val share = (remaining * (w / weightLeft)).toInt()
+            sizes[i] += share
+            remaining -= share
             weightLeft -= w
         }
         return sizes
@@ -149,19 +158,21 @@ internal fun linearMeasurePolicy(vertical: Boolean, gap: Int, ignoreWeights: Boo
         }
 
         val measured = placeables.map { it!! }
-        val finalMain = if (mainFixed) mainMax else (measured.sumOf { it.main() } + totalGap(measured.size)).coerceIn(mainMin, mainMax)
+        val finalMain = if (mainFixed) mainMax else (measured.sumOf { it.main() } + gaps(measurables)).coerceIn(mainMin, mainMax)
         return layout(if (vertical) cross else finalMain, if (vertical) finalMain else cross) {
-            var position = 0
+            var position = 0f
             measured.forEachIndexed { i, p ->
+                val halfGapTaken = gap * measurables[i].element.collapsedFraction / 2
+                position -= halfGapTaken
                 val crossOffset = measurables[i].crossAlign().offset(cross - p.cross())
-                if (vertical) p.place(crossOffset, position) else p.place(position, crossOffset)
-                position += p.main() + gap
+                if (vertical) p.place(crossOffset, position.roundToInt()) else p.place(position.roundToInt(), crossOffset)
+                position += p.main() + gap - halfGapTaken
             }
         }
     }
 
     fun intrinsicMain(children: List<IntrinsicMeasurable>, cross: Int) =
-        children.sumOf { it.naturalMain(cross) } + totalGap(children.size)
+        children.sumOf { it.naturalMain(cross) } + gaps(children)
 
     fun intrinsicCross(children: List<IntrinsicMeasurable>, main: Int): Int {
         val sizes = mainSizes(children, main) { i -> children[i].naturalMain(Infinity).coerceAtMost(main) }

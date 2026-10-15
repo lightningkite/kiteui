@@ -2,7 +2,7 @@
 
 Goal: a desktop (JVM) KiteUI backend rendered with Compose Multiplatform, built so the same view code can later back Android and iOS as an alternative to the native backends.  Web stays on the HTML backend.
 
-Scope: everything in `commonMain` gets an actual, including video.  Out of scope: WebView (throws `UnsupportedOperationException` on construction), animated theme/screen transitions (`areAnimationsEnabled = false`, `animateIn/Out` complete immediately), gamepads, audio capture (clear "not supported" errors), Compose on Android/iOS (but `composeMain` must not use JVM-only APIs, to keep that door open).
+Scope: everything in `commonMain` gets an actual, including video.  Out of scope: WebView (throws `UnsupportedOperationException` on construction), gamepads, audio capture (clear "not supported" errors), Compose on Android/iOS (but `composeMain` must not use JVM-only APIs, to keep that door open).
 
 ## Proven already
 
@@ -29,7 +29,7 @@ Resource codegen: the gradle plugin's JVM output already emits commonHtml-shaped
 
 **Units.** `DimensionRaw = Float` in dp.  `px` is dp (same as CSS px, which are device-independent), `rem` is a fixed 16dp (no font-scale setting on desktop yet).  Desktop density comes from Compose's `LocalDensity`.
 
-**Modifiers** (`align`, `weight`, `dynamicWeight`, `sizedBox`, `dynamicSizeConstraints`, `shownWhen`, `shownForQuery`) store their values on the element (snapshot state) in `beforeSetup`; the parent reads them when laying out.  `sizedBox` applies `sizeIn`/`size`/`aspectRatio` on the element itself (the web approach, no wrapper element).  Scrolling injects a scroll-container element via `lazyInjectModifierWriter`, like Android, because `ScrollingBehaviors` needs an element to live on.  `shownWhen` just sets `shown`.
+**Modifiers** (`align`, `weight`, `dynamicWeight`, `sizedBox`, `dynamicSizeConstraints`, `shownWhen`, `shownForQuery`) store their values on the element (snapshot state) in `beforeSetup`; the parent reads them when laying out.  `sizedBox` applies `sizeIn`/`size`/`aspectRatio` on the element itself (the web approach, no wrapper element).  Scrolling injects a scroll-container element via `lazyInjectModifierWriter`, like Android, because `ScrollingBehaviors` needs an element to live on.  `shownWhen` sets `shown`, animating after setup (see Animations).
 
 **Layout rules** (from the web and Android behavior, not Compose's defaults):
 - Linear (`RowOrCol`): main axis wraps; `weight` takes a proportional share of the remaining space (flex-basis 0); `Stretch` on the main axis means wrap.  Cross axis defaults to stretch, meaning **the container's cross size**, which for a wrap-content container is the largest non-stretch child.  The gap goes only between shown children.  Hidden (`shown = false`) children are not composed at all.
@@ -38,9 +38,9 @@ Resource codegen: the gradle plugin's JVM output already emits commonHtml-shaped
 - `RowCollapsingToColumn` switches the same layout's orientation from `AppState.windowInfo().width`, ignoring weights in column mode.  `RowWrapping` uses `FlowRow`.  `ProgrammaticLayout` is a `Layout` that calls the delegate's measure/place.  `spacingOverrideBeforeNext` is a no-op (deprecated everywhere).
 
 **Theming.** `nativeApplyTheme` stores the `ThemeAndBack`; `Render` turns it into modifiers:
-- With `drawBackground`: `shadow(elevation, shape)`, `background(brush, shape)`, `border(outlineWidth, outline, shape)`, `clip(shape)`.
+- With `drawBackground`: a `graphicsLayer` with the shadow (and opacity and transform), a `drawWithCache` drawing the background and the border (inset like `Modifier.border`; drawn by hand so animated colours are read while drawing), `clip(shape)`.
 - Then `padding(appliedPadding)`.
-- Corner radii resolve each `CornerRadii` variant against the parent's `spacingForChildCornerRadii`.  Paints map to `SolidColor`, `Brush.linearGradient` (exact angle, which is better than Android) and `Brush.radialGradient`.  `FadingColor` uses its base colour for now.
+- Corner radii resolve each `CornerRadii` variant against the parent's `spacingForChildCornerRadii`.  Paints map to `SolidColor`, `Brush.linearGradient` (exact angle, which is better than Android) and `Brush.radialGradient`.  `FadingColor` backgrounds fade between their colours; elsewhere it is the base colour.
 - Text reads `theme.font` (`FontFamily`, weight, italic, size, line height, letter spacing, all-caps, underline/strike, alignment) via a `TextStyle`.
 
 Interactive states work like the web's CSS: interactive elements watch their `MutableInteractionSource` (hovered, pressed, focused) and render `theme[HoverSemantic]`, `theme[DownSemantic]` and so on.  Those themes are already cached in common code.
@@ -79,7 +79,7 @@ Total: roughly 5–7 weeks.
 
 ## Status
 
-Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of phase 4.  Tests: 72 desktop tests (5 skip in the agent sandbox: no audio device, no video decoding), 822 SSR tests, JS compiles.
+Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of phase 4.  Tests: 81 desktop tests (5 skip in the agent sandbox: no audio device, no video decoding), 822 SSR tests, JS compiles.
 
 - **Views:** all of them except WebView (out of scope; throws `UnsupportedOperationException`) and `CameraPreview` (no webcam support yet).  Twins `library-lottie-compose` (LottieView via the common `LottieRenderer`) and `library-camera-compose` (placeholder).
 - **Example app:** `example-app-desktop` runs the whole example app; `ExampleAppTest` renders the home page and fails on any element error.
@@ -91,6 +91,16 @@ Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of ph
   - Explicit sizes are capped by the parent's space and centered in a stretched slot (Android's behavior).  Wrapping containers size stretch axes from intrinsics, since Compose measures each child once; the layouts define their own intrinsics.
   - One input rule: an element takes input only when it and its ancestors are visible and it doesn't ignore interaction.  Hover is element state; interactions feed KiteUI's theme pipeline as on iOS.
   - `rem` is a fixed 16dp.  `KiteUiRoot` must be built on the main (Swing) thread.
+- **Animations** (branch `compose-animations`), following the web where it and Android differ:
+  - `animationsEnabled` is a global flag, as on Android and JS; `withoutAnimation` clears it, making property changes (theme, opacity, `shownWhen`, `dynamicWeight`) instant.  Like the web, `animateIn`/`animateOut` play regardless.
+  - Animations outside composition run on the root composition's frame clock and dispatcher (`animationContext`, set by `KiteUiRoot`), as Android's run on its Choreographer, so they follow a test's clock.
+  - Theme and opacity changes (hover, press and focus themes included) animate linearly over the theme's `transitionDuration` once the element is on screen: background, outline and text colours, opacity, elevation, and `Theme.transform` (now applied, to elements drawing a background as on the web).  Gradients change at once; icon colours change at once (as on the web, whose transition list has no `fill`).  Values are read while drawing, so frames redraw without recomposing or relayout.
+  - `animateIn`/`animateOut` play every `ScreenTransition` (fade, slides as fractions of the element's own size like CSS's `translate(%)`, scale, rotation, easing); a transition with nothing to animate finishes at once.  `SwapView` animates the old view out over the new one (clipped, like the web's) and removes it after; overlays and dialogs use the same.
+  - `shownWhen` plays its transition and, in a row or column, collapses the element's size and its gap so siblings move smoothly (weighted children shrink their weight, as the web animates `flex-grow`); in other parents only the transition plays.  An interrupted change continues from where it got to.  `shownForQuery` is instant, like CSS media queries.
+  - `dynamicWeight` animates linearly; a weight of 0 (natural size) blends into a positive one.
+  - `FadingColor` backgrounds fade there and back in 2s.
+  - Scroll benchmark (5 runs): median 1.41–1.44ms (was 1.30–1.36), p90 1.96–2.05ms (was 1.98–2.03), p99 2.83–3.16ms (was 2.63–2.97).  The small rise is hover transitions running while scrolling, the price of any animation (a bare `withFrameNanos` loop alone accounts for most of it); render and layout counts are unchanged.  A first version on Compose `Transition`s recomposed twice as often and cost twice as much.
+
 - Media: `RawVideoView` uses ComposeMediaPlayer (opened paused: its default autoplays; macOS never calls `onPlaybackEnded`, so completion is detected from position).  Audio uses `javax.sound` (WAV/AIFF/AU only).  Playback can't be verified in the sandbox: run `MediaTest` on a real Mac.  Linux needs GStreamer installed.
 
 - **Desktop vs web comparison** (`docs/compare/index.html`, untracked, 106 routes): layout, theming and components match the web closely.  Remaining differences are expected: font (the web loads Montserrat; desktop uses the system font, so text is slightly narrower and shorter), pre-formatted code blocks scroll instead of wrapping, and remote images can't load in the sandbox.  Fixed from the comparison: weights fill a minimum size (scrolling rows centering their content), bare progress bars.
@@ -98,7 +108,7 @@ Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of ph
 ### Known issues and TODOs
 
 - **Element leaks**: a heap dump traced retained pages to Compose UI 1.12.1 reusing modifier lists across nodes (`NodeChain` differ buffers), not to KiteUI.  Bounded, but the example app's leak detector warns.  Retest on the next Compose release; report upstream if it persists.
-- Date/time pickers (fields accept typed values only), popover focus and following a scrolling anchor, `keepScreenOn`, webcam, MP3 audio, `FadingColor` animation, all animations and transitions.
+- Date/time pickers (fields accept typed values only), popover focus and following a scrolling anchor, `keepScreenOn`, webcam, MP3 audio.  Not animated: text colour in views other than `TextView` (inputs, checkboxes and so on change at once), corner radii, outline widths, `RowWrapping` children's `shownWhen` collapse.
 - Untested without a real window/devices: file dialogs, window close confirmation, `inForeground`, video playback, audio output.
 - `:example-app:jvmSsrTest` aborts (exit 134) in the agent sandbox after 4 suites pass, independently of this work.
 - `test-utilities` has no desktop twin yet, so driver-command `uiTest`s don't run on desktop (the AI driver itself works).

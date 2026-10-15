@@ -17,7 +17,7 @@ public actual fun ElementWriter.CanAddWeight.weight(amount: Float): ElementWrite
     beforeSetup { underlyingNativeElement.weight = amount }
 
 public actual fun ElementWriter.CanAddWeight.dynamicWeight(amount: ReactiveContext.() -> Float): ElementWriter.CanAddListElementModifier =
-    beforeSetup { reactive { underlyingNativeElement.weight = amount() } }
+    beforeSetup { reactive { underlyingNativeElement.changeWeight(amount()) } }
 
 public actual fun ElementWriter.CanAddAlignment.align(horizontal: Align, vertical: Align): ElementWriter.CanAddWeight =
     beforeSetup {
@@ -31,11 +31,27 @@ public actual fun ElementWriter.CanAddSizing.sizedBox(constraints: SizeConstrain
 public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ElementWriter.CanAddTheme =
     beforeSetup { reactive { underlyingNativeElement.sizeConstraints = constraints() } }
 
-// TODO: transitions; animations are out of scope for now.
+// As on the web, changes after setup animate (except inside withoutAnimation), and in a row or column the
+// element also collapses so the others close up smoothly.
 public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing =
     beforeSetup {
         shown = default
-        reactive { shown = condition() }
+        var goal = default
+        reactive {
+            val value = condition()
+            if (value == goal) return@reactive
+            goal = value
+            val native = underlyingNativeElement
+            val animate = areAnimationsEnabled && native.fullyStarted
+            val collapses = animate && parent is NativeLinearLayoutElement
+            val t = if (animate) transition else ScreenTransition.None
+            if (value) {
+                shown = true
+                native.animateScreenTransition(t, entering = true, collapses = collapses, done = null)
+            } else {
+                native.animateScreenTransition(t, entering = false, collapses = collapses) { shown = false }
+            }
+        }
     }
 
 private val desktopDeviceTraits = MediaQueryDeviceTraits(
@@ -45,10 +61,9 @@ private val desktopDeviceTraits = MediaQueryDeviceTraits(
     displayMode = MediaQuery.DisplayMode.Option.Standalone,
 )
 
+// Instant, as the web's CSS media queries are.
 public actual fun ElementWriter.CanAddShownWhen.shownForQuery(query: MediaQuery): ElementWriter.CanAddSizing =
-    shownWhen(default = query.matches(AppState.windowInfo.value, desktopDeviceTraits)) {
-        query.matches(AppState.windowInfo(), desktopDeviceTraits)
-    }
+    beforeSetup { reactive { shown = query.matches(AppState.windowInfo(), desktopDeviceTraits) } }
 
 public actual inline fun ElementWriter.CanAddScrolling.__scrollsUncontracted(
     vertical: Boolean,
