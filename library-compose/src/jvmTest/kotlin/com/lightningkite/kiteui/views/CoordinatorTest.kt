@@ -188,6 +188,42 @@ class CoordinatorTest {
         onNodeWithText("Sheet content", useUnmergedTree = true).assertDoesNotExist()
     }
 
+    @Test
+    fun collapsedBottomSheetShowsItsPeek() = runKiteUiTest {
+        lateinit var control: BottomSheetControl
+        val (root, frame) = show { text("Page behind") }
+        runOnUiThread {
+            frame.bottomSheet(peekSize = 120.px, startState = BottomSheetState.COLLAPSED) {
+                control = it
+                card.col { centered.coordinatorDragHandle(); text("Sheet content") }
+            }
+        }
+        waitForIdle()
+        val height = rootBounds().bottom
+        val handle = onNode(hasClickAction())
+        assertEquals(height - 120.dp, handle.getUnclippedBoundsInRoot().top - testTheme.padding.top.value.dp)
+        saveScreenshot(root, "sheet-collapsed")
+
+        // Dragged up a little, it settles back at the peek; dragged down most of the peek, it closes.
+        handle.performMouseInput {
+            moveTo(center)
+            press()
+            repeat(5) { moveBy(Offset(0f, -10f * density)) }
+            release()
+        }
+        waitForIdle()
+        assertEquals(BottomSheetState.COLLAPSED, control.state.state.getOrNull())
+        assertEquals((height - 120.dp).value, (handle.getUnclippedBoundsInRoot().top - testTheme.padding.top.value.dp).value, 1f)
+        handle.performMouseInput {
+            moveTo(center)
+            press()
+            repeat(10) { moveBy(Offset(0f, 10f * density)) }
+            release()
+        }
+        waitForIdle()
+        onNodeWithText("Sheet content", useUnmergedTree = true).assertDoesNotExist()
+    }
+
 
     @Test
     fun slidingPanels() = runKiteUiTest {
