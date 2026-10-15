@@ -62,6 +62,14 @@ public actual class ScrollingBehaviorImpl actual constructor(
         get() = throw UnsupportedOperationException("Ignoring ScrollView interaction is not supported for web targets")
         set(value) {}
 
+    actual override var userScrollEnabled: Boolean = true
+        set(value) {
+            field = value
+            val overflow = if (value) "auto" else "hidden"
+            if (horizontal) native.style.overflowX = overflow
+            if (vertical) native.style.overflowY = overflow
+        }
+
     actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
     }
     actual override fun scrollTo(element: Element, horizontal: Align, vertical: Align, animated: Boolean) {
