@@ -7,11 +7,16 @@ import com.lightningkite.kiteui.models.px
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.CoroutineScope
 import java.util.Locale
+import javax.swing.Timer
 
 // The window root (KiteUiRoot) keeps these up to date.
 public actual object AppState {
-    internal val _animationFrame = BasicListenable()
-    public actual val animationFrame: Listenable get() = _animationFrame
+    // Android drives this from a ValueAnimator; here a timer ticks while anything listens, so an idle app does no work.
+    public actual val animationFrame: Listenable = object : BaseListenable() {
+        private val timer = Timer(16) { invokeAllListeners() }
+        override fun activate() = timer.start()
+        override fun deactivate() = timer.stop()
+    }
     internal val _windowInfo = Signal(WindowStatistics(1024.px, 768.px, 1f))
     public actual val windowInfo: ReactiveValue<WindowStatistics> get() = _windowInfo
     internal val _inForeground = Signal(true)

@@ -53,7 +53,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import javax.swing.Timer
 
 /**
  * Hosts a KiteUI app in Compose: builds the element tree with [app], then draws it from [Content].
@@ -84,16 +83,12 @@ public class KiteUiRoot(
         }
     }
 
-    // Android drives this from a ValueAnimator that never stops; a timer is the desktop equivalent.
-    private val animationFrames = Timer(16) { AppState._animationFrame.invokeAll() }
-
     init {
         // Elements built off the main thread race their own reactive setup, which runs on it.
         assertMainThread()
         PlatformStorage.appId = appId
         current = this
         writer.app()
-        animationFrames.start()
     }
 
     /** The app's main navigator, which `appBase` binds here.  Back and closing the window go through it. */
@@ -152,9 +147,8 @@ public class KiteUiRoot(
         )
     }
 
-    /** Stops the app: shuts down the element tree and the timers driving it. */
+    /** Stops the app: shuts down the element tree. */
     public fun close() {
-        animationFrames.stop()
         animationContext = null
         root?.onShutdown()
         scope.cancel()
