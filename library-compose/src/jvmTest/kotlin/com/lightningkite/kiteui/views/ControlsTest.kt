@@ -5,6 +5,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
@@ -101,6 +102,34 @@ class ControlsTest {
     }
 
     @Test
+    fun sliderFollowsAReactiveMax() = runKiteUiTest {
+        val max = Signal(10f)
+        lateinit var slider: Slider
+        val root = show {
+            col {
+                slider = slider { reactive { this@slider.max = max() } }
+            }
+        }
+        slider.value.value = 5f
+        val node = onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))
+        val bounds = node.getUnclippedBoundsInRoot()
+        // Just above the track, where only the thumb draws.
+        fun thumbIsAt(fraction: Float): Boolean {
+            val image = saveScreenshot(root, "slider-max")
+            val radius = 8.dp
+            val x = bounds.left + radius + (bounds.width - radius * 2) * fraction
+            val y = bounds.top + radius - 6.dp
+            val pixel = image.getRGB(with(density) { x.roundToPx() }, with(density) { y.roundToPx() })
+            val background = image.getRGB(with(density) { bounds.left.roundToPx() }, with(density) { y.roundToPx() })
+            return pixel != background
+        }
+        assertTrue(thumbIsAt(0.5f) && !thumbIsAt(0.25f))
+        max.value = 20f
+        waitUntil(timeoutMillis = 2_000) { node.fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].range.endInclusive == 20f }
+        assertTrue(thumbIsAt(0.25f) && !thumbIsAt(0.5f), "the thumb didn't move when max changed")
+    }
+
+    @Test
     fun progressIndicators() = runKiteUiTest {
         val root = show {
             col {
@@ -146,6 +175,19 @@ class ControlsTest {
         onNodeWithText("Unsafe").performClick()
         waitForIdle()
         assertEquals(2, clicked)
+    }
+
+    @Test
+    fun htmlLinksOpenOnlySafeUrls() {
+        val opened = ArrayList<String>()
+        val text = parseBasicHtml(
+            """<a href="https://example.com">safe</a> <a href="file:///etc/passwd">file</a> <a href="javascript:alert(1)">script</a>""",
+        ) { opened += it }
+        assertEquals("safe file script", text.text.trim())
+        val link = text.getLinkAnnotations(0, text.length).single()
+        assertEquals("safe", text.text.substring(link.start, link.end))
+        (link.item as LinkAnnotation.Clickable).linkInteractionListener!!.onClick(link.item)
+        assertEquals(listOf("https://example.com"), opened)
     }
 
     @Test

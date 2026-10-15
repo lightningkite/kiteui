@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
+import com.lightningkite.kiteui.views.hintColor
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
 import com.lightningkite.reactive.context.invoke
@@ -27,7 +28,8 @@ import com.lightningkite.reactive.core.Signal
 import kotlinx.datetime.LocalTime
 
 // Typed as 24-hour hh:mm; like the web's time input, content stays null until the text is a whole, valid time.
-// TODO: Compose backend: a time picker popover limited to range, once openPopover exists.
+// TODO: Compose backend: a picker.  The web's native input opens scrolling hour and minute columns from a clock
+//  icon at the field's end, with times outside range disabled; build it on openPopover.
 public actual class LocalTimeField actual constructor(context: ElementContext) : NativeElementWithAction(context) {
     override val driverValue: String? get() = localTimeDriverValue()
     override val driverActions: AiDriver.Actions get() = super.driverActions + localTimeDriverActions()
@@ -78,7 +80,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalTimeField) }),
             decorationBox = { inner ->
                 Box {
-                    if (field.text.isEmpty()) BasicText("hh:mm", style = style.copy(color = color.withAlpha(0.5f).toCompose()))
+                    if (field.text.isEmpty()) BasicText("hh:mm", style = style.copy(color = theme.hintColor))
                     inner()
                 }
             },

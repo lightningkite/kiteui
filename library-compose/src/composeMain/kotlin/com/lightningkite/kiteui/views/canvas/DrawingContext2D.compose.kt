@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.PathHitTester
 import androidx.compose.ui.graphics.PathOperation
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -37,10 +36,13 @@ import com.lightningkite.kiteui.models.RadialGradient
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toFontFamily
 import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
+import kotlin.math.tan
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.Paint as ComposePaint
 
@@ -93,7 +95,9 @@ internal data class CanvasState(
     val shadowOffsetY: Double = 0.0,
     val font: TextStyle,
     val textAlign: TextAlign = TextAlign.start,
-)
+) {
+    val hasShadow: Boolean get() = shadowColor.alpha > 0f
+}
 
 // HTML canvas 2D on a Compose [DrawScope], in its pixels.  As in HTML, the current [path] is kept in canvas
 // pixels: each point is transformed as it's added, so changing the transform part-way through a path works.
@@ -144,9 +148,14 @@ public class ComposeDrawingContext2D(
         get() = state.lineDashOffset
         set(value) { state = state.copy(lineDashOffset = value) }
 
-    override fun clearRect(x: Double, y: Double, w: Double, h: Double): Unit = withState {
+    override fun clearRect(x: Double, y: Double, w: Double, h: Double) {
         // Ignores alpha, shadow and compositing, as in HTML.
-        drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), ComposePaint().apply { blendMode = BlendMode.Clear })
+        val canvas = scope.drawContext.canvas
+        canvas.save()
+        state.clip?.let { canvas.clipPath(it) }
+        canvas.concat(state.transform.toCompose())
+        canvas.drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), ComposePaint().apply { blendMode = BlendMode.Clear })
+        canvas.restore()
     }
 
     override fun fillRect(x: Double, y: Double, w: Double, h: Double): Unit = withState {
@@ -199,11 +208,30 @@ public class ComposeDrawingContext2D(
         drawPath(pathInUserSpace().apply { fillType = rule }, paint(stroke = false))
     }
 
-    // Adds to [path] with [build] working in [space] rather than in canvas pixels.
-    internal inline fun addInSpace(space: TransformMatrix, build: Path.() -> Unit) {
-        path.transform(space.toCompose().apply { invert() })
-        path.build()
-        path.transform(space.toCompose())
+    // Adds an arc of the unit circle, mapped by [circleSpace], as HTML's arc() does: a full turn or more is the
+    // whole circle, and otherwise it runs from [start] to [end] (radians) in the given direction, joined to the
+    // path by a line.  It's made of cubic Béziers, one per quarter turn or less, since an affine transform maps
+    // those exactly; that's what lets each point go straight into the path in canvas pixels.
+    internal fun addArc(circleSpace: TransformMatrix, start: Double, end: Double, anticlockwise: Boolean) {
+        val turn = 2 * PI
+        val sweep = when {
+            !anticlockwise -> if (end - start >= turn) turn else (end - start).mod(turn)
+            else -> if (start - end >= turn) -turn else -(start - end).mod(turn)
+        }
+        val pieces = max(1, ceil(abs(sweep) / (PI / 2)).toInt())
+        val step = sweep / pieces
+        // How far along each end's tangent its control point lies, for the closest cubic to a circular arc.
+        val handle = 4.0 / 3 * tan(step / 4)
+        val first = circleSpace.map(cos(start), sin(start))
+        if (path.isEmpty) path.moveTo(first.x, first.y) else path.lineTo(first.x, first.y)
+        for (i in 0 until pieces) {
+            val a = start + step * i
+            val b = a + step
+            val c1 = circleSpace.map(cos(a) - handle * sin(a), sin(a) + handle * cos(a))
+            val c2 = circleSpace.map(cos(b) + handle * sin(b), sin(b) - handle * cos(b))
+            val p = circleSpace.map(cos(b), sin(b))
+            path.cubicTo(c1.x, c1.y, c2.x, c2.y, p.x, p.y)
+        }
     }
 
     // Drawn under the transform, so line widths, dashes and gradients are in user space, as in HTML.
@@ -212,20 +240,31 @@ public class ComposeDrawingContext2D(
         transform(state.transform.toCompose().apply { invert() })
     }
 
-    // Runs [draw] in user space, under the current clip.
+    // Runs [draw] in user space, under the current clip and with the current shadow.
     internal inline fun withState(draw: Canvas.() -> Unit) {
+        val state = state
         val canvas = scope.drawContext.canvas
         canvas.save()
         state.clip?.let { canvas.clipPath(it) }
+        // HTML's shadows are in canvas pixels, unaffected by the transform, so the shadow goes on a layer made
+        // before the transform.  The layer then composites as the drawing would have.
+        if (state.hasShadow) canvas.saveLayer(Rect(Offset.Zero, scope.size), ComposePaint().apply {
+            blendMode = state.blendMode
+            setShadow(state.shadowColor.toCompose(), Offset(state.shadowOffsetX.toFloat(), state.shadowOffsetY.toFloat()), state.shadowBlur.toFloat())
+        })
         canvas.concat(state.transform.toCompose())
         canvas.draw()
+        if (state.hasShadow) canvas.restore()
         canvas.restore()
     }
+
+    // Under a shadow, drawing goes onto a transparent layer, which itself composites.
+    private val drawBlendMode get() = if (state.hasShadow) BlendMode.SrcOver else state.blendMode
 
     private fun paint(stroke: Boolean) = ComposePaint().apply {
         val state = state
         (if (stroke) state.stroke else state.fill).toCanvasBrush().applyTo(scope.size, this, state.globalAlpha.toFloat())
-        blendMode = state.blendMode
+        blendMode = drawBlendMode
         if (stroke) {
             style = PaintingStyle.Stroke
             strokeWidth = state.lineWidth.toFloat()
@@ -236,11 +275,6 @@ public class ComposeDrawingContext2D(
                 pathEffect = PathEffect.dashPathEffect(state.lineDash.map { it.toFloat() }.toFloatArray(), state.lineDashOffset.toFloat())
             }
         }
-        if (state.shadowColor.alpha > 0f) setShadow(
-            state.shadowColor.toCompose(),
-            Offset(state.shadowOffsetX.toFloat(), state.shadowOffsetY.toFloat()),
-            state.shadowBlur.toFloat(),
-        )
     }
 
     internal fun drawText(text: String, x: Double, y: Double, stroke: Boolean) {
@@ -262,18 +296,13 @@ public class ComposeDrawingContext2D(
                 // HTML's default baseline is the alphabetic one.
                 topLeft = Offset(x.toFloat() - anchor, y.toFloat() - layout.firstBaseline),
                 alpha = state.globalAlpha.toFloat(),
-                shadow = if (state.shadowColor.alpha > 0f) Shadow(
-                    state.shadowColor.toCompose(),
-                    Offset(state.shadowOffsetX.toFloat(), state.shadowOffsetY.toFloat()),
-                    state.shadowBlur.toFloat(),
-                ) else null,
                 drawStyle = if (stroke) Stroke(
                     width = state.lineWidth.toFloat(),
                     miter = state.miterLimit.toFloat(),
                     cap = state.lineCap.toCompose(),
                     join = state.lineJoin.toCompose(),
                 ) else Fill,
-                blendMode = state.blendMode,
+                blendMode = drawBlendMode,
             )
         }
     }
@@ -378,25 +407,10 @@ private fun FillRule.toCompose() = when (this) {
     FillRule.evenodd -> PathFillType.EvenOdd
 }
 
-// Adds an arc of the ellipse in [oval] as HTML's arc() does: a full turn or more is the whole ellipse, and
-// otherwise it runs from [start] to [end] (radians) in the given direction, joined to the path by a line.
-private fun Path.htmlArc(oval: Rect, start: Double, end: Double, anticlockwise: Boolean) {
-    val turn = 2 * PI
-    val sweep = when {
-        !anticlockwise -> if (end - start >= turn) turn else (end - start).mod(turn)
-        else -> if (start - end >= turn) -turn else -(start - end).mod(turn)
-    }
-    val startDegrees = (start * 180 / PI).toFloat()
-    val halfSweepDegrees = (sweep * 90 / PI).toFloat()
-    // Skia adds nothing for a 360 degree arcTo, so add it in two halves.
-    arcTo(oval, startDegrees, halfSweepDegrees, forceMoveTo = false)
-    arcTo(oval, startDegrees + halfSweepDegrees, halfSweepDegrees, forceMoveTo = false)
+public actual fun DrawingContext2D.appendArc(x: Double, y: Double, radius: Double, startAngle: Angle, endAngle: Angle, anticlockwise: Boolean) {
+    val circleSpace = compose.state.transform * TransformMatrix(a = radius, d = radius, e = x, f = y)
+    compose.addArc(circleSpace, startAngle.radians.toDouble(), endAngle.radians.toDouble(), anticlockwise)
 }
-
-public actual fun DrawingContext2D.appendArc(x: Double, y: Double, radius: Double, startAngle: Angle, endAngle: Angle, anticlockwise: Boolean): Unit =
-    compose.addInSpace(compose.state.transform) {
-        htmlArc(Rect(Offset(x.toFloat(), y.toFloat()), radius.toFloat()), startAngle.radians.toDouble(), endAngle.radians.toDouble(), anticlockwise)
-    }
 
 public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double): Unit = compose.drawText(text, x, y, stroke = true)
 public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit = compose.drawText(text, x, y, stroke = false)
@@ -475,8 +489,10 @@ public actual fun DrawingContext2D.roundRect(
     x: Double, y: Double, width: Double, height: Double,
     topLeftRadius: Double, topRightRadius: Double,
     bottomRightRadius: Double, bottomLeftRadius: Double
-): Unit = compose.addInSpace(compose.state.transform) {
-    addRoundRect(
+) {
+    // A new subpath, as in HTML.
+    val roundRect = Path()
+    roundRect.addRoundRect(
         RoundRect(
             left = x.toFloat(), top = y.toFloat(), right = (x + width).toFloat(), bottom = (y + height).toFloat(),
             topLeftCornerRadius = CornerRadius(topLeftRadius.toFloat()),
@@ -485,6 +501,8 @@ public actual fun DrawingContext2D.roundRect(
             bottomLeftCornerRadius = CornerRadius(bottomLeftRadius.toFloat()),
         )
     )
+    roundRect.transform(compose.state.transform.toCompose())
+    compose.path.addPath(roundRect)
 }
 
 public actual fun DrawingContext2D.ellipse(
@@ -494,13 +512,11 @@ public actual fun DrawingContext2D.ellipse(
     startAngle: Double, endAngle: Double,
     anticlockwise: Boolean
 ) {
-    val c = compose
-    val ellipseSpace = c.state.transform *
+    val circleSpace = compose.state.transform *
         TransformMatrix(e = x, f = y) *
-        TransformMatrix(cos(rotation), sin(rotation), -sin(rotation), cos(rotation))
-    c.addInSpace(ellipseSpace) {
-        htmlArc(Rect(-radiusX.toFloat(), -radiusY.toFloat(), radiusX.toFloat(), radiusY.toFloat()), startAngle, endAngle, anticlockwise)
-    }
+        TransformMatrix(cos(rotation), sin(rotation), -sin(rotation), cos(rotation)) *
+        TransformMatrix(a = radiusX, d = radiusY)
+    compose.addArc(circleSpace, startAngle, endAngle, anticlockwise)
 }
 
 // As in HTML, the point is in canvas pixels, unaffected by the transform.

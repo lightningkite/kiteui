@@ -28,7 +28,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -146,12 +145,7 @@ public actual class RawVideoView actual constructor(
             playerState = player,
             // Sized like the web's <video>: its own aspect ratio, unless the parent fixes both axes.
             modifier = modifier.aspectRatio(player.aspectRatio).semantics { contentDescription = description },
-            contentScale = when (scaleType) {
-                ImageScaleType.Fit -> ContentScale.Fit
-                ImageScaleType.Crop -> ContentScale.Crop
-                ImageScaleType.Stretch -> ContentScale.FillBounds
-                ImageScaleType.NoScale -> ContentScale.None
-            },
+            contentScale = scaleType.toContentScale(),
         ) {
             if (showControls) Controls()
         }

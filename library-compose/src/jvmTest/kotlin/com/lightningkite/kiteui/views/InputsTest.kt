@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
+import androidx.compose.ui.text.TextRange
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.direct.*
@@ -170,7 +171,52 @@ class InputsTest {
         onNodeWithText("Grape").performClick()
         awaitValue(fruit, "Grape")
         field(0).assertTextEquals("Grape")
+        field(0).assert(SemanticsMatcher.expectValue(SemanticsProperties.TextSelectionRange, TextRange(5)))
         onAllNodes(isPopup()).assertCountEquals(0)
+    }
+
+    @Test
+    fun autoCompleteAnswersTheKeyboard() = runKiteUiTest {
+        val fruit = Signal("")
+        showKiteUi {
+            fieldTheme.autoCompleteTextField {
+                suggestions = listOf("Apple", "Grape", "Cherry")
+                content bind fruit
+            }
+        }
+        field(0).performTextInput("e")
+        waitForIdle()
+        field(0).performKeyInput { pressKey(Key.DirectionDown); pressKey(Key.DirectionDown); pressKey(Key.Enter) }
+        awaitValue(fruit, "Grape")
+        field(0).assert(SemanticsMatcher.expectValue(SemanticsProperties.TextSelectionRange, TextRange(5)))
+        onAllNodes(isPopup()).assertCountEquals(0)
+        field(0).performTextInput("x")
+        field(0).performTextClearance()
+        waitForIdle()
+        onAllNodes(isPopup()).assertCountEquals(1)
+        field(0).performKeyInput { pressKey(Key.Escape) }
+        waitForIdle()
+        onAllNodes(isPopup()).assertCountEquals(0)
+    }
+
+    @Test
+    fun selectAnswersTheKeyboard() = runKiteUiTest {
+        val fruit = Signal("Apple")
+        showKiteUi {
+            fieldTheme.select { bind(fruit, Constant(listOf("Apple", "Banana", "Cherry"))) { it } }
+        }
+        onNodeWithText("Apple").performClick()
+        waitForIdle()
+        // The list starts at the selected option, as a native <select> does.
+        onNode(isFocused() and hasAnyAncestor(isPopup())).performKeyInput { pressKey(Key.DirectionDown); pressKey(Key.DirectionDown); pressKey(Key.DirectionUp); pressKey(Key.Enter) }
+        awaitValue(fruit, "Banana")
+        onAllNodes(isPopup()).assertCountEquals(0)
+        onNodeWithText("Banana").performClick()
+        waitForIdle()
+        onNode(isFocused() and hasAnyAncestor(isPopup())).performKeyInput { pressKey(Key.Escape) }
+        waitForIdle()
+        onAllNodes(isPopup()).assertCountEquals(0)
+        assertEquals("Banana", fruit.value)
     }
 
     @Test

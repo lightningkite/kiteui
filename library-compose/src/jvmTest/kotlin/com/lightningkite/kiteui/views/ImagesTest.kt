@@ -326,6 +326,15 @@ class ImagesTest {
                 fillPaint = Color.blue
                 fillRect(110.0, 200.0, 50.0, 50.0)
                 restore()
+                // The transform doesn't scale a shadow, as in HTML.
+                save()
+                translate(10.0, 272.0)
+                scale(4.0, 4.0)
+                shadowColorValue = Color.black
+                shadowOffsetX = 20.0
+                fillPaint = Color.green
+                fillRect(0.0, 0.0, 4.0, 4.0)
+                restore()
                 globalAlpha = 0.5
                 fillPaint = Color.red
                 fillRect(180.0, 200.0, 50.0, 50.0)
@@ -372,9 +381,13 @@ class ImagesTest {
         assertTrue(at(430.0, 5.0) != 'W', "clearRect leaves no white")
         assertEquals('W', at(320.0, 45.0), "even-odd hole")
         assertEquals('G', at(320.0, 22.0), "even-odd ring")
+        assertEquals('W', at(296.0, 21.0), "the ring is round")
         assertEquals('K', at(130.0, 140.0), "a line whose transform changed part-way")
         assertEquals('G', at(25.0, 205.0), "inside the clip")
         assertEquals('W', at(10.0, 230.0), "outside the clip")
+        assertEquals('G', at(18.0, 280.0), "a scaled square")
+        assertEquals('K', at(38.0, 280.0), "its shadow, 20 canvas pixels along")
+        assertEquals('W', at(98.0, 280.0), "not 20 scaled pixels along")
         assertEquals(true, measurements["inTriangle"])
         assertEquals(false, measurements["outsideTriangle"])
         val transform = measurements["transform"] as TransformMatrix

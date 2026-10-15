@@ -15,7 +15,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.UnselectedSemantic
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.models.toDp
 import com.lightningkite.kiteui.views.*
@@ -24,6 +26,7 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactiveValue
 import com.lightningkite.reactive.core.Signal
 
+@OptIn(ExperimentalKiteUi::class)
 public actual class Switch actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
     override val driverActions: AiDriver.Actions get() = super.driverActions + switchDriverActions()
@@ -32,6 +35,8 @@ public actual class Switch actual constructor(context: ElementContext) : NativeI
     private var isChecked by mutableStateOf(false)
 
     init {
+        // As on the web, where every check control gets the unselected theme.
+        themePipeline.add(ThemePipeline.Step.elementStyling, UnselectedSemantic)
         reactive { isChecked = checked() }
     }
 

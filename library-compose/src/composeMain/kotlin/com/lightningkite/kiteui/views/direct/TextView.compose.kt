@@ -10,6 +10,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
+import com.lightningkite.kiteui.externalServices
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.ElementContext
@@ -17,7 +18,7 @@ import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
 
-internal expect fun parseBasicHtml(html: String): AnnotatedString
+internal expect fun parseBasicHtml(html: String, openLink: (url: String) -> Unit): AnnotatedString
 
 public actual class TextView actual constructor(context: ElementContext) : NativeElement(context) {
     override val driverValue: String? get() = content
@@ -35,7 +36,7 @@ public actual class TextView actual constructor(context: ElementContext) : Nativ
     public actual var lineClamp: Int? by mutableStateOf(null)
 
     public actual fun setBasicHtmlContent(html: String) {
-        text = parseBasicHtml(html)
+        text = parseBasicHtml(html) { context.externalServices.openLink(it) }
     }
 
     @Composable

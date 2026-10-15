@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,16 +92,17 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
                     }, color)
                 }
             }
-            if (open) DropdownList(
-                owner = this@Select,
-                options = options,
-                focusable = true,
-                onChoose = {
-                    open = false
-                    choose?.invoke(it)
-                },
-                onDismiss = { open = false },
-            )
+            if (open) remember(options) {
+                DropdownList(
+                    options = options,
+                    highlighted = options.indexOf(selected),
+                    onChoose = {
+                        open = false
+                        choose?.invoke(it)
+                    },
+                    onDismiss = { open = false },
+                )
+            }.Render(owner = this@Select, focusable = true)
         }
     }
 }

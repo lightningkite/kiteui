@@ -7,6 +7,7 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.models.*
@@ -14,6 +15,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Signal
+import kotlin.math.abs
 
 public actual class CoordinatorFrame actual constructor(context: ElementContext) : NativeContainerElement(context) {
     // Laid out like the web: a full-size column whose top part is an empty spacer, so the content takes the rest.
@@ -26,7 +28,7 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
         blockBehind: Boolean,
         content: ElementWriter.CanAddShownWhen.(control: BottomSheetControl) -> Unit
     ) {
-        val sheet = BottomSheet(this, Signal(startState), partialRatio, draggable)
+        val sheet = BottomSheet(this, Signal(startState), peekSize, partialRatio, draggable)
         val control = object : BottomSheetControl {
             override val state = sheet.state
             override fun close() = sheet.close()
@@ -37,9 +39,12 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
             context.bottomSheet = sheet
             sheet.above = frame { ignoreInteraction = true }
             beforeSetup { sheet.content = underlyingNativeElement }.content(control)
-            reactive { sheet.fraction = sheet.fractionOf(sheet.state()) }
+            reactive { sheet.fraction = sheet.fractionOf(sheet.state(), this@CoordinatorFrame.height()) }
         }
     }
+
+    // In dp; 0 until laid out.
+    internal val height = Signal(0f)
 
     public actual fun leftSlidingPanel(ratio: Float?, blockBehind: Boolean, content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit) {
         lateinit var panel: Element
@@ -77,7 +82,11 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
 
     @Composable
     override fun Content(modifier: Modifier) {
-        Layout(content = { ShownChildren() }, modifier = modifier, measurePolicy = FrameMeasurePolicy)
+        Layout(
+            content = { ShownChildren() },
+            modifier = modifier.onSizeChanged { height.value = it.height / density },
+            measurePolicy = FrameMeasurePolicy,
+        )
     }
 }
 
@@ -86,6 +95,7 @@ private var ElementContext.bottomSheet: BottomSheet? by contextAddon(null)
 private class BottomSheet(
     val frame: CoordinatorFrame,
     val state: Signal<BottomSheetState>,
+    val peekSize: Dimension?,
     val partialRatio: Float,
     val draggable: Boolean,
 ) {
@@ -103,10 +113,15 @@ private class BottomSheet(
             content.weight = value
         }
 
-    fun fractionOf(state: BottomSheetState): Float = when (state) {
+    // Collapsed shows peekSize of the content, as on Android.  (The web shows a collapsed sheet expanded.)
+    fun fractionOf(state: BottomSheetState, frameHeight: Float): Float = when (state) {
         BottomSheetState.EXPANDED -> 1f
         BottomSheetState.PARTIALLY_EXPANDED -> partialRatio
-        BottomSheetState.COLLAPSED -> TODO("Compose backend: BottomSheetState.COLLAPSED (peekSize)")
+        BottomSheetState.COLLAPSED -> {
+            val peek = checkNotNull(peekSize) { "A bottom sheet needs a peekSize to be COLLAPSED" }
+            // Before the first layout the height is 0, so the sheet starts full until it's known.
+            minOf(1f, peek.value / frameHeight)
+        }
     }
 
     fun close() {
@@ -122,16 +137,16 @@ private class BottomSheet(
         if (next <= 0f) close() else fraction = next
     }
 
+    // Settles at the nearest state, or closes if the bottom of the frame is nearer still.
     fun settle() {
         if (closed) return
-        val target = when {
-            fraction < partialRatio / 2 -> return close()
-            fraction < (1f + partialRatio) / 2 -> BottomSheetState.PARTIALLY_EXPANDED
-            else -> BottomSheetState.EXPANDED
-        }
+        val frameHeight = frame.height.value
+        val states = if (peekSize == null) BottomSheetState.entries - BottomSheetState.COLLAPSED else BottomSheetState.entries
+        val target = states.minBy { abs(fractionOf(it, frameHeight) - fraction) }
+        if (fraction < abs(fractionOf(target, frameHeight) - fraction)) return close()
         state.value = target
         // Setting the state again doesn't notify, so put the sheet back explicitly.
-        fraction = fractionOf(target)
+        fraction = fractionOf(target, frameHeight)
     }
 }
 
