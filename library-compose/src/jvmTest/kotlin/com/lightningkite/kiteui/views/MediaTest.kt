@@ -1,0 +1,305 @@
+package com.lightningkite.kiteui.views
+
+import androidx.compose.ui.graphics.toAwtImage
+import androidx.compose.ui.test.*
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.lightningkite.kiteui.PlayableAudio
+import com.lightningkite.kiteui.SoundEffectPool
+import com.lightningkite.kiteui.audio.AudioFormat
+import com.lightningkite.kiteui.audio.AudioPlayback
+import com.lightningkite.kiteui.createFileReferenceFromBytes
+import com.lightningkite.kiteui.load
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.toBlob
+import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.core.*
+import com.sun.net.httpserver.HttpServer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.junit.Assume.assumeTrue
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.net.InetSocketAddress
+import javax.imageio.ImageIO
+import javax.sound.sampled.AudioFileFormat
+import javax.sound.sampled.AudioInputStream
+import javax.sound.sampled.AudioSystem
+import javax.sound.sampled.Line
+import javax.sound.sampled.SourceDataLine
+import javax.sound.sampled.UnsupportedAudioFileException
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.sin
+import kotlin.test.AfterTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import javax.sound.sampled.AudioFormat as LineFormat
+
+@OptIn(ExperimentalTestApi::class)
+class MediaTest {
+    private val theme = Theme.flat2("test", 0.6.turns)
+
+    // Two seconds of 64x32 video, left half red and right half blue, with a silent audio track.
+    private val mp4 = javaClass.classLoader.getResourceAsStream("common/video/test-pattern.mp4")!!.use { it.readBytes() }
+
+    // AVFoundation streams over HTTP with range requests, so the server answers them.
+    private val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
+        createContext("/") { exchange ->
+            val range = exchange.requestHeaders.getFirst("Range")?.removePrefix("bytes=")?.split("-")
+            val start = range?.get(0)?.toInt() ?: 0
+            val end = range?.get(1)?.takeIf { it.isNotEmpty() }?.toInt() ?: mp4.lastIndex
+            exchange.responseHeaders.add("Content-Type", "video/mp4")
+            exchange.responseHeaders.add("Accept-Ranges", "bytes")
+            if (range != null) exchange.responseHeaders.add("Content-Range", "bytes $start-$end/${mp4.size}")
+            exchange.sendResponseHeaders(if (range != null) 206 else 200, (end - start + 1).toLong())
+            exchange.responseBody.use { it.write(mp4, start, end - start + 1) }
+            exchange.close()
+        }
+        start()
+    }
+
+    @AfterTest
+    fun stopServer() = server.stop(0)
+
+    private fun ComposeUiTest.show(app: ViewWriter.() -> Unit): KiteUiRoot {
+        val root = runBlocking(Dispatchers.Main) { KiteUiRoot("kiteui-compose-test", { theme }, app) }
+        setContent { root.Content() }
+        waitForIdle()
+        return root
+    }
+
+    private fun ComposeUiTest.waitForLoad(video: RawVideoView) {
+        waitUntil(timeoutMillis = 10_000) { video.state.state.ready }
+        check(video.state.state.success) { "${video.source} failed: ${video.state.state}" }
+    }
+
+    private fun <T> Reactive<T>.now(): T = state.get()
+
+    @Test
+    fun loadsPlaysSeeksAndEnds() = runComposeUiTest {
+        lateinit var video: RawVideoView
+        val root = show {
+            sizeConstraints(width = 128.px, height = 64.px).rawVideo(VideoResource("common/video/test-pattern.mp4"), "test pattern") { video = this }
+        }
+        waitForLoad(video)
+        assertEquals(2.0, video.sourceDuration.now()!!, 0.1)
+        assertEquals(listOf(0.0..video.sourceDuration.now()!!), video.seekableTimeRanges)
+
+        runBlocking(Dispatchers.Main) { video.currentTime.set(1.seconds) }
+        waitUntil(timeoutMillis = 5_000) { abs(video.currentTime.now().inWholeMilliseconds - 1000) < 150 }
+        waitForIdle()
+        val image = runBlocking { root.screenshot() }.toAwtImage()
+        ImageIO.write(image, "png", File(File(System.getProperty("user.dir"), "build/shots").apply { mkdirs() }, "video-frame.png"))
+        val box = onNodeWithContentDescription("test pattern").getBoundsInRoot()
+        fun rgbAt(x: Dp, y: Dp) = image.getRGB(((box.left + x).value * root.density).toInt(), ((box.top + y).value * root.density).toInt())
+        val left = rgbAt(32.dp, 32.dp)
+        val right = rgbAt(96.dp, 32.dp)
+        assertTrue((left shr 16 and 0xFF) > 150 && (left and 0xFF) < 100, "left half should be red, was ${Integer.toHexString(left)}")
+        assertTrue((right and 0xFF) > 150 && (right shr 16 and 0xFF) < 100, "right half should be blue, was ${Integer.toHexString(right)}")
+
+        var completions = 0
+        runBlocking(Dispatchers.Main) {
+            video.completedPlay.addListener { completions++ }
+            video.playing.set(true)
+        }
+        waitUntil(timeoutMillis = 5_000) { video.playing.now() }
+        waitUntil(timeoutMillis = 5_000) { video.currentTime.now() > 1.2.seconds }
+        waitUntil(timeoutMillis = 5_000) { completions == 1 }
+        assertFalse(video.playing.now())
+
+        runBlocking(Dispatchers.Main) { video.volume.set(0.25f) }
+        waitUntil(timeoutMillis = 5_000) { video.volume.now() == 0.25f }
+        root.close()
+    }
+
+    @Test
+    fun pausesAndLoops() = runComposeUiTest {
+        lateinit var video: RawVideoView
+        val root = show {
+            sizeConstraints(width = 128.px, height = 64.px).rawVideo(VideoResource("common/video/test-pattern.mp4"), "test pattern") {
+                video = this
+                loop = true
+                showControls = true
+            }
+        }
+        // Asked to play before it has loaded, it plays once it has, like the web's autoplay.
+        runBlocking(Dispatchers.Main) { video.playing.set(true) }
+        waitForLoad(video)
+        var completions = 0
+        runBlocking(Dispatchers.Main) { video.completedPlay.addListener { completions++ } }
+        waitUntil(timeoutMillis = 5_000) { video.playing.now() }
+
+        // Looping wraps around to the start rather than ending.
+        waitUntil(timeoutMillis = 5_000) { video.currentTime.now() > 1.5.seconds }
+        waitUntil(timeoutMillis = 5_000) { video.currentTime.now() < 1.seconds }
+        assertTrue(video.playing.now())
+        assertEquals(0, completions)
+
+        runBlocking(Dispatchers.Main) { video.playing.set(false) }
+        waitUntil(timeoutMillis = 5_000) { !video.playing.now() }
+        val pausedAt = video.currentTime.now()
+        Thread.sleep(300)
+        waitForIdle()
+        assertEquals(pausedAt, video.currentTime.now())
+        root.close()
+    }
+
+    @Test
+    fun everySourceLoads() = runComposeUiTest {
+        val sources = listOf(
+            VideoRaw(mp4.toBlob("video/mp4")),
+            VideoLocal(createFileReferenceFromBytes(mp4, "video/mp4", "pattern.mp4")),
+            VideoRemote("http://127.0.0.1:${server.address.port}/pattern.mp4"),
+        )
+        val videos = ArrayList<RawVideoView>()
+        val root = show {
+            col {
+                for (source in sources) sizeConstraints(width = 64.px, height = 32.px).rawVideo(source, "$source") { videos += this }
+            }
+        }
+        for (video in videos) {
+            waitForLoad(video)
+            assertEquals(2.0, video.sourceDuration.now()!!, 0.1, "${video.source}")
+        }
+        root.close()
+    }
+
+    @Test
+    fun missingVideoReportsAnError() = runComposeUiTest {
+        lateinit var video: RawVideoView
+        val root = show {
+            rawVideo(VideoLocal(createFileReferenceFromBytes(ByteArray(100), "video/mp4", "garbage.mp4")), "garbage") { video = this }
+        }
+        waitUntil(timeoutMillis = 10_000) { video.state.state.ready }
+        assertFalse(video.state.state.success)
+        root.close()
+    }
+
+    @Test
+    fun removedVideoReleasesItsPlayer() = runComposeUiTest {
+        val shown = Signal(true)
+        lateinit var video: RawVideoView
+        val root = show {
+            swapView {
+                swapping(current = { shown() }) {
+                    if (it) sizeConstraints(width = 64.px, height = 32.px).rawVideo(VideoResource("common/video/test-pattern.mp4"), "test pattern") { video = this }
+                    else text("Gone")
+                }
+            }
+        }
+        waitForLoad(video)
+        runBlocking(Dispatchers.Main) { video.playing.set(true) }
+        waitUntil(timeoutMillis = 5_000) { video.playing.now() }
+        runBlocking(Dispatchers.Main) { shown.value = false }
+        waitForIdle()
+        assertTrue(video.isShutdown)
+        val player = RawVideoView::class.java.getDeclaredField("player").apply { isAccessible = true }.get(video)
+            as io.github.kdroidfilter.composemediaplayer.VideoPlayerState
+        waitUntil(timeoutMillis = 5_000) { !player.isPlaying && !player.hasMedia }
+        root.close()
+    }
+
+    // Half a second of a 440Hz tone, 16-bit mono.
+    private val toneFormat = LineFormat(22050f, 16, 1, true, false)
+    private val tone = ByteArray(22050).also { pcm ->
+        for (i in 0 until pcm.size / 2) {
+            val sample = (sin(2 * PI * 440 * i / 22050) * 8000).toInt()
+            pcm[2 * i] = sample.toByte()
+            pcm[2 * i + 1] = (sample shr 8).toByte()
+        }
+    }
+    private val wav = ByteArrayOutputStream().also {
+        AudioSystem.write(AudioInputStream(ByteArrayInputStream(tone), toneFormat, tone.size / 2L), AudioFileFormat.Type.WAVE, it)
+    }.toByteArray()
+
+    private val hasAudioOutput get() = AudioSystem.isLineSupported(Line.Info(SourceDataLine::class.java))
+
+    @Test
+    fun soundEffectsDecodeWavAndRejectOtherFormats(): Unit = runBlocking(Dispatchers.Main) {
+        val pool = SoundEffectPool()
+        pool.preload(AudioRaw(wav.toBlob("audio/wav")))
+        assertFailsWith<UnsupportedAudioFileException> { pool.preload(AudioRaw(ByteArray(1000).toBlob("audio/mpeg"))) }
+
+    }
+
+    @Test
+    fun soundEffectsPlay(): Unit = runBlocking(Dispatchers.Main) {
+        assumeTrue("No audio output device", hasAudioOutput)
+        val pool = SoundEffectPool()
+        val sound = AudioRaw(wav.toBlob("audio/wav"))
+        val first = pool.play(sound)
+        val second = pool.play(sound)
+        first.volume = 0.5f
+        assertTrue(first.isPlaying && second.isPlaying)
+        first.stop()
+        assertFalse(first.isPlaying)
+        kotlinx.coroutines.delay(1000)
+        assertFalse(second.isPlaying, "a finished sound reports that it stopped")
+        second.volume = 0.5f
+    }
+
+    @Test
+    fun playableAudioCompletesSeeksAndLoops(): Unit = runBlocking(Dispatchers.Main) {
+        assumeTrue("No audio output device", hasAudioOutput)
+        val audio: PlayableAudio = AudioRaw(wav.toBlob("audio/wav")).load()
+        var completions = 0
+        audio.onComplete { completions++ }
+        audio.play()
+        assertTrue(audio.isPlaying)
+        kotlinx.coroutines.delay(1000)
+        assertEquals(1, completions)
+        assertFalse(audio.isPlaying)
+
+        audio.currentTime.set(250.milliseconds)
+        assertEquals(250.milliseconds, audio.currentTime.now())
+
+        audio.loop = true
+        audio.play()
+        kotlinx.coroutines.delay(1000)
+        assertTrue(audio.isPlaying)
+        assertEquals(1, completions)
+        audio.stop()
+        assertFalse(audio.isPlaying)
+        assertEquals(0.seconds, audio.currentTime.now())
+    }
+
+    @Test
+    fun audioPlaybackBuffersUntilStarted(): Unit = runBlocking(Dispatchers.Main) {
+        val playback = AudioPlayback(AudioFormat(sampleRate = 22050))
+        playback.enqueue(tone)
+        playback.enqueue(tone)
+        assertEquals(1000L, playback.bufferedDurationMs.now())
+        assertFalse(playback.isPlaying.now())
+        playback.clearBuffer()
+        assertEquals(0L, playback.bufferedDurationMs.now())
+        playback.release()
+    }
+
+    @Test
+    fun audioPlaybackStreams(): Unit = runBlocking(Dispatchers.Main) {
+        assumeTrue("No audio output device", hasAudioOutput)
+        val playback = AudioPlayback(AudioFormat(sampleRate = 22050))
+        var empties = 0
+        playback.onBufferEmpty { empties++ }
+        playback.enqueue(tone)
+        playback.enqueue(tone)
+        playback.volume = 0.5f
+        playback.start()
+        assertTrue(playback.isPlaying.now())
+        kotlinx.coroutines.delay(1500)
+        assertEquals(0L, playback.bufferedDurationMs.now())
+        assertEquals(1, empties)
+        playback.enqueue(tone)
+        playback.stop()
+        assertFalse(playback.isPlaying.now())
+        assertEquals(0L, playback.bufferedDurationMs.now())
+        playback.release()
+    }
+}
