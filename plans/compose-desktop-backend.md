@@ -79,18 +79,29 @@ Total: roughly 5–7 weeks.
 
 ## Status
 
-- Phase 0 done: `commonJvmMain` holds the shared JVM actuals (jvmSsrTest unchanged, 819 passing); `library-compose` compiles, with not-yet-implemented views throwing `NotImplementedError("Compose backend: …")` on construction.
-- Phase 1 in progress.  Written: base/container/interactive elements, `ElementContext`, theming, `Frame`/`RowOrCol`/`RowCollapsingToColumn`/`RowWrapping`, `TextView` (with basic HTML via the JDK parser), `TextInput`, `Button`, `IconView`, `Space`, `Separator`, `SwapView`, `CoordinatorFrame` (as a frame; sheets and panels TODO), scrolling, modifiers, overlay, `KiteUiRoot`/`kiteUiWindow`, AppState, storage, timers, screenshots.  `RenderTest` drives a real KiteUI form headlessly (type, click, reactive update) and saves a screenshot.
-- A review pass fixed: wrapped text clipped in wrapping rows, exponential intrinsic cost (layouts now define intrinsics), SwapView fighting `shownWhen`, invisible elements taking input, stuck hover/press themes, `KiteUiRoot.close()`, focus requests before composition, element rectangles now in dp.  `LayoutTest` covers the first three.
-- Decided while building: explicit sizes (`sizedBox`) win over a stretched slot and are centered in it (Android's behavior).  Wrapping containers size stretch axes from Compose intrinsics, since Compose measures each child once.
-- Platform services done: ExternalServices, keyboard (`onUniversalKeyboard`, Canvas keys, Escape closes popovers), back from Alt+Left and the mouse back button, `inForeground` from window focus, confirm-before-leaving.  File dialogs, window close, and `inForeground` need a real window, so only the logic around them is tested headless.
+Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of phase 4.  Tests: 72 desktop tests (5 skip in the agent sandbox: no audio device, no video decoding), 822 SSR tests, JS compiles.
 
-- Media written.  In the agent sandbox, AVFoundation loads media (duration, errors, release are tested) but never decodes a frame or advances playback, so `MediaTest`'s playback tests skip themselves there; run them on a real machine.  The player must be opened with `InitialPlayerState.PAUSE`: its default autoplays.
-  - `RawVideoView` uses ComposeMediaPlayer.  Its snapshot state is mirrored into signals with `snapshotFlow`.  macOS never calls `onPlaybackEnded`, so `completedPlay` fires when playback stops at the end.  Seeking before the duration is known throws.  `preloadHint` is ignored (as on Android).  `showControls` draws a minimal play/pause and seek bar, since the library has no controls.
-  - Audio uses `javax.sound` (WAV/AIFF/AU only; other formats fail with a clear error).  `composemediaplayer-audio` was dropped: no completion event, loop fixed at play time, and its Rust `nucleus.rodio` dependency.  The sandbox has no audio device, so tests that play sound are skipped there.
+- **Views:** all of them except WebView (out of scope; throws `UnsupportedOperationException`) and `CameraPreview` (no webcam support yet).  Twins `library-lottie-compose` (LottieView via the common `LottieRenderer`) and `library-camera-compose` (placeholder).
+- **Example app:** `example-app-desktop` runs the whole example app; `ExampleAppTest` renders the home page and fails on any element error.
+- **AI driver:** `kiteUiHeadless` renders offscreen; `./gradlew :example-app-desktop:run --args=--headless` with `KITEUI_DEVELOPMENT=true` connects to the relay, and `kiteui-drive` snapshot/screenshot/find/navigate/back/url work.
+- **Packaging:** the JetBrains Compose Gradle plugin builds the `.app` (135 MB with its runtime).  Building with Homebrew's JDK needs `-Pcompose.desktop.packaging.checkJdkVendor=false`; the `.dmg` step (`hdiutil`) can't run in the agent sandbox.
+- **Gradle plugin:** `commonMainDirectory` for twin apps; `iosProjectRoot` optional; JVM resources go on the classpath under `common/`.
+- **Common-code changes:** `MutableCoroutineContext.plus` now lets later elements win (flows collected in element scopes failed on every platform); the AI driver reports errors (including `Error`s) instead of timing out, and `url` returns a leading `/`; `allowNavigate` is internal so the desktop window close reuses it.
+- Decided while building:
+  - Explicit sizes are capped by the parent's space and centered in a stretched slot (Android's behavior).  Wrapping containers size stretch axes from intrinsics, since Compose measures each child once; the layouts define their own intrinsics.
+  - One input rule: an element takes input only when it and its ancestors are visible and it doesn't ignore interaction.  Hover is element state; interactions feed KiteUI's theme pipeline as on iOS.
+  - `rem` is a fixed 16dp.  `KiteUiRoot` must be built on the main (Swing) thread.
+- Media: `RawVideoView` uses ComposeMediaPlayer (opened paused: its default autoplays; macOS never calls `onPlaybackEnded`, so completion is detected from position).  Audio uses `javax.sound` (WAV/AIFF/AU only).  Playback can't be verified in the sandbox: run `MediaTest` on a real Mac.  Linux needs GStreamer installed.
+
+### Known issues and TODOs
+
+- **Element leaks**: a heap dump traced retained pages to Compose UI 1.12.1 reusing modifier lists across nodes (`NodeChain` differ buffers), not to KiteUI.  Bounded, but the example app's leak detector warns.  Retest on the next Compose release; report upstream if it persists.
+- Date/time pickers (fields accept typed values only), popover focus and following a scrolling anchor, `keepScreenOn`, webcam, MP3 audio, `FadingColor` animation, all animations and transitions.
+- Untested without a real window/devices: file dialogs, window close confirmation, `inForeground`, video playback, audio output.
+- `:example-app:jvmSsrTest` aborts (exit 134) in the agent sandbox after 4 suites pass, independently of this work.
+- `test-utilities` has no desktop twin yet, so driver-command `uiTest`s don't run on desktop (the AI driver itself works).
 
 ## Open decisions
 
-1. **How consumer apps add desktop.**  An app module's `commonMain` depends on `kiteui`; a desktop JVM target in the same module would resolve kiteui's `jvmSsr` variant.  So with this layout, apps need a separate desktop module that `srcDir`s their common code, like `example-app-desktop`.  The alternative is to move SSR into its own `library-ssr` module and make `:library`'s single JVM target the desktop one.  That gives apps a normal `jvm()` target, but it's a bigger restructure and affects SSR users.  Plan assumes the separate-module approach for now; revisit after phase 1.
-2. **ComposeMediaPlayer** adoption, after the audit.
-3. **Sandbox prerequisite.**  kiteui's wrapper needs Gradle 9.6.1, which isn't usable in the agent sandbox.  Either bump the wrapper to 9.7.1, or allow `services.gradle.org`.
+1. **How consumer apps add desktop**: decided, twin modules (`library-compose`, `library-*-compose`, an app's `-desktop` module with `commonMainDirectory`).  Every add-on library with platform views needs a twin.
+2. **Moving `overlay` to common code**: the Android, iOS, HTML and Compose copies are nearly identical, and all silently log and return when there's no overlay frame.  Moving it (and failing fast) touches every platform, including iOS, which can't be built in the agent sandbox.
