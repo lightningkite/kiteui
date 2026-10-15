@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layoutId
 
 public actual abstract class NativeContainerElement actual constructor(context: ElementContext) : NativeContainerElementCommonCode(context) {
-    /** [children] as snapshot state, so composition sees additions and removals. */
+    // Snapshot state, so composition sees additions and removals.
     protected val nativeChildren: SnapshotStateList<NativeElement> = mutableStateListOf()
 
     actual override fun nativeAddChild(index: Int, element: Element) {
@@ -23,7 +23,7 @@ public actual abstract class NativeContainerElement actual constructor(context: 
         nativeChildren.clear()
     }
 
-    /** Emits the shown children, each tagged with its element so layouts can read its alignment and weight. */
+    // Tagged with their elements, so layouts can read alignment and weight.
     @Composable
     protected fun ShownChildren() {
         for (child in nativeChildren) {

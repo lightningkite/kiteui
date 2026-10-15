@@ -2,9 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
@@ -19,6 +16,8 @@ import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
+import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.context.reactive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -33,17 +32,10 @@ public actual fun Element.openPopover(preferredDirection: PopoverPreferredDirect
 /**
  * A popover beside [anchor], in the overlay frame: the desktop counterpart of the web's FloatingInfoHolder.
  * Once [block]ed it closes on a click outside it.  Until then it closes when the pointer has left both
- * the popover and the anchor (as reported through [anchorHovered]), unless something inside it is
- * keeping it open.
+ * the popover and the anchor, unless something inside it is keeping it open.
  */
 internal class Popover(private val source: Element, private val anchor: Element) {
     private var layer: PopoverLayer? = null
-    private var popoverHovered = false
-    var anchorHovered = false
-        set(value) {
-            field = value
-            closeIfAbandoned()
-        }
 
     fun open(direction: PopoverPreferredDirection, createMenu: Frame.() -> Unit) {
         if (layer != null) return
@@ -61,9 +53,9 @@ internal class Popover(private val source: Element, private val anchor: Element)
             layer = write(PopoverLayer(context, anchor.underlyingNativeElement, direction, close = ::close)) {
                 source.context.keepPopoverOpen(this)
                 themed(PopoverSemantic).frame {
-                    underlyingNativeElement.onHoverChange = {
-                        popoverHovered = it
-                        closeIfAbandoned()
+                    val popover = underlyingNativeElement
+                    reactive {
+                        if (!anchor.underlyingNativeElement.hovered() && !popover.hovered()) closeIfAbandoned(popover)
                     }
                     createMenu()
                 }
@@ -79,13 +71,14 @@ internal class Popover(private val source: Element, private val anchor: Element)
         source.context.closeSiblingPopovers()
     }
 
-    private fun closeIfAbandoned() {
+    private fun closeIfAbandoned(popover: NativeElement) {
         val layer = layer ?: return
         // Moving from the anchor onto the popover reports leaving one an event or so before entering the other.
         // The web allows for this with 32px of slack around both; this allows a moment instead.
         layer.launch {
             delay(100.milliseconds)
-            if (!layer.blocking && !anchorHovered && !popoverHovered && layer.context.popoverKeepOpen <= 0) close()
+            val hovered = anchor.underlyingNativeElement.hovered.value || popover.hovered.value
+            if (!layer.blocking && !hovered && layer.context.popoverKeepOpen <= 0) close()
         }
     }
 }
@@ -97,20 +90,25 @@ internal class PopoverLayer(
     private val direction: PopoverPreferredDirection,
     private val close: () -> Unit,
 ) : NativeContainerElement(context) {
-    var blocking by mutableStateOf(false)
     private var popoverBounds = IntRect.Zero
 
     // The layer covers the whole overlay: when not blocking, the pointer must reach what's under it
-    // (including the anchor, whose hover keeps a hover popover open).  When blocking it handles taps itself.
+    // (including the anchor, whose hover keeps a hover popover open).  When blocking it takes taps itself.
+    var blocking: Boolean
+        get() = !ignoreInteraction
+        set(value) {
+            ignoreInteraction = !value
+        }
+
     init {
-        ignoreInteraction = true
+        blocking = false
     }
 
     // TODO: focusing the popover's first focusable child, and following the anchor when it scrolls.
     @Composable
     override fun Content(modifier: Modifier) {
         val density = LocalDensity.current.density
-        val m = if (blocking) modifier.pointerInput(Unit) {
+        val m = if (takesInput) modifier.pointerInput(Unit) {
             detectTapGestures { if (!popoverBounds.contains(it.round())) close() }
         } else modifier
         Layout(content = { ShownChildren() }, modifier = m) { measurables, constraints ->

@@ -6,6 +6,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.context.reactive
 
 public actual class MenuButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverActions: AiDriver.Actions get() = super.driverActions + menuDriverActions(click = createMenu?.let { ::openAndBlock })
@@ -21,9 +23,8 @@ public actual class MenuButton actual constructor(context: ElementContext) : Nat
     public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
 
     init {
-        onHoverChange = { hovered ->
-            if (hovered && !requireClick) createMenu?.let { popover.open(preferredDirection, it) }
-            popover.anchorHovered = hovered
+        reactive {
+            if (hovered() && !requireClick) createMenu?.let { popover.open(preferredDirection, it) }
         }
     }
 
@@ -35,13 +36,12 @@ public actual class MenuButton actual constructor(context: ElementContext) : Nat
     override fun inputModifier(): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled && !ignoreInteraction,
+        enabled = enabled,
         onClick = ::openAndBlock,
     )
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         Layout(content = { ShownChildren() }, modifier = modifier, measurePolicy = FrameMeasurePolicy)
     }
 }

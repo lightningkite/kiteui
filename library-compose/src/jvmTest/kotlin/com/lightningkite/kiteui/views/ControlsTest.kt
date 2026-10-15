@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -21,8 +20,6 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import java.io.File
-import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -30,32 +27,17 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class ControlsTest {
-    private val theme = Theme.flat2("test", 0.6.turns)
-
-    private fun ComposeUiTest.show(app: ViewWriter.() -> Unit): KiteUiRoot {
-        val root = runBlocking(Dispatchers.Main) {
-            KiteUiRoot("kiteui-compose-test", { theme }) {
-                frame {
-                    context.overlayFrame = this
-                    app()
-                }
-            }
+    private fun ComposeUiTest.show(app: ViewWriter.() -> Unit): KiteUiRoot = showKiteUi {
+        frame {
+            context.overlayFrame = this
+            app()
         }
-        setContent { root.Content() }
-        waitForIdle()
-        return root
-    }
-
-    private fun ComposeUiTest.screenshot(root: KiteUiRoot, name: String) {
-        waitForIdle()
-        val out = File(System.getProperty("user.dir"), "build/shots").apply { mkdirs() }
-        ImageIO.write(runBlocking { root.screenshot() }.toAwtImage(), "png", File(out, "$name.png"))
     }
 
     private fun hasRole(role: Role) = SemanticsMatcher.expectValue(SemanticsProperties.Role, role)
 
     @Test
-    fun togglesReachTheirSignals() = runComposeUiTest {
+    fun togglesReachTheirSignals() = runKiteUiTest {
         val checkbox = Signal(false)
         val switch = Signal(false)
         val radio = Signal(false)
@@ -70,7 +52,7 @@ class ControlsTest {
                 radioToggleButton { checked bind radioToggle; text("Radio toggle") }
             }
         }
-        screenshot(root, "toggles-off")
+        saveScreenshot(root, "toggles-off")
 
         onNode(hasRole(Role.Checkbox)).performClick()
         onNode(hasRole(Role.Switch)).performClick()
@@ -80,7 +62,7 @@ class ControlsTest {
         waitForIdle()
         assertTrue(checkbox.value && switch.value && radio.value && toggle.value && radioToggle.value, "a click didn't reach its signal")
         onNode(hasRole(Role.Checkbox)).assertIsOn()
-        screenshot(root, "toggles-on")
+        saveScreenshot(root, "toggles-on")
 
         // Toggles flip back; radios stay selected.
         onNode(hasRole(Role.Checkbox)).performClick()
@@ -93,11 +75,10 @@ class ControlsTest {
         // (bind passes values on through a coroutine, which waitForIdle doesn't know about.)
         switch.value = false
         waitUntil { onNode(hasRole(Role.Switch)).fetchSemanticsNode().config[SemanticsProperties.ToggleableState] == ToggleableState.Off }
-        root.close()
     }
 
     @Test
-    fun sliderClampsAndSteps() = runComposeUiTest {
+    fun sliderClampsAndSteps() = runKiteUiTest {
         lateinit var slider: Slider
         val root = show {
             col {
@@ -116,12 +97,11 @@ class ControlsTest {
         node.performTouchInput { click(Offset(width * 0.25f, centerY)) }
         waitForIdle()
         assertTrue(slider.value.value in 2f..4f, "clicking a quarter of the way along gave ${slider.value.value}")
-        screenshot(root, "slider")
-        root.close()
+        saveScreenshot(root, "slider")
     }
 
     @Test
-    fun progressIndicators() = runComposeUiTest {
+    fun progressIndicators() = runKiteUiTest {
         val root = show {
             col {
                 progressBar { ratio = 0.4f }
@@ -136,12 +116,11 @@ class ControlsTest {
         assertEquals(48.dp, ring.height)
         val bar = onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))[0].getUnclippedBoundsInRoot()
         assertEquals(4.dp, bar.height)
-        screenshot(root, "progress")
-        root.close()
+        saveScreenshot(root, "progress")
     }
 
     @Test
-    fun linksNavigateAndRejectUnsafeUrls() = runComposeUiTest {
+    fun linksNavigateAndRejectUnsafeUrls() = runKiteUiTest {
         val navigator = PageNavigator { Routes(listOf(), mapOf()) }
         var clicked = 0
         lateinit var external: ExternalLink
@@ -167,11 +146,10 @@ class ControlsTest {
         onNodeWithText("Unsafe").performClick()
         waitForIdle()
         assertEquals(2, clicked)
-        root.close()
     }
 
     @Test
-    fun menuButtonOpensOnClickAndClosesOutside() = runComposeUiTest {
+    fun menuButtonOpensOnClickAndClosesOutside() = runKiteUiTest {
         val root = show {
             col {
                 text("Above")
@@ -188,16 +166,15 @@ class ControlsTest {
         val button = onNodeWithText("Menu").getUnclippedBoundsInRoot()
         val item = onNodeWithText("First item").assertExists().getUnclippedBoundsInRoot()
         assertTrue(item.top >= button.bottom, "the menu should open below its button: $item vs $button")
-        screenshot(root, "menu-open")
+        saveScreenshot(root, "menu-open")
 
         onNodeWithText("Above").performClick()
         waitForIdle()
         onNodeWithText("First item").assertDoesNotExist()
-        root.close()
     }
 
     @Test
-    fun menuButtonOpensOnHoverUnlessClickRequired() = runComposeUiTest {
+    fun menuButtonOpensOnHoverUnlessClickRequired() = runKiteUiTest {
         val root = show {
             col {
                 text("Elsewhere")
@@ -217,11 +194,10 @@ class ControlsTest {
         // ...and leaving both closes it.
         onNodeWithText("Elsewhere").performMouseInput { moveTo(center) }
         waitUntilDoesNotExist(hasText("Hover item"))
-        root.close()
     }
 
     @Test
-    fun textPopoverShowsWhileHovered() = runComposeUiTest {
+    fun textPopoverShowsWhileHovered() = runKiteUiTest {
         val root = show {
             col {
                 text("Elsewhere")
@@ -232,15 +208,33 @@ class ControlsTest {
         onNodeWithText("Hover for a hint").performMouseInput { moveTo(center) }
         waitForIdle()
         onNodeWithText("A helpful hint").assertExists()
-        screenshot(root, "hint")
+        saveScreenshot(root, "hint")
         onNodeWithText("Elsewhere").performMouseInput { moveTo(center) }
-        waitForIdle()
-        onNodeWithText("A helpful hint").assertDoesNotExist()
-        root.close()
+        waitUntilDoesNotExist(hasText("A helpful hint"))
     }
 
     @Test
-    fun openPopoverFromAButton() = runComposeUiTest {
+    fun hintPopoverOnAMenuButton() = runKiteUiTest {
+        show {
+            col {
+                text("Elsewhere")
+                centered.textPopover("Menu hint").menuButton {
+                    requireClick = true
+                    opensMenu { text("Menu item") }
+                    text("Menu with a hint")
+                }
+            }
+        }
+        onNodeWithText("Menu with a hint").performMouseInput { moveTo(center) }
+        waitForIdle()
+        onNodeWithText("Menu hint").assertExists()
+        onNodeWithText("Menu with a hint").performClick()
+        waitForIdle()
+        onNodeWithText("Menu item").assertExists()
+    }
+
+    @Test
+    fun openPopoverFromAButton() = runKiteUiTest {
         val root = show {
             col {
                 button {
@@ -256,11 +250,10 @@ class ControlsTest {
         onNodeWithText("Popped").performClick()
         waitForIdle()
         onNodeWithText("Popped").assertExists()
-        root.close()
     }
 
     @Test
-    fun dismissBackgroundIgnoresClicksOnItsContent() = runComposeUiTest {
+    fun dismissBackgroundIgnoresClicksOnItsContent() = runKiteUiTest {
         var dismissed = 0
         val root = show {
             dismissBackground {
@@ -274,7 +267,48 @@ class ControlsTest {
         onRoot().performTouchInput { click(Offset(5f, 5f)) }
         waitForIdle()
         assertEquals(1, dismissed)
-        screenshot(root, "dismiss-background")
-        root.close()
+        saveScreenshot(root, "dismiss-background")
+    }
+
+    // Like the web's visibility:hidden, which children inherit.
+    @Test
+    fun anInvisibleContainersChildrenTakeNoInput() = runKiteUiTest {
+        var clicks = 0
+        lateinit var panel: Element
+        show {
+            col {
+                text("Elsewhere")
+                panel = card.col {
+                    button {
+                        text("Hidden button")
+                        onClick { clicks++ }
+                    }
+                }
+            }
+        }
+        val buttonCenter = onNodeWithText("Hidden button").fetchSemanticsNode().boundsInRoot.center
+        runBlocking(Dispatchers.Main) { panel.visible = false }
+        waitForIdle()
+        onNodeWithText("Hidden button").assertDoesNotExist()
+        onRoot().performMouseInput { click(buttonCenter) }
+        waitForIdle()
+        assertEquals(0, clicks)
+    }
+
+    @Test
+    fun clicksPassThroughAnOverlayIgnoringInteraction() = runKiteUiTest {
+        var clicks = 0
+        show {
+            frame {
+                button {
+                    text("Behind")
+                    onClick { clicks++ }
+                }
+                frame { ignoreInteraction = true }
+            }
+        }
+        onNodeWithText("Behind").performClick()
+        waitForIdle()
+        assertEquals(1, clicks)
     }
 }

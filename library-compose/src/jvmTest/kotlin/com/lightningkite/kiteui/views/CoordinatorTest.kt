@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.test.*
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
@@ -10,39 +9,24 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.l2.toast
-import com.lightningkite.reactive.context.invoke
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import java.io.File
-import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class CoordinatorTest {
-    private val theme = Theme.flat2("test", 0.6.turns)
-
     // Shows [page] inside a coordinator frame set up the way `appBase` does it.
     private fun ComposeUiTest.show(page: CoordinatorFrame.() -> Unit): Pair<KiteUiRoot, CoordinatorFrame> {
         lateinit var frame: CoordinatorFrame
-        val root = runBlocking(Dispatchers.Main) {
-            KiteUiRoot("kiteui-compose-test", { theme }) {
-                coordinatorFrame {
-                    frame = this
-                    context.overlayFrame = this
-                    page()
-                }
+        val root = showKiteUi {
+            coordinatorFrame {
+                frame = this
+                context.overlayFrame = this
+                page()
             }
         }
-        setContent { root.Content() }
-        waitForIdle()
         return root to frame
-    }
-
-    private fun ComposeUiTest.screenshot(root: KiteUiRoot, name: String) {
-        val out = File(System.getProperty("user.dir"), "build/shots").apply { mkdirs() }
-        ImageIO.write(runBlocking { root.screenshot() }.toAwtImage(), "png", File(out, "$name.png"))
     }
 
     private fun ComposeUiTest.bounds(text: String): DpRect = onNodeWithText(text, useUnmergedTree = true).getUnclippedBoundsInRoot()
@@ -65,7 +49,7 @@ class CoordinatorTest {
     }
 
     @Test
-    fun programmaticLayoutPlacesChildrenWhereItsDelegateSays() = runComposeUiTest {
+    fun programmaticLayoutPlacesChildrenWhereItsDelegateSays() = runKiteUiTest {
         lateinit var layout: ProgrammaticLayout
         val (root, _) = show {
             col {
@@ -82,8 +66,8 @@ class CoordinatorTest {
         val above = bounds("Above")
         val first = bounds("First")
         val second = bounds("Second")
-        val padding = theme.padding.top.value.dp
-        assertEquals(above.bottom + theme.gap.value.dp + padding, first.top, "first child should sit inside the padding")
+        val padding = testTheme.padding.top.value.dp
+        assertEquals(above.bottom + testTheme.gap.value.dp + padding, first.top, "first child should sit inside the padding")
         assertEquals(first.right + 10.dp, second.left)
         assertEquals(first.bottom + 10.dp, second.top)
 
@@ -91,35 +75,33 @@ class CoordinatorTest {
         runOnUiThread { layout.text("Third") }
         waitForIdle()
         assertEquals(second.right + 10.dp, bounds("Third").left)
-        screenshot(root, "programmatic")
+        saveScreenshot(root, "programmatic")
         runOnUiThread { layout.delegate = ProgrammaticLayoutDelegate.AllFull }
         waitForIdle()
         assertEquals(bounds("First").left, bounds("Third").left)
-        root.close()
     }
 
     @Test
-    fun recyclerViewShowsItsFirstCells() = runComposeUiTest {
+    fun recyclerViewShowsItsFirstCells() = runKiteUiTest {
         val root = show {
             recyclerView {
                 children({ (1..1000).toList() }, id = { it }) { item -> text { ::content { "Item ${item()}" } } }
             }
         }.first
         waitForIdle()
-        screenshot(root, "recycler")
+        saveScreenshot(root, "recycler")
         onNodeWithText("Item 1", useUnmergedTree = true).assertExists()
         onNodeWithText("Item 1000", useUnmergedTree = true).assertDoesNotExist()
 
         // Scrolling far down recycles the first cells into later ones.
         onRoot().performMouseInput { moveTo(center); repeat(20) { scroll(10f) } }
         waitForIdle()
-        screenshot(root, "recycler-scrolled")
+        saveScreenshot(root, "recycler-scrolled")
         onNodeWithText("Item 1", useUnmergedTree = true).assertDoesNotExist()
-        root.close()
     }
 
     @Test
-    fun bottomSheetMovesBetweenStatesAndCloses()= runComposeUiTest {
+    fun bottomSheetMovesBetweenStatesAndCloses()= runKiteUiTest {
         lateinit var control: BottomSheetControl
         var behindClicks = 0
         val (root, frame) = show {
@@ -141,7 +123,7 @@ class CoordinatorTest {
         val height = rootBounds().bottom
         val partialTop = bounds("Sheet content").top
         assertTrue(partialTop > height * 0.6f - 1.dp && partialTop < height * 0.75f, "partial sheet should cover the bottom 40%, content at $partialTop of $height")
-        screenshot(root, "sheet-partial")
+        saveScreenshot(root, "sheet-partial")
 
         // The page above a partial sheet still takes clicks.
         onNodeWithText("Page behind").performClick()
@@ -154,7 +136,7 @@ class CoordinatorTest {
         waitForIdle()
         assertEquals(BottomSheetState.EXPANDED, control.state.state.getOrNull())
         assertTrue(bounds("Sheet content").top < height * 0.2f)
-        screenshot(root, "sheet-expanded")
+        saveScreenshot(root, "sheet-expanded")
         handle.performClick()
         waitForIdle()
         assertEquals(BottomSheetState.PARTIALLY_EXPANDED, control.state.state.getOrNull())
@@ -186,11 +168,10 @@ class CoordinatorTest {
         waitForIdle()
         onNodeWithText("Sheet content", useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("Page behind", useUnmergedTree = true).assertExists()
-        root.close()
     }
 
     @Test
-    fun draggingABottomSheetOffTheBottomClosesIt() = runComposeUiTest {
+    fun draggingABottomSheetOffTheBottomClosesIt() = runKiteUiTest {
         val (root, frame) = show { text("Page behind") }
         runOnUiThread {
             frame.bottomSheet { card.col { centered.coordinatorDragHandle(); text("Sheet content") } }
@@ -205,12 +186,11 @@ class CoordinatorTest {
         }
         waitForIdle()
         onNodeWithText("Sheet content", useUnmergedTree = true).assertDoesNotExist()
-        root.close()
     }
 
 
     @Test
-    fun slidingPanels() = runComposeUiTest {
+    fun slidingPanels() = runKiteUiTest {
         lateinit var left: SlidingPanelControl
         lateinit var right: SlidingPanelControl
         val (root, frame) = show { text("Page behind") }
@@ -224,7 +204,7 @@ class CoordinatorTest {
         val rightPanel = bounds("Right panel")
         assertTrue(leftPanel.right < width * 0.25f, "left panel should take a quarter of the width, ends at ${leftPanel.right} of $width")
         assertTrue(rightPanel.left > width * 0.5f, "an unsized right panel should hug the right edge, starts at ${rightPanel.left}")
-        screenshot(root, "panels")
+        saveScreenshot(root, "panels")
 
         runOnUiThread { left.close() }
         waitForIdle()
@@ -232,11 +212,10 @@ class CoordinatorTest {
         runOnUiThread { right.close() }
         waitForIdle()
         onNodeWithText("Right panel", useUnmergedTree = true).assertDoesNotExist()
-        root.close()
     }
 
     @Test
-    fun overlayDialogRendersOnTopAndCloses() = runComposeUiTest {
+    fun overlayDialogRendersOnTopAndCloses() = runKiteUiTest {
         var behindClicks = 0
         val (root, frame) = show {
             button {
@@ -256,7 +235,7 @@ class CoordinatorTest {
             }
         }
         waitForIdle()
-        screenshot(root, "dialog")
+        saveScreenshot(root, "dialog")
 
         // The dialog card covers what's behind it, even where it has no button of its own.
         val title = bounds("Are you sure?")
@@ -270,25 +249,23 @@ class CoordinatorTest {
         onNodeWithText("Behind").performClick()
         waitForIdle()
         assertEquals(1, behindClicks)
-        root.close()
     }
 
     @Test
-    fun toastAndLegacyBottomSheet() = runComposeUiTest {
+    fun toastAndLegacyBottomSheet() = runKiteUiTest {
         val (root, frame) = show { text("Page behind") }
         runOnUiThread { frame.context.toast("Saved") }
         waitForIdle()
         onNodeWithText("Saved", useUnmergedTree = true).assertExists()
-        screenshot(root, "toast")
+        saveScreenshot(root, "toast")
 
         @Suppress("DEPRECATION")
         runOnUiThread { frame.context.openBottomSheet { text("Legacy sheet") } }
         waitForIdle()
         assertTrue(bounds("Legacy sheet").top > rootBounds().bottom * 0.4f)
-        screenshot(root, "legacy-sheet")
+        saveScreenshot(root, "legacy-sheet")
         onNodeWithContentDescription("close", useUnmergedTree = true).performClick()
         waitForIdle()
         onNodeWithText("Legacy sheet", useUnmergedTree = true).assertDoesNotExist()
-        root.close()
     }
 }

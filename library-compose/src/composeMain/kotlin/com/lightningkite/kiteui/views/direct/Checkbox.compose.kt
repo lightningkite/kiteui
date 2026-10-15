@@ -50,14 +50,13 @@ public actual class Checkbox actual constructor(context: ElementContext) : Nativ
         value = isChecked,
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled && !ignoreInteraction,
+        enabled = enabled,
         role = Role.Checkbox,
         onValueChange = { checked.value = it },
     )
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val theme = currentTheme.theme
         val boxColor = theme.icon.closestColor().toCompose()
         val markColor = theme.foreground.closestColor().toCompose()

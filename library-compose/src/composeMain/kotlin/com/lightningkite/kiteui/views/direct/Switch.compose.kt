@@ -46,14 +46,13 @@ public actual class Switch actual constructor(context: ElementContext) : NativeI
         value = isChecked,
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled && !ignoreInteraction,
+        enabled = enabled,
         role = Role.Switch,
         onValueChange = { checked.value = it },
     )
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val foreground = currentTheme.theme.foreground.closestColor().toCompose()
         val checked = isChecked
         // The web's colors and geometry, including its fixed green: the thumb overhangs the track slightly.

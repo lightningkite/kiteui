@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.test.*
 import com.lightningkite.kiteui.PlayableAudio
 import com.lightningkite.kiteui.SoundEffectPool
@@ -18,9 +17,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assume.assumeTrue
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.net.InetSocketAddress
-import javax.imageio.ImageIO
 import javax.sound.sampled.AudioFileFormat
 import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
@@ -42,8 +39,6 @@ import javax.sound.sampled.AudioFormat as LineFormat
 
 @OptIn(ExperimentalTestApi::class)
 class MediaTest {
-    private val theme = Theme.flat2("test", 0.6.turns)
-
     // Two seconds of 64x32 video, left half red and right half blue, with a silent audio track.
     private val mp4 = javaClass.classLoader.getResourceAsStream("common/video/test-pattern.mp4")!!.use { it.readBytes() }
 
@@ -66,13 +61,6 @@ class MediaTest {
     @AfterTest
     fun stopServer() = server.stop(0)
 
-    private fun ComposeUiTest.show(app: ViewWriter.() -> Unit): KiteUiRoot {
-        val root = runBlocking(Dispatchers.Main) { KiteUiRoot("kiteui-compose-test", { theme }, app) }
-        setContent { root.Content() }
-        waitForIdle()
-        return root
-    }
-
     private fun ComposeUiTest.waitForLoad(video: RawVideoView) {
         waitUntil(timeoutMillis = 10_000) { video.state.state.ready }
         check(video.state.state.success) { "${video.source} failed: ${video.state.state}" }
@@ -93,9 +81,9 @@ class MediaTest {
     }
 
     @Test
-    fun loadsPlaysSeeksAndEnds() = runComposeUiTest {
+    fun loadsPlaysSeeksAndEnds() = runKiteUiTest {
         lateinit var video: RawVideoView
-        val root = show {
+        val root = showKiteUi {
             sizeConstraints(width = 128.px, height = 64.px).rawVideo(VideoResource("common/video/test-pattern.mp4"), "test pattern") { video = this }
         }
         waitForLoad(video)
@@ -118,9 +106,7 @@ class MediaTest {
         assumeNativePlaybackAdvances(video)
 
         // The screenshot is of the root element, which here is just the video.
-        waitForIdle()
-        val image = runBlocking { root.screenshot() }.toAwtImage()
-        ImageIO.write(image, "png", File(File(System.getProperty("user.dir"), "build/shots").apply { mkdirs() }, "video-frame.png"))
+        val image = saveScreenshot(root, "video-frame")
         val left = image.getRGB(image.width / 4, image.height / 2)
         val right = image.getRGB(image.width * 3 / 4, image.height / 2)
         assertTrue((left shr 16 and 0xFF) > 150 && (left and 0xFF) < 100, "left half should be red, was ${Integer.toHexString(left)}")
@@ -131,13 +117,12 @@ class MediaTest {
 
         runBlocking(Dispatchers.Main) { video.currentTime.set(1.seconds) }
         waitUntil(timeoutMillis = 5_000) { abs(video.currentTime.now().inWholeMilliseconds - 1000) < 150 }
-        root.close()
     }
 
     @Test
-    fun pausesAndLoops() = runComposeUiTest {
+    fun pausesAndLoops() = runKiteUiTest {
         lateinit var video: RawVideoView
-        val root = show {
+        showKiteUi {
             sizeConstraints(width = 128.px, height = 64.px).rawVideo(VideoResource("common/video/test-pattern.mp4"), "test pattern") {
                 video = this
                 loop = true
@@ -164,18 +149,17 @@ class MediaTest {
         Thread.sleep(300)
         waitForIdle()
         assertEquals(pausedAt, video.currentTime.now())
-        root.close()
     }
 
     @Test
-    fun everySourceLoads() = runComposeUiTest {
+    fun everySourceLoads() = runKiteUiTest {
         val sources = listOf(
             VideoRaw(mp4.toBlob("video/mp4")),
             VideoLocal(createFileReferenceFromBytes(mp4, "video/mp4", "pattern.mp4")),
             VideoRemote("http://127.0.0.1:${server.address.port}/pattern.mp4"),
         )
         val videos = ArrayList<RawVideoView>()
-        val root = show {
+        showKiteUi {
             col {
                 for (source in sources) sizeConstraints(width = 64.px, height = 32.px).rawVideo(source, "$source") { videos += this }
             }
@@ -184,25 +168,23 @@ class MediaTest {
             waitForLoad(video)
             assertEquals(2.0, video.sourceDuration.now()!!, 0.1, "${video.source}")
         }
-        root.close()
     }
 
     @Test
-    fun missingVideoReportsAnError() = runComposeUiTest {
+    fun missingVideoReportsAnError() = runKiteUiTest {
         lateinit var video: RawVideoView
-        val root = show {
+        showKiteUi {
             rawVideo(VideoLocal(createFileReferenceFromBytes(ByteArray(100), "video/mp4", "garbage.mp4")), "garbage") { video = this }
         }
         waitUntil(timeoutMillis = 10_000) { video.state.state.ready }
         assertFalse(video.state.state.success)
-        root.close()
     }
 
     @Test
-    fun removedVideoReleasesItsPlayer() = runComposeUiTest {
+    fun removedVideoReleasesItsPlayer() = runKiteUiTest {
         val shown = Signal(true)
         lateinit var video: RawVideoView
-        val root = show {
+        showKiteUi {
             swapView {
                 swapping(current = { shown() }) {
                     if (it) sizeConstraints(width = 64.px, height = 32.px).rawVideo(VideoResource("common/video/test-pattern.mp4"), "test pattern") { video = this }
@@ -219,7 +201,6 @@ class MediaTest {
         val player = RawVideoView::class.java.getDeclaredField("player").apply { isAccessible = true }.get(video)
             as io.github.kdroidfilter.composemediaplayer.VideoPlayerState
         waitUntil(timeoutMillis = 5_000) { !player.isPlaying && !player.hasMedia }
-        root.close()
     }
 
     // Half a second of a 440Hz tone, 16-bit mono.

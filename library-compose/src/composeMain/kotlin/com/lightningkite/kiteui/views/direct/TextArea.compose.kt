@@ -43,7 +43,6 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val theme = currentTheme.theme
         val color = theme.foreground.closestColor()
         val style = theme.font.toTextStyle(color.toCompose())
@@ -60,7 +59,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
                 action.startAction(this@TextArea)
                 true
             },
-            enabled = enabled && !ignoreInteraction,
+            enabled = enabled && takesInput,
             textStyle = style,
             cursorBrush = SolidColor(color.toCompose()),
             interactionSource = interactions.source,

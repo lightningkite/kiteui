@@ -44,14 +44,13 @@ public actual class RadioButton actual constructor(context: ElementContext) : Na
         selected = isChecked,
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled && !ignoreInteraction,
+        enabled = enabled,
         role = Role.RadioButton,
         onClick = { checked.value = true },
     )
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         val theme = currentTheme.theme
         val ringColor = theme.icon.closestColor().toCompose()
         val dotColor = theme.foreground.closestColor().toCompose()

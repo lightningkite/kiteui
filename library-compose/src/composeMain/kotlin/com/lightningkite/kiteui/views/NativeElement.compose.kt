@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -28,6 +31,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
@@ -37,7 +41,14 @@ import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.reactive.core.Signal
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
+
+// False inside an invisible element: like the web's visibility:hidden, invisibility is inherited.
+private val LocalVisible = compositionLocalOf { true }
 
 /**
  * KiteUI keeps its own retained element tree; Compose only draws it.  Everything [Render] reads is
@@ -60,8 +71,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     public var weight: Float? by mutableStateOf(null)
     public var sizeConstraints: SizeConstraints? by mutableStateOf(null)
     internal var scrolling: ScrollingBehaviorImpl? = null
-    // Set by popovers that open or close on hover: called with true when the pointer enters, false when it leaves.
-    internal var onHoverChange: ((Boolean) -> Unit)? by mutableStateOf(null)
+    // Set by the pointer input in Render; popovers that open on hover watch it.
+    internal val hovered = Signal(false)
+    public open val interactions: Interactions? get() = null
 
     protected var currentTheme: ThemeAndBack by mutableStateOf(Theme.placeholder.withBack)
         private set
@@ -82,6 +94,10 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     private var coordinates: LayoutCoordinates? = null
     private val bringIntoView = BringIntoViewRequester()
     private val focusRequester = FocusRequester()
+
+    // Pixels per dp, as last composed.
+    internal var density: Float by mutableStateOf(1f)
+        private set
 
     actual override fun nativeApplyTheme(theme: ThemeAndBack) {
         currentTheme = theme
@@ -115,11 +131,18 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         launch { bringIntoView.bringIntoView() }
     }
 
-    // Applied from Render, since a FocusRequester only works once its element is composed.
-    private var focusPending by mutableStateOf(false)
+    // Applied by Render, since a FocusRequester only works once its element is composed.  Like the web, which
+    // focuses a moment later, a request lapses if the element isn't on screen by then (it's not shown).
+    private var focusRequested by mutableStateOf(false)
+    private var focusRequestLapse: Job? = null
 
     actual override fun requestFocus() {
-        focusPending = true
+        focusRequested = true
+        focusRequestLapse?.cancel()
+        focusRequestLapse = launch {
+            delay(100.milliseconds)
+            focusRequested = false
+        }
     }
 
     actual override fun announceAsNewScreen(title: String) {
@@ -129,7 +152,6 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     // Compose positions are in pixels; KiteUI's are in dp.
     public actual fun screenRectangle(): Rect? = coordinates?.takeIf { it.isAttached }?.boundsInWindow()?.toRect()
     public actual fun parentRectangle(): Rect? = coordinates?.takeIf { it.isAttached }?.boundsInParent()?.toRect()
-    private var density = 1f
 
     private fun androidx.compose.ui.geometry.Rect.toRect() = Rect(
         left = (left / density).toDouble(),
@@ -138,47 +160,58 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         bottom = (bottom / density).toDouble(),
     )
 
-    /** Whether the parent lays this element out at all; hidden elements take no space. */
+    // Hidden elements take no space.
     internal open val takesSpace: Boolean get() = shown
 
+    // Whether this element takes pointer, key and focus input itself: not when it or an ancestor is invisible
+    // (the web's visibility:hidden), nor when it ignores interaction (its children still may).
+    protected val takesInput: Boolean
+        @Composable get() = LocalVisible.current && !ignoreInteraction
+
     @Composable
-    public fun Render(modifier: Modifier = Modifier) {
-        density = LocalDensity.current.density
-        if (focusPending) LaunchedEffect(Unit) {
+    public fun Render(modifier: Modifier = Modifier): Unit = CompositionLocalProvider(LocalVisible provides (visible && LocalVisible.current)) {
+        val density = LocalDensity.current.density
+        SideEffect { this.density = density }
+        // Does nothing if the element can't take focus (it's invisible, say), as on the web.
+        if (focusRequested) LaunchedEffect(Unit) {
             focusRequester.requestFocus()
-            focusPending = false
+            focusRequested = false
         }
+        interactions?.Track()
         var m = modifier
             .onGloballyPositioned { coordinates = it }
             .bringIntoViewRequester(bringIntoView)
             .focusRequester(focusRequester)
         sizeConstraints?.let { m = m.sized(it) }
-        // Like the web's visibility:hidden, an invisible element can't be interacted with.
-        if (visible) m = m.then(inputModifier())
-        if (visible) onHoverChange?.let { onHover ->
-            m = m.pointerInput(onHover) {
+        if (takesInput) m = m.then(inputModifier()).pointerInput(Unit) {
+            // Any pointer input takes the pointer over the element's bounds so, as on the web, it doesn't reach
+            // what's behind (a dialog card over a page).
+            try {
                 awaitPointerEventScope {
                     while (true) {
                         when (awaitPointerEvent().type) {
-                            PointerEventType.Enter -> onHover(true)
-                            PointerEventType.Exit -> onHover(false)
+                            PointerEventType.Enter -> hovered.value = true
+                            PointerEventType.Exit -> hovered.value = false
                         }
                     }
                 }
+            } finally {
+                hovered.value = false
             }
         }
-        // As on the web, an element takes the pointer over its bounds so it doesn't reach what's behind
-        // (a dialog card over a page), unless it ignores interaction (its children still take it).
-        if (visible && !ignoreInteraction) m = m.pointerInput(Unit) {}
         if (!visible || opacity != 1.0) m = m.graphicsLayer(alpha = if (visible) opacity.toFloat() else 0f)
-        label?.let { m = m.semantics { contentDescription = it } }
-        paneTitle?.let { m = m.semantics { paneTitle = it } }
+        if (visible) {
+            label?.let { m = m.semantics { contentDescription = it } }
+            paneTitle?.let { m = m.semantics { paneTitle = it } }
+        } else {
+            m = m.clearAndSetSemantics {}
+        }
         decoration?.let { d ->
             m = m.shadow(d.elevation, d.shape, clip = false).background(d.background, d.shape)
             if (d.outlineWidth.value > 0f) m = m.border(d.outlineWidth, d.outline, d.shape)
             if (d.clip) m = m.clip(d.shape)
         }
-        scrolling?.let { m = it.applyTo(m, density) }
+        scrolling?.let { m = it.applyTo(m, takesInput) }
         val p = padding
         m = m.padding(start = p.left.toDp(), top = p.top.toDp(), end = p.right.toDp(), bottom = p.bottom.toDp())
         Content(m)
@@ -187,7 +220,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     // Applied outside padding, so the whole element responds.
     protected open fun inputModifier(): Modifier = Modifier
 
-    /** The element's own composable. It must apply [modifier] to exactly one root layout node. */
+    // It must apply its modifier to exactly one root layout node.
     @Composable
     protected abstract fun Content(modifier: Modifier)
 }

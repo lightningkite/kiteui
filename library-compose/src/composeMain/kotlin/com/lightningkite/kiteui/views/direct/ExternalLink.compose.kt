@@ -22,7 +22,7 @@ public actual class ExternalLink actual constructor(context: ElementContext) : N
     override fun inputModifier(): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled && !ignoreInteraction,
+        enabled = enabled,
     ) {
         launch {
             action?.startAction(this)
@@ -35,7 +35,6 @@ public actual class ExternalLink actual constructor(context: ElementContext) : N
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         Layout(content = { ShownChildren() }, modifier = modifier, measurePolicy = FrameMeasurePolicy)
     }
 }

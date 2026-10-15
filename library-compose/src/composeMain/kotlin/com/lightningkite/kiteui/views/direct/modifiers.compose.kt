@@ -75,10 +75,8 @@ public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ElementWriter = beforeSetup {
-    val native = underlyingNativeElement
-    check(native.onHoverChange == null) { "$native already opens a popover on hover" }
     val popover = Popover(source = this, anchor = this)
-    native.onHoverChange = { hovered -> if (hovered) popover.open(preferredDirection, setup) else popover.close() }
+    reactive { if (underlyingNativeElement.hovered()) popover.open(preferredDirection, setup) }
 }
 
 public actual fun ElementWriter.textPopover(message: String): ElementWriter = hintPopover {

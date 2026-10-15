@@ -22,7 +22,7 @@ public actual class Link actual constructor(context: ElementContext) : NativeCon
     override fun inputModifier(): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled && !ignoreInteraction,
+        enabled = enabled,
     ) {
         launch {
             action?.startAction(this)
@@ -35,7 +35,6 @@ public actual class Link actual constructor(context: ElementContext) : NativeCon
 
     @Composable
     override fun Content(modifier: Modifier) {
-        interactions.Track()
         Layout(content = { ShownChildren() }, modifier = modifier, measurePolicy = FrameMeasurePolicy)
     }
 }
