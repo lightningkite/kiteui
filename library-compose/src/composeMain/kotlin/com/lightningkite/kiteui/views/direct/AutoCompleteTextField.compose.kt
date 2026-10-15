@@ -7,12 +7,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.VisualTransformation
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.AiDriver
@@ -35,12 +39,15 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
     public actual var hint: String by mutableStateOf("")
     public actual var suggestions: List<String> by mutableStateOf(emptyList())
 
-    private var text by mutableStateOf("")
+    private var field by mutableStateOf(TextFieldValue(""))
     // Open while the user is typing; closed by choosing, dismissing or leaving the field.
     private var suggesting by mutableStateOf(false)
 
     init {
-        reactive { text = content() }
+        reactive {
+            val text = content()
+            if (text != field.text) field = TextFieldValue(text, TextRange(text.length))
+        }
     }
 
     @Composable
@@ -50,15 +57,34 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
         val hints = keyboardHints
         val style = theme.font.toTextStyle(color.toCompose())
         // Like a browser's datalist: suggestions containing the text, ignoring case.
-        val matches = suggestions.filter { it.contains(text, ignoreCase = true) && it != text }
+        val matches = suggestions.filter { it.contains(field.text, ignoreCase = true) && it != field.text }
+        val showsList = suggesting && matches.isNotEmpty()
+        val list = remember(matches) {
+            DropdownList(
+                options = matches,
+                highlighted = -1,
+                onChoose = {
+                    val choice = matches[it]
+                    field = TextFieldValue(choice, TextRange(choice.length))
+                    content.value = choice
+                    suggesting = false
+                },
+                onDismiss = { suggesting = false },
+            )
+        }
         BasicTextField(
-            value = text,
+            value = field,
             onValueChange = {
-                text = it
-                content.value = it
-                suggesting = true
+                val edited = it.text != field.text
+                field = it
+                if (edited) {
+                    content.value = it.text
+                    suggesting = true
+                }
             },
-            modifier = modifier.onFocusChanged { if (!it.isFocused) suggesting = false },
+            modifier = modifier
+                .onFocusChanged { if (!it.isFocused) suggesting = false }
+                .onPreviewKeyEvent { showsList && list.onKeyEvent(it) },
             enabled = enabled && takesInput,
             singleLine = true,
             textStyle = style,
@@ -67,21 +93,11 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
             visualTransformation = if (hints.isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@AutoCompleteTextField) }),
-            decorationBox = { field ->
+            decorationBox = { innerField ->
                 Box {
-                    if (text.isEmpty()) BasicText(hint, style = style.copy(color = theme.hintColor))
-                    field()
-                    if (suggesting && matches.isNotEmpty()) DropdownList(
-                        owner = this@AutoCompleteTextField,
-                        options = matches,
-                        focusable = false,
-                        onChoose = {
-                            text = matches[it]
-                            content.value = matches[it]
-                            suggesting = false
-                        },
-                        onDismiss = { suggesting = false },
-                    )
+                    if (field.text.isEmpty()) BasicText(hint, style = style.copy(color = theme.hintColor))
+                    innerField()
+                    if (showsList) list.Render(owner = this@AutoCompleteTextField, focusable = false)
                 }
             },
         )
