@@ -120,8 +120,14 @@ internal fun linearMeasurePolicy(vertical: Boolean, gap: Int, ignoreWeights: Boo
         val crossMin = if (vertical) constraints.minWidth else constraints.minHeight
         val crossMax = if (vertical) constraints.maxWidth else constraints.maxHeight
         val crossFixed = if (vertical) constraints.hasFixedWidth else constraints.hasFixedHeight
-        val available = if (mainFixed) mainMax else Infinity
-        fun weighted(m: Measurable) = mainFixed && m.weight() > 0f
+        // Weights share a known size: the fixed size, or else a minimum the content doesn't fill (a row
+        // filling a scroll viewport, as flex and Android's fillViewport do).
+        val available = when {
+            mainFixed -> mainMax
+            mainMin > 0 && intrinsicMain(measurables, Infinity) < mainMin -> mainMin
+            else -> Infinity
+        }
+        fun weighted(m: Measurable) = available != Infinity && m.weight() > 0f
         val placeables = arrayOfNulls<Placeable>(measurables.size)
 
         // Unweighted children can be measured now, unless they stretch to a cross size we don't know yet.

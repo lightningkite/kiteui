@@ -30,6 +30,25 @@ class LayoutTest {
         assertTrue(wrapped > oneLine * 2, "Expected the long text to wrap onto several lines, got $wrapped vs one line $oneLine")
     }
 
+    // As with flex (and Android's fillViewport), scrolled content is at least as wide as the viewport,
+    // so expanding spaces around narrow content center it.
+    @Test
+    fun weightsFillAScrollViewport() = runKiteUiTest {
+        showKiteUi {
+            col {
+                scrollingHorizontally.row {
+                    expanding.space()
+                    text("Middle")
+                    expanding.space()
+                }
+            }
+        }
+        val root = onRoot().getUnclippedBoundsInRoot()
+        val middle = onNodeWithText("Middle").getUnclippedBoundsInRoot()
+        val center = (middle.left + middle.right) / 2
+        assertEquals((root.width / 2).value, center.value, 2f, "Expected the text centered in the viewport")
+    }
+
     @Test
     fun weightsShareTheRemainingSpace() = runKiteUiTest {
         showKiteUi {

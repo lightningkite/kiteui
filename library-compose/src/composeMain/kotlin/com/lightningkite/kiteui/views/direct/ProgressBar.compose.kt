@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.models.toDp
 import com.lightningkite.kiteui.views.ElementContext
@@ -22,6 +23,13 @@ import com.lightningkite.kiteui.views.toCompose
 
 public actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
     public actual var ratio: Float by mutableStateOf(0f)
+
+    // The web's <progress> is always bare: its theme colors the bar, but it draws no background box or padding.
+    override fun nativeApplyTheme(theme: ThemeAndBack) {
+        super.nativeApplyTheme(theme.copy(drawBackground = false))
+    }
+
+    override fun refreshPadding() {}
 
     @Composable
     override fun Content(modifier: Modifier) {
