@@ -27,7 +27,7 @@ Resource codegen: the gradle plugin's JVM output already emits commonHtml-shaped
 
 **Element ↔ Compose bridge.** `NativeElement` keeps KiteUI's retained tree and owns snapshot state for everything it renders: `themeAndBack`, `shown`, `visible`, `opacity`, `ignoreInteraction`, layout settings.  Each element has `@Composable fun Render(modifier: Modifier)`.  `NativeContainerElement` keeps a `mutableStateListOf<NativeElement>` that `nativeAddChild/RemoveChild/ClearChildren` edit, and renders children with `key(child)`.  Properties are set before an element is ever composed (during setup), which snapshot state handles naturally.
 
-**Units.** `DimensionRaw = Float` in dp.  `px` is dp (same as CSS px, which are device-independent), `rem` is 16dp scaled by the font-scale setting.  Desktop density comes from Compose's `LocalDensity`.
+**Units.** `DimensionRaw = Float` in dp.  `px` is dp (same as CSS px, which are device-independent), `rem` is a fixed 16dp (no font-scale setting on desktop yet).  Desktop density comes from Compose's `LocalDensity`.
 
 **Modifiers** (`align`, `weight`, `dynamicWeight`, `sizedBox`, `dynamicSizeConstraints`, `shownWhen`, `shownForQuery`) store their values on the element (snapshot state) in `beforeSetup`; the parent reads them when laying out.  `sizedBox` applies `sizeIn`/`size`/`aspectRatio` on the element itself (the web approach, no wrapper element).  Scrolling injects a scroll-container element via `lazyInjectModifierWriter`, like Android, because `ScrollingBehaviors` needs an element to live on.  `shownWhen` just sets `shown`.
 
