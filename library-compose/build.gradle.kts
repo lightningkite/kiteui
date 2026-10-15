@@ -73,6 +73,12 @@ kotlin {
     }
 }
 
+dependencies {
+    // ComposeMediaPlayer's published metadata leaks kotlinx-coroutines-test into runtime (its issue #250).
+    addProvider<MinimalExternalModuleDependency, ExternalModuleDependency>("composeMainImplementation", libs.composemediaplayer.asProvider()) { exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-test") }
+    addProvider<MinimalExternalModuleDependency, ExternalModuleDependency>("composeMainImplementation", libs.composemediaplayer.audio) { exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-test") }
+}
+
 // Tests render offscreen; without this, AWT tries to reach the window server.
 tasks.named<Test>("jvmTest") {
     systemProperty("java.awt.headless", "true")
