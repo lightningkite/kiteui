@@ -59,8 +59,9 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
     override fun Content(modifier: Modifier) {
         SubcomposeLayout(modifier.then(NoIntrinsicSize)) { constraints ->
             layoutRequests
-            fun Double.toPx(): Int = if (isInfinite()) Constraints.Infinity else (this * density).roundToInt()
-            fun Int.toDp(): Double = if (this == Constraints.Infinity) Double.POSITIVE_INFINITY else this / density.toDouble()
+            val pxPerDp = density
+            fun Double.toPx(): Int = if (isInfinite()) Constraints.Infinity else (this * pxPerDp).roundToInt()
+            fun Int.toDp(): Double = if (this == Constraints.Infinity) Double.POSITIVE_INFINITY else this / pxPerDp.toDouble()
 
             // Every shown child is subcomposed each pass, or Compose disposes it.
             val measurables = HashMap<NativeElement, Measurable>()
@@ -75,6 +76,8 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
             slots.keys.retainAll(current)
 
             val inProgress = object : ProgrammingLayoutInProgress {
+                // Delegates may keep this (Recycler2 does), so it lets go of the pass's layout nodes once the pass is over.
+                var measurableOf: ((Element) -> Measurable?)? = ::measurable
                 override var within = Size(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
                 override val gap: Double = (this@ProgrammaticLayout.gap ?: currentTheme.theme.gap).px
                 override val padding: Double get() = paddingLeft
@@ -85,7 +88,7 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
 
                 override fun measure(child: Element, sizeConstraint: Size): Size {
                     // A hidden child takes no space, like display: none on the web.
-                    val m = measurable(child) ?: return Size.Zero
+                    val m = checkNotNull(measurableOf) { "Measured outside a layout pass" }(child) ?: return Size.Zero
                     val maxHeight = sizeConstraint.height.toPx()
                     val width = m.maxIntrinsicWidth(maxHeight).coerceAtMost(sizeConstraint.width.toPx())
                     val height = m.maxIntrinsicHeight(width).coerceAtMost(maxHeight)
@@ -113,6 +116,7 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
                 delegate.layout(this@ProgrammaticLayout, inProgress, inProgress.within)
             } finally {
                 measuring = false
+                inProgress.measurableOf = null
             }
 
             val placeables = placed.mapNotNull { (child, rect) ->

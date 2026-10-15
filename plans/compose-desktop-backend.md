@@ -79,7 +79,7 @@ Total: roughly 5–7 weeks.
 
 ## Status
 
-Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of phase 4.  Tests: 81 desktop tests (5 skip in the agent sandbox: no audio device, no video decoding), 822 SSR tests, JS compiles.
+Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of phase 4.  Tests: 90 desktop tests (5 skip in the agent sandbox: no audio device, no video decoding; 1 is the ignored Compose leak reproduction), 822 SSR tests, JS compiles.
 
 - **Views:** all of them except WebView (out of scope; throws `UnsupportedOperationException`) and `CameraPreview` (no webcam support yet).  Twins `library-lottie-compose` (LottieView via the common `LottieRenderer`) and `library-camera-compose` (placeholder).
 - **Example app:** `example-app-desktop` runs the whole example app; `ExampleAppTest` renders the home page and fails on any element error.
@@ -99,6 +99,7 @@ Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of ph
   - `shownWhen` plays its transition and, in a row or column, collapses the element's size and its gap so siblings move smoothly (weighted children shrink their weight, as the web animates `flex-grow`); in other parents only the transition plays.  An interrupted change continues from where it got to.  `shownForQuery` is instant, like CSS media queries.
   - `dynamicWeight` animates linearly; a weight of 0 (natural size) blends into a positive one.
   - `FadingColor` backgrounds fade there and back in 2s.
+- **Idle work**: a still page draws no frames (`IdleWorkTest`).  Endless animations (`ActivityIndicator`, `FadingColor`) run only while they can be seen: in the window (`onVisibilityChanged`), visible and not transparent.  Image and video views keep a transparent spinner once loaded, which used to redraw every frame.  `AppState.animationFrame` ticks only while something listens.  Navigating back and forth leaves no element coroutines or listeners behind.
   - Scroll benchmark (5 runs): median 1.41–1.44ms (was 1.30–1.36), p90 1.96–2.05ms (was 1.98–2.03), p99 2.83–3.16ms (was 2.63–2.97).  The small rise is hover transitions running while scrolling, the price of any animation (a bare `withFrameNanos` loop alone accounts for most of it); render and layout counts are unchanged.  A first version on Compose `Transition`s recomposed twice as often and cost twice as much.
 
 - Media: `RawVideoView` uses ComposeMediaPlayer (opened paused: its default autoplays; macOS never calls `onPlaybackEnded`, so completion is detected from position).  Audio uses `javax.sound` (WAV/AIFF/AU only).  Playback can't be verified in the sandbox: run `MediaTest` on a real Mac.  Linux needs GStreamer installed.
@@ -107,7 +108,8 @@ Branch `compose-desktop-backend` (local).  Phases 0–3 are done, and most of ph
 
 ### Known issues and TODOs
 
-- **Element leaks**: a heap dump traced retained pages to Compose UI 1.12.1 reusing modifier lists across nodes (`NodeChain` differ buffers), not to KiteUI.  Bounded, but the example app's leak detector warns.  Retest on the next Compose release; report upstream if it persists.
+- **Element leaks** (`NavigationLeakTest`): Compose UI 1.12.1 keeps a few removed nodes' modifiers, and so their elements and those elements' children, reachable.  A node's `NodeChain.cachedDiffer` keeps the lists of its last structural diff; they go back to a pool shared by all nodes, so one can become another node's modifier list, which stays reachable when that node is removed.  This is bounded by the live nodes and replaced as they diff again: about 650-770 of 6,668 removed elements survive 3 rounds of 13 pages, flat with more navigation, so the example app's leak detector still warns.  `PureComposeRetentionTest` reproduces it without KiteUI (ignored, since it fails): run it after upgrading Compose, and report it upstream.
+  KiteUI used to turn this into an unbounded leak, and every page ever shown stayed in memory (6,668 of 6,668).  Elements kept their `LayoutCoordinates` after leaving composition.  `ProgrammaticLayout`'s measure pass also kept its layout nodes, and `Recycler2` holds on to the pass.  Through those layout nodes' own stale lists, each retained element reached other removed ones.  Elements now drop their coordinates when they leave composition, and a pass lets go of its layout nodes when it ends.
 - Date/time pickers (fields accept typed values only), popover focus and following a scrolling anchor, `keepScreenOn`, webcam, MP3 audio.  Not animated: text colour in views other than `TextView` (inputs, checkboxes and so on change at once), corner radii, outline widths, `RowWrapping` children's `shownWhen` collapse.
 - Untested without a real window/devices: file dialogs, window close confirmation, `inForeground`, video playback, audio output.
 - `:example-app:jvmSsrTest` aborts (exit 134) in the agent sandbox after 4 suites pass, independently of this work.

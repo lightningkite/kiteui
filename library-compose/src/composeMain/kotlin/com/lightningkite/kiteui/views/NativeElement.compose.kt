@@ -18,11 +18,13 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +47,7 @@ import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -68,7 +71,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.ui.graphics.Color as ComposeColor
 
 // False inside an invisible element: like the web's visibility:hidden, invisibility is inherited.
-private val LocalVisible = compositionLocalOf { true }
+internal val LocalVisible = compositionLocalOf { true }
 
 /**
  * KiteUI keeps its own retained element tree; Compose only draws it.  Everything [Render] reads is
@@ -130,7 +133,8 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         )
     } else null
 
-    private var coordinates: LayoutCoordinates? = null
+    internal var coordinates: LayoutCoordinates? = null
+        private set
     private val bringIntoView = BringIntoViewRequester()
     private val focusRequester = FocusRequester()
 
@@ -334,6 +338,8 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     public fun Render(modifier: Modifier = Modifier): Unit = CompositionLocalProvider(LocalVisible provides (visible && LocalVisible.current)) {
         val density = LocalDensity.current.density
         SideEffect { this.density = density }
+        // The coordinates lead to this composition's layout nodes, which must not outlive it.
+        DisposableEffect(Unit) { onDispose { coordinates = null } }
         // Does nothing if the element can't take focus (it's invisible, say), as on the web.
         if (focusRequested) LaunchedEffect(Unit) {
             focusRequester.requestFocus()
@@ -414,8 +420,12 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         }
         d?.let { d ->
             val fading = (d.background as? FadingColor)?.let {
-                // There and back in 2s, as on the web.
-                rememberInfiniteTransition().animateColor(it.base.toCompose(), it.alternate.toCompose(), infiniteRepeatable(tween(1000), RepeatMode.Reverse))
+                var inWindow by remember { mutableStateOf(false) }
+                m = m.onVisibilityChanged(minFractionVisible = 0f) { inWindow = it }
+                // There and back in 2s, as on the web, while it can be seen.
+                if (inWindow && LocalVisible.current && targetOpacity > 0.0) {
+                    rememberInfiniteTransition().animateColor(it.base.toCompose(), it.alternate.toCompose(), infiniteRepeatable(tween(1000), RepeatMode.Reverse))
+                } else null
             }
             val backgroundBrush = d.background.toBrush()
             val outlineBrush = d.outline.toBrush()
