@@ -46,11 +46,11 @@ public actual class Checkbox actual constructor(context: ElementContext) : Nativ
     // The web forces a checkbox's padding to 0; it's a fixed-size box.
     override fun refreshPadding() {}
 
-    override fun inputModifier(): Modifier = Modifier.toggleable(
+    override fun inputModifier(takesInput: Boolean): Modifier = Modifier.toggleable(
         value = isChecked,
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled,
+        enabled = enabled && takesInput,
         role = Role.Checkbox,
         onValueChange = { checked.value = it },
     )

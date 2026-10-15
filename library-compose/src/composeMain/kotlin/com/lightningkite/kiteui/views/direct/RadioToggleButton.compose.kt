@@ -33,11 +33,11 @@ public actual class RadioToggleButton actual constructor(context: ElementContext
         }
     }
 
-    override fun inputModifier(): Modifier = Modifier.selectable(
+    override fun inputModifier(takesInput: Boolean): Modifier = Modifier.selectable(
         selected = isChecked,
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled,
+        enabled = enabled && takesInput,
         role = Role.RadioButton,
         onClick = { checked.value = true },
     )

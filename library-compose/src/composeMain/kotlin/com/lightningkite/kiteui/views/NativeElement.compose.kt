@@ -27,9 +27,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -38,23 +37,29 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onVisibilityChanged
+import androidx.compose.ui.node.DelegatingNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.PointerInputModifierNode
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.util.lerp
@@ -101,7 +106,10 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     public var weight: Float? by mutableStateOf(null)
     public var sizeConstraints: SizeConstraints? by mutableStateOf(null)
     internal var scrolling: ScrollingBehaviorImpl? = null
-    // Set by the pointer input in Render; popovers that open on hover watch it.
+    // Set by shownWhen during setup.  Only these elements can collapse, so only they get the modifiers for it.
+    internal var collapsible: Boolean = false
+    private var watchesWindow = false
+    // Set by HoverNode; popovers that open on hover watch it.
     internal val hovered = Signal(false)
     public open val interactions: Interactions? get() = null
 
@@ -346,122 +354,156 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             focusRequested = false
         }
         interactions?.Track()
+        // Changes to an element (its theme, hovering, visibility, animations) change its modifiers' values, never
+        // which modifiers it has: that is decided at setup, apart from rare changes like sizing.  Compose UI 1.12.1
+        // keeps references to the modifier lists of a node's last change in the chain's shape (adding or removing a
+        // modifier), and those lists are reused by other nodes, whose modifiers (and so elements, and their
+        // subtrees) then outlive them.  See the plan's known issues and PureComposeRetentionTest.
         var m = modifier
             .onPlaced { coordinates = it }
             .bringIntoViewRequester(bringIntoView)
             .focusRequester(focusRequester)
-        screenAnimation?.let { s ->
-            if (s.collapses) {
+        if (collapsible) m = m
+            .drawWithContent {
+                if (screenAnimation?.collapses == true) clipRect { this@drawWithContent.drawContent() } else drawContent()
+            }
+            .layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints)
+                val shown = 1f - collapsedFraction
+                if (shown == 1f) return@layout layout(placeable.width, placeable.height) { placeable.place(0, 0) }
                 val vertical = (parent as NativeLinearLayoutElement).layoutVertical
-                m = m.clipToBounds().layout { measurable, constraints ->
-                    val placeable = measurable.measure(constraints)
-                    val shown = 1f - collapsedFraction
-                    // A weighted element's size is fixed by the parent, which shrinks its weight instead.
-                    val width = if (!vertical && !constraints.hasFixedWidth) (placeable.width * shown).roundToInt() else placeable.width
-                    val height = if (vertical && !constraints.hasFixedHeight) (placeable.height * shown).roundToInt() else placeable.height
-                    layout(width, height) { placeable.place(0, 0) }
-                }
+                // A weighted element's size is fixed by the parent, which shrinks its weight instead.
+                val width = if (!vertical && !constraints.hasFixedWidth) (placeable.width * shown).roundToInt() else placeable.width
+                val height = if (vertical && !constraints.hasFixedHeight) (placeable.height * shown).roundToInt() else placeable.height
+                layout(width, height) { placeable.place(0, 0) }
             }
-            m = m.graphicsLayer {
-                val away = s.away.value
-                val pose = if (s.entering) s.transition.entryTransform else s.transition.exitTransform
-                if (s.transition.fade) alpha = 1f - away
-                // Fractions of the element's own size, like CSS's translate(%).
-                translationX = (pose.translationX * size.width * away).toFloat()
-                translationY = (pose.translationY * size.height * away).toFloat()
-                scaleX = lerp(1f, pose.scaleX.toFloat(), away)
-                scaleY = lerp(1f, pose.scaleY.toFloat(), away)
-                rotationZ = (pose.rotation * away).toFloat()
-                rotationX = (pose.rotationX * away).toFloat()
-                rotationY = (pose.rotationY * away).toFloat()
-            }
-        }
         sizeConstraints?.let { m = m.sized(it) }
-        if (takesInput) m = m.then(inputModifier()).pointerInput(Unit) {
-            // Any pointer input takes the pointer over the element's bounds so, as on the web, it doesn't reach
-            // what's behind (a dialog card over a page).
-            try {
-                awaitPointerEventScope {
-                    while (true) {
-                        when (awaitPointerEvent().type) {
-                            PointerEventType.Enter -> hovered.value = true
-                            PointerEventType.Exit -> hovered.value = false
-                        }
-                    }
-                }
-            } finally {
-                hovered.value = false
-            }
-        }
+        val takesInput = takesInput
+        m = m.then(inputModifier(takesInput)).then(HoverElement(this, takesInput))
         val theme = currentTheme
         val a = appearance
         // Losing its background, an element keeps drawing the old one while it fades.
         val d = decoration ?: lastDecoration?.takeIf { a != null }
         val transform = theme.transformation
-        if (a != null || !visible || targetOpacity != 1.0 || theme.elevation.value > 0f || transform != Transformation()) m = m.graphicsLayer {
-            alpha = if (visible) a?.alpha?.value ?: targetOpacity.toFloat() else 0f
+        val visible = visible
+        val clip = d != null && d.clip && decoration != null
+        m = m.graphicsLayer {
+            // A screen transition's pose and the theme's transform are combined simply, which is exact when only one
+            // of them moves the element, as is usual.
+            val screen = screenAnimation
+            val away = screen?.away?.value ?: 0f
+            val pose = (if (screen?.entering == true) screen.transition.entryTransform else screen?.transition?.exitTransform) ?: Transformation()
+            val fade = if (screen?.transition?.fade == true) 1f - away else 1f
+            alpha = fade * if (visible) a?.alpha?.value ?: targetOpacity.toFloat() else 0f
             shadowElevation = (a?.elevation?.value ?: theme.elevation).toPx()
             shape = d?.shape ?: RectangleShape
+            this.clip = clip
             val t = a?.translation?.value ?: transform.translation
-            translationX = t.x.dp.toPx()
-            translationY = t.y.dp.toPx()
+            // The pose's translation is a fraction of the element's own size, like CSS's translate(%).
+            translationX = t.x.dp.toPx() + (pose.translationX * size.width * away).toFloat()
+            translationY = t.y.dp.toPx() + (pose.translationY * size.height * away).toFloat()
             val s = a?.scale?.value ?: transform.scale
-            scaleX = s.x
-            scaleY = s.y
-            rotationZ = a?.rotation?.value ?: transform.rotation.toFloat()
-            rotationX = transform.rotationX.toFloat()
-            rotationY = transform.rotationY.toFloat()
+            scaleX = s.x * lerp(1f, pose.scaleX.toFloat(), away)
+            scaleY = s.y * lerp(1f, pose.scaleY.toFloat(), away)
+            rotationZ = (a?.rotation?.value ?: transform.rotation.toFloat()) + (pose.rotation * away).toFloat()
+            rotationX = (transform.rotationX + pose.rotationX * away).toFloat()
+            rotationY = (transform.rotationY + pose.rotationY * away).toFloat()
         }
-        if (visible) {
-            label?.let { m = m.semantics { contentDescription = it } }
-            paneTitle?.let { m = m.semantics { paneTitle = it } }
-        } else {
-            m = m.clearAndSetSemantics {}
+        var inWindow by remember { mutableStateOf(false) }
+        // Watching every element would slow scrolling, so only those that have faded do, from then on.
+        if (d?.background is FadingColor) watchesWindow = true
+        if (watchesWindow) m = m.onVisibilityChanged(minFractionVisible = 0f) { inWindow = it }
+        val fading = (d?.background as? FadingColor)?.let {
+            // There and back in 2s, as on the web, while it can be seen.
+            if (inWindow && LocalVisible.current && targetOpacity > 0.0) {
+                rememberInfiniteTransition().animateColor(it.base.toCompose(), it.alternate.toCompose(), infiniteRepeatable(tween(1000), RepeatMode.Reverse))
+            } else null
         }
-        d?.let { d ->
-            val fading = (d.background as? FadingColor)?.let {
-                var inWindow by remember { mutableStateOf(false) }
-                m = m.onVisibilityChanged(minFractionVisible = 0f) { inWindow = it }
-                // There and back in 2s, as on the web, while it can be seen.
-                if (inWindow && LocalVisible.current && targetOpacity > 0.0) {
-                    rememberInfiniteTransition().animateColor(it.base.toCompose(), it.alternate.toCompose(), infiniteRepeatable(tween(1000), RepeatMode.Reverse))
-                } else null
-            }
+        m = m.drawWithCache {
+            if (d == null) return@drawWithCache onDrawWithContent { drawContent() }
             val backgroundBrush = d.background.toBrush()
             val outlineBrush = d.outline.toBrush()
-            m = m.drawWithCache {
-                val shape = d.shape.createOutline(size, layoutDirection, this)
-                val width = d.outlineWidth.toPx()
-                // Inset by half the stroke, so that like Modifier.border's it lies inside the bounds.
-                val border = d.shape.createOutline(Size(size.width - width, size.height - width), layoutDirection, this)
-                onDrawWithContent {
-                    // Plain colours animate; gradients change at once.
-                    when {
-                        fading != null -> drawOutline(shape, fading.value)
-                        a != null && d.background is Color -> drawOutline(shape, a.background.value)
-                        else -> drawOutline(shape, backgroundBrush)
-                    }
-                    drawContent()
-                    if (width > 0f) translate(width / 2, width / 2) {
-                        if (a != null && d.outline is Color) drawOutline(border, a.outline.value, style = Stroke(width))
-                        else drawOutline(border, outlineBrush, style = Stroke(width))
-                    }
+            val shape = d.shape.createOutline(size, layoutDirection, this)
+            val width = d.outlineWidth.toPx()
+            // Inset by half the stroke, so that like Modifier.border's it lies inside the bounds.
+            val border = d.shape.createOutline(Size(size.width - width, size.height - width), layoutDirection, this)
+            onDrawWithContent {
+                // Plain colours animate; gradients change at once.
+                when {
+                    fading != null -> drawOutline(shape, fading.value)
+                    a != null && d.background is Color -> drawOutline(shape, a.background.value)
+                    else -> drawOutline(shape, backgroundBrush)
+                }
+                drawContent()
+                if (width > 0f) translate(width / 2, width / 2) {
+                    if (a != null && d.outline is Color) drawOutline(border, a.outline.value, style = Stroke(width))
+                    else drawOutline(border, outlineBrush, style = Stroke(width))
                 }
             }
-            if (d.clip && decoration != null) m = m.clip(d.shape)
         }
         scrolling?.let { m = it.applyTo(m, takesInput) }
         val p = padding
         m = m.padding(start = p.left.toDp(), top = p.top.toDp(), end = p.right.toDp(), bottom = p.bottom.toDp())
+        // Last, so that a view's own semantics still give the node its bounds (the view's, inside the padding).
+        val label = label
+        val paneTitle = paneTitle
+        m = m.semantics {
+            if (visible) {
+                label?.let { contentDescription = it }
+                paneTitle?.let { this.paneTitle = it }
+            } else {
+                hideFromAccessibility()
+            }
+        }
         Content(m)
     }
 
-    // Applied outside padding, so the whole element responds.
-    protected open fun inputModifier(): Modifier = Modifier
+    // Applied outside padding, so the whole element responds.  Disabled rather than left out when the element
+    // doesn't take input, so that the modifiers keep their shape (see Render).
+    protected open fun inputModifier(takesInput: Boolean): Modifier = Modifier
 
     // It must apply its modifier to exactly one root layout node.
     @Composable
     protected abstract fun Content(modifier: Modifier)
+}
+
+// Any pointer input node takes the pointer over the element's bounds so, as on the web, it doesn't reach what's
+// behind (a dialog card over a page).  So, like Compose's clickable, this only has one while it's enabled.
+private data class HoverElement(val element: NativeElement, val enabled: Boolean) : ModifierNodeElement<HoverNode>() {
+    override fun create() = HoverNode(element, enabled)
+    override fun update(node: HoverNode) = node.update(element, enabled)
+}
+
+private class HoverNode(private var element: NativeElement, enabled: Boolean) : DelegatingNode() {
+    private var tracking: Tracking? = if (enabled) delegate(Tracking()) else null
+
+    fun update(element: NativeElement, enabled: Boolean) {
+        this.element = element
+        val tracking = tracking
+        if (enabled && tracking == null) this.tracking = delegate(Tracking())
+        if (!enabled && tracking != null) {
+            undelegate(tracking)
+            this.tracking = null
+        }
+    }
+
+    private inner class Tracking : Modifier.Node(), PointerInputModifierNode {
+        override fun onPointerEvent(pointerEvent: PointerEvent, pass: PointerEventPass, bounds: IntSize) {
+            if (pass != PointerEventPass.Main) return
+            when (pointerEvent.type) {
+                PointerEventType.Enter -> element.hovered.value = true
+                PointerEventType.Exit -> element.hovered.value = false
+            }
+        }
+
+        override fun onCancelPointerInput() {
+            element.hovered.value = false
+        }
+
+        override fun onDetach() {
+            element.hovered.value = false
+        }
+    }
 }
 
 /**

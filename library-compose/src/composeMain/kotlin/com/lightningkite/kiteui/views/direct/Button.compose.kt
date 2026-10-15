@@ -24,10 +24,10 @@ public actual class Button actual constructor(context: ElementContext) : NativeC
     }
 
     @OptIn(ExperimentalFoundationApi::class)
-    override fun inputModifier(): Modifier = Modifier.combinedClickable(
+    override fun inputModifier(takesInput: Boolean): Modifier = Modifier.combinedClickable(
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled,
+        enabled = enabled && takesInput,
         onLongClick = if (hasSecondaryAction) ({ secondaryAction?.startAction(this) }) else null,
         onClick = { action?.startAction(this) },
     )

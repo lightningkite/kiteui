@@ -33,10 +33,10 @@ public actual class MenuButton actual constructor(context: ElementContext) : Nat
         popover.block()
     }
 
-    override fun inputModifier(): Modifier = Modifier.clickable(
+    override fun inputModifier(takesInput: Boolean): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled,
+        enabled = enabled && takesInput,
         onClick = ::openAndBlock,
     )
 

@@ -33,11 +33,11 @@ public actual class ToggleButton actual constructor(context: ElementContext) : N
         }
     }
 
-    override fun inputModifier(): Modifier = Modifier.toggleable(
+    override fun inputModifier(takesInput: Boolean): Modifier = Modifier.toggleable(
         value = isChecked,
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled,
+        enabled = enabled && takesInput,
         role = Role.Button,
         onValueChange = { checked.value = it },
     )

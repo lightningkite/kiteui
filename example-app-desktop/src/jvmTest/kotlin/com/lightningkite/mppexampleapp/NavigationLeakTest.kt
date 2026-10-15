@@ -15,7 +15,7 @@ import kotlinx.coroutines.yield
 import java.lang.ref.WeakReference
 import java.util.IdentityHashMap
 import kotlin.test.Test
-import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalComposeUiApi::class)
 class NavigationLeakTest {
@@ -27,6 +27,7 @@ class NavigationLeakTest {
 
     // Not inline, so that no strong reference is left behind in the test's frame.
     private fun removed(seen: Map<Element, WeakReference<Element>>) = seen.filterKeys { it.underlyingNativeElement.isShutdown }.values.toList()
+    private fun survivors(removed: List<WeakReference<Element>>) = removed.count { it.get() != null }
 
     @Test
     fun navigatingAwayDoesNotAccumulateElements() = runBlocking(Dispatchers.Main) {
@@ -59,16 +60,18 @@ class NavigationLeakTest {
         frames(60)
         val removed = removed(seen)
         seen.clear()
-        repeat(5) {
+        // System.gc() only starts a concurrent collection in these tests (see the build file), which may not have
+        // finished, so this gives it a few tries.
+        var survivors = survivors(removed)
+        var collections = 0
+        while (survivors > 0 && collections++ < 20) {
             System.gc()
             frames(2)
-            Thread.sleep(50)
+            Thread.sleep(100)
+            survivors = survivors(removed)
         }
-        val survivors = removed.count { it.get() != null }
         println("Navigation leak test: $survivors of ${removed.size} removed elements survive")
-        // Compose keeps a few removed nodes' modifiers, and so their elements, until those lists are reused (see the
-        // plan's known issues): a bounded number, unlike everything ever shown.
-        assertTrue(survivors < removed.size / rounds, "$survivors of ${removed.size} removed elements survive $rounds rounds of navigation")
+        assertEquals(0, survivors, "$survivors of ${removed.size} removed elements survive $rounds rounds of navigation")
         scene.close()
         root.close()
     }

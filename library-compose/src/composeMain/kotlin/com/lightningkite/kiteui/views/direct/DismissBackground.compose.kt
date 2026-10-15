@@ -31,8 +31,8 @@ public actual class DismissBackground actual constructor(context: ElementContext
     }
 
     // Not clickable: like the web's div, the background is no Tab stop.
-    override fun inputModifier(): Modifier = onClick?.let { action ->
-        Modifier.pointerInput(action) { detectTapGestures { launch { action() } } }
+    override fun inputModifier(takesInput: Boolean): Modifier = onClick?.let { action ->
+        Modifier.pointerInput(action, takesInput) { if (takesInput) detectTapGestures { launch { action() } } }
     } ?: Modifier
 
     @Composable

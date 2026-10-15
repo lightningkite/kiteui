@@ -23,6 +23,13 @@ public actual abstract class NativeContainerElement actual constructor(context: 
         nativeChildren.clear()
     }
 
+    // Like the common children, so that a shut-down element that Compose still references (see NativeElement.Render)
+    // doesn't keep its whole subtree.
+    override fun onShutdown() {
+        super.onShutdown()
+        nativeChildren.clear()
+    }
+
     // Tagged with their elements, so layouts can read alignment and weight.
     @Composable
     protected fun ShownChildren() {
