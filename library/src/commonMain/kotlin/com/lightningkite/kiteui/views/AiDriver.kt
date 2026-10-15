@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kotlinx.serialization.uri.encodeURIComponent
 import com.lightningkite.reactive.core.AppScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -65,6 +66,8 @@ public object AiDriver {
                     log.info("Got command $message")
                     val response = handleCommand(message.trim(), rootView(), navigator())
                     ws.send(response)
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Throwable) {
                     // Not just Exception: an Error (such as a backend's TODO()) would otherwise leave the caller waiting.
                     try {
