@@ -45,7 +45,6 @@ appcompat = { module = "androidx.appcompat:appcompat", version = { ref = "appcom
 cardview = { module = "androidx.cardview:cardview", version = { ref = "cardview" } }
 commonsLang3 = { module = "org.apache.commons:commons-lang3", version = { ref = "commonsLang3" } }
 composemediaplayer = { module = "io.github.kdroidfilter:composemediaplayer", version.ref = "composeMediaPlayer" }
-composemediaplayer-audio = { module = "io.github.kdroidfilter:composemediaplayer-audio", version.ref = "composeMediaPlayer" }
 compose-desktop = { module = "org.jetbrains.compose.desktop:desktop", version.ref = "composeMultiplatform" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "composeMultiplatform" }

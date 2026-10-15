@@ -85,6 +85,10 @@ Total: roughly 5–7 weeks.
 - Decided while building: explicit sizes (`sizedBox`) win over a stretched slot and are centered in it (Android's behavior).  Wrapping containers size stretch axes from Compose intrinsics, since Compose measures each child once.
 - Platform services done: ExternalServices, keyboard (`onUniversalKeyboard`, Canvas keys, Escape closes popovers), back from Alt+Left and the mouse back button, `inForeground` from window focus, confirm-before-leaving.  File dialogs, window close, and `inForeground` need a real window, so only the logic around them is tested headless.
 
+- Media written but **not yet run**: `jvmTestRuntimeClasspath` can't resolve `androidx.annotation:annotation:1.10.0` (pulled in by ComposeMediaPlayer's filekit dependency) offline; build once outside the sandbox, then run `MediaTest`.
+  - `RawVideoView` uses ComposeMediaPlayer.  Its snapshot state is mirrored into signals with `snapshotFlow`.  macOS never calls `onPlaybackEnded`, so `completedPlay` fires when playback stops at the end.  Seeking before the duration is known throws.  `preloadHint` is ignored (as on Android).  `showControls` draws a minimal play/pause and seek bar, since the library has no controls.
+  - Audio uses `javax.sound` (WAV/AIFF/AU only; other formats fail with a clear error).  `composemediaplayer-audio` was dropped: no completion event, loop fixed at play time, and its Rust `nucleus.rodio` dependency.  The sandbox has no audio device, so tests that play sound are skipped there.
+
 ## Open decisions
 
 1. **How consumer apps add desktop.**  An app module's `commonMain` depends on `kiteui`; a desktop JVM target in the same module would resolve kiteui's `jvmSsr` variant.  So with this layout, apps need a separate desktop module that `srcDir`s their common code, like `example-app-desktop`.  The alternative is to move SSR into its own `library-ssr` module and make `:library`'s single JVM target the desktop one.  That gives apps a normal `jvm()` target, but it's a bigger restructure and affects SSR users.  Plan assumes the separate-module approach for now; revisit after phase 1.
