@@ -8,6 +8,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import com.lightningkite.kiteui.utils.safeLinkUrlOrNull
 import java.io.StringReader
 import javax.swing.text.MutableAttributeSet
 import javax.swing.text.html.HTML
@@ -15,7 +16,7 @@ import javax.swing.text.html.HTMLEditorKit
 import javax.swing.text.html.parser.ParserDelegator
 
 /** The inline tags Android's TextView supports, via the JDK's HTML parser. */
-internal actual fun parseBasicHtml(html: String): AnnotatedString = buildAnnotatedString {
+internal actual fun parseBasicHtml(html: String, openLink: (url: String) -> Unit): AnnotatedString = buildAnnotatedString {
     // Tag -> stack of indices from push*, so an end tag pops what its start tag pushed.
     val pushed = HashMap<HTML.Tag, ArrayDeque<Int>>()
     val callback = object : HTMLEditorKit.ParserCallback() {
@@ -34,7 +35,10 @@ internal actual fun parseBasicHtml(html: String): AnnotatedString = buildAnnotat
                 HTML.Tag.U -> pushStyle(SpanStyle(textDecoration = TextDecoration.Underline))
                 HTML.Tag.S, HTML.Tag.STRIKE -> pushStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
                 HTML.Tag.TT, HTML.Tag.CODE -> pushStyle(SpanStyle(fontFamily = FontFamily.Monospace))
-                HTML.Tag.A -> (a.getAttribute(HTML.Attribute.HREF) as? String)?.let { pushLink(LinkAnnotation.Url(it)) }
+                // A sink that hands URLs to the OS, so unsafe ones (file:, javascript:, ...) stay plain text.
+                HTML.Tag.A -> safeLinkUrlOrNull(a.getAttribute(HTML.Attribute.HREF) as? String)?.let { url ->
+                    pushLink(LinkAnnotation.Clickable(url) { openLink(url) })
+                }
                 else -> null
             } ?: return
             pushed.getOrPut(t) { ArrayDeque() }.addLast(index)

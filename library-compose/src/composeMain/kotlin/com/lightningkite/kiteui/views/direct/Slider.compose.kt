@@ -53,19 +53,26 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
         override fun addListener(listener: () -> Unit): Release = current.addListener(listener)
     }
 
-    public actual var min: Float = 0f
+    private var minState by mutableStateOf(0f)
+    private var maxState by mutableStateOf(1f)
+    private var stepState by mutableStateOf<Float?>(null)
+
+    public actual var min: Float
+        get() = minState
         set(value) {
-            field = value
+            minState = value
             this.value.value = this.value.value
         }
-    public actual var max: Float = 1f
+    public actual var max: Float
+        get() = maxState
         set(value) {
-            field = value
+            maxState = value
             this.value.value = this.value.value
         }
-    public actual var step: Float? = null
+    public actual var step: Float?
+        get() = stepState
         set(value) {
-            field = value
+            stepState = value
             this.value.value = this.value.value
         }
 
