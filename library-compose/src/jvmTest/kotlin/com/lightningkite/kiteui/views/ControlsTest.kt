@@ -331,7 +331,7 @@ class ControlsTest {
         val buttonCenter = onNodeWithText("Hidden button").fetchSemanticsNode().boundsInRoot.center
         runBlocking(Dispatchers.Main) { panel.visible = false }
         waitForIdle()
-        onNodeWithText("Hidden button").assertDoesNotExist()
+        onNodeWithText("Hidden button").assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility)))
         onRoot().performMouseInput { click(buttonCenter) }
         waitForIdle()
         assertEquals(0, clicks)

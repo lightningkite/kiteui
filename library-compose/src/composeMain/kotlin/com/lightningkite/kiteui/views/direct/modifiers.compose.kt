@@ -35,6 +35,7 @@ public actual fun ElementWriter.CanAddSizing.dynamicSizeConstraints(constraints:
 // element also collapses so the others close up smoothly.
 public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, transition: ScreenTransition, condition: ReactiveContext.() -> Boolean): ElementWriter.CanAddSizing =
     beforeSetup {
+        underlyingNativeElement.collapsible = true
         shown = default
         var goal = default
         reactive {

@@ -47,11 +47,11 @@ public actual class Switch actual constructor(context: ElementContext) : NativeI
 
     override fun refreshPadding() {}
 
-    override fun inputModifier(): Modifier = Modifier.toggleable(
+    override fun inputModifier(takesInput: Boolean): Modifier = Modifier.toggleable(
         value = isChecked,
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled,
+        enabled = enabled && takesInput,
         role = Role.Switch,
         onValueChange = { checked.value = it },
     )

@@ -19,10 +19,10 @@ public actual class ExternalLink actual constructor(context: ElementContext) : N
         }
     public actual var newTab: Boolean = false
 
-    override fun inputModifier(): Modifier = Modifier.clickable(
+    override fun inputModifier(takesInput: Boolean): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled,
+        enabled = enabled && takesInput,
     ) {
         launch {
             action?.startAction(this)

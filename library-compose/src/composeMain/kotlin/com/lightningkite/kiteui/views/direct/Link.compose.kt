@@ -19,10 +19,10 @@ public actual class Link actual constructor(context: ElementContext) : NativeCon
     public actual var newTab: Boolean = false
     public actual var resetsStack: Boolean = false
 
-    override fun inputModifier(): Modifier = Modifier.clickable(
+    override fun inputModifier(takesInput: Boolean): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled,
+        enabled = enabled && takesInput,
     ) {
         launch {
             action?.startAction(this)

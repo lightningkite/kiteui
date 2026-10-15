@@ -62,10 +62,10 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
         }
     }
 
-    override fun inputModifier(): Modifier = Modifier.clickable(
+    override fun inputModifier(takesInput: Boolean): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,
-        enabled = enabled,
+        enabled = enabled && takesInput,
         onClick = { open = !open },
     )
 

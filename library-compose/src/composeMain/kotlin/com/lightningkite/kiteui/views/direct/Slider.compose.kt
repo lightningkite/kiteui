@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -92,17 +93,18 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
     // Padding would only narrow the track, and the pointer handling below assumes the track spans the element.
     override fun refreshPadding() {}
 
-    override fun inputModifier(): Modifier {
-        if (!enabled) return Modifier
+    override fun inputModifier(takesInput: Boolean): Modifier {
+        val active = enabled && takesInput
         val keyStep = step ?: ((max - min) / 100)
         return Modifier
             .semantics {
                 progressBarRangeInfo = ProgressBarRangeInfo(displayed, min..max)
-                setProgress { value.value = it; true }
+                if (active) setProgress { value.value = it; true }
             }
+            .focusProperties { canFocus = active }
             .focusable(interactionSource = interactions.source)
             .onKeyEvent {
-                if (it.type != KeyEventType.KeyDown) return@onKeyEvent false
+                if (!active || it.type != KeyEventType.KeyDown) return@onKeyEvent false
                 when (it.key) {
                     Key.DirectionLeft, Key.DirectionDown -> value.value -= keyStep
                     Key.DirectionRight, Key.DirectionUp -> value.value += keyStep
@@ -110,7 +112,8 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
                 }
                 true
             }
-            .pointerInput(Unit) {
+            .pointerInput(active) {
+                if (!active) return@pointerInput
                 fun setFrom(x: Float) {
                     val radius = thumbRadius.toPx()
                     val fraction = ((x - radius) / (size.width - 2 * radius)).coerceIn(0f, 1f)
