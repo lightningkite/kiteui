@@ -53,6 +53,8 @@ public actual class TextView actual constructor(context: ElementContext) : Nativ
             overflow = if (ellipsis) TextOverflow.Ellipsis else TextOverflow.Clip,
             softWrap = wraps,
             maxLines = if (!wraps) 1 else lineClamp ?: Int.MAX_VALUE,
+            // Read while drawing, so a theme transition doesn't recompose or re-measure the text.
+            color = { foreground },
         )
     }
 }

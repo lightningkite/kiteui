@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -47,6 +48,7 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.reactive.context.ReactiveContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -130,9 +132,11 @@ public class KiteUiRoot(
     public fun Content() {
         val density = LocalDensity.current.density
         val layer = rememberGraphicsLayer()
+        val scope = rememberCoroutineScope()
         SideEffect {
             this.density = density
             this.layer = layer
+            animationContext = scope.coroutineContext.minusKey(Job)
         }
         root?.underlyingNativeElement?.Render(
             Modifier
@@ -151,6 +155,7 @@ public class KiteUiRoot(
     /** Stops the app: shuts down the element tree and the timers driving it. */
     public fun close() {
         animationFrames.stop()
+        animationContext = null
         root?.onShutdown()
         scope.cancel()
         if (current == this) current = null

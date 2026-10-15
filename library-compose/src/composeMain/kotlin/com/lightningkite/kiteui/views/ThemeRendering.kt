@@ -30,7 +30,7 @@ internal val Theme.hintColor: ComposeColor get() = foreground.closestColor().wit
 
 public fun Paint.toBrush(): Brush = when (this) {
     is Color -> SolidColor(toCompose())
-    // TODO: animate between base and alternate; animations are out of scope for now.
+    // Element backgrounds fade between the two (see NativeElement.Render), as on the web; elsewhere it's the base.
     is FadingColor -> SolidColor(base.toCompose())
     is LinearGradient -> AngledLinearGradient(this)
     is RadialGradient -> Brush.radialGradient(*stops.map { it.ratio to it.color.toCompose() }.toTypedArray())
