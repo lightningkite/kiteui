@@ -6,13 +6,15 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
+import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.kotlin.dsl.create
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import java.io.File
 
 interface KiteUiPluginExtension {
     var packageName: String
-    var iosProjectRoot: File
+    /** The Xcode project's source folder; leave unset in modules without iOS targets. */
+    var iosProjectRoot: File?
     /** Where the app's common code and resources live; defaults to src/commonMain.  A desktop twin of an app points this at the app's. */
     var commonMainDirectory: File?
 }
@@ -25,8 +27,6 @@ class KiteUiPlugin : Plugin<Project> {
         afterEvaluate {
             if (ext.packageName.isEmpty())
                 throw IllegalArgumentException("KiteUiPluginExtension property packageName is not set. Please configure KiteUiPluginExtension and provide a value")
-            if (ext.iosProjectRoot.path.isEmpty())
-                throw IllegalArgumentException("KiteUiPluginExtension property iosProjectRoot is not set. Please configure KiteUiPluginExtension and provide a value")
         }
 
         val kotlinExtension = project.extensions.findByName("kotlin")
@@ -103,16 +103,17 @@ class KiteUiPlugin : Plugin<Project> {
             task.dependsOn("kiteuiResourcesCommon")
             group = "kiteui"
             val out = project.file("build/generated/kiteui-jvm/Resources.jvm.kt")
-            val gitIgnore = project.file("src/jvmMain/resources/common/.gitignore")
             task.outputs.file(out)
-            task.outputs.file(gitIgnore)
             task.inputs.files(resourceFolder)
             task.doLast {
-                resourcesJs(listOf(gitIgnore), resourceFolder.get(), out, ext)
+                resourcesJs(listOf(), resourceFolder.get(), out, ext)
             }
             tasks.matching { it.name == "compileKotlinJvm" }.configureEach { dependsOn(task) }
             tasks.matching { it.name == "kspKotlinJvm" }.configureEach { dependsOn(task) }
-            tasks.matching { it.name == "jvmProcessResources" }.configureEach { dependsOn(task) }
+            // Resources.jvm.kt loads its files from `common/<path>` on the classpath.
+            tasks.withType(ProcessResources::class.java).matching { it.name == "jvmProcessResources" }.configureEach {
+                from(resourceFolder) { into("common") }
+            }
         }
         tasks.register("kiteuiResourcesJvmSsr", Task::class.java).apply {
             val task = this.get()
@@ -144,6 +145,11 @@ class KiteUiPlugin : Plugin<Project> {
             afterEvaluate {
                 resourceFolder.get().mkdirs()
                 val outProject = ext.iosProjectRoot
+                if (outProject == null) {
+                    if (tasks.names.any { it.startsWith("compile") && it.contains("ios", true) && it.contains("kotlin", true) })
+                        throw IllegalArgumentException("KiteUiPluginExtension property iosProjectRoot is not set, but this project has iOS targets.  Set it to the Xcode project's source folder.")
+                    return@afterEvaluate
+                }
                 outProject.mkdirs()
                 val outAssets = outProject.resolve("Assets.xcassets")
                 val outNonAssets = outProject.resolve("resourcesFromCommon")
@@ -242,17 +248,21 @@ class KiteUiPlugin : Plugin<Project> {
                 val versionCode =
                     project.extensions.findByName("android")?.groovyObject?.getPropertyAsObject("defaultConfig")
                         ?.getProperty("versionCode") as? Int ?: 0
-                val projectFolder = ext.iosProjectRoot.parentFile.listFiles()?.toList()
+                val iosProjectRoot = ext.iosProjectRoot ?: run {
+                    println("No iosProjectRoot set")
+                    return@doLast
+                }
+                val projectFolder = iosProjectRoot.parentFile.listFiles()?.toList()
                     ?.find { it.name.endsWith("xcodeproj", true) }
                     ?: run {
-                        println("No xcodeproj found in ${ext.iosProjectRoot}")
+                        println("No xcodeproj found in $iosProjectRoot")
                         return@doLast
                     }
                 val projectFile = projectFolder
                     .resolve("project.pbxproj")
                     .also {
                         if (!it.exists()) {
-                            println("No xcodeproj found in ${ext.iosProjectRoot}")
+                            println("No xcodeproj found in $iosProjectRoot")
                             return@doLast
                         }
                     }

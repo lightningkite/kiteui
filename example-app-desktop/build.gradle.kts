@@ -17,7 +17,6 @@ val exampleApp = project(":example-app").projectDir
 apply<KiteUiPlugin>()
 configure<KiteUiPluginExtension> {
     packageName = "com.lightningkite.mppexampleapp"
-    iosProjectRoot = file("build/no-ios") // required by the plugin; this module has no iOS target
     commonMainDirectory = exampleApp.resolve("src/commonMain")
 }
 
@@ -52,11 +51,6 @@ kotlin {
             }
         }
     }
-}
-
-// The plugin's generated JVM resources refer to files as `common/<path>` on the classpath.
-tasks.named<ProcessResources>("jvmProcessResources") {
-    from("$exampleApp/src/commonMain/resources") { into("common") }
 }
 
 tasks.named<Test>("jvmTest") {
