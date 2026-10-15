@@ -2,23 +2,13 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.compose.multiplatform)
 }
 
 // Kotlin allows one JVM target per module and :library's is jvmSsr, so this backend compiles
 // :library's common (and plain-JVM) sources itself instead of depending on :library.
 val library = project(":library").projectDir
 
-// Compose's desktop runtime ships Skia natives per OS/arch; tests need the host's.
-val hostComposeRuntime = run {
-    val os = System.getProperty("os.name").lowercase()
-    val arch = if (System.getProperty("os.arch") in setOf("aarch64", "arm64")) "arm64" else "x64"
-    val osName = when {
-        os.startsWith("mac") -> "macos"
-        os.startsWith("windows") -> "windows"
-        else -> "linux"
-    }
-    "org.jetbrains.compose.desktop:desktop-jvm-$osName-$arch:${libs.versions.composeMultiplatform.get()}"
-}
 
 kotlin {
     explicitApi()
@@ -67,7 +57,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.compose.ui.test)
-                implementation(hostComposeRuntime)
+                implementation(compose.desktop.currentOs)
             }
         }
     }

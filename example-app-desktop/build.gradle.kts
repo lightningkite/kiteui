@@ -1,11 +1,13 @@
 import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import java.time.Duration
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.compose.multiplatform)
 }
 
 // example-app on the Compose desktop backend.  Kotlin allows one JVM target per module and example-app's is
@@ -19,17 +21,6 @@ configure<KiteUiPluginExtension> {
     commonMainDirectory = exampleApp.resolve("src/commonMain")
 }
 
-// Same as in library-compose: Compose's desktop runtime ships Skia natives per OS/arch.
-val hostComposeRuntime = run {
-    val os = System.getProperty("os.name").lowercase()
-    val arch = if (System.getProperty("os.arch") in setOf("aarch64", "arm64")) "arm64" else "x64"
-    val osName = when {
-        os.startsWith("mac") -> "macos"
-        os.startsWith("windows") -> "windows"
-        else -> "linux"
-    }
-    "org.jetbrains.compose.desktop:desktop-jvm-$osName-$arch:${libs.versions.composeMultiplatform.get()}"
-}
 
 kotlin {
     jvm()
@@ -51,7 +42,7 @@ kotlin {
         }
         getByName("jvmMain") {
             dependencies {
-                implementation(hostComposeRuntime)
+                implementation(compose.desktop.currentOs)
             }
         }
         getByName("jvmTest") {
@@ -73,9 +64,13 @@ tasks.named<Test>("jvmTest") {
     timeout.set(Duration.ofMinutes(5))
 }
 
-tasks.register<JavaExec>("run") {
-    group = "application"
-    mainClass.set("com.lightningkite.mppexampleapp.MainKt")
-    val jvm = kotlin.jvm().compilations.getByName("main")
-    classpath = files(jvm.output.allOutputs, jvm.runtimeDependencyFiles)
+compose.desktop {
+    application {
+        mainClass = "com.lightningkite.mppexampleapp.MainKt"
+        nativeDistributions {
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "KiteUI Example"
+            packageVersion = "1.0.0"
+        }
+    }
 }
