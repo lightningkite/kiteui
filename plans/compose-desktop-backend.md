@@ -47,7 +47,7 @@ Interactive states work like the web's CSS: interactive elements watch their `Mu
 
 **Root.** `kiteUiWindow(theme) { app(navigator) }` opens a Compose `Window` whose content is the root element's `Render()`.  It mirrors `KiteUiActivity`: root `ElementContext`, `themeChoice = SetAsBase(theme)`, `safeInsets = Edges.ZERO`, and `AppState.windowInfo`/`inForeground`/`animationFrame`/keyboard driven from the window.  There is also a headless root for tests.  `Dispatchers.Main` is the Swing EDT (`kotlinx-coroutines-swing`); `assertMainThread` checks for it.
 
-**Navigation.** It uses an in-memory stack.  Back is Alt+Left or the mouse back button.  `askForConfirmNavigateAway` uses a Compose dialog.
+**Navigation.** It uses an in-memory stack.  Back is Alt+Left or the mouse back button, and closes the top dialog before going back a page (as on Android).  `askForConfirmNavigateAway` uses `JOptionPane`, since it must answer synchronously (like the web's `window.confirm`); closing the window asks the same way (like `beforeunload`).
 
 **AI driver.** `driverScreenshot()` uses the graphics-layer capture above.  Each view wires the existing common helpers in `DriverOverrides.kt`; `MenuButton` passes its open-menu function like commonHtml does.  `tryAutoStartDaemon` is shared JVM code.
 
@@ -58,9 +58,9 @@ Interactive states work like the web's CSS: interactive elements watch their `Mu
 | `Platform` | `os.name`; `usesTouchscreen = false` |
 | `onMainThread`, `afterTimeout` | Swing dispatcher / coroutine delay |
 | `PlatformStorage` | `java.util.prefs.Preferences` per app |
-| `ExternalServices` | `java.awt.Desktop` (open URL, mail), `FileDialog` pickers, AWT clipboard, downloads to `~/Downloads`; share/geolocation throw unsupported |
+| `ExternalServices` | `java.awt.Desktop` (open URL, map URL as on the web, `.ics` opened in the calendar app), `FileDialog` pickers (capture falls back to the picker, as desktop browsers do), AWT clipboard, downloads into `~/Downloads` or `~/Pictures` without overwriting; share/geolocation throw unsupported |
 | `Font`, `ImageResource`, `VideoResource`, `AudioResource` | commonHtml constructor shapes, loaded from the classpath |
-| `KeyCode` | mapping from Compose `Key` |
+| `KeyCode` | Compose `Key.keyCode` (`Key` is a value class, which can't actualize an expect class).  The window's `onKeyEvent` feeds `onUniversalKeyboard`, so keys a focused text field uses don't reach it (unlike the web) |
 | `SoundEffectPool`, `AudioPlayback` | `javax.sound.sampled` (wav; mp3/ogg via the video library if it handles audio, otherwise unsupported) |
 | `getAppVersion`, `Build` | from the jar manifest |
 | Gamepads, AudioCapture, HydrationContext | stubs (no pads / throws unsupported / not hydrating) |
@@ -83,6 +83,7 @@ Total: roughly 5–7 weeks.
 - Phase 1 in progress.  Written: base/container/interactive elements, `ElementContext`, theming, `Frame`/`RowOrCol`/`RowCollapsingToColumn`/`RowWrapping`, `TextView` (with basic HTML via the JDK parser), `TextInput`, `Button`, `IconView`, `Space`, `Separator`, `SwapView`, `CoordinatorFrame` (as a frame; sheets and panels TODO), scrolling, modifiers, overlay, `KiteUiRoot`/`kiteUiWindow`, AppState, storage, timers, screenshots.  `RenderTest` drives a real KiteUI form headlessly (type, click, reactive update) and saves a screenshot.
 - A review pass fixed: wrapped text clipped in wrapping rows, exponential intrinsic cost (layouts now define intrinsics), SwapView fighting `shownWhen`, invisible elements taking input, stuck hover/press themes, `KiteUiRoot.close()`, focus requests before composition, element rectangles now in dp.  `LayoutTest` covers the first three.
 - Decided while building: explicit sizes (`sizedBox`) win over a stretched slot and are centered in it (Android's behavior).  Wrapping containers size stretch axes from Compose intrinsics, since Compose measures each child once.
+- Platform services done: ExternalServices, keyboard (`onUniversalKeyboard`, Canvas keys, Escape closes popovers), back from Alt+Left and the mouse back button, `inForeground` from window focus, confirm-before-leaving.  File dialogs, window close, and `inForeground` need a real window, so only the logic around them is tested headless.
 
 ## Open decisions
 

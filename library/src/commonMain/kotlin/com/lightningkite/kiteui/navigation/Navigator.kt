@@ -32,7 +32,7 @@ public class PageNavigator(private val routesGetter: ()->Routes) {
     public val currentPage: Reactive<Page?> = remember(reentrancyLimit = 8) { stack().lastOrNull() }
     public val canGoBack: Reactive<Boolean> = remember(reentrancyLimit = 8) { stack().size > 1 }
 
-    private val allowNavigate get(): Boolean {
+    internal val allowNavigate get(): Boolean {
         val notBlocked = (stack.value.lastOrNull() as? CanBlockBack)?.onNavigateAwayAttempt() ?: true
         return if (notBlocked) true else askForConfirmNavigateAway()
     }
