@@ -124,7 +124,8 @@ internal fun linearMeasurePolicy(vertical: Boolean, gap: Int, ignoreWeights: Boo
         // filling a scroll viewport, as flex and Android's fillViewport do).
         val available = when {
             mainFixed -> mainMax
-            mainMin > 0 && intrinsicMain(measurables, Infinity) < mainMin -> mainMin
+            // Asking children for intrinsics makes them re-measure this layout whenever they change, so only when it matters.
+            mainMin > 0 && measurables.any { it.weight() > 0f } && intrinsicMain(measurables, Infinity) < mainMin -> mainMin
             else -> Infinity
         }
         fun weighted(m: Measurable) = available != Infinity && m.weight() > 0f

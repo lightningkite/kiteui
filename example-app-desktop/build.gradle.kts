@@ -56,11 +56,17 @@ kotlin {
 tasks.named<Test>("jvmTest") {
     systemProperty("java.awt.headless", "true")
     timeout.set(Duration.ofMinutes(5))
+    // The example app turns on KiteUI's leak detector, which calls System.gc(); by default that's a full stop-the-world
+    // collection, long enough to drop frames.
+    jvmArgs("-XX:+ExplicitGCInvokesConcurrent")
+    // -Pjfr=<file> records a Flight Recorder profile, e.g. of ScrollBenchmark.
+    providers.gradleProperty("jfr").orNull?.let { jvmArgs("-XX:StartFlightRecording=filename=$it,settings=profile") }
 }
 
 compose.desktop {
     application {
         mainClass = "com.lightningkite.mppexampleapp.MainKt"
+        jvmArgs += "-XX:+ExplicitGCInvokesConcurrent" // See jvmTest above.
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "KiteUI Example"

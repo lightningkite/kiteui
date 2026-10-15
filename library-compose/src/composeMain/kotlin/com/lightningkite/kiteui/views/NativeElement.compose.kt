@@ -29,7 +29,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -179,7 +179,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         }
         interactions?.Track()
         var m = modifier
-            .onGloballyPositioned { coordinates = it }
+            .onPlaced { coordinates = it }
             .bringIntoViewRequester(bringIntoView)
             .focusRequester(focusRequester)
         sizeConstraints?.let { m = m.sized(it) }
