@@ -553,6 +553,8 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         }
     }
 
+    /** Off ignores new touch and mouse-wheel scrolling; a drag already under way carries on. scrollTo still works. */
+    internal var userScrollEnabled: Boolean = true
     internal var lockX: Boolean = false
     internal var lockY: Boolean = false
 
@@ -724,6 +726,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
         if ((action == MotionEvent.ACTION_MOVE) && mIsBeingDragged) {
             return true
         }
+        if (!userScrollEnabled && !mIsBeingDragged) return false
 
         when (action and MotionEvent.ACTION_MASK) {
             MotionEvent.ACTION_MOVE -> run label@{
@@ -827,6 +830,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
+        if (!userScrollEnabled && !mIsBeingDragged && ev.actionMasked == MotionEvent.ACTION_DOWN) return false
         initVelocityTrackerIfNotExists()
 
         val actionMasked = ev.actionMasked
@@ -1079,6 +1083,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        if (!userScrollEnabled) return super.onGenericMotionEvent(event)
         if ((event.source and InputDeviceCompat.SOURCE_CLASS_POINTER) != 0) {
             when (event.action) {
                 MotionEvent.ACTION_SCROLL -> {
