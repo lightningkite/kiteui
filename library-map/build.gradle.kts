@@ -19,16 +19,30 @@ if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
 val maplibreWebVersion = "6.12.0"
 val minMapLibreIosVersion = "6.0"
 
-val generateMapLibreLayerTypes = tasks.register<GenerateMapLibreLayerTypes>("generateMapLibreLayerTypes") {
+val generateMapLibreLayerTypes = tasks.register("generateMapLibreLayerTypes") {
     description = "Regenerate the MapLibre layer types from the MapLibre style spec"
 
-    specFile.set(layout.projectDirectory.file("maplibre-style-spec/v8.json"))
-    cocoaConventionsFile.set(layout.projectDirectory.file("maplibre-style-spec/style-spec-cocoa-conventions-v8.json"))
-    packageName.set("com.lightningkite.kiteui.map.style")
-    webVersion.set(maplibreWebVersion)
-    androidVersion.set(libs.versions.maplibreAndroidCore)
-    iosVersion.set(minMapLibreIosVersion)
-    outputDir.set(layout.buildDirectory.dir("generated/maplibreStyle/commonMain/kotlin"))
+    val specFile = file("maplibre-style-spec/v8.json")
+    val cocoaConventionsFile = file("maplibre-style-spec/style-spec-cocoa-conventions-v8.json")
+    val packageName = "com.lightningkite.kiteui.map.style"
+    val webVersion = maplibreWebVersion
+    val androidVersion = libs.versions.maplibreAndroidCore.get()
+    val iosVersion = minMapLibreIosVersion
+    val outputDir = layout.buildDirectory.dir("generated/maplibreLayers/kotlin")
+
+    inputs.files(specFile, cocoaConventionsFile).withPathSensitivity(PathSensitivity.NONE)
+    inputs.property("packageName", packageName)
+    inputs.property("versions", listOf(webVersion, androidVersion, iosVersion))
+    outputs.dir(outputDir)
+    outputs.cacheIf { true }
+
+    doLast {
+        generateMapLibreLayerTypes(
+            specFile, cocoaConventionsFile, packageName,
+            webVersion, androidVersion, iosVersion,
+            outputDir.get().asFile,
+        )
+    }
 }
 
 kotlin {
