@@ -11,6 +11,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
     override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
+    public actual var role: String = "menu"
 
     private var _openMenu: (() -> Unit)? = null
 

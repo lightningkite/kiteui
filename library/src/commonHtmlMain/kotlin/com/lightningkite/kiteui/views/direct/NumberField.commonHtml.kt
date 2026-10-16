@@ -85,8 +85,12 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
                     native.attributes.autocomplete = "tel"
                 }
 
-                AutoComplete.OneTimeCode,null -> {
-                    native.attributes.autocomplete = "off"
+                AutoComplete.OneTimeCode -> {
+                    native.attributes.autocomplete = "one-time-code"
+                }
+
+                null -> {
+                    native.attributes.autocomplete = null
                 }
             }
         }

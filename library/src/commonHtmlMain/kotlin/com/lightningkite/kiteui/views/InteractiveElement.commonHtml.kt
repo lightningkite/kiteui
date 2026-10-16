@@ -16,4 +16,16 @@ public actual abstract class NativeInteractiveContainerElement actual constructo
             native.attributes.disabled = !value
             native.setAttribute("aria-disabled", if (value) null else "true")
         }
+
+    public actual open var accessibleExpanded: Boolean? = null
+        set(value) {
+            field = value
+            if (value != null) native.setAttribute("aria-expanded", value.toString())
+        }
+
+    public actual open var accessibleOpensDialog: Boolean = false
+        set(value) {
+            field = value
+            if (value) native.setAttribute("aria-openspopup", "true")
+        }
 }
