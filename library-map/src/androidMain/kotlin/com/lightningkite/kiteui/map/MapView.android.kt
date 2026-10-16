@@ -15,7 +15,6 @@ import org.maplibre.android.camera.CameraUpdate
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.BackgroundLayer
 import org.maplibre.android.style.layers.CircleLayer
 import org.maplibre.android.style.layers.ColorReliefLayer
@@ -31,17 +30,14 @@ import org.maplibre.android.style.layers.PropertyValue
 import org.maplibre.android.style.layers.RasterLayer
 import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonSource
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.double
 import kotlinx.serialization.json.float
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import com.lightningkite.kiteui.map.style.Layer
+import com.lightningkite.kiteui.map.style.setFilter
+import com.lightningkite.kiteui.map.style.toNativeFilter
+import com.lightningkite.kiteui.map.style.toNativeValue
 import org.maplibre.spatialk.geojson.GeoJsonObject
 import org.maplibre.spatialk.geojson.toJson
 import kotlin.reflect.KMutableProperty1
@@ -69,7 +65,7 @@ actual class MapView actual constructor(
         style.addSource(GeoJsonSource(id.toString(), data.toJson()))
     }) { map.state.getOrNull()?.style?.removeSource(it.toString()) }
 
-    actual val layers: MutableMap<Uuid, Layer?> = StyleDataMap({ id, layer ->
+    actual val layers: MutableMap<Uuid, Layer<*>?> = StyleDataMap({ id, layer ->
         val style = map.state.getOrNull()?.style ?: return@StyleDataMap
         val beforeIndex = layers.keys.indexOf(id).let { if (0 <= it && it < layers.size - 1) it + 1 else null }
         val beforeId = beforeIndex?.let { layers.keys.toList()[it] }?.toString()
@@ -87,7 +83,7 @@ actual class MapView actual constructor(
         layers.forEach { (id, layer) -> style.addLayer(layer.toMapLibreLayer(id.toString())) }
     }
 
-    private fun Layer?.toMapLibreLayer(id: String): MapLibreLayer = if (this == null) {
+    private fun Layer<*>?.toMapLibreLayer(id: String): MapLibreLayer = if (this == null) {
         SymbolLayer(id, emptySourceId.toString())
     } else layerFromJson(id, toJson())
 
@@ -212,18 +208,7 @@ private fun layerFromJson(id: String, json: JsonObject): MapLibreLayer {
     json["minzoom"]?.let { layer.minZoom = it.jsonPrimitive.float }
     json["maxzoom"]?.let { layer.maxZoom = it.jsonPrimitive.float }
 
-    json["filter"]?.let {
-        val filter = Expression.Converter.convert(it.toString())
-        when (layer) {
-            is CircleLayer -> layer.setFilter(filter)
-            is FillLayer -> layer.setFilter(filter)
-            is FillExtrusionLayer -> layer.setFilter(filter)
-            is HeatmapLayer -> layer.setFilter(filter)
-            is LineLayer -> layer.setFilter(filter)
-            is SymbolLayer -> layer.setFilter(filter)
-            else -> throw IllegalArgumentException("Layer type '$type' does not support filters")
-        }
-    }
+    json["filter"]?.let { layer.setFilter(it.toNativeFilter()) }
 
     val properties = ArrayList<PropertyValue<*>>()
     json["paint"]?.jsonObject?.forEach { (name, value) ->
@@ -241,13 +226,6 @@ private fun layerFromJson(id: String, json: JsonObject): MapLibreLayer {
     layer.setProperties(*properties.toTypedArray())
 
     return layer
-}
-
-private fun JsonElement.toNativeValue(): Any? = when (this) {
-    JsonNull -> null
-    is JsonArray -> Array(size) { this[it].toNativeValue() }
-    is JsonObject -> HashMap(mapValues { it.value.toNativeValue() })
-    is JsonPrimitive -> if (isString) content else booleanOrNull ?: double
 }
 
 private fun <T> MapView.lateInit(

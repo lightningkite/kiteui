@@ -15,8 +15,8 @@ import platform.UIKit.UIView
 
 @OptIn(ExperimentalForeignApi::class)
 actual class MapView actual constructor(context: ElementContext) : NativeElement(context) {
-    private val mapView = MLNMapView()
-    override val native: UIView get() = mapView
+    internal val mlnMapView = MLNMapView()
+    override val native: UIView get() = mlnMapView
 
     actual val api: LateInitSignal<Map.Api> get() = TODO("Not yet implemented")
 

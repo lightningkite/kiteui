@@ -9,12 +9,13 @@ import com.lightningkite.kiteui.map.Style
 import com.lightningkite.kiteui.map.addCircle
 import com.lightningkite.kiteui.map.mapView
 import com.lightningkite.kiteui.map.addLine
+import com.lightningkite.kiteui.map.feature
 import com.lightningkite.kiteui.map.lineString
-import com.lightningkite.kiteui.map.multiPoint
+import com.lightningkite.kiteui.map.mapFeatures
 import com.lightningkite.kiteui.map.onClick
 import com.lightningkite.kiteui.map.source
 import com.lightningkite.kiteui.map.point
-import com.lightningkite.kiteui.map.style.layerValue
+import com.lightningkite.kiteui.map.style.expression
 import com.lightningkite.kiteui.map.style.onClick
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Icon
@@ -33,16 +34,18 @@ import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.scrollingHorizontally
 import com.lightningkite.kiteui.views.direct.unpadded
 import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.core.BasicListenable
 import com.lightningkite.reactive.core.Constant
-import com.lightningkite.reactive.core.LateInitSignal
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.modify
-import com.lightningkite.reactive.extensions.value
+import com.lightningkite.reactive.lensing.lens
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import org.maplibre.spatialk.geojson.Feature
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
@@ -54,8 +57,8 @@ object MapViewTestPage : Page {
         unpadded.frame {
             val useBaseDemoTiles = Signal(true)
             val markerPosition = Signal(GeoCoordinate(0.0, 0.0))
-            val markerCollection = Signal(listOf<GeoCoordinate>())
-            val toggleLayerVisible = LateInitSignal<Unit>()
+            val coordinates = Signal(listOf<GeoCoordinate>())
+            val recolor = BasicListenable()
 
             val map = mapView(I_SWEAR_ON_MY_JOB.I_DO_NOT_NEED_ATTRIBUTION) {
                 ::style style@{
@@ -66,36 +69,37 @@ object MapViewTestPage : Page {
                     Style.Debug
                 }
 
-                source(markerPosition.point) {
-                    addCircle {
-//                        visibility = const(Visibility.Visible)
-                        color = Color.blue.layerValue
-                        radius = 10.layerValue
+                @Serializable
+                data class FeatureData(val radius: Double)
 
-                        onClick {  }
+                source(markerPosition.point.lens { Feature(it, FeatureData(radius = 20.0)) }) {
+                    addCircle {
+                        ::color { rerunOn(recolor); Random.nextColor().literal }
+                        radius = expression { FeatureData::radius.get }
                     }
 
-                    onClick {  }
+                    onClick { }
                 }
 
-                source(markerCollection.lineString) {
+                source(coordinates.lineString.feature) {
                     addLine {
-                        color = Color.green.layerValue
-                        width = 10.layerValue
+                        ::color { rerunOn(recolor); Random.nextColor().literal }
+                        width = 10.literal
 
-                        onClick {  }
+                        onClick { }
                     }
 
-                    onClick {  }
+                    onClick { }
                 }
 
 
-                source(markerCollection.multiPoint) {
+                source(coordinates.lens { it.map { it.point.feature } }) {
+//                source(coordinates.mapFeatures { it.point.feature }) {
                     addCircle {
-                        color = Color.red.layerValue
-                        radius = 10.layerValue
+                        ::color { rerunOn(recolor); Random.nextColor().literal }
+                        radius = 10.literal
 
-                        onClick {  }
+                        onClick { }
                     }
                 }
 
@@ -152,12 +156,12 @@ object MapViewTestPage : Page {
 
                 card.button {
                     icon(Icon.addLocationAlt, "Add Marker")
-                    onClick { markerCollection.modify { it + Random.nextGeoCoordinate() } }
+                    onClick { coordinates.modify { it + Random.nextGeoCoordinate() } }
                 }
 
                 card.button {
                     icon(Icon.wrongLocation, "Remove Marker")
-                    onClick { markerCollection.modify { it.drop(1) } }
+                    onClick { coordinates.modify { it.drop(1) } }
                 }
 
                 card.button {
@@ -169,10 +173,8 @@ object MapViewTestPage : Page {
                 }
 
                 card.button {
-                    icon(Icon.menu, "Test Toggle Layer")
-                    onClick {
-                        toggleLayerVisible.value = Unit
-                    }
+                    icon(Icon.colors, "Test Toggle Layer")
+                    onClick { recolor.invokeAll() }
                 }
             }
         }
@@ -187,6 +189,13 @@ fun Random.nextAnimateTo() = Camera.AnimateTo(
     bearing = nextDouble(0.0, 360.0),
     pitch = nextDouble(0.0, 60.0),
     duration = nextDouble(2.0, 4.0).seconds,
+)
+
+fun Random.nextColor() = Color(
+    nextDouble(0.5, 1.0).toFloat(),
+    nextDouble(0.0, 1.0).toFloat(),
+    nextDouble(0.0, 1.0).toFloat(),
+    nextDouble(0.0, 1.0).toFloat(),
 )
 
 val Icon.Companion.globe
@@ -286,4 +295,15 @@ val Icon.Companion.airplaneModeInactive
         960,
         960,
         listOf("m880-288-232-94-239-239v-188q0-29 21-50t50-21q29 0 50 21t21 50v188l329 231v102ZM480-139 285-80v-83l124-86v-172L80-288v-102l230-162L56-806l42-42L848-97l-42 41-255-255v62l123 86v83l-194-59Z")
+    )
+
+val Icon.Companion.colors
+    get() = Icon(
+        1.5.rem,
+        1.5.rem,
+        0,
+        -960,
+        960,
+        960,
+        listOf("M348-138 98-388q-9-9.12-13.5-20.06T80-430.7q0-11.7 4.5-22.5T98-473l250-250-114-114 43-43 406 407q9.47 9 13.74 19.8 4.26 10.8 4.26 22.5t-4.26 22.64Q692.47-397.12 683-388L433-138q-9 9-19.8 13.5t-22.5 4.5q-11.7 0-22.64-4.5Q357.12-129 348-138Zm43-542L141-430h500L391-680Zm408.66 560q-33.35 0-56.5-23.18Q720-166.36 720-200q0-26.28 10-49.64T756-293l44-57 44 57q15 20 25.5 43.36T880-200q0 33.64-23.5 56.82T799.66-120Z")
     )

@@ -115,6 +115,18 @@ external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3557 */
     fun getLayer(id: String): StyleLayer?
 
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3596 */
+    fun setLayerZoomRange(layerId: String, minzoom: Double, maxzoom: Double): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3634 */
+    fun setFilter(layerId: String, filter: Any?, options: Any? = definedExternally): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3665 */
+    fun setPaintProperty(layerId: String, name: String, value: Any?, options: Any? = definedExternally): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3693 */
+    fun setLayoutProperty(layerId: String, name: String, value: Any?, options: Any? = definedExternally): Map
+
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L84 */
     @JsPlainObject
     interface Options {

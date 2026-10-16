@@ -16,11 +16,18 @@ plugins {
 // Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
 if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
 
+val maplibreWebVersion = "6.12.0"
+val minMapLibreIosVersion = "6.0"
+
 val generateMapLibreLayerTypes = tasks.register<GenerateMapLibreLayerTypes>("generateMapLibreLayerTypes") {
-    description = "Regenerate the MapLibre layer types from "
+    description = "Regenerate the MapLibre layer types from the MapLibre style spec"
 
     specFile.set(layout.projectDirectory.file("maplibre-style-spec/v8.json"))
+    cocoaConventionsFile.set(layout.projectDirectory.file("maplibre-style-spec/style-spec-cocoa-conventions-v8.json"))
     packageName.set("com.lightningkite.kiteui.map.style")
+    webVersion.set(maplibreWebVersion)
+    androidVersion.set(libs.versions.maplibreAndroidCore)
+    iosVersion.set(minMapLibreIosVersion)
     outputDir.set(layout.buildDirectory.dir("generated/maplibreStyle/commonMain/kotlin"))
 }
 
@@ -47,7 +54,7 @@ kotlin {
             version = "1.0"
             ios.deploymentTarget = "14.0"
             pod("MapLibre") {
-                version = "~> 6.0"
+                version = "~> $minMapLibreIosVersion"
             }
         }
     }
@@ -92,7 +99,7 @@ kotlin {
 
         val jsMain = getByName("jsMain") {
             dependencies {
-                implementation(npm("maplibre-gl", "6.12.0"))
+                implementation(npm("maplibre-gl", maplibreWebVersion))
             }
         }
 

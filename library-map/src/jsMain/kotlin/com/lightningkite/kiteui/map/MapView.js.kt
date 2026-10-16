@@ -42,7 +42,7 @@ actual class MapView actual constructor(
         map.addSource(id.toString(), data.toSourceSpecification())
     }) { if (isStyleLoaded) map.state.getOrNull()?.removeSource(it.toString()) }
 
-    actual val layers: MutableMap<Uuid, Layer?> = StyleDataMap({ id, layer ->
+    actual val layers: MutableMap<Uuid, Layer<*>?> = StyleDataMap({ id, layer ->
         val map = map.state.getOrNull() ?: return@StyleDataMap
         if (!isStyleLoaded) return@StyleDataMap
         val beforeIndex = layers.keys.indexOf(id).let { if (0 <= it && it < layers.size - 1) it + 1 else null }
@@ -58,7 +58,7 @@ actual class MapView actual constructor(
     }
 
     val emptySourceId = Uuid.random()
-    private fun Layer?.toAddLayerObject(id: Uuid): AddLayerObject = if (this == null) {
+    private fun Layer<*>?.toAddLayerObject(id: Uuid): AddLayerObject = if (this == null) {
         val id = id.toString()
         val sourceId = emptySourceId.toString()
         js("{id: id, type: 'symbol', source: sourceId}")

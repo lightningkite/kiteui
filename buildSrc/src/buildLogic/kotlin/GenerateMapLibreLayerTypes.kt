@@ -14,9 +14,12 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Generates typed MapLibre layer classes from the MapLibre style spec (`v8.json`).
  *
- * For each layer type in the spec (e.g. `circle`), this generates a data class (`CircleLayer`)
- * implementing the hand-written `Layer` interface, with the source and one mutable
- * `Expression<T>?` property per paint and layout property.
+ * For each layer type in the spec (e.g. `circle`), this generates a class (`CircleLayer`) extending
+ * the hand-written `Layer` class, with one `LayerValue<T>?` property per paint and layout property.
+ *
+ * Each property delegates to `Layer.paint` or `Layer.layout`, which store it and write it to the live
+ * platform layer once it is on the map. Properties missing on some platforms (in the MapLibre versions
+ * in use) are only stored, and re-add the layer when set.
  *
  * Enum-typed properties get enum classes. Enums used by a single layer type are nested in its
  * class without the layer's name (`CircleLayer.PitchAlignment`); enums shared between layer types
@@ -31,8 +34,22 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val specFile: RegularFileProperty
 
+    /** MapLibre Native's renames of style spec properties for iOS (`style-spec-cocoa-conventions-v8.json`). */
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val cocoaConventionsFile: RegularFileProperty
+
     @get:Input
     abstract val packageName: Property<String>
+
+    @get:Input
+    abstract val webVersion: Property<String>
+
+    @get:Input
+    abstract val androidVersion: Property<String>
+
+    @get:Input
+    abstract val iosVersion: Property<String>
 
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
@@ -42,10 +59,14 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
         @Suppress("UNCHECKED_CAST")
         val spec = JsonSlurper().parse(specFile.get().asFile) as Map<String, Any?>
         @Suppress("UNCHECKED_CAST")
-        val layerTypeSpecs =
-            (spec["layer"] as Map<String, Map<String, Any?>>)["type"]!!["values"] as Map<String, Map<String, Any?>>
+        val cocoaConventions = JsonSlurper().parse(cocoaConventionsFile.get().asFile) as Map<String, Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val layerSpec = spec["layer"] as Map<String, Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val layerTypeSpecs = layerSpec["type"]!!["values"] as Map<String, Map<String, Any?>>
         val layerTypes = layerTypeSpecs.keys
         val pkg = packageName.get()
+        val versions = mapOf("js" to webVersion.get(), "android" to androidVersion.get(), "ios" to iosVersion.get())
 
         val properties = layerTypes.flatMap { layerType ->
             val groupSpecs = listOf("paint", "layout").associateWith { group ->
@@ -56,7 +77,7 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
             val layerPropertyNames = groupSpecs.values.flatMap { it.keys }.toSet()
             groupSpecs.flatMap { (group, groupSpec) ->
                 groupSpec.map { (name, propertySpec) ->
-                    StyleProperty(layerType, group, name, propertySpec, layerPropertyNames)
+                    StyleProperty(layerType, group, name, propertySpec, layerPropertyNames, cocoaConventions, versions)
                 }
             }
         }.filter { it.supportedAnywhere }
@@ -65,9 +86,9 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
 
         val dir = outputDir.get().asFile
         dir.deleteRecursively()
-        val packageDir = dir.resolve(pkg.replace('.', '/')).apply { mkdirs() }
+        val commonDir = dir.resolve(pkg.replace('.', '/')).apply { mkdirs() }
 
-        packageDir.resolve("StyleEnums.kt").writeText(buildString {
+        commonDir.resolve("StyleEnums.kt").writeText(buildString {
             appendLine(HEADER)
             appendLine("package $pkg")
             for (enum in enums.values.distinct().filter { it.ownerLayerType == null }.sortedBy { it.name }) {
@@ -76,19 +97,22 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
             }
         })
 
+        val filterDoc = layerSpec["filter"]?.get("doc") as? String
+
         for (layerType in layerTypes) {
             val className = layerClassName(layerType)
             val typeDoc = layerTypeSpecs.getValue(layerType)["doc"] as? String
             val layerProperties = properties.filter { it.layerType == layerType }
             val nestedEnums = enums.values.distinct().filter { it.ownerLayerType == layerType }.sortedBy { it.name }
             val needsAnchorOffset = layerProperties.any { it.type == "variableAnchorOffsetCollection" }
+            val filterable = layerType in FILTERABLE_LAYER_TYPES
 
-            packageDir.resolve("$className.kt").writeText(buildString {
+            commonDir.resolve("$className.kt").writeText(buildString {
                 appendLine(HEADER)
                 appendLine("package $pkg")
                 appendLine()
+                appendLine("import com.lightningkite.kiteui.map.MapView")
                 appendLine("import com.lightningkite.kiteui.models.Color")
-                appendLine("import kotlinx.serialization.json.JsonObject")
                 appendLine("import kotlin.uuid.Uuid")
                 appendLine()
 
@@ -96,29 +120,23 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
                     "${typeDoc ?: "A $layerType layer."}\n\nSee https://maplibre.org/maplibre-style-spec/layers/#$layerType",
                     ""
                 )
-                appendLine("data class $className(")
-                appendLine("    /** The id of the source this layer draws, as a key of `MapView.sources`. */")
-                appendLine("    override val source: Uuid,")
-                appendLine("    override var filter: Expression<Boolean>? = null,")
-                appendLine("    override var minZoom: Number? = null,")
-                appendLine("    override var maxZoom: Number? = null,")
+                appendLine("class $className<P> internal constructor(mapView: MapView, id: Uuid, source: Uuid) : Layer<P>(mapView, id, source, \"$layerType\") {")
+                if (filterable) {
+                    appendKdoc(
+                        "${filterDoc ?: "Only features matching the filter are displayed."}\n\nSee https://maplibre.org/maplibre-style-spec/layers/#filter",
+                        "    "
+                    )
+                    appendLine("    var filter: LayerValue<Boolean, P>? by filter()")
+                }
                 for (property in layerProperties) {
+                    val native = if (property.supportedEverywhere) "" else ", native = false"
+                    appendLine()
                     appendKdoc(property.kdoc(), "    ")
-                    appendLine("    var ${property.kotlinName}: Expression<${property.kotlinType(enums)}>? = null,")
+                    appendLine(
+                        "    var ${property.kotlinName}: LayerValue<${property.kotlinType(enums)}, P>? by " +
+                            "${property.group}(\"${property.name}\", \"${property.cocoaName}\"$native)"
+                    )
                 }
-                appendLine(") : Layer {")
-                appendLine("    override fun toJson(): JsonObject = layerJson(")
-                appendLine("        paint = mapOf(")
-                for (property in layerProperties.filter { it.group == "paint" }) {
-                    appendLine("            \"${property.name}\" to ${property.kotlinName},")
-                }
-                appendLine("        ),")
-                appendLine("        layout = mapOf(")
-                for (property in layerProperties.filter { it.group == "layout" }) {
-                    appendLine("            \"${property.name}\" to ${property.kotlinName},")
-                }
-                appendLine("        ),")
-                appendLine("    )")
                 for (enum in nestedEnums) {
                     appendLine()
                     appendEnum(enum, "    ")
@@ -171,6 +189,9 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
         val spec: Map<String, Any?>,
         /** The names of all properties of [layerType], to avoid shortening one into another. */
         layerPropertyNames: Set<String>,
+        cocoaConventions: Map<String, Map<String, Any?>>,
+        /** The MapLibre version in use per `sdk-support` platform key. */
+        versions: Map<String, String>,
     ) {
         val type = spec["type"] as String
 
@@ -181,6 +202,20 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
         val shortName = name.removePrefix("$layerType-").takeUnless { it != name && it in layerPropertyNames } ?: name
 
         val kotlinName = camelCase(shortName)
+
+        /**
+         * The key of the property on iOS's `MLN*StyleLayer`, which renames some properties. Renames to
+         * `is-*` only change the getter's name, so they're dropped here like MapLibre Native does.
+         */
+        val cocoaName: String = run {
+            val renamed = when (val convention = cocoaConventions["${group}_$layerType"]?.get(name)) {
+                null -> name
+                is String -> convention
+                is Map<*, *> -> convention["name"] as String
+                else -> error("Unexpected Cocoa convention for $name: $convention")
+            }
+            camelCase(renamed.removePrefix("is-"))
+        }
 
         val enumKey = when {
             shortName.startsWith("icon-") -> shortName.removePrefix("icon-")
@@ -198,12 +233,19 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
         @Suppress("UNCHECKED_CAST")
         private val basicSupport = (spec["sdk-support"] as? Map<String, Map<String, Any?>>)?.get("basic functionality")
 
-        /** Platforms whose basic support is an issue link rather than a version. */
+        /**
+         * Platforms without basic support in the versions in use: missing, an issue link rather than a
+         * version, or a later version.
+         */
         val unsupportedOn = listOf("js" to "Web", "android" to "Android", "ios" to "iOS")
-            .filter { (key, _) -> basicSupport?.get(key).toString().startsWith("http") }
+            .filter { (key, _) ->
+                val since = basicSupport?.get(key)?.toString()?.let(::parseVersion) ?: return@filter true
+                compareVersions(since, parseVersion(versions.getValue(key)) ?: error("Invalid $key version")) > 0
+            }
             .map { it.second }
 
         val supportedAnywhere get() = unsupportedOn.size < 3
+        val supportedEverywhere get() = unsupportedOn.isEmpty()
 
         fun kotlinType(enums: Map<String, StyleEnum>): String = when (type) {
             "number" -> "Number"
@@ -245,7 +287,10 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
                 "data-constant" -> add("Can't depend on feature data")
                 "color-ramp" -> add("Evaluated per point along the line with `lineProgress()`")
             }
-            if (unsupportedOn.isNotEmpty()) add("**Not supported on ${unsupportedOn.joinToString()}**")
+            if (unsupportedOn.isNotEmpty()) {
+                add("**Not supported on ${unsupportedOn.joinToString()}**")
+                add("Setting this re-adds the layer, since it can't be set on the live layer on every platform.")
+            }
         }.joinToString("\n\n")
     }
 
@@ -256,13 +301,28 @@ abstract class GenerateMapLibreLayerTypes : DefaultTask() {
         /** The property whose enum `AnchorOffset.anchor` uses. */
         const val ANCHOR_OFFSET_ANCHOR_PROPERTY = "text-anchor"
 
-        const val HEADER = "// Generated by GenerateMapLibreStyle from the MapLibre style spec. Do not edit."
+        /** The layer types drawing features from a source, which can be filtered. */
+        val FILTERABLE_LAYER_TYPES = setOf("circle", "fill", "fill-extrusion", "heatmap", "line", "symbol")
+
+        const val HEADER = "// Generated by GenerateMapLibreLayerTypes from the MapLibre style spec. Do not edit."
 
         fun layerClassName(layerType: String) = pascalCase(layerType) + "Layer"
         fun pascalCase(name: String) =
             name.split('-', '_').joinToString("") { it.replaceFirstChar(Char::uppercaseChar) }
 
         fun camelCase(name: String) = pascalCase(name).replaceFirstChar(Char::lowercaseChar)
+
+        /** Parses a version like `6.2.0`, or returns null if it isn't one (e.g. an issue link). */
+        fun parseVersion(version: String): List<Int>? =
+            version.split('.').map { it.toIntOrNull() ?: return null }
+
+        fun compareVersions(a: List<Int>, b: List<Int>): Int {
+            for (i in 0 until maxOf(a.size, b.size)) {
+                val difference = a.getOrElse(i) { 0 } - b.getOrElse(i) { 0 }
+                if (difference != 0) return difference
+            }
+            return 0
+        }
 
         fun formatJson(value: Any?): String = when (value) {
             is String -> "\"$value\""

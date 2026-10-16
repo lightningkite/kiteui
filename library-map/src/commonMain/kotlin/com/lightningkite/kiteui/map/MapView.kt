@@ -22,7 +22,7 @@ expect class MapView(
 
     override var style: Style
     val sources: MutableMap<Uuid, GeoJsonObject>
-    val layers: MutableMap<Uuid, Layer?>
+    val layers: MutableMap<Uuid, Layer<*>?>
 
     val camera: Camera
 }
