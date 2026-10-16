@@ -63,16 +63,21 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     public open fun defaultLayoutParams(): LayoutParams =
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
+    private var opacityAnimator: ValueAnimator? = null
+
     actual override var opacity: Double = 1.0
         set(value) {
             field = value
+            opacityAnimator?.cancel()
+            opacityAnimator = null
             if (animationsEnabled) {
-                ValueAnimator.ofFloat(native.alpha, value.toFloat()).apply {
+                opacityAnimator = ValueAnimator.ofFloat(native.alpha, value.toFloat()).apply {
                     duration = theme.transitionDuration.inWholeMilliseconds
                     addUpdateListener {
                         native.alpha = animatedValue as Float
                     }
-                }.start()
+                    start()
+                }
             } else {
                 native.alpha = value.toFloat()
             }
