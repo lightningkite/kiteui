@@ -6,7 +6,9 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
-import com.lightningkite.kiteui.telemetry.TelemetryContext
+import com.lightningkite.kiteui.telemetry.screenLoad
+import com.lightningkite.kiteui.telemetry.telemetryAttributes
+import com.lightningkite.services.telemetry.TelemetryAttributeElement
 import com.lightningkite.kiteui.utils.OrderedKeyedList
 import com.lightningkite.reactive.context.StatusListener
 import com.lightningkite.reactive.context.onRemove
@@ -480,7 +482,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
             override fun watchForegroundProcess(status: Reactive<*>): Release =
                 this@NativeElementCommonCode.watchForegroundProcess(status)
         },
-        TelemetryContext(element = asNativeElementOrFail())
+        TelemetryAttributeElement(context.telemetryAttributes, null)
     )
 
     public var fullyStarted: Boolean = false
@@ -633,7 +635,13 @@ public abstract class NativeElementCommonCode internal constructor(override val 
         private val processes = HashSet<Reactive<*>>()
 
         private var exceptionCount = 0
+        private val screenLoad = if (foreground) null else context.screenLoad
         private var notReadyCount = 0
+            set(value) {
+                if (field == 0 && value > 0) screenLoad?.startedLoading()
+                if (field > 0 && value == 0) screenLoad?.finishedLoading()
+                field = value
+            }
 
         private var releaseExceptionHandler: Release? = null
 
@@ -705,6 +713,8 @@ public abstract class NativeElementCommonCode internal constructor(override val 
 
             val release = status.addAndRunListener {
                 onMainThread {
+                    // A callback posted from another thread can land after release() already uncounted this process.
+                    if (status !in processes) return@onMainThread
                     val s = status.state.severity
                     if (prevSeverity != s) {    // severity changed
                         when (prevSeverity) {

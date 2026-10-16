@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.telemetry.span
+import com.lightningkite.kiteui.telemetry.ClientContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
@@ -15,8 +15,16 @@ import com.lightningkite.kiteui.views.important
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
+import com.lightningkite.services.Namespaced
+import com.lightningkite.services.SettingContext
+import com.lightningkite.services.telemetry.telemetryTrace
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
+
+private object Demo : Namespaced {
+    override val name: String = "demo"
+    override val context: SettingContext = ClientContext
+}
 
 @Routable("/internal/telemetry-test")
 object TelemetryTestPage : Page {
@@ -25,11 +33,11 @@ object TelemetryTestPage : Page {
         val result = Signal("")
         scrolling.col {
             h1("Telemetry Test")
-            text("Buttons for manually testing telemetry traces, spans, and metrics. Check Grafana after clicking.")
+            text("Buttons for manually testing telemetry traces, spans, and metrics. Check the server's telemetry output after clicking.")
             separator()
 
             h2("Action Spans")
-            text("Each button click creates an interaction span as a child of the page span.")
+            text("Each button click creates an action span, the root of its own trace.")
             row {
                 important.button {
                     text("+")
@@ -64,29 +72,29 @@ object TelemetryTestPage : Page {
             }
 
             separator()
-            h2("Custom span()")
+            h2("Custom spans")
             text("Sequential custom spans become children of the action span.")
             button {
                 text("3 Sequential Spans")
                 onClick("Multi-Step Work", frequencyCap = 0.milliseconds) {
-                    span("validate") { delay(50) }
-                    span("transform") { delay(100) }
-                    span("save") { delay(75) }
+                    Demo.telemetryTrace("validate") { delay(50) }
+                    Demo.telemetryTrace("transform") { delay(100) }
+                    Demo.telemetryTrace("save") { delay(75) }
                     result.value = "3 spans done"
                 }
             }
 
             separator()
-            h2("Nested span()")
+            h2("Nested spans")
             text("Nested spans form a parent-child hierarchy. HTTP inside a span becomes its child.")
             button {
                 text("Nested Spans + HTTP")
                 onClick("Nested Work", frequencyCap = 0.milliseconds) {
-                    span("outer-work") {
-                        span("inner-fetch") {
+                    Demo.telemetryTrace("outer-work") {
+                        Demo.telemetryTrace("inner-fetch") {
                             fetch("/", method = HttpMethod.GET)
                         }
-                        span("inner-compute") {
+                        Demo.telemetryTrace("inner-compute") {
                             delay(30)
                         }
                     }
@@ -96,12 +104,12 @@ object TelemetryTestPage : Page {
 
             separator()
             h2("Error Spans")
-            text("Errors set STATUS_CODE_ERROR on the span and propagate up through nested spans.")
+            text("A span whose block throws is recorded with outcome Error.")
             button {
                 text("Span With Error")
                 onClick("Failing Work", frequencyCap = 0.milliseconds) {
                     try {
-                        span("will-fail") {
+                        Demo.telemetryTrace("will-fail") {
                             error("intentional test error")
                         }
                     } catch (_: Exception) {

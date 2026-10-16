@@ -7,7 +7,16 @@ import com.lightningkite.kiteui.models.LiveRegionMode
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.kiteui.telemetry.ScreenLoad
+import com.lightningkite.kiteui.telemetry.Telemetry
+import com.lightningkite.kiteui.telemetry.ClientContext
+import com.lightningkite.kiteui.telemetry.screenLoad
+import com.lightningkite.kiteui.telemetry.telemetryAttributes
 import com.lightningkite.reactive.context.awaitOnce
+import com.lightningkite.services.telemetry.TelemetryAttributeElement
+import com.lightningkite.services.telemetry.TelemetryKeys
+import com.lightningkite.services.telemetry.telemetryAttributesOf
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
@@ -15,6 +24,7 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
         debugName = "navigatorView"
         Element.Debugger.debugTarget = this
         var lastStack = navigator.stack.value
+        var visit: Job? = null
         swapping(
             transition = {
                 val newStack = navigator.stack.value
@@ -29,8 +39,21 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
             views = { screen ->
                 with(split()) {
                     context.pageNavigator = navigator
-                    if (screen != null)
+                    visit?.cancel()
+                    if (screen != null) {
+                        val load = ScreenLoad()
+                        context.screenLoad = load
+                        context.telemetryAttributes += telemetryAttributesOf(
+                            TelemetryKeys.App.screenName to (screen::class.simpleName ?: "Unknown"),
+                            TelemetryKeys.App.screenId to Telemetry.spanId(),
+                        )
+                        val telemetry = ClientContext.telemetryBackend as? Telemetry
+                        if (telemetry != null) visit = this@swapView.launch(TelemetryAttributeElement(context.telemetryAttributes, null)) {
+                            telemetry.recordScreenVisit(navigator, load)
+                        }
                         with(screen) { themed(MainContentSemantic).asMain.padded.render() }
+                        load.finishedRendering()
+                    }
                     // Tell assistive technology the screen changed, which it can't otherwise
                     // notice. Deliberately not requestFocus: keyboard focus landing on the new
                     // page's first field pops the soft keyboard on Android and iOS. Pages that

@@ -1,11 +1,11 @@
 package com.lightningkite.kiteui.telemetry
 
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
+import com.lightningkite.kiteui.PlatformStorage
+import platform.Foundation.NSUserDefaults
 
 // Only catches Kotlin/Native exceptions, not ObjC/Swift crashes.
 // setUnhandledExceptionHook replaces the default termination behavior,
-// so we must explicitly terminate after flushing.
+// so we must explicitly terminate after recording.
 @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
 internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     val previous = kotlin.native.getUnhandledExceptionHook()
@@ -22,10 +22,7 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     }
 }
 
-internal actual fun blockingFlush(exporter: TelemetryExporter) {
-    try {
-        runBlocking { withTimeout(3_000) { exporter.flushAll() } }
-    } catch (_: Exception) {
-        // Best effort — if network is unreachable or times out, data is lost.
-    }
+internal actual fun writeDurably(key: String, value: String) {
+    PlatformStorage.set(key, value)
+    NSUserDefaults.standardUserDefaults.synchronize()
 }

@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### Telemetry (breaking)
+
+- **Telemetry now goes through your own server, recorded with Service Abstractions' API.** `Telemetry` is a
+  `TelemetryBackend` built with an `upload` function (normally your generated client's
+  `clientTelemetry.ingest`, from Lightning Server's `ClientTelemetryEndpoints`) instead of an OTLP endpoint
+  and headers, so no telemetry token ships in the app. **Revoke any Grafana/OTLP token that shipped in a
+  client build.** The server adds `user.id` and forwards to its own backend. KiteUI now depends on
+  `com.lightningkite.services:basis`.
+- Records are saved to device storage and uploaded oldest first, so telemetry recorded offline or just
+  before a crash is sent on a later run. The `sendBeacon` crash path is gone.
+- Spans are short: requests, actions (`action.<title>`, with their requests as children) and screen loads
+  (`screen.load`, ending when the screen is usable). The page-long `page: X` spans and foreground session
+  span are gone. Logs and errors are labelled with the current screen rather than a guessed trace.
+- Removed: `TelemetryConfig`, the public `span()` function (use `Owner.telemetryTrace`, with
+  `ClientContext` as the owner's context), `exceptionAttributes` (use the new
+  `ElementContext.telemetryAttributes`), and `ActionInstrumentation`/`actionInstrumentors` (replaced by
+  `actionInterceptors`, which wrap the action's run). `crash.fingerprint` is now `error.fingerprint`, and
+  `page.name` is `app.screen.name`. See `docs/TELEMETRY.md` for setup and dashboard migration.
+
 ### Navigation
 
 - **Showing a page no longer focuses its first field.** `navigatorView` used to request focus on the
