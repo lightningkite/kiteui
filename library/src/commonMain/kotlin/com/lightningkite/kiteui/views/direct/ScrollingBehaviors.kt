@@ -19,6 +19,14 @@ public interface ScrollingBehaviors {
     public var ignoreInteraction: Boolean
 
     /**
+     * Whether the user can scroll this by touch, mouse wheel, trackpad or keyboard. [scrollTo] still works while
+     * it's off. Turning it off doesn't stop a drag or fling already under way; it applies from the next gesture.
+     */
+    public var userScrollEnabled: Boolean
+        get() = true
+        set(value) {}
+
+    /**
      * Should not interrupt animations.
      */
     public fun scrollToKeepAnimations(x: Double, y: Double)

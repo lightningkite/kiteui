@@ -168,7 +168,13 @@ public class ScrollView(
         set(value) {
             super.ignoreInteraction = value
             scroller.extensionIgnoreInteraction = value
-            scroller.scrollEnabled = !value
+            scroller.scrollEnabled = !value && userScrollEnabled
+        }
+
+    override var userScrollEnabled: Boolean = true
+        set(value) {
+            field = value
+            scroller.scrollEnabled = value && !ignoreInteraction
         }
     override val viewport: Reactive<Rect> = (sizeChange + scroll).lensListenable {
         val (ox, oy) = scroller.contentOffset.useContents { x to y }

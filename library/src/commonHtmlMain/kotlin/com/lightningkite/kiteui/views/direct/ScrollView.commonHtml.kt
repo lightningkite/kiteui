@@ -36,6 +36,8 @@ public expect class ScrollingBehaviorImpl constructor(
 
      override var ignoreInteraction: Boolean
 
+     override var userScrollEnabled: Boolean
+
      override fun scrollTo(left: Double, top: Double, animated: Boolean)
 
      override fun scrollTo(element: Element, horizontal: Align, vertical: Align, animated: Boolean)

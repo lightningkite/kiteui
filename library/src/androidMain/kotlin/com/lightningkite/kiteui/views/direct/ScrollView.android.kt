@@ -43,6 +43,7 @@ public class ScrollView(
         }
         val touches = HashSet<Int>()
         setOnTouchListener { v, event ->
+            if (!userScrollEnabled && event.actionMasked == MotionEvent.ACTION_DOWN) return@setOnTouchListener false
             vx.addMovement(event)
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
@@ -254,6 +255,11 @@ public class ScrollView(
 
     override var snapToElements: Pair<Align?, Align?> = null to null
     override var scrollSnapStop: Boolean = false
+    override var userScrollEnabled: Boolean
+        get() = native.userScrollEnabled
+        set(value) {
+            native.userScrollEnabled = value
+        }
     private val _directlyInteractingWithScroller = Signal(false)
     override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
