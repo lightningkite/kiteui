@@ -103,7 +103,6 @@ class InstrumentFetchTest {
         val span = t.recordedSpans().single()
         assertEquals("ProceedCapture", span.error?.type)
         assertEquals("example.com", span.attributes[TelemetryKeys.Server.address])
-        assertEquals(setOf("server.address", "http.response.status_code"), span.dimensions)
     }
 
     @Test

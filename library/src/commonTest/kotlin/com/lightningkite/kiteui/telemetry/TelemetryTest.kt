@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.HttpMethod
 import com.lightningkite.kiteui.httpHeaders
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.services.telemetry.MetricUnit
-import com.lightningkite.services.telemetry.RecordedMetric
 import com.lightningkite.services.telemetry.RecordedSpan
 import com.lightningkite.services.telemetry.TelemetryAttributeElement
 import com.lightningkite.services.telemetry.TelemetryKey
@@ -63,17 +62,16 @@ class TelemetryTest {
     }
 
     @Test
-    fun spanCarriesAmbientAndEnrichedAttributesAndDimensionNames() = runTest {
+    fun spanCarriesAmbientAndEnrichedAttributes() = runTest {
         val t = testTelemetry()
         val step = TelemetryKey.OfString("checkout.step")
         telemetryAttributes(screenAttributes) {
-            t.owner("checkout").telemetryTrace("pay", dimensions = setOf(step)) { it.enrich(step to "card") }
+            t.owner("checkout").telemetryTrace("pay") { it.enrich(step to "card") }
         }
 
         val span = t.recordedSpans().single()
         assertEquals("HomePage", span.attributes[TelemetryKeys.App.screenName])
         assertEquals("card", span.attributes[step])
-        assertEquals(setOf("checkout.step"), span.dimensions)
     }
 
     @Test
@@ -99,10 +97,10 @@ class TelemetryTest {
     }
 
     @Test
-    fun unsampledSessionStillRecordsSpansForRed() = runTest {
+    fun unsampledSessionRecordsNoSpans() = runTest {
         val t = testTelemetry(traceSamplingRate = 0.0)
         t.owner("checkout").telemetryTrace("pay") {}
-        assertEquals(false, t.recordedSpans().single().sampled)
+        assertTrue(t.recordedSpans().isEmpty())
     }
 
     @Test
@@ -120,15 +118,9 @@ class TelemetryTest {
     }
 
     @Test
-    fun counterProjectsAmbientAttributesToItsDimensions() = runTest {
+    fun clientsRecordNoMetrics() {
         val t = testTelemetry()
-        val counter = t.owner("checkout").telemetryCounter("abandoned", MetricUnit.Occurrences, setOf(TelemetryKeys.App.screenName))
-        telemetryAttributes(screenAttributes) { counter.increment(1.0) }
-
-        val metric = t.recordedMetrics().single()
-        assertEquals(RecordedMetric.Kind.Counter, metric.kind)
-        assertEquals("HomePage", metric.attributes[TelemetryKeys.App.screenName])
-        assertNull(metric.attributes[TelemetryKeys.App.screenId], "only dimensions become metric attributes")
+        assertFailsWith<UnsupportedOperationException> { t.owner("checkout").telemetryCounter("abandoned", MetricUnit.Occurrences, setOf()) }
     }
 
     @Test

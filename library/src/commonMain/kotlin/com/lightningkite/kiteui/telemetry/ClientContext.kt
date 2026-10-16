@@ -18,8 +18,8 @@ import kotlinx.serialization.modules.SerializersModule
  * Checkout.telemetryTrace("submit") { ... }
  * ```
  *
- * Its [telemetryBackend] is the installed [Telemetry], or [TelemetryBackend.Noop] when none is. Counters and
- * histograms capture the backend when they're created, so create them after [Telemetry.install].
+ * Its [telemetryBackend] is the installed [Telemetry], or [TelemetryBackend.Noop] when none is. Clients record
+ * spans and logs only; metric instruments throw.
  */
 public object ClientContext : SettingContext {
     // Unused on clients; the server identifies the app from the batch's resource attributes.

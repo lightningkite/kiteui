@@ -7,7 +7,7 @@ import kotlinx.coroutines.CompletableDeferred
 
 /**
  * Ambient telemetry attributes for everything rendered in this context: every coroutine an element launches
- * carries them, so spans and metrics recorded there do too. [com.lightningkite.kiteui.views.l2.navigatorView]
+ * carries them, so spans recorded there do too. [com.lightningkite.kiteui.views.l2.navigatorView]
  * adds the screen's name and visit id; set app-wide attributes on the root context.
  */
 public var ElementContext.telemetryAttributes: TelemetryAttributes by contextAddon(TelemetryAttributes.empty)

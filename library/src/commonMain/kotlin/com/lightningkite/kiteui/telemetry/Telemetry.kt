@@ -30,7 +30,6 @@ import com.lightningkite.services.telemetry.LogLevel
 import com.lightningkite.services.telemetry.MetricUnit
 import com.lightningkite.services.telemetry.RecordedError
 import com.lightningkite.services.telemetry.RecordedLog
-import com.lightningkite.services.telemetry.RecordedMetric
 import com.lightningkite.services.telemetry.RecordedSpan
 import com.lightningkite.services.telemetry.TelemetryAttributeElement
 import com.lightningkite.services.telemetry.TelemetryAttributes
@@ -67,26 +66,19 @@ import com.lightningkite.kiteui.LogLevel as KiteUiLogLevel
  * val telemetry = Telemetry(
  *     serviceName = "my-app",
  *     serviceVersion = Build.version,
- *     upload = { batch ->
- *         try {
- *             api.clientTelemetry.ingest(batch)
- *         } catch (e: LsErrorException) {
- *             // The server refused this batch for good; returning drops it. Anything thrown is retried.
- *             if (e.error.http !in 400..499 || e.error.http in setOf(401, 408, 429)) throw e
- *         }
- *     },
+ *     upload = telemetryUpload { api.clientTelemetry.ingest(it) }, // from lightning-server-kiteui
  *     tracePropagationHosts = listOf("api.example.com"),
  * )
  * telemetry.install(context, navigator)
  * ```
  *
  * Once installed, requests, actions and screen visits are traced, logs at [minLogLevel] and above and
- * reported exceptions are recorded, and records are kept on the device until uploaded.
+ * reported exceptions are recorded, and records are kept on the device until uploaded. Clients record no
+ * metrics: they're untrusted, and metric cardinality drives observability cost.
  *
  * @param upload sends one batch. Throw to keep it and retry later with backoff; return to be done with it,
  *   whether it was delivered or permanently refused.
- * @param traceSamplingRate the fraction of sessions whose spans are exported. Unsampled spans still count
- *   toward the server's RED metrics.
+ * @param traceSamplingRate the fraction of sessions whose spans are recorded.
  * @param tracePropagationHosts hosts (and their subdomains) that receive a `traceparent` header, linking their spans to ours.
  */
 public class Telemetry(
@@ -189,9 +181,9 @@ public class Telemetry(
         fetchInterceptors.add(fetchInterceptor)
         actionInterceptors.add(actionInterceptor)
 
-        enqueue {
+        if (sampled) enqueue {
             add(RecordedSpan(traceId(), spanId(), null, "app", "start", constructedAt, Clock.System.now(),
-                TelemetryAttributes.empty, setOf(), RecordedSpan.Outcome.Ok, null, sampled))
+                TelemetryAttributes.empty, RecordedSpan.Outcome.Ok, null))
         }
 
         cleanups += AppState.inForeground.addListener {
@@ -210,7 +202,6 @@ public class Telemetry(
             if (code != 0.toShort()) {
                 val attributes = telemetryAttributesOf(connectivityIssueCode to code.toLong())
                 enqueue {
-                    add(RecordedMetric("app", "connectivity.issues", MetricUnit.Occurrences, RecordedMetric.Kind.Counter, 1.0, attributes))
                     add(RecordedLog(Clock.System.now(), LogLevel.Warn, "Connectivity issue: status code $code", currentScreen + attributes))
                 }
             }
@@ -287,9 +278,9 @@ public class Telemetry(
             error = e.toRecordedError()
             throw e
         } finally {
-            enqueue {
+            if (sampled) enqueue {
                 add(RecordedSpan(span.traceId, span.spanId, parent?.spanId, owner.name, opName, start, Clock.System.now(),
-                    attributes + trace.enriched, dimensions.mapTo(HashSet()) { it.name }, outcome, error, sampled))
+                    attributes + trace.enriched, outcome, error))
             }
         }
     }
@@ -303,19 +294,11 @@ public class Telemetry(
         }
     }
 
-    override fun counter(owner: Namespaced, name: String, unit: MetricUnit, dimensions: Set<TelemetryKey<*>>): Counter = object : Counter {
-        override suspend fun increment(amount: Double) {
-            val attributes = currentTelemetryAttributes().filterKeys { it in dimensions }
-            enqueue { add(RecordedMetric(owner.name, name, unit, RecordedMetric.Kind.Counter, amount, attributes)) }
-        }
-    }
+    override fun counter(owner: Namespaced, name: String, unit: MetricUnit, dimensions: Set<TelemetryKey<*>>): Counter =
+        throw UnsupportedOperationException("Clients don't record metrics; record a span or log instead.")
 
-    override fun histogram(owner: Namespaced, name: String, unit: MetricUnit, dimensions: Set<TelemetryKey<*>>): Histogram = object : Histogram {
-        override suspend fun record(amount: Double) {
-            val attributes = currentTelemetryAttributes().filterKeys { it in dimensions }
-            enqueue { add(RecordedMetric(owner.name, name, unit, RecordedMetric.Kind.Histogram, amount, attributes)) }
-        }
-    }
+    override fun histogram(owner: Namespaced, name: String, unit: MetricUnit, dimensions: Set<TelemetryKey<*>>): Histogram =
+        throw UnsupportedOperationException("Clients don't record metrics; record a span or log instead.")
 
     override fun inFlight(owner: Namespaced, name: String, dimensions: Set<TelemetryKey<*>>): InFlight =
         throw UnsupportedOperationException("In-flight gauges aren't supported on clients.")
@@ -356,7 +339,7 @@ public class Telemetry(
             put(TelemetryKeys.Url.path, "/" + afterScheme.substringAfter("/", ""))
             put(TelemetryKeys.Server.address, host)
         }
-        return http.telemetryTrace(method.name, attributes, setOf(TelemetryKeys.Server.address, TelemetryKeys.Http.responseStatusCode)) { trace ->
+        return http.telemetryTrace(method.name, attributes) { trace ->
             val outHeaders = httpHeaders(headers)
             if (tracePropagationHosts.any { host == it || host.endsWith(".$it") }) {
                 val span = currentCoroutineContext()[ClientSpan]!!
@@ -375,7 +358,7 @@ public class Telemetry(
         event("app.screen.view_start", screenAttributes)
         try {
             try {
-                screen.telemetryTrace("load", dimensions = setOf(TelemetryKeys.App.screenName)) {
+                screen.telemetryTrace("load") {
                     withTimeoutOrNull(60.seconds) { load.usable.await() } ?: throw ScreenLoadTimeout()
                 }
             } catch (_: ScreenLoadTimeout) {

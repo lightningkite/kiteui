@@ -5,9 +5,9 @@
 ### Telemetry (breaking)
 
 - **Telemetry now goes through your own server, recorded with Service Abstractions' API.** `Telemetry` is a
-  `TelemetryBackend` built with an `upload` function (normally your generated client's
-  `clientTelemetry.ingest`, from Lightning Server's `ClientTelemetryEndpoints`) instead of an OTLP endpoint
-  and headers, so no telemetry token ships in the app. **Revoke any Grafana/OTLP token that shipped in a
+  `TelemetryBackend` built with an `upload` function (normally
+  `telemetryUpload { api.clientTelemetry.ingest(it) }`, with lightning-server-kiteui's helper and Lightning
+  Server's `ClientTelemetryEndpoints`) instead of an OTLP endpoint and headers, so no telemetry token ships in the app. **Revoke any Grafana/OTLP token that shipped in a
   client build.** The server adds `user.id` and forwards to its own backend. KiteUI now depends on
   `com.lightningkite.services:basis`.
 - Records are saved to device storage and uploaded oldest first, so telemetry recorded offline or just
@@ -15,6 +15,10 @@
 - Spans are short: requests, actions (`action.<title>`, with their requests as children) and screen loads
   (`screen.load`, ending when the screen is usable). The page-long `page: X` spans and foreground session
   span are gone. Logs and errors are labelled with the current screen rather than a guessed trace.
+- **Clients record no metrics.** `counter`/`histogram` throw, `http.client.request.duration`,
+  `navigation.page_views`, `action.invocations` and `connectivity.issues` are gone (connectivity issues remain
+  WARN logs), and the server derives no metrics from client spans. Clients are untrusted, and metric
+  cardinality drives observability cost. Unsampled sessions record no spans.
 - Removed: `TelemetryConfig`, the public `span()` function (use `Owner.telemetryTrace`, with
   `ClientContext` as the owner's context), `exceptionAttributes` (use the new
   `ElementContext.telemetryAttributes`), and `ActionInstrumentation`/`actionInstrumentors` (replaced by

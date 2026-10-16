@@ -22,18 +22,15 @@ Client, after regenerating the SDK so it includes `clientTelemetry.ingest`:
 val telemetry = Telemetry(
     serviceName = "my-app",
     serviceVersion = Build.version,
-    upload = { batch ->
-        try {
-            api.clientTelemetry.ingest(batch)
-        } catch (e: LsErrorException) {
-            // The server refused this batch for good; returning drops it. Anything thrown is retried.
-            if (e.error.http !in 400..499 || e.error.http in setOf(401, 408, 429)) throw e
-        }
-    },
+    upload = telemetryUpload { api.clientTelemetry.ingest(it) },
     tracePropagationHosts = listOf("api.example.com"),
 )
 telemetry.install(context, navigator)
 ```
+
+`upload` sends one batch: throwing keeps the batch for a retry, returning drops it. `telemetryUpload` (from
+lightning-server-kiteui) drops batches the server refused for good (a 4xx other than 401, 408 or 429) and
+retries everything else.
 
 Upload goes through your generated client so it carries the user's `Authorization` header. Anonymous
 uploads are accepted and simply have no `user.id`. The user is whoever is signed in when a batch is
@@ -53,26 +50,25 @@ Install before the first `navigatorView` renders; screens shown earlier aren't r
 | Logs | `Log` calls at `minLogLevel` and above (default `Warn`), labelled with the current screen |
 | Errors | Reported exceptions and exception-handler errors, as ERROR logs with a fingerprint |
 | Crashes | Uncaught exceptions, as ERROR logs with `exception.escaped = true`, saved to disk before the process dies |
-| Lifecycle | Events `app.foreground` / `app.background`; connectivity issues as `app` metric `connectivity.issues` plus a WARN log |
+| Lifecycle | Events `app.foreground` / `app.background`; connectivity issues as WARN logs |
 
-Every span also feeds the server's RED metrics, `<owner>.client.operation.count` and
-`<owner>.client.operation.duration`, tagged with `operation`, `outcome` (`ok`, `error`, `cancelled`) and the
-span's dimensions (e.g. `app.screen.name` for screen loads, `server.address` and status code for requests).
-Page views are the count of `screen.load`.
+Clients record no metrics, and the server turns none of their spans into metrics: clients are untrusted, and
+metric cardinality drives cost on observability platforms. Query spans and logs instead (e.g. page views are
+`screen.load` spans).
 
 ### Traces
 
 A trace starts at an action, a screen load, or a request made outside any span. Requests inside an action are
 its children, and with `tracePropagationHosts` the server's request span continues the same trace.
 
-Sampling is decided once per session (`traceSamplingRate`). Unsampled spans aren't exported, but still count
-toward RED metrics.
+Sampling is decided once per session (`traceSamplingRate`); unsampled sessions record no spans. The server
+links its spans to the client's but samples them by its own rules.
 
 ### Screen attributes
 
 `navigatorView` sets `app.screen.name` and a per-visit `app.screen.id` on its screen's `ElementContext`. Every
-coroutine an element launches carries them, including actions started from it, so spans and metrics recorded
-there are labelled with the screen. Add app-wide attributes to the root context:
+coroutine an element launches carries them, including actions started from it, so spans recorded there are
+labelled with the screen. Add app-wide attributes to the root context:
 
 ```kotlin
 context.telemetryAttributes += telemetryAttributesOf(TelemetryKey.OfString("app.flavor") to "beta")
@@ -94,11 +90,11 @@ Checkout.telemetryTrace("submit") { trace ->
 }
 ```
 
-Counters and histograms (`Checkout.telemetryCounter(...)`) work too; create them after `install`, since they
-capture the backend when created. Gauges and in-flight counters aren't supported on clients.
+Metric instruments (`telemetryCounter` and the rest) throw on clients.
 
-Owner and metric names must match `[A-Za-z][A-Za-z0-9_.-]{0,63}`, and a server accepts at most 500 distinct
-ones per process.
+The server rejects a batch (400, so it's dropped) if an owner or attribute name doesn't match
+`[A-Za-z][A-Za-z0-9_.-]{0,63}`, a record has more than 128 attributes, or an attribute value is longer than
+4096 characters.
 
 ## Delivery
 
@@ -108,7 +104,7 @@ backgrounded or hidden, and on a crash. Saved batches are uploaded oldest first 
 uploads back off from 30 seconds to 5 minutes.
 
 The saved outbox is capped at 512 KB; when it overflows, the oldest batches are dropped and the next batch
-reports how many records were lost as the `telemetry.dropped` metric.
+carries a WARN log saying how many records were lost (`telemetry.dropped_records`).
 
 On the web, tabs share one outbox, so concurrent tabs can occasionally duplicate or lose a batch.
 
@@ -134,9 +130,11 @@ The fingerprint becomes the record's `error.fingerprint`, the same attribute ser
 
 1. Revoke and rotate any Grafana or OTLP token that shipped in a client build. It is public.
 2. Mount `ClientTelemetryEndpoints` on the server and regenerate the SDK.
-3. Replace `Telemetry(TelemetryConfig(endpoint, headers, ...))` with the constructor above.
+3. Replace `Telemetry(TelemetryConfig(endpoint, headers, ...))` with the constructor above. Custom
+   `counter`/`histogram` calls must become spans or logs.
 4. Replace `span("x") { }` with `SomeOwner.telemetryTrace("x") { }`. `exceptionAttributes` is gone; `user.id`
    comes from the server, and app-wide attributes go on the root `ElementContext.telemetryAttributes`.
 5. Update dashboards: `page.name` is now `app.screen.name`, `crash.fingerprint` is `error.fingerprint`, and
-   `http.client.request.duration`, `navigation.page_views` and `action.invocations` are replaced by the RED
-   metrics `http.client.operation.*`, `screen.client.operation.*` and `action.client.operation.*`.
+   the client metrics `http.client.request.duration`, `navigation.page_views`, `action.invocations` and
+   `connectivity.issues` are gone; use the `http.*`, `screen.load` and `action.*` spans and the connectivity
+   WARN logs.

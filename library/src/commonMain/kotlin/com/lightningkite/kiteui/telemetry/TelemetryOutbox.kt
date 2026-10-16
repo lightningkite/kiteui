@@ -3,12 +3,13 @@ package com.lightningkite.kiteui.telemetry
 import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.PlatformStorage
 import com.lightningkite.kiteui.suppressConnectivityIssues
-import com.lightningkite.services.telemetry.MetricUnit
+import com.lightningkite.services.telemetry.LogLevel
 import com.lightningkite.services.telemetry.RecordedLog
-import com.lightningkite.services.telemetry.RecordedMetric
 import com.lightningkite.services.telemetry.RecordedSpan
 import com.lightningkite.services.telemetry.TelemetryAttributes
 import com.lightningkite.services.telemetry.TelemetryBatch
+import com.lightningkite.services.telemetry.TelemetryKey
+import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CancellationException
@@ -35,7 +36,6 @@ internal class TelemetryOutbox(
     private val lock = SynchronizedObject()
     private val spans = ArrayList<RecordedSpan>()
     private val logs = ArrayList<RecordedLog>()
-    private val metrics = ArrayList<RecordedMetric>()
     private var droppedRecords = 0
     internal val batches: MutableList<TelemetryBatch> = load()
 
@@ -43,23 +43,21 @@ internal class TelemetryOutbox(
     private var retryAt = Instant.DISTANT_PAST
     private var retryDelay = firstRetryDelay
 
-    val bufferedRecords: Int get() = synchronized(lock) { spans.size + logs.size + metrics.size }
+    val bufferedRecords: Int get() = synchronized(lock) { spans.size + logs.size }
 
     fun add(span: RecordedSpan): Unit = synchronized(lock) { spans += span }
     fun add(log: RecordedLog): Unit = synchronized(lock) { logs += log }
-    fun add(metric: RecordedMetric): Unit = synchronized(lock) { metrics += metric }
 
     /** Moves buffered records into a new batch and saves the outbox. [durably] for the crash path, where the process is about to die. */
     fun persist(durably: Boolean = false): Unit = synchronized(lock) {
-        if (spans.isEmpty() && logs.isEmpty() && metrics.isEmpty() && droppedRecords == 0) return
+        if (spans.isEmpty() && logs.isEmpty() && droppedRecords == 0) return
         if (droppedRecords > 0) {
-            metrics += RecordedMetric("telemetry", "dropped", MetricUnit.Occurrences, RecordedMetric.Kind.Counter, droppedRecords.toDouble(), TelemetryAttributes.empty)
+            logs += RecordedLog(Clock.System.now(), LogLevel.Warn, "Dropped $droppedRecords telemetry records: the device's outbox was full", telemetryAttributesOf(droppedRecordsKey to droppedRecords.toLong()))
             droppedRecords = 0
         }
-        batches += TelemetryBatch(resource, Clock.System.now(), spans.toList(), logs.toList(), metrics.toList())
+        batches += TelemetryBatch(resource, Clock.System.now(), spans.toList(), logs.toList())
         spans.clear()
         logs.clear()
-        metrics.clear()
         save(durably)
     }
 
@@ -102,7 +100,7 @@ internal class TelemetryOutbox(
         var stored = json.encodeToString(serializer, batches)
         while (stored.length > MAX_STORED_CHARS && batches.size > 1) {
             val oldest = batches.removeAt(0)
-            droppedRecords += oldest.spans.size + oldest.logs.size + oldest.metrics.size
+            droppedRecords += oldest.spans.size + oldest.logs.size
             stored = json.encodeToString(serializer, batches)
         }
         // Failing to store telemetry must not break the app code that happened to record it.
@@ -128,6 +126,7 @@ internal class TelemetryOutbox(
         const val MAX_STORED_CHARS = 512 * 1024
         val firstRetryDelay: Duration = 30.seconds
         val maxRetryDelay: Duration = 5.minutes
+        private val droppedRecordsKey = TelemetryKey.OfLong("telemetry.dropped_records")
         private val json = Json { ignoreUnknownKeys = true }
         private val serializer = ListSerializer(TelemetryBatch.serializer())
     }

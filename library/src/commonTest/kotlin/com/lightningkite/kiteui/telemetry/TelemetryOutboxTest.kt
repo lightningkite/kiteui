@@ -58,8 +58,8 @@ class TelemetryOutboxTest {
 
         outbox.add(log("after"))
         outbox.persist()
-        val dropped = outbox.batches.flatMap { it.metrics }.filter { it.owner == "telemetry" && it.name == "dropped" }
-        assertTrue(dropped.sumOf { it.value } >= 1.0)
+        val dropped = outbox.batches.flatMap { it.logs }.filter { it.message.startsWith("Dropped ") }
+        assertTrue(dropped.isNotEmpty(), "the drop is reported as a log")
     }
 
     @Test
