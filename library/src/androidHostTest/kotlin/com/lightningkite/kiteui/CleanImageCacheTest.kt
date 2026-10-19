@@ -6,6 +6,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.Options
+import com.bumptech.glide.load.ResourceDecoder
+import com.bumptech.glide.load.engine.Resource
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
+import com.bumptech.glide.load.resource.bitmap.BitmapResource
 import com.bumptech.glide.load.data.DataFetcher
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.ModelLoader
@@ -19,9 +23,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.GraphicsMode
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 
@@ -35,35 +36,49 @@ import kotlin.test.assertEquals
  * Requests opt out of Glide's disk cache (DiskCacheStrategy.NONE) so the test only exercises the
  * in-memory cache that cleanImageCache()'s clearMemory() call is responsible for - disk eviction
  * happens on a background thread inside cleanImageCache() and isn't asserted on here.
+ *
+ * The fetched data is a plain marker object decoded by a fake decoder that builds the Bitmap
+ * directly, rather than real PNG bytes run through BitmapFactory: Robolectric's native image codecs
+ * differ by host OS (on the macOS CI runner BitmapFactory fails with "Failed to create image
+ * decoder with message 'unimplemented'"), and this test is about caching, not decoding.
  */
-private class CountingSource(val tag: String, val loadCount: AtomicInteger, val pngBytes: ByteArray)
+private class CountingSource(val tag: String, val loadCount: AtomicInteger)
 
-private class CountingFetcher(private val source: CountingSource) : DataFetcher<InputStream> {
-    override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream>) {
+private class CountedData
+
+private class CountingFetcher(private val source: CountingSource) : DataFetcher<CountedData> {
+    override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in CountedData>) {
         source.loadCount.incrementAndGet()
-        callback.onDataReady(ByteArrayInputStream(source.pngBytes))
+        callback.onDataReady(CountedData())
     }
 
     override fun cleanup() {}
     override fun cancel() {}
-    override fun getDataClass(): Class<InputStream> = InputStream::class.java
+    override fun getDataClass(): Class<CountedData> = CountedData::class.java
     override fun getDataSource(): DataSource = DataSource.LOCAL
 }
 
-private class CountingModelLoader : ModelLoader<CountingSource, InputStream> {
+private class CountingModelLoader : ModelLoader<CountingSource, CountedData> {
     override fun buildLoadData(
         model: CountingSource, width: Int, height: Int, options: Options
-    ): ModelLoader.LoadData<InputStream> =
+    ): ModelLoader.LoadData<CountedData> =
         ModelLoader.LoadData(ObjectKey(model.tag), CountingFetcher(model))
 
     override fun handles(model: CountingSource): Boolean = true
 }
 
-private class CountingModelLoaderFactory : ModelLoaderFactory<CountingSource, InputStream> {
-    override fun build(multiFactory: MultiModelLoaderFactory): ModelLoader<CountingSource, InputStream> =
+private class CountingModelLoaderFactory : ModelLoaderFactory<CountingSource, CountedData> {
+    override fun build(multiFactory: MultiModelLoaderFactory): ModelLoader<CountingSource, CountedData> =
         CountingModelLoader()
 
     override fun teardown() {}
+}
+
+private class CountedDataDecoder(private val bitmapPool: BitmapPool) : ResourceDecoder<CountedData, Bitmap> {
+    override fun handles(source: CountedData, options: Options): Boolean = true
+
+    override fun decode(source: CountedData, width: Int, height: Int, options: Options): Resource<Bitmap>? =
+        BitmapResource.obtain(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888), bitmapPool)
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -81,14 +96,12 @@ class CleanImageCacheTest {
     @Test
     fun cleanImageCacheForcesAFreshFetchInsteadOfServingTheCachedBitmap() {
         val context = context()
-        Glide.get(context).registry.prepend(
-            CountingSource::class.java, InputStream::class.java, CountingModelLoaderFactory()
-        )
-        val pngBytes = ByteArrayOutputStream().also {
-            Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888).compress(Bitmap.CompressFormat.PNG, 100, it)
-        }.toByteArray()
+        val glide = Glide.get(context)
+        glide.registry
+            .prepend(CountingSource::class.java, CountedData::class.java, CountingModelLoaderFactory())
+            .prepend(CountedData::class.java, Bitmap::class.java, CountedDataDecoder(glide.bitmapPool))
         val loadCount = AtomicInteger(0)
-        val source = CountingSource("clean-image-cache-test", loadCount, pngBytes)
+        val source = CountingSource("clean-image-cache-test", loadCount)
 
         // RequestFutureTarget.get() asserts it isn't called on the main thread, and Robolectric
         // treats the JUnit test thread as main - so each blocking load runs on its own thread.
