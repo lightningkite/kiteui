@@ -1,12 +1,5 @@
 package com.lightningkite.kiteui.map
 
-import com.lightningkite.kiteui.map.style.CircleLayer
-import com.lightningkite.kiteui.map.style.FillExtrusionLayer
-import com.lightningkite.kiteui.map.style.FillLayer
-import com.lightningkite.kiteui.map.style.HeatmapLayer
-import com.lightningkite.kiteui.map.style.Layer
-import com.lightningkite.kiteui.map.style.LineLayer
-import com.lightningkite.kiteui.map.style.SymbolLayer
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.lensing.lens
@@ -134,9 +127,3 @@ val Reactive<Collection<List<GeoCoordinate>>>.multiLineString get() = lens { it.
 
 val <T : Geometry?> T.feature get() = Feature<T, Nothing?>(this, null)
 val <T : Geometry?> Reactive<T>.feature get() = lens { it.feature }
-
-fun <T, G : Geometry?, P> Collection<T>.mapFeatures(toFeature: (T) -> Feature<G, P>) =
-    FeatureCollection(map(toFeature))
-
-fun <T, G : Geometry?, P> Reactive<Collection<T>>.mapFeatures(toFeature: (T) -> Feature<G, P>) =
-    lens { FeatureCollection(it.map(toFeature)) }

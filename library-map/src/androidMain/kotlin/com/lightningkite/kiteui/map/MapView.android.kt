@@ -34,10 +34,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.float
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import com.lightningkite.kiteui.map.style.Layer
-import com.lightningkite.kiteui.map.style.setFilter
-import com.lightningkite.kiteui.map.style.toNativeFilter
-import com.lightningkite.kiteui.map.style.toNativeValue
 import org.maplibre.spatialk.geojson.GeoJsonObject
 import org.maplibre.spatialk.geojson.toJson
 import kotlin.reflect.KMutableProperty1

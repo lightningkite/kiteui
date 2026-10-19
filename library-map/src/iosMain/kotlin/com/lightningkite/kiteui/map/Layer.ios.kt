@@ -1,4 +1,4 @@
-package com.lightningkite.kiteui.map.style
+package com.lightningkite.kiteui.map
 
 import cocoapods.MapLibre.MLNStyleLayer
 import cocoapods.MapLibre.MLNVectorStyleLayer

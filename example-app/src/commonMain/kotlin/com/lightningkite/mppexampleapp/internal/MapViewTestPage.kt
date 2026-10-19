@@ -5,18 +5,16 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.map.Camera
 import com.lightningkite.kiteui.map.I_SWEAR_ON_MY_JOB
+import com.lightningkite.kiteui.map.LineLayer
 import com.lightningkite.kiteui.map.Style
 import com.lightningkite.kiteui.map.addCircle
 import com.lightningkite.kiteui.map.mapView
 import com.lightningkite.kiteui.map.addLine
 import com.lightningkite.kiteui.map.feature
 import com.lightningkite.kiteui.map.lineString
-import com.lightningkite.kiteui.map.mapFeatures
 import com.lightningkite.kiteui.map.onClick
 import com.lightningkite.kiteui.map.source
 import com.lightningkite.kiteui.map.point
-import com.lightningkite.kiteui.map.style.expression
-import com.lightningkite.kiteui.map.style.onClick
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
@@ -75,7 +73,7 @@ object MapViewTestPage : Page {
                 source(markerPosition.point.lens { Feature(it, FeatureData(radius = 20.0)) }) {
                     addCircle {
                         ::color { rerunOn(recolor); Random.nextColor().literal }
-                        radius = expression { FeatureData::radius.get }
+                        radius = FeatureData::radius.value
                     }
 
                     onClick { }
@@ -83,8 +81,10 @@ object MapViewTestPage : Page {
 
                 source(coordinates.lineString.feature) {
                     addLine {
-                        ::color { rerunOn(recolor); Random.nextColor().literal }
+                        ::color { rerunOn(recolor); Random.nextColor().copy(alpha = 1.0f).literal }
                         width = 10.literal
+                        cap = LineLayer.Cap.Round.literal
+                        join = LineLayer.Join.Round.literal
 
                         onClick { }
                     }
@@ -94,7 +94,6 @@ object MapViewTestPage : Page {
 
 
                 source(coordinates.lens { it.map { it.point.feature } }) {
-//                source(coordinates.mapFeatures { it.point.feature }) {
                     addCircle {
                         ::color { rerunOn(recolor); Random.nextColor().literal }
                         radius = 10.literal

@@ -24,7 +24,7 @@ val generateMapLibreLayerTypes = tasks.register("generateMapLibreLayerTypes") {
 
     val specFile = file("maplibre-style-spec/v8.json")
     val cocoaConventionsFile = file("maplibre-style-spec/style-spec-cocoa-conventions-v8.json")
-    val packageName = "com.lightningkite.kiteui.map.style"
+    val packageName = "com.lightningkite.kiteui.map"
     val webVersion = maplibreWebVersion
     val androidVersion = libs.versions.maplibreAndroidCore.get()
     val iosVersion = minMapLibreIosVersion

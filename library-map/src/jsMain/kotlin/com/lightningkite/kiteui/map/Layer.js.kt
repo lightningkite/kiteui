@@ -1,4 +1,4 @@
-package com.lightningkite.kiteui.map.style
+package com.lightningkite.kiteui.map
 
 import kotlinx.serialization.json.JsonElement
 import com.lightningkite.kiteui.map.maplibre.Map as MapLibreMap

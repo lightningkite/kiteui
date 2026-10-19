@@ -95,13 +95,13 @@ fun generateMapLibreLayerTypes(
             if (layerType in FILTERABLE_LAYER_TYPES) {
                 val filterDoc = layerSpec.filter?.doc ?: "Only features matching the filter are displayed."
                 appendKdoc("$filterDoc\n\nSee https://maplibre.org/maplibre-style-spec/layers/#filter", "    ")
-                appendLine("    var filter: LayerValue<Boolean, P>? by filter()")
+                appendLine("    var filter: Value<Boolean>? by filter()")
             }
             for (property in properties) {
                 val native = if (property.unsupportedOn.isEmpty()) "" else ", native = false"
                 appendLine()
                 appendKdoc(property.kdoc(), "    ")
-                append("    var ${property.shortName.camelCase()}: LayerValue<${property.kotlinType(enums)}, P>? by ")
+                append("    var ${property.shortName.camelCase()}: Value<${property.kotlinType(enums)}>? by ")
                 appendLine("${property.group}(\"${property.name}\", \"${property.cocoaName}\"$native)")
             }
             for (enum in enumsByOwner[layerType].orEmpty()) appendEnum(enum, "    ")
