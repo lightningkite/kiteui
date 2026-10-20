@@ -4,9 +4,14 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.write
+import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
+import com.lightningkite.reactive.lensing.lens
 import com.lightningkite.services.data.GeoCoordinate
+import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.GeoJsonObject
+import org.maplibre.spatialk.geojson.Geometry
+import kotlin.jvm.JvmName
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
@@ -20,11 +25,12 @@ expect class MapView(
     internal val preInit: PreInit
 
     override var style: Style
-    val sources: MutableMap<Uuid, GeoJsonObject>
-    val layers: MutableMap<Uuid, Layer<*>?>
+    internal val sources: MutableMap<Uuid, GeoJsonObject>
+    internal val layers: MutableMap<Uuid, Layer<*>?>
 
     val camera: Camera
 }
+
 
 inline fun ElementWriter.mapView(
     disableAttribution: I_SWEAR_ON_MY_JOB? = null,
@@ -34,6 +40,15 @@ inline fun ElementWriter.mapView(
 
 expect fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit)
 
+
+fun <G : Geometry?, P> MapView.source(feature: Reactive<Feature<G, P>>, setup: Source<G, P>.() -> Unit = {}) =
+    Source(this, feature.lens { listOf(it) }).apply(setup)
+
+@JvmName("source2")
+fun <G : Geometry?, P> MapView.source(
+    features: Reactive<Collection<Feature<G, P>>>,
+    setup: Source<G, P>.() -> Unit = {}
+) = Source(this, features).apply(setup)
 
 /**
  * Yes, this is meant to be attention grabbing.
@@ -57,7 +72,6 @@ enum class I_SWEAR_ON_MY_JOB {
     /** Choose this if you are handling attribution manually elsewhere in the app. */
     I_AM_HANDLING_ATTRIBUTION,
 }
-
 
 /**
  * The MapLibre map is not initialized immediately on android and web, so we need to keep track

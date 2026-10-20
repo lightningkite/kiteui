@@ -6,6 +6,6 @@ import kotlinx.serialization.json.JsonElement
 
 internal actual val Layer<*>.isNativeLayerAdded: Boolean get() = false
 
-internal actual fun Layer<*>.writeNativeProperty(key: PropertyKey, value: JsonElement?) {}
-internal actual fun Layer<*>.setNativeMinZoom(value: Double?) {}
-internal actual fun Layer<*>.setNativeMaxZoom(value: Double?) {}
+internal actual fun Layer<*>.writeLiveProperty(prop: Layer<*>.Property<*>, value: JsonElement?) {}
+internal actual fun Layer<*>.setLiveMinZoom(value: Double?) {}
+internal actual fun Layer<*>.setLiveMaxZoom(value: Double?) {}

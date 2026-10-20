@@ -47,15 +47,6 @@ class Source<G : Geometry?, P> internal constructor(
     }
 }
 
-@JvmName("sourceOfFeature")
-fun <G : Geometry?, P> MapView.source(feature: Reactive<Feature<G, P>>, setup: Source<G, P>.() -> Unit = {}) =
-    Source(this, feature.lens { listOf(it) }).apply(setup)
-
-fun <G : Geometry?, P> MapView.source(
-    features: Reactive<Collection<Feature<G, P>>>,
-    setup: Source<G, P>.() -> Unit = {}
-) = Source(this, features).apply(setup)
-
 fun Source<*, *>.onClick(callback: () -> Unit) {}
 
 

@@ -23,15 +23,15 @@ private val Layer<*>.nativeLayer: MLNStyleLayer get() = nativeLayerOrNull!!
 
 internal actual val Layer<*>.isNativeLayerAdded: Boolean get() = nativeLayerOrNull != null
 
-internal actual fun Layer<*>.writeNativeProperty(key: PropertyKey, value: JsonElement?) {
+internal actual fun Layer<*>.writeNativeProperty(prop: Layer<*>.Property<*>, value: JsonElement?) {
     when {
         // iOS represents filters as predicates.
-        key.group == PropertyGroup.Filter -> (nativeLayer as MLNVectorStyleLayer).predicate =
+        prop.group == PropertyGroup.Filter -> (nativeLayer as MLNVectorStyleLayer).predicate =
             value?.let { NSPredicate.predicateWithMLNJSONObject(it.toFoundation()!!) }
         // iOS replaces the `visibility` property with `MLNStyleLayer.visible`.
-        key.name == "visibility" -> nativeLayer.visible = (value as? JsonPrimitive)?.content != "none"
+        prop.name == "visibility" -> nativeLayer.visible = (value as? JsonPrimitive)?.content != "none"
         // The `MLN*StyleLayer` property, which iOS names differently than the style spec.
-        else -> nativeLayer.setValue(value?.let { NSExpression.expressionWithMLNJSONObject(it.toFoundation()!!) }, forKey = key.cocoaName)
+        else -> nativeLayer.setValue(value?.let { NSExpression.expressionWithMLNJSONObject(it.toFoundation()!!) }, forKey = prop.cocoaName)
     }
 }
 

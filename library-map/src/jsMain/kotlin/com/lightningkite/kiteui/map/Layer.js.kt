@@ -9,20 +9,20 @@ private val Layer<*>.map: MapLibreMap get() = mapView.map.state.getOrNull()!!
 internal actual val Layer<*>.isNativeLayerAdded: Boolean
     get() = mapView.isStyleLoaded && mapView.map.state.getOrNull()?.getLayer(id.toString()) != null
 
-internal actual fun Layer<*>.writeNativeProperty(key: PropertyKey, value: JsonElement?) {
+internal actual fun Layer<*>.writeLiveProperty(prop: Layer<*>.Property<*>, value: JsonElement?) {
     val json = value?.let { JSON.parse<Any?>(it.toString()) }
-    when (key.group) {
-        PropertyGroup.Paint -> map.setPaintProperty(id.toString(), key.name, json)
-        PropertyGroup.Layout -> map.setLayoutProperty(id.toString(), key.name, json)
-        PropertyGroup.Filter -> map.setFilter(id.toString(), json)
+    when (prop.group) {
+        Layer.PropertyGroup.Paint -> map.setPaintProperty(id.toString(), prop.name, json)
+        Layer.PropertyGroup.Layout -> map.setLayoutProperty(id.toString(), prop.name, json)
+        Layer.PropertyGroup.Filter -> map.setFilter(id.toString(), json)
     }
 }
 
-internal actual fun Layer<*>.setNativeMinZoom(value: Double?) {
+internal actual fun Layer<*>.setLiveMinZoom(value: Double?) {
     map.setLayerZoomRange(id.toString(), value ?: MIN_ZOOM, maxZoom ?: MAX_ZOOM)
 }
 
-internal actual fun Layer<*>.setNativeMaxZoom(value: Double?) {
+internal actual fun Layer<*>.setLiveMaxZoom(value: Double?) {
     map.setLayerZoomRange(id.toString(), minZoom ?: MIN_ZOOM, value ?: MAX_ZOOM)
 }
 

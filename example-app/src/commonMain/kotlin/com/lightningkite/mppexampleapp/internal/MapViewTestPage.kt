@@ -83,8 +83,8 @@ object MapViewTestPage : Page {
                     addLine {
                         ::color { rerunOn(recolor); Random.nextColor().copy(alpha = 1.0f).literal }
                         width = 10.literal
-                        cap = LineLayer.Cap.Round.literal
-                        join = LineLayer.Join.Round.literal
+                        cap = LineLayer.Cap.Round
+                        join = LineLayer.Join.Round
 
                         onClick { }
                     }

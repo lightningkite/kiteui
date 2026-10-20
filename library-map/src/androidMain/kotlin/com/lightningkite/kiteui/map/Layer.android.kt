@@ -26,20 +26,19 @@ private val Layer<*>.nativeLayer: NativeLayer get() = nativeLayerOrNull!!
 
 internal actual val Layer<*>.isNativeLayerAdded: Boolean get() = nativeLayerOrNull != null
 
-internal actual fun Layer<*>.writeNativeProperty(key: PropertyKey, value: JsonElement?) {
-    when (key.group) {
-        PropertyGroup.Paint -> nativeLayer.setProperties(PaintPropertyValue(key.name, value?.toNativeValue()))
-        PropertyGroup.Layout -> nativeLayer.setProperties(LayoutPropertyValue(key.name, value?.toNativeValue()))
-        PropertyGroup.Filter -> nativeLayer.setFilter(value.toNativeFilter())
+internal actual fun Layer<*>.writeLiveProperty(prop: Layer<*>.Property<*>, value: JsonElement?) {
+    when (prop.group) {
+        Layer.PropertyGroup.Paint -> nativeLayer.setProperties(PaintPropertyValue(prop.name, value?.toNativeValue()))
+        Layer.PropertyGroup.Layout -> nativeLayer.setProperties(LayoutPropertyValue(prop.name, value?.toNativeValue()))
+        Layer.PropertyGroup.Filter -> nativeLayer.setFilter(value.toNativeFilter())
     }
 }
 
-// MapLibre Native defaults to unbounded zoom ranges.
-internal actual fun Layer<*>.setNativeMinZoom(value: Double?) {
+internal actual fun Layer<*>.setLiveMinZoom(value: Double?) {
     nativeLayer.minZoom = value?.toFloat() ?: Float.NEGATIVE_INFINITY
 }
 
-internal actual fun Layer<*>.setNativeMaxZoom(value: Double?) {
+internal actual fun Layer<*>.setLiveMaxZoom(value: Double?) {
     nativeLayer.maxZoom = value?.toFloat() ?: Float.POSITIVE_INFINITY
 }
 

@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.map
 
 import com.lightningkite.kiteui.models.Color
+import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -25,31 +26,27 @@ sealed class Layer<P>(
     var minZoom: Double? = null
         set(value) {
             field = value
-            if (isLive) setNativeMinZoom(value)
+            if (isLive) setLiveMinZoom(value)
         }
 
     var maxZoom: Double? = null
         set(value) {
             field = value
-            if (isLive) setNativeMaxZoom(value)
+            if (isLive) setLiveMaxZoom(value)
         }
 
-    /**
-     * Whether this layer is on the map, so property changes should go through the platform's layer.
-     * A layer that has been replaced in `MapView.layers` isn't live, even though its id is.
-     */
     internal val isLive: Boolean get() = mapView.layers[id] === this && isNativeLayerAdded
 
-    /**
-     * A style spec property. While the layer is live, setting it writes it to the platform's layer
-     * if it is [native] (supported on every platform), or else re-adds the layer.
-     */
     internal inner class Property<T>(
-        private val key: PropertyKey,
-        private val native: Boolean,
+        val group: PropertyGroup,
+        val name: String,
+        val cocoaName: String,
+        val native: Boolean,
     ) : ReadWriteProperty<Layer<P>, Value<T>?> {
-        internal val name get() = key.name
-        internal val group get() = key.group
+        init {
+            properties += this
+        }
+
         internal var value: Value<T>? = null
 
         override fun getValue(thisRef: Layer<P>, property: KProperty<*>): Value<T>? = value
@@ -58,20 +55,14 @@ sealed class Layer<P>(
             this.value = value
             when {
                 !native -> if (mapView.layers[id] === thisRef) mapView.layers[id] = thisRef
-                isLive -> writeNativeProperty(key, value?.json)
+                isLive -> writeLiveProperty(this, value?.json)
             }
         }
     }
 
-    private fun <T> property(key: PropertyKey, native: Boolean) = Property<T>(key, native).also { properties += it }
+    internal enum class PropertyGroup { Paint, Layout, Filter }
 
-    internal fun <T> paint(name: String, cocoaName: String, native: Boolean = true) =
-        property<T>(PropertyKey(PropertyGroup.Paint, name, cocoaName), native)
-
-    internal fun <T> layout(name: String, cocoaName: String, native: Boolean = true) =
-        property<T>(PropertyKey(PropertyGroup.Layout, name, cocoaName), native)
-
-    internal fun filter() = property<Boolean>(PropertyKey(PropertyGroup.Filter, "filter", "predicate"), native = true)
+    internal fun filter() = Property<Boolean>(PropertyGroup.Filter, "filter", "predicate", native = true)
 
     /** The layer as style spec JSON. */
     internal fun toJson(): JsonObject = buildJsonObject {
@@ -87,74 +78,46 @@ sealed class Layer<P>(
         put("layout", JsonObject(group(PropertyGroup.Layout).toMap()))
     }
 
-//    @get:JvmName("numbersLiteral")
-//    val List<Number>.literal get() = Literal<List<Number>, P>(this)
 
-//    @get:JvmName("stringsLiteral")
-//    val List<String>.literal get() = Literal<List<String>, P>(this)
-
-//    @get:JvmName("colorsLiteral")
-//    val List<Color>.literal get() = Literal<List<Color>, P>(this)
-
-//    @get:JvmName("enumsLiteral")
-//    val <E : StyleEnum> List<E>.literal get() = Literal<List<E>, P>(this)
-
-//    @get:JvmName("anchorOffsetsLiteral")
-//    val List<SymbolLayer.AnchorOffset>.literal get() = Literal<List<SymbolLayer.AnchorOffset>, P>(this)
-
-
-    class Value<out T> internal constructor(val json: JsonElement) {
-//        fun toJson(): JsonElement = when (this) {
-//            is Expression -> json
-//            is Literal -> when (val value = value) {
-//                is Point -> literalArray(listOf(value.x, value.y).map(::JsonPrimitive))
-//                is Padding -> literalArray(
-//                    listOf(
-//                        value.top,
-//                        value.right,
-//                        value.bottom,
-//                        value.left
-//                    ).map(::JsonPrimitive)
-//                )
-//
-//                is List<*> -> literalArray(value.flatMap { item ->
-//                     Anchor offsets are flattened into `anchor, [x, y]` pairs.
-//                    if (item is SymbolLayer.AnchorOffset) {
-//                        listOf(
-//                            item.anchor.json,
-//                            JsonArray(listOf(JsonPrimitive(item.offset.x), JsonPrimitive(item.offset.y)))
-//                        )
-//                    } else {
-//                        listOf(scalarJson(item))
-//                    }
-//                })
-//
-//                else -> scalarJson(value)
-//            }
-//        }
+    sealed interface Value<out T> {
+        val json: JsonElement
     }
 
-//    class Literal<out T> internal constructor(val value: T) : Value<T>
+    internal class Literal<T>(override val json: JsonElement) : Value<T>
 
-    val <T> Value<T>?.flatten get() = this ?: Value<T?>(JsonPrimitive(null))
-    val Number.literal get() = Value<Number>(JsonPrimitive(this))
-    val Boolean.literal get() = Value<Boolean>(JsonPrimitive(this))
-    val String.literal get() = Value<String>(JsonPrimitive(this))
-//    val Color.literal get() = Value<Color>(JsonPrimitive(this))
-    val <E : StyleEnum> E.literal get() = Value<E>(JsonPrimitive(value))
-//    val Point.literal get() = Value<Point>(JsonPrimitive(this))
-//    val Padding.literal get() = Value<Padding>(JsonPrimitive(this))
+    val <T> Value<T>?.flatten get(): Value<T?> = this ?: Literal(JsonPrimitive(null))
+    val Number.literal get(): Value<Number> = Literal(JsonPrimitive(this))
+    val Boolean.literal get(): Value<Boolean> = Literal(JsonPrimitive(this))
+    val String.literal get(): Value<String> = Literal(JsonPrimitive(this))
+    val Color.literal get(): Value<Color> = Literal(JsonPrimitive(toWeb()))
 
-//    class Expression<out T> internal constructor(op: String, vararg elements: Value<*>) : Value<T> {
-//        val json = JsonArray(listOf(JsonPrimitive(op)) + elements.map { it.toJson() })
+    internal interface StyleEnum<T> : Value<T> {
+        override val json get() = JsonPrimitive(value)
+        val value: String
+    }
 
-//        override fun equals(other: Any?) = other is Expression<*> && json == other.json
-//        override fun hashCode() = json.hashCode()
-//        override fun toString() = json.toString()
-//    }
+    data class Point(val x: Double, val y: Double) : Value<Point> {
+        override val json get() = JsonArray(listOf(JsonPrimitive(x), JsonPrimitive(y)))
+    }
 
-    internal fun <T> expression(op: String, vararg elements: Value<*>) =
-        Value<T>(JsonArray(listOf(JsonPrimitive(op)) + elements.map { it.json }))
+    val GeoCoordinate.point get() = Point(this.latitude, this.longitude)
+
+    data class Padding(val top: Double, val right: Double, val bottom: Double, val left: Double) : Value<Padding> {
+        constructor(all: Double) : this(all, all, all, all)
+        constructor(vertical: Double, horizontal: Double) : this(vertical, horizontal, vertical, horizontal)
+
+        override val json get() = JsonArray(listOf(top, right, bottom, left).map(::JsonPrimitive))
+    }
+
+    object Formatted
+
+    /** An image from the style's sprite or added to the map. Create with [image]. */
+    sealed interface ResolvedImage
+
+    internal fun <T> expression(op: String, vararg elements: Value<*>): Value<T> =
+        Literal(JsonArray(listOf(JsonPrimitive(op)) + elements.map { it.json }))
+
+    val <T> List<Value<T>>.literal get() = expression<List<T>>("semiliteral", Literal<Any>(JsonArray(map { it.json })))
 
     operator fun <T> Value<List<T>>.get(index: Value<Number>) = expression<T>("at", index, this)
 
@@ -166,12 +129,11 @@ sealed class Layer<P>(
         inclusiveStart: Value<Number>, exclusiveEnd: Value<Number>? = null
     ) = expression<List<T>>("slice", this, inclusiveStart, exclusiveEnd.flatten)
 
-    val <T> KProperty1<P, T>.value get() = expression<T>("get", Value<String>(JsonPrimitive(name)))
+    val <T> KProperty1<P, T>.value get() = expression<T>("get", Literal<String>(JsonPrimitive(name)))
     fun <T> Value<List<T>>.size() = expression<Number>("length", this)
 
-
-    fun <T> case(cases: List<Pair<Value<Boolean>, Value<T>>>) =
-        expression<T>("case", *cases.flatMap { listOf(it.first, it.second) }.toTypedArray())
+    fun <T> case(cases: List<Pair<Value<Boolean>, Value<T>>>, fallback: Value<T>) =
+        expression<T>("case", *cases.flatMap { listOf(it.first, it.second) }.toTypedArray(), fallback)
 
     fun <T> List<Value<T?>>.firstNotNullOr(default: Value<T>) = expression<T>("coalesce", *this.toTypedArray(), default)
     infix fun <T> Value<T>.eq(other: Value<T>) = expression<Boolean>("==", this, other)
@@ -180,20 +142,27 @@ sealed class Layer<P>(
     infix fun Value<Number>.lt(other: Value<Number>) = expression<Boolean>("<", this, other)
     infix fun Value<Number>.gte(other: Value<Number>) = expression<Boolean>(">=", this, other)
     infix fun Value<Number>.lte(other: Value<Number>) = expression<Boolean>("<=", this, other)
+
+    @JvmName("stringGt")
     infix fun Value<String>.gt(other: Value<String>) = expression<Boolean>(">", this, other)
+
+    @JvmName("stringLt")
     infix fun Value<String>.lt(other: Value<String>) = expression<Boolean>("<", this, other)
+
+    @JvmName("stringGte")
     infix fun Value<String>.gte(other: Value<String>) = expression<Boolean>(">=", this, other)
+
+    @JvmName("stringLte")
     infix fun Value<String>.lte(other: Value<String>) = expression<Boolean>("<=", this, other)
+
     fun all(vararg of: Value<Boolean>) = expression<Boolean>("all", *of)
     fun any(vararg of: Value<Boolean>) = expression<Boolean>("any", *of)
     operator fun Value<Boolean>.not() = expression<Boolean>("!", this)
     val Value<GeoJsonObject>.isWithin get() = expression<Boolean>("within", this)
 
-
     fun <T> Value<Number>.step(
         initial: Value<T>, steps: List<Pair<Value<Number>, Value<T>>>
     ) = expression<T>("step", this, initial, *steps.flatMap { listOf(it.first, it.second) }.toTypedArray())
-
 
     operator fun Value<Number>.plus(other: Value<Number>) = expression<Number>("+", this, other)
     fun sum(vararg values: Value<Number>) = expression<Number>("+", *values)
@@ -220,75 +189,22 @@ sealed class Layer<P>(
     fun ceil(x: Value<Number>) = expression<Number>("ceil", x)
     fun floor(x: Value<Number>) = expression<Number>("floor", x)
 
-
     val zoom get() = expression<Number>("zoom")
-
 
     fun Value<String>.uppercase() = expression<Number>("upcase", this)
     fun Value<String>.lowercase() = expression<Number>("downcase", this)
+
+    @JvmName("stringPlus")
     operator fun Value<String>.plus(other: Value<String>) = expression<String>("concat", this, other)
     fun Value<String>.split(separator: Value<String>) = expression<List<String>>("split", this, separator)
     fun Value<List<String>>.joinToString(separator: Value<String>) = expression<String>("join", this, separator)
-}
-
-private fun literalArray(items: List<JsonElement>) =
-    JsonArray(listOf(JsonPrimitive("literal"), JsonArray(items)))
-
-private fun scalarJson(value: Any?): JsonElement = when (value) {
-    is Number -> JsonPrimitive(value)
-    is Boolean -> JsonPrimitive(value)
-    is String -> JsonPrimitive(value)
-    is Color -> JsonPrimitive(value.toWeb())
-    is StyleEnum -> value.json
-    else -> error("Unsupported literal value $value")
 }
 
 fun Layer<*>.onClick(callback: () -> Unit) {
 
 }
 
-internal enum class PropertyGroup { Paint, Layout, Filter }
-
-/**
- * Identifies a layer property on every platform: by [group] and style spec [name], or on iOS by
- * [cocoaName], the name of the `MLN*StyleLayer` property (which renames some).
- */
-internal class PropertyKey(val group: PropertyGroup, val name: String, val cocoaName: String)
-
-/** Whether the platform's map currently has this layer's id. */
 internal expect val Layer<*>.isNativeLayerAdded: Boolean
-
-/** Writes a property, as style spec JSON, to the platform's live layer. Only called while [Layer.isLive]. */
-internal expect fun Layer<*>.writeNativeProperty(key: PropertyKey, value: JsonElement?)
-
-/** Sets the platform's live layer's minimum zoom, or resets it if null. Only called while [Layer.isLive]. */
-internal expect fun Layer<*>.setNativeMinZoom(value: Double?)
-
-/** Sets the platform's live layer's maximum zoom, or resets it if null. Only called while [Layer.isLive]. */
-internal expect fun Layer<*>.setNativeMaxZoom(value: Double?)
-
-interface StyleEnum {
-    val value: String
-}
-
-/** An `[x, y]` offset. Positive values are right and down. */
-data class Point(val x: Double, val y: Double)
-
-/** Padding in the style spec's `[top, right, bottom, left]` order. */
-data class Padding(val top: Double, val right: Double, val bottom: Double, val left: Double) {
-    constructor(all: Double) : this(all, all, all, all)
-    constructor(vertical: Double, horizontal: Double) : this(vertical, horizontal, vertical, horizontal)
-}
-
-/**
- * Text that may contain sections with different fonts, scales, and colors. Create with [format], or
- * convert a string expression with [formatted].
- */
-sealed interface Formatted
-
-/** An image from the style's sprite or added to the map. Create with [image]. */
-sealed interface ResolvedImage
-
-internal val StyleEnum.json: JsonElement get() = JsonPrimitive(value)
-
-
+internal expect fun Layer<*>.writeLiveProperty(prop: Layer<*>.Property<*>, value: JsonElement?)
+internal expect fun Layer<*>.setLiveMinZoom(value: Double?)
+internal expect fun Layer<*>.setLiveMaxZoom(value: Double?)

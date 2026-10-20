@@ -98,11 +98,11 @@ fun generateMapLibreLayerTypes(
                 appendLine("    var filter: Value<Boolean>? by filter()")
             }
             for (property in properties) {
-                val native = if (property.unsupportedOn.isEmpty()) "" else ", native = false"
+                val native = property.unsupportedOn.isEmpty()
                 appendLine()
                 appendKdoc(property.kdoc(), "    ")
                 append("    var ${property.shortName.camelCase()}: Value<${property.kotlinType(enums)}>? by ")
-                appendLine("${property.group}(\"${property.name}\", \"${property.cocoaName}\"$native)")
+                appendLine("Property(PropertyGroup.${property.group.pascalCase()}, \"${property.name}\", \"${property.cocoaName}\", $native)")
             }
             for (enum in enumsByOwner[layerType].orEmpty()) appendEnum(enum, "    ")
             if (properties.any { it.spec.type == "variableAnchorOffsetCollection" }) {
@@ -273,7 +273,7 @@ private fun StringBuilder.appendKdoc(text: String, indent: String) {
 /** Appends a blank line, then the enum. */
 private fun StringBuilder.appendEnum(enum: StyleEnum, indent: String) {
     appendLine()
-    appendLine("${indent}enum class ${enum.name}(override val value: String) : StyleEnum {")
+    appendLine("${indent}enum class ${enum.name}(override val value: String) : Layer.StyleEnum<${enum.name}> {")
     for ((value, doc) in enum.values) {
         doc?.let { appendKdoc(it, "$indent    ") }
         appendLine("$indent    ${value.pascalCase()}(\"$value\"),")
