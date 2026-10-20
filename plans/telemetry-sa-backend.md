@@ -146,9 +146,9 @@ public class ClientTelemetryEndpoints : ServerBuilder() {
 ```
 
 - Anonymous clients are accepted, and `user.id` is omitted for them.
-- The server strips any client-supplied `user.*` keys, so the client cannot spoof them.
-- Apps mount it as `path.path("telemetry") module ClientTelemetryEndpoints()`.
-- Rate limiting uses the existing server-wide `ratelimit` `RateLimitInterceptor`. The endpoint caps record count itself, and engines already cap body size with `maxBodySize`.
+- The server builds the resource (implementation note 9) and strips client-supplied `user.*` keys, so the client cannot spoof its identity.
+- Apps mount it as `path.path("telemetry") module ClientTelemetryEndpoints(cache)`.
+- The endpoint rate limits itself per user, else IP (implementation note 10), caps record count, and engines already cap body size with `maxBodySize`.
 - **Validation.** Since ingested spans feed no metrics, client-chosen names and values no longer grow server metric state, so there is no name registry. The endpoint rejects the whole batch with 400 (it does not truncate) for: more than 2000 records; more than 128 attributes on a record; an attribute value over 4096 characters (ingested records skip the server SDK's `SpanLimits`); owner or attribute names not matching `[A-Za-z][A-Za-z0-9_.-]{0,63}`; trace/span ids that aren't 32/16 lowercase hex.
 - **Not traced.** The ingest handler sets `HttpHandler.traced = false` (a new property beside `timeout`), so the upload request gets no span or RED metrics; LS runs it under SA's new `Untraced` element, which makes `telemetryTrace` record nothing beneath it.
 - Watch out: `SessionManager.read` throws `UnauthorizedException` for a bad token even on a `noAuth` endpoint. The client therefore treats 401 as retryable (section 3).
