@@ -6,7 +6,16 @@ import com.lightningkite.kiteui.map.maplibre.FlyToOptions
 import com.lightningkite.kiteui.map.maplibre.AddLayerObject
 import com.lightningkite.kiteui.map.maplibre.GeoJSONSource
 import com.lightningkite.kiteui.map.maplibre.SourceSpecification
+import com.lightningkite.kiteui.models.ImageLocal
+import com.lightningkite.kiteui.models.ImageRaw
+import com.lightningkite.kiteui.models.ImageRemote
+import com.lightningkite.kiteui.models.ImageResource
+import com.lightningkite.kiteui.models.ImageSource
+import com.lightningkite.kiteui.models.ImageVector
+import com.lightningkite.kiteui.models.vectorToSvgDataUrl
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.direct.createObjectURL
+import com.lightningkite.kiteui.views.direct.revokeObjectURL
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.map.maplibre.Map as MapLibreMap
 import com.lightningkite.kiteui.map.maplibre.setWorkerUrl
@@ -15,9 +24,13 @@ import com.lightningkite.reactive.core.LateInitSignal
 import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import org.maplibre.spatialk.geojson.GeoJsonObject
 import org.maplibre.spatialk.geojson.toJson
+import org.w3c.dom.HTMLImageElement
+import org.w3c.dom.Image
+import kotlin.math.roundToInt
 import kotlin.reflect.KMutableProperty1
 import kotlin.uuid.Uuid
 
@@ -50,6 +63,54 @@ actual class MapView actual constructor(
         if (map.getLayer(id.toString()) != null) map.removeLayer(id.toString())
         map.addLayer(layer.toAddLayerObject(id), beforeId = beforeId)
     }) { if (isStyleLoaded) map.state.getOrNull()?.removeLayer(it.toString()) }
+
+    /** The decoded [images], which can be re-added without reloading when the style changes. */
+    private val loadedImages = HashMap<Uuid, LoadedImage>()
+
+    private class LoadedImage(val element: HTMLImageElement, val pixelRatio: Double) {
+        fun addTo(map: MapLibreMap, id: Uuid) {
+            val pixelRatio = pixelRatio
+            if (map.hasImage(id.toString())) map.removeImage(id.toString())
+            map.addImage(id.toString(), element, js("{pixelRatio: pixelRatio}"))
+        }
+    }
+
+    actual val images: MutableMap<Uuid, ImageSource> = StyleDataMap({ id, source ->
+        loadImage(source) { image ->
+            if (images[id] !== source) return@loadImage
+            loadedImages[id] = image
+            if (isStyleLoaded) map.state.getOrNull()?.let { image.addTo(it, id) }
+        }
+    }) {
+        loadedImages.remove(it)
+        if (isStyleLoaded) map.state.getOrNull()?.removeImage(it.toString())
+    }
+
+    private fun loadImage(source: ImageSource, onLoaded: (LoadedImage) -> Unit) {
+        val element = Image()
+        // MapLibre reads the pixels through a canvas, which cross-origin images would taint.
+        element.crossOrigin = "anonymous"
+        val blobUrl = when (source) {
+            is ImageRaw -> createObjectURL(source.data)
+            is ImageLocal -> createObjectURL(source.file)
+            else -> null
+        }
+        element.onload = {
+            blobUrl?.let(::revokeObjectURL)
+            // Vectors have no natural resolution, so rasterize them at the screen's.
+            val pixelRatio = if (source is ImageVector) window.devicePixelRatio else 1.0
+            element.width = (element.naturalWidth * pixelRatio).roundToInt()
+            element.height = (element.naturalHeight * pixelRatio).roundToInt()
+            onLoaded(LoadedImage(element, pixelRatio))
+        }
+        element.onerror = { _, _, _, _, _ -> blobUrl?.let(::revokeObjectURL) }
+        element.src = when (source) {
+            is ImageRemote -> source.url
+            is ImageResource -> context.basePath + source.relativeUrl
+            is ImageVector -> source.vectorToSvgDataUrl()
+            is ImageRaw, is ImageLocal -> blobUrl!!
+        }
+    }
 
     private fun GeoJsonObject.toSourceSpecification() = js("{}").unsafeCast<SourceSpecification>().also {
         it.asDynamic().type = "geojson"
@@ -113,6 +174,7 @@ actual class MapView actual constructor(
             map.value = MapLibreMap(preInit.toOptions(it, disableAttribution, interactive)).apply {
                 on("style.load") {
                     isStyleLoaded = true
+                    loadedImages.forEach { (id, image) -> image.addTo(this, id) }
                     addSource(emptySourceId.toString(), js("{type: 'geojson', data: {type: 'FeatureCollection', features: []}}"))
                     sources.forEach { (id, source) -> addSource(id.toString(), source.toSourceSpecification()) }
                     layers.forEach { (id, layer) -> addLayer(layer.toAddLayerObject(id)) }
@@ -140,6 +202,9 @@ internal fun PreInit.toOptions(
         pitch = pitch,
         minPitch = minPitch ?: JsUndefined,
         maxPitch = maxPitch ?: JsUndefined,
+
+        // Symbols fade in when placed, and a moved symbol counts as new, so it would blink on every move.
+        fadeDuration = 0.0,
     ).also { if (disableAttribution != null) it.attributionControl = false }
 }
 

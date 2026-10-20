@@ -1,6 +1,20 @@
 package com.lightningkite.kiteui.map
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.view.View
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import com.lightningkite.kiteui.models.ImageLocal
+import com.lightningkite.kiteui.models.ImageRaw
+import com.lightningkite.kiteui.models.ImageRemote
+import com.lightningkite.kiteui.models.ImageResource
+import com.lightningkite.kiteui.models.ImageSource
+import com.lightningkite.kiteui.models.ImageVector
+import com.lightningkite.kiteui.views.Path.toDrawable
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.reactive.context.awaitOnce
@@ -29,6 +43,7 @@ import org.maplibre.android.style.layers.PaintPropertyValue
 import org.maplibre.android.style.layers.PropertyValue
 import org.maplibre.android.style.layers.RasterLayer
 import org.maplibre.android.style.layers.SymbolLayer
+import org.maplibre.android.style.layers.TransitionOptions
 import org.maplibre.android.style.sources.GeoJsonSource
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.float
@@ -41,6 +56,7 @@ import kotlin.run
 import kotlin.uuid.Uuid
 import org.maplibre.android.maps.Style as MapLibreStyle
 import org.maplibre.android.maps.MapView as MapLibreMapView
+import androidx.core.graphics.drawable.toBitmap
 
 actual class MapView actual constructor(
     context: ElementContext, val disableAttribution: I_SWEAR_ON_MY_JOB?, val interactive: Boolean
@@ -72,9 +88,44 @@ actual class MapView actual constructor(
         style.addLayerBelow(nativeLayer, beforeId)
     }) { map.state.getOrNull()?.style?.removeLayer(it.toString()) }
 
+    /** The decoded [images], which can be re-added without reloading when the style changes. */
+    private val loadedImages = HashMap<Uuid, Bitmap>()
+
+    actual val images: MutableMap<Uuid, ImageSource> = StyleDataMap({ id, source ->
+        loadBitmap(source) { bitmap ->
+            if (images[id] !== source) return@loadBitmap
+            loadedImages[id] = bitmap
+            map.state.getOrNull()?.style?.addImage(id.toString(), bitmap)
+        }
+    }) {
+        loadedImages.remove(it)
+        map.state.getOrNull()?.style?.removeImage(it.toString())
+    }
+
+    private fun loadBitmap(source: ImageSource, onLoaded: (Bitmap) -> Unit) {
+        fun RequestBuilder<Bitmap>.finish() = disallowHardwareConfig().into(object : CustomTarget<Bitmap>() {
+            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) =
+                onLoaded(resource.copy(Bitmap.Config.ARGB_8888, false))
+
+            override fun onLoadCleared(placeholder: Drawable?) {}
+        })
+
+        val glide = Glide.with(context.activity.applicationContext).asBitmap()
+        when (source) {
+            is ImageLocal -> glide.load(source.file.uri).finish()
+            is ImageRaw -> BitmapFactory.decodeByteArray(source.data.data, 0, source.data.data.size)?.let(onLoaded)
+            is ImageRemote -> glide.load(source.url).finish()
+            is ImageResource -> glide.load(source.resource).finish()
+            is ImageVector -> onLoaded(source.toDrawable().toBitmap())
+        }
+    }
+
     val emptySourceId = Uuid.random()
     private fun onStyleLoaded(style: MapLibreStyle) {
+        // Symbols fade in when placed, and a moved symbol counts as new, so it would blink on every move.
+        style.transition.let { style.transition = TransitionOptions(it.duration, it.delay, false) }
         style.addSource(GeoJsonSource(emptySourceId.toString()))
+        loadedImages.forEach { (id, bitmap) -> style.addImage(id.toString(), bitmap) }
         sources.forEach { (id, source) -> style.addSource(GeoJsonSource(id.toString(), source.toJson())) }
         layers.forEach { (id, layer) -> style.addLayer(layer.toMapLibreLayer(id.toString())) }
     }

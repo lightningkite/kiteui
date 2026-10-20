@@ -1,9 +1,16 @@
 package com.lightningkite.kiteui.map
 
+import com.lightningkite.kiteui.models.Color
+import com.lightningkite.kiteui.models.ImageSource
+import com.lightningkite.kiteui.models.ImageVector
+import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.Size
+import com.lightningkite.kiteui.models.dp
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.write
+import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.reactive.lensing.lens
@@ -25,6 +32,7 @@ expect class MapView(
     internal val preInit: PreInit
 
     override var style: Style
+    internal val images: MutableMap<Uuid, ImageSource>
     internal val sources: MutableMap<Uuid, GeoJsonObject>
     internal val layers: MutableMap<Uuid, Layer<*>?>
 
@@ -49,6 +57,25 @@ fun <G : Geometry?, P> MapView.source(
     features: Reactive<Collection<Feature<G, P>>>,
     setup: Source<G, P>.() -> Unit = {}
 ) = Source(this, features).apply(setup)
+
+
+/**
+ * An image added to the map's style. Use it in layers that take a [Layer.ResolvedImage], such as
+ * [SymbolLayer.iconImage] or [FillLayer.pattern], via [Layer.image].
+ *
+ * Images load asynchronously, so features using one render without it until it has loaded.
+ */
+class MapImage internal constructor(val mapView: MapView) : Layer.Value<ImageSource> {
+    val id = Uuid.random()
+    override val json get() = expression<ImageSource>("image", id.toString().literal).json
+}
+
+/** Adds [source] to the map's style as an image. */
+fun MapView.registerImage(source: ImageSource) = MapImage(this).also { images[it.id] = source }
+
+/** Adds [source] to the map's style as an image, replacing it whenever [source] changes. */
+fun MapView.registerImage(source: Reactive<ImageSource>) =
+    MapImage(this).also { reactive { images[it.id] = source() } }
 
 /**
  * Yes, this is meant to be attention grabbing.
@@ -187,3 +214,35 @@ interface Camera : CameraProperties {
         val duration: Duration,
     )
 }
+
+fun getDefaultPin(
+    size: Size = Size(20.0 * 1.2, 56.0 * 1.2),
+    color: Color = Color.red,
+    strokeColor: Color = color.toBlack(0.25f),
+    dotColor: Color = Color.white,
+) = ImageVector(
+    width = size.width.dp,
+    height = size.height.dp,
+    viewBoxWidth = 20,
+    viewBoxHeight = 56,
+    paths = listOf(
+        ImageVector.Path(
+            fillColor = Color.fromHexString("#262626").applyAlpha(0.2f),
+            path = "M1,27 A9,5 0 1,0 19,27 A9,5 0 1,0 1,27 Z",
+        ),
+        ImageVector.Path(
+            fillColor = color,
+            strokeColor = strokeColor,
+            strokeWidth = 1.0,
+            strokeCap = Icon.StrokeLineCap.Round,
+            path = "M19.5,10.4 c0,6.3 -9.5,17.1 -9.5,17.1 S0.5,16.6 0.5,10.4 c0,-5.5 4.3,-9.9 9.5,-9.9 S19.5,4.9 19.5,10.4 Z",
+        ),
+        ImageVector.Path(
+            fillColor = dotColor,
+            strokeColor = strokeColor,
+            strokeWidth = 1.0,
+            strokeCap = Icon.StrokeLineCap.Round,
+            path = "M6.2,10 A3.8,3.8 0 1,0 13.8,10 A3.8,3.8 0 1,0 6.2,10 Z",
+        ),
+    ),
+)

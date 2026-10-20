@@ -5,13 +5,19 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.map.Camera
 import com.lightningkite.kiteui.map.I_SWEAR_ON_MY_JOB
+import com.lightningkite.kiteui.map.Layer
 import com.lightningkite.kiteui.map.LineLayer
 import com.lightningkite.kiteui.map.Style
+import com.lightningkite.kiteui.map.SymbolLayer
 import com.lightningkite.kiteui.map.addCircle
 import com.lightningkite.kiteui.map.mapView
 import com.lightningkite.kiteui.map.addLine
+import com.lightningkite.kiteui.map.addSymbol
 import com.lightningkite.kiteui.map.feature
+import com.lightningkite.kiteui.map.getDefaultPin
+import com.lightningkite.kiteui.map.registerImage
 import com.lightningkite.kiteui.map.lineString
+import com.lightningkite.kiteui.map.literal
 import com.lightningkite.kiteui.map.onClick
 import com.lightningkite.kiteui.map.source
 import com.lightningkite.kiteui.map.point
@@ -71,9 +77,16 @@ object MapViewTestPage : Page {
                 data class FeatureData(val radius: Double)
 
                 source(markerPosition.point.lens { Feature(it, FeatureData(radius = 20.0)) }) {
-                    addCircle {
-                        ::color { rerunOn(recolor); Random.nextColor().literal }
-                        radius = FeatureData::radius.value
+                    val pin = registerImage(getDefaultPin(color = Color.red))
+                    addSymbol {
+                        iconImage = pin
+                        textField = "Hello, world!".literal as Layer.Value<Layer.Formatted>
+                        textHaloColor = Color.white.literal
+                        textHaloWidth = 1.literal
+                        textVariableAnchorOffset = Layer.AnchorOffsets(listOf(
+                            SymbolLayer.Anchor.Left to Layer.Point(1.0, -1.25),
+                            SymbolLayer.Anchor.Right to Layer.Point(-1.0, -1.25),
+                        ))
                     }
 
                     onClick { }

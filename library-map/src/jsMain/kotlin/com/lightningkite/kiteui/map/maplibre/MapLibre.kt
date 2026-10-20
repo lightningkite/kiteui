@@ -103,6 +103,15 @@ external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3093 */
     fun getSource(id: String): Source?
 
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3189 */
+    fun addImage(id: String, image: Any, options: Any? = definedExternally): Map
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3356 */
+    fun hasImage(id: String): Boolean
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3379 */
+    fun removeImage(id: String)
+
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L3502 */
     fun addLayer(layer: AddLayerObject, beforeId: String? = definedExternally): Map
 
@@ -142,6 +151,8 @@ external class Map(options: Options) {
         val pitch: Double?
         val minPitch: Double?
         val maxPitch: Double?
+
+        val fadeDuration: Double?
     }
 }
 

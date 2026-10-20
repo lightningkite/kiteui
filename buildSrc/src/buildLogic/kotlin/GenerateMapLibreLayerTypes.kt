@@ -86,6 +86,7 @@ fun generateMapLibreLayerTypes(
             appendLine()
             appendLine("import com.lightningkite.kiteui.map.MapView")
             appendLine("import com.lightningkite.kiteui.models.Color")
+            appendLine("import com.lightningkite.kiteui.models.ImageSource")
             appendLine("import kotlin.uuid.Uuid")
             appendLine()
             val typeDoc = layerSpec.type.values.getValue(layerType)?.doc ?: "A $layerType layer."
@@ -105,11 +106,6 @@ fun generateMapLibreLayerTypes(
                 appendLine("Property(PropertyGroup.${property.group.pascalCase()}, \"${property.name}\", \"${property.cocoaName}\", $native)")
             }
             for (enum in enumsByOwner[layerType].orEmpty()) appendEnum(enum, "    ")
-            if (properties.any { it.spec.type == "variableAnchorOffsetCollection" }) {
-                appendLine()
-                appendLine("    /** An anchor paired with the text offset to use when the label is placed at it. */")
-                appendLine("    data class AnchorOffset(val anchor: ${enums.getValue(ANCHOR_OFFSET_ANCHOR_PROPERTY).reference}, val offset: Point)")
-            }
             appendLine("}")
         }
     }
@@ -174,11 +170,11 @@ private class StyleProperty(
         "color" -> "Color"
         "enum" -> enums.getValue(name).reference
         "formatted" -> "Formatted"
-        "resolvedImage" -> "ResolvedImage"
+        "resolvedImage" -> "ImageSource"
         "padding" -> "Padding"
         "numberArray" -> "List<Number>"
         "colorArray" -> "List<Color>"
-        "variableAnchorOffsetCollection" -> "List<${layerClassName(layerType)}.AnchorOffset>"
+        "variableAnchorOffsetCollection" -> "AnchorOffsets"
         "array" -> when (spec.value) {
             "number" -> when (spec.length) {
                 2 -> "Point"

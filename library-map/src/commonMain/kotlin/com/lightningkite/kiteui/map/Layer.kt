@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.map
 
+import com.lightningkite.kiteui.map.Layer.Literal
+import com.lightningkite.kiteui.map.Layer.Value
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.serialization.json.JsonArray
@@ -85,12 +87,6 @@ sealed class Layer<P>(
 
     internal class Literal<T>(override val json: JsonElement) : Value<T>
 
-    val <T> Value<T>?.flatten get(): Value<T?> = this ?: Literal(JsonPrimitive(null))
-    val Number.literal get(): Value<Number> = Literal(JsonPrimitive(this))
-    val Boolean.literal get(): Value<Boolean> = Literal(JsonPrimitive(this))
-    val String.literal get(): Value<String> = Literal(JsonPrimitive(this))
-    val Color.literal get(): Value<Color> = Literal(JsonPrimitive(toWeb()))
-
     internal interface StyleEnum<T> : Value<T> {
         override val json get() = JsonPrimitive(value)
         val value: String
@@ -109,13 +105,11 @@ sealed class Layer<P>(
         override val json get() = JsonArray(listOf(top, right, bottom, left).map(::JsonPrimitive))
     }
 
+    data class AnchorOffsets(val value: List<Pair<SymbolLayer.Anchor, Point>>) : Value<AnchorOffsets> {
+        override val json get() = JsonArray(value.flatMap { listOf(it.first, it.second) }.map { it.json })
+    }
+
     object Formatted
-
-    /** An image from the style's sprite or added to the map. Create with [image]. */
-    sealed interface ResolvedImage
-
-    internal fun <T> expression(op: String, vararg elements: Value<*>): Value<T> =
-        Literal(JsonArray(listOf(JsonPrimitive(op)) + elements.map { it.json }))
 
     val <T> List<Value<T>>.literal get() = expression<List<T>>("semiliteral", Literal<Any>(JsonArray(map { it.json })))
 
@@ -199,6 +193,16 @@ sealed class Layer<P>(
     fun Value<String>.split(separator: Value<String>) = expression<List<String>>("split", this, separator)
     fun Value<List<String>>.joinToString(separator: Value<String>) = expression<String>("join", this, separator)
 }
+
+
+val <T> Value<T>?.flatten get(): Value<T?> = this ?: Literal(JsonPrimitive(null))
+val Number.literal get(): Value<Number> = Literal(JsonPrimitive(this))
+val Boolean.literal get(): Value<Boolean> = Literal(JsonPrimitive(this))
+val String.literal get(): Value<String> = Literal(JsonPrimitive(this))
+val Color.literal get(): Value<Color> = Literal(JsonPrimitive(toWeb()))
+
+internal fun <T> expression(op: String, vararg elements: Value<*>): Value<T> =
+    Literal(JsonArray(listOf(JsonPrimitive(op)) + elements.map { it.json }))
 
 fun Layer<*>.onClick(callback: () -> Unit) {
 
