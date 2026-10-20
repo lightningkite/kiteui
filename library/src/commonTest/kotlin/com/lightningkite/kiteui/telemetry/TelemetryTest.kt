@@ -3,19 +3,14 @@ package com.lightningkite.kiteui.telemetry
 import com.lightningkite.kiteui.HttpMethod
 import com.lightningkite.kiteui.httpHeaders
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.services.telemetry.MetricUnit
 import com.lightningkite.services.telemetry.RecordedSpan
-import com.lightningkite.services.telemetry.TelemetryAttributeElement
 import com.lightningkite.services.telemetry.TelemetryKey
 import com.lightningkite.services.telemetry.TelemetryKeys
-import com.lightningkite.services.telemetry.enrich
-import com.lightningkite.services.telemetry.telemetryAttributes
 import com.lightningkite.services.telemetry.telemetryAttributesOf
-import com.lightningkite.services.telemetry.telemetryCounter
-import com.lightningkite.services.telemetry.telemetryTrace
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
@@ -37,9 +32,8 @@ class TelemetryTest {
     @Test
     fun spanWithoutParentStartsATrace() = runTest {
         val t = testTelemetry()
-        val owner = t.owner("checkout")
-        owner.telemetryTrace("first") {}
-        owner.telemetryTrace("second") {}
+        t.span("checkout", "first") {}
+        t.span("checkout", "second") {}
 
         val (first, second) = t.recordedSpans()
         assertNull(first.parentSpanId)
@@ -52,8 +46,7 @@ class TelemetryTest {
     @Test
     fun nestedSpanIsAChild() = runTest {
         val t = testTelemetry()
-        val owner = t.owner("checkout")
-        owner.telemetryTrace("outer") { owner.telemetryTrace("inner") {} }
+        t.span("checkout", "outer") { t.span("checkout", "inner") {} }
 
         val inner = t.recordedSpans().single { it.operation == "inner" }
         val outer = t.recordedSpans().single { it.operation == "outer" }
@@ -62,11 +55,11 @@ class TelemetryTest {
     }
 
     @Test
-    fun spanCarriesAmbientAndEnrichedAttributes() = runTest {
+    fun spanCarriesAmbientAndItsOwnAttributes() = runTest {
         val t = testTelemetry()
         val step = TelemetryKey.OfString("checkout.step")
-        telemetryAttributes(screenAttributes) {
-            t.owner("checkout").telemetryTrace("pay") { it.enrich(step to "card") }
+        withContext(TelemetryAttributesElement(screenAttributes)) {
+            t.span("checkout", "pay", telemetryAttributesOf(step to "card")) {}
         }
 
         val span = t.recordedSpans().single()
@@ -77,7 +70,7 @@ class TelemetryTest {
     @Test
     fun failedSpanRecordsErrorWithFingerprint() = runTest {
         val t = testTelemetry()
-        assertFailsWith<IllegalStateException> { t.owner("checkout").telemetryTrace("pay") { error("declined") } }
+        assertFailsWith<IllegalStateException> { t.span("checkout", "pay") { error("declined") } }
 
         val span = t.recordedSpans().single()
         assertEquals(RecordedSpan.Outcome.Error, span.outcome)
@@ -88,7 +81,7 @@ class TelemetryTest {
     @Test
     fun cancelledSpanIsRecordedAsCancelled() = runTest {
         val t = testTelemetry()
-        val job = launch { t.owner("screen").telemetryTrace("load") { kotlinx.coroutines.awaitCancellation() } }
+        val job = launch { t.span("screen", "load") { kotlinx.coroutines.awaitCancellation() } }
         yield()
         job.cancel()
         job.join()
@@ -99,7 +92,7 @@ class TelemetryTest {
     @Test
     fun unsampledSessionRecordsNoSpans() = runTest {
         val t = testTelemetry(traceSamplingRate = 0.0)
-        t.owner("checkout").telemetryTrace("pay") {}
+        t.span("checkout", "pay") {}
         assertTrue(t.recordedSpans().isEmpty())
     }
 
@@ -118,15 +111,23 @@ class TelemetryTest {
     }
 
     @Test
-    fun clientsRecordNoMetrics() {
+    fun appSpansGoToTheInstalledTelemetry() = runTest {
+        assertEquals(1, span("checkout", "pay") { 1 }, "without telemetry the action just runs")
+
         val t = testTelemetry()
-        assertFailsWith<UnsupportedOperationException> { t.owner("checkout").telemetryCounter("abandoned", MetricUnit.Occurrences, setOf()) }
+        Telemetry.installed = t
+        try {
+            span("checkout", "pay") {}
+        } finally {
+            Telemetry.installed = null
+        }
+        assertEquals("pay", t.recordedSpans().single().operation)
     }
 
     @Test
     fun actionCarriesTheScreenAttributesOfTheScopeItStartedFrom() = runTest {
         val t = testTelemetry()
-        val elementScope = CoroutineScope(TelemetryAttributeElement(screenAttributes, null) + Job())
+        val elementScope = CoroutineScope(TelemetryAttributesElement(screenAttributes) + Job())
         // Runs here, outside elementScope, as an action with keepRunningWhile = AppScope would.
         t.actionInterceptor(elementScope, "Save") {
             try {
@@ -147,7 +148,7 @@ class TelemetryTest {
         val t = testTelemetry()
         val load = ScreenLoad()
         load.startedLoading()
-        val visit = launch(TelemetryAttributeElement(screenAttributes, null)) { t.recordScreenVisit(navigator, load) }
+        val visit = launch(TelemetryAttributesElement(screenAttributes)) { t.recordScreenVisit(navigator, load) }
         load.finishedRendering()
         yield()
         assertTrue(t.recordedSpans().isEmpty(), "still loading")
@@ -167,7 +168,7 @@ class TelemetryTest {
         val t = testTelemetry()
         val load = ScreenLoad()
         load.startedLoading()
-        val visit = launch(TelemetryAttributeElement(screenAttributes, null)) { t.recordScreenVisit(navigator, load) }
+        val visit = launch(TelemetryAttributesElement(screenAttributes)) { t.recordScreenVisit(navigator, load) }
         advanceTimeBy(61_000)
 
         assertEquals(RecordedSpan.Outcome.Error, t.recordedSpans().single().outcome)
@@ -180,7 +181,7 @@ class TelemetryTest {
         val t = testTelemetry()
         val load = ScreenLoad()
         load.startedLoading()
-        val visit = launch(TelemetryAttributeElement(screenAttributes, null)) { t.recordScreenVisit(navigator, load) }
+        val visit = launch(TelemetryAttributesElement(screenAttributes)) { t.recordScreenVisit(navigator, load) }
         yield()
         visit.cancel()
         visit.join()

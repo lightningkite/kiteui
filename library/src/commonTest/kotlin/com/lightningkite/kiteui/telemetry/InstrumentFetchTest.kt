@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.HttpHeaders
 import com.lightningkite.kiteui.HttpMethod
 import com.lightningkite.kiteui.httpHeaders
 import com.lightningkite.services.telemetry.TelemetryKeys
-import com.lightningkite.services.telemetry.telemetryTrace
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlin.test.*
@@ -81,7 +80,7 @@ class InstrumentFetchTest {
     @Test
     fun requestInsideASpanIsItsChild() = runTest {
         val t = testTelemetry()
-        val tp = t.owner("checkout").telemetryTrace("pay") { captureHeaders(t) }.get("traceparent")!!
+        val tp = t.span("checkout", "pay") { captureHeaders(t) }.get("traceparent")!!
 
         val parent = t.recordedSpans().single { it.owner == "checkout" }
         assertEquals(parent.traceId, tp.split("-")[1])

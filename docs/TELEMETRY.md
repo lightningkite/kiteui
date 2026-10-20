@@ -1,9 +1,9 @@
 # KiteUI Telemetry
 
-KiteUI records telemetry through Service Abstractions' API (`telemetryTrace`, `telemetryAttributes`,
-`TelemetryBackend`), the same one Lightning Server code uses, and sends it through your own server. The server
-adds the signed-in user and forwards everything to its configured telemetry backend (OTLP, Sentry, ...).
-No telemetry credentials ship in the app.
+KiteUI records spans and logs on the device and sends them through your own server, as Service Abstractions'
+`TelemetryBatch` (from the client-safe `telemetry-shared` module). The server adds the signed-in user and
+forwards everything to its configured telemetry backend (OTLP, Sentry, ...). No telemetry credentials ship in
+the app.
 
 ## Setup
 
@@ -85,21 +85,16 @@ context.telemetryAttributes += telemetryAttributesOf(TelemetryKey.OfString("app.
 
 ## Your own telemetry
 
-Give your owners `ClientContext`:
+Record a span with `span(owner, operation)`. It becomes a child of the current span (an action, say), and
+requests made inside it become its children:
 
 ```kotlin
-object Checkout : Namespaced {
-    override val name = "checkout"
-    override val context = ClientContext
-}
-
-Checkout.telemetryTrace("submit") { trace ->
-    trace.enrich(TelemetryKey.OfString("checkout.method") to "card")
+span("checkout", "submit", telemetryAttributesOf(TelemetryKey.OfString("checkout.method") to "card")) {
     submit()
 }
 ```
 
-Metric instruments (`telemetryCounter` and the rest) throw on clients.
+Without an installed `Telemetry`, `span` just runs its block. There is no client metrics API.
 
 The server rejects a batch (400, so it's dropped) if an owner or attribute name doesn't match
 `[A-Za-z][A-Za-z0-9_.-]{0,63}`, a record has more than 128 attributes, or an attribute value is longer than
@@ -141,7 +136,7 @@ The fingerprint becomes the record's `error.fingerprint`, the same attribute ser
 2. Mount `ClientTelemetryEndpoints` on the server and regenerate the SDK.
 3. Replace `Telemetry(TelemetryConfig(endpoint, headers, ...))` with the constructor above. Custom
    `counter`/`histogram` calls must become spans or logs.
-4. Replace `span("x") { }` with `SomeOwner.telemetryTrace("x") { }`. `exceptionAttributes` is gone; `user.id`
+4. Replace `span("x") { }` with `span("owner", "x") { }`. `exceptionAttributes` is gone; `user.id`
    comes from the server, and app-wide attributes go on the root `ElementContext.telemetryAttributes`.
 5. Update dashboards: `page.name` is now `app.screen.name`, `crash.fingerprint` is `error.fingerprint`, and
    the client metrics `http.client.request.duration`, `navigation.page_views`, `action.invocations` and

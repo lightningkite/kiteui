@@ -21,26 +21,15 @@ import com.lightningkite.kiteui.reactive.actionInterceptors
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.viewPath
 import com.lightningkite.reactive.core.AppScope
-import com.lightningkite.services.Namespaced
-import com.lightningkite.services.SettingContext
-import com.lightningkite.services.telemetry.Counter
-import com.lightningkite.services.telemetry.Histogram
-import com.lightningkite.services.telemetry.InFlight
 import com.lightningkite.services.telemetry.LogLevel
-import com.lightningkite.services.telemetry.MetricUnit
 import com.lightningkite.services.telemetry.RecordedError
 import com.lightningkite.services.telemetry.RecordedLog
 import com.lightningkite.services.telemetry.RecordedSpan
-import com.lightningkite.services.telemetry.TelemetryAttributeElement
 import com.lightningkite.services.telemetry.TelemetryAttributes
-import com.lightningkite.services.telemetry.TelemetryBackend
 import com.lightningkite.services.telemetry.TelemetryBatch
 import com.lightningkite.services.telemetry.TelemetryKey
 import com.lightningkite.services.telemetry.TelemetryKeys
-import com.lightningkite.services.telemetry.TelemetryTrace
-import com.lightningkite.services.telemetry.currentTelemetryAttributes
 import com.lightningkite.services.telemetry.telemetryAttributesOf
-import com.lightningkite.services.telemetry.telemetryTrace
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -59,8 +48,8 @@ import kotlin.time.Duration.Companion.seconds
 import com.lightningkite.kiteui.LogLevel as KiteUiLogLevel
 
 /**
- * KiteUI's telemetry, recorded through Service Abstractions' API and sent through your own server, which adds
- * the signed-in user and forwards it to its telemetry backend. No telemetry credentials ship in the app.
+ * KiteUI's telemetry, sent through your own server, which adds the signed-in user and forwards it to its
+ * telemetry backend. No telemetry credentials ship in the app.
  *
  * ```kotlin
  * val telemetry = Telemetry(
@@ -72,8 +61,8 @@ import com.lightningkite.kiteui.LogLevel as KiteUiLogLevel
  * ```
  *
  * Once installed, requests, actions and screen visits are traced, logs at [minLogLevel] and above and
- * reported exceptions are recorded, and records are kept on the device until uploaded. Clients record no
- * metrics: they're untrusted, and metric cardinality drives observability cost.
+ * reported exceptions are recorded, and records are kept on the device until uploaded. Record your own spans
+ * with [span]. Clients record no metrics: they're untrusted, and metric cardinality drives observability cost.
  *
  * @param upload sends one batch. Throw to keep it and retry later with backoff; return to be done with it,
  *   whether it was delivered or permanently refused.
@@ -86,7 +75,7 @@ public class Telemetry(
     traceSamplingRate: Double = 1.0,
     private val tracePropagationHosts: List<String> = listOf(),
     private val minLogLevel: LogLevel = LogLevel.Warn,
-) : TelemetryBackend {
+) {
     internal val sessionId: String = spanId()
     internal val sampled: Boolean = Random.nextDouble() < traceSamplingRate
     internal val outbox = TelemetryOutbox(
@@ -105,18 +94,6 @@ public class Telemetry(
     internal var currentScreen: TelemetryAttributes = TelemetryAttributes.empty
     private var mainNavigator: PageNavigator? = null
 
-    // Our own owners record to this instance even before install, so they work in tests without global hooks.
-    private val ownContext: SettingContext = object : SettingContext by ClientContext {
-        override val telemetryBackend: TelemetryBackend get() = this@Telemetry
-    }
-    private fun owner(name: String): Namespaced = object : Namespaced {
-        override val name: String = name
-        override val context: SettingContext = ownContext
-    }
-    private val http = owner("http")
-    private val action = owner("action")
-    private val screen = owner("screen")
-
     // ===== Installation =====
 
     private var installed = false
@@ -132,8 +109,8 @@ public class Telemetry(
     }
     internal val actionInterceptor: suspend (CoroutineScope, String, suspend () -> Unit) -> Unit = { scope, title, proceed ->
         // Actions run in AppScope by default, which doesn't carry the screen's attributes.
-        withContext(scope.coroutineContext[TelemetryAttributeElement] ?: EmptyCoroutineContext) {
-            action.telemetryTrace(title) { proceed() }
+        withContext(scope.coroutineContext[TelemetryAttributesElement] ?: EmptyCoroutineContext) {
+            span("action", title) { proceed() }
         }
     }
     internal val logInterceptor: LogInterceptor = LogInterceptor { level, tag, entries ->
@@ -152,7 +129,7 @@ public class Telemetry(
         val source = meta?.source
         reportError(e, TelemetryAttributes {
             if (source != null) {
-                source.underlyingNativeElement.coroutineContext[TelemetryAttributeElement]?.let { putAll(it.flattened()) }
+                source.underlyingNativeElement.coroutineContext[TelemetryAttributesElement]?.let { putAll(it.attributes) }
                 put(viewPathKey, source.viewPath())
             }
         })
@@ -164,7 +141,7 @@ public class Telemetry(
         check(!installed) { "Telemetry.install() called twice. Call shutdown() first." }
         installed = true
         mainNavigator = navigator
-        ClientContext.telemetryBackend = this
+        Companion.installed = this
 
         Log.interceptors.add(logInterceptor)
         elementContext = context
@@ -227,7 +204,7 @@ public class Telemetry(
     internal fun shutdown() {
         if (!installed) return
         installed = false
-        ClientContext.telemetryBackend = TelemetryBackend.Noop
+        Companion.installed = null
         fetchInterceptors.remove(fetchInterceptor)
         actionInterceptors.remove(actionInterceptor)
         Log.interceptors.remove(logInterceptor)
@@ -253,21 +230,17 @@ public class Telemetry(
         add(RecordedLog(Clock.System.now(), LogLevel.Info, name, attributes + telemetryAttributesOf(TelemetryKeys.Event.name to name)))
     }
 
-    override suspend fun <T> span(
-        owner: Namespaced,
-        opName: String,
-        attributes: TelemetryAttributes,
-        dimensions: Set<TelemetryKey<*>>,
-        action: suspend (TelemetryTrace) -> T,
-    ): T {
-        val parent = currentCoroutineContext()[ClientSpan]
-        val span = ClientSpan(traceId = parent?.traceId ?: traceId(), spanId = spanId())
-        val trace = ClientTrace(span)
+    /** Runs [action] as span `owner.operation`, a child of the current span if there is one. */
+    internal suspend fun <T> span(owner: String, operation: String, attributes: TelemetryAttributes = TelemetryAttributes.empty, action: suspend (ClientSpan) -> T): T {
+        val context = currentCoroutineContext()
+        val parent = context[ClientSpan]
+        val ambient = context[TelemetryAttributesElement]?.attributes ?: TelemetryAttributes.empty
+        val span = ClientSpan(traceId = parent?.traceId ?: traceId(), spanId = spanId(), attributes = ambient + attributes)
         val start = Clock.System.now()
         var outcome = RecordedSpan.Outcome.Error
         var error: RecordedError? = null
         try {
-            return withContext(span) { action(trace) }.also { outcome = RecordedSpan.Outcome.Ok }
+            return withContext(span) { action(span) }.also { outcome = RecordedSpan.Outcome.Ok }
         } catch (e: CancellationException) {
             outcome = RecordedSpan.Outcome.Cancelled
             throw e
@@ -276,45 +249,22 @@ public class Telemetry(
             throw e
         } finally {
             if (sampled) enqueue {
-                add(RecordedSpan(span.traceId, span.spanId, parent?.spanId, owner.name, opName, start, Clock.System.now(),
-                    attributes + trace.enriched, outcome, error))
+                add(RecordedSpan(span.traceId, span.spanId, parent?.spanId, owner, operation, start, Clock.System.now(),
+                    span.attributes, outcome, error))
             }
         }
     }
 
-    private inner class ClientTrace(private val span: ClientSpan) : TelemetryTrace {
-        var enriched = TelemetryAttributes.empty
-        override fun enrich(attributes: TelemetryAttributes) { enriched += attributes }
-        override fun isLoggable(level: LogLevel): Boolean = level >= minLogLevel
-        override fun log(level: LogLevel, message: String, attributes: TelemetryAttributes) {
-            if (isLoggable(level)) enqueue { add(RecordedLog(Clock.System.now(), level, message, attributes, span.traceId, span.spanId)) }
-        }
-    }
-
-    override fun counter(owner: Namespaced, name: String, unit: MetricUnit, dimensions: Set<TelemetryKey<*>>): Counter =
-        throw UnsupportedOperationException("Clients don't record metrics; record a span or log instead.")
-
-    override fun histogram(owner: Namespaced, name: String, unit: MetricUnit, dimensions: Set<TelemetryKey<*>>): Histogram =
-        throw UnsupportedOperationException("Clients don't record metrics; record a span or log instead.")
-
-    override fun inFlight(owner: Namespaced, name: String, dimensions: Set<TelemetryKey<*>>): InFlight =
-        throw UnsupportedOperationException("In-flight gauges aren't supported on clients.")
-
-    override fun gauge(owner: Namespaced, name: String, unit: MetricUnit, attributes: TelemetryAttributes, sample: () -> Long): AutoCloseable =
-        throw UnsupportedOperationException("Gauges aren't supported on clients.")
-
-    override fun reportError(throwable: Throwable, attributes: TelemetryAttributes): Unit = enqueue {
+    internal fun reportError(throwable: Throwable, attributes: TelemetryAttributes): Unit = enqueue {
         add(RecordedLog(Clock.System.now(), LogLevel.Error, throwable.message ?: throwable::class.simpleName ?: "Error",
             currentScreen + attributes, error = throwable.toRecordedError()))
     }
 
-    override suspend fun flush() {
+    /** Saves what's been recorded and uploads it now, e.g. before the user signs out. */
+    public suspend fun flush() {
         outbox.persist()
         outbox.upload()
     }
-
-    override fun ingest(batch: TelemetryBatch): Unit =
-        throw UnsupportedOperationException("Clients record telemetry; servers ingest it.")
 
     // ===== Instrumentation =====
 
@@ -336,26 +286,25 @@ public class Telemetry(
             put(TelemetryKeys.Url.path, "/" + afterScheme.substringAfter("/", ""))
             put(TelemetryKeys.Server.address, host)
         }
-        return http.telemetryTrace(method.name, attributes) { trace ->
+        return span("http", method.name, attributes) { span ->
             val outHeaders = httpHeaders(headers)
             if (tracePropagationHosts.any { host == it || host.endsWith(".$it") }) {
-                val span = currentCoroutineContext()[ClientSpan]!!
                 outHeaders.set("traceparent", "00-${span.traceId}-${span.spanId}-${if (sampled) "01" else "00"}")
             }
             val response = proceed(url, method, outHeaders, body)
-            trace.enrich(telemetryAttributesOf(TelemetryKeys.Http.responseStatusCode to response.status.toLong()))
+            span.attributes += telemetryAttributesOf(TelemetryKeys.Http.responseStatusCode to response.status.toLong())
             response
         }
     }
 
     /** Runs for as long as a screen is shown, with the screen's attributes in the coroutine context. */
     internal suspend fun recordScreenVisit(navigator: PageNavigator, load: ScreenLoad) {
-        val screenAttributes = currentTelemetryAttributes()
+        val screenAttributes = currentCoroutineContext()[TelemetryAttributesElement]?.attributes ?: TelemetryAttributes.empty
         if (navigator === mainNavigator) currentScreen = screenAttributes
         event("app.screen.view_start", screenAttributes)
         try {
             try {
-                screen.telemetryTrace("load") {
+                span("screen", "load") {
                     withTimeoutOrNull(60.seconds) { load.usable.await() } ?: throw ScreenLoadTimeout()
                 }
             } catch (_: ScreenLoadTimeout) {
@@ -369,6 +318,8 @@ public class Telemetry(
 
     internal companion object {
         const val MAX_BUFFERED_RECORDS = 100
+
+        var installed: Telemetry? = null
 
         private val appDebug = TelemetryKey.OfBoolean("app.debug")
         private val logTag = TelemetryKey.OfString("log.tag")
@@ -389,9 +340,28 @@ public class Telemetry(
 
 private class ScreenLoadTimeout : Exception("The screen wasn't usable within 60 seconds")
 
-/** The client span the current coroutine runs in; spans started inside it become its children. */
-internal class ClientSpan(val traceId: String, val spanId: String) : AbstractCoroutineContextElement(Key) {
+/**
+ * Records [action] as span `owner.operation` with the installed [Telemetry], as a child of the current span if
+ * there is one. Just runs [action] when telemetry isn't installed.
+ */
+public suspend fun <T> span(
+    owner: String,
+    operation: String,
+    attributes: TelemetryAttributes = TelemetryAttributes.empty,
+    action: suspend () -> T,
+): T {
+    val telemetry = Telemetry.installed ?: return action()
+    return telemetry.span(owner, operation, attributes) { action() }
+}
+
+/** The span the current coroutine runs in; spans started inside it become its children. */
+internal class ClientSpan(val traceId: String, val spanId: String, var attributes: TelemetryAttributes) : AbstractCoroutineContextElement(Key) {
     companion object Key : CoroutineContext.Key<ClientSpan>
+}
+
+/** Attributes for everything recorded in this coroutine; elements carry their [ElementContext.telemetryAttributes]. */
+internal class TelemetryAttributesElement(val attributes: TelemetryAttributes) : AbstractCoroutineContextElement(Key) {
+    companion object Key : CoroutineContext.Key<TelemetryAttributesElement>
 }
 
 private fun Throwable.toRecordedError(): RecordedError = RecordedError(

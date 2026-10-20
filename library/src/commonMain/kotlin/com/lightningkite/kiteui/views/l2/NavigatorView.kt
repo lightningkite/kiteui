@@ -9,11 +9,10 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.kiteui.telemetry.ScreenLoad
 import com.lightningkite.kiteui.telemetry.Telemetry
-import com.lightningkite.kiteui.telemetry.ClientContext
 import com.lightningkite.kiteui.telemetry.screenLoad
 import com.lightningkite.kiteui.telemetry.telemetryAttributes
 import com.lightningkite.reactive.context.awaitOnce
-import com.lightningkite.services.telemetry.TelemetryAttributeElement
+import com.lightningkite.kiteui.telemetry.TelemetryAttributesElement
 import com.lightningkite.services.telemetry.TelemetryKeys
 import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.coroutines.Job
@@ -47,8 +46,8 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
                             TelemetryKeys.App.screenName to (screen::class.simpleName ?: "Unknown"),
                             TelemetryKeys.App.screenId to Telemetry.spanId(),
                         )
-                        val telemetry = ClientContext.telemetryBackend as? Telemetry
-                        if (telemetry != null) visit = this@swapView.launch(TelemetryAttributeElement(context.telemetryAttributes, null)) {
+                        val telemetry = Telemetry.installed
+                        if (telemetry != null) visit = this@swapView.launch(TelemetryAttributesElement(context.telemetryAttributes)) {
                             telemetry.recordScreenVisit(navigator, load)
                         }
                         with(screen) { themed(MainContentSemantic).asMain.padded.render() }

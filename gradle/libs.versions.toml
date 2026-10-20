@@ -29,7 +29,7 @@ reactive = "7.0.0-prerelease-64-02a1bce"
 robolectric = "4.17"
 roborazzi = "1.75.0"
 roborazziVersion = "1.75.0"
-serviceAbstractions = "1.3.0-telemetryclientingest-9-d1bc42f8"
+serviceAbstractions = "1.3.0-telemetryclientingest-10-c8442f7c"
 atomicfu = "0.33.0"
 swingxAll = "1.6.5-1"
 swiperefreshlayout = "1.2.0"
@@ -90,7 +90,7 @@ photoview = { module = "com.github.chrisbanes:PhotoView", version = { ref = "pho
 reactive = { module = "com.lightningkite:reactive", version = { ref = "reactive" } }
 robolectric = { module = "org.robolectric:robolectric", version = { ref = "robolectric" } }
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazziVersion" }
-services-basis = { module = "com.lightningkite.services:basis", version = { ref = "serviceAbstractions" } }
+services-telemetry-shared = { module = "com.lightningkite.services:telemetry-shared", version = { ref = "serviceAbstractions" } }
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version = { ref = "atomicfu" } }
 swingx-all = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingxAll" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = { ref = "swiperefreshlayout" } }

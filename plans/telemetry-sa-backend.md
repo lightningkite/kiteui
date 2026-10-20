@@ -5,8 +5,8 @@ Status: implemented on the `telemetry-*` worktree branches (SA, LS, KiteUI, LSK)
 ## Goal
 
 Replace KiteUI's private OTLP client with:
-- recording through SA's own API (`telemetryTrace`, ambient attributes, `TelemetryBackend`);
-- a client `TelemetryBackend` that queues records durably and POSTs them to an ingest endpoint on the app's own Lightning Server.
+- recording spans and logs in KiteUI and uploading them as SA's `TelemetryBatch` (from the client-safe `telemetry-shared` module; see "Option B" below);
+- a durable client outbox that POSTs batches to an ingest endpoint on the app's own Lightning Server.
 
 The server then adds `user.id` from the session and forwards the records to its configured backend (OTLP today, a self-hosted monitor later).
 
@@ -16,6 +16,29 @@ The changes fix the review findings:
 - Telemetry recorded while offline survives.
 - Client and server share one vocabulary.
 - Spans get `user.id`.
+
+## Option B: KiteUI without `basis` (decided after implementation)
+
+The first implementation made KiteUI depend on SA `basis` and implement `TelemetryBackend`, so client code
+recorded through basis's DSL (`telemetryTrace`, `Namespaced` owners, a client `SettingContext` called
+`ClientContext`). The user chose to drop that for cleanliness: `basis` drags server concepts (`SettingContext`,
+`SharedResources`, `Namespaced`, URL settings, terraform annotations) into every client and forced the invented
+`ClientContext`. LS's client-facing `*-shared` modules already avoid `basis` by depending only on SA `*-shared`
+modules; KiteUI now follows the same convention.
+
+- SA: new module `telemetry-shared` holds only the upload format and its value types (`TelemetryBatch`,
+  `RecordedSpan`/`RecordedLog`/`RecordedError`, `TelemetryAttributes`, `TelemetryKey`, `TelemetryKeys`,
+  `LogLevel`), in the same package. `basis` depends on it with `api`, so server code is unchanged.
+- KiteUI depends on `telemetry-shared` only and records with its own small API: an internal `span` primitive,
+  a `ClientSpan` coroutine element (current span, for parenting and the outgoing `traceparent`), a
+  `TelemetryAttributesElement` (screen attributes carried by element coroutines), and a public top-level
+  `span(owner, operation, attributes) { }` for app code. No metrics API.
+- LS `typed-shared` depends on `telemetry-shared` so the generated client SDK's `TelemetryBatch` comes from a
+  client-safe module.
+- Size was not the reason: measured pre-webpack, `basis` with minimal use added +6.8 KB gzip to a JS client,
+  and the full branch (with `basis`) +21 KB gzip.
+
+Sections below are updated where they described the `basis` design.
 
 ## Order of work
 
@@ -156,8 +179,8 @@ public class ClientTelemetryEndpoints : ServerBuilder() {
 ## 3. KiteUI client
 
 ### Dependency
-- `gradle/libs.versions.toml`: add `serviceAbstractions` and `services-basis`.
-- `library/build.gradle.kts` commonMain: `api(libs.services.basis)`. It is `api` because `TelemetryAttributes` and `TelemetryBackend` appear in KiteUI's public API.
+- `gradle/libs.versions.toml`: add `serviceAbstractions` and `services-telemetry-shared`.
+- `library/build.gradle.kts` commonMain: `api(libs.services.telemetry.shared)`. It is `api` because `upload` receives a `TelemetryBatch`. KiteUI does not depend on `basis` (Option B).
 
 ### Setup (app code)
 ```kotlin
@@ -174,12 +197,12 @@ telemetry.install(context, navigator)
 - Upload goes through the app's own LS client, which is how it gets authenticated.
   - Lightning-server-kiteui (LSK) attaches the access token as an `Authorization` header via its header calculator, not as a cookie.
   - A raw `fetch` from KiteUI would therefore be anonymous.
-- `ClientContext` is a new `public object ClientContext : SettingContext`. Its `telemetryBackend` is set by `install` and reset by `shutdown`.
-  - It gives every client `Namespaced` owner a context: KiteUI's own owners, and apps' `object Checkout : Namespaced { name = "checkout"; context = ClientContext }`.
+- No `ClientContext`, `SettingContext` or `Namespaced` on the client (Option B). App code records spans with the top-level `span(owner, operation, attributes) { }`, which records into the installed `Telemetry` (an internal `Telemetry.installed`) and just runs the block when none is installed.
+
   - `publicUrl` and `internalSerializersModule` are unused on the client; they are empty values.
   - The name is an open question.
 
-### `Telemetry` as a `TelemetryBackend`
+### `Telemetry` (originally a `TelemetryBackend`; under Option B a plain class with an internal `span` primitive, `reportError` and `flush`)
 File: `library/src/commonMain/.../telemetry/Telemetry.kt`, rewritten.
 
 - `span(owner, op, attrs, dims, action)`:
@@ -221,11 +244,11 @@ Per platform:
 
 ### Screen visits
 - New `ElementContext.telemetryAttributes: TelemetryAttributes` addon. It inherits down the `ChainMap`, like `pageNavigator`.
-- `NativeElement.kt:483` replaces `TelemetryContext(element = ...)` with `TelemetryAttributeElement(context.telemetryAttributes, null)`. Every coroutine an element launches, including reactive loads and the fetches inside them, then carries the screen's attributes.
+- `NativeElement.kt:483` replaces `TelemetryContext(element = ...)` with `TelemetryAttributesElement(context.telemetryAttributes)`. Every coroutine an element launches, including reactive loads and the fetches inside them, then carries the screen's attributes.
 - `navigatorView` (`views/l2/NavigatorView.kt`) sets the addon inside `with(split())`, next to `context.pageNavigator = navigator`: `TelemetryKeys.App.screenName` = page class simple name, and `TelemetryKeys.App.screenId` = fresh random id per visit.
 - What a visit records, all short:
   - **Screen load.**
-    - Owner `screen`, op `load`, launched in the screen's scope: `telemetryTrace("load") { loaded.await() }`.
+    - Owner `screen`, op `load`, launched in the screen's scope: `span("screen", "load") { usable.await() }`.
     - It ends when the screen is usable, or as `Cancelled` if the user navigates away first.
     - "Usable" means the screen subtree has no background process that is not ready. `Processes` in `NativeElement.kt:632` is per element and not hierarchical. So a small `ScreenLoad` counter in the screen's context addons is incremented and decremented by each element's background `Processes` when its not-ready count crosses zero.
     - Capped at 60s. This is open question 2.
@@ -237,8 +260,8 @@ Per platform:
 
 | Today | After |
 |---|---|
-| `fetchInterceptors` → `instrumentFetch` | Kept. Runs `http.telemetryTrace(method.name, attrs) { proceed(...) }`. URL credentials and query are still stripped (`withoutUserInfo` is kept). `traceparent` comes from `ClientSpan` and is sent only to allowlisted hosts. Inside an action the request is a child of that action; otherwise it starts its own trace. Attributes use `TelemetryKeys.Http/Url/Server` keys. The `http.client.request.duration` histogram is gone. |
-| `actionInstrumentors` + `ActionInstrumentation(context, onStart, onEnd)` | The type is replaced by an interceptor `suspend (scope, title, proceed) -> Unit`, which is needed to wrap `telemetryTrace` around the body. It has no other users (grep). It runs at both call sites, `Action.kt:222` and `Action.kt:315`. Telemetry's interceptor copies `scope.coroutineContext[TelemetryAttributeElement]` into the action, because actions launch in `AppScope` by default. Then it runs `action.telemetryTrace(title, viewPath attr) { proceed() }`. The `action.invocations` counter is gone. |
+| `fetchInterceptors` → `instrumentFetch` | Kept. Runs `span("http", method.name, attrs) { proceed(...) }`. URL credentials and query are still stripped (`withoutUserInfo` is kept). `traceparent` comes from `ClientSpan` and is sent only to allowlisted hosts. Inside an action the request is a child of that action; otherwise it starts its own trace. Attributes use `TelemetryKeys.Http/Url/Server` keys. The `http.client.request.duration` histogram is gone. |
+| `actionInstrumentors` + `ActionInstrumentation(context, onStart, onEnd)` | The type is replaced by an interceptor `suspend (scope, title, proceed) -> Unit`, which is needed to wrap a span around the body. It has no other users (grep). It runs at both call sites, `Action.kt:222` and `Action.kt:315`. Telemetry's interceptor copies `scope.coroutineContext[TelemetryAttributesElement]` into the action, because actions launch in `AppScope` by default. Then it runs `span("action", title) { proceed() }`. The `action.invocations` counter is gone. |
 | Navigation listener: `page: X` span, trace rotation, `navigation.page_views` counter | Screen-visit model above. Page views are `screen.load` spans. |
 | `Throwable_report` hook, `ExceptionHandler` interceptor | Kept. Both call `reportError`. The `ExceptionHandler` path adds the `meta.source` element's ambient attributes and `view.path`. |
 | `Log.interceptors` | Kept, as described above. `setVerboseLogging` is kept if used, otherwise deleted. |
@@ -246,7 +269,7 @@ Per platform:
 | Cold start span, foreground session span, foreground counter | Cold start: short `app.start` span. The long foreground span is deleted; foreground and background become info events, and background triggers persist and upload. |
 | Crash hook + `blockingFlush` (3s network) | The hook is kept. It records the throwable as ERROR with `exception.escaped=true`, then persists synchronously. No network. |
 | `CrashFingerprint` | Kept, unchanged. |
-| Public `span(name, attrs) {}` | Deleted. Use `Owner.telemetryTrace(...)` / `telemetryAttributes(...)`. |
+| Public `span(name, attrs) {}` | Becomes `span(owner, operation, attrs) {}` (Option B). |
 | `exceptionAttributes` config | Deleted. `user.id` comes from the server; app-wide attributes go in the root `ElementContext.telemetryAttributes`. |
 
 ### Deleted
@@ -263,7 +286,7 @@ Per platform:
 - `ActionInstrumentation`.
 - Tests: `OtlpModelsTest`, `TelemetryMetricsTest`, `TracePerPageTest`, `SpanTest`, `TelemetryContextTest`, `TelemetryExporterTest`, `InteractionSpanTest`, `TelemetryConfigureTest`. Their replacements are listed in section 5.
 - `docs/TELEMETRY.md` is rewritten, removing the Grafana-token setup and the PromQL for the old metric names.
-- `example-app/.../TelemetryTestPage.kt` is updated to `telemetryTrace`.
+- `example-app/.../TelemetryTestPage.kt` is updated to `span("demo", ...)`.
 
 ## 4. Migration for existing apps
 1. **Revoke and rotate any Grafana or OTLP token that shipped in a client build.** It is public now.
@@ -277,7 +300,7 @@ Per platform:
    - Regenerate the SDK so it includes `telemetry.ingest`.
    - Replace `Telemetry(TelemetryConfig(endpoint, headers, ...))` with the constructor shown in section 3.
 4. Code:
-   - `span("x") { }` becomes `SomeOwner.telemetryTrace("x") { }`.
+   - `span("x") { }` becomes `span("owner", "x") { }`.
    - `exceptionAttributes` is removed.
    - Dashboards change too: `page.name` becomes `app.screen.name`, `crash.fingerprint` becomes `error.fingerprint`, and the old client histogram and counters are gone (use spans and logs).
 
@@ -335,7 +358,7 @@ Per platform:
 1. **Requests inside an action:** children of the action (user confirmed). Requests outside any action are their own trace.
 2. **What "usable" means for screen load:** no background process pending in the screen subtree, capped at 60 s.
 3. **Raw metric points versus client-side aggregation:** moot; clients record no metrics.
-4. **The client `SettingContext` object:** `ClientContext`, in KiteUI.
+4. **The client `SettingContext` object:** superseded by Option B: KiteUI has none.
 5. **Multi-tab web outbox race:** accepted.
 6. **Clock-skew correction via `sentAt`:** kept.
 7. **Ingest request span:** not traced (`HttpHandler.traced = false`).

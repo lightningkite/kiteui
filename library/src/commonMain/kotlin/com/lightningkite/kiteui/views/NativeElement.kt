@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.telemetry.screenLoad
 import com.lightningkite.kiteui.telemetry.telemetryAttributes
-import com.lightningkite.services.telemetry.TelemetryAttributeElement
+import com.lightningkite.kiteui.telemetry.TelemetryAttributesElement
 import com.lightningkite.kiteui.utils.OrderedKeyedList
 import com.lightningkite.reactive.context.StatusListener
 import com.lightningkite.reactive.context.onRemove
@@ -482,7 +482,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
             override fun watchForegroundProcess(status: Reactive<*>): Release =
                 this@NativeElementCommonCode.watchForegroundProcess(status)
         },
-        TelemetryAttributeElement(context.telemetryAttributes, null)
+        TelemetryAttributesElement(context.telemetryAttributes)
     )
 
     public var fullyStarted: Boolean = false

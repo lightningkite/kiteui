@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.telemetry.ClientContext
+import com.lightningkite.kiteui.telemetry.span
 import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
@@ -15,16 +15,8 @@ import com.lightningkite.kiteui.views.important
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
-import com.lightningkite.services.Namespaced
-import com.lightningkite.services.SettingContext
-import com.lightningkite.services.telemetry.telemetryTrace
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
-
-private object Demo : Namespaced {
-    override val name: String = "demo"
-    override val context: SettingContext = ClientContext
-}
 
 @Routable("/internal/telemetry-test")
 object TelemetryTestPage : Page {
@@ -77,9 +69,9 @@ object TelemetryTestPage : Page {
             button {
                 text("3 Sequential Spans")
                 onClick("Multi-Step Work", frequencyCap = 0.milliseconds) {
-                    Demo.telemetryTrace("validate") { delay(50) }
-                    Demo.telemetryTrace("transform") { delay(100) }
-                    Demo.telemetryTrace("save") { delay(75) }
+                    span("demo", "validate") { delay(50) }
+                    span("demo", "transform") { delay(100) }
+                    span("demo", "save") { delay(75) }
                     result.value = "3 spans done"
                 }
             }
@@ -90,11 +82,11 @@ object TelemetryTestPage : Page {
             button {
                 text("Nested Spans + HTTP")
                 onClick("Nested Work", frequencyCap = 0.milliseconds) {
-                    Demo.telemetryTrace("outer-work") {
-                        Demo.telemetryTrace("inner-fetch") {
+                    span("demo", "outer-work") {
+                        span("demo", "inner-fetch") {
                             fetch("/", method = HttpMethod.GET)
                         }
-                        Demo.telemetryTrace("inner-compute") {
+                        span("demo", "inner-compute") {
                             delay(30)
                         }
                     }
@@ -109,7 +101,7 @@ object TelemetryTestPage : Page {
                 text("Span With Error")
                 onClick("Failing Work", frequencyCap = 0.milliseconds) {
                     try {
-                        Demo.telemetryTrace("will-fail") {
+                        span("demo", "will-fail") {
                             error("intentional test error")
                         }
                     } catch (_: Exception) {
