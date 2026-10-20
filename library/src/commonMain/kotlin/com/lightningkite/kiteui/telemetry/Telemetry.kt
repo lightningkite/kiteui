@@ -64,7 +64,6 @@ import com.lightningkite.kiteui.LogLevel as KiteUiLogLevel
  *
  * ```kotlin
  * val telemetry = Telemetry(
- *     serviceName = "my-app",
  *     serviceVersion = Build.version,
  *     upload = telemetryUpload { api.clientTelemetry.ingest(it) }, // from lightning-server-kiteui
  *     tracePropagationHosts = listOf("api.example.com"),
@@ -82,7 +81,6 @@ import com.lightningkite.kiteui.LogLevel as KiteUiLogLevel
  * @param tracePropagationHosts hosts (and their subdomains) that receive a `traceparent` header, linking their spans to ours.
  */
 public class Telemetry(
-    serviceName: String,
     serviceVersion: String,
     upload: suspend (TelemetryBatch) -> Unit,
     traceSamplingRate: Double = 1.0,
@@ -92,12 +90,11 @@ public class Telemetry(
     internal val sessionId: String = spanId()
     internal val sampled: Boolean = Random.nextDouble() < traceSamplingRate
     internal val outbox = TelemetryOutbox(
+        // The server keeps only these keys (LS ClientTelemetryEndpoints.CLIENT_RESOURCE_KEYS) and sets service.name itself.
         resource = TelemetryAttributes {
-            put(TelemetryKeys.Service.name, serviceName)
             put(TelemetryKeys.Service.version, serviceVersion)
             put(TelemetryKeys.Os.type, Platform.current.name.lowercase())
             put(TelemetryKeys.Session.id, sessionId)
-            put(TelemetryKeys.Telemetry.sdkName, "kiteui")
             put(appDebug, Build.debug)
         },
         send = upload,

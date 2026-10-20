@@ -10,8 +10,18 @@ No telemetry credentials ship in the app.
 Server (Lightning Server):
 
 ```kotlin
-val telemetry = path.path("telemetry") module ClientTelemetryEndpoints()
+val cache = setting("cache", Cache.Settings())
+val telemetry = path.path("telemetry") module ClientTelemetryEndpoints(cache)
 ```
+
+The server decides who records are from: `service.name` is `<projectName>-client`, `user.id` comes from the
+caller's authentication, and of the client's resource attributes only `service.version`, `os.type`,
+`session.id` and `app.debug` are kept. A client can't pose as the server or as another user.
+
+Uploads are rate limited per signed-in user, else per IP, using the `cache`: a burst of about 24 uploads
+(enough to drain an outbox saved while offline), then one per 5 seconds; clients normally upload every 30
+seconds. A 429 is retried later like any other failure. Set the `clientTelemetryRateLimit` setting to null to
+turn the limit off.
 
 Point the server's `telemetry` setting at your backend, with its credentials kept server-side. If CORS
 `limitToHeaders` isn't `*`, add `traceparent`.
@@ -20,7 +30,6 @@ Client, after regenerating the SDK so it includes `clientTelemetry.ingest`:
 
 ```kotlin
 val telemetry = Telemetry(
-    serviceName = "my-app",
     serviceVersion = Build.version,
     upload = telemetryUpload { api.clientTelemetry.ingest(it) },
     tracePropagationHosts = listOf("api.example.com"),
@@ -30,7 +39,7 @@ telemetry.install(context, navigator)
 
 `upload` sends one batch: throwing keeps the batch for a retry, returning drops it. `telemetryUpload` (from
 lightning-server-kiteui) drops batches the server refused for good (a 4xx other than 401, 408 or 429) and
-retries everything else.
+retries everything else, including rate-limit 429s.
 
 Upload goes through your generated client so it carries the user's `Authorization` header. Anonymous
 uploads are accepted and simply have no `user.id`. The user is whoever is signed in when a batch is

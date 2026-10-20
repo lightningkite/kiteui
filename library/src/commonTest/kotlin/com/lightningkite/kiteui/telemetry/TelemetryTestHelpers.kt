@@ -10,7 +10,6 @@ internal fun testTelemetry(
     traceSamplingRate: Double = 1.0,
     tracePropagationHosts: List<String> = listOf("example.com"),
 ) = Telemetry(
-    serviceName = "test",
     serviceVersion = "1",
     upload = { error("not uploading in this test") },
     traceSamplingRate = traceSamplingRate,

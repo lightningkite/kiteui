@@ -19,6 +19,9 @@
   `navigation.page_views`, `action.invocations` and `connectivity.issues` are gone (connectivity issues remain
   WARN logs), and the server derives no metrics from client spans. Clients are untrusted, and metric
   cardinality drives observability cost. Unsampled sessions record no spans.
+- **`Telemetry` no longer takes `serviceName`.** The server names client records `<projectName>-client` and
+  keeps only `service.version`, `os.type`, `session.id` and `app.debug` from the client, so a client can't
+  pose as the server. Uploads are rate limited server-side; a 429 is retried later.
 - Removed: `TelemetryConfig`, the public `span()` function (use `Owner.telemetryTrace`, with
   `ClientContext` as the owner's context), `exceptionAttributes` (use the new
   `ElementContext.telemetryAttributes`), and `ActionInstrumentation`/`actionInstrumentors` (replaced by
