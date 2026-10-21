@@ -14,12 +14,7 @@ import java.awt.datatransfer.StringSelection
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.UUID
 import kotlin.time.Clock
-import kotlin.time.Instant
-import kotlin.time.toJavaInstant
 
 /** Downloads go into [home]'s `Downloads` or `Pictures` folder. */
 public class DesktopExternalServices(private val home: File = File(System.getProperty("user.home"))) : ExternalServicesAccess {
@@ -111,26 +106,4 @@ internal fun fileMatches(file: File, mimeTypes: List<String>): Boolean {
             else -> type == accepted
         }
     }
-}
-
-internal fun icsEvent(title: String, description: String, location: String, start: Instant, end: Instant, now: Instant): String {
-    val utc = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC)
-    fun Instant.format() = utc.format(toJavaInstant())
-    fun String.escaped() = replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
-    return listOf(
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//Lightning Kite//KiteUI//EN",
-        "METHOD:PUBLISH",
-        "BEGIN:VEVENT",
-        "UID:${UUID.randomUUID()}",
-        "DTSTAMP:${now.format()}",
-        "DTSTART:${start.format()}",
-        "DTEND:${end.format()}",
-        "SUMMARY:${title.escaped()}",
-        "DESCRIPTION:${description.escaped()}",
-        "LOCATION:${location.escaped()}",
-        "END:VEVENT",
-        "END:VCALENDAR",
-    ).joinToString("\r\n", postfix = "\r\n")
 }
