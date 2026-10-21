@@ -56,10 +56,6 @@ class Source<G : Geometry?, P> internal constructor(
     }
 }
 
-/**
- * Calls [callback] when the map is clicked on features from this source, in any of its layers.
- * [callback] receives the properties of every feature that was clicked, once each.
- */
 fun <P> Source<*, P>.onClick(callback: (properties: List<P>) -> Unit) {
     clickListeners += callback
 }

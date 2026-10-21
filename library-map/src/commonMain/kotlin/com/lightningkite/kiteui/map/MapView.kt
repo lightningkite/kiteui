@@ -292,7 +292,7 @@ private fun JsonObject.restoreNestedValues(descriptor: SerialDescriptor): JsonOb
 }
 
 fun getDefaultPin(
-    size: Size = Size(20.0 * 1.2, 56.0 * 1.2),
+    size: Size = Size(20.0 * 1.2, 32.0 * 1.2),
     color: Color = Color.red,
     strokeColor: Color = color.toBlack(0.25f),
     dotColor: Color = Color.white,
@@ -300,12 +300,8 @@ fun getDefaultPin(
     width = size.width.dp,
     height = size.height.dp,
     viewBoxWidth = 20,
-    viewBoxHeight = 56,
+    viewBoxHeight = 32,
     paths = listOf(
-        ImageVector.Path(
-            fillColor = Color.fromHexString("#262626").applyAlpha(0.2f),
-            path = "M1,27 A9,5 0 1,0 19,27 A9,5 0 1,0 1,27 Z",
-        ),
         ImageVector.Path(
             fillColor = color,
             strokeColor = strokeColor,

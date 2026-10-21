@@ -50,7 +50,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.maplibre.spatialk.geojson.Feature
-import org.maplibre.spatialk.geojson.Position
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
@@ -81,6 +80,7 @@ object MapViewTestPage : Page {
                     addSymbol {
                         iconImage = pin
                         textField = "Hello, world!".literal
+                        iconAnchor = SymbolLayer.Anchor.Bottom
                         textHaloColor = Color.white.literal
                         textHaloWidth = 1.literal
                         textVariableAnchorOffset = Layer.AnchorOffsets(
