@@ -81,7 +81,8 @@ public inline fun ElementWriter.label(label: String, setup: LinearLayoutElement.
 
 public inline fun ElementWriter.field(label: String, content: ElementWriter.CanAddTheme.() -> Unit): LabeledView {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
-    return label(label) {
+    // errorText() catches every error in its context, so split to keep errors from the rest of the page out of this field.
+    return split().label(label) {
         fieldTheme.content()
         errorText()
     }
