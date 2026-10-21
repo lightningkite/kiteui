@@ -85,6 +85,12 @@ public class Recycler2(
             scroll.scrollSnapStop = value
         }
 
+    public var userScrollEnabled: Boolean
+        get() = scroll.userScrollEnabled
+        set(value) {
+            scroll.userScrollEnabled = value
+        }
+
     init {
         with(outerFrame) frame@{
 
