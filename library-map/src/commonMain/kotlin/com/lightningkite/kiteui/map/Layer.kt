@@ -24,6 +24,7 @@ sealed class Layer<P>(
     private val type: String,
 ) {
     private val properties = ArrayList<Property<*>>()
+    internal val clickListeners = ArrayList<(properties: List<P>) -> Unit>()
 
     var minZoom: Double? = null
         set(value) {
@@ -109,8 +110,6 @@ sealed class Layer<P>(
         override val json get() = JsonArray(value.flatMap { listOf(it.first, it.second) }.map { it.json })
     }
 
-    object Formatted
-
     val <T> List<Value<T>>.literal get() = expression<List<T>>("semiliteral", Literal<Any>(JsonArray(map { it.json })))
 
     operator fun <T> Value<List<T>>.get(index: Value<Number>) = expression<T>("at", index, this)
@@ -123,7 +122,7 @@ sealed class Layer<P>(
         inclusiveStart: Value<Number>, exclusiveEnd: Value<Number>? = null
     ) = expression<List<T>>("slice", this, inclusiveStart, exclusiveEnd.flatten)
 
-    val <T> KProperty1<P, T>.value get() = expression<T>("get", Literal<String>(JsonPrimitive(name)))
+    val <T> KProperty1<P, T>.value get() = expression<T>("get", Literal<T>(JsonPrimitive(name)))
     fun <T> Value<List<T>>.size() = expression<Number>("length", this)
 
     fun <T> case(cases: List<Pair<Value<Boolean>, Value<T>>>, fallback: Value<T>) =
@@ -204,8 +203,8 @@ val Color.literal get(): Value<Color> = Literal(JsonPrimitive(toWeb()))
 internal fun <T> expression(op: String, vararg elements: Value<*>): Value<T> =
     Literal(JsonArray(listOf(JsonPrimitive(op)) + elements.map { it.json }))
 
-fun Layer<*>.onClick(callback: () -> Unit) {
-
+fun <P> Layer<P>.onClick(callback: (properties: List<P>) -> Unit) {
+    clickListeners += callback
 }
 
 internal expect val Layer<*>.isNativeLayerAdded: Boolean

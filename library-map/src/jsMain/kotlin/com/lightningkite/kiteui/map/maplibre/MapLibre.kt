@@ -79,6 +79,12 @@ external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2338 */
     fun on(type: String, listener: Listener<Any>): Subscription
 
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2579 */
+    fun queryRenderedFeatures(
+        geometry: Any,
+        options: QueryRenderedFeaturesOptions? = definedExternally,
+    ): Array<MapGeoJSONFeature>
+
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L2680 */
     fun setStyle(style: Any?, options: Any? = definedExternally)
 
@@ -286,6 +292,29 @@ external interface FlyToOptions : AnimationOptions, CameraOptions {
 //    screenSpeed?: number;
 //    maxDuration?: number;
 //    padding?: number | PaddingOptions;
+}
+
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/events.ts#L611 */
+external interface MapMouseEvent {
+    val point: Any
+    val lngLat: LngLat
+}
+
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/query_features.ts#L22 */
+@JsPlainObject
+external interface QueryRenderedFeaturesOptions {
+    val layers: Array<String>?
+}
+
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/util/vectortile_to_geojson.ts#L22 */
+external interface MapGeoJSONFeature {
+    val id: Any?
+    val layer: Layer
+    val properties: Any?
+
+    interface Layer {
+        val id: String
+    }
 }
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/geo/lng_lat.ts#L51 */

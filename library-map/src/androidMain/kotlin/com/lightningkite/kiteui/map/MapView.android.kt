@@ -45,11 +45,11 @@ import org.maplibre.android.style.layers.RasterLayer
 import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.layers.TransitionOptions
 import org.maplibre.android.style.sources.GeoJsonSource
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.float
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.maplibre.spatialk.geojson.GeoJsonObject
 import org.maplibre.spatialk.geojson.toJson
 import kotlin.reflect.KMutableProperty1
 import kotlin.run
@@ -69,12 +69,12 @@ actual class MapView actual constructor(
         preInit.style = it
     }
 
-    actual val sources: MutableMap<Uuid, GeoJsonObject> = StyleDataMap({ id, data ->
+    actual val sources: MutableMap<Uuid, Source<*, *>> = StyleDataMap({ id, source ->
         val style = map.state.getOrNull()?.style ?: return@StyleDataMap
         val existing = style.getSourceAs<GeoJsonSource>(id.toString())
 
-        if (existing != null) return@StyleDataMap existing.setGeoJson(data.toJson())
-        style.addSource(GeoJsonSource(id.toString(), data.toJson()))
+        if (existing != null) return@StyleDataMap existing.setGeoJson(source.data.toJson())
+        style.addSource(GeoJsonSource(id.toString(), source.data.toJson()))
     }) { map.state.getOrNull()?.style?.removeSource(it.toString()) }
 
     actual val layers: MutableMap<Uuid, Layer<*>?> = StyleDataMap({ id, layer ->
@@ -126,7 +126,7 @@ actual class MapView actual constructor(
         style.transition.let { style.transition = TransitionOptions(it.duration, it.delay, false) }
         style.addSource(GeoJsonSource(emptySourceId.toString()))
         loadedImages.forEach { (id, bitmap) -> style.addImage(id.toString(), bitmap) }
-        sources.forEach { (id, source) -> style.addSource(GeoJsonSource(id.toString(), source.toJson())) }
+        sources.forEach { (id, source) -> style.addSource(GeoJsonSource(id.toString(), source.data.toJson())) }
         layers.forEach { (id, layer) -> style.addLayer(layer.toMapLibreLayer(id.toString())) }
     }
 
@@ -187,13 +187,22 @@ actual class MapView actual constructor(
             }
         })
 
-        getMapAsync {
-            preInit.toOptions(it, ::onStyleLoaded)
-            it.uiSettings.isAttributionEnabled = disableAttribution == null
-            it.uiSettings.isLogoEnabled = false
-            it.uiSettings.isCompassEnabled = false
-            it.uiSettings.setAllGesturesEnabled(interactive)
-            map.value = it
+        getMapAsync { map ->
+            preInit.toOptions(map, ::onStyleLoaded)
+            map.uiSettings.isAttributionEnabled = disableAttribution == null
+            map.uiSettings.isLogoEnabled = false
+            map.uiSettings.isCompassEnabled = false
+            map.uiSettings.setAllGesturesEnabled(interactive)
+
+            map.addOnMapClickListener { point ->
+                val screenPoint = map.projection.toScreenLocation(point)
+                handleSourceLayerClicks { layerIds ->
+                    map.queryRenderedFeatures(screenPoint, *layerIds.map { it.toString() }.toTypedArray())
+                        .map { feature -> feature.properties()?.let { Json.parseToJsonElement(it.toString()).jsonObject } }
+                }
+            }
+
+            this@MapView.map.value = map
         }
     }
 }

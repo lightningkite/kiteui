@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.services.data.GeoCoordinate
-import org.maplibre.spatialk.geojson.GeoJsonObject
 import kotlin.uuid.Uuid
 
 actual class MapView actual constructor(
@@ -17,7 +16,7 @@ actual class MapView actual constructor(
 
     actual override var style: Style = Style.Demo
     actual val images: MutableMap<Uuid, ImageSource> = LinkedHashMap()
-    actual val sources: MutableMap<Uuid, GeoJsonObject> = LinkedHashMap()
+    actual val sources: MutableMap<Uuid, Source<*, *>> = LinkedHashMap()
     actual val layers: MutableMap<Uuid, Layer<*>?> = LinkedHashMap()
 
     internal actual val preInit: PreInit

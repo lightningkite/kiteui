@@ -169,7 +169,7 @@ private class StyleProperty(
         "string" -> "String"
         "color" -> "Color"
         "enum" -> enums.getValue(name).reference
-        "formatted" -> "Formatted"
+        "formatted" -> "String"
         "resolvedImage" -> "ImageSource"
         "padding" -> "Padding"
         "numberArray" -> "List<Number>"

@@ -17,18 +17,27 @@ import org.maplibre.spatialk.geojson.PointGeometry
 import org.maplibre.spatialk.geojson.PolygonGeometry
 import org.maplibre.spatialk.geojson.Position
 import org.maplibre.spatialk.geojson.SingleGeometry
+import org.maplibre.spatialk.geojson.GeoJsonObject
+import kotlinx.serialization.KSerializer
 import kotlin.jvm.JvmName
 import kotlin.uuid.Uuid
 
 class Source<G : Geometry?, P> internal constructor(
     val mapView: MapView,
     val features: Reactive<Collection<Feature<G, P>>>,
+    internal val propertiesSerializer: KSerializer<P>,
 ) {
     val id = Uuid.random()
 
+    internal var data: GeoJsonObject = FeatureCollection<G, P>(emptyList())
+    internal val clickListeners = ArrayList<(properties: List<P>) -> Unit>()
+
     init {
-        mapView.sources[id] = FeatureCollection<G, P>(emptyList())
-        mapView.reactive { mapView.sources.put(id, FeatureCollection(features().toList())) }
+        mapView.sources[id] = this
+        mapView.reactive {
+            data = FeatureCollection(features().toList())
+            mapView.sources[id] = this@Source
+        }
     }
 
     internal fun <L : Layer<P>> addLayer(constructor: (MapView, Uuid, Uuid) -> L, setup: L.() -> Unit) {
@@ -47,7 +56,13 @@ class Source<G : Geometry?, P> internal constructor(
     }
 }
 
-fun Source<*, *>.onClick(callback: () -> Unit) {}
+/**
+ * Calls [callback] when the map is clicked on features from this source, in any of its layers.
+ * [callback] receives the properties of every feature that was clicked, once each.
+ */
+fun <P> Source<*, P>.onClick(callback: (properties: List<P>) -> Unit) {
+    clickListeners += callback
+}
 
 
 fun <G : PolygonGeometry?, P> Source<G, P>.addFill(setup: FillLayer<P>.() -> Unit) = addLayer(::FillLayer, setup)
@@ -65,7 +80,9 @@ fun <G : PolygonGeometry?, P> Source<G, P>.addLine(setup: LineLayer<P>.() -> Uni
 fun <G : PolygonGeometry?, P, D> Source<G, P>.addExpensiveLine(from: Reactive<D>, setup: LineLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::LineLayer, from, setup)
 
-fun <G : SingleGeometry?, P> Source<G, P>.addSymbol(setup: SymbolLayer<P>.() -> Unit) = addLayer(::SymbolLayer, setup)
+fun <G : SingleGeometry?, P> Source<G, P>.addSymbol(setup: SymbolLayer<P>.() -> Unit) =
+    addLayer(::SymbolLayer, setup)
+
 fun <G : SingleGeometry?, P, D> Source<G, P>.addExpensiveSymbol(from: Reactive<D>, setup: SymbolLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::SymbolLayer, from, setup)
 
@@ -80,7 +97,9 @@ fun <G : PointGeometry?, P> Source<G, P>.addCircle(setup: CircleLayer<P>.() -> U
 fun <G : PointGeometry?, P, D> Source<G, P>.addExpensiveCircle(from: Reactive<D>, setup: CircleLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::CircleLayer, from, setup)
 
-fun <G : PointGeometry?, P> Source<G, P>.addHeatmap(setup: HeatmapLayer<P>.() -> Unit) = addLayer(::HeatmapLayer, setup)
+fun <G : PointGeometry?, P> Source<G, P>.addHeatmap(setup: HeatmapLayer<P>.() -> Unit) =
+    addLayer(::HeatmapLayer, setup)
+
 fun <G : PointGeometry?, P, D> Source<G, P>.addExpensiveHeatmap(from: Reactive<D>, setup: HeatmapLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::HeatmapLayer, from, setup)
 
@@ -88,8 +107,7 @@ fun <G : PolygonGeometry?, P> Source<G, P>.addFillExtrusion(setup: FillExtrusion
     addLayer(::FillExtrusionLayer, setup)
 
 fun <G : PolygonGeometry?, P, D> Source<G, P>.addExpensiveFillExtrusion(
-    from: Reactive<D>,
-    setup: FillExtrusionLayer<P>.(D) -> Unit,
+    from: Reactive<D>, setup: FillExtrusionLayer<P>.(D) -> Unit,
 ) = addExpensiveLayer(::FillExtrusionLayer, from, setup)
 
 

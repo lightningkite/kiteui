@@ -50,8 +50,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.maplibre.spatialk.geojson.Feature
+import org.maplibre.spatialk.geojson.Position
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
+import kotlin.uuid.Uuid
 
 @Routable("/map-view-test")
 object MapViewTestPage : Page {
@@ -61,8 +63,9 @@ object MapViewTestPage : Page {
         unpadded.frame {
             val useBaseDemoTiles = Signal(true)
             val markerPosition = Signal(GeoCoordinate(0.0, 0.0))
-            val coordinates = Signal(listOf<GeoCoordinate>())
+            val coordinates = Signal(listOf<Pair<Uuid, GeoCoordinate>>())
             val recolor = BasicListenable()
+            val selectedDot = Signal(Uuid.random())
 
             val map = mapView(I_SWEAR_ON_MY_JOB.I_DO_NOT_NEED_ATTRIBUTION) {
                 ::style style@{
@@ -73,45 +76,47 @@ object MapViewTestPage : Page {
                     Style.Debug
                 }
 
-                @Serializable
-                data class FeatureData(val radius: Double)
-
-                source(markerPosition.point.lens { Feature(it, FeatureData(radius = 20.0)) }) {
+                source(markerPosition.point.feature) {
                     val pin = registerImage(getDefaultPin(color = Color.red))
                     addSymbol {
                         iconImage = pin
-                        textField = "Hello, world!".literal as Layer.Value<Layer.Formatted>
+                        textField = "Hello, world!".literal
                         textHaloColor = Color.white.literal
                         textHaloWidth = 1.literal
-                        textVariableAnchorOffset = Layer.AnchorOffsets(listOf(
-                            SymbolLayer.Anchor.Left to Layer.Point(1.0, -1.25),
-                            SymbolLayer.Anchor.Right to Layer.Point(-1.0, -1.25),
-                        ))
+                        textVariableAnchorOffset = Layer.AnchorOffsets(
+                            listOf(
+                                SymbolLayer.Anchor.Left to Layer.Point(1.0, -1.25),
+                                SymbolLayer.Anchor.Right to Layer.Point(-1.0, -1.25),
+                            )
+                        )
                     }
 
-                    onClick { }
+                    onClick {}
                 }
 
-                source(coordinates.lineString.feature) {
+                source(coordinates.lens { it.map { it.second } }.lineString.feature) {
                     addLine {
                         ::color { rerunOn(recolor); Random.nextColor().copy(alpha = 1.0f).literal }
                         width = 10.literal
                         cap = LineLayer.Cap.Round
                         join = LineLayer.Join.Round
-
-                        onClick { }
                     }
-
-                    onClick { }
                 }
 
+                @Serializable
+                data class FeatureData2(val _id: Uuid)
 
-                source(coordinates.lens { it.map { it.point.feature } }) {
+                source(coordinates.lens { it.map { Feature(it.second.point, FeatureData2(it.first)) } }) {
                     addCircle {
                         ::color { rerunOn(recolor); Random.nextColor().literal }
-                        radius = 10.literal
+                        ::radius {
+                            case(
+                                listOf((selectedDot().toString().literal eq FeatureData2::_id.value) to 15.literal),
+                                10.literal
+                            )
+                        }
 
-                        onClick { }
+                        onClick { println("Clicked circle layer: $it"); it.firstOrNull()?._id?.let { selectedDot.value = it } }
                     }
                 }
 
@@ -168,7 +173,7 @@ object MapViewTestPage : Page {
 
                 card.button {
                     icon(Icon.addLocationAlt, "Add Marker")
-                    onClick { coordinates.modify { it + Random.nextGeoCoordinate() } }
+                    onClick { coordinates.modify { it + (Uuid.random() to Random.nextGeoCoordinate()) } }
                 }
 
                 card.button {

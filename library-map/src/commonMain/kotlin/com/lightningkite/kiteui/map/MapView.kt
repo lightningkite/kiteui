@@ -15,8 +15,19 @@ import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.reactive.lensing.lens
 import com.lightningkite.services.data.GeoCoordinate
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PolymorphicKind
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.serializer
 import org.maplibre.spatialk.geojson.Feature
-import org.maplibre.spatialk.geojson.GeoJsonObject
+import org.maplibre.spatialk.geojson.GeoJson
 import org.maplibre.spatialk.geojson.Geometry
 import kotlin.jvm.JvmName
 import kotlin.properties.ReadWriteProperty
@@ -33,7 +44,7 @@ expect class MapView(
 
     override var style: Style
     internal val images: MutableMap<Uuid, ImageSource>
-    internal val sources: MutableMap<Uuid, GeoJsonObject>
+    internal val sources: MutableMap<Uuid, Source<*, *>>
     internal val layers: MutableMap<Uuid, Layer<*>?>
 
     val camera: Camera
@@ -49,14 +60,29 @@ inline fun ElementWriter.mapView(
 expect fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit)
 
 
-fun <G : Geometry?, P> MapView.source(feature: Reactive<Feature<G, P>>, setup: Source<G, P>.() -> Unit = {}) =
-    Source(this, feature.lens { listOf(it) }).apply(setup)
+inline fun <G : Geometry?, reified P> MapView.source(
+    feature: Reactive<Feature<G, P>>,
+    noinline setup: Source<G, P>.() -> Unit = {},
+) = source(feature, serializer<P>(), setup)
+
+fun <G : Geometry?, P> MapView.source(
+    feature: Reactive<Feature<G, P>>,
+    propertiesSerializer: KSerializer<P>,
+    setup: Source<G, P>.() -> Unit = {},
+) = Source(this, feature.lens { listOf(it) }, propertiesSerializer).apply(setup)
+
+@JvmName("source2")
+inline fun <G : Geometry?, reified P> MapView.source(
+    features: Reactive<Collection<Feature<G, P>>>,
+    noinline setup: Source<G, P>.() -> Unit = {},
+) = source(features, serializer<P>(), setup)
 
 @JvmName("source2")
 fun <G : Geometry?, P> MapView.source(
     features: Reactive<Collection<Feature<G, P>>>,
-    setup: Source<G, P>.() -> Unit = {}
-) = Source(this, features).apply(setup)
+    propertiesSerializer: KSerializer<P>,
+    setup: Source<G, P>.() -> Unit = {},
+) = Source(this, features, propertiesSerializer).apply(setup)
 
 
 /**
@@ -213,6 +239,56 @@ interface Camera : CameraProperties {
         val pitch: Double? = null,
         val duration: Duration,
     )
+}
+
+internal fun MapView.handleSourceLayerClicks(getClickedProperties: (layerIds: Set<Uuid>) -> List<JsonObject?>): Boolean {
+    val layersBySource = layers.values.filterNotNull().groupBy { it.source }.mapKeys { sources[it.key]!! }
+    var handledAny = false
+
+    layersBySource.forEach { (source, layers) ->
+        @Suppress("UNCHECKED_CAST") source as Source<*, Any?>
+
+        layers.forEach { layer ->
+            if (layer.clickListeners.isEmpty()) return@forEach
+            @Suppress("UNCHECKED_CAST") layer as Layer<Any?>
+            val properties = getClickedProperties(setOf(layer.id)).map(source::decodeProperties)
+            if (properties.isEmpty()) return@forEach
+            layer.clickListeners.forEach { it(properties); handledAny = true }
+        }
+
+        if (source.clickListeners.isEmpty()) return@forEach
+        val properties = getClickedProperties(layers.map { it.id }.toSet()).map(source::decodeProperties)
+        if (properties.isEmpty()) return@forEach
+        source.clickListeners.forEach { it(properties); handledAny = true }
+    }
+
+    return handledAny
+}
+
+private fun <P> Source<*, P>.decodeProperties(properties: JsonObject?): P {
+    val descriptor = propertiesSerializer.descriptor
+    // MapLibre reports a feature with null properties as having empty properties.
+    val json = if (properties == null || properties.isEmpty() && descriptor.isNullable) JsonNull
+    else properties.restoreNestedValues(descriptor)
+    return GeoJson.jsonFormat.decodeFromJsonElement(propertiesSerializer, json)
+}
+
+/**
+ * MapLibre (at least on the web) flattens nested objects and arrays in feature properties into
+ * JSON strings, so this parses them back wherever [descriptor] expects a structure.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+private fun JsonObject.restoreNestedValues(descriptor: SerialDescriptor): JsonObject {
+    if (descriptor.kind != StructureKind.CLASS) return this
+    return JsonObject(mapValues { (key, value) ->
+        val index = descriptor.getElementIndex(key)
+        if (index == CompositeDecoder.UNKNOWN_NAME || value !is JsonPrimitive || !value.isString) return@mapValues value
+        when (descriptor.getElementDescriptor(index).kind) {
+            is StructureKind, is PolymorphicKind ->
+                runCatching { Json.parseToJsonElement(value.content) }.getOrDefault(value)
+            else -> value
+        }
+    })
 }
 
 fun getDefaultPin(

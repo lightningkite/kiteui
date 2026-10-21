@@ -5,6 +5,8 @@ import com.lightningkite.kiteui.map.maplibre.EaseToOptions
 import com.lightningkite.kiteui.map.maplibre.FlyToOptions
 import com.lightningkite.kiteui.map.maplibre.AddLayerObject
 import com.lightningkite.kiteui.map.maplibre.GeoJSONSource
+import com.lightningkite.kiteui.map.maplibre.MapMouseEvent
+import com.lightningkite.kiteui.map.maplibre.QueryRenderedFeaturesOptions
 import com.lightningkite.kiteui.map.maplibre.SourceSpecification
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.models.ImageRaw
@@ -26,6 +28,8 @@ import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import org.maplibre.spatialk.geojson.GeoJsonObject
 import org.maplibre.spatialk.geojson.toJson
 import org.w3c.dom.HTMLImageElement
@@ -41,17 +45,19 @@ actual class MapView actual constructor(
     val map = LateInitSignal<MapLibreMap>()
     var isStyleLoaded = false
 
+    internal val clickListeners = ArrayList<(where: GeoCoordinate) -> Unit>()
+
     actual override var style by lateInit(PreInit::style, {
         getStyleUrl()?.let { Style.Url(it) } ?: Style.Json(getStyle().toString())
     }) { setStyle(it.toUnion(), js("{diff: false}")); isStyleLoaded = false }
 
-    actual val sources: MutableMap<Uuid, GeoJsonObject> = StyleDataMap({ id, data ->
+    actual val sources: MutableMap<Uuid, Source<*, *>> = StyleDataMap({ id, source ->
         val map = map.state.getOrNull() ?: return@StyleDataMap
         if (!isStyleLoaded) return@StyleDataMap
         val existing = map.getSource(id.toString())?.unsafeCast<GeoJSONSource>()
 
-        if (existing != null) return@StyleDataMap existing.setData(JSON.parse(data.toJson()))
-        map.addSource(id.toString(), data.toSourceSpecification())
+        if (existing != null) return@StyleDataMap existing.setData(JSON.parse(source.data.toJson()))
+        map.addSource(id.toString(), source.data.toSourceSpecification())
     }) { if (isStyleLoaded) map.state.getOrNull()?.removeSource(it.toString()) }
 
     actual val layers: MutableMap<Uuid, Layer<*>?> = StyleDataMap({ id, layer ->
@@ -176,14 +182,21 @@ actual class MapView actual constructor(
                     isStyleLoaded = true
                     loadedImages.forEach { (id, image) -> image.addTo(this, id) }
                     addSource(emptySourceId.toString(), js("{type: 'geojson', data: {type: 'FeatureCollection', features: []}}"))
-                    sources.forEach { (id, source) -> addSource(id.toString(), source.toSourceSpecification()) }
+                    sources.forEach { (id, source) -> addSource(id.toString(), source.data.toSourceSpecification()) }
                     layers.forEach { (id, layer) -> addLayer(layer.toAddLayerObject(id)) }
+                }
+                on("click") {
+                    val event = it.unsafeCast<MapMouseEvent>()
+                    val handled = handleSourceLayerClicks { layerIds ->
+                        queryRenderedFeatures(event.point, QueryRenderedFeaturesOptions(layers = layerIds.map { it.toString() }.toTypedArray()))
+                            .map { feature -> feature.properties?.let { Json.parseToJsonElement(JSON.stringify(it)).jsonObject } }
+                    }
+                    if (!handled) clickListeners.forEach { it(event.lngLat.toGeoCoordinate()) }
                 }
             }
         }
     }
 }
-
 
 internal fun PreInit.toOptions(
     container: DOMElement,
@@ -208,8 +221,8 @@ internal fun PreInit.toOptions(
     ).also { if (disableAttribution != null) it.attributionControl = false }
 }
 
-actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
-    on("click") { callback(geoCoordinateFromLngLat(it.asDynamic().lngLat)) }
+actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) {
+    clickListeners += callback
 }
 
 private fun <T> MapView.lateInit(
