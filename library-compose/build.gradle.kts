@@ -31,6 +31,8 @@ kotlin {
                 api(libs.kotlinx.datetime)
                 api(libs.kotlinx.coroutines.core)
                 api(libs.kotlinx.serialization.uri)
+                api(libs.services.telemetry.shared)
+                implementation(libs.kotlinx.atomicfu)
             }
         }
         // Compose view implementations, kept free of JVM-only APIs so Android/iOS can reuse them later.
