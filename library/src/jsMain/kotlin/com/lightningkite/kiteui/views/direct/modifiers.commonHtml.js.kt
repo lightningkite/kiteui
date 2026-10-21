@@ -69,6 +69,18 @@ internal actual fun ContainerElement.nativeAnimateWeight(fromWeight: Float, toWe
     ensureWorkerScheduled()
 }
 
+// A shownWhen/weight wrapper's child's inline sizing, which animations temporarily lock to pixels.
+private class ChildSize(val width: String, val maxWidth: String, val height: String, val maxHeight: String) {
+    constructor(child: HTMLElement) : this(child.style.width, child.style.maxWidth, child.style.height, child.style.maxHeight)
+
+    fun applyTo(child: HTMLElement) {
+        child.style.width = width
+        child.style.maxWidth = maxWidth
+        child.style.height = height
+        child.style.maxHeight = maxHeight
+    }
+}
+
 private val showHideAnimating = HashMap<ContainerElement, OngoingAnimation>()
 // by Claude - tracking ongoing weight animations
 private val weightAnimating = HashMap<ContainerElement, OngoingWeightAnimation>()
@@ -79,16 +91,14 @@ private data class OngoingAnimation(
     val to: Json,
     val goal: Boolean,
     val startRatio: Double,
+    val childUnlockedSize: ChildSize,
     val easingCss: String = "linear",
 ) {
     var totalTime: Double = 1000.0
     val myElement = on.native.element as HTMLElement
     val child = on.children[0].native.element as HTMLElement
     var animation: Animation? = null
-    private var widthChildResume: String = ""
-    private var maxWidthChildResume: String = ""
-    private var heightChildResume: String = ""
-    private var maxHeightChildResume: String = ""
+    private var childLockedSize: ChildSize? = null
     fun animRatio() = animation!!.currentTime.toFloat() / totalTime
     val job = Job(on.coroutineContext.job)
     init {
@@ -142,10 +152,7 @@ private data class OngoingAnimation(
         myElement.hidden = !goal
         (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         myElement.classList.remove("animatingShowHide")
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        childUnlockedSize.applyTo(child)
     }
 
     fun pretendEnd() {
@@ -153,23 +160,14 @@ private data class OngoingAnimation(
         animation!!.pause()
         myElement.hidden = !goal
 //        forEach(to) { k, v -> myElement.style.setProperty(k, v) }
-        widthChildResume = child.style.width
-        maxWidthChildResume = child.style.maxWidth
-        heightChildResume = child.style.height
-        maxHeightChildResume = child.style.maxHeight
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        childLockedSize = ChildSize(child)
+        childUnlockedSize.applyTo(child)
     }
 
     fun continueNow() {
         log?.info("continueNow")
         myElement.hidden = false
-        child.style.width = widthChildResume
-        child.style.maxWidth = maxWidthChildResume
-        child.style.height = heightChildResume
-        child.style.maxHeight = maxHeightChildResume
+        childLockedSize!!.applyTo(child)
         animation!!.play()
     }
 }
@@ -184,15 +182,13 @@ private class OngoingWeightAnimation(
     val fromBasis: String,
     val toBasis: String,
     val startRatio: Double,
+    val childUnlockedSize: ChildSize,
 ) {
     var totalTime: Double = 1000.0
     val myElement = on.native.element as HTMLElement
     val child = on.children[0].native.element as HTMLElement
     var animation: Animation? = null
-    private var widthChildResume: String = ""
-    private var maxWidthChildResume: String = ""
-    private var heightChildResume: String = ""
-    private var maxHeightChildResume: String = ""
+    private var childLockedSize: ChildSize? = null
     // by Claude - saved inline styles for pretendEnd/continueNow
     private var savedFlexGrow: String = ""
     private var savedFlexShrink: String = ""
@@ -240,11 +236,7 @@ private class OngoingWeightAnimation(
         myElement.style.flexShrink = "$toWeight"
         myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
         (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
-        // Unlock child dimensions
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        childUnlockedSize.applyTo(child)
     }
 
     fun cancel() {
@@ -253,11 +245,7 @@ private class OngoingWeightAnimation(
         closed = true
         job.cancel()
         myElement.classList.remove("animatingShowHide")
-        // Unlock child dimensions
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        childUnlockedSize.applyTo(child)
     }
 
     // by Claude - pretendEnd must cancel the animation (not just pause) because Web Animations
@@ -274,15 +262,8 @@ private class OngoingWeightAnimation(
         myElement.style.flexGrow = "$toWeight"
         myElement.style.flexShrink = "$toWeight"
         myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
-        // Save and unlock child dimensions for measurement
-        widthChildResume = child.style.width
-        maxWidthChildResume = child.style.maxWidth
-        heightChildResume = child.style.height
-        maxHeightChildResume = child.style.maxHeight
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        childLockedSize = ChildSize(child)
+        childUnlockedSize.applyTo(child)
     }
 
     // by Claude - continueNow recreates the animation since we had to cancel it in pretendEnd
@@ -292,11 +273,7 @@ private class OngoingWeightAnimation(
         myElement.style.flexGrow = savedFlexGrow
         myElement.style.flexShrink = savedFlexShrink
         myElement.style.flexBasis = savedFlexBasis
-        // Restore locked child dimensions
-        child.style.width = widthChildResume
-        child.style.maxWidth = maxWidthChildResume
-        child.style.height = heightChildResume
-        child.style.maxHeight = maxHeightChildResume
+        childLockedSize!!.applyTo(child)
         // Recreate the animation from saved progress
         totalTime = on.theme.transitionDuration.inWholeMilliseconds.toDouble()
         animation = myElement.animate(
@@ -378,6 +355,11 @@ private val combinedAnimationWorker = label@{
             val rect = myElement.getBoundingClientRect()
             on to "${if (isColumn) rect.height else rect.width}px"
         }?.associate { it } ?: emptyMap()
+
+        // The child's own inline sizing (from sizeConstraints, or the stack's 100% fill) must come back
+        // when the animation ends, so record it before the locks below overwrite it.
+        val childUnlockedSizes = (currentShowHideQueue.orEmpty().keys + currentWeightQueue.orEmpty().keys)
+            .associateWith { ChildSize(it.children[0].native.element as HTMLElement) }
 
         // === Phase 2: Lock sizes for disappearing/shrinking views ===
         log?.info("// Lock current sizes for disappearing/shrinking views.")
@@ -618,6 +600,7 @@ private val combinedAnimationWorker = label@{
                 goal = goal,
                 startRatio = 1.0 - pastShowHideRatios.getOrElse(on) { 1.0 }
                     .also { log?.info("Past for ${on.children.singleOrNull()?.debugName} is $it") },
+                childUnlockedSize = childUnlockedSizes.getValue(on),
                 easingCss = easingCss,
             )
         }
@@ -632,6 +615,7 @@ private val combinedAnimationWorker = label@{
                 toBasis = if (toWeight != 0f) "0" else (weightToBasis[on] ?: "auto"),
                 startRatio = 1.0 - pastWeightRatios.getOrElse(on) { 1.0 }
                     .also { log?.info("Weight past for ${on.children.singleOrNull()?.debugName} is $it") },
+                childUnlockedSize = childUnlockedSizes.getValue(on),
             )
         }
 
