@@ -14,7 +14,10 @@ public class MutableCoroutineContext: CoroutineContext {
     public fun add(context: CoroutineContext) {
         context.fold(Unit) { _, element -> add(element) }
     }
+    // Like any CoroutineContext, a later element replaces the one with its key.  kotlinx.coroutines walks contexts
+    // with fold, so a replaced element left behind (the element's Job, under a coroutine's own) breaks checks such as Flow's.
     public fun add(element: CoroutineContext.Element) {
+        list.removeAll { it.key == element.key }
         list.add(element)
     }
 
@@ -47,13 +50,13 @@ public class MutableCoroutineContext: CoroutineContext {
 
 public fun coroutineContextOf(vararg elements: CoroutineContext.Element): CoroutineContext {
     return MutableCoroutineContext().apply {
-        list.addAll(elements)
+        for (e in elements) add(e)
     }
 }
 
 public fun mutableCoroutineContextOf(vararg elements: CoroutineContext.Element): MutableCoroutineContext {
     return MutableCoroutineContext().apply {
-        list.addAll(elements)
+        for (e in elements) add(e)
     }
 }
 

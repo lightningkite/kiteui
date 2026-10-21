@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kotlinx.serialization.uri.encodeURIComponent
 import com.lightningkite.reactive.core.AppScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -65,7 +66,10 @@ public object AiDriver {
                     log.info("Got command $message")
                     val response = handleCommand(message.trim(), rootView(), navigator())
                     ws.send(response)
-                } catch (e: Exception) {
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    // Not just Exception: an Error (such as a backend's TODO()) would otherwise leave the caller waiting.
                     try {
                         ws.send("ERROR: ${e::class.simpleName}: ${e.message}")
                     } catch (_: Exception) {
@@ -179,7 +183,8 @@ public suspend fun handleCommand(command: String, root: Element?, navigator: Pag
                 ?: throw DriverActionException("no current page")
             val rendered = navigator.routes.render(currentPage)
                 ?: throw DriverActionException("current page has no route")
-            rendered.urlLikePath.render()
+            // The relay ignores blank replies, and the home page renders to an empty path.
+            "/" + rendered.urlLikePath.render()
         }
         "back" -> {
             if (navigator == null) throw DriverActionException("no navigator available")
