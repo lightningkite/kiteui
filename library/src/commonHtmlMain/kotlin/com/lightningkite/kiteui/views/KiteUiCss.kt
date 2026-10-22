@@ -1155,8 +1155,11 @@ public class KiteUiCss(
         return theme.classes
     }
 
+    // Ids are free-form (e.g. "brand-0.38"), but this class goes unescaped into selectors, where a '.'
+    // would split it in two.  '_' is encoded too so that distinct ids can't end up sharing a class.
+    private val notClassSafe = Regex("[^A-Za-z0-9-]")
     private val Theme.classes: String
-        get() = "t-${id}"
+        get() = "t-" + id.replace(notClassSafe) { "_${it.value[0].code}_" }
     private val Theme.classSelector get() = ".$classes"
     private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
         getter().takeUnless { diff?.getter() == it }
@@ -1194,7 +1197,7 @@ public class KiteUiCss(
                 is FadingColor -> {
                     dynamicCss.rule(
                         """
-                        @keyframes ${theme.id}-flickerAnimation {
+                        @keyframes ${theme.classes}-flickerAnimation {
                         0% {
                             background-color: ${it.base.toWeb()};
                         }
@@ -1207,7 +1210,7 @@ public class KiteUiCss(
                     }
                     """.trimIndent()
                     )
-                    addToCss(backSel, "animation", "2s infinite ${theme.id}-flickerAnimation")
+                    addToCss(backSel, "animation", "2s infinite ${theme.classes}-flickerAnimation")
                     addToCss(backSel, "background-color", it.base.toWeb())
                     addToCss(backSel, "background-image", "none")
                 }
