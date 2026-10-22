@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.map.Layer.Literal
 import com.lightningkite.kiteui.map.Layer.Value
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.services.data.GeoCoordinate
+import com.lightningkite.services.database.HasId
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -203,8 +204,12 @@ val Color.literal get(): Value<Color> = Literal(JsonPrimitive(toWeb()))
 internal fun <T> expression(op: String, vararg elements: Value<*>): Value<T> =
     Literal(JsonArray(listOf(JsonPrimitive(op)) + elements.map { it.json }))
 
-fun <P> Layer<P>.onClick(callback: (properties: List<P>) -> Unit) {
+fun <P : HasId<*>> Layer<P>.onClick(callback: (properties: List<P>) -> Unit) {
     clickListeners += callback
+}
+
+fun Layer<Nothing?>.onClick(callback: () -> Unit) {
+    clickListeners += { callback() }
 }
 
 internal expect val Layer<*>.isNativeLayerAdded: Boolean

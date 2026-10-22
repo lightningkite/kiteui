@@ -111,7 +111,8 @@ kotlin {
                 api(project(":library-lottie"))
                 api(project(":library-camera"))
                 api(project(":library-map"))
-                api("com.lightningkite.services:data-shared:1.3.0-prerelease-86-c4aefa99")
+                api("com.lightningkite.services:data-shared:1.3.0")
+                api("com.lightningkite.services:database-shared:1.3.0")
             }
         }
 

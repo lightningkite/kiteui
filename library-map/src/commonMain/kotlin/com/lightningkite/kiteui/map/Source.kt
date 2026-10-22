@@ -4,6 +4,7 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.lensing.lens
 import com.lightningkite.services.data.GeoCoordinate
+import com.lightningkite.services.database.HasId
 import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Geometry
@@ -23,7 +24,7 @@ import kotlinx.serialization.builtins.nullable
 import kotlin.jvm.JvmName
 import kotlin.uuid.Uuid
 
-class Source<G : Geometry?, P> internal constructor(
+class Source<G : Geometry?, P : HasId<*>?> internal constructor(
     val mapView: MapView,
     val features: Reactive<Collection<Feature<G, P>>>,
     internal val propertiesSerializer: KSerializer<P>,
@@ -62,53 +63,57 @@ class Source<G : Geometry?, P> internal constructor(
     }
 }
 
-fun <P> Source<*, P>.onClick(callback: (properties: List<P>) -> Unit) {
+fun <P : HasId<*>> Source<*, P>.onClick(callback: (properties: List<P>) -> Unit) {
     clickListeners += callback
 }
 
+fun Source<*, Nothing?>.onClick(callback: () -> Unit) {
+    clickListeners += { callback() }
+}
 
-fun <G : PolygonGeometry?, P> Source<G, P>.addFill(setup: FillLayer<P>.() -> Unit) = addLayer(::FillLayer, setup)
-fun <G : PolygonGeometry?, P, D> Source<G, P>.addExpensiveFill(from: Reactive<D>, setup: FillLayer<P>.(D) -> Unit) =
+
+fun <G : PolygonGeometry?, P : HasId<*>?> Source<G, P>.addFill(setup: FillLayer<P>.() -> Unit) = addLayer(::FillLayer, setup)
+fun <G : PolygonGeometry?, P : HasId<*>?, D> Source<G, P>.addExpensiveFill(from: Reactive<D>, setup: FillLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::FillLayer, from, setup)
 
-fun <G : LineStringGeometry?, P> Source<G, P>.addLine(setup: LineLayer<P>.() -> Unit) = addLayer(::LineLayer, setup)
-fun <G : LineStringGeometry?, P, D> Source<G, P>.addExpensiveLine(from: Reactive<D>, setup: LineLayer<P>.(D) -> Unit) =
+fun <G : LineStringGeometry?, P : HasId<*>?> Source<G, P>.addLine(setup: LineLayer<P>.() -> Unit) = addLayer(::LineLayer, setup)
+fun <G : LineStringGeometry?, P : HasId<*>?, D> Source<G, P>.addExpensiveLine(from: Reactive<D>, setup: LineLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::LineLayer, from, setup)
 
 @JvmName("addLine2")
-fun <G : PolygonGeometry?, P> Source<G, P>.addLine(setup: LineLayer<P>.() -> Unit) = addLayer(::LineLayer, setup)
+fun <G : PolygonGeometry?, P : HasId<*>?> Source<G, P>.addLine(setup: LineLayer<P>.() -> Unit) = addLayer(::LineLayer, setup)
 
 @JvmName("addExpensiveLine2")
-fun <G : PolygonGeometry?, P, D> Source<G, P>.addExpensiveLine(from: Reactive<D>, setup: LineLayer<P>.(D) -> Unit) =
+fun <G : PolygonGeometry?, P : HasId<*>?, D> Source<G, P>.addExpensiveLine(from: Reactive<D>, setup: LineLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::LineLayer, from, setup)
 
-fun <G : SingleGeometry?, P> Source<G, P>.addSymbol(setup: SymbolLayer<P>.() -> Unit) =
+fun <G : SingleGeometry?, P : HasId<*>?> Source<G, P>.addSymbol(setup: SymbolLayer<P>.() -> Unit) =
     addLayer(::SymbolLayer, setup)
 
-fun <G : SingleGeometry?, P, D> Source<G, P>.addExpensiveSymbol(from: Reactive<D>, setup: SymbolLayer<P>.(D) -> Unit) =
+fun <G : SingleGeometry?, P : HasId<*>?, D> Source<G, P>.addExpensiveSymbol(from: Reactive<D>, setup: SymbolLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::SymbolLayer, from, setup)
 
 @JvmName("addSymbol2")
-fun <G : MultiGeometry?, P> Source<G, P>.addSymbol(setup: SymbolLayer<P>.() -> Unit) = addLayer(::SymbolLayer, setup)
+fun <G : MultiGeometry?, P : HasId<*>?> Source<G, P>.addSymbol(setup: SymbolLayer<P>.() -> Unit) = addLayer(::SymbolLayer, setup)
 
 @JvmName("addExpensiveSymbol2")
-fun <G : MultiGeometry?, P, D> Source<G, P>.addExpensiveSymbol(from: Reactive<D>, setup: SymbolLayer<P>.(D) -> Unit) =
+fun <G : MultiGeometry?, P : HasId<*>?, D> Source<G, P>.addExpensiveSymbol(from: Reactive<D>, setup: SymbolLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::SymbolLayer, from, setup)
 
-fun <G : PointGeometry?, P> Source<G, P>.addCircle(setup: CircleLayer<P>.() -> Unit) = addLayer(::CircleLayer, setup)
-fun <G : PointGeometry?, P, D> Source<G, P>.addExpensiveCircle(from: Reactive<D>, setup: CircleLayer<P>.(D) -> Unit) =
+fun <G : PointGeometry?, P : HasId<*>?> Source<G, P>.addCircle(setup: CircleLayer<P>.() -> Unit) = addLayer(::CircleLayer, setup)
+fun <G : PointGeometry?, P : HasId<*>?, D> Source<G, P>.addExpensiveCircle(from: Reactive<D>, setup: CircleLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::CircleLayer, from, setup)
 
-fun <G : PointGeometry?, P> Source<G, P>.addHeatmap(setup: HeatmapLayer<P>.() -> Unit) =
+fun <G : PointGeometry?, P : HasId<*>?> Source<G, P>.addHeatmap(setup: HeatmapLayer<P>.() -> Unit) =
     addLayer(::HeatmapLayer, setup)
 
-fun <G : PointGeometry?, P, D> Source<G, P>.addExpensiveHeatmap(from: Reactive<D>, setup: HeatmapLayer<P>.(D) -> Unit) =
+fun <G : PointGeometry?, P : HasId<*>?, D> Source<G, P>.addExpensiveHeatmap(from: Reactive<D>, setup: HeatmapLayer<P>.(D) -> Unit) =
     addExpensiveLayer(::HeatmapLayer, from, setup)
 
-fun <G : PolygonGeometry?, P> Source<G, P>.addFillExtrusion(setup: FillExtrusionLayer<P>.() -> Unit) =
+fun <G : PolygonGeometry?, P : HasId<*>?> Source<G, P>.addFillExtrusion(setup: FillExtrusionLayer<P>.() -> Unit) =
     addLayer(::FillExtrusionLayer, setup)
 
-fun <G : PolygonGeometry?, P, D> Source<G, P>.addExpensiveFillExtrusion(
+fun <G : PolygonGeometry?, P : HasId<*>?, D> Source<G, P>.addExpensiveFillExtrusion(
     from: Reactive<D>, setup: FillExtrusionLayer<P>.(D) -> Unit,
 ) = addExpensiveLayer(::FillExtrusionLayer, from, setup)
 

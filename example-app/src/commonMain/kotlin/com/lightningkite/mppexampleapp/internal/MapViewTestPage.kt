@@ -45,6 +45,7 @@ import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.modify
 import com.lightningkite.reactive.lensing.lens
 import com.lightningkite.services.data.GeoCoordinate
+import com.lightningkite.services.database.HasId
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -104,7 +105,7 @@ object MapViewTestPage : Page {
                 }
 
                 @Serializable
-                data class FeatureData2(val _id: Uuid)
+                data class FeatureData2(override val _id: Uuid) : HasId<Uuid>
 
                 addSource(coordinates.lens { it.map { Feature(it.second.point, FeatureData2(it.first)) } }) {
                     addCircle {

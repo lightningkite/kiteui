@@ -15,6 +15,7 @@ import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.reactive.lensing.lens
 import com.lightningkite.services.data.GeoCoordinate
+import com.lightningkite.services.database.HasId
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PolymorphicKind
@@ -50,7 +51,6 @@ expect class MapView(
     val camera: Camera
 }
 
-
 inline fun ElementWriter.mapView(
     disableAttribution: I_SWEAR_ON_MY_JOB? = null,
     interactive: Boolean = true,
@@ -60,48 +60,51 @@ inline fun ElementWriter.mapView(
 expect fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit)
 
 
-inline fun <G : Geometry?, reified P> MapView.addSource(
+inline fun <G : Geometry?, reified P : HasId<*>> MapView.addSource(
     feature: Reactive<Feature<G, P>>,
     noinline setup: Source<G, P>.() -> Unit = {},
 ) = addSource(feature, serializer<P>(), setup)
 
-fun <G : Geometry?, P> MapView.addSource(
+fun <G : Geometry?, P : HasId<*>> MapView.addSource(
     feature: Reactive<Feature<G, P>>,
     propertiesSerializer: KSerializer<P>,
     setup: Source<G, P>.() -> Unit = {},
 ) = Source(this, feature.lens { listOf(it) }, propertiesSerializer).apply(setup)
 
 @JvmName("source2")
-inline fun <G : Geometry?, reified P> MapView.addSource(
+inline fun <G : Geometry?, reified P : HasId<*>> MapView.addSource(
     features: Reactive<Collection<Feature<G, P>>>,
     noinline setup: Source<G, P>.() -> Unit = {},
 ) = addSource(features, serializer<P>(), setup)
 
 @JvmName("source2")
-fun <G : Geometry?, P> MapView.addSource(
+fun <G : Geometry?, P : HasId<*>> MapView.addSource(
     features: Reactive<Collection<Feature<G, P>>>,
     propertiesSerializer: KSerializer<P>,
     setup: Source<G, P>.() -> Unit = {},
 ) = Source(this, features, propertiesSerializer).apply(setup)
 
+@JvmName("sourceNoProperties")
+fun <G : Geometry?> MapView.addSource(
+    feature: Reactive<Feature<G, Nothing?>>,
+    setup: Source<G, Nothing?>.() -> Unit = {},
+) = Source(this, feature.lens { listOf(it) }, serializer<Nothing?>()).apply(setup)
 
-/**
- * An image added to the map's style. Use it in layers that take a [Layer.ResolvedImage], such as
- * [SymbolLayer.iconImage] or [FillLayer.pattern], via [Layer.image].
- *
- * Images load asynchronously, so features using one render without it until it has loaded.
- */
-class MapImage internal constructor(val mapView: MapView) : Layer.Value<ImageSource> {
+@JvmName("sourceNoProperties2")
+fun <G : Geometry?> MapView.addSource(
+    features: Reactive<Collection<Feature<G, Nothing?>>>,
+    setup: Source<G, Nothing?>.() -> Unit = {},
+) = Source(this, features, serializer<Nothing?>()).apply(setup)
+
+
+class ResolvedImage internal constructor(val mapView: MapView) : Layer.Value<ImageSource> {
     val id = Uuid.random()
     override val json get() = expression<ImageSource>("image", id.toString().literal).json
 }
 
-/** Adds [source] to the map's style as an image. */
-fun MapView.addImage(source: ImageSource) = MapImage(this).also { images[it.id] = source }
+fun MapView.addImage(source: ImageSource) = ResolvedImage(this).also { images[it.id] = source }
+fun MapView.addImage(source: Reactive<ImageSource>) = ResolvedImage(this).also { reactive { images[it.id] = source() } }
 
-/** Adds [source] to the map's style as an image, replacing it whenever [source] changes. */
-fun MapView.addImage(source: Reactive<ImageSource>) =
-    MapImage(this).also { reactive { images[it.id] = source() } }
 
 /**
  * Yes, this is meant to be attention grabbing.
@@ -110,8 +113,8 @@ fun MapView.addImage(source: Reactive<ImageSource>) =
  * all the third-party map APIs you are using and what kind of attribution they require, if any.
  * MapLibre itself does not require attribution, as it's licensed under 3-Clause BSD.
  *
- * Setting this doesn't actually do anything behind the scenes. It's just a form of in-code docs
- * (and a way to make it slightly harder to forget to handle it).
+ * The passed value isn't actually used for anything behind the scenes. It's just a form of in-code
+ * docs (and a way to make it slightly harder to forget to handle it).
  *
  * As an example, basemaps obtained from `Map.Style.Url()` commonly require attribution.
  */
@@ -125,6 +128,7 @@ enum class I_SWEAR_ON_MY_JOB {
     /** Choose this if you are handling attribution manually elsewhere in the app. */
     I_AM_HANDLING_ATTRIBUTION,
 }
+
 
 /**
  * The MapLibre map is not initialized immediately on android and web, so we need to keep track
@@ -147,7 +151,7 @@ internal data class PreInit(
 ) : BaseProperties, CameraProperties
 
 internal class StyleDataMap<V>(
-    private val onPut: (key: Uuid,  new: V) -> Unit,
+    private val onPut: (key: Uuid, new: V) -> Unit,
     private val onRemove: (key: Uuid) -> Unit,
 ) : AbstractMutableMap<Uuid, V>() {
     private val backing = LinkedHashMap<Uuid, V>()
@@ -158,34 +162,37 @@ internal class StyleDataMap<V>(
     override fun put(key: Uuid, value: V): V? = backing.put(key, value).also { onPut(key, value) }
     override fun remove(key: Uuid): V? = backing.remove(key)?.also { onRemove(key) }
 
-    override val entries: MutableSet<MutableMap.MutableEntry<Uuid, V>> = object : AbstractMutableSet<MutableMap.MutableEntry<Uuid, V>>() {
-        override val size: Int get() = backing.size
-        override fun add(element: MutableMap.MutableEntry<Uuid, V>): Boolean = put(element.key, element.value) != element.value
+    override val entries: MutableSet<MutableMap.MutableEntry<Uuid, V>> =
+        object : AbstractMutableSet<MutableMap.MutableEntry<Uuid, V>>() {
+            override val size: Int get() = backing.size
+            override fun add(element: MutableMap.MutableEntry<Uuid, V>): Boolean =
+                put(element.key, element.value) != element.value
 
-        override fun iterator(): MutableIterator<MutableMap.MutableEntry<Uuid, V>> = object : MutableIterator<MutableMap.MutableEntry<Uuid, V>> {
-            private val inner = backing.entries.iterator()
-            private var last: MutableMap.MutableEntry<Uuid, V>? = null
+            override fun iterator(): MutableIterator<MutableMap.MutableEntry<Uuid, V>> =
+                object : MutableIterator<MutableMap.MutableEntry<Uuid, V>> {
+                    private val inner = backing.entries.iterator()
+                    private var last: MutableMap.MutableEntry<Uuid, V>? = null
 
-            override fun hasNext() = inner.hasNext()
+                    override fun hasNext() = inner.hasNext()
 
-            override fun next(): MutableMap.MutableEntry<Uuid, V> {
-                val entry = inner.next().also { last = it }
-                return object : MutableMap.MutableEntry<Uuid, V> {
-                    override val key get() = entry.key
-                    override val value get() = entry.value
-                    override fun setValue(newValue: V) = put(entry.key, newValue)!!
+                    override fun next(): MutableMap.MutableEntry<Uuid, V> {
+                        val entry = inner.next().also { last = it }
+                        return object : MutableMap.MutableEntry<Uuid, V> {
+                            override val key get() = entry.key
+                            override val value get() = entry.value
+                            override fun setValue(newValue: V) = put(entry.key, newValue)!!
+                        }
+                    }
+
+                    override fun remove() {
+                        val removed = checkNotNull(last) { "next() has not been called" }
+                        val (key, value) = removed.key to removed.value
+                        inner.remove()
+                        last = null
+                        onRemove(key)
+                    }
                 }
-            }
-
-            override fun remove() {
-                val removed = checkNotNull(last) { "next() has not been called" }
-                val (key, value) = removed.key to removed.value
-                inner.remove()
-                last = null
-                onRemove(key)
-            }
         }
-    }
 }
 
 internal class LateInit<T, M>(
@@ -258,18 +265,19 @@ internal fun MapView.handleSourceLayerClicks(getClickedProperties: (layerIds: Se
     var handledAny = false
 
     layersBySource.forEach { (source, layers) ->
-        @Suppress("UNCHECKED_CAST") source as Source<*, Any?>
+        @Suppress("UNCHECKED_CAST") source as Source<*, HasId<*>?>
 
         layers.forEach { layer ->
             if (layer.clickListeners.isEmpty()) return@forEach
-            @Suppress("UNCHECKED_CAST") layer as Layer<Any?>
-            val properties = getClickedProperties(setOf(layer.id)).map(source::decodeProperties)
+            @Suppress("UNCHECKED_CAST") layer as Layer<HasId<*>?>
+            val properties = getClickedProperties(setOf(layer.id)).map(source::decodeProperties).distinctBy { it?._id }
             if (properties.isEmpty()) return@forEach
             layer.clickListeners.forEach { it(properties); handledAny = true }
         }
 
         if (source.clickListeners.isEmpty()) return@forEach
-        val properties = getClickedProperties(layers.map { it.id }.toSet()).map(source::decodeProperties)
+        val properties =
+            getClickedProperties(layers.map { it.id }.toSet()).map(source::decodeProperties).distinctBy { it?._id }
         if (properties.isEmpty()) return@forEach
         source.clickListeners.forEach { it(properties); handledAny = true }
     }
@@ -277,7 +285,7 @@ internal fun MapView.handleSourceLayerClicks(getClickedProperties: (layerIds: Se
     return handledAny
 }
 
-private fun <P> Source<*, P>.decodeProperties(properties: JsonObject?): P {
+private fun <P : HasId<*>?> Source<*, P>.decodeProperties(properties: JsonObject?): P {
     val descriptor = propertiesSerializer.descriptor
     // MapLibre reports a feature with null properties as having empty properties.
     val json = if (properties == null || properties.isEmpty() && descriptor.isNullable) JsonNull

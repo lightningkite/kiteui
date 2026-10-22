@@ -86,7 +86,8 @@ kotlin {
             kotlin.srcDir(generateMapLibreLayerTypes)
             dependencies {
                 api(project(":library"))
-                api("com.lightningkite.services:data-shared:1.3.0-prerelease-86-c4aefa99")
+                api("com.lightningkite.services:data-shared:1.3.0")
+                api("com.lightningkite.services:database-shared:1.3.0")
                 api(libs.spatialk.geojson)
                 api(libs.kotlinx.serialization.json)
             }
