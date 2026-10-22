@@ -43,7 +43,6 @@ import org.maplibre.android.style.layers.PaintPropertyValue
 import org.maplibre.android.style.layers.PropertyValue
 import org.maplibre.android.style.layers.RasterLayer
 import org.maplibre.android.style.layers.SymbolLayer
-import org.maplibre.android.style.layers.TransitionOptions
 import org.maplibre.android.style.sources.GeoJsonSource
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -120,8 +119,6 @@ actual class MapView actual constructor(
 
     val emptySourceId = Uuid.random()
     private fun onStyleLoaded(style: MapLibreStyle) {
-        // Symbols fade in when placed, and a moved symbol counts as new, so it would blink on every move.
-        style.transition.let { style.transition = TransitionOptions(it.duration, it.delay, false) }
         style.addSource(GeoJsonSource(emptySourceId.toString()))
         loadedImages.forEach { (id, bitmap) -> style.addImage(id.toString(), bitmap) }
         sources.forEach { (id, source) -> style.addSource(GeoJsonSource(id.toString(), source.data.toJson())) }

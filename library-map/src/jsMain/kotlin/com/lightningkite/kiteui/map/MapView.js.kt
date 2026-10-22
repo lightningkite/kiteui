@@ -250,8 +250,6 @@ internal fun PreInit.toOptions(
         pitch = pitch,
         minPitch = minPitch ?: JsUndefined,
         maxPitch = maxPitch ?: JsUndefined,
-
-        fadeDuration = 0.0,
     ).also { if (disableAttribution != null) it.attributionControl = false }
 }
 

@@ -170,8 +170,6 @@ external class Map(options: Options) {
         val pitch: Double?
         val minPitch: Double?
         val maxPitch: Double?
-
-        val fadeDuration: Double?
     }
 }
 
