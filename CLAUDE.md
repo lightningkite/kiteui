@@ -134,7 +134,7 @@ class ItemDetailPage(val id: String) : Page {
 
 A page may carry several `@Routable`s (e.g. `items/new` and `items/{id}` with `id: String?`); its URL comes from the route with the most path parameters that are all non-null.
 
-Navigate using `context.pageNavigator.navigate(SomePage)` or use `link` components.  On web only `navigate()` adds a browser history entry; `replace()`, `reset()` and `goBack()` overwrite the current one.
+Navigate using `context.pageNavigator.navigate(SomePage)` or use `link` components.  On web the browser history mirrors the stack: only `navigate()` adds an entry, `replace()` overwrites the current one, and `goBack()` (or a shorter `reset()`) steps the browser back.
 
 ### Errors
 
