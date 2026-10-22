@@ -9,8 +9,10 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import kotlin.math.roundToInt
+import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.events.Event
 
 public actual class ProgrammaticLayout actual constructor(context: ElementContext) : NativeLinearLayoutElement(context) {
     init {
@@ -32,6 +34,15 @@ public actual class ProgrammaticLayout actual constructor(context: ElementContex
             remeasureConstrainedSize()
             invalidateLayout()
         })
+        // Web fonts (the default Montserrat uses display=swap) usually finish loading after the first
+        // layout and change text size without any mutation or resize, leaving cached measurements stale.
+        val fonts = document.asDynamic().fonts
+        val onFontsLoaded: (Event) -> Unit = {
+            children.forEach { child -> child.native.onElement { it.asDynamic().__existingMeasure = null } }
+            invalidateLayout()
+        }
+        fonts.addEventListener("loadingdone", onFontsLoaded)
+        onRemove { fonts.removeEventListener("loadingdone", onFontsLoaded) }
     }
 
     override fun nativeAddChild(index: Int, element: Element) {
