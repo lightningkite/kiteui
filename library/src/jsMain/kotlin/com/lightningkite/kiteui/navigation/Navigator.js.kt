@@ -94,8 +94,37 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     }
     guessAndImplementFromUrlBar(initBar)
 
+    // Each browser history entry's state is the depth of the stack it shows, so the browser's entries mirror the
+    // stack: navigate() pushes, replace() overwrites, and popping (goBack, a shorter reset) steps the browser back
+    // with history.go() instead of overwriting, so browser Back and Forward match the app.
+    window.history.replaceState(stack.value.lastIndex, "", window.location.href)
     var suppressNav = false
+    var rewinding = false
+    fun writeToHistory(s: List<Page>) {
+        val top = s.lastOrNull()?.let { routes.render(it) } ?: return
+        val url = basePath + top.urlLikePath.render()
+        val depth = window.history.state as Int
+        if (s.lastIndex < depth) {
+            // history.go() is asynchronous; its popstate finishes the write with whatever the stack is by then.
+            rewinding = true
+            window.history.go(s.lastIndex - depth)
+            return
+        }
+        for (i in depth + 1..s.lastIndex) {
+            val pageUrl = routes.render(s[i])?.let { basePath + it.urlLikePath.render() } ?: url
+            window.history.pushState(i, "", pageUrl)
+        }
+        log?.log("Replacing state as index ${s.lastIndex} with '$url'")
+        window.history.replaceState(s.lastIndex, "", url)
+        lastStackForPath[top.urlLikePath] = s
+    }
+
     window.addEventListener("popstate", { event ->
+        if (rewinding) {
+            rewinding = false
+            writeToHistory(stack.value)
+            return@addEventListener
+        }
         if (suppressNav) return@addEventListener
         event as PopStateEvent
 
@@ -104,7 +133,7 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
         if (context.dismissTopDialog()) {
             val currentUrl = routes.render(stack.value.lastOrNull() ?: return@addEventListener)
                 ?.urlLikePath ?: return@addEventListener
-            window.history.pushState(null, "", basePath + currentUrl.render())
+            window.history.pushState(stack.value.lastIndex, "", basePath + currentUrl.render())
             return@addEventListener
         }
 
@@ -114,49 +143,15 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
         } finally {
             suppressNav = false
         }
+        // The stack remembered for this URL may be a different depth than the entry recorded (e.g. after a reload).
+        window.history.replaceState(stack.value.lastIndex, "", window.location.href)
     })
 
-    var lastStack = stack.value
     AppScope.reactive {
         val s = stack()
-        val previous = lastStack
-        lastStack = s
-        if (suppressNav) return@reactive
-        try {
-            suppressNav = true
-            // Only navigate() deepens the stack.  replace(), reset() and goBack() leave the URL to the
-            // replaceState below, so browser Back can't return to a page the app has left.
-            if (s.size > previous.size && s.lastOrNull() != previous.lastOrNull()) {
-                val new = s.lastOrNull() ?: return@reactive
-                routes.render(new)?.urlLikePath?.let {
-                    log?.log("pushState '${it.render()}'...")
-                    window.history.pushState(
-                        null,
-                        "",
-                        basePath + it.render()
-                    )
-                }
-            }
-        } finally {
-            suppressNav = false
-        }
-    }
-    AppScope.reactive {
-        // Whenever the stack's top changes, we want to update the URL bar.
-        val s = stack()
-        s.lastOrNull()?.let { routes.render(it) }?.let {
-            it.listenables.forEach { rerunOn(it) }
-            if (suppressNav) return@let
-            log?.log("Replacing state as index ${s.lastIndex} with '${it.urlLikePath.render()}'")
-            it.urlLikePath.let {
-                window.history.replaceState(
-                    s.lastIndex,
-                    "",
-                    basePath + it.render()
-                )
-            }
-            lastStackForPath[it.urlLikePath] = s
-        }
+        s.lastOrNull()?.let { routes.render(it) }?.listenables?.forEach { rerunOn(it) }
+        if (suppressNav || rewinding) return@reactive
+        writeToHistory(s)
     }
 
     AppScope.reactive {

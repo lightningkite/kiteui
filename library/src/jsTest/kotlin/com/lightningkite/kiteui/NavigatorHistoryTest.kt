@@ -21,8 +21,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * Only navigate() should add a browser history entry.  replace() and goBack() used to push one too,
- * so the browser's Back button returned to pages the app had already left, like a just-saved form.
+ * The browser's history should mirror the app's stack: browser Back after an in-app goBack() moves on in one
+ * press, and Back from a page that replace()d a form skips the form.
  */
 class NavigatorHistoryTest {
 
@@ -30,8 +30,18 @@ class NavigatorHistoryTest {
         override fun ElementWriter.CanAddTheme.render() { space() }
     }
 
+    // Browser history moves asynchronously.
+    private suspend fun awaitPath(path: String) {
+        var waited = 0
+        while (window.location.pathname != path && waited < 2000) {
+            delay(50); waited += 50
+        }
+        delay(50)
+        assertEquals(path, window.location.pathname)
+    }
+
     @Test
-    fun onlyNavigateAddsHistoryEntries() = GlobalScope.promise {
+    fun browserHistoryMirrorsTheStack() = GlobalScope.promise {
         window.history.replaceState(null, "", "/list")
         lateinit var context: ElementContext
         root(Theme(id = "unitTest")) { context = this.context }
@@ -42,30 +52,34 @@ class NavigatorHistoryTest {
             )
         }
         navigator.bindToPlatform(context)
-        assertEquals(listOf<Page>(NamedPage("list")), navigator.stack.value)
         val startLength = window.history.length
 
-        navigator.navigate(NamedPage("edit"))
-        assertEquals(startLength + 1, window.history.length)
-        assertEquals("/edit", window.location.pathname)
+        navigator.navigate(NamedPage("a"))
+        navigator.navigate(NamedPage("b"))
+        assertEquals(startLength + 2, window.history.length)
+        assertEquals("/b", window.location.pathname)
 
         navigator.goBack()
-        assertEquals(startLength + 1, window.history.length)
-        assertEquals("/list", window.location.pathname)
+        awaitPath("/a")
+        assertEquals(listOf<Page>(NamedPage("list"), NamedPage("a")), navigator.stack.value)
+
+        // One press, not a dead step on a duplicate of /a.
+        window.history.back()
+        awaitPath("/list")
+        assertEquals(NamedPage("list"), navigator.stack.value.last())
+
+        // Forward returns to the page that was left, as on any website.
+        window.history.forward()
+        awaitPath("/a")
+        assertEquals(NamedPage("a"), navigator.stack.value.last())
 
         navigator.navigate(NamedPage("form"))
-        assertEquals(startLength + 2, window.history.length)
         navigator.replace(NamedPage("detail"))
-        assertEquals(startLength + 2, window.history.length)
         assertEquals("/detail", window.location.pathname)
 
         // Back from the saved detail page must not land on the form it replaced.
         window.history.back()
-        var waited = 0
-        while (window.location.pathname != "/list" && waited < 2000) {
-            delay(50); waited += 50
-        }
-        assertEquals("/list", window.location.pathname)
-        assertEquals(NamedPage("list"), navigator.stack.value.last())
+        awaitPath("/a")
+        assertEquals(NamedPage("a"), navigator.stack.value.last())
     }
 }
