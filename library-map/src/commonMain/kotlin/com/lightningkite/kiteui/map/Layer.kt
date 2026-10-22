@@ -24,7 +24,7 @@ sealed class Layer<P>(
     val source: Uuid,
     private val type: String,
 ) {
-    private val properties = ArrayList<Property<*>>()
+    internal val properties = ArrayList<Property<*>>()
     internal val clickListeners = ArrayList<(properties: List<P>) -> Unit>()
 
     var minZoom: Double? = null
