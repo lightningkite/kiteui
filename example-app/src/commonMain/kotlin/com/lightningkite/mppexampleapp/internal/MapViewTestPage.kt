@@ -15,11 +15,11 @@ import com.lightningkite.kiteui.map.addLine
 import com.lightningkite.kiteui.map.addSymbol
 import com.lightningkite.kiteui.map.feature
 import com.lightningkite.kiteui.map.getDefaultPin
-import com.lightningkite.kiteui.map.registerImage
+import com.lightningkite.kiteui.map.addImage
 import com.lightningkite.kiteui.map.lineString
 import com.lightningkite.kiteui.map.literal
 import com.lightningkite.kiteui.map.onClick
-import com.lightningkite.kiteui.map.source
+import com.lightningkite.kiteui.map.addSource
 import com.lightningkite.kiteui.map.point
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Icon
@@ -75,8 +75,8 @@ object MapViewTestPage : Page {
                     Style.Debug
                 }
 
-                source(markerPosition.point.feature) {
-                    val pin = registerImage(getDefaultPin(color = Color.red))
+                addSource(markerPosition.point.feature) {
+                    val pin = addImage(getDefaultPin(color = Color.red))
                     addSymbol {
                         iconImage = pin
                         textField = "Hello, world!".literal
@@ -94,7 +94,7 @@ object MapViewTestPage : Page {
                     onClick {}
                 }
 
-                source(coordinates.lens { it.map { it.second } }.lineString.feature) {
+                addSource(coordinates.lens { it.map { it.second } }.lineString.feature) {
                     addLine {
                         ::color { rerunOn(recolor); Random.nextColor().copy(alpha = 1.0f).literal }
                         width = 10.literal
@@ -106,7 +106,7 @@ object MapViewTestPage : Page {
                 @Serializable
                 data class FeatureData2(val _id: Uuid)
 
-                source(coordinates.lens { it.map { Feature(it.second.point, FeatureData2(it.first)) } }) {
+                addSource(coordinates.lens { it.map { Feature(it.second.point, FeatureData2(it.first)) } }) {
                     addCircle {
                         ::color { rerunOn(recolor); Random.nextColor().literal }
                         ::radius {

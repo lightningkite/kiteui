@@ -60,25 +60,25 @@ inline fun ElementWriter.mapView(
 expect fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit)
 
 
-inline fun <G : Geometry?, reified P> MapView.source(
+inline fun <G : Geometry?, reified P> MapView.addSource(
     feature: Reactive<Feature<G, P>>,
     noinline setup: Source<G, P>.() -> Unit = {},
-) = source(feature, serializer<P>(), setup)
+) = addSource(feature, serializer<P>(), setup)
 
-fun <G : Geometry?, P> MapView.source(
+fun <G : Geometry?, P> MapView.addSource(
     feature: Reactive<Feature<G, P>>,
     propertiesSerializer: KSerializer<P>,
     setup: Source<G, P>.() -> Unit = {},
 ) = Source(this, feature.lens { listOf(it) }, propertiesSerializer).apply(setup)
 
 @JvmName("source2")
-inline fun <G : Geometry?, reified P> MapView.source(
+inline fun <G : Geometry?, reified P> MapView.addSource(
     features: Reactive<Collection<Feature<G, P>>>,
     noinline setup: Source<G, P>.() -> Unit = {},
-) = source(features, serializer<P>(), setup)
+) = addSource(features, serializer<P>(), setup)
 
 @JvmName("source2")
-fun <G : Geometry?, P> MapView.source(
+fun <G : Geometry?, P> MapView.addSource(
     features: Reactive<Collection<Feature<G, P>>>,
     propertiesSerializer: KSerializer<P>,
     setup: Source<G, P>.() -> Unit = {},
@@ -97,10 +97,10 @@ class MapImage internal constructor(val mapView: MapView) : Layer.Value<ImageSou
 }
 
 /** Adds [source] to the map's style as an image. */
-fun MapView.registerImage(source: ImageSource) = MapImage(this).also { images[it.id] = source }
+fun MapView.addImage(source: ImageSource) = MapImage(this).also { images[it.id] = source }
 
 /** Adds [source] to the map's style as an image, replacing it whenever [source] changes. */
-fun MapView.registerImage(source: Reactive<ImageSource>) =
+fun MapView.addImage(source: Reactive<ImageSource>) =
     MapImage(this).also { reactive { images[it.id] = source() } }
 
 /**
