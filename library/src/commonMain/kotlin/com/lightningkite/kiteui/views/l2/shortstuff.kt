@@ -39,10 +39,12 @@ public fun ElementWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWrit
 public fun ElementWriter.CanAddShownWhen.errorText() {
     val errors = ReactiveMutableSet<Exception>()
     val errorView = shownWhen { errors().isNotEmpty() }.themed(SubtextSemantic).themed(ErrorSemantic).text {
-        this@errorText.context.exceptionHandlers += ExceptionHandler(1f) {
+        val handler = ExceptionHandler(1f) {
             errors.add(it);
             { errors.remove(it) }
         }
+        this@errorText.context.exceptionHandlers += handler
+        onRemove { this@errorText.context.exceptionHandlers.remove(handler) }
 
         ::content {
             errors().joinToString("\n") {
