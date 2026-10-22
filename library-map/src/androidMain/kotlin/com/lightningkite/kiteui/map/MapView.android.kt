@@ -223,7 +223,7 @@ actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
 
 private fun MapLibreStyle?.toMapStyle(): Style {
     if (this == null) return Style.Json("{}")
-    return Style.Url(uri)
+    return if (uri.isEmpty()) Style.Json(json) else Style.Url(uri)
 }
 
 private fun Style?.toBuilder(): MapLibreStyle.Builder = when (this) {

@@ -47,7 +47,7 @@ actual class MapView actual constructor(
     internal val clickListeners = ArrayList<(where: GeoCoordinate) -> Unit>()
 
     actual override var style by lateInit(PreInit::style, {
-        getStyleUrl()?.let { Style.Url(it) } ?: Style.Json(getStyle().toString())
+        getStyleUrl()?.let { Style.Url(it) } ?: Style.Json(JSON.stringify(getStyle()))
     }) { setStyle(it.toUnion(), js("{diff: false}")); isStyleLoaded = false }
 
     actual val sources: MutableMap<Uuid, Source<*, *>> = StyleDataMap({ id, source ->

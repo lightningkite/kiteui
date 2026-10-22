@@ -98,7 +98,7 @@ sealed class Layer<P>(
         override val json get() = JsonArray(listOf(JsonPrimitive(x), JsonPrimitive(y)))
     }
 
-    val GeoCoordinate.point get() = Point(this.latitude, this.longitude)
+    val GeoCoordinate.point get() = Point(this.longitude, this.latitude)
 
     data class Padding(val top: Double, val right: Double, val bottom: Double, val left: Double) : Value<Padding> {
         constructor(all: Double) : this(all, all, all, all)

@@ -165,8 +165,11 @@ internal class StyleDataMap<V>(
     override val entries: MutableSet<MutableMap.MutableEntry<Uuid, V>> =
         object : AbstractMutableSet<MutableMap.MutableEntry<Uuid, V>>() {
             override val size: Int get() = backing.size
-            override fun add(element: MutableMap.MutableEntry<Uuid, V>): Boolean =
-                put(element.key, element.value) != element.value
+            override fun add(element: MutableMap.MutableEntry<Uuid, V>): Boolean {
+                val changed = !backing.containsKey(element.key) || backing[element.key] != element.value
+                put(element.key, element.value)
+                return changed
+            }
 
             override fun iterator(): MutableIterator<MutableMap.MutableEntry<Uuid, V>> =
                 object : MutableIterator<MutableMap.MutableEntry<Uuid, V>> {
@@ -180,16 +183,15 @@ internal class StyleDataMap<V>(
                         return object : MutableMap.MutableEntry<Uuid, V> {
                             override val key get() = entry.key
                             override val value get() = entry.value
-                            override fun setValue(newValue: V) = put(entry.key, newValue)!!
+                            override fun setValue(newValue: V) = entry.value.also { put(entry.key, newValue) }
                         }
                     }
 
                     override fun remove() {
                         val removed = checkNotNull(last) { "next() has not been called" }
-                        val (key, value) = removed.key to removed.value
                         inner.remove()
                         last = null
-                        onRemove(key)
+                        onRemove(removed.key)
                     }
                 }
         }
@@ -261,7 +263,8 @@ interface Camera : CameraProperties {
 }
 
 internal fun MapView.handleSourceLayerClicks(getClickedProperties: (layerIds: Set<Uuid>) -> List<JsonObject?>): Boolean {
-    val layersBySource = layers.values.filterNotNull().groupBy { it.source }.mapKeys { sources[it.key]!! }
+    val layersBySource = layers.values.filterNotNull().filter { it.isNativeLayerAdded }
+        .groupBy { it.source }.mapKeys { sources[it.key]!! }
     var handledAny = false
 
     layersBySource.forEach { (source, layers) ->
