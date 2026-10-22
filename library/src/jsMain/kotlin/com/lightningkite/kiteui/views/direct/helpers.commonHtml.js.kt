@@ -165,7 +165,7 @@ public actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenab
                     // to the DOM bindings' `undefined` sentinel, which currently evaluates to `null`. A
                     // `null` attributeFilter (declared sequence<DOMString>) fails WebIDL conversion and
                     // throws. Omitting the key entirely keeps it truly absent (real `undefined`).
-                    val init = js("({ childList: true, attributes: true, attributeOldValue: true })")
+                    val init = js("({ childList: true, attributes: true, attributeOldValue: true, characterData: true })")
                     init.subtree = recursive
                     this.observe(it, init.unsafeCast<MutationObserverInit>())
                 }
