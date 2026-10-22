@@ -36,6 +36,20 @@ public fun ElementWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWrit
     }
 }
 
+/**
+ * Shows the errors raised anywhere in this writer's [ElementContext] (button actions, reactive
+ * blocks, ...) while they're unresolved.  A context is shared by everything written under it,
+ * nested containers included, until [split] starts a new one, so an errorText() catches errors
+ * from its siblings' whole subtrees, not just its neighbor.  [field] splits for you; give other
+ * actions their own scope:
+ * ```kotlin
+ * split().col {
+ *     button { text("Save"); onClick { save() } }
+ *     errorText()
+ * }
+ * ```
+ * Stops catching when it is removed.
+ */
 public fun ElementWriter.CanAddShownWhen.errorText() {
     val errors = ReactiveMutableSet<Exception>()
     val errorView = shownWhen { errors().isNotEmpty() }.themed(SubtextSemantic).themed(ErrorSemantic).text {

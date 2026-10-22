@@ -571,6 +571,8 @@ fun longPressOpensMenu() = kiteUiTest {
 ./gradlew :library:iosX64Test      # iOS Simulator
 ```
 
+`jsTest` installs Kotlin's karma fork straight from github.com (`karma@github:Kotlin/karma` in `kotlin-js-store/yarn.lock`), so it fails where only package registries are reachable.  `./gradlew :library:compileTestDevelopmentExecutableKotlinJs` still builds the tests: `library/build/compileSync/js/test/testDevelopmentExecutable/kotlin/` holds AMD/UMD modules that register through mocha-style `describe`/`it` globals, which a small page that defines those globals and `define` can load and run in headless Chrome.
+
 ### Run Specific Test Class
 
 ```bash

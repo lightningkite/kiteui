@@ -29,6 +29,11 @@ private class Split(parent: ElementWriter) : ViewWriter, ElementWriter by parent
     override val context: ElementContext = parent.context.split()
 }
 
+/**
+ * Writes the next element under a child [ElementContext], so exception handlers added inside it
+ * (e.g. by [com.lightningkite.kiteui.views.l2.errorText]) only see errors from inside it.
+ * Without it, nested containers share their writer's context.
+ */
 public fun ElementWriter.split(): ElementWriter = Split(this)
 public fun ElementWriter.CanAddScrolling.split(): ElementWriter.CanAddScrolling = Split(this)
 public fun ElementWriter.CanAddSizing.split(): ElementWriter.CanAddSizing = Split(this)
