@@ -278,32 +278,44 @@ internal fun generateAutoroutes(sources: File, out: File) {
                 appendLine("),")
                 appendLine("renderers = mapOf(")
                 tab {
-                    for (routable in allRoutables) {
-                        val route = routable.url
-                        val rendered = route.joinToString(", ") { seg ->
-                            when (seg) {
-                                is Segment.Constant -> "\"${seg.value}\""
-                                // DefaultUriFormat.encodeToString already percent-encodes; UrlLikePath.render()
-                                // percent-encodes segments too (see UrlLikePath docs above), so decode here to
-                                // hand render() the raw value it expects - otherwise '%20' etc. becomes '%2520'.
-                                is Segment.Variable -> "decodeURIComponent(DefaultUriFormat.encodeToString(it.${seg.name}))"
-                            }
-                        }
-                        appendLine("${routable.name}::class to label@{")
+                    // A class can carry several routes (@Routable is repeatable), but mapOf keeps one renderer per
+                    // class, so each class gets one renderer that picks the route with the most path parameters
+                    // whose parameters are all non-null; e.g. a null id renders "/new-event", not "/events/null/edit".
+                    for ((name, routes) in allRoutables.groupBy { it.name }) {
+                        val byPreference = routes.sortedWith(compareBy<ScreenData> { it.isFallback }
+                            .thenByDescending { it.url.count { s -> s is Segment.Variable } }
+                            .thenBy { it.normalizedPath() })
+                        val queryParams = byPreference.first().queryParams
+                        appendLine("$name::class to label@{")
                         tab {
-                            appendLine("if (it !is ${routable.name}) return@label null")
+                            appendLine("if (it !is $name) return@label null")
                             appendLine("val params = mutableMapOf<String, String>()")
-                            for ((key, property) in routable.queryParams) {
+                            for ((key, property) in queryParams) {
                                 appendLine("it.$property.state.getOrNull()?.let { DefaultUriFormat.encodeToStringMap(\"$key\", it, params) }")
                             }
-                            appendLine("RouteRendered(UrlLikePath(")
-                            tab {
-                                appendLine("segments = listOf($rendered),")
-                                // DefaultUriFormat.encodeToStringMap already percent-encodes each value it
-                                // writes; decode here so UrlLikePath gets the raw values its render() expects.
-                                appendLine("parameters = params.mapValues { decodeURIComponent(it.value) }")
+                            for (routable in byPreference) {
+                                val variables = routable.url.filterIsInstance<Segment.Variable>()
+                                val isLastResort = variables.isEmpty() || routable === byPreference.last()
+                                val rendered = routable.url.joinToString(", ") { seg ->
+                                    when (seg) {
+                                        is Segment.Constant -> "\"${seg.value}\""
+                                        // DefaultUriFormat.encodeToString already percent-encodes; UrlLikePath.render()
+                                        // percent-encodes segments too (see UrlLikePath docs above), so decode here to
+                                        // hand render() the raw value it expects - otherwise '%20' etc. becomes '%2520'.
+                                        is Segment.Variable -> "decodeURIComponent(DefaultUriFormat.encodeToString(it.${seg.name}))"
+                                    }
+                                }
+                                if (isLastResort) appendLine("RouteRendered(UrlLikePath(")
+                                else appendLine("if (${variables.joinToString(" && ") { v -> "it.${v.name} != null" }}) return@label RouteRendered(UrlLikePath(")
+                                tab {
+                                    appendLine("segments = listOf($rendered),")
+                                    // DefaultUriFormat.encodeToStringMap already percent-encodes each value it
+                                    // writes; decode here so UrlLikePath gets the raw values its render() expects.
+                                    appendLine("parameters = params.mapValues { decodeURIComponent(it.value) }")
+                                }
+                                appendLine("), listOf(${queryParams.keys.joinToString { param -> "it.${param}" }}))")
+                                if (isLastResort) break
                             }
-                            appendLine("), listOf(${routable.queryParams.keys.joinToString { param -> "it.${param}" }}))")
                         }
                         appendLine("},")
                     }

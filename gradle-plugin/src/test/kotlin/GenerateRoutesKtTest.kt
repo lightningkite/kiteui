@@ -155,6 +155,27 @@ class GenerateRoutesKtTest {
         }
     }
 
+    @Test
+    fun `a page with several routes renders the most specific route whose path parameters are all non-null`() {
+        val source = """
+            package com.example
+
+            @Routable("/new-event")
+            @Routable("/events/{eventId}/edit")
+            class EventEditPage(val eventId: String? = null) {}
+        """.trimIndent()
+
+        val renderers = generateFromSources("EventEditPage.kt" to source).substringAfter("renderers = mapOf(")
+
+        assertEquals("One renderer per class, or later routes overwrite earlier ones in mapOf",
+            1, Regex("EventEditPage::class to").findAll(renderers).count())
+        val guard = renderers.indexOf("if (it.eventId != null) return@label RouteRendered(")
+        val editRoute = renderers.indexOf("\"events\"")
+        val newRoute = renderers.indexOf("\"new-event\"")
+        assertTrue("The edit route must be used only when eventId is non-null:\n$renderers", guard in 0 until editRoute)
+        assertTrue("The parameterless route must be the unconditional last resort:\n$renderers", editRoute < newRoute)
+    }
+
     // ---- (f) "/*" inside a string literal must not open a phantom block comment -------------
 
     @Test
