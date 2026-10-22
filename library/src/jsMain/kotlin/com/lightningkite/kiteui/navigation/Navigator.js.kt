@@ -119,10 +119,14 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
     var lastStack = stack.value
     AppScope.reactive {
         val s = stack()
+        val previous = lastStack
+        lastStack = s
         if (suppressNav) return@reactive
         try {
             suppressNav = true
-            if (s.lastOrNull() != lastStack.lastOrNull()) {
+            // Only navigate() deepens the stack.  replace(), reset() and goBack() leave the URL to the
+            // replaceState below, so browser Back can't return to a page the app has left.
+            if (s.size > previous.size && s.lastOrNull() != previous.lastOrNull()) {
                 val new = s.lastOrNull() ?: return@reactive
                 routes.render(new)?.urlLikePath?.let {
                     log?.log("pushState '${it.render()}'...")
