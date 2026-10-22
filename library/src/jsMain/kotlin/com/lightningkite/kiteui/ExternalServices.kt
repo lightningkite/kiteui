@@ -7,7 +7,7 @@ import kotlinx.browser.window
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
+import kotlinx.datetime.toInstant
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLScriptElement
@@ -17,6 +17,7 @@ import org.w3c.files.FilePropertyBag
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.js.json
+import kotlin.time.Clock
 
 // by Claude
 
@@ -98,27 +99,9 @@ public class JsExternalServices(private val ctx: ElementContext) : ExternalServi
     }
 
     override fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) {
-        fun LocalDateTime.format() = buildString {
-            if (zone.id != "SYSTEM") { append("TZID="); append(zone.id); append(':') }
-            append(year.toString().padStart(4, '0'))
-            append(month.number.toString().padStart(2, '0'))
-            append(day.toString().padStart(2, '0'))
-            append('T')
-            append(hour.toString().padStart(2, '0'))
-            append(minute.toString().padStart(2, '0'))
-            append(second.toString().padStart(2, '0'))
-        }
-        var calText = "BEGIN:VCALENDAR\nVERSION:2.0\nCALSCALE:GREGORIAN\nPRODID:adamgibbons/ics\nMETHOD:PUBLISH\nBEGIN:VEVENT\n"
-        calText += "UID:" + window.asDynamic().crypto.randomUUID() + "\n"
-        calText += "SUMMARY:" + title + "\n"
-        calText += "DTSTART:" + start.format() + "\n"
-        calText += "DTSTAMP:" + start.format() + "\n"
-        calText += "DTEND:" + end.format() + "\n"
-        calText += "DESCRIPTION:" + description + "\n"
-        calText += "LOCATION:" + location + "\n"
-        calText += "END:VEVENT\nEND:VCALENDAR"
+        val calText = icsEvent(title, description, location, start.toInstant(zone), end.toInstant(zone), Clock.System.now())
         val a = document.createElement("a") as HTMLAnchorElement
-        a.href = "data:text/plain;charset=utf-8," + encodeURIComponent(calText.replace("\n", "\r\n"))
+        a.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(calText)
         a.download = "event.ics"
         a.click()
     }
