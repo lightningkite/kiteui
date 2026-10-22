@@ -38,9 +38,9 @@ public class PageNavigator(private val routesGetter: ()->Routes) {
     }
 
     /**
-     * Pushes [screen].  On web this is the only call that adds a browser history entry;
-     * [replace], [reset] and [goBack] overwrite the current one, so browser Back never returns
-     * to a page the app replaced (e.g. a just-saved form).
+     * Pushes [screen].  On web the browser history mirrors the stack: this is the only call that adds
+     * an entry, [replace] overwrites the current one (so browser Back never returns to a replaced page,
+     * e.g. a just-saved form), and [goBack] steps the browser back, leaving Forward to return.
      */
     public fun navigate(screen: Page) {
         if (allowNavigate) {
