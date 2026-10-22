@@ -17,8 +17,9 @@ import org.maplibre.spatialk.geojson.PointGeometry
 import org.maplibre.spatialk.geojson.PolygonGeometry
 import org.maplibre.spatialk.geojson.Position
 import org.maplibre.spatialk.geojson.SingleGeometry
-import org.maplibre.spatialk.geojson.GeoJsonObject
+import org.maplibre.spatialk.geojson.GeoJson
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.nullable
 import kotlin.jvm.JvmName
 import kotlin.uuid.Uuid
 
@@ -29,16 +30,21 @@ class Source<G : Geometry?, P> internal constructor(
 ) {
     val id = Uuid.random()
 
-    internal var data: GeoJsonObject = FeatureCollection<G, P>(emptyList())
+    internal var data: String = encode(emptyList())
     internal val clickListeners = ArrayList<(properties: List<P>) -> Unit>()
 
     init {
         mapView.sources[id] = this
         mapView.reactive {
-            data = FeatureCollection(features().toList())
+            data = encode(features().toList())
             mapView.sources[id] = this@Source
         }
     }
+
+    private fun encode(features: List<Feature<G, P>>): String = GeoJson.jsonFormat.encodeToString(
+        FeatureCollection.serializer(Geometry.serializer().nullable, propertiesSerializer),
+        FeatureCollection(features),
+    )
 
     internal fun <L : Layer<P>> addLayer(constructor: (MapView, Uuid, Uuid) -> L, setup: L.() -> Unit) {
         val layerId = Uuid.random()

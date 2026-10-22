@@ -159,7 +159,7 @@ sealed class Layer<P>(
 
     operator fun Value<Number>.plus(other: Value<Number>) = expression<Number>("+", this, other)
     fun sum(vararg values: Value<Number>) = expression<Number>("+", *values)
-    operator fun minus(other: Value<Number>) = expression<Number>("-", other)
+    operator fun Value<Number>.unaryMinus() = expression<Number>("-", this)
     operator fun Value<Number>.minus(other: Value<Number>) = expression<Number>("-", this, other)
     operator fun Value<Number>.times(other: Value<Number>) = expression<Number>("*", this, other)
     operator fun Value<Number>.div(other: Value<Number>) = expression<Number>("/", this, other)
@@ -184,8 +184,8 @@ sealed class Layer<P>(
 
     val zoom get() = expression<Number>("zoom")
 
-    fun Value<String>.uppercase() = expression<Number>("upcase", this)
-    fun Value<String>.lowercase() = expression<Number>("downcase", this)
+    fun Value<String>.uppercase() = expression<String>("upcase", this)
+    fun Value<String>.lowercase() = expression<String>("downcase", this)
 
     @JvmName("stringPlus")
     operator fun Value<String>.plus(other: Value<String>) = expression<String>("concat", this, other)

@@ -31,8 +31,6 @@ import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import org.maplibre.spatialk.geojson.GeoJsonObject
-import org.maplibre.spatialk.geojson.toJson
 import org.w3c.dom.HTMLImageElement
 import org.w3c.dom.Image
 import kotlin.math.roundToInt
@@ -57,8 +55,8 @@ actual class MapView actual constructor(
         if (!isStyleLoaded) return@StyleDataMap
         val existing = map.getSource(id.toString())?.unsafeCast<GeoJSONSource>()
 
-        if (existing != null) return@StyleDataMap existing.setData(JSON.parse(source.data.toJson()))
-        map.addSource(id.toString(), source.data.toSourceSpecification())
+        if (existing != null) return@StyleDataMap existing.setData(JSON.parse(source.data))
+        map.addSource(id.toString(), source.toSourceSpecification())
     }) { if (isStyleLoaded) map.state.getOrNull()?.removeSource(it.toString()) }
 
     actual val layers: MutableMap<Uuid, Layer<*>?> = StyleDataMap({ id, layer ->
@@ -119,9 +117,9 @@ actual class MapView actual constructor(
         }
     }
 
-    private fun GeoJsonObject.toSourceSpecification() = js("{}").unsafeCast<SourceSpecification>().also {
+    private fun Source<*, *>.toSourceSpecification() = js("{}").unsafeCast<SourceSpecification>().also {
         it.asDynamic().type = "geojson"
-        it.asDynamic().data = JSON.parse(toJson())
+        it.asDynamic().data = JSON.parse(data)
     }
 
     val emptySourceId = Uuid.random()
@@ -194,7 +192,7 @@ actual class MapView actual constructor(
                         emptySourceId.toString(),
                         js("{type: 'geojson', data: {type: 'FeatureCollection', features: []}}")
                     )
-                    sources.forEach { (id, source) -> addSource(id.toString(), source.data.toSourceSpecification()) }
+                    sources.forEach { (id, source) -> addSource(id.toString(), source.toSourceSpecification()) }
                     layers.forEach { (id, layer) -> addLayer(layer.toAddLayerObject(id)) }
                 }
                 on("click") {

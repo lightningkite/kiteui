@@ -49,7 +49,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.float
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.maplibre.spatialk.geojson.toJson
 import kotlin.reflect.KMutableProperty1
 import kotlin.run
 import kotlin.uuid.Uuid
@@ -70,8 +69,8 @@ actual class MapView actual constructor(
         val style = map.state.getOrNull()?.style ?: return@StyleDataMap
         val existing = style.getSourceAs<GeoJsonSource>(id.toString())
 
-        if (existing != null) return@StyleDataMap existing.setGeoJson(source.data.toJson())
-        style.addSource(GeoJsonSource(id.toString(), source.data.toJson()))
+        if (existing != null) return@StyleDataMap existing.setGeoJson(source.data)
+        style.addSource(GeoJsonSource(id.toString(), source.data))
     }) { map.state.getOrNull()?.style?.removeSource(it.toString()) }
 
     actual val layers: MutableMap<Uuid, Layer<*>?> = StyleDataMap({ id, layer ->
@@ -121,7 +120,7 @@ actual class MapView actual constructor(
     private fun onStyleLoaded(style: MapLibreStyle) {
         style.addSource(GeoJsonSource(emptySourceId.toString()))
         loadedImages.forEach { (id, bitmap) -> style.addImage(id.toString(), bitmap) }
-        sources.forEach { (id, source) -> style.addSource(GeoJsonSource(id.toString(), source.data.toJson())) }
+        sources.forEach { (id, source) -> style.addSource(GeoJsonSource(id.toString(), source.data)) }
         layers.forEach { (id, layer) -> style.addLayer(layer.toMapLibreLayer(id.toString())) }
     }
 
@@ -249,7 +248,13 @@ private fun Camera.AnimateTo.toCameraUpdate(map: MapLibreMap): CameraUpdate = Ca
 
 internal fun PreInit.toOptions(map: MapLibreMap, onStyleLoaded: (MapLibreStyle) -> Unit) {
     map.setStyle(style.toBuilder(), onStyleLoaded)
-    map.cameraPosition = CameraPosition.Builder().target(center.toLatLng()).zoom(zoom).tilt(pitch).build()
+    map.cameraPosition = CameraPosition.Builder()
+        .target(center.toLatLng())
+        .zoom(zoom)
+        .bearing(bearing)
+        .tilt(pitch)
+        .padding(padding.toDoubleArray())
+        .build()
     minZoom?.let { map.setMinZoomPreference(it) }
     maxZoom?.let { map.setMaxZoomPreference(it) }
     minPitch?.let { map.setMinPitchPreference(it) }
