@@ -37,6 +37,18 @@ external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1130 */
     fun setZoom(zoom: Double, eventData: Any? = definedExternally)
 
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1212 */
+    fun getBearing(): Double
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1229 */
+    fun setBearing(bearing: Double, eventData: Any? = definedExternally)
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1247 */
+    fun getPadding(): PaddingOptions
+
+    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1263 */
+    fun setPadding(padding: PaddingOptions, eventData: Any? = definedExternally)
+
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1308 */
     fun getPitch(): Double
 
@@ -152,6 +164,7 @@ external class Map(options: Options) {
 
         val center: LngLat?
         val zoom: Double?
+        val bearing: Double?
         val minZoom: Double?
         val maxZoom: Double?
         val pitch: Double?
@@ -231,22 +244,6 @@ external interface LayerSpecification
 @JsPlainObject
 external interface AddLayerObject : LayerSpecification
 
-/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L288 */
-external class Marker(options: Options? = definedExternally) {
-    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L391 */
-    fun addTo(map: Map): Marker
-
-    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L428 */
-    fun remove(): Marker
-
-    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L490 */
-    fun setLngLat(lngLat: LngLat): Marker
-
-    /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/marker.ts#L104 */
-    @JsPlainObject
-    interface Options
-}
-
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/camera.ts#L232 */
 @JsPlainObject
 external interface AnimationOptions {
@@ -273,11 +270,20 @@ external interface CameraOptions : CenterZoomBearing {
     val elevation: Double?
 }
 
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/geo/edge_insets.ts#L129 */
+@JsPlainObject
+external interface PaddingOptions {
+    val top: Double?
+    val bottom: Double?
+    val right: Double?
+    val left: Double?
+}
+
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/camera.ts#L188 */
 @JsPlainObject
 external interface EaseToOptions : AnimationOptions, CameraOptions {
 //    delayEndEvents?: number;
-//    padding?: number | PaddingOptions;
+    val padding: PaddingOptions?
 //    around?: LngLatLike;
 //    easeId?: string;
 //    noMoveStart?: boolean;
@@ -291,7 +297,7 @@ external interface FlyToOptions : AnimationOptions, CameraOptions {
 //    speed?: number;
 //    screenSpeed?: number;
 //    maxDuration?: number;
-//    padding?: number | PaddingOptions;
+    val padding: PaddingOptions?
 }
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/events.ts#L611 */

@@ -139,6 +139,7 @@ object MapViewTestPage : Page {
                         val newPosition = Random.nextGeoCoordinate()
                         markerPosition.value = newPosition
                         map.camera.center = newPosition
+                        map.camera.padding = Random.nextPadding()
                     }
                 }
 
@@ -200,10 +201,18 @@ object MapViewTestPage : Page {
 
 fun Random.nextGeoCoordinate() = GeoCoordinate(nextDouble(-90.0, 90.0), nextDouble(-180.0, 180.0))
 
+fun Random.nextPadding() = Camera.Padding(
+    nextDouble(0.0, 500.0),
+    nextDouble(0.0, 500.0),
+    nextDouble(0.0, 500.0),
+    nextDouble(0.0, 500.0),
+)
+
 fun Random.nextAnimateTo() = Camera.AnimateTo(
     center = nextGeoCoordinate(),
     zoom = nextDouble(3.0, 8.0),
     bearing = nextDouble(0.0, 360.0),
+    padding = nextPadding(),
     pitch = nextDouble(0.0, 60.0),
     duration = nextDouble(2.0, 4.0).seconds,
 )

@@ -139,6 +139,8 @@ internal data class PreInit(
     override var zoom: Double = 0.0,
     override var minZoom: Double? = null,
     override var maxZoom: Double? = null,
+    override var bearing: Double = 0.0,
+    override var padding: Camera.Padding = Camera.Padding(),
     override var pitch: Double = 0.0,
     override var minPitch: Double? = null,
     override var maxPitch: Double? = null,
@@ -222,6 +224,8 @@ interface CameraProperties {
     var zoom: Double
     var minZoom: Double?
     var maxZoom: Double?
+    var bearing: Double
+    var padding: Camera.Padding
     var pitch: Double
     var minPitch: Double?
     var maxPitch: Double?
@@ -232,10 +236,18 @@ interface Camera : CameraProperties {
     fun fly(animateTo: AnimateTo)
     fun stopAnimation()
 
+    data class Padding(
+        val top: Double = 0.0,
+        val bottom: Double = 0.0,
+        val right: Double = 0.0,
+        val left: Double = 0.0,
+    )
+
     data class AnimateTo(
         val center: GeoCoordinate? = null,
         val zoom: Double? = null,
         val bearing: Double? = null,
+        val padding: Padding? = null,
         val pitch: Double? = null,
         val duration: Duration,
     )

@@ -64,10 +64,8 @@ actual class MapView actual constructor(
     internal actual val preInit = PreInit()
     val map = LateInitSignal<MapLibreMap>()
 
-    actual override var style by lateInit(PreInit::style, { style.toMapStyle() }) {
-        setStyle(it.toBuilder(), ::onStyleLoaded)
-        preInit.style = it
-    }
+    actual override var style by lateInit(
+        PreInit::style, { style.toMapStyle() }) { setStyle(it.toBuilder(), ::onStyleLoaded) }
 
     actual val sources: MutableMap<Uuid, Source<*, *>> = StyleDataMap({ id, source ->
         val style = map.state.getOrNull()?.style ?: return@StyleDataMap
@@ -142,6 +140,12 @@ actual class MapView actual constructor(
         override var zoom by lateInit(PreInit::zoom, { zoom }) { moveCamera(CameraUpdateFactory.zoomTo(it)) }
         override var minZoom by lateInit(PreInit::minZoom, { minZoomLevel }) { setMinZoomPreference(it ?: 0.0) }
         override var maxZoom by lateInit(PreInit::maxZoom, { maxZoomLevel }) { setMaxZoomPreference(it ?: 22.0) }
+        override var bearing by lateInit(
+            PreInit::bearing, { cameraPosition.bearing }) { moveCamera(CameraUpdateFactory.bearingTo(it)) }
+        override var padding by lateInit(
+            PreInit::padding, {
+                cameraPosition.padding?.toPadding() ?: Camera.Padding()
+            }) { moveCamera(CameraUpdateFactory.paddingTo(it.toDoubleArray())) }
         override var pitch by lateInit(
             PreInit::pitch, { cameraPosition.tilt }) { moveCamera(CameraUpdateFactory.tiltTo(it)) }
         override var minPitch by lateInit(PreInit::minPitch, { minPitch }) { setMinPitchPreference(it ?: 0.0) }
@@ -198,7 +202,9 @@ actual class MapView actual constructor(
                 val screenPoint = map.projection.toScreenLocation(point)
                 handleSourceLayerClicks { layerIds ->
                     map.queryRenderedFeatures(screenPoint, *layerIds.map { it.toString() }.toTypedArray())
-                        .map { feature -> feature.properties()?.let { Json.parseToJsonElement(it.toString()).jsonObject } }
+                        .map { feature ->
+                            feature.properties()?.let { Json.parseToJsonElement(it.toString()).jsonObject }
+                        }
                 }
             }
 
@@ -206,6 +212,14 @@ actual class MapView actual constructor(
         }
     }
 }
+
+fun Camera.Padding.toDoubleArray(): DoubleArray = doubleArrayOf(left, top, right, bottom)
+fun DoubleArray.toPadding() = Camera.Padding(
+    left = this[0],
+    top = this[1],
+    right = this[2],
+    bottom = this[3],
+)
 
 actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
     addOnMapClickListener { callback(it.toGeoCoordinate()); true }
@@ -230,6 +244,7 @@ private fun Camera.AnimateTo.toCameraUpdate(map: MapLibreMap): CameraUpdate = Ca
         center?.let { target(it.toLatLng()) }
         zoom?.let { zoom(it) }
         bearing?.let { bearing(it) }
+        padding?.let { padding(it.toDoubleArray()) }
         pitch?.let { tilt(it) }
     }.build()
 )

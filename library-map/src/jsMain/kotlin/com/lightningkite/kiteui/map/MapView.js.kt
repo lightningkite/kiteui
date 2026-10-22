@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.map.maplibre.FlyToOptions
 import com.lightningkite.kiteui.map.maplibre.AddLayerObject
 import com.lightningkite.kiteui.map.maplibre.GeoJSONSource
 import com.lightningkite.kiteui.map.maplibre.MapMouseEvent
+import com.lightningkite.kiteui.map.maplibre.PaddingOptions
 import com.lightningkite.kiteui.map.maplibre.QueryRenderedFeaturesOptions
 import com.lightningkite.kiteui.map.maplibre.SourceSpecification
 import com.lightningkite.kiteui.models.ImageLocal
@@ -135,6 +136,9 @@ actual class MapView actual constructor(
         override var zoom by lateInit(PreInit::zoom, MapLibreMap::getZoom, MapLibreMap::setZoom)
         override var minZoom by lateInit(PreInit::minZoom, MapLibreMap::getMinZoom, MapLibreMap::setMinZoom)
         override var maxZoom by lateInit(PreInit::maxZoom, MapLibreMap::getMaxZoom, MapLibreMap::setMaxZoom)
+        override var bearing by lateInit(PreInit::bearing, MapLibreMap::getBearing, MapLibreMap::setBearing)
+        override var padding by lateInit(
+            PreInit::padding, { getPadding().toPadding() }) { setPadding(it.toPaddingOptions()) }
         override var pitch by lateInit(PreInit::pitch, MapLibreMap::getPitch, MapLibreMap::setPitch)
         override var minPitch by lateInit(PreInit::minPitch, MapLibreMap::getMinPitch, MapLibreMap::setMinPitch)
         override var maxPitch by lateInit(PreInit::maxPitch, MapLibreMap::getMaxPitch, MapLibreMap::setMaxPitch)
@@ -145,6 +149,7 @@ actual class MapView actual constructor(
                     center = animateTo.center?.toLngLat(),
                     zoom = animateTo.zoom,
                     bearing = animateTo.bearing,
+                    padding = animateTo.padding?.toPaddingOptions(),
                     pitch = animateTo.pitch,
                     duration = animateTo.duration.inWholeMilliseconds.toDouble(),
                 )
@@ -157,6 +162,7 @@ actual class MapView actual constructor(
                     center = animateTo.center?.toLngLat(),
                     zoom = animateTo.zoom,
                     bearing = animateTo.bearing,
+                    padding = animateTo.padding?.toPaddingOptions(),
                     pitch = animateTo.pitch,
                     duration = animateTo.duration.inWholeMilliseconds.toDouble(),
                 )
@@ -178,17 +184,26 @@ actual class MapView actual constructor(
 
         native.onElement {
             map.value = MapLibreMap(preInit.toOptions(it, disableAttribution, interactive)).apply {
+                on("load") {
+                    setPadding(preInit.padding.toPaddingOptions())
+                }
                 on("style.load") {
                     isStyleLoaded = true
                     loadedImages.forEach { (id, image) -> image.addTo(this, id) }
-                    addSource(emptySourceId.toString(), js("{type: 'geojson', data: {type: 'FeatureCollection', features: []}}"))
+                    addSource(
+                        emptySourceId.toString(),
+                        js("{type: 'geojson', data: {type: 'FeatureCollection', features: []}}")
+                    )
                     sources.forEach { (id, source) -> addSource(id.toString(), source.data.toSourceSpecification()) }
                     layers.forEach { (id, layer) -> addLayer(layer.toAddLayerObject(id)) }
                 }
                 on("click") {
                     val event = it.unsafeCast<MapMouseEvent>()
                     val handled = handleSourceLayerClicks { layerIds ->
-                        queryRenderedFeatures(event.point, QueryRenderedFeaturesOptions(layers = layerIds.map { it.toString() }.toTypedArray()))
+                        queryRenderedFeatures(
+                            event.point,
+                            QueryRenderedFeaturesOptions(layers = layerIds.map { it.toString() }.toTypedArray())
+                        )
                             .map { feature -> feature.properties?.let { Json.parseToJsonElement(JSON.stringify(it)).jsonObject } }
                     }
                     if (!handled) clickListeners.forEach { it(event.lngLat.toGeoCoordinate()) }
@@ -197,6 +212,25 @@ actual class MapView actual constructor(
         }
     }
 }
+
+actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) {
+    clickListeners += callback
+}
+
+
+fun Camera.Padding.toPaddingOptions() = PaddingOptions(
+    top = top ?: JsUndefined,
+    bottom = bottom ?: JsUndefined,
+    right = right ?: JsUndefined,
+    left = left ?: JsUndefined,
+)
+
+fun PaddingOptions.toPadding() = Camera.Padding(
+    top = top ?: 0.0,
+    bottom = bottom ?: 0.0,
+    right = right ?: 0.0,
+    left = left ?: 0.0,
+)
 
 internal fun PreInit.toOptions(
     container: DOMElement,
@@ -212,17 +246,13 @@ internal fun PreInit.toOptions(
         zoom = zoom,
         minZoom = minZoom ?: JsUndefined,
         maxZoom = maxZoom ?: JsUndefined,
+        bearing = bearing,
         pitch = pitch,
         minPitch = minPitch ?: JsUndefined,
         maxPitch = maxPitch ?: JsUndefined,
 
-        // Symbols fade in when placed, and a moved symbol counts as new, so it would blink on every move.
         fadeDuration = 0.0,
     ).also { if (disableAttribution != null) it.attributionControl = false }
-}
-
-actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) {
-    clickListeners += callback
 }
 
 private fun <T> MapView.lateInit(
