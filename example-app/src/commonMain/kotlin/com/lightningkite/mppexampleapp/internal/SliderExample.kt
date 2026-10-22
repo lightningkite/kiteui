@@ -46,6 +46,23 @@ object SliderExamplePage : Page {
             }
 
             card.col {
+                h2 { content = "Initial Value with Offset Range (0.5-10, step 0.5)" }
+                val atMaxValue = Signal(10f)
+                text { ::content { "Starts at max: ${atMaxValue()}" } }
+                slider {
+                    range(0.5f, 10f, 0.5f)
+                    value bind atMaxValue
+                }
+
+                val wholeNumberValue = Signal(3f)
+                text { ::content { "Starts at a whole number: ${wholeNumberValue()}" } }
+                slider {
+                    range(0.5f, 10f, 0.5f)
+                    value bind wholeNumberValue
+                }
+            }
+
+            card.col {
                 h2 { content = "Themed Sliders" }
 
                 val themedSliderValue = Signal(50f)
