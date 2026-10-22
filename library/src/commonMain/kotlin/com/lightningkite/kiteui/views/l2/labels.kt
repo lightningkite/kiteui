@@ -79,6 +79,7 @@ public inline fun ElementWriter.label(label: String, setup: LinearLayoutElement.
     }
 }
 
+/** A labeled input with its own [errorText], which shows only errors raised inside the field. */
 public inline fun ElementWriter.field(label: String, content: ElementWriter.CanAddTheme.() -> Unit): LabeledView {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     return label(label) {

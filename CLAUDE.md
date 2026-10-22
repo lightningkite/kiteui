@@ -132,7 +132,13 @@ class ItemDetailPage(val id: String) : Page {
 }
 ```
 
-Navigate using `context.pageNavigator.navigate(SomePage)` or use `link` components.
+A page may carry several `@Routable`s (e.g. `items/new` and `items/{id}` with `id: String?`); its URL comes from the route with the most path parameters that are all non-null.
+
+Navigate using `context.pageNavigator.navigate(SomePage)` or use `link` components.  On web only `navigate()` adds a browser history entry; `replace()`, `reset()` and `goBack()` overwrite the current one.
+
+### Errors
+
+`errorText()` shows every error raised in its writer's `ElementContext`, which nested containers share; only `split()` starts a new one.  `field()` scopes its own errorText; give an action its own the same way: `split().col { button { ... }; errorText() }`.
 
 ### ViewWriter and Component Creation
 

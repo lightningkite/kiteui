@@ -37,6 +37,11 @@ public class PageNavigator(private val routesGetter: ()->Routes) {
         return if (notBlocked) true else askForConfirmNavigateAway()
     }
 
+    /**
+     * Pushes [screen].  On web this is the only call that adds a browser history entry;
+     * [replace], [reset] and [goBack] overwrite the current one, so browser Back never returns
+     * to a page the app replaced (e.g. a just-saved form).
+     */
     public fun navigate(screen: Page) {
         if (allowNavigate) {
             stack.value += screen

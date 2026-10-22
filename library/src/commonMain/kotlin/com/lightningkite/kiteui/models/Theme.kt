@@ -1247,7 +1247,8 @@ public sealed interface ShaderEffect {
  * }
  * ```
  *
- * @property id Unique identifier for this theme.
+ * @property id Unique identifier for this theme.  On web it becomes a CSS class; any id works
+ *   (other characters are encoded), but `[A-Za-z0-9-]` keeps the class readable in dev tools.
  * @property font The default font and styling for text.
  * @property elevation The shadow/elevation depth for elements.
  * @property cornerRadii The corner radius configuration for rounded corners.

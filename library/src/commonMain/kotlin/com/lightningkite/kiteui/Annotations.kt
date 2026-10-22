@@ -1,5 +1,17 @@
 package com.lightningkite.kiteui
 
+/**
+ * Gives a page a URL, e.g. `@Routable("items/{id}")`.  Every annotated path parses to the page.
+ *
+ * A page with several `@Routable` renders its URL from the route with the most path parameters
+ * whose values are all non-null, so a `null` id renders `"items/new"` rather than `"items/null"`:
+ * ```kotlin
+ * @Routable("items/new")
+ * @Routable("items/{id}")
+ * class ItemEditPage(val id: Uuid?) : Page
+ * ```
+ * A route without parameters (or else the one with the fewest) is the last resort.
+ */
 @Repeatable
 @Target(AnnotationTarget.CLASS)
 public annotation class Routable(val path: String)
