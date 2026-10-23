@@ -109,14 +109,14 @@ object MapViewTestPage : Page {
                 }
 
                 @Serializable
-                data class FeatureData2(override val _id: Uuid) : HasId<Uuid>
+                data class ArbitraryFeatureData(override val _id: Uuid) : HasId<Uuid>
 
-                addSource(coordinates.lens { it.map { Feature(it.second.point, FeatureData2(it.first)) } }) {
+                addSource(coordinates.lens { it.map { Feature(it.second.point, ArbitraryFeatureData(it.first)) } }) {
                     addCircle {
                         ::color { rerunOn(recolor); Random.nextColor().literal }
                         ::radius {
                             case(
-                                listOf((selectedDot().toString().literal eq FeatureData2::_id.value) to 15.literal),
+                                listOf((selectedDot().toString().literal eq ArbitraryFeatureData::_id.value) to 15.literal),
                                 10.literal
                             )
                         }
