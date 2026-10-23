@@ -1,12 +1,10 @@
 package com.lightningkite.kiteui.map
 
-import com.lightningkite.kiteui.dom.DOMElement
 import com.lightningkite.kiteui.map.maplibre.EaseToOptions
 import com.lightningkite.kiteui.map.maplibre.FlyToOptions
 import com.lightningkite.kiteui.map.maplibre.AddLayerObject
 import com.lightningkite.kiteui.map.maplibre.GeoJSONSource
 import com.lightningkite.kiteui.map.maplibre.MapMouseEvent
-import com.lightningkite.kiteui.map.maplibre.PaddingOptions
 import com.lightningkite.kiteui.map.maplibre.QueryRenderedFeaturesOptions
 import com.lightningkite.kiteui.map.maplibre.SourceSpecification
 import com.lightningkite.kiteui.models.ImageLocal
@@ -41,8 +39,8 @@ actual class MapView actual constructor(
     context: ElementContext, val disableAttribution: I_SWEAR_ON_MY_JOB?, val interactive: Boolean
 ) : NativeElement(context), BaseProperties {
     internal actual val preInit = PreInit()
-    val map = LateInitSignal<MapLibreMap>()
-    var isStyleLoaded = false
+    internal val map = LateInitSignal<MapLibreMap>()
+    internal var isStyleLoaded = false
 
     internal val clickListeners = ArrayList<(where: GeoCoordinate) -> Unit>()
 
@@ -122,7 +120,7 @@ actual class MapView actual constructor(
         it.asDynamic().data = JSON.parse(data)
     }
 
-    val emptySourceId = Uuid.random()
+    private val emptySourceId = Uuid.random()
     private fun Layer<*>?.toAddLayerObject(id: Uuid): AddLayerObject = if (this == null) {
         val id = id.toString()
         val sourceId = emptySourceId.toString()
@@ -215,41 +213,6 @@ actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) {
     clickListeners += callback
 }
 
-
-fun Camera.Padding.toPaddingOptions() = PaddingOptions(
-    top = top ?: JsUndefined,
-    bottom = bottom ?: JsUndefined,
-    right = right ?: JsUndefined,
-    left = left ?: JsUndefined,
-)
-
-fun PaddingOptions.toPadding() = Camera.Padding(
-    top = top ?: 0.0,
-    bottom = bottom ?: 0.0,
-    right = right ?: 0.0,
-    left = left ?: 0.0,
-)
-
-internal fun PreInit.toOptions(
-    container: DOMElement,
-    disableAttribution: I_SWEAR_ON_MY_JOB?,
-    interactive: Boolean,
-): MapLibreMap.Options {
-    return MapLibreMap.Options(
-        container = container,
-        interactive = interactive,
-        style = style.toUnion(),
-
-        center = center.toLngLat(),
-        zoom = zoom,
-        minZoom = minZoom ?: JsUndefined,
-        maxZoom = maxZoom ?: JsUndefined,
-        bearing = bearing,
-        pitch = pitch,
-        minPitch = minPitch ?: JsUndefined,
-        maxPitch = maxPitch ?: JsUndefined,
-    ).also { if (disableAttribution != null) it.attributionControl = false }
-}
 
 private fun <T> MapView.lateInit(
     preInitProp: KMutableProperty1<PreInit, T>,

@@ -20,6 +20,8 @@ import com.lightningkite.kiteui.map.lineString
 import com.lightningkite.kiteui.map.literal
 import com.lightningkite.kiteui.map.onClick
 import com.lightningkite.kiteui.map.addSource
+import com.lightningkite.kiteui.map.case
+import com.lightningkite.kiteui.map.eq
 import com.lightningkite.kiteui.map.point
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Icon
@@ -76,6 +78,8 @@ object MapViewTestPage : Page {
                     Style.Debug
                 }
 
+                onClick { markerPosition.value = it }
+
                 addSource(markerPosition.point.feature) {
                     val pin = addImage(getDefaultPin(color = Color.red))
                     addSymbol {
@@ -105,38 +109,21 @@ object MapViewTestPage : Page {
                 }
 
                 @Serializable
-                data class FeatureData2(override val _id: Uuid) : HasId<Uuid>
+                data class ArbitraryFeatureData(override val _id: Uuid) : HasId<Uuid>
 
-                addSource(coordinates.lens { it.map { Feature(it.second.point, FeatureData2(it.first)) } }) {
+                addSource(coordinates.lens { it.map { Feature(it.second.point, ArbitraryFeatureData(it.first)) } }) {
                     addCircle {
                         ::color { rerunOn(recolor); Random.nextColor().literal }
                         ::radius {
                             case(
-                                listOf((selectedDot().toString().literal eq FeatureData2::_id.value) to 15.literal),
+                                listOf((selectedDot().toString().literal eq ArbitraryFeatureData::_id.value) to 15.literal),
                                 10.literal
                             )
                         }
 
                         onClick { it.firstOrNull()?._id?.let { selectedDot.value = it } }
                     }
-
-                    addCircle {
-                        ::color { rerunOn(recolor); Random.nextColor().literal }
-                        ::radius {
-                            case(
-                                listOf((selectedDot().toString().literal eq FeatureData2::_id.value) to 15.literal),
-                                10.literal
-                            )
-                        }
-
-                        onClick { it.firstOrNull()?._id?.let { selectedDot.value = it } }
-                    }
-
-                    onClick { println("Circle layer clicked: $it") }
                 }
-
-
-                onClick { markerPosition.value = it }
             }
 
             (if (Platform.current == Platform.Web) atTopStart else atBottomStart).padded.scrollingHorizontally.row {

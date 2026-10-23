@@ -24,31 +24,13 @@ import com.lightningkite.reactive.extensions.value
 import com.lightningkite.services.data.GeoCoordinate
 import kotlinx.coroutines.launch
 import org.maplibre.android.MapLibre
-import org.maplibre.android.camera.CameraPosition
-import org.maplibre.android.camera.CameraUpdate
 import org.maplibre.android.camera.CameraUpdateFactory
-import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.style.layers.BackgroundLayer
-import org.maplibre.android.style.layers.CircleLayer
-import org.maplibre.android.style.layers.ColorReliefLayer
-import org.maplibre.android.style.layers.FillExtrusionLayer
-import org.maplibre.android.style.layers.FillLayer
-import org.maplibre.android.style.layers.HeatmapLayer
-import org.maplibre.android.style.layers.HillshadeLayer
 import org.maplibre.android.style.layers.Layer as MapLibreLayer
-import org.maplibre.android.style.layers.LayoutPropertyValue
-import org.maplibre.android.style.layers.LineLayer
-import org.maplibre.android.style.layers.PaintPropertyValue
-import org.maplibre.android.style.layers.PropertyValue
-import org.maplibre.android.style.layers.RasterLayer
 import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonSource
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.float
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.reflect.KMutableProperty1
 import kotlin.run
 import kotlin.uuid.Uuid
@@ -60,7 +42,7 @@ actual class MapView actual constructor(
     context: ElementContext, val disableAttribution: I_SWEAR_ON_MY_JOB?, val interactive: Boolean
 ) : NativeElement(context), BaseProperties {
     internal actual val preInit = PreInit()
-    val map = LateInitSignal<MapLibreMap>()
+    internal val map = LateInitSignal<MapLibreMap>()
 
     actual override var style by lateInit(
         PreInit::style, { style.toMapStyle() }) { setStyle(it.toBuilder(), ::onStyleLoaded) }
@@ -84,7 +66,6 @@ actual class MapView actual constructor(
         style.addLayerBelow(nativeLayer, beforeId)
     }) { map.state.getOrNull()?.style?.removeLayer(it.toString()) }
 
-    /** The decoded [images], which can be re-added without reloading when the style changes. */
     private val loadedImages = HashMap<Uuid, Bitmap>()
 
     actual val images: MutableMap<Uuid, ImageSource> = StyleDataMap({ id, source ->
@@ -116,7 +97,7 @@ actual class MapView actual constructor(
         }
     }
 
-    val emptySourceId = Uuid.random()
+    private val emptySourceId = Uuid.random()
     private fun onStyleLoaded(style: MapLibreStyle) {
         style.addSource(GeoJsonSource(emptySourceId.toString()))
         loadedImages.forEach { (id, bitmap) -> style.addImage(id.toString(), bitmap) }
@@ -126,7 +107,7 @@ actual class MapView actual constructor(
 
     private fun Layer<*>?.toMapLibreLayer(id: String): MapLibreLayer = if (this == null) {
         SymbolLayer(id, emptySourceId.toString())
-    } else layerFromJson(id, toJson())
+    } else layerFromJson(id)
 
     actual val camera = object : Camera {
         override var center by lateInit(
@@ -209,97 +190,10 @@ actual class MapView actual constructor(
     }
 }
 
-fun Camera.Padding.toDoubleArray(): DoubleArray = doubleArrayOf(left, top, right, bottom)
-fun DoubleArray.toPadding() = Camera.Padding(
-    left = this[0],
-    top = this[1],
-    right = this[2],
-    bottom = this[3],
-)
-
 actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) = lateRun {
     addOnMapClickListener { callback(it.toGeoCoordinate()); true }
 }
 
-private fun MapLibreStyle?.toMapStyle(): Style {
-    if (this == null) return Style.Json("{}")
-    return if (uri.isEmpty()) Style.Json(json) else Style.Url(uri)
-}
-
-private fun Style?.toBuilder(): MapLibreStyle.Builder = when (this) {
-    is Style.Json -> MapLibreStyle.Builder().fromJson(json)
-    is Style.Url -> MapLibreStyle.Builder().fromUri(url)
-    null -> MapLibreStyle.Builder().fromJson("""{"version":8,"sources":{},"layers":[]}""")
-}
-
-fun GeoCoordinate.toLatLng() = LatLng(latitude, longitude)
-fun LatLng.toGeoCoordinate() = GeoCoordinate(latitude, longitude)
-
-private fun Camera.AnimateTo.toCameraUpdate(map: MapLibreMap): CameraUpdate = CameraUpdateFactory.newCameraPosition(
-    CameraPosition.Builder(map.cameraPosition).apply {
-        center?.let { target(it.toLatLng()) }
-        zoom?.let { zoom(it) }
-        bearing?.let { bearing(it) }
-        padding?.let { padding(it.toDoubleArray()) }
-        pitch?.let { tilt(it) }
-    }.build()
-)
-
-
-internal fun PreInit.toOptions(map: MapLibreMap, onStyleLoaded: (MapLibreStyle) -> Unit) {
-    map.setStyle(style.toBuilder(), onStyleLoaded)
-    map.cameraPosition = CameraPosition.Builder()
-        .target(center.toLatLng())
-        .zoom(zoom)
-        .bearing(bearing)
-        .tilt(pitch)
-        .padding(padding.toDoubleArray())
-        .build()
-    minZoom?.let { map.setMinZoomPreference(it) }
-    maxZoom?.let { map.setMaxZoomPreference(it) }
-    minPitch?.let { map.setMinPitchPreference(it) }
-    maxPitch?.let { map.setMaxPitchPreference(it) }
-}
-
-private fun layerFromJson(id: String, json: JsonObject): MapLibreLayer {
-    val type = json["type"]?.jsonPrimitive?.content
-    val source = json["source"]?.jsonPrimitive?.content ?: ""
-    val layer = when (type) {
-        "background" -> BackgroundLayer(id)
-        "circle" -> CircleLayer(id, source)
-        "color-relief" -> ColorReliefLayer(id, source)
-        "fill" -> FillLayer(id, source)
-        "fill-extrusion" -> FillExtrusionLayer(id, source)
-        "heatmap" -> HeatmapLayer(id, source)
-        "hillshade" -> HillshadeLayer(id, source)
-        "line" -> LineLayer(id, source)
-        "raster" -> RasterLayer(id, source)
-        "symbol" -> SymbolLayer(id, source)
-        else -> throw IllegalArgumentException("Unsupported layer type '$type'")
-    }
-
-    json["minzoom"]?.let { layer.minZoom = it.jsonPrimitive.float }
-    json["maxzoom"]?.let { layer.maxZoom = it.jsonPrimitive.float }
-
-    json["filter"]?.let { layer.setFilter(it.toNativeFilter()) }
-
-    val properties = ArrayList<PropertyValue<*>>()
-    json["paint"]?.jsonObject?.forEach { (name, value) ->
-        properties += PaintPropertyValue(
-            name,
-            value.toNativeValue()
-        )
-    }
-    json["layout"]?.jsonObject?.forEach { (name, value) ->
-        properties += LayoutPropertyValue(
-            name,
-            value.toNativeValue()
-        )
-    }
-    layer.setProperties(*properties.toTypedArray())
-
-    return layer
-}
 
 private fun <T> MapView.lateInit(
     preInitProp: KMutableProperty1<PreInit, T>,

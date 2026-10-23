@@ -269,7 +269,7 @@ private fun StringBuilder.appendKdoc(text: String, indent: String) {
 /** Appends a blank line, then the enum. */
 private fun StringBuilder.appendEnum(enum: StyleEnum, indent: String) {
     appendLine()
-    appendLine("${indent}enum class ${enum.name}(override val value: String) : Layer.StyleEnum<${enum.name}> {")
+    appendLine("${indent}enum class ${enum.name}(override val value: String) : Layer.Enum<${enum.name}> {")
     for ((value, doc) in enum.values) {
         doc?.let { appendKdoc(it, "$indent    ") }
         appendLine("$indent    ${value.pascalCase()}(\"$value\"),")

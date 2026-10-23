@@ -48,7 +48,7 @@ public actual class Button actual constructor(context: ElementContext): NativeCo
                 action?.startAction(this)
             }
         }
-        native.setOnLongClickListener {
+        extraLongClickHandler = {
             if (enabled) {
                 secondaryAction?.startAction(this)
                 secondaryAction != null
