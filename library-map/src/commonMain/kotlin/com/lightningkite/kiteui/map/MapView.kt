@@ -133,12 +133,11 @@ enum class I_SWEAR_ON_MY_JOB {
 /**
  * The MapLibre map is not initialized immediately on android and web, so we need to keep track
  * of state changes that happen before initialization (e.g., in the KiteUI initializer, which
- * runs first) and forward those to the initializer.
+ * runs first) and forward those to the MapLibre initializer.
  */
 internal data class PreInit(
     override var style: Style = Style.Demo,
 
-    // Camera
     override var center: GeoCoordinate = GeoCoordinate(0.0, 0.0),
     override var zoom: Double = 0.0,
     override var minZoom: Double? = null,
@@ -149,53 +148,6 @@ internal data class PreInit(
     override var minPitch: Double? = null,
     override var maxPitch: Double? = null,
 ) : BaseProperties, CameraProperties
-
-internal class StyleDataMap<V>(
-    private val onPut: (key: Uuid, new: V) -> Unit,
-    private val onRemove: (key: Uuid) -> Unit,
-) : AbstractMutableMap<Uuid, V>() {
-    private val backing = LinkedHashMap<Uuid, V>()
-
-    override val size: Int get() = backing.size
-    override fun get(key: Uuid): V? = backing[key]
-    override fun containsKey(key: Uuid): Boolean = backing.containsKey(key)
-    override fun put(key: Uuid, value: V): V? = backing.put(key, value).also { onPut(key, value) }
-    override fun remove(key: Uuid): V? = backing.remove(key)?.also { onRemove(key) }
-
-    override val entries: MutableSet<MutableMap.MutableEntry<Uuid, V>> =
-        object : AbstractMutableSet<MutableMap.MutableEntry<Uuid, V>>() {
-            override val size: Int get() = backing.size
-            override fun add(element: MutableMap.MutableEntry<Uuid, V>): Boolean {
-                val changed = !backing.containsKey(element.key) || backing[element.key] != element.value
-                put(element.key, element.value)
-                return changed
-            }
-
-            override fun iterator(): MutableIterator<MutableMap.MutableEntry<Uuid, V>> =
-                object : MutableIterator<MutableMap.MutableEntry<Uuid, V>> {
-                    private val inner = backing.entries.iterator()
-                    private var last: MutableMap.MutableEntry<Uuid, V>? = null
-
-                    override fun hasNext() = inner.hasNext()
-
-                    override fun next(): MutableMap.MutableEntry<Uuid, V> {
-                        val entry = inner.next().also { last = it }
-                        return object : MutableMap.MutableEntry<Uuid, V> {
-                            override val key get() = entry.key
-                            override val value get() = entry.value
-                            override fun setValue(newValue: V) = entry.value.also { put(entry.key, newValue) }
-                        }
-                    }
-
-                    override fun remove() {
-                        val removed = checkNotNull(last) { "next() has not been called" }
-                        inner.remove()
-                        last = null
-                        onRemove(removed.key)
-                    }
-                }
-        }
-}
 
 internal class LateInit<T, M>(
     val mapView: MapView,
@@ -262,6 +214,54 @@ interface Camera : CameraProperties {
     )
 }
 
+
+internal class StyleDataMap<V>(
+    private val onPut: (key: Uuid, new: V) -> Unit,
+    private val onRemove: (key: Uuid) -> Unit,
+) : AbstractMutableMap<Uuid, V>() {
+    private val backing = LinkedHashMap<Uuid, V>()
+
+    override val size: Int get() = backing.size
+    override fun get(key: Uuid): V? = backing[key]
+    override fun containsKey(key: Uuid): Boolean = backing.containsKey(key)
+    override fun put(key: Uuid, value: V): V? = backing.put(key, value).also { onPut(key, value) }
+    override fun remove(key: Uuid): V? = backing.remove(key)?.also { onRemove(key) }
+
+    override val entries: MutableSet<MutableMap.MutableEntry<Uuid, V>> =
+        object : AbstractMutableSet<MutableMap.MutableEntry<Uuid, V>>() {
+            override val size: Int get() = backing.size
+            override fun add(element: MutableMap.MutableEntry<Uuid, V>): Boolean {
+                val changed = !backing.containsKey(element.key) || backing[element.key] != element.value
+                put(element.key, element.value)
+                return changed
+            }
+
+            override fun iterator(): MutableIterator<MutableMap.MutableEntry<Uuid, V>> =
+                object : MutableIterator<MutableMap.MutableEntry<Uuid, V>> {
+                    private val inner = backing.entries.iterator()
+                    private var last: MutableMap.MutableEntry<Uuid, V>? = null
+
+                    override fun hasNext() = inner.hasNext()
+
+                    override fun next(): MutableMap.MutableEntry<Uuid, V> {
+                        val entry = inner.next().also { last = it }
+                        return object : MutableMap.MutableEntry<Uuid, V> {
+                            override val key get() = entry.key
+                            override val value get() = entry.value
+                            override fun setValue(newValue: V) = entry.value.also { put(entry.key, newValue) }
+                        }
+                    }
+
+                    override fun remove() {
+                        val removed = checkNotNull(last) { "next() has not been called" }
+                        inner.remove()
+                        last = null
+                        onRemove(removed.key)
+                    }
+                }
+        }
+}
+
 internal fun MapView.handleSourceLayerClicks(getClickedProperties: (layerIds: Set<Uuid>) -> List<JsonObject?>): Boolean {
     val layersBySource = layers.values.filterNotNull().filter { it.isNativeLayerAdded }
         .groupBy { it.source }.mapKeys { sources[it.key]!! }
@@ -314,6 +314,8 @@ private fun JsonObject.restoreNestedValues(descriptor: SerialDescriptor): JsonOb
     })
 }
 
+
+/** A basic configurable vector pin icon based on MapLibre's default marker icon */
 fun getDefaultPin(
     size: Size = Size(20.0 * 1.2, 32.0 * 1.2),
     color: Color = Color.red,

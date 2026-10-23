@@ -1,5 +1,5 @@
 /**
- * External MapLibre TypeScript typedefs
+ * Internal external MapLibre TypeScript typedefs
  *
  * If the npm package version changes, this may become out-of-sync! Double check that the
  * current version of each linked source file is the same as the npm package version in
@@ -7,8 +7,8 @@
  *
  * If these versions are out-of-sync, please update them to match. It should just take a
  * find-and-replace to update the tagged version. The referenced line numbers will take
- * more effort though, so don't worry too much about those. It should be easy enough to
- * find the typedef as long as the file it is defined in hasn't changed.
+ * more effort to keep in-sync though, so don't worry too much about them. It should be
+ * easy enough to find the typedef as long as the file it is defined in hasn't changed.
  *
  * If you are working on this and notice a link that is incorrect AND you have the correct
  * reference on hand, please update it!
@@ -24,7 +24,7 @@ import org.w3c.dom.Element
 import kotlin.js.Promise
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L592 */
-external class Map(options: Options) {
+internal external class Map(options: Options) {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/map.ts#L1041 */
     fun getCenter(): LngLat
 
@@ -175,13 +175,13 @@ external class Map(options: Options) {
 
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/source.ts#L31 */
-external interface Source
+internal external interface Source
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/style/style_layer.ts */
-external interface StyleLayer
+internal external interface StyleLayer
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/geojson_source.ts#L165 */
-abstract external class GeoJSONSource : Source {
+internal abstract external class GeoJSONSource : Source {
     /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/geojson_source.ts#L297 */
     fun setData(data: Any)
 
@@ -222,29 +222,29 @@ abstract external class GeoJSONSource : Source {
  * Docs: https://maplibre.org/maplibre-style-spec/
  */
 @JsPlainObject
-external interface StyleSpecification
+internal external interface StyleSpecification
 
 /**
  * Generated from reference defined at https://github.com/maplibre/maplibre-style-spec/blob/v26.4.4/src/reference/v8.json
  * Docs: https://maplibre.org/maplibre-style-spec/sources/
  */
 @JsPlainObject
-external interface SourceSpecification
+internal external interface SourceSpecification
 
 /**
  * Generated from reference defined at https://github.com/maplibre/maplibre-style-spec/blob/v26.4.4/src/reference/v8.json
  * Docs: https://maplibre.org/maplibre-style-spec/layers/
  */
 @JsPlainObject
-external interface LayerSpecification
+internal external interface LayerSpecification
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/style/style.ts#L199 */
 @JsPlainObject
-external interface AddLayerObject : LayerSpecification
+internal external interface AddLayerObject : LayerSpecification
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/camera.ts#L232 */
 @JsPlainObject
-external interface AnimationOptions {
+internal external interface AnimationOptions {
     val duration: Double?
     val easing: ((_: Double) -> Double)?
 
@@ -254,7 +254,7 @@ external interface AnimationOptions {
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/camera.ts#L78 */
 @JsPlainObject
-external interface CenterZoomBearing {
+internal external interface CenterZoomBearing {
     val center: LngLat?
     val zoom: Double?
     val bearing: Double?
@@ -262,7 +262,7 @@ external interface CenterZoomBearing {
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/camera.ts#L57 */
 @JsPlainObject
-external interface CameraOptions : CenterZoomBearing {
+internal external interface CameraOptions : CenterZoomBearing {
     val pitch: Double?
     val roll: Double?
     val elevation: Double?
@@ -270,7 +270,7 @@ external interface CameraOptions : CenterZoomBearing {
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/geo/edge_insets.ts#L129 */
 @JsPlainObject
-external interface PaddingOptions {
+internal external interface PaddingOptions {
     val top: Double?
     val bottom: Double?
     val right: Double?
@@ -279,7 +279,7 @@ external interface PaddingOptions {
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/camera.ts#L188 */
 @JsPlainObject
-external interface EaseToOptions : AnimationOptions, CameraOptions {
+internal external interface EaseToOptions : AnimationOptions, CameraOptions {
 //    delayEndEvents?: number;
     val padding: PaddingOptions?
 //    around?: LngLatLike;
@@ -289,7 +289,7 @@ external interface EaseToOptions : AnimationOptions, CameraOptions {
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/camera.ts#L142 */
 @JsPlainObject
-external interface FlyToOptions : AnimationOptions, CameraOptions {
+internal external interface FlyToOptions : AnimationOptions, CameraOptions {
 //    curve?: number;
 //    minZoom?: number;
 //    speed?: number;
@@ -299,19 +299,19 @@ external interface FlyToOptions : AnimationOptions, CameraOptions {
 }
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/ui/events.ts#L611 */
-external interface MapMouseEvent {
+internal external interface MapMouseEvent {
     val point: Any
     val lngLat: LngLat
 }
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/source/query_features.ts#L22 */
 @JsPlainObject
-external interface QueryRenderedFeaturesOptions {
+internal external interface QueryRenderedFeaturesOptions {
     val layers: Array<String>?
 }
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/util/vectortile_to_geojson.ts#L22 */
-external interface MapGeoJSONFeature {
+internal external interface MapGeoJSONFeature {
     val id: Any?
     val layer: Layer
     val properties: Any?
@@ -322,15 +322,15 @@ external interface MapGeoJSONFeature {
 }
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/geo/lng_lat.ts#L51 */
-external class LngLat(val lng: Double, val lat: Double)
+internal external class LngLat(val lng: Double, val lat: Double)
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/util/evented.ts#L6 */
-typealias Listener<T> = (event: T) -> Any
+internal typealias Listener<T> = (event: T) -> Any
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/util/util.ts#L974 */
-external interface Subscription {
+internal external interface Subscription {
     fun unsubscribe()
 }
 
 /** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/index.ts#L176 */
-external fun setWorkerUrl(value: String)
+internal external fun setWorkerUrl(value: String)

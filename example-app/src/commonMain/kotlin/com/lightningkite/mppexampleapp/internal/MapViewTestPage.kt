@@ -20,6 +20,8 @@ import com.lightningkite.kiteui.map.lineString
 import com.lightningkite.kiteui.map.literal
 import com.lightningkite.kiteui.map.onClick
 import com.lightningkite.kiteui.map.addSource
+import com.lightningkite.kiteui.map.case
+import com.lightningkite.kiteui.map.eq
 import com.lightningkite.kiteui.map.point
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Icon
