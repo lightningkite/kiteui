@@ -78,6 +78,8 @@ object MapViewTestPage : Page {
                     Style.Debug
                 }
 
+                onClick { markerPosition.value = it }
+
                 addSource(markerPosition.point.feature) {
                     val pin = addImage(getDefaultPin(color = Color.red))
                     addSymbol {
@@ -121,24 +123,7 @@ object MapViewTestPage : Page {
 
                         onClick { it.firstOrNull()?._id?.let { selectedDot.value = it } }
                     }
-
-                    addCircle {
-                        ::color { rerunOn(recolor); Random.nextColor().literal }
-                        ::radius {
-                            case(
-                                listOf((selectedDot().toString().literal eq FeatureData2::_id.value) to 15.literal),
-                                10.literal
-                            )
-                        }
-
-                        onClick { it.firstOrNull()?._id?.let { selectedDot.value = it } }
-                    }
-
-                    onClick { println("Circle layer clicked: $it") }
                 }
-
-
-                onClick { markerPosition.value = it }
             }
 
             (if (Platform.current == Platform.Web) atTopStart else atBottomStart).padded.scrollingHorizontally.row {
