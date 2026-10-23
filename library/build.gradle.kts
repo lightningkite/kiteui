@@ -80,6 +80,8 @@ kotlin {
                 api(libs.kotlinx.datetime)
                 api(libs.kotlinx.coroutines.core)
                 api(libs.kotlinx.serialization.uri)
+                api(libs.services.telemetry.shared)
+                implementation(libs.kotlinx.atomicfu)
             }
         }
         val commonTest = getByName("commonTest") {

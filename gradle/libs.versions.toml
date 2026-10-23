@@ -18,7 +18,7 @@ kotlinxDatetime = "0.8.0"
 kotlinxSerializationJson = "1.11.0"
 ktorVersion = "3.5.2"
 ktx = "1.18.0"
-lightningServer = "5.0.0"
+lightningServer = "5.3.0-telemetryclientingest-30-02e5a08cc"
 lkGradleHelpers = "4.1.1"
 lottie = "6.7.1"
 material = "1.14.0"
@@ -29,6 +29,8 @@ reactive = "7.0.0-prerelease-64-02a1bce"
 robolectric = "4.17"
 roborazzi = "1.75.0"
 roborazziVersion = "1.75.0"
+serviceAbstractions = "1.3.0-telemetryclientingest-81-1d3ec6a9"
+atomicfu = "0.33.0"
 swingxAll = "1.6.5-1"
 swiperefreshlayout = "1.2.0"
 timber = "5.0.1"
@@ -88,6 +90,8 @@ photoview = { module = "com.github.chrisbanes:PhotoView", version = { ref = "pho
 reactive = { module = "com.lightningkite:reactive", version = { ref = "reactive" } }
 robolectric = { module = "org.robolectric:robolectric", version = { ref = "robolectric" } }
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazziVersion" }
+services-telemetry-shared = { module = "com.lightningkite.services:telemetry-shared", version = { ref = "serviceAbstractions" } }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version = { ref = "atomicfu" } }
 swingx-all = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingxAll" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = { ref = "swiperefreshlayout" } }
 timber = { module = "com.jakewharton.timber:timber", version = { ref = "timber" } }

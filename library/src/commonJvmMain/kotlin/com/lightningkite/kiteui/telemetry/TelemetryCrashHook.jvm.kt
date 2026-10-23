@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.telemetry
 
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
+import com.lightningkite.kiteui.PlatformStorage
 
 internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     val previous = Thread.getDefaultUncaughtExceptionHandler()
@@ -13,10 +12,4 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     }
 }
 
-internal actual fun blockingFlush(exporter: TelemetryExporter) {
-    try {
-        runBlocking { withTimeout(3_000) { exporter.flushAll() } }
-    } catch (_: Exception) {
-        // Best effort — if network is unreachable or times out, data is lost.
-    }
-}
+internal actual fun writeDurably(key: String, value: String) = PlatformStorage.set(key, value)

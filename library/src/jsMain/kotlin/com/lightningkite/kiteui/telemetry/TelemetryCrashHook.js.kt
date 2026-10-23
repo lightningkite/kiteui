@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.telemetry
 
-import com.lightningkite.kiteui.toBlob
+import com.lightningkite.kiteui.PlatformStorage
 import kotlinx.browser.window
 import org.w3c.dom.events.Event
 
@@ -19,20 +19,5 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     })
 }
 
-internal actual fun blockingFlush(exporter: TelemetryExporter) {
-    // Use navigator.sendBeacon for best-effort delivery during page unload/error.
-    // Unlike AppScope.launch, sendBeacon survives page navigation and unload.
-    // Limitation: sendBeacon cannot send custom headers, so crash telemetry will
-    // silently fail for endpoints requiring auth headers (e.g. Grafana Cloud).
-    // No browser API reliably supports both custom headers and unload-survival.
-    val navigator = js("navigator")
-    val payloads = exporter.drainToPayloads()
-    for ((url, body) in payloads) {
-        try {
-            val blob = body.toBlob("application/json")
-            navigator.sendBeacon(url, blob)
-        } catch (_: dynamic) {
-            // Best effort — if sendBeacon is unavailable, data is lost
-        }
-    }
-}
+// localStorage writes are synchronous.
+internal actual fun writeDurably(key: String, value: String) = PlatformStorage.set(key, value)

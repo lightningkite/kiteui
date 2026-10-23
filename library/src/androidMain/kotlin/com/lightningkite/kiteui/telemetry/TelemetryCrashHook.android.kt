@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.telemetry
 
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
+import android.content.Context
+import com.lightningkite.kiteui.views.AndroidAppContext
 
 internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     val previous = Thread.getDefaultUncaughtExceptionHandler()
@@ -13,10 +13,9 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     }
 }
 
-internal actual fun blockingFlush(exporter: TelemetryExporter) {
-    try {
-        runBlocking { withTimeout(3_000) { exporter.flushAll() } }
-    } catch (_: Exception) {
-        // Best effort — if network is unreachable or times out, data is lost.
-    }
+// PlatformStorage uses apply(), which writes asynchronously and is lost if the process dies first.
+// Same preferences file as PlatformStorage.
+internal actual fun writeDurably(key: String, value: String) {
+    AndroidAppContext.applicationCtx.getSharedPreferences("KiteUI.PlatformStorage", Context.MODE_PRIVATE)
+        .edit().putString(key, value).commit()
 }
