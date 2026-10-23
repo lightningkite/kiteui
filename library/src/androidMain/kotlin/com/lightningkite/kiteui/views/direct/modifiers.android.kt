@@ -363,7 +363,7 @@ public actual fun ElementWriter.hintPopover(
     setup: ViewWriter.() -> Unit,
 ): ElementWriter {
     return this@hintPopover.beforeSetup {
-        native.setOnLongClickListener {
+        underlyingNativeElement.extraLongClickHandler = {
             // Reuses the same in-tree overlay popover MenuButton.opensMenu() is built on
             // (Element.openPopover, openPopover.android.kt) rather than a PopupWindow/AlertDialog,
             // so it gets the same theming, positioning against preferredDirection, and

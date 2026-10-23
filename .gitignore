@@ -30,3 +30,4 @@ screenshot-*.png
 .fork/
 .env
 tmp
+secrets.properties
