@@ -18,6 +18,8 @@ import platform.QuartzCore.CAMediaTimingFunction
 import platform.QuartzCore.kCAMediaTimingFunctionEaseInEaseOut
 import platform.UIKit.*
 import platform.darwin.NSObject
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
 import kotlin.uuid.Uuid
 
@@ -164,7 +166,11 @@ actual class MapView actual constructor(
         }
 
         override fun stopAnimation() {
-            mlnMapView.setCamera(mlnMapView.camera, animated = false)
+            // Dispatch asynchronously so this returns before cancelTransitions() fires.
+            // cancelTransitions() synchronously drains callbacks on iOS, which can resume
+            // suspended coroutines; callers need a chance to cancel their jobs first.
+            val view = mlnMapView
+            dispatch_async(dispatch_get_main_queue()) { view.cancelTransitions() }
         }
 
         private fun Camera.AnimateTo.toMLNCamera(): MLNMapCamera {
@@ -305,6 +311,11 @@ private fun MapView.toMLNLayer(id: String, layer: Layer<*>?, style: MLNStyle): M
                     NSPredicate.predicateWithMLNJSONObject(value.json.toFoundation()!!)
             prop.name == "visibility" ->
                 nativeLayer.visible = (value.json as? JsonPrimitive)?.content != "none"
+            prop.cocoaName == "textVariableAnchorOffset" ->
+                nativeLayer.setValue(
+                    anchorOffsetExpression(value.json) ?: NSExpression.expressionWithMLNJSONObject(value.json.toFoundation()!!),
+                    forKey = prop.cocoaName,
+                )
             else ->
                 nativeLayer.setValue(
                     NSExpression.expressionWithMLNJSONObject(value.json.toFoundation()!!),
