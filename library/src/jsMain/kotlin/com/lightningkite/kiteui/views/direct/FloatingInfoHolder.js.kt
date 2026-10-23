@@ -31,6 +31,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
     public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
     internal var currentDirection: PopoverPreferredDirection = preferredDirection
     public actual var menuGenerator: Frame.() -> Unit = { space() }
+    public actual var popoverRole: String? = null
 
     internal fun closeButton() {
         if (closeView != null) return
@@ -100,8 +101,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                 val menuId = "kiteui-menu-${Random.nextInt().toUInt()}"
                 native.id = menuId
                 source.native.setAttribute("aria-controls", menuId)
-                native.setAttribute("role", "dialog")
-                native.setAttribute("aria-modal", "true")
+                native.setAttribute("aria-modal", if (popoverRole == "dialog") "true" else null)
                 // Update aria-expanded on the source element
                 source.native.setAttribute("aria-expanded", "true")
                 var tx = 0.0
