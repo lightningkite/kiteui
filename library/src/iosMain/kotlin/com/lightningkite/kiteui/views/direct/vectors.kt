@@ -355,10 +355,12 @@ public fun ImageVector.caLayer(): CALayer {
 
 
 public fun ImageVector.render(): UIImage {
-    UIGraphicsBeginImageContext(CGSizeMake(width.px, height.px))
+    val scale = UIScreen.mainScreen.scale
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width.px / scale, height.px / scale), false, scale)
     try {
-        with(UIGraphicsGetCurrentContext()) {
-            caLayer().renderInContext(this)
+        UIGraphicsGetCurrentContext()?.let { ctx ->
+            CGContextScaleCTM(ctx, 1.0 / scale, 1.0 / scale)
+            caLayer().renderInContext(ctx)
         }
         return UIGraphicsGetImageFromCurrentImageContext()!!
     } finally {

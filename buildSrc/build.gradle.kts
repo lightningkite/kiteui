@@ -1,5 +1,6 @@
 plugins {
     `kotlin-dsl`
+    kotlin("plugin.serialization") version embeddedKotlinVersion
 }
 repositories {
     mavenCentral()
@@ -7,6 +8,7 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.4.20")
     implementation("org.apache.pdfbox:fontbox:3.0.8")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 }
 kotlin {
     jvmToolchain(17)
