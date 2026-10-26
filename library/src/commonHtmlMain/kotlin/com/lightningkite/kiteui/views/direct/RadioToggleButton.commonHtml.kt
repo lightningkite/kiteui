@@ -33,6 +33,7 @@ public actual class RadioToggleButton actual constructor(context: ElementContext
         native.classes.add("kiteui-stack")
         native.classes.add("checkResponsive")
         native.classes.add("clickable")
+        native.setStyleProperty("position", "relative")
         native.appendChild(input)
         input.addEventListener("keydown", { ev ->
             ev as KeyboardEvent

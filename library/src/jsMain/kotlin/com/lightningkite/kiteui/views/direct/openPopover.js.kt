@@ -11,7 +11,7 @@ public actual fun Element.openPopover(
     val floating = FloatingInfoHolder(this, anchor)
     floating.preferredDirection = preferredDirection
     floating.menuGenerator = createMenu
-    floating.popoverRole = "menu"
+    floating.popoverRole = "dialog"
     floating.open()
     floating.block()
 }

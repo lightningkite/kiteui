@@ -17,9 +17,7 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import org.w3c.dom.asList
-import org.w3c.dom.events.EventListener
 import org.w3c.dom.events.MouseEvent
-import kotlin.collections.filter
 import kotlin.math.min
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -104,9 +102,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                 val menuId = "kiteui-menu-${Random.nextInt().toUInt()}"
                 native.id = menuId
                 source.native.setAttribute("aria-controls", menuId)
-                popoverRole?.takeIf { popoverRole == "dialog" }?.let {
-                    native.setAttribute("role", it)
-                }
+                popoverRole?.let { native.setAttribute("role", it) }
                 // Update aria-expanded on the source element
                 source.native.setAttribute("aria-expanded", "true")
                 var tx = 0.0
@@ -280,14 +276,12 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                 val repos = { ev: Event -> reposition() }
                 window.addEventListener("scroll", repos, true)
 
-                (native.element as? Element)?.trapFocus()
-
                 val escapeHandler = eventListener@{ ev: Event ->
                     val ev = ev as? KeyboardEvent
                     if (ev?.key == "Escape") {
                         close()
                     }
-                    if (ev?.key != "Tab") return@eventListener
+                    if (ev?.key != "Tab" || popoverRole == "tooltip") return@eventListener
                     val focusable = native.element?.querySelectorAll(
                         "a[href], button:not([disabled]), input:not([disabled]), " +
                                 "select:not([disabled]), textarea:not([disabled]), " +
@@ -299,8 +293,8 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
                                 style.visibility != "hidden" &&
                                 el.getBoundingClientRect().height > 0)
                     }
-                    val first = focusable?.get(0)
-                    val last = focusable?.get(focusable.size - 1)
+                    val first = focusable?.firstOrNull()
+                    val last = focusable?.lastOrNull()
                     if (ev.shiftKey && document.activeElement == first) {
                         ev.preventDefault()
                         (last as? HTMLElement)?.focus()

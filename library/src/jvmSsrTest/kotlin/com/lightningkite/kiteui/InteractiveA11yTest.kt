@@ -62,4 +62,16 @@ class InteractiveA11yTest {
         val html = buildString { root.native.render(this) }
         assertFalse(html.contains("aria-expanded"), "clearing expanded state should remove the attribute")
     }
+
+    @Test
+    fun requiredProducesAriaRequired() {
+        val context = ElementContext("/")
+        val root = Frame(context)
+        with(root) {
+            textInput { required = true }
+        }
+
+        val html = buildString { root.native.render(this) }
+        assertTrue(html.contains("aria-required='true'"), "required should map to aria-required")
+    }
 }

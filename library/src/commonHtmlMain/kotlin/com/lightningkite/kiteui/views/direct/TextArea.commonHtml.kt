@@ -66,7 +66,7 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
                 }
 
                 null -> {
-                    textarea.attributes.autocomplete = null
+                    textarea.attributes.autocomplete = "off"
                 }
             }
         }

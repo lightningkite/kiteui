@@ -10,7 +10,7 @@ public actual abstract class NativeInteractiveElement actual constructor(context
     public actual open var required: Boolean = false
         set(value) {
             field = value
-            native.setAttribute("aria-required", if (value) null else "true")
+            native.setAttribute("aria-required", if (value) "true" else null)
         }
 }
 
@@ -25,12 +25,12 @@ public actual abstract class NativeInteractiveContainerElement actual constructo
     public actual open var accessibleExpanded: Boolean? = null
         set(value) {
             field = value
-            if (value != null) native.setAttribute("aria-expanded", value.toString())
+            native.setAttribute("aria-expanded", value?.toString())
         }
 
     public actual open var accessibleOpensDialog: Boolean = false
         set(value) {
             field = value
-            if (value) native.setAttribute("aria-openspopup", "true")
+            native.setAttribute("aria-haspopup", if (value) "dialog" else null)
         }
 }

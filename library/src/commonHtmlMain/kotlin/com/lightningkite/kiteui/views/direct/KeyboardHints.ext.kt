@@ -58,10 +58,9 @@ internal fun FutureElement.applyKeyboardHints(hints: KeyboardHints) {
         }
     }
 
-    // When the app provides no autocomplete hint, leave the attribute unset so the browser applies
-    // its default (rather than forcing "off", which disables password-manager/autofill integration).
+    // Claude: autofill is opt-in; only inputs with a KeyboardHints autocomplete hint get it.
     attributes.autocomplete = listOfNotNull(
         primaryAutocompleteValue,
         "webauthn".takeIf { hints.includePasskeys }
-    ).joinToString(" ").takeIf { it.isNotEmpty() }
+    ).joinToString(" ").takeIf { it.isNotEmpty() } ?: "off"
 }

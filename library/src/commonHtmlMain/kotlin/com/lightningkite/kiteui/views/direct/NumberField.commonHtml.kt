@@ -90,7 +90,7 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
                 }
 
                 null -> {
-                    native.attributes.autocomplete = null
+                    native.attributes.autocomplete = "off"
                 }
             }
         }
