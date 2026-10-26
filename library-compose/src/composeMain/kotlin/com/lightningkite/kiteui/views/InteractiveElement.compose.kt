@@ -76,9 +76,12 @@ public class Interactions internal constructor(private val element: NativeElemen
 public actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
     override val interactions: Interactions = Interactions(this)
     actual override var enabled: Boolean by interactions::enabled
+    public actual open var required: Boolean = false
 }
 
 public actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
     override val interactions: Interactions = Interactions(this)
     actual override var enabled: Boolean by interactions::enabled
+    public actual open var accessibleExpanded: Boolean? = null
+    public actual open var accessibleOpensDialog: Boolean = false
 }

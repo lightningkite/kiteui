@@ -1,4 +1,5 @@
 @file:Suppress("OPT_IN_USAGE")
+@file:MustUseReturnValues
 
 package com.lightningkite.kiteui.views.direct
 

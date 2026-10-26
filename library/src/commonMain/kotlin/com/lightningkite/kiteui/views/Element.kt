@@ -465,7 +465,7 @@ public interface Element : KiteUiCoroutineScopeHelpers {
      *
      * Use via the `liveRegion()` modifier:
      * ```kotlin
-     * liveRegion() - col { text { ::content { statusMessage() } } }
+     * liveRegion().col { text { ::content { statusMessage() } } }
      * ```
      */
     public var accessibleLiveRegion: LiveRegionMode

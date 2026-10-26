@@ -22,6 +22,8 @@ public actual abstract class NativeInteractiveElement actual constructor(context
         themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
         themePipeline.add(ThemePipeline.Step.elementStatus, enabledTheming)
     }
+
+    public actual open var required: Boolean = false
 }
 
 @OptIn(ExperimentalKiteUi::class)
@@ -32,6 +34,9 @@ public actual abstract class NativeInteractiveContainerElement actual constructo
             native.isEnabled = value
             refreshTheming()
         }
+
+    public actual open var accessibleExpanded: Boolean? = null
+    public actual open var accessibleOpensDialog: Boolean = false
 
     init {
         themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)

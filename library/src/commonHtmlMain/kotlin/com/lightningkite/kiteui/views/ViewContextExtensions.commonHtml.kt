@@ -32,7 +32,14 @@ public actual fun ElementContext.overlay(
                 if (willRemove != null) throw IllegalStateException("overlay writer produced more than one element, when only one is allowed.")
                 animateIn(transition.forward)
                 willRemove = this
+                if (modal) {
+                    native.setAttribute("role", "dialog")
+                    native.setAttribute("aria-modal", "true")
+                }
             }.body(close)
+            if (modal) {
+                willRemove?.trapFocus()
+            }
         }
     }
 }

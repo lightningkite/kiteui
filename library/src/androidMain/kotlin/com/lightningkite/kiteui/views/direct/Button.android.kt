@@ -23,6 +23,8 @@ public actual class Button actual constructor(context: ElementContext): NativeCo
         isClickable = true
     }
 
+    //TODO setup functionality for accessibleRole and accessibleHasPopup
+
     @OverrideOnly
     override fun onStartup() {
         super.onStartup()
@@ -48,7 +50,7 @@ public actual class Button actual constructor(context: ElementContext): NativeCo
                 action?.startAction(this)
             }
         }
-        native.setOnLongClickListener {
+        extraLongClickHandler = {
             if (enabled) {
                 secondaryAction?.startAction(this)
                 secondaryAction != null

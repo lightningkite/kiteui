@@ -1,4 +1,5 @@
 @file:OptIn(InternalKiteUi::class, ExperimentalKiteUi::class)
+@file:MustUseReturnValues
 
 package com.lightningkite.kiteui.views.direct
 
@@ -18,6 +19,7 @@ public actual fun ElementWriter.hintPopover(
 ): ElementWriter = beforeSetup {
     val floating = FloatingInfoHolder(this)
     floating.menuGenerator = setup
+    floating.popoverRole = "tooltip"
     floating.preferredDirection = preferredDirection
     native.addEventListener("contextmenu") {
         floating.open()

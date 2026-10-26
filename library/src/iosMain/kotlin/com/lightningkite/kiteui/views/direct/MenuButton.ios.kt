@@ -64,6 +64,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
         _openMenu = openFn
     }
 
+    public actual var role: String = "dialog"
     public actual var requireClick: Boolean = true
     public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
 }
