@@ -13,8 +13,8 @@ import kotlin.test.assertTrue
 /**
  * Verifies the web `autocomplete` attribute ("autocomplete tokens") emitted for text inputs.
  *
- * See KeyboardHints.ext.kt `applyKeyboardHints`. Fields with no explicit autocomplete hint must let
- * the browser default apply (not `autocomplete="off"`), and the one-time-code token must be emitted.
+ * See KeyboardHints.ext.kt `applyKeyboardHints`. Fields with no explicit autocomplete hint must emit
+ * `autocomplete="off"`, and the one-time-code token must be emitted.
  */
 class KeyboardHintsTest {
     init {
@@ -31,9 +31,9 @@ class KeyboardHintsTest {
     }
 
     @Test
-    fun noHintsDoesNotDisableAutocomplete() {
+    fun noHintsDisablesAutocomplete() {
         val html = renderInput() // no KeyboardHints set
-        assertFalse(html.contains("autocomplete='off'"), "plain text input must not force autocomplete='off'")
+        assertTrue(html.contains("autocomplete='off'"), "plain text input must default to autocomplete='off'")
     }
 
     @Test

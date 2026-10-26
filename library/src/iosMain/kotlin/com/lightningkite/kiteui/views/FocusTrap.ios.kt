@@ -10,7 +10,7 @@ import platform.UIKit.UIAccessibilityScreenChangedNotification
  * screen-changed notification moves VoiceOver focus into the modal. Focus is also moved to the
  * first interactive descendant so hardware keyboards land in the right place.
  */
-actual fun Element.trapFocus() {
+public actual fun Element.trapFocus() {
     native.accessibilityViewIsModal = true
     requestFocusOrDescendant()
     UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, native)

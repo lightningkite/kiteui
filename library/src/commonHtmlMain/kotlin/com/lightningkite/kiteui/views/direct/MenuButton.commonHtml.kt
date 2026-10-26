@@ -10,8 +10,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
     private var _openMenu: (() -> Unit)? = null
     override val driverActions: AiDriver.Actions get() = super.driverActions + menuDriverActions(click = _openMenu)
     internal val floating: FloatingInfoHolder = FloatingInfoHolder(this)
-    public actual var role: String = "menu"
-        get() = field
+    public actual var role: String = "dialog"
         set(value) {
             field = value
             floating.popoverRole = value
