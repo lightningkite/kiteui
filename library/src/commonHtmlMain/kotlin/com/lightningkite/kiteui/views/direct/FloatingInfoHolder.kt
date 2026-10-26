@@ -11,4 +11,5 @@ public expect class FloatingInfoHolder(source: Element, anchor: Element? = null)
     public fun open()
     public fun block()
     public fun close()
+    public var popoverRole: String?
 }
