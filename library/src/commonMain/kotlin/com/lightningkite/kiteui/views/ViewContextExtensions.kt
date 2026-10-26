@@ -1,3 +1,5 @@
+@file:MustUseReturnValues
+
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.Edges

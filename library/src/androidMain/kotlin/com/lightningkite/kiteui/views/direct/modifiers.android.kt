@@ -1,3 +1,5 @@
+@file:MustUseReturnValues
+
 package com.lightningkite.kiteui.views.direct
 
 import android.animation.Animator

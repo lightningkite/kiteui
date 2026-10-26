@@ -1,4 +1,5 @@
 @file:Suppress("DSL_MARKER_APPLIED_TO_WRONG_TARGET")
+@file:MustUseReturnValues
 
 package com.lightningkite.kiteui.reactive
 

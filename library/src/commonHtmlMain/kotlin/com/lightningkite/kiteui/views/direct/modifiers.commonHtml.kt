@@ -1,4 +1,5 @@
 @file:OptIn(InternalKiteUi::class, ExperimentalKiteUi::class)
+@file:MustUseReturnValues
 
 package com.lightningkite.kiteui.views.direct
 
