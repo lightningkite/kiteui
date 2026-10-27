@@ -25,8 +25,14 @@
   (it just runs the block when none is installed). `Telemetry.flush()` saves and uploads now.
 - Removed: `TelemetryConfig`, `exceptionAttributes` (use the new
   `ElementContext.telemetryAttributes`), and `ActionInstrumentation`/`actionInstrumentors` (replaced by
-  `actionInterceptors`, which wrap the action's run). `crash.fingerprint` is now `error.fingerprint`, and
+  `Action.Interceptor`, which wraps the action's run). `crash.fingerprint` is now `error.fingerprint`, and
   `page.name` is `app.screen.name`. See `docs/TELEMETRY.md` for setup and dashboard migration.
+- **Interceptors are registered, not added to public lists.** `fetchInterceptors`, `Log.interceptors` and
+  `actionInterceptors` were mutable lists anyone could `clear()`. They are now `HttpFetcher.Interceptor.register(...)`,
+  `Log.Interceptor.register(...)` and `Action.Interceptor.register(...)`, each returning a `Release` that removes
+  only that interceptor. `LogInterceptor` is now `Log.Interceptor`. `HttpFetcher.Interceptor` and
+  `Action.Interceptor` are `fun interface`s; wrap lambdas in
+  `HttpFetcher.Interceptor { ... }` where a bare lambda was passed before, such as to `HttpFetcher.intercepted`.
 
 ### Navigation
 

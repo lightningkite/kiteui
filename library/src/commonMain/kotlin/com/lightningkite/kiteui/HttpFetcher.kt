@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.reactive.core.Release
+
 /** Reports transfer progress. `bytesExpected` is -1 when the total size is not known in advance. */
 public typealias ProgressCallback = (bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit
 
@@ -42,6 +44,29 @@ public interface HttpFetcher {
     /** The socket is not opened until it is used; see [retryWebSocket] for the reconnecting form. */
     public fun webSocket(url: String): WebSocket
 
+    /** Wraps HTTP requests. Call [proceed] to continue the chain. */
+    public fun interface Interceptor {
+        public suspend fun intercept(
+            url: String,
+            method: HttpMethod,
+            headers: HttpHeaders,
+            body: RequestBody?,
+            proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse,
+        ): RequestResponse
+
+        public companion object {
+            /** Every interceptor the top-level [fetch] applies, first registered outermost. */
+            internal var registered: List<Interceptor> = emptyList()
+                private set
+
+            /** Adds [interceptor] to every top-level [fetch], and returns a [Release] that removes it. */
+            public fun register(interceptor: Interceptor): Release {
+                registered += interceptor
+                return { registered -= interceptor }
+            }
+        }
+    }
+
     public companion object {
         /**
          * The platform's own networking, with nothing wrapped around it. The base of every chain.
@@ -49,8 +74,8 @@ public interface HttpFetcher {
         public val platform: HttpFetcher = PlatformHttpFetcher
 
         /**
-         * What the top-level [fetch] uses: [platform] plus whatever is in the global
-         * [fetchInterceptors] at the time of the call.
+         * What the top-level [fetch] uses: [platform] plus whatever [Interceptor]s are
+         * registered at the time of the call.
          *
          * Present so that code which has not yet been handed an [HttpFetcher] keeps behaving as it
          * did. New code should take an [HttpFetcher] parameter instead of reaching for this, so that
@@ -76,8 +101,8 @@ private object PlatformHttpFetcher : HttpFetcher {
 }
 
 /**
- * Applies the process-wide [fetchInterceptors] to each request, reading the list per call so that
- * interceptors installed and removed at runtime — as [com.lightningkite.kiteui.telemetry.Telemetry]
+ * Applies the registered [HttpFetcher.Interceptor]s to each request, reading them per call so that
+ * interceptors registered at runtime — as [com.lightningkite.kiteui.telemetry.Telemetry]
  * does — take effect immediately.
  *
  * Only here to preserve the behavior of the top-level [fetch]. Prefer [intercepted], which composes
@@ -92,7 +117,7 @@ private class GlobalInterceptorHttpFetcher(private val wrapped: HttpFetcher) : H
         onUploadProgress: ProgressCallback?,
         onDownloadProgress: ProgressCallback?,
     ): RequestResponse = applyInterceptors(
-        interceptors = fetchInterceptors.toList(),
+        interceptors = HttpFetcher.Interceptor.registered,
         url = url,
         method = method,
         headers = headers,
@@ -105,7 +130,7 @@ private class GlobalInterceptorHttpFetcher(private val wrapped: HttpFetcher) : H
 /** Wraps each request in [interceptors], outermost first. */
 private class InterceptedHttpFetcher(
     private val wrapped: HttpFetcher,
-    private val interceptors: List<FetchInterceptor>,
+    private val interceptors: List<HttpFetcher.Interceptor>,
 ) : HttpFetcher {
     override suspend fun fetch(
         url: String,
@@ -129,7 +154,7 @@ private class InterceptedHttpFetcher(
  * Returns an [HttpFetcher] that runs [interceptors] around each request of this one, the first
  * listed being the outermost.
  */
-public fun HttpFetcher.intercepted(vararg interceptors: FetchInterceptor): HttpFetcher =
+public fun HttpFetcher.intercepted(vararg interceptors: HttpFetcher.Interceptor): HttpFetcher =
     InterceptedHttpFetcher(this, interceptors.toList())
 
 /**
@@ -170,7 +195,7 @@ private class HeaderCalculatingHttpFetcher(
 
 /** Builds the interceptor chain and invokes it. Shared by the two interceptor-applying fetchers. */
 private suspend fun applyInterceptors(
-    interceptors: List<FetchInterceptor>,
+    interceptors: List<HttpFetcher.Interceptor>,
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -180,7 +205,7 @@ private suspend fun applyInterceptors(
     var proceed = terminal
     for (interceptor in interceptors.asReversed()) {
         val next = proceed
-        proceed = { u, m, h, b -> interceptor(u, m, h, b, next) }
+        proceed = { u, m, h, b -> interceptor.intercept(u, m, h, b, next) }
     }
     return proceed(url, method, headers, body)
 }

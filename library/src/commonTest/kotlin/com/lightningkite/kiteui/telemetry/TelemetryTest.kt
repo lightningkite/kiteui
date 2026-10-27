@@ -129,7 +129,7 @@ class TelemetryTest {
         val t = testTelemetry()
         val elementScope = CoroutineScope(TelemetryAttributesElement(screenAttributes) + Job())
         // Runs here, outside elementScope, as an action with keepRunningWhile = AppScope would.
-        t.actionInterceptor(elementScope, "Save") {
+        t.actionInterceptor.intercept(elementScope, "Save") {
             try {
                 t.instrumentFetch("https://example.com/save", HttpMethod.POST, httpHeaders(), null) { _, _, _, _ -> throw Offline() }
             } catch (_: Offline) {}

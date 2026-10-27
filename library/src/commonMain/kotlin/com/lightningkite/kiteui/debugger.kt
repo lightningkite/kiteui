@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.Element
+import com.lightningkite.reactive.core.Release
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -120,11 +121,6 @@ public enum class LogLevel {
     LOG,
 }
 
-/** Observes log calls without owning the delegation chain. Is only called if the log's current level would actually log.  */
-public fun interface LogInterceptor {
-    public fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
-}
-
 public interface Log {
     public val tag: String
     public fun tag(tag: String): Log
@@ -137,10 +133,24 @@ public interface Log {
     public fun warn(vararg entries: Any?)
     public fun error(vararg entries: Any?)
 
-    public companion object Default : Log by InterceptedLog(LogRoot) {
-        /** Interceptors that observe all [Log] calls. Each receives every call; [LogRoot] is always called regardless. */
-        public val interceptors: MutableList<LogInterceptor> = mutableListOf()
+    /** Observes log calls without owning the delegation chain. Is only called if the log's current level would actually log.  */
+    public fun interface Interceptor {
+        public fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
+
+        public companion object {
+            /** Every interceptor, in registration order. */
+            internal var registered: List<Interceptor> = emptyList()
+                private set
+
+            /** Adds [interceptor] to every [Log] call, and returns a [Release] that removes it. */
+            public fun register(interceptor: Interceptor): Release {
+                registered += interceptor
+                return { registered -= interceptor }
+            }
+        }
     }
+
+    public companion object Default : Log by InterceptedLog(LogRoot)
 }
 
 public fun Log.output(level: LogLevel, vararg entries: Any?): Unit = when (level) {
@@ -201,7 +211,7 @@ private class InterceptedLog(private val wraps: Log) : Log {
     override fun withLevel(level: LogLevel): Log = InterceptedLog(wraps.withLevel(level))
 
     private fun intercept(level: LogLevel, entries: Array<out Any?>) {
-        for (i in Log.interceptors) i.intercept(level, wraps.tag, entries)
+        for (i in Log.Interceptor.registered) i.intercept(level, wraps.tag, entries)
     }
 
     override fun log(vararg entries: Any?) {

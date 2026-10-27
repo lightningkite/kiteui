@@ -7,6 +7,7 @@ import com.lightningkite.services.telemetry.TelemetryBatch
 import com.lightningkite.services.telemetry.TelemetryKeys
 import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.coroutines.test.runTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -15,6 +16,9 @@ import kotlin.time.Clock
 class TelemetryOutboxTest {
     private val resource = telemetryAttributesOf(TelemetryKeys.Service.name to "test")
     private fun log(message: String) = RecordedLog(Clock.System.now(), LogLevel.Warn, message, TelemetryAttributes.empty)
+
+    @BeforeTest
+    fun clearStorage() = clearStoredTelemetry()
 
     @Test
     fun uploadsOldestFirstAndForgetsWhatWasSent() = runTest {

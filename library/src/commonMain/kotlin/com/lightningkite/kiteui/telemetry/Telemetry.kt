@@ -2,25 +2,24 @@ package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.Build
 import com.lightningkite.kiteui.Connectivity
-import com.lightningkite.kiteui.FetchInterceptor
+import com.lightningkite.kiteui.HttpFetcher
 import com.lightningkite.kiteui.HttpHeaders
 import com.lightningkite.kiteui.HttpMethod
 import com.lightningkite.kiteui.Log
-import com.lightningkite.kiteui.LogInterceptor
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.RequestBody
 import com.lightningkite.kiteui.RequestResponse
 import com.lightningkite.kiteui.Throwable_report
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
-import com.lightningkite.kiteui.fetchInterceptors
 import com.lightningkite.kiteui.httpHeaders
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.reactive.actionInterceptors
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.viewPath
 import com.lightningkite.reactive.core.AppScope
+import com.lightningkite.reactive.core.Release
 import com.lightningkite.services.telemetry.LogLevel
 import com.lightningkite.services.telemetry.RecordedError
 import com.lightningkite.services.telemetry.RecordedLog
@@ -31,7 +30,6 @@ import com.lightningkite.services.telemetry.TelemetryKey
 import com.lightningkite.services.telemetry.TelemetryKeys
 import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.currentCoroutineContext
@@ -102,18 +100,15 @@ public class Telemetry(
     private var crashHookActive = false
     private var elementContext: ElementContext? = null
     private var flushLoop: Job? = null
-    private val cleanups = ArrayList<() -> Unit>()
+    private val cleanups = ArrayList<Release>()
 
-    private val fetchInterceptor: FetchInterceptor = { url, method, headers, body, proceed ->
-        instrumentFetch(url, method, headers, body, proceed)
-    }
-    internal val actionInterceptor: suspend (CoroutineScope, String, suspend () -> Unit) -> Unit = { scope, title, proceed ->
+    internal val actionInterceptor = Action.Interceptor { scope, title, proceed ->
         // Actions run in AppScope by default, which doesn't carry the screen's attributes.
         withContext(scope.coroutineContext[TelemetryAttributesElement] ?: EmptyCoroutineContext) {
             span("action", title) { proceed() }
         }
     }
-    internal val logInterceptor: LogInterceptor = LogInterceptor { level, tag, entries ->
+    internal val logInterceptor = Log.Interceptor { level, tag, entries ->
         val telemetryLevel = when (level) {
             KiteUiLogLevel.ERROR -> LogLevel.Error
             KiteUiLogLevel.WARN -> LogLevel.Warn
@@ -125,7 +120,7 @@ public class Telemetry(
             enqueue { add(RecordedLog(Clock.System.now(), telemetryLevel, entries.joinToString(" "), attributes)) }
         }
     }
-    private val exceptionHandlerInterceptor = ExceptionHandler(10f) { e, meta ->
+    private val exceptionHandlerInterceptor = ExceptionHandler(Float.MAX_VALUE) { e, meta ->
         val source = meta?.source
         reportError(e, TelemetryAttributes {
             if (source != null) {
@@ -143,7 +138,11 @@ public class Telemetry(
         mainNavigator = navigator
         Companion.installed = this
 
-        Log.interceptors.add(logInterceptor)
+        cleanups += HttpFetcher.Interceptor.register { url, method, headers, body, proceed ->
+            instrumentFetch(url, method, headers, body, proceed)
+        }
+        cleanups += Action.Interceptor.register(actionInterceptor)
+        cleanups += Log.Interceptor.register(logInterceptor)
         elementContext = context
         context.exceptionHandlers += exceptionHandlerInterceptor
         throwableHookActive = true
@@ -152,8 +151,6 @@ public class Telemetry(
             previous(throwable, where)
             if (throwableHookActive) reportError(throwable, telemetryAttributesOf(exceptionContext to where))
         }
-        fetchInterceptors.add(fetchInterceptor)
-        actionInterceptors.add(actionInterceptor)
 
         if (sampled) enqueue {
             add(RecordedSpan(traceId(), spanId(), null, "app", "start", constructedAt, Clock.System.now(),
@@ -205,9 +202,6 @@ public class Telemetry(
         if (!installed) return
         installed = false
         Companion.installed = null
-        fetchInterceptors.remove(fetchInterceptor)
-        actionInterceptors.remove(actionInterceptor)
-        Log.interceptors.remove(logInterceptor)
         elementContext?.exceptionHandlers?.remove(exceptionHandlerInterceptor)
         throwableHookActive = false
         crashHookActive = false

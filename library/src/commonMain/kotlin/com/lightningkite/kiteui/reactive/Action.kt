@@ -15,14 +15,8 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.*
 
-/**
- * Wrap every run of an [Action], first one outermost. Each must call `proceed` once. `scope` is the scope
- * the action was started from, which is not the one it runs in when it has `keepRunningWhile`.
- */
-public val actionInterceptors: MutableList<suspend (scope: CoroutineScope, title: String, proceed: suspend () -> Unit) -> Unit> = mutableListOf()
-
 private suspend fun runIntercepted(scope: CoroutineScope, title: String, action: suspend () -> Unit) {
-    val chain = actionInterceptors.toList().foldRight(action) { interceptor, next -> { interceptor(scope, title, next) } }
+    val chain = Action.Interceptor.registered.foldRight(action) { interceptor, next -> { interceptor.intercept(scope, title, next) } }
     chain()
 }
 
@@ -31,6 +25,27 @@ public interface Action: Reactive<Boolean> {
     public val icon: Icon
     public fun startAction(scope: CoroutineScope)
     public operator fun plus(other: Action): Action
+
+    /**
+     * Wraps every run of an [Action]. Each must call [proceed] once.
+     *
+     * [scope] is the scope the action was started from, which is not the one it runs in when it has `keepRunningWhile`.
+     */
+    public fun interface Interceptor {
+        public suspend fun intercept(scope: CoroutineScope, title: String, proceed: suspend () -> Unit)
+
+        public companion object {
+            /** Every interceptor, first registered outermost. */
+            internal var registered: List<Interceptor> = emptyList()
+                private set
+
+            /** Adds [interceptor] to every [Action] run, and returns a [Release] that removes it. */
+            public fun register(interceptor: Interceptor): Release {
+                registered += interceptor
+                return { registered -= interceptor }
+            }
+        }
+    }
 
     public companion object {
         public var defaultClearErrorOnDependencyChange: Boolean = true

@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.Log
-import com.lightningkite.kiteui.LogInterceptor
 import com.lightningkite.services.telemetry.LogLevel
 import com.lightningkite.services.telemetry.TelemetryKey
 import com.lightningkite.services.telemetry.TelemetryKeys
@@ -9,22 +8,17 @@ import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlin.test.*
 
 class TelemetryLogTest {
-    private var savedInterceptors: List<LogInterceptor> = emptyList()
     private val telemetry = testTelemetry()
     private val logTag = TelemetryKey.OfString("log.tag")
+    private lateinit var release: () -> Unit
 
     @BeforeTest
-    fun saveState() {
-        savedInterceptors = Log.interceptors.toList()
-        Log.interceptors.clear()
-        Log.interceptors.add(telemetry.logInterceptor)
+    fun register() {
+        release = Log.Interceptor.register(telemetry.logInterceptor)
     }
 
     @AfterTest
-    fun restoreState() {
-        Log.interceptors.clear()
-        Log.interceptors.addAll(savedInterceptors)
-    }
+    fun unregister() = release()
 
     @Test
     fun onlyLogsAtTheMinimumLevelAndAboveAreRecorded() {

@@ -46,8 +46,8 @@ class HttpFetcherChainTest {
     fun interceptorsRunOutermostFirst() = networkTest {
         val entered = mutableListOf<String>()
         val fetcher = HttpFetcher.platform.intercepted(
-            { url, method, headers, body, proceed -> entered += "outer"; proceed(url, method, headers, body) },
-            { url, method, headers, body, proceed -> entered += "inner"; proceed(url, method, headers, body) },
+            HttpFetcher.Interceptor { url, method, headers, body, proceed -> entered += "outer"; proceed(url, method, headers, body) },
+            HttpFetcher.Interceptor { url, method, headers, body, proceed -> entered += "inner"; proceed(url, method, headers, body) },
         )
         assertEquals(TestServer.helloBody, fetcher.fetch("${TestServer.http}/hello").text())
         assertEquals(listOf("outer", "inner"), entered)
@@ -56,7 +56,7 @@ class HttpFetcherChainTest {
     /** An interceptor may rewrite the request; the server is what proves the rewrite took effect. */
     @Test
     fun interceptorsCanRewriteTheRequest() = networkTest {
-        val fetcher = HttpFetcher.platform.intercepted({ _, method, headers, body, proceed ->
+        val fetcher = HttpFetcher.platform.intercepted(HttpFetcher.Interceptor { _, method, headers, body, proceed ->
             proceed("${TestServer.http}/hello", method, headers, body)
         })
         assertEquals(TestServer.helloBody, fetcher.fetch("${TestServer.http}/status/500").text())

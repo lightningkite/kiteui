@@ -37,7 +37,6 @@ timber = "5.0.1"
 transition = "1.7.2"
 uriEncoding = "0.0.1-6"
 vannitechPublishing = "0.37.0"
-jsPlainObjects = "2.4.20"
 kfc = "19.16.0"
 
 
@@ -111,4 +110,4 @@ roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 testing-manual = { id = "com.lightningkite.testing.manual", version = "0.0.9" }
 vannitechPublishing = { id = "com.vanniktech.maven.publish", version = { ref = "vannitechPublishing" } }
 kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
-kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }
+kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version.ref = "kotlin" }

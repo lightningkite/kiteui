@@ -382,14 +382,13 @@ class SemanticOverridesCssTest {
     /** Runs [block], collecting everything KiteUiCss logs while it runs. */
     private fun collectingCssLog(block: () -> Unit): List<Logged> {
         val collected = mutableListOf<Logged>()
-        val interceptor = LogInterceptor { seen, tag, entries ->
+        val release = Log.Interceptor.register { seen, tag, entries ->
             if (tag.contains("KiteUiCss")) collected.add(Logged(seen, entries.joinToString(" ")))
         }
-        Log.interceptors.add(interceptor)
         try {
             block()
         } finally {
-            Log.interceptors.remove(interceptor)
+            release()
         }
         return collected
     }

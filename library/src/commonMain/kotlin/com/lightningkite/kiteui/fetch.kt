@@ -22,20 +22,8 @@ public suspend inline fun fetch(
     body: FileReference
 ): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
 
-/** Interceptor that wraps HTTP requests. Call [proceed] to continue the chain. */
-public typealias FetchInterceptor = suspend (
-    url: String,
-    method: HttpMethod,
-    headers: HttpHeaders,
-    body: RequestBody?,
-    proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse,
-) -> RequestResponse
-
-/** Interceptors applied to all [fetch] calls, in order. Each wraps the next in the chain. */
-public val fetchInterceptors: MutableList<FetchInterceptor> = mutableListOf()
-
 /**
- * Issues a request through [HttpFetcher.default], applying the global [fetchInterceptors].
+ * Issues a request through [HttpFetcher.default], applying the [HttpFetcher.Interceptor.register]ed interceptors.
  *
  * Prefer taking an [HttpFetcher] and calling [HttpFetcher.fetch] on it. This function can only ever
  * reach the one process-wide chain, so code that calls it cannot be pointed at a fake and cannot be

@@ -42,8 +42,8 @@ public object AiDriver {
         tryAutoStartDaemon(port)
 
         // Install log interceptor that buffers for the driver's "logs" command
-        if (Log.interceptors.none { it is BufferingLogInterceptor }) {
-            Log.interceptors.add(BufferingLogInterceptor())
+        if (Log.Interceptor.registered.none { it is BufferingLogInterceptor }) {
+            Log.Interceptor.register(BufferingLogInterceptor())
         }
 
         val gate = ConnectivityGate()
@@ -245,7 +245,7 @@ public suspend fun handleCommand(command: String, root: Element?, navigator: Pag
 }
 
 /** Log interceptor that buffers log calls for the driver's "logs" command. */
-private class BufferingLogInterceptor : LogInterceptor {
+private class BufferingLogInterceptor : Log.Interceptor {
     override fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>) {
         LogBuffer.add(level.name, tag, entries.joinToString(" "))
     }
