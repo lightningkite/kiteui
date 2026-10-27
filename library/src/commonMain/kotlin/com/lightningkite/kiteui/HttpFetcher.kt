@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.reactive.core.Release
+import kotlin.experimental.ExperimentalTypeInference
 
 /** Reports transfer progress. `bytesExpected` is -1 when the total size is not known in advance. */
 public typealias ProgressCallback = (bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit
@@ -13,7 +14,7 @@ public typealias ProgressCallback = (bytesComplete: Long, bytesExpectedOrNegativ
  * state. Each concern holds the next [HttpFetcher]:
  *
  * ```kotlin
- * val fetcher = HttpFetcher.platform
+ * val fetcher = HttpFetcher.Platform
  *     .intercepted(telemetryInterceptor)
  *     .withHeaders { listOf("Authorization" to token()) }
  * ```
@@ -35,7 +36,7 @@ public interface HttpFetcher {
     public suspend fun fetch(
         url: String,
         method: HttpMethod = HttpMethod.GET,
-        headers: HttpHeaders = httpHeaders(),
+        headers: HttpHeaders = HttpHeaders(),
         body: RequestBody? = null,
         onUploadProgress: ProgressCallback? = null,
         onDownloadProgress: ProgressCallback? = null,
@@ -55,107 +56,77 @@ public interface HttpFetcher {
         ): RequestResponse
 
         public companion object {
-            /** Every interceptor the top-level [fetch] applies, first registered outermost. */
-            internal var registered: List<Interceptor> = emptyList()
-                private set
+            private val _registered = ArrayList<Interceptor>()
+
+            /** Every interceptor the top-level [fetch] applies, first registered outermost. A view that changes as interceptors are registered and released, so copy it before iterating. */
+            public val registered: List<Interceptor> = _registered
 
             /** Adds [interceptor] to every top-level [fetch], and returns a [Release] that removes it. */
             public fun register(interceptor: Interceptor): Release {
-                registered += interceptor
-                return { registered -= interceptor }
+                _registered += interceptor
+                return { _registered.remove(interceptor) }
             }
         }
     }
 
-    public companion object {
-        /**
-         * The platform's own networking, with nothing wrapped around it. The base of every chain.
-         */
-        public val platform: HttpFetcher = PlatformHttpFetcher
+    /**
+     * Runs [interceptors] around each request of [wraps], the first listed being the outermost.
+     *
+     * [interceptors] is read on every request, so a list that changes, such as [Interceptor.registered], takes effect immediately.
+     */
+    public class Intercepted(private val wraps: HttpFetcher, private val interceptors: List<Interceptor>) : HttpFetcher {
+        override suspend fun fetch(
+            url: String,
+            method: HttpMethod,
+            headers: HttpHeaders,
+            body: RequestBody?,
+            onUploadProgress: ProgressCallback?,
+            onDownloadProgress: ProgressCallback?,
+        ): RequestResponse {
+            var proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse =
+                { u, m, h, b -> wraps.fetch(u, m, h, b, onUploadProgress, onDownloadProgress) }
+            for (interceptor in interceptors.toList().asReversed()) {
+                val next = proceed
+                proceed = { u, m, h, b -> interceptor.intercept(u, m, h, b, next) }
+            }
+            return proceed(url, method, headers, body)
+        }
 
-        /**
-         * What the top-level [fetch] uses: [platform] plus whatever [Interceptor]s are
-         * registered at the time of the call.
-         *
-         * Present so that code which has not yet been handed an [HttpFetcher] keeps behaving as it
-         * did. New code should take an [HttpFetcher] parameter instead of reaching for this, so that
-         * a test can supply its own.
-         */
-        public val default: HttpFetcher = GlobalInterceptorHttpFetcher(platform)
+        override fun webSocket(url: String): WebSocket = wraps.webSocket(url)
     }
+
+    /** The platform's own networking, with nothing wrapped around it. The base of every chain. */
+    public object Platform : HttpFetcher by PlatformHttpFetcher
+
+    /**
+     * What the top-level [fetch] uses: [Platform] wrapped in the registered [Interceptor]s.
+     *
+     * Present so that code which has not yet been handed an [HttpFetcher] keeps behaving as it
+     * did. New code should take an [HttpFetcher] parameter instead of reaching for this, so that
+     * a test can supply its own.
+     */
+    public object Default : HttpFetcher by Intercepted(PlatformHttpFetcher, Interceptor.registered)
 }
 
-/** Delegates straight to the platform's `fetchRaw` and `webSocket`. */
-private object PlatformHttpFetcher : HttpFetcher {
+internal expect object PlatformHttpFetcher : HttpFetcher {
     override suspend fun fetch(
         url: String,
         method: HttpMethod,
         headers: HttpHeaders,
         body: RequestBody?,
         onUploadProgress: ProgressCallback?,
-        onDownloadProgress: ProgressCallback?,
-    ): RequestResponse = platformFetch(url, method, headers, body, onUploadProgress, onDownloadProgress)
+        onDownloadProgress: ProgressCallback?
+    ): RequestResponse
 
-    // Qualified because the member would otherwise shadow the top-level expect function.
-    override fun webSocket(url: String): WebSocket = platformWebSocket(url)
-}
-
-/**
- * Applies the registered [HttpFetcher.Interceptor]s to each request, reading them per call so that
- * interceptors registered at runtime — as [com.lightningkite.kiteui.telemetry.Telemetry]
- * does — take effect immediately.
- *
- * Only here to preserve the behavior of the top-level [fetch]. Prefer [intercepted], which composes
- * a fixed chain that a test can construct independently.
- */
-private class GlobalInterceptorHttpFetcher(private val wrapped: HttpFetcher) : HttpFetcher {
-    override suspend fun fetch(
-        url: String,
-        method: HttpMethod,
-        headers: HttpHeaders,
-        body: RequestBody?,
-        onUploadProgress: ProgressCallback?,
-        onDownloadProgress: ProgressCallback?,
-    ): RequestResponse = applyInterceptors(
-        interceptors = HttpFetcher.Interceptor.registered,
-        url = url,
-        method = method,
-        headers = headers,
-        body = body,
-    ) { u, m, h, b -> wrapped.fetch(u, m, h, b, onUploadProgress, onDownloadProgress) }
-
-    override fun webSocket(url: String): WebSocket = wrapped.webSocket(url)
-}
-
-/** Wraps each request in [interceptors], outermost first. */
-private class InterceptedHttpFetcher(
-    private val wrapped: HttpFetcher,
-    private val interceptors: List<HttpFetcher.Interceptor>,
-) : HttpFetcher {
-    override suspend fun fetch(
-        url: String,
-        method: HttpMethod,
-        headers: HttpHeaders,
-        body: RequestBody?,
-        onUploadProgress: ProgressCallback?,
-        onDownloadProgress: ProgressCallback?,
-    ): RequestResponse = applyInterceptors(
-        interceptors = interceptors,
-        url = url,
-        method = method,
-        headers = headers,
-        body = body,
-    ) { u, m, h, b -> wrapped.fetch(u, m, h, b, onUploadProgress, onDownloadProgress) }
-
-    override fun webSocket(url: String): WebSocket = wrapped.webSocket(url)
+    override fun webSocket(url: String): WebSocket
 }
 
 /**
  * Returns an [HttpFetcher] that runs [interceptors] around each request of this one, the first
  * listed being the outermost.
  */
-public fun HttpFetcher.intercepted(vararg interceptors: HttpFetcher.Interceptor): HttpFetcher =
-    InterceptedHttpFetcher(this, interceptors.toList())
+public fun HttpFetcher.intercepted(interceptors: List<HttpFetcher.Interceptor>): HttpFetcher =
+    HttpFetcher.Intercepted(this, interceptors)
 
 /**
  * Returns an [HttpFetcher] that adds the headers [calculator] produces to each request, overriding
@@ -165,12 +136,26 @@ public fun HttpFetcher.intercepted(vararg interceptors: HttpFetcher.Interceptor)
  * long it is held onto and wherever in a chain it sits — including inside a
  * [ConnectivityGate.runRequest] lambda, where each retry calls [fetch] again and so recomputes.
  */
+@OptIn(ExperimentalTypeInference::class)
+@OverloadResolutionByLambdaReturnType
+@Deprecated("Return HttpHeaders explicitly", ReplaceWith("withHeaders { HttpHeaders(calculator()) }"))
 public fun HttpFetcher.withHeaders(calculator: suspend () -> List<Pair<String, String>>): HttpFetcher =
+    this.withHeaders { HttpHeaders(calculator()) }
+
+/**
+ * Returns an [HttpFetcher] that adds the headers [calculator] produces to each request, overriding
+ * any of the same name the caller supplied.
+ *
+ * [calculator] runs per request rather than once, so a fetcher built this way stays correct however
+ * long it is held onto and wherever in a chain it sits — including inside a
+ * [ConnectivityGate.runRequest] lambda, where each retry calls [fetch] again and so recomputes.
+ */
+public fun HttpFetcher.withHeaders(calculator: suspend () -> HttpHeaders): HttpFetcher =
     HeaderCalculatingHttpFetcher(this, calculator)
 
 private class HeaderCalculatingHttpFetcher(
     private val wrapped: HttpFetcher,
-    private val calculator: suspend () -> List<Pair<String, String>>,
+    private val calculator: suspend () -> HttpHeaders
 ) : HttpFetcher {
     override suspend fun fetch(
         url: String,
@@ -182,30 +167,11 @@ private class HeaderCalculatingHttpFetcher(
     ): RequestResponse = wrapped.fetch(
         url = url,
         method = method,
-        headers = httpHeaders(headers).also { combined ->
-            for ((name, value) in calculator()) combined.set(name, value)
-        },
+        headers = headers + calculator(),
         body = body,
         onUploadProgress = onUploadProgress,
         onDownloadProgress = onDownloadProgress,
     )
 
     override fun webSocket(url: String): WebSocket = wrapped.webSocket(url)
-}
-
-/** Builds the interceptor chain and invokes it. Shared by the two interceptor-applying fetchers. */
-private suspend fun applyInterceptors(
-    interceptors: List<HttpFetcher.Interceptor>,
-    url: String,
-    method: HttpMethod,
-    headers: HttpHeaders,
-    body: RequestBody?,
-    terminal: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse,
-): RequestResponse {
-    var proceed = terminal
-    for (interceptor in interceptors.asReversed()) {
-        val next = proceed
-        proceed = { u, m, h, b -> interceptor.intercept(u, m, h, b, next) }
-    }
-    return proceed(url, method, headers, body)
 }

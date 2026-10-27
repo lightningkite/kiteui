@@ -8,7 +8,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 
 /**
- * What [platformWebSocket] must do identically on every platform, checked against a real server.
+ * What [HttpFetcher.Platform.webSocket] must do identically on every platform, checked against a real server.
  *
  * As with [HttpFetchTest], the value is in the agreement: four implementations — Ktor over OkHttp,
  * Ktor over NSURLSession, the browser's own `WebSocket`, and Android's client — are supposed to

@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.HttpMethod
-import com.lightningkite.kiteui.httpHeaders
+import com.lightningkite.kiteui.HttpHeaders
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.services.telemetry.RecordedSpan
 import com.lightningkite.services.telemetry.TelemetryKey
@@ -131,7 +131,7 @@ class TelemetryTest {
         // Runs here, outside elementScope, as an action with keepRunningWhile = AppScope would.
         t.actionInterceptor.intercept(elementScope, "Save") {
             try {
-                t.instrumentFetch("https://example.com/save", HttpMethod.POST, httpHeaders(), null) { _, _, _, _ -> throw Offline() }
+                t.instrumentFetch("https://example.com/save", HttpMethod.POST, HttpHeaders(), null) { _, _, _, _ -> throw Offline() }
             } catch (_: Offline) {}
         }
 

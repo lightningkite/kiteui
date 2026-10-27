@@ -13,7 +13,7 @@ class HttpFetcherChainTest {
 
     @Test
     fun addedHeadersReachTheServer() = networkTest {
-        val fetcher = HttpFetcher.platform.withHeaders { listOf("X-Kiteui-Auth" to "token-1") }
+        val fetcher = HttpFetcher.Platform.withHeaders { HttpHeaders(listOf("X-Kiteui-Auth" to "token-1")) }
         val body = fetcher.fetch("${TestServer.http}/headers").text()
         assertContains(body.lines(), "x-kiteui-auth: token-1")
     }
@@ -25,7 +25,7 @@ class HttpFetcherChainTest {
     @Test
     fun headersAreRecomputedPerRequest() = networkTest {
         var issued = 0
-        val fetcher = HttpFetcher.platform.withHeaders { listOf("X-Kiteui-Auth" to "token-${++issued}") }
+        val fetcher = HttpFetcher.Platform.withHeaders { HttpHeaders(listOf("X-Kiteui-Auth" to "token-${++issued}")) }
         assertContains(fetcher.fetch("${TestServer.http}/headers").text().lines(), "x-kiteui-auth: token-1")
         assertContains(fetcher.fetch("${TestServer.http}/headers").text().lines(), "x-kiteui-auth: token-2")
     }
@@ -33,10 +33,10 @@ class HttpFetcherChainTest {
     /** A header the caller supplied is the one an added header of the same name replaces. */
     @Test
     fun addedHeadersOverrideTheCallers() = networkTest {
-        val fetcher = HttpFetcher.platform.withHeaders { listOf("X-Kiteui-Auth" to "from-chain") }
+        val fetcher = HttpFetcher.Platform.withHeaders { HttpHeaders(listOf("X-Kiteui-Auth" to "from-chain")) }
         val body = fetcher.fetch(
             url = "${TestServer.http}/headers",
-            headers = httpHeaders("X-Kiteui-Auth" to "from-caller"),
+            headers = HttpHeaders("X-Kiteui-Auth" to "from-caller"),
         ).text()
         assertContains(body.lines(), "x-kiteui-auth: from-chain")
     }
@@ -45,10 +45,10 @@ class HttpFetcherChainTest {
     @Test
     fun interceptorsRunOutermostFirst() = networkTest {
         val entered = mutableListOf<String>()
-        val fetcher = HttpFetcher.platform.intercepted(
+        val fetcher = HttpFetcher.Platform.intercepted(listOf(
             HttpFetcher.Interceptor { url, method, headers, body, proceed -> entered += "outer"; proceed(url, method, headers, body) },
             HttpFetcher.Interceptor { url, method, headers, body, proceed -> entered += "inner"; proceed(url, method, headers, body) },
-        )
+        ))
         assertEquals(TestServer.helloBody, fetcher.fetch("${TestServer.http}/hello").text())
         assertEquals(listOf("outer", "inner"), entered)
     }
@@ -56,9 +56,27 @@ class HttpFetcherChainTest {
     /** An interceptor may rewrite the request; the server is what proves the rewrite took effect. */
     @Test
     fun interceptorsCanRewriteTheRequest() = networkTest {
-        val fetcher = HttpFetcher.platform.intercepted(HttpFetcher.Interceptor { _, method, headers, body, proceed ->
+        val fetcher = HttpFetcher.Platform.intercepted(listOf(HttpFetcher.Interceptor { _, method, headers, body, proceed ->
             proceed("${TestServer.http}/hello", method, headers, body)
-        })
+        }))
         assertEquals(TestServer.helloBody, fetcher.fetch("${TestServer.http}/status/500").text())
+    }
+
+    /** [HttpFetcher.Default] follows the registry, even for interceptors registered after it was first used. */
+    @Test
+    fun defaultSeesRegistrationsAndReleases() = networkTest {
+        HttpFetcher.Default.fetch("${TestServer.http}/hello")
+        var seen = 0
+        val release = HttpFetcher.Interceptor.register { url, method, headers, body, proceed ->
+            seen++
+            proceed(url, method, headers, body)
+        }
+        try {
+            HttpFetcher.Default.fetch("${TestServer.http}/hello")
+        } finally {
+            release()
+        }
+        HttpFetcher.Default.fetch("${TestServer.http}/hello")
+        assertEquals(1, seen)
     }
 }

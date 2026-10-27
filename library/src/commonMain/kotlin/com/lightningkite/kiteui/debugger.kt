@@ -138,14 +138,15 @@ public interface Log {
         public fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
 
         public companion object {
-            /** Every interceptor, in registration order. */
-            internal var registered: List<Interceptor> = emptyList()
-                private set
+            private val _registered = ArrayList<Interceptor>()
+
+            /** Every interceptor, in registration order. A view that changes as interceptors are registered and released, so copy it before iterating. */
+            public val registered: List<Interceptor> = _registered
 
             /** Adds [interceptor] to every [Log] call, and returns a [Release] that removes it. */
             public fun register(interceptor: Interceptor): Release {
-                registered += interceptor
-                return { registered -= interceptor }
+                _registered += interceptor
+                return { _registered.remove(interceptor) }
             }
         }
     }
@@ -211,7 +212,7 @@ private class InterceptedLog(private val wraps: Log) : Log {
     override fun withLevel(level: LogLevel): Log = InterceptedLog(wraps.withLevel(level))
 
     private fun intercept(level: LogLevel, entries: Array<out Any?>) {
-        for (i in Log.Interceptor.registered) i.intercept(level, wraps.tag, entries)
+        for (i in Log.Interceptor.registered.toList()) i.intercept(level, wraps.tag, entries)
     }
 
     override fun log(vararg entries: Any?) {

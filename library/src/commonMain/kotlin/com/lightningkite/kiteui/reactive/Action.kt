@@ -16,7 +16,7 @@ import kotlin.time.TimeSource
 import kotlinx.coroutines.*
 
 private suspend fun runIntercepted(scope: CoroutineScope, title: String, action: suspend () -> Unit) {
-    val chain = Action.Interceptor.registered.foldRight(action) { interceptor, next -> { interceptor.intercept(scope, title, next) } }
+    val chain = Action.Interceptor.registered.toList().foldRight(action) { interceptor, next -> { interceptor.intercept(scope, title, next) } }
     chain()
 }
 
@@ -35,14 +35,15 @@ public interface Action: Reactive<Boolean> {
         public suspend fun intercept(scope: CoroutineScope, title: String, proceed: suspend () -> Unit)
 
         public companion object {
-            /** Every interceptor, first registered outermost. */
-            internal var registered: List<Interceptor> = emptyList()
-                private set
+            private val _registered = ArrayList<Interceptor>()
+
+            /** Every interceptor, first registered outermost. A view that changes as interceptors are registered and released, so copy it before iterating. */
+            public val registered: List<Interceptor> = _registered
 
             /** Adds [interceptor] to every [Action] run, and returns a [Release] that removes it. */
             public fun register(interceptor: Interceptor): Release {
-                registered += interceptor
-                return { registered -= interceptor }
+                _registered += interceptor
+                return { _registered.remove(interceptor) }
             }
         }
     }

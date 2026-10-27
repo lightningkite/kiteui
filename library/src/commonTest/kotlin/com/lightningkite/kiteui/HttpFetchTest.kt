@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * What [platformFetch] must do identically on every platform, checked against a real server.
+ * What [HttpFetcher.Platform.fetch] must do identically on every platform, checked against a real server.
  *
  * Each target implements this over a different HTTP client, so agreement is a claim about four
  * separate pieces of code and cannot be established by testing one of them.
@@ -40,7 +40,7 @@ class HttpFetchTest {
     fun sendsRequestHeaders() = networkTest {
         val response = fetch(
             url = "${TestServer.http}/headers",
-            headers = httpHeaders("X-Kiteui-Test" to "present"),
+            headers = HttpHeaders("X-Kiteui-Test" to "present"),
         )
         assertContains(response.text().lines(), "x-kiteui-test: present")
     }

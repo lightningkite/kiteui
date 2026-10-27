@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.HttpHeaders
 import com.lightningkite.kiteui.HttpMethod
-import com.lightningkite.kiteui.httpHeaders
 import com.lightningkite.services.telemetry.TelemetryKeys
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -14,7 +13,7 @@ class InstrumentFetchTest {
     /** Calls instrumentFetch, captures the headers received by proceed, then throws. */
     private suspend fun captureHeaders(t: Telemetry, url: String = "http://example.com/api"): HttpHeaders {
         try {
-            t.instrumentFetch(url, HttpMethod.GET, httpHeaders(), null) { _, _, h, _ -> throw ProceedCapture(h) }
+            t.instrumentFetch(url, HttpMethod.GET, HttpHeaders(), null) { _, _, h, _ -> throw ProceedCapture(h) }
         } catch (e: ProceedCapture) {
             return e.headers
         }
@@ -70,9 +69,9 @@ class InstrumentFetchTest {
     @Test
     fun callerHeadersNotMutated() = runTest {
         val t = testTelemetry()
-        val callerHeaders = httpHeaders()
+        val callerHeaders = HttpHeaders()
         try {
-            t.instrumentFetch("http://example.com/api", HttpMethod.GET, callerHeaders, null) { _, _, _, _ -> throw ProceedCapture(httpHeaders()) }
+            t.instrumentFetch("http://example.com/api", HttpMethod.GET, callerHeaders, null) { _, _, _, _ -> throw ProceedCapture(HttpHeaders()) }
         } catch (_: ProceedCapture) {}
         assertFalse(callerHeaders.has("traceparent"))
     }
@@ -117,10 +116,10 @@ class InstrumentFetchTest {
         var capturedUrl = ""
         var capturedMethod = HttpMethod.GET
         try {
-            t.instrumentFetch("http://example.com/api/items", HttpMethod.POST, httpHeaders(), null) { u, m, _, _ ->
+            t.instrumentFetch("http://example.com/api/items", HttpMethod.POST, HttpHeaders(), null) { u, m, _, _ ->
                 capturedUrl = u
                 capturedMethod = m
-                throw ProceedCapture(httpHeaders())
+                throw ProceedCapture(HttpHeaders())
             }
         } catch (_: ProceedCapture) {}
 

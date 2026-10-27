@@ -46,11 +46,7 @@ public class JsExternalServices(private val ctx: ElementContext) : ExternalServi
         val a = document.createElement("a") as HTMLAnchorElement
         a.href = com.lightningkite.kiteui.fetch(
             url, method = HttpMethod.GET,
-            httpHeaders().apply {
-                append("mode", "cors")
-                append("cache", "no-cache")
-                append("Cache-Control", "no-cache")
-            },
+            HttpHeaders("mode" to "cors", "cache" to "no-cache", "Cache-Control" to "no-cache"),
         ).let { URL.createObjectURL(it.blob()) }
         a.style.display = "none"
         a.download = name

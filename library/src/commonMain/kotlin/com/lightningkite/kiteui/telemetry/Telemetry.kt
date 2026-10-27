@@ -12,7 +12,6 @@ import com.lightningkite.kiteui.RequestBody
 import com.lightningkite.kiteui.RequestResponse
 import com.lightningkite.kiteui.Throwable_report
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
-import com.lightningkite.kiteui.httpHeaders
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.reactive.Action
@@ -281,7 +280,7 @@ public class Telemetry(
             put(TelemetryKeys.Server.address, host)
         }
         return span("http", method.name, attributes) { span ->
-            val outHeaders = httpHeaders(headers)
+            val outHeaders = headers.copy()
             if (tracePropagationHosts.any { host == it || host.endsWith(".$it") }) {
                 outHeaders.set("traceparent", "00-${span.traceId}-${span.spanId}-${if (sampled) "01" else "00"}")
             }

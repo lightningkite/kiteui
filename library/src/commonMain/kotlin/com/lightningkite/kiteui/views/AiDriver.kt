@@ -42,7 +42,7 @@ public object AiDriver {
         tryAutoStartDaemon(port)
 
         // Install log interceptor that buffers for the driver's "logs" command
-        if (Log.Interceptor.registered.none { it is BufferingLogInterceptor }) {
+        if (Log.Interceptor.registered.toList().none { it is BufferingLogInterceptor }) {
             Log.Interceptor.register(BufferingLogInterceptor())
         }
 

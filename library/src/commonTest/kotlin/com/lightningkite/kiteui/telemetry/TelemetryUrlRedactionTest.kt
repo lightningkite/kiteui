@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.telemetry
 import com.lightningkite.services.telemetry.TelemetryKeys
 
 import com.lightningkite.kiteui.HttpMethod
-import com.lightningkite.kiteui.httpHeaders
+import com.lightningkite.kiteui.HttpHeaders
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
@@ -17,7 +17,7 @@ class TelemetryUrlRedactionTest {
     /** Runs instrumentFetch with a proceed that always fails, so the fetch span is still recorded. */
     private suspend fun fetch(t: Telemetry, url: String) {
         try {
-            t.instrumentFetch(url, HttpMethod.GET, httpHeaders(), null) { _, _, _, _ ->
+            t.instrumentFetch(url, HttpMethod.GET, HttpHeaders(), null) { _, _, _, _ ->
                 throw RuntimeException("mock failure")
             }
         } catch (_: RuntimeException) {
