@@ -42,8 +42,8 @@ public object AiDriver {
         tryAutoStartDaemon(port)
 
         // Install log interceptor that buffers for the driver's "logs" command
-        if (Log.Interceptor.registered.toList().none { it is BufferingLogInterceptor }) {
-            Log.Interceptor.register(BufferingLogInterceptor())
+        if (Log.Interceptor.global.snapshot().none { it is BufferingLogInterceptor }) {
+            Log.Interceptor.global.register(BufferingLogInterceptor())
         }
 
         val gate = ConnectivityGate()

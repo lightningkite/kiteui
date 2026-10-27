@@ -23,7 +23,7 @@ public suspend inline fun fetch(
 ): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
 
 /**
- * Issues a request through [HttpFetcher.Default], applying the [HttpFetcher.Interceptor.register]ed interceptors.
+ * Issues a request through [HttpFetcher.Default], applying the interceptors in [HttpFetcher.Interceptor.global].
  *
  * Prefer taking an [HttpFetcher] and calling [HttpFetcher.fetch] on it. This function can only ever
  * reach the one process-wide chain, so code that calls it cannot be pointed at a fake and cannot be

@@ -1,7 +1,9 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.utils.LiveRegistry
 import com.lightningkite.reactive.core.Release
 import kotlin.experimental.ExperimentalTypeInference
+import kotlin.jvm.JvmName
 
 /** Reports transfer progress. `bytesExpected` is -1 when the total size is not known in advance. */
 public typealias ProgressCallback = (bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit
@@ -56,25 +58,17 @@ public interface HttpFetcher {
         ): RequestResponse
 
         public companion object {
-            private val _registered = ArrayList<Interceptor>()
-
-            /** Every interceptor the top-level [fetch] applies, first registered outermost. A view that changes as interceptors are registered and released, so copy it before iterating. */
-            public val registered: List<Interceptor> = _registered
-
-            /** Adds [interceptor] to every top-level [fetch], and returns a [Release] that removes it. */
-            public fun register(interceptor: Interceptor): Release {
-                _registered += interceptor
-                return { _registered.remove(interceptor) }
-            }
+            /** Every interceptor the top-level [fetch] applies, first registered outermost. */
+            public val global: LiveRegistry<Interceptor> = LiveRegistry()
         }
     }
 
     /**
      * Runs [interceptors] around each request of [wraps], the first listed being the outermost.
      *
-     * [interceptors] is read on every request, so a list that changes, such as [Interceptor.registered], takes effect immediately.
+     * [interceptors] is read on every request, so registrations and releases in a registry such as [Interceptor.global] take effect immediately.
      */
-    public class Intercepted(private val wraps: HttpFetcher, private val interceptors: List<Interceptor>) : HttpFetcher {
+    public class Intercepted(private val wraps: HttpFetcher, private val interceptors: LiveRegistry<Interceptor>) : HttpFetcher {
         override suspend fun fetch(
             url: String,
             method: HttpMethod,
@@ -85,7 +79,7 @@ public interface HttpFetcher {
         ): RequestResponse {
             var proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse =
                 { u, m, h, b -> wraps.fetch(u, m, h, b, onUploadProgress, onDownloadProgress) }
-            for (interceptor in interceptors.toList().asReversed()) {
+            for (interceptor in interceptors.snapshot().asReversed()) {
                 val next = proceed
                 proceed = { u, m, h, b -> interceptor.intercept(u, m, h, b, next) }
             }
@@ -105,7 +99,7 @@ public interface HttpFetcher {
      * did. New code should take an [HttpFetcher] parameter instead of reaching for this, so that
      * a test can supply its own.
      */
-    public object Default : HttpFetcher by Intercepted(PlatformHttpFetcher, Interceptor.registered)
+    public object Default : HttpFetcher by Intercepted(PlatformHttpFetcher, Interceptor.global)
 }
 
 internal expect object PlatformHttpFetcher : HttpFetcher {
@@ -126,7 +120,7 @@ internal expect object PlatformHttpFetcher : HttpFetcher {
  * listed being the outermost.
  */
 public fun HttpFetcher.intercepted(interceptors: List<HttpFetcher.Interceptor>): HttpFetcher =
-    HttpFetcher.Intercepted(this, interceptors)
+    HttpFetcher.Intercepted(this, LiveRegistry(interceptors))
 
 /**
  * Returns an [HttpFetcher] that adds the headers [calculator] produces to each request, overriding
@@ -139,6 +133,7 @@ public fun HttpFetcher.intercepted(interceptors: List<HttpFetcher.Interceptor>):
 @OptIn(ExperimentalTypeInference::class)
 @OverloadResolutionByLambdaReturnType
 @Deprecated("Return HttpHeaders explicitly", ReplaceWith("withHeaders { HttpHeaders(calculator()) }"))
+@JvmName("withHeadersFromPairs")
 public fun HttpFetcher.withHeaders(calculator: suspend () -> List<Pair<String, String>>): HttpFetcher =
     this.withHeaders { HttpHeaders(calculator()) }
 

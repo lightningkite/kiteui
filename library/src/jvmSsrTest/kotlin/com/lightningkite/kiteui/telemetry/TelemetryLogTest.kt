@@ -14,7 +14,7 @@ class TelemetryLogTest {
 
     @BeforeTest
     fun register() {
-        release = Log.Interceptor.register(telemetry.logInterceptor)
+        release = Log.Interceptor.global.register(telemetry.logInterceptor)
     }
 
     @AfterTest

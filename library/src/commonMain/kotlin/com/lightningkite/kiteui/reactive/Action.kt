@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.exceptions.ExceptionHandlersTree
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.utils.LiveRegistry
 import com.lightningkite.reactive.context.DependencyChangeListener
 import com.lightningkite.reactive.context.awaitOnce
 import com.lightningkite.reactive.context.rerunOn
@@ -16,7 +17,7 @@ import kotlin.time.TimeSource
 import kotlinx.coroutines.*
 
 private suspend fun runIntercepted(scope: CoroutineScope, title: String, action: suspend () -> Unit) {
-    val chain = Action.Interceptor.registered.toList().foldRight(action) { interceptor, next -> { interceptor.intercept(scope, title, next) } }
+    val chain = Action.Interceptor.global.snapshot().foldRight(action) { interceptor, next -> { interceptor.intercept(scope, title, next) } }
     chain()
 }
 
@@ -35,16 +36,8 @@ public interface Action: Reactive<Boolean> {
         public suspend fun intercept(scope: CoroutineScope, title: String, proceed: suspend () -> Unit)
 
         public companion object {
-            private val _registered = ArrayList<Interceptor>()
-
-            /** Every interceptor, first registered outermost. A view that changes as interceptors are registered and released, so copy it before iterating. */
-            public val registered: List<Interceptor> = _registered
-
-            /** Adds [interceptor] to every [Action] run, and returns a [Release] that removes it. */
-            public fun register(interceptor: Interceptor): Release {
-                _registered += interceptor
-                return { _registered.remove(interceptor) }
-            }
+            /** Every interceptor, first registered outermost. */
+            public val global: LiveRegistry<Interceptor> = LiveRegistry()
         }
     }
 

@@ -67,10 +67,11 @@ class HttpFetcherChainTest {
     fun defaultSeesRegistrationsAndReleases() = networkTest {
         HttpFetcher.Default.fetch("${TestServer.http}/hello")
         var seen = 0
-        val release = HttpFetcher.Interceptor.register { url, method, headers, body, proceed ->
-            seen++
-            proceed(url, method, headers, body)
-        }
+        val release =
+            HttpFetcher.Interceptor.global.register { url: String, method: HttpMethod, headers: HttpHeaders, body: RequestBody?, proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse ->
+                seen++
+                proceed(url, method, headers, body)
+            }
         try {
             HttpFetcher.Default.fetch("${TestServer.http}/hello")
         } finally {

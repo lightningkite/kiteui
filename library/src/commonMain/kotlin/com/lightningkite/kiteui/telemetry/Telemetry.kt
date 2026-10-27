@@ -119,6 +119,9 @@ public class Telemetry(
             enqueue { add(RecordedLog(Clock.System.now(), telemetryLevel, entries.joinToString(" "), attributes)) }
         }
     }
+    private val fetchInterceptor = HttpFetcher.Interceptor { url: String, method: HttpMethod, headers: HttpHeaders, body: RequestBody?, proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse ->
+        instrumentFetch(url, method, headers, body, proceed)
+    }
     private val exceptionHandlerInterceptor = ExceptionHandler(Float.MAX_VALUE) { e, meta ->
         val source = meta?.source
         reportError(e, TelemetryAttributes {
@@ -137,11 +140,9 @@ public class Telemetry(
         mainNavigator = navigator
         Companion.installed = this
 
-        cleanups += HttpFetcher.Interceptor.register { url, method, headers, body, proceed ->
-            instrumentFetch(url, method, headers, body, proceed)
-        }
-        cleanups += Action.Interceptor.register(actionInterceptor)
-        cleanups += Log.Interceptor.register(logInterceptor)
+        cleanups += HttpFetcher.Interceptor.global.register(fetchInterceptor)
+        cleanups += Action.Interceptor.global.register(actionInterceptor)
+        cleanups += Log.Interceptor.global.register(logInterceptor)
         elementContext = context
         context.exceptionHandlers += exceptionHandlerInterceptor
         throwableHookActive = true

@@ -3,7 +3,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.Element
-import com.lightningkite.reactive.core.Release
+import com.lightningkite.kiteui.utils.LiveRegistry
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -138,16 +138,8 @@ public interface Log {
         public fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>)
 
         public companion object {
-            private val _registered = ArrayList<Interceptor>()
-
-            /** Every interceptor, in registration order. A view that changes as interceptors are registered and released, so copy it before iterating. */
-            public val registered: List<Interceptor> = _registered
-
-            /** Adds [interceptor] to every [Log] call, and returns a [Release] that removes it. */
-            public fun register(interceptor: Interceptor): Release {
-                _registered += interceptor
-                return { _registered.remove(interceptor) }
-            }
+            /** Every interceptor, in registration order. */
+            public val global: LiveRegistry<Interceptor> = LiveRegistry()
         }
     }
 
@@ -212,7 +204,7 @@ private class InterceptedLog(private val wraps: Log) : Log {
     override fun withLevel(level: LogLevel): Log = InterceptedLog(wraps.withLevel(level))
 
     private fun intercept(level: LogLevel, entries: Array<out Any?>) {
-        for (i in Log.Interceptor.registered.toList()) i.intercept(level, wraps.tag, entries)
+        for (i in Log.Interceptor.global.snapshot()) i.intercept(level, wraps.tag, entries)
     }
 
     override fun log(vararg entries: Any?) {
