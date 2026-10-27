@@ -19,6 +19,7 @@ public actual class MenuButton actual constructor(context: ElementContext) : Nat
         this.createMenu = createMenu
     }
 
+    public actual var role: String = "dialog"
     public actual var requireClick: Boolean = false
     public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
 
