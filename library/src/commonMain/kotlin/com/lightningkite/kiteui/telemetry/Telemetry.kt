@@ -220,7 +220,7 @@ public class Telemetry(
             outcome = RecordedSpan.Outcome.Cancelled
             throw e
         } catch (e: Throwable) {
-            error = e.toRecordedError()
+            if (sampled) error = e.toRecordedError() // a stack trace and a fingerprint aren't free
             throw e
         } finally {
             if (sampled) enqueue {
