@@ -127,6 +127,10 @@ public class Telemetry(
             outbox.upload() // whatever earlier runs left behind
             while (true) {
                 delay(30.seconds)
+                // Offline, saving here would make a one-record batch, and later spend an upload on it, every 30 s.
+                // Records wait in memory instead; enqueue still saves every MAX_BUFFERED_RECORDS, and going to the
+                // background or crashing saves at once.
+                if (outbox.backingOff) continue
                 outbox.persist()
                 outbox.upload()
             }

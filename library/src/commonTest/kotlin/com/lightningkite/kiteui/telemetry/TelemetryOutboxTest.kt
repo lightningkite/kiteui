@@ -52,6 +52,7 @@ class TelemetryOutboxTest {
         outbox.persist()
 
         outbox.upload()
+        assertTrue(outbox.backingOff)
         outbox.upload() // within the backoff window: not attempted
 
         assertEquals(1, attempts)

@@ -49,6 +49,10 @@ internal class TelemetryOutbox(
 
     val bufferedRecords: Int get() = synchronized(lock) { spans.size + logs.size }
 
+    // Claude: read without holding uploading; a stale answer only shifts the next upload by one tick.
+    /** Whether a failed upload is still waiting out its backoff. */
+    val backingOff: Boolean get() = Clock.System.now() < retryAt
+
     fun add(span: RecordedSpan): Unit = synchronized(lock) { spans += span.copy(attributes = span.attributes.withinServerLimits()) }
     fun add(log: RecordedLog): Unit = synchronized(lock) { logs += log.copy(attributes = log.attributes.withinServerLimits()) }
 
