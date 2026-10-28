@@ -25,10 +25,14 @@ public expect class Slider(context: ElementContext) : NativeInteractiveElement {
     public var max: Float
     
     /**
-     * The step size for the slider. If null, the slider is continuous.
+     * The step size for the slider. If null, the slider is continuous.  A step that isn't positive becomes 1, as
+     * an HTML range input treats it.
      */
     public var step: Float?
 }
+
+// Every platform's step setter goes through this, so they agree.
+internal fun Float?.validSliderStep(): Float? = this?.let { if (it > 0f) it else 1f }
 
 /**
  * Sets the value range for the slider.

@@ -84,7 +84,7 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
 
     public actual var step: Float? = null
         set(value) {
-            field = value
+            field = value.validSliderStep()
             // iOS UISlider doesn't have a built-in step property
             // We handle this in the value change listener
         }

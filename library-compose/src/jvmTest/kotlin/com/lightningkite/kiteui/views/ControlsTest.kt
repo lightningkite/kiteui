@@ -137,6 +137,16 @@ class ControlsTest {
         assertTrue(start != end, "expected the thumb at the start")
     }
 
+    // An HTML range input treats a step that isn't positive as 1, and every platform follows it.
+    @Test
+    fun sliderStepsOfZeroAreOnes() = runKiteUiTest {
+        lateinit var slider: Slider
+        show { slider = slider { range(0f, 10f, 0f) } }
+        assertEquals(1f, slider.step)
+        slider.value.value = 3.4f
+        assertEquals(3f, slider.value.value)
+    }
+
     @Test
     fun sliderFollowsAReactiveMax() = runKiteUiTest {
         val max = Signal(10f)

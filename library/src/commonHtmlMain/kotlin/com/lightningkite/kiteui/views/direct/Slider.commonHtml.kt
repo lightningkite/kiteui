@@ -61,8 +61,8 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
 
     public actual var step: Float? = null
         set(value) {
-            field = value
-            native.attributes.step = value?.toString() ?: "any"
+            field = value.validSliderStep()
+            native.attributes.step = field?.toString() ?: "any"
         }
 
     init {

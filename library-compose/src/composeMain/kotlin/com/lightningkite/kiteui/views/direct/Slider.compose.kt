@@ -74,7 +74,7 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
     public actual var step: Float?
         get() = stepState
         set(value) {
-            stepState = value
+            stepState = value.validSliderStep()
             this.value.value = this.value.value
         }
 
