@@ -14,6 +14,7 @@ import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
@@ -58,25 +59,12 @@ internal class TelemetryOutbox(
         save(durably)
     }
 
-    /** Sends batches oldest first, unless an upload is already running or a failed one is still backing off. */
+    /** Sends batches oldest first, unless an upload is already running or a failed one is still backing off. Failures are retried later. */
     suspend fun upload() {
         if (!uploading.tryLock()) return
         try {
             if (Clock.System.now() < retryAt) return
-            withContext(TelemetryUploading) {
-                suppressConnectivityIssues {
-                    while (true) {
-                        val batch = synchronized(lock) { batches.firstOrNull() } ?: break
-                        send(batch.copy(sentAt = Clock.System.now()))
-                        synchronized(lock) {
-                            // By identity: persist() may have dropped this batch for size while it was in flight.
-                            batches.removeAll { it === batch }
-                            save(durably = false)
-                        }
-                    }
-                }
-            }
-            retryDelay = firstRetryDelay
+            sendAll()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -87,6 +75,28 @@ internal class TelemetryOutbox(
         } finally {
             uploading.unlock()
         }
+    }
+
+    /** Sends every batch now, waiting for a running upload to finish and ignoring any backoff. Throws what [send] throws. */
+    suspend fun flush(): Unit = uploading.withLock { sendAll() }
+
+    /** Call holding [uploading]. */
+    private suspend fun sendAll() {
+        withContext(TelemetryUploading) {
+            suppressConnectivityIssues {
+                while (true) {
+                    val batch = synchronized(lock) { batches.firstOrNull() } ?: break
+                    send(batch.copy(sentAt = Clock.System.now()))
+                    synchronized(lock) {
+                        // By identity: persist() may have dropped this batch for size while it was in flight.
+                        batches.removeAll { it === batch }
+                        save(durably = false)
+                    }
+                }
+            }
+        }
+        retryAt = Instant.DISTANT_PAST
+        retryDelay = firstRetryDelay
     }
 
     /** Call holding [lock]. Drops the oldest batches while the outbox is over its size cap, noting the drop in the next batch. */

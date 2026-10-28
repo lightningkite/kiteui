@@ -228,10 +228,15 @@ public class Telemetry(
         }
     }
 
-    /** Saves what's been recorded and uploads it now, e.g. before the user signs out. */
+    /**
+     * Saves what's been recorded and uploads it now, e.g. before the user signs out.
+     *
+     * Waits for an upload already in progress, so everything recorded before the call has been sent when it returns.
+     * Throws what `upload` throws; the records stay saved and are sent by a later upload.
+     */
     public suspend fun flush() {
         outbox.persist()
-        outbox.upload()
+        outbox.flush()
     }
 
     // ===== Instrumentation =====

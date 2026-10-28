@@ -6,10 +6,13 @@ import com.lightningkite.services.telemetry.TelemetryAttributes
 import com.lightningkite.services.telemetry.TelemetryBatch
 import com.lightningkite.services.telemetry.TelemetryKeys
 import com.lightningkite.services.telemetry.telemetryAttributesOf
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 
@@ -48,6 +51,47 @@ class TelemetryOutboxTest {
 
         assertEquals(1, attempts)
         assertEquals("kept", outbox.batches.single().logs.single().message)
+    }
+
+    @Test
+    fun flushWaitsForARunningUploadAndSendsWhatCameAfter() = runTest {
+        val sent = ArrayList<String>()
+        val firstSendStarted = CompletableDeferred<Unit>()
+        val finishFirstSend = CompletableDeferred<Unit>()
+        val outbox = TelemetryOutbox(resource) {
+            if (sent.isEmpty()) { firstSendStarted.complete(Unit); finishFirstSend.await() }
+            sent += it.logs.single().message
+        }
+        outbox.add(log("first"))
+        outbox.persist()
+        val upload = launch { outbox.upload() }
+        firstSendStarted.await()
+
+        outbox.add(log("second"))
+        outbox.persist()
+        val flush = launch { outbox.flush() }
+        testScheduler.runCurrent()
+        assertTrue(flush.isActive, "flush should wait for the running upload")
+        finishFirstSend.complete(Unit)
+        flush.join()
+
+        assertEquals(listOf("first", "second"), sent)
+        upload.join()
+    }
+
+    @Test
+    fun flushIgnoresBackoffAndThrowsWhenTheUploadFails() = runTest {
+        var online = false
+        val outbox = TelemetryOutbox(resource) { if (!online) throw Exception("offline") }
+        outbox.add(log("kept"))
+        outbox.persist()
+
+        outbox.upload() // fails and starts backing off
+        assertFailsWith<Exception> { outbox.flush() }
+        online = true
+        outbox.flush()
+
+        assertTrue(outbox.batches.isEmpty())
     }
 
     @Test

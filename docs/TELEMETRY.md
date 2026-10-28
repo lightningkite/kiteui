@@ -44,7 +44,8 @@ retries everything else, including rate-limit 429s.
 Upload goes through your generated client so it carries the user's `Authorization` header. Anonymous
 uploads are accepted and simply have no `user.id`. The user is whoever is signed in when a batch is
 *uploaded*, so call `telemetry.flush()` before signing out, or records made before sign-out (or offline) are
-attributed to the next user.
+attributed to the next user. `flush()` waits for an upload already in progress and throws if the upload fails,
+for example offline; the records stay saved and are sent by a later upload.
 
 Install before the first `navigatorView` renders; screens shown earlier aren't recorded.
 
