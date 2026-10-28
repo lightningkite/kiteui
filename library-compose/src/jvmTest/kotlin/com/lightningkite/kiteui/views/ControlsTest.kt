@@ -101,6 +101,19 @@ class ControlsTest {
         saveScreenshot(root, "slider")
     }
 
+    @Test
+    fun sliderTakesTheHoverTheme() = runKiteUiTest {
+        lateinit var slider: Slider
+        show { col { slider = slider { } } }
+        val rest = slider.themeAndBack
+        onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).performMouseInput { moveTo(center) }
+        waitForIdle()
+        assertTrue(slider.themeAndBack != rest, "hovering should change the slider's theme")
+        onRoot().performMouseInput { moveTo(Offset(width - 1f, height - 1f)) }
+        waitForIdle()
+        assertEquals(rest, slider.themeAndBack)
+    }
+
     // range sets min first, above the old max.  As the web's range input, the value then sits at min.
     @Test
     fun sliderTakesRangesAboveOrOnTheOldOne() = runKiteUiTest {
