@@ -241,6 +241,16 @@ public class Telemetry(
         outbox.flush()
     }
 
+    /**
+     * Deletes everything recorded and not yet uploaded, from memory and from the device.
+     *
+     * Use it at sign-out when [flush] fails, so the records aren't uploaded later under the next user:
+     * ```kotlin
+     * try { telemetry.flush() } catch (e: Exception) { telemetry.clear() }
+     * ```
+     */
+    public fun clear(): Unit = outbox.clear()
+
     internal suspend fun instrumentFetch(
         url: String,
         method: HttpMethod,

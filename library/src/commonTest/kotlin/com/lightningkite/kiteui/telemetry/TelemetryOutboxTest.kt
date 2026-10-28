@@ -111,6 +111,30 @@ class TelemetryOutboxTest {
     }
 
     @Test
+    fun clearForgetsEverythingIncludingWhatWasSaved() {
+        val outbox = TelemetryOutbox(resource) {}
+        outbox.add(log("saved"))
+        outbox.persist()
+        outbox.add(log("buffered"))
+
+        outbox.clear()
+        outbox.persist()
+
+        assertTrue(outbox.batches.isEmpty())
+        assertTrue(TelemetryOutbox(resource) {}.batches.isEmpty(), "nothing is left on the device")
+    }
+
+    @Test
+    fun savedBatchesAreLoadedByTheNextOutbox() {
+        if (!storageKeepsValues()) return
+        TelemetryOutbox(resource) {}.apply {
+            add(log("from the last run"))
+            persist()
+        }
+        assertEquals("from the last run", TelemetryOutbox(resource) {}.batches.single().logs.single().message)
+    }
+
+    @Test
     fun recordsAreMadeToFitTheServersLimits() {
         val outbox = TelemetryOutbox(resource) {}
         val attributes = TelemetryAttributes {

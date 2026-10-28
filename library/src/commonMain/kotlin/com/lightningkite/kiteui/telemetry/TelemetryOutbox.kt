@@ -61,6 +61,14 @@ internal class TelemetryOutbox(
         save(durably)
     }
 
+    /** Forgets every record and batch that hasn't been sent, here and on the device. */
+    fun clear(): Unit = synchronized(lock) {
+        spans.clear()
+        logs.clear()
+        batches.clear()
+        save(durably = false)
+    }
+
     /** Sends batches oldest first, unless an upload is already running or a failed one is still backing off. Failures are retried later. */
     suspend fun upload() {
         if (!uploading.tryLock()) return

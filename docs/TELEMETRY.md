@@ -45,7 +45,12 @@ Upload goes through your generated client so it carries the user's `Authorizatio
 uploads are accepted and simply have no `user.id`. The user is whoever is signed in when a batch is
 *uploaded*, so call `telemetry.flush()` before signing out, or records made before sign-out (or offline) are
 attributed to the next user. `flush()` waits for an upload already in progress and throws if the upload fails,
-for example offline; the records stay saved and are sent by a later upload.
+for example offline; the records stay saved and are sent by a later upload. To make sure they can't go out under
+the next user, delete them when the flush fails:
+
+```kotlin
+try { telemetry.flush() } catch (e: Exception) { telemetry.clear() }
+```
 
 Install before the first `navigatorView` renders; screens shown earlier aren't recorded. During server-side
 rendering `install` does nothing, so it's safe to call from `app()`.
