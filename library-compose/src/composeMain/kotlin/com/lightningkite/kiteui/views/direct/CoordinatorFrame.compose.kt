@@ -49,7 +49,7 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
     public actual fun leftSlidingPanel(ratio: Float?, blockBehind: Boolean, content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit) {
         lateinit var panel: Element
         val control = object : SlidingPanelControl {
-            override fun close() = removeChild(panel)
+            override fun close() { if (panel in children) removeChild(panel) }
         }
         panel = if (ratio == null) {
             checkNotNull(produceAtMostOneView { align(Align.Start, Align.Stretch).content(control) })
@@ -64,7 +64,7 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
     public actual fun rightSlidingPanel(ratio: Float?, blockBehind: Boolean, content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit) {
         lateinit var panel: Element
         val control = object : SlidingPanelControl {
-            override fun close() = removeChild(panel)
+            override fun close() { if (panel in children) removeChild(panel) }
         }
         panel = if (ratio == null) {
             checkNotNull(produceAtMostOneView { align(Align.End, Align.Stretch).content(control) })
