@@ -29,6 +29,28 @@ class InputsTest {
         signal.value == value
     }
 
+    // As on the web, Enter in a single-line field runs its action.
+    @Test
+    fun enterInSingleLineFieldsRunsTheAction() = runKiteUiTest {
+        val submitted = ArrayList<String>()
+        fun submit(name: String) = Action(name, frequencyCap = null) { submitted += name }
+        showKiteUi {
+            col {
+                fieldTheme.textInput { action = submit("text") }
+                fieldTheme.numberInput { action = submit("number") }
+                fieldTheme.phoneNumberInput { action = submit("formatted") }
+                fieldTheme.autoCompleteTextField { action = submit("autocomplete") }
+                fieldTheme.localDateField { action = submit("date") }
+            }
+        }
+        for (i in 0 until 5) {
+            field(i).performClick()
+            field(i).performKeyInput { pressKey(Key.Enter) }
+        }
+        waitUntil("all submitted, got $submitted", 2_000) { submitted.size == 5 }
+        assertEquals(listOf("text", "number", "formatted", "autocomplete", "date"), submitted)
+    }
+
     @Test
     fun textAreaTakesLinesAndSubmitsOnEnter() = runKiteUiTest {
         val notes = Signal("")
