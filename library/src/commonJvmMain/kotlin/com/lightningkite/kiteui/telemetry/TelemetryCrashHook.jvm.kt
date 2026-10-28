@@ -5,7 +5,7 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
         try {
             onCrash(throwable)
-        } catch (_: Exception) {}
+        } catch (_: Throwable) {}
         previous?.uncaughtException(thread, throwable)
     }
 }

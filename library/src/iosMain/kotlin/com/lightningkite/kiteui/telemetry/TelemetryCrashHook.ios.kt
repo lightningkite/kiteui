@@ -9,7 +9,7 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     kotlin.native.setUnhandledExceptionHook { throwable ->
         try {
             onCrash(throwable)
-        } catch (_: Exception) {}
+        } catch (_: Throwable) {}
         if (previous != null) {
             previous(throwable)
         } else {

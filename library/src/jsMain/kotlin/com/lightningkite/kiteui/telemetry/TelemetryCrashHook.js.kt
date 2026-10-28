@@ -8,12 +8,12 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
         val error = event.asDynamic().error
         val throwable = if (error is Throwable) error
             else Exception(event.asDynamic().message?.toString() ?: "Unknown error")
-        try { onCrash(throwable) } catch (_: Exception) {}
+        try { onCrash(throwable) } catch (_: Throwable) {}
     })
     window.addEventListener("unhandledrejection", { event: Event ->
         val reason = event.asDynamic().reason
         val throwable = if (reason is Throwable) reason
             else Exception(reason?.toString() ?: "Unhandled promise rejection")
-        try { onCrash(throwable) } catch (_: Exception) {}
+        try { onCrash(throwable) } catch (_: Throwable) {}
     })
 }
