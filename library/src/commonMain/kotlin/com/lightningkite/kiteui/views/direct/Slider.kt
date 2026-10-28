@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.*
+import kotlin.math.floor
 
 /**
  * A slider component that allows users to select a value from a continuous range.
@@ -33,6 +34,21 @@ public expect class Slider(context: ElementContext) : NativeInteractiveElement {
 
 // Every platform's step setter goes through this, so they agree.
 internal fun Float?.validSliderStep(): Float? = this?.let { if (it > 0f) it else 1f }
+
+/**
+ * The value a slider holds when given [value], on every platform, as an HTML range input does: a max below the min
+ * counts as the min; the value is kept within them; and with a step, it goes to the nearest step from the min (the
+ * greater one when halfway), but never past the max.
+ */
+internal fun sliderValue(value: Float, min: Float, max: Float, step: Float?): Float {
+    val top = max.coerceAtLeast(min)
+    val clamped = value.coerceIn(min, top)
+    if (step == null) return clamped
+    // The small allowance keeps float error from losing a step (1 / 0.1f is 9.99999...).
+    val nearest = floor((clamped - min) / step + 0.5f + 1e-4f)
+    val lastBelowTop = floor((top - min) / step + 1e-4f)
+    return min + minOf(nearest, lastBelowTop) * step
+}
 
 /**
  * Sets the value range for the slider.

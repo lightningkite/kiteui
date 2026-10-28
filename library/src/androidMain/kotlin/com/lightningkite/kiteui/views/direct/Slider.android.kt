@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.kiteui.views.AiDriver
+import kotlin.math.roundToInt
 
 public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
@@ -13,16 +14,15 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
     private val nativeSeekBar = SeekBar(context.activity)
     override val native: SeekBar = nativeSeekBar
 
-    private val valueProp = Signal(0.5f)
+    // The value is kept here rather than read back from the SeekBar, whose progress has only 1000 positions.
+    private var current = 0.5f
 
     // A stable val backed by BaseListenable, so every addListener() call multicasts off of one
     // underlying SeekBar listener instead of each call replacing SeekBar's single listener slot.
     public actual val value: MutableReactiveValue<Float> = object : MutableReactiveValue<Float>, BaseListenable() {
         private val seekBarListener = object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    invokeAllListeners()
-                }
+                if (fromUser) value = min + progress / 1000f * (max - min)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
@@ -34,74 +34,41 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
         override fun deactivate() { nativeSeekBar.setOnSeekBarChangeListener(null) }
 
         override var value: Float
-            get() {
-                val progress = nativeSeekBar.progress
-                val range = max - min
-                val rawValue = min + (progress / 1000f) * range
-
-                // Apply step if it's set
-                return step?.let { stepValue ->
-                    if (stepValue > 0) {
-                        val steps = ((rawValue - min) / stepValue).toInt()
-                        min + (steps * stepValue)
-                    } else {
-                        rawValue
-                    }
-                } ?: rawValue
-            }
+            get() = current
             set(value) {
-                // Ensure value is within min/max range
-                val clampedValue = value.coerceIn(min, max)
-
-                // Apply step if it's set
-                val finalValue = step?.let { stepValue ->
-                    if (stepValue > 0) {
-                        val steps = ((clampedValue - min) / stepValue).toInt()
-                        min + (steps * stepValue)
-                    } else {
-                        clampedValue
-                    }
-                } ?: clampedValue
-
-                // Convert to progress (0-1000)
+                val held = sliderValue(value, min, max, step)
+                // Always placed, since a new range moves the thumb even when the value stays.
                 val range = max - min
-                val normalizedValue = (finalValue - min) / range
-                val progress = (normalizedValue * 1000).toInt()
-
-                if (nativeSeekBar.progress != progress) {
-                    nativeSeekBar.progress = progress
-                }
+                nativeSeekBar.progress = if (range > 0f) ((held - min) / range * 1000).roundToInt() else 0
+                if (held == current) return
+                current = held
+                invokeAllListeners()
             }
     }
 
     public actual var min: Float = 0f
         set(value) {
             field = value
-            // Update current value to ensure it's within new range
             this.value.value = this.value.value
         }
 
     public actual var max: Float = 1f
         set(value) {
             field = value
-            // Update current value to ensure it's within new range
             this.value.value = this.value.value
         }
 
     public actual var step: Float? = null
         set(value) {
             field = value.validSliderStep()
-            // Android SeekBar doesn't have a built-in step property
-            // We handle this in the value setter
+            this.value.value = this.value.value
         }
 
     init {
         // Android SeekBar uses integers for progress (0-1000)
         nativeSeekBar.max = 1000
         nativeSeekBar.accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
-
-        // Initialize with the property value
-        value.value = valueProp.value
+        value.value = current
     }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {

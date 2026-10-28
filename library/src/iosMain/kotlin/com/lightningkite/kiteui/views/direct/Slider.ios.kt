@@ -12,93 +12,51 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
     override val native: UISlider = UISlider()
     override val control: UIControl get() = native
 
-    private val valueProp = Signal(0.5f)
-    public actual val value: MutableReactiveValue<Float> = object : MutableReactiveValue<Float> {
-        override fun addListener(listener: () -> Unit): Release {
-            return native.onEvent(this@Slider, UIControlEventValueChanged) {
-                // Apply step if it's set
-                step?.let { stepValue ->
-                    if (stepValue > 0) {
-                        val currentValue = native.value.toFloat()
-                        val steps = ((currentValue - min) / stepValue).toInt()
-                        val steppedValue = min + (steps * stepValue)
-                        // Update slider position to match stepped value
-                        native.value = steppedValue.toFloat()
-                    }
-                }
-                listener()
-            }
-        }
+    private var current = 0.5f
 
+    public actual val value: MutableReactiveValue<Float> = object : MutableReactiveValue<Float>, BaseListenable() {
         override var value: Float
-            get() {
-                val rawValue = native.value.toFloat()
-
-                // Apply step if it's set
-                return step?.let { stepValue ->
-                    if (stepValue > 0) {
-                        val steps = ((rawValue - min) / stepValue).toInt()
-                        min + (steps * stepValue)
-                    } else {
-                        rawValue
-                    }
-                } ?: rawValue
-            }
+            get() = current
             set(value) {
-                // Ensure value is within min/max range
-                val clampedValue = value.coerceIn(min, max)
-
-                // Apply step if it's set
-                val finalValue = step?.let { stepValue ->
-                    if (stepValue > 0) {
-                        val steps = ((clampedValue - min) / stepValue).toInt()
-                        min + (steps * stepValue)
-                    } else {
-                        clampedValue
-                    }
-                } ?: clampedValue
-
-                if (native.value.toFloat() != finalValue) {
-                    native.value = finalValue
-                    // fire change event so reactive listeners are notified on programmatic updates
-                    native.sendActionsForControlEvents(UIControlEventValueChanged)
-                }
+                val held = sliderValue(value, min, max, step)
+                // Always placed, since a drag leaves the thumb between steps and a new range moves it.
+                native.value = held
+                if (held == current) return
+                current = held
+                invokeAllListeners()
             }
     }
 
+    // UISlider can't hold a max below its min; that counts as the min, as on the web.
     public actual var min: Float = 0f
         set(value) {
             field = value
-            native.minimumValue = value.toFloat()
-            // Update current value to ensure it's within new range
+            native.minimumValue = value
+            native.maximumValue = max.coerceAtLeast(value)
             this.value.value = this.value.value
         }
 
     public actual var max: Float = 1f
         set(value) {
             field = value
-            native.maximumValue = value.toFloat()
-            // Update current value to ensure it's within new range
+            native.maximumValue = value.coerceAtLeast(min)
             this.value.value = this.value.value
         }
 
     public actual var step: Float? = null
         set(value) {
             field = value.validSliderStep()
-            // iOS UISlider doesn't have a built-in step property
-            // We handle this in the value change listener
+            this.value.value = this.value.value
         }
 
     init {
         // UISlider already has built-in VoiceOver support (traits, value announcements).
         native.isAccessibilityElement = true
         setupControl()
-        native.minimumValue = min.toFloat()
-        native.maximumValue = max.toFloat()
-        native.value = valueProp.value.toFloat()
-
-        // Initialize with the property value
-        value.value = valueProp.value
+        native.minimumValue = min
+        native.maximumValue = max
+        native.onEvent(this, UIControlEventValueChanged) { value.value = native.value }
+        value.value = current
     }
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {

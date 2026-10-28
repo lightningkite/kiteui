@@ -35,7 +35,6 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactiveValue
 import com.lightningkite.reactive.core.Release
 import com.lightningkite.reactive.core.Signal
-import kotlin.math.roundToInt
 
 public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
@@ -49,7 +48,7 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
         override var value: Float
             get() = current.value
             set(value) {
-                current.value = snapped(value)
+                current.value = sliderValue(value, min, max, step)
             }
 
         override fun addListener(listener: () -> Unit): Release = current.addListener(listener)
@@ -80,13 +79,6 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
 
     init {
         reactive { displayed = value() }
-    }
-
-    // When max is below min (as while range sets min first), min wins, as on the web.
-    private fun snapped(v: Float): Float {
-        val clamped = v.coerceAtMost(max).coerceAtLeast(min)
-        val step = step ?: return clamped
-        return (min + ((clamped - min) / step).roundToInt() * step).coerceAtMost(max).coerceAtLeast(min)
     }
 
     // The thumb's center travels from one radius in from the left edge to one radius in from the right.

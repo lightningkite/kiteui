@@ -56,7 +56,8 @@ class SliderListenerTest {
             // private fields) exercises the real installed production listener.
             val seekBarListener: SeekBar.OnSeekBarChangeListener = shadowOf(slider.native).onSeekBarChangeListener
                 ?: error("Slider did not install a SeekBar listener")
-            seekBarListener.onProgressChanged(slider.native, 500, true)
+            // Not 500, which is the starting value: listeners hear changes only.
+            seekBarListener.onProgressChanged(slider.native, 700, true)
 
             assertEquals(1, firstCount, "first subscriber should have fired")
             assertEquals(1, secondCount, "second subscriber should have fired too - this is exactly what the fresh-object-per-access bug broke, since adding it used to evict the first subscriber's listener")
@@ -79,6 +80,30 @@ class SliderListenerTest {
             seekBarListener.onProgressChanged(slider.native, 500, false)
 
             assertEquals(0, count)
+        }
+    }
+
+    // The same rules as the other platforms (see SliderValueTest), and the value is exact rather than one of the
+    // SeekBar's 1000 positions.
+    @Test
+    fun holdsTheSameValuesAsTheOtherPlatforms() {
+        Robolectric.buildActivity(TestActivity::class.java).use { controller ->
+            controller.setup()
+            val slider = controller.get().slider
+            var count = 0
+            slider.value.addListener { count++ }
+
+            slider.range(18f, 100f)
+            assertEquals(18f, slider.value.value)
+            assertEquals(1, count, "a range that moves the value tells listeners, as elsewhere")
+
+            slider.value.value = 33.3337f
+            assertEquals(33.3337f, slider.value.value)
+
+            slider.step = 2f
+            assertEquals(34f, slider.value.value)
+            slider.step = 0f
+            assertEquals(1f, slider.step)
         }
     }
 }

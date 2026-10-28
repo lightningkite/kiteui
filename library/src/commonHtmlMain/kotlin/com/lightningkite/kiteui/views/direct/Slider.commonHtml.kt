@@ -25,22 +25,7 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
     public actual val value: MutableReactiveValue<Float> = native.vprop(
         "input",
         { attributes.valueString?.toFloatOrNull() ?: 0.5f },
-        { newValue -> 
-            // Ensure value is within min/max range
-            val clampedValue = newValue.coerceIn(min, max)
-
-            // Apply step if it's set
-            val finalValue = step?.let { stepValue ->
-                if (stepValue > 0) {
-                    val steps = ((clampedValue - min) / stepValue).toInt()
-                    min + (steps * stepValue)
-                } else {
-                    clampedValue
-                }
-            } ?: clampedValue
-
-            attributes.valueString = finalValue.toString()
-        }
+        { newValue -> attributes.valueString = sliderValue(newValue, min, max, step).toString() }
     )
 
     public actual var min: Float = 0f
@@ -63,6 +48,7 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
         set(value) {
             field = value.validSliderStep()
             native.attributes.step = field?.toString() ?: "any"
+            this.value.value = this.value.value
         }
 
     init {
