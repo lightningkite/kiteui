@@ -15,6 +15,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertTrue
 
 class MarkdownRendererTest {
@@ -91,6 +92,18 @@ class MarkdownRendererTest {
 
         assertTrue(result.html.contains("href=\"https://example.com\""), "HTML should contain link href")
         assertTrue(result.html.contains("Click here"), "HTML should contain link text")
+    }
+
+    @Test
+    fun testWhitespaceAroundInlineElementsIsKeptExactly() = runWithTimeout {
+        val context = SsrContext("/")
+        context.render {
+            markdown("Use a controller ([ESP-TM2](/Product/1)), see [**fast** *setup*](/guide).")
+        }
+        val html = context.serialize().html
+
+        assertContains(html, "controller (<a href=\"/Product/1\">ESP-TM2</a>), see <a")
+        assertContains(html, "fast</b> <i")
     }
 
     @Test

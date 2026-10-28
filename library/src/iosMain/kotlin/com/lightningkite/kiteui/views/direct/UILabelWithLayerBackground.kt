@@ -2,6 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.navigation.UrlLikePath
+import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.openTab
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.debugPrint
@@ -101,10 +103,16 @@ public class UILabelWithLayerBackground(internal val context: WeakReference<RCon
 
         val link = label.attributedText?.attribute(NSLinkAttributeName, indexOfCharacter, effectiveRange = null)
 
-        when(link) {
-            is NSURL -> context.get()?.openTab(link.toString())
-            is NSString -> context.get()?.openTab(link as String)
+        val url = when(link) {
+            is NSURL -> link.toString()
+            is NSString -> link as String
+            else -> return
         }
+        val context = context.get() ?: return
+        // openTab hands every link to the OS, which can't open a path into this app.
+        val isAppPath = NSURL.URLWithString(url)?.let { it.scheme == null && it.host == null } == true
+        val page = if (isAppPath) context.pageNavigator.routes.parse(UrlLikePath.fromUrlString(url)) else null
+        if (page != null) context.pageNavigator.navigate(page) else context.openTab(url)
 
     }
 

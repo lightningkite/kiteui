@@ -1,7 +1,11 @@
 package com.lightningkite.kiteui.dom
 
+import com.lightningkite.kiteui.navigation.UrlLikePath
+import com.lightningkite.kiteui.navigation.urlLike
 import kotlinx.browser.document
+import kotlinx.browser.window
 import org.w3c.dom.DOMRect
+import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.get
 import org.w3c.dom.pointerevents.PointerEvent
 
@@ -16,3 +20,11 @@ public actual typealias Node = org.w3c.dom.Node
 public actual typealias DOMElement = org.w3c.dom.Element
 public actual typealias DOMRectReadOnly = org.w3c.dom.DOMRectReadOnly
 public actual typealias DOMRect = org.w3c.dom.DOMRect
+
+internal actual fun Event.clickedSameOriginLink(): UrlLikePath? {
+    // Modifier clicks ask the browser for a new tab or window.
+    if (this is MouseEvent && (ctrlKey || metaKey || shiftKey || altKey)) return null
+    val link = (target as? DOMElement)?.closest("a") as? HTMLAnchorElement ?: return null
+    if (link.origin != window.location.origin || link.target == "_blank") return null
+    return urlLike(link.pathname, link.search)
+}

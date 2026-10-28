@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.dom
 
+import com.lightningkite.kiteui.navigation.UrlLikePath
+
 public actual abstract class EventTarget
 public actual open class Event {
     public actual fun preventDefault(){}
@@ -7,6 +9,9 @@ public actual open class Event {
     public actual fun stopImmediatePropagation(){}
     public actual open val target: EventTarget? = null
 }
+
+internal actual fun Event.clickedSameOriginLink(): UrlLikePath? = null
+
 public actual open class UIEvent: Event() {
 }
 public actual open class KeyboardEvent: UIEvent() {

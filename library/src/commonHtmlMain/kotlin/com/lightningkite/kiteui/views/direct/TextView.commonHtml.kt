@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.dom.clickedSameOriginLink
 import com.lightningkite.kiteui.dom.parseMinimalHtmlNodes
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.WordBreak
+import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 
 
@@ -78,7 +80,14 @@ public actual class TextView actual constructor(context: ElementContext) : Nativ
     public actual fun setBasicHtmlContent(html: String) {
         native.style.whiteSpace = "pre-line"
         native.classes.add("kui-basic-html-content")
-        native.innerHtmlUnsafe = html.parseMinimalHtmlNodes().onEach { it.secure() }.joinToString(" ")
+        native.innerHtmlUnsafe = html.parseMinimalHtmlNodes().onEach { it.secure() }.joinToString("")
+        // A plain link into the app would reload it, so one the app's routes know navigates the way Link does.
+        native.replaceEventListener("click") { event ->
+            val path = event.clickedSameOriginLink() ?: return@replaceEventListener
+            val page = context.pageNavigator.routes.parse(path) ?: return@replaceEventListener
+            event.preventDefault()
+            context.pageNavigator.navigate(page)
+        }
     }
 }
 
