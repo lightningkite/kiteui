@@ -120,21 +120,20 @@ internal class TelemetryOutbox(
             )
         }
         // Failing to store telemetry must not break the app code that happened to record it.
+        // Claude: Throwable, because a browser's DOMException (storage blocked or full) isn't a Kotlin Exception.
         try {
             PlatformStorage.set(STORAGE_KEY, stored, ensureOnDisk = durably)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             LogRoot.tag("Telemetry").warn("Couldn't save telemetry: $e")
         }
     }
 
-    private fun load(): MutableList<TelemetryBatch> {
-        val stored = PlatformStorage.get(STORAGE_KEY) ?: return ArrayList()
-        return try {
-            json.decodeFromString(serializer, stored).toMutableList()
-        } catch (e: Exception) {
-            LogRoot.tag("Telemetry").warn("Discarding unreadable stored telemetry: $e")
-            ArrayList()
-        }
+    // Claude: Throwable for the same reason as in save; reading blocked browser storage throws too.
+    private fun load(): MutableList<TelemetryBatch> = try {
+        PlatformStorage.get(STORAGE_KEY)?.let { json.decodeFromString(serializer, it).toMutableList() } ?: ArrayList()
+    } catch (e: Throwable) {
+        LogRoot.tag("Telemetry").warn("Discarding unreadable stored telemetry: $e")
+        ArrayList()
     }
 
     companion object {
