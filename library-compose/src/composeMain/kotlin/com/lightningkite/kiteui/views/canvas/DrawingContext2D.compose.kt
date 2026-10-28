@@ -326,9 +326,9 @@ public class ComposeDrawingContext2D(
         is RadialGradient -> {
             val cx = cx ?: (scope.size.width / 2.0)
             val cy = cy ?: (scope.size.height / 2.0)
-            if ((fx ?: cx) != cx || (fy ?: cy) != cy) TODO("Compose backend: radial gradients with a focal point")
-            Brush.radialGradient(
-                *stops.map { it.ratio to it.color.toCompose() }.toTypedArray(),
+            canvasRadialGradient(
+                stops.map { it.ratio to it.color.toCompose() },
+                focus = Offset((fx ?: cx).toFloat(), (fy ?: cy).toFloat()),
                 center = Offset(cx.toFloat(), cy.toFloat()),
                 radius = (radius ?: (min(scope.size.width, scope.size.height) / 2.0)).toFloat(),
             )
@@ -337,6 +337,9 @@ public class ComposeDrawingContext2D(
 }
 
 private val DrawingContext2D.compose: ComposeDrawingContext2D get() = this as ComposeDrawingContext2D
+
+// HTML canvas's createRadialGradient(focus, 0, center, radius); Compose's own radial gradient has no focal point.
+internal expect fun canvasRadialGradient(stops: List<Pair<Float, ComposeColor>>, focus: Offset, center: Offset, radius: Float): Brush
 
 // Gives this paint a drop shadow; [blur] is HTML canvas's shadowBlur.
 internal expect fun ComposePaint.setShadow(color: ComposeColor, offset: Offset, blur: Float)

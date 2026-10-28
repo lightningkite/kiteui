@@ -248,6 +248,11 @@ class CoordinatorTest {
         runOnUiThread { right.close() }
         waitForIdle()
         onNodeWithText("Right panel", useUnmergedTree = true).assertDoesNotExist()
+        // Closing again, from a second click before the panel went, say, does nothing.
+        runOnUiThread {
+            left.close()
+            right.close()
+        }
     }
 
     @Test

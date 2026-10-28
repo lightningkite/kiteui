@@ -116,7 +116,13 @@ internal class PopoverLayer(
             layout(constraints.maxWidth, constraints.maxHeight) {
                 // Null only while Compose works out alignment lines, which this layout has none of.
                 val origin = (coordinates ?: return@layout).positionInWindow()
-                val anchorRect = checkNotNull(anchor.screenRectangle()) { "Popover anchor $anchor is not on screen" }
+                val anchorRect = anchor.screenRectangle()
+                if (anchorRect == null) {
+                    // The anchor was hidden or its page went away, so the popover points at nothing.
+                    // Closing removes this layer, which mustn't happen in the middle of placing it.
+                    launch { close() }
+                    return@layout
+                }
                 val (x, y) = direction.calculatePopoverOffset(
                     anchor = Rect(
                         left = anchorRect.left * density - origin.x,

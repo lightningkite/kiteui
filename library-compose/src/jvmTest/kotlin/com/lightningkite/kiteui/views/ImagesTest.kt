@@ -405,4 +405,34 @@ class ImagesTest {
         waitForIdle()
         assertEquals(listOf(100.0 * root.density to 50.0 * root.density), pointerDowns)
     }
+
+    @Test
+    fun canvasRadialGradientsStartAtTheirFocus() = runKiteUiTest {
+        val delegate = object : CanvasDelegate() {
+            override fun draw(context: DrawingContext2D) = with(context) {
+                fillPaint = RadialGradient(
+                    listOf(GradientStop(0f, Color.white), GradientStop(1f, Color.blue)),
+                    cx = 100.0, cy = 50.0, radius = 50.0, fx = 60.0, fy = 50.0,
+                )
+                fillRect(0.0, 0.0, width, height)
+            }
+        }
+        var canvas: Canvas? = null
+        val root = showKiteUi {
+            col {
+                sizeConstraints(width = 200.px, height = 100.px).canvas {
+                    this.delegate = delegate
+                    canvas = this
+                }
+            }
+        }
+        val shot = saveScreenshot(root, "canvas-focal-gradient")
+        val bounds = canvas!!.screenRectangle()!!
+        val box = DpRect(bounds.left.toFloat().dp, bounds.top.toFloat().dp, bounds.right.toFloat().dp, bounds.bottom.toFloat().dp)
+        fun at(x: Double, y: Double) = shot.colorAt(root, box, (x / root.density).toFloat().dp, (y / root.density).toFloat().dp)
+
+        // Centered, this point would be 80% of the way out; from the focus it's the first stop.
+        assertEquals('W', at(60.0, 50.0), "the focus")
+        assertEquals('B', at(140.0, 50.0), "near the edge")
+    }
 }

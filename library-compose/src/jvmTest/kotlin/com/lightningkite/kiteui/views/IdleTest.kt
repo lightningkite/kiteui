@@ -16,8 +16,8 @@ import kotlin.test.assertEquals
 class IdleTest {
     private val fading = ThemeDerivation { it.copy(id = "fading", background = FadingColor(Color.red, Color.blue)).withBack }
 
-    // Shows [app] and, once it has settled, counts the frames out of 30 that had anything to do.
-    private fun busyFrames(app: ViewWriter.() -> Unit): Int = runBlocking(Dispatchers.Main) {
+    // Shows [app], makes [change], and once it has settled, counts the frames out of 30 that had anything to do.
+    private fun busyFrames(change: () -> Unit = {}, app: ViewWriter.() -> Unit): Int = runBlocking(Dispatchers.Main) {
         val root = KiteUiRoot("kiteui-test", { testTheme }, app)
         val scene = ImageComposeScene(400, 300) { root.Content() }
         var time = 0L
@@ -29,6 +29,8 @@ class IdleTest {
             repeat(3) { yield() }
             busy
         }
+        frames(60)
+        change()
         frames(60)
         frames(30).also {
             scene.close()
@@ -59,5 +61,14 @@ class IdleTest {
                 themed(fading).frame { text("Loading") }
             }
         }, "one scrolled out of the window")
+    }
+
+    // The old background fades out with the theme transition, and is then gone, its animation with it.
+    @Test
+    fun lostBackgroundsStopDrawing() {
+        val loading = Signal(true)
+        assertEquals(0, busyFrames({ loading.value = false }) {
+            col { dynamicThemed { if (loading()) fading else null }.frame { text("Loaded") } }
+        })
     }
 }

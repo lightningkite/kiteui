@@ -101,6 +101,29 @@ class ControlsTest {
         saveScreenshot(root, "slider")
     }
 
+    // range sets min first, above the old max.  As the web's range input, the value then sits at min.
+    @Test
+    fun sliderTakesRangesAboveOrOnTheOldOne() = runKiteUiTest {
+        lateinit var above: Slider
+        lateinit var empty: Slider
+        val root = show {
+            col {
+                above = slider { range(18f, 100f) }
+                empty = slider { range(5, 5) }
+            }
+        }
+        assertEquals(18f, above.value.value)
+        assertEquals(5f, empty.value.value)
+        // An empty range draws its thumb at the start, as the web does.
+        val node = onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))[1]
+        val bounds = node.getUnclippedBoundsInRoot()
+        val image = saveScreenshot(root, "slider-empty")
+        val y = with(density) { (bounds.top + 2.dp).roundToPx() }
+        val start = image.getRGB(with(density) { (bounds.left + 8.dp).roundToPx() }, y)
+        val end = image.getRGB(with(density) { (bounds.right - 8.dp).roundToPx() }, y)
+        assertTrue(start != end, "expected the thumb at the start")
+    }
+
     @Test
     fun sliderFollowsAReactiveMax() = runKiteUiTest {
         val max = Signal(10f)
@@ -292,6 +315,25 @@ class ControlsTest {
         onNodeWithText("Popped").performClick()
         waitForIdle()
         onNodeWithText("Popped").assertExists()
+    }
+
+    @Test
+    fun popoverClosesWhenItsAnchorLeaves() = runKiteUiTest {
+        val anchorShown = Signal(true)
+        show {
+            col {
+                shownWhen { anchorShown() }.button {
+                    text("Open")
+                    onClick { openPopover(PopoverPreferredDirection.belowCenter) { text("Popped") } }
+                }
+            }
+        }
+        onNodeWithText("Open").performClick()
+        waitForIdle()
+        onNodeWithText("Popped").assertExists()
+        anchorShown.value = false
+        // shownWhen reacts on the Swing thread, which waitForIdle doesn't track.
+        waitUntil { onAllNodesWithText("Popped").fetchSemanticsNodes().isEmpty() }
     }
 
     @Test

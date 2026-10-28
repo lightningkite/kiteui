@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.*
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
@@ -206,6 +207,26 @@ class AnimationTest {
         mainClock.advanceTimeBy(200)
         waitForIdle()
         onNodeWithText("Dialog").assertDoesNotExist()
+    }
+
+    @Test
+    fun lostGradientBackgroundsGo() = runKiteUiTest {
+        mainClock.autoAdvance = false
+        val gradient = Signal(true)
+        val red = LinearGradient(listOf(GradientStop(0f, Color.red), GradientStop(1f, Color.red)))
+        val root = showKiteUi {
+            col {
+                dynamicThemed { if (gradient()) ThemeDerivation { it.copy(id = "gradient", background = red).withBack } else null }.frame { text("Swatch") }
+            }
+        }
+        assertEquals(255, saveScreenshot(root, "gradient-start").colorBeside(root, bounds("Swatch")).red)
+        runOnUiThread { gradient.value = false }
+        mainClock.advanceTimeBy(400)
+        // Near the right end of the frame, well clear of the text.
+        val text = bounds("Swatch")
+        val image = saveScreenshot(root, "gradient-end")
+        val end = image.getRGB(image.width - 30, ((text.top + text.bottom).value / 2 * root.density).toInt())
+        assertEquals(testTheme.background.closestColor().toCompose().toArgb(), end)
     }
 
     // There and back in 2s, as on the web.

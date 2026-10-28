@@ -142,7 +142,8 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         )
     } else null
 
-    internal var coordinates: LayoutCoordinates? = null
+    // State so that a layout placing something against this element (a popover) runs again when it leaves the screen.
+    internal var coordinates: LayoutCoordinates? by mutableStateOf(null)
         private set
     private val bringIntoView = BringIntoViewRequester()
     private val focusRequester = FocusRequester()
@@ -194,18 +195,22 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         val opacity = targetOpacity.toFloat()
         val duration = theme.theme.transitionDuration.inWholeMilliseconds.toInt()
         animation.job = launch(context) {
-            // Linear, like the web's.
-            fun <T, V : AnimationVector> Animatable<T, V>.animate(target: T) {
-                if (value != target) launch { animateTo(target, tween(duration, easing = LinearEasing)) }
+            coroutineScope {
+                // Linear, like the web's.
+                fun <T, V : AnimationVector> Animatable<T, V>.animate(target: T) {
+                    if (value != target) launch { animateTo(target, tween(duration, easing = LinearEasing)) }
+                }
+                animation.background.animate(theme.backgroundColor)
+                animation.outline.animate(theme.outlineColor)
+                animation.foreground.animate(theme.foregroundColor)
+                animation.alpha.animate(opacity)
+                animation.elevation.animate(theme.elevation)
+                animation.translation.animate(theme.transformation.translation)
+                animation.scale.animate(theme.transformation.scale)
+                animation.rotation.animate(theme.transformation.rotation.toFloat())
             }
-            animation.background.animate(theme.backgroundColor)
-            animation.outline.animate(theme.outlineColor)
-            animation.foreground.animate(theme.foregroundColor)
-            animation.alpha.animate(opacity)
-            animation.elevation.animate(theme.elevation)
-            animation.translation.animate(theme.transformation.translation)
-            animation.scale.animate(theme.transformation.scale)
-            animation.rotation.animate(theme.transformation.rotation.toFloat())
+            appearance = null
+            lastDecoration = null
         }
     }
 
@@ -526,9 +531,11 @@ private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, 
         maxHeight = maxHeight,
     )
     c.aspectRatio?.let { ratio ->
-        // Derive the unconstrained axis from the constrained one.
+        // Derive one axis from the other: from the height when only it is fixed (explicitly, or stretched by a row,
+        // as on Android), otherwise from the width if it's bounded.
+        val fromHeight = (own.hasFixedHeight && !own.hasFixedWidth) || !own.hasBoundedWidth
         own = when {
-            own.hasBoundedWidth && (height == null) -> {
+            !fromHeight -> {
                 val w = own.maxWidth
                 val h = (w / ratio).toInt().coerceIn(own.minHeight, own.maxHeight)
                 own.copy(minWidth = w, maxWidth = w, minHeight = h, maxHeight = h)
