@@ -8,9 +8,8 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
 /**
- * Regression tests for the userinfo-stripping fix in [Telemetry.instrumentFetch]: URLs with embedded
- * credentials (`https://user:pass@host/path`) must never have those credentials reach any recorded
- * telemetry attribute, while ordinary URLs must be recorded unchanged (over-redaction is also a bug).
+ * Credentials embedded in a URL (`https://user:pass@host/path`) never reach a recorded attribute, and ordinary
+ * URLs are recorded unchanged.
  */
 class TelemetryUrlRedactionTest {
 

@@ -9,30 +9,17 @@ import kotlin.jvm.JvmName
 public typealias ProgressCallback = (bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit
 
 /**
- * Every request the app makes to the network, behind one interface.
+ * Makes HTTP requests and opens WebSockets.
  *
- * Exists so that the things which decorate network access — telemetry, authentication, and the fakes
- * a test substitutes for them — compose as ordinary objects rather than accumulating in global
- * state. Each concern holds the next [HttpFetcher]:
+ * Wrap a fetcher to add behavior to every request, such as authentication, and take an [HttpFetcher] parameter
+ * instead of calling the top-level [fetch], so a test can pass a fake:
  *
  * ```kotlin
- * val fetcher = HttpFetcher.Platform
- *     .intercepted(telemetryInterceptor)
- *     .withHeaders { listOf("Authorization" to token()) }
+ * val fetcher = HttpFetcher.Platform.withHeaders { HttpHeaders("Authorization" to "Bearer ${token()}") }
  * ```
  *
- * Every layer here is a genuine transformation of one request into one request, which is what makes
- * the order between them a matter of intent rather than of correctness. Retry is not such a layer
- * and is deliberately absent: it re-runs an operation rather than transforming it, so it lives in
- * [ConnectivityGate.runRequest], which takes the operation as a lambda and can therefore say what
- * gets re-run.
- *
- * A test builds a chain over a fake instead of the platform, which is what makes connectivity
- * failures reproducible; the previous arrangement — a top-level `fetch` reading a global interceptor
- * list — could only be faked by mutating process-wide state, so tests hand-copied the stack instead.
- *
- * [webSocket] belongs here alongside [fetch] because a test that can fake requests but not sockets
- * cannot exercise a reconnect.
+ * Retrying is not a wrapper; use [ConnectivityGate.runRequest], which takes the request as a lambda and so can
+ * run it again.
  */
 public interface HttpFetcher {
     public suspend fun fetch(

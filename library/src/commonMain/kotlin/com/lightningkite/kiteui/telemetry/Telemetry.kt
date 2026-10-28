@@ -59,7 +59,7 @@ import com.lightningkite.kiteui.LogLevel as KiteUiLogLevel
  *
  * Once installed, requests, actions and screen visits are traced, logs at [minLogLevel] and above and
  * reported exceptions are recorded, and records are kept on the device until uploaded. Record your own spans
- * with [span]. Clients record no metrics: they're untrusted, and metric cardinality drives observability cost.
+ * with [span]. No metrics are recorded.
  *
  * @param upload sends one batch. Throw to keep it and retry later with backoff; return to be done with it,
  *   whether it was delivered or permanently refused.
@@ -90,8 +90,6 @@ public class Telemetry(
     /** The main navigator's current screen, for records made outside any coroutine. */
     internal var currentScreen: TelemetryAttributes = TelemetryAttributes.empty
     private var mainNavigator: PageNavigator? = null
-
-    // ===== Installation =====
 
     /**
      * Installs the global hooks and starts uploading, for the rest of the process. [navigator] is the one whose
@@ -188,8 +186,6 @@ public class Telemetry(
         outbox.persist(durably = true)
     }
 
-    // ===== Recording =====
-
     private fun enqueue(add: TelemetryOutbox.() -> Unit) {
         outbox.add()
         if (outbox.bufferedRecords >= MAX_BUFFERED_RECORDS) {
@@ -243,8 +239,6 @@ public class Telemetry(
         outbox.persist()
         outbox.flush()
     }
-
-    // ===== Instrumentation =====
 
     internal suspend fun instrumentFetch(
         url: String,
