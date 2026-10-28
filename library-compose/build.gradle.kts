@@ -80,7 +80,9 @@ dependencies {
 // Tests render offscreen; without this, AWT tries to reach the window server.
 tasks.named<Test>("jvmTest") {
     systemProperty("java.awt.headless", "true")
-    // PlatformStorage's preferences live in memory, not in the developer's real ones.
-    systemProperty("java.util.prefs.PreferencesFactory", "com.lightningkite.kiteui.InMemoryPreferencesFactory")
+    // PlatformStorage's files go here, not into the developer's real app-data folder.
+    val dataDirectory = layout.buildDirectory.dir("tmp/jvmTest/data").get().asFile
+    systemProperty("kiteui.dataDirectory", dataDirectory.absolutePath)
+    doFirst { dataDirectory.deleteRecursively() }
 }
 
