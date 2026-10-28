@@ -25,6 +25,14 @@ internal actual fun Event.clickedSameOriginLink(): UrlLikePath? {
     // Modifier clicks ask the browser for a new tab or window.
     if (this is MouseEvent && (ctrlKey || metaKey || shiftKey || altKey)) return null
     val link = (target as? DOMElement)?.closest("a") as? HTMLAnchorElement ?: return null
-    if (link.origin != window.location.origin || link.target == "_blank") return null
+    if (link.target == "_blank") return null
+    return appPathOf(link.href)
+}
+
+internal actual fun appPathOf(href: String): UrlLikePath? {
+    // An anchor resolves href exactly as the rendered link will, and unlike URL() doesn't throw on a malformed one.
+    val link = document.createElement("a") as HTMLAnchorElement
+    link.href = href
+    if (link.origin != window.location.origin) return null
     return urlLike(link.pathname, link.search)
 }

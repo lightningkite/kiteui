@@ -3,6 +3,10 @@
 
 package com.lightningkite.kiteui.markdown
 
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.navigation.Routes
+import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.ssr.SsrContext
 import com.lightningkite.kiteui.ssr.SsrDocument
 import com.lightningkite.kiteui.views.ViewWriter
@@ -22,6 +26,9 @@ class MarkdownRendererTest {
     init {
         Dispatchers.setMain(Dispatchers.IO)
     }
+
+    // Rich text asks the app's routes whether a link stays in the app.
+    private val everyPathIsAPage = PageNavigator { Routes(parsers = listOf { Page.Empty }, renderers = mapOf()) }
 
     private fun <T> runWithTimeout(timeoutMs: Long = 5000, block: () -> T): T = runBlocking {
         withTimeout(timeoutMs) { block() }
@@ -98,6 +105,7 @@ class MarkdownRendererTest {
     fun testWhitespaceAroundInlineElementsIsKeptExactly() = runWithTimeout {
         val context = SsrContext("/")
         context.render {
+            this.context.pageNavigator = everyPathIsAPage
             markdown("Use a controller ([ESP-TM2](/Product/1)), see [**fast** *setup*](/guide).")
         }
         val html = context.serialize().html
@@ -244,6 +252,7 @@ class MarkdownRendererTest {
     fun testInternalLinks() = runWithTimeout {
         val context = SsrContext("/")
         context.render {
+            this.context.pageNavigator = everyPathIsAPage
             markdown(
                 "[Go Home](/home)",
                 config = MarkdownConfig.withInternalLinks(

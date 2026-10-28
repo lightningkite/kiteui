@@ -78,14 +78,6 @@ public class KiteUiCss(
             p.kui li.kui {
                 margin-inline-start: 1em;
             }
-            p.kui a.kui {
-                text-decoration: revert;
-                color: revert;
-            }
-            p.kui a.kui:visited {
-                color: revert;
-            }
-    
             /* HTML5 display-role reset for older browsers */
             article.kui, aside.kui, details.kui, figcaption.kui, figure.kui, footer.kui, header.kui, hgroup.kui, menu.kui, nav.kui, section.kui {
                 display: block;
@@ -95,6 +87,8 @@ public class KiteUiCss(
             .kui-basic-html-content i, .kui-basic-html-content em { font-style: italic; }
             .kui-basic-html-content u { text-decoration: underline; }
             .kui-basic-html-content s, .kui-basic-html-content strike { text-decoration: line-through; }
+            /* The text's own theme color, not the browser's blue and visited purple; the browser's underline marks it. */
+            .kui-basic-html-content a { color: inherit; }
     
             body {
                 line-height: 1;
