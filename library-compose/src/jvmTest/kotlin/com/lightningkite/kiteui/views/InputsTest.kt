@@ -115,6 +115,35 @@ class InputsTest {
         awaitText(2, "")
     }
 
+    // Like the web's text-transform: fields, hints and selects show their text in capitals, and a field's value
+    // keeps what was typed.
+    @Test
+    fun allCapsShowsCapitalsWithoutChangingValues() = runKiteUiTest {
+        val name = Signal("")
+        val fruit = Signal("Banana")
+        showKiteUi {
+            col {
+                allCaps.fieldTheme.textInput { hint = "Your name"; content bind name }
+                allCaps.fieldTheme.textArea { hint = "Notes" }
+                allCaps.fieldTheme.numberInput { hint = "Amount" }
+                allCaps.fieldTheme.select { bind(fruit, Constant(listOf("Apple", "Banana"))) { it } }
+            }
+        }
+        onNodeWithText("YOUR NAME", useUnmergedTree = true).assertExists()
+        onNodeWithText("NOTES", useUnmergedTree = true).assertExists()
+        onNodeWithText("AMOUNT", useUnmergedTree = true).assertExists()
+        onNodeWithText("BANANA").performClick()
+        waitForIdle()
+        // The list is styled by the select's surroundings, like other popovers.
+        onNodeWithText("Apple").performClick()
+        awaitValue(fruit, "Apple")
+        onNodeWithText("APPLE").assertExists()
+
+        field(0).performTextInput("ada")
+        awaitValue(name, "ada")
+        field(0).assertTextEquals("ADA")
+    }
+
     @Test
     fun selectOpensAListAndChooses() = runKiteUiTest {
         val fruit = Signal("Banana")

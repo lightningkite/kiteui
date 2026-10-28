@@ -51,6 +51,7 @@ import com.lightningkite.kiteui.views.theme
 import com.lightningkite.kiteui.views.toBrush
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
+import com.lightningkite.kiteui.views.cased
 
 /**
  * The list of choices that [Select] and [AutoCompleteTextField] open below themselves, at least as wide as the owner.
@@ -117,7 +118,7 @@ internal class DropdownList(
                 for ((index, option) in options.withIndex()) {
                     val optionTheme = if (index == highlighted) theme[HoverSemantic].theme else theme
                     BasicText(
-                        option,
+                        optionTheme.font.cased(option),
                         style = optionTheme.font.toTextStyle(optionTheme.foreground.closestColor().toCompose()),
                         modifier = Modifier
                             .fillMaxWidth()

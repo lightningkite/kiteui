@@ -22,6 +22,8 @@ import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.kiteui.views.hintColor
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
+import com.lightningkite.kiteui.views.cased
+import com.lightningkite.kiteui.views.casing
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactiveValue
@@ -77,13 +79,14 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
             enabled = enabled && takesInput,
             singleLine = true,
             textStyle = style,
+            visualTransformation = theme.font.casing,
             cursorBrush = SolidColor(color.toCompose()),
             interactionSource = interactions.source,
             keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@NumberInput) }),
             decorationBox = { inner ->
                 Box {
-                    if (field.text.isEmpty()) BasicText(hint, style = style.copy(color = theme.hintColor))
+                    if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     inner()
                 }
             },

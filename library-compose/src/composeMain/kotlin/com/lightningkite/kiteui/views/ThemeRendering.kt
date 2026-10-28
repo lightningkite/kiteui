@@ -9,7 +9,11 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -73,6 +77,17 @@ public fun Theme.shape(parentSpacing: Dimension): Shape = when (val c = cornerRa
 }
 
 public expect fun Font.toFontFamily(): FontFamily
+
+// Compose's TextStyle has no text-transform, so allCaps changes the text itself wherever it's shown.  Character by
+// character, keeping the length, so a field's offsets still line up.
+internal fun FontAndStyle.cased(text: String): String = if (allCaps) text.uppercaseKeepingLength() else text
+
+// A field shows its value cased while the value keeps what was typed, as with the web's text-transform.
+internal val FontAndStyle.casing: VisualTransformation get() = if (allCaps) AllCaps else VisualTransformation.None
+
+private val AllCaps = VisualTransformation { TransformedText(AnnotatedString(it.text.uppercaseKeepingLength()), OffsetMapping.Identity) }
+
+private fun String.uppercaseKeepingLength() = String(CharArray(length) { this[it].uppercaseChar() })
 
 public fun FontAndStyle.toTextStyle(color: ComposeColor, align: Align = this.align): TextStyle = TextStyle(
     color = color,
