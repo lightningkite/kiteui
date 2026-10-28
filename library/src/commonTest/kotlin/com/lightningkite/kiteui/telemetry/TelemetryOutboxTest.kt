@@ -7,7 +7,9 @@ import com.lightningkite.services.telemetry.TelemetryBatch
 import com.lightningkite.services.telemetry.TelemetryKeys
 import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -15,6 +17,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class TelemetryOutboxTest {
     private val resource = telemetryAttributesOf(TelemetryKeys.Service.name to "test")
@@ -92,6 +96,17 @@ class TelemetryOutboxTest {
         outbox.flush()
 
         assertTrue(outbox.batches.isEmpty())
+    }
+
+    @Test
+    fun timeoutInsideSendIsAFailedUploadNotACancellation() = runTest {
+        val outbox = TelemetryOutbox(resource) { withTimeout(1.milliseconds) { delay(1.seconds) } }
+        outbox.add(log("kept"))
+        outbox.persist()
+
+        outbox.upload() // must return normally, or the periodic upload loop would end
+
+        assertEquals("kept", outbox.batches.single().logs.single().message)
     }
 
     @Test

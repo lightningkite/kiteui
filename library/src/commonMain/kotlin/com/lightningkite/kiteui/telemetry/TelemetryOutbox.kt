@@ -13,6 +13,8 @@ import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -65,9 +67,10 @@ internal class TelemetryOutbox(
         try {
             if (Clock.System.now() < retryAt) return
             sendAll()
-        } catch (e: CancellationException) {
-            throw e
         } catch (e: Exception) {
+            // Claude: a CancellationException from inside send, such as a withTimeout there, is a failed upload;
+            // only our own cancellation should end the caller's upload loop.
+            if (e is CancellationException) currentCoroutineContext().ensureActive()
             // LogRoot, not Log: Log is intercepted by telemetry, which would record this failure and retry it forever.
             LogRoot.tag("Telemetry").warn("Upload failed; retrying in $retryDelay: $e")
             retryAt = Clock.System.now() + retryDelay
