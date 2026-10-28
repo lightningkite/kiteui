@@ -3,7 +3,7 @@ package com.lightningkite.kiteui
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ErrorReporterTest {
+class ThrowableReporterTest {
     @Test
     fun reportReachesRegisteredReportersUntilReleased() {
         val seen = mutableListOf<Pair<String?, String>>()

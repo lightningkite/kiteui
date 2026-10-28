@@ -59,12 +59,12 @@ rendering `install` does nothing, so it's safe to call from `app()`.
 
 | What | How |
 |---|---|
-| HTTP requests | Span `http.<METHOD>` with `http.request.method`, `url.path` (no query or credentials, and path segments that look like ids, emails or tokens replaced with `{id}`), `server.address`, `http.response.status_code` |
-| Actions | Span `action.<title>`; requests made inside it are its children |
+| HTTP requests | Span `http.<METHOD>` with `http.request.method`, `url.path` (no query or credentials, and path segments that look like ids, emails or tokens replaced with `{id}`), `server.address`, `http.response.status_code`; an `Error` for status 400 and above |
+| Actions | Span `action.<title>`; requests and coroutines it starts, and the halves of an `a + b`, are its children |
 | Screen visits | Span `screen.load`, ending when the screen has rendered and nothing in it is loading, `Cancelled` if the user leaves first, or an `Error` after 60 s. A screen with something that stays loading, such as a `LateInitSignal` waiting for input, always ends in that error. Events `app.screen.view_start` / `app.screen.view_end` |
 | App start | Span `app.start`, from constructing `Telemetry` to `install` |
 | Logs | `Log` calls at `minLogLevel` and above (default `Warn`), labelled with the current screen |
-| Errors | Reported exceptions and exception-handler errors, as ERROR logs with a fingerprint |
+| Errors | Reported exceptions and exception-handler errors, as ERROR logs with a fingerprint. An error that a handler nearer the element than the root's handles, such as `errorText`'s, isn't recorded, and an element's error can be recorded more than once |
 | Crashes | Uncaught exceptions, as ERROR logs with `exception.escaped = true`, saved to disk before the process dies |
 | Lifecycle | Events `app.foreground` / `app.background`; connectivity issues as WARN logs |
 

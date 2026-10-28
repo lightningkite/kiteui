@@ -22,7 +22,9 @@
   keeps only `service.version`, `os.type`, `session.id` and `app.debug` from the client, so a client can't
   pose as the server. Uploads are rate limited server-side; a 429 is retried later.
 - `span(name) { }` is now `span(owner, operation, attributes) { }`, recording into the installed `Telemetry`
-  (it just runs the block when none is installed). `Telemetry.flush()` saves and uploads now.
+  (it just runs the block when none is installed), and throws for an owner the server would refuse.
+- `Telemetry.flush()` saves and uploads now, waiting for an upload already running, and throws if the upload
+  fails. `Telemetry.clear()` deletes unsent records, for when a flush at sign-out fails.
 - Removed: `TelemetryConfig`, `exceptionAttributes` (use the new
   `ElementContext.telemetryAttributes`), and `ActionInstrumentation`/`actionInstrumentors` (replaced by
   `Action.Interceptor`, which wraps the action's run). `crash.fingerprint` is now `error.fingerprint`, and
@@ -32,11 +34,18 @@
   `Log.Interceptor.global` and `Action.Interceptor.global`, each a `LiveRegistry` whose `register(...)` returns a
   `Release` that removes only that interceptor. `LogInterceptor` is now `Log.Interceptor`. `HttpFetcher.Interceptor` and
   `Action.Interceptor` are `fun interface`s; wrap lambdas in
-  `HttpFetcher.Interceptor { ... }` where a bare lambda was passed before, such as to `HttpFetcher.intercepted`.
-- **`Throwable_report` is now the `ErrorReporter.global` registry.** Assigning the old variable replaced
-  whatever was there, so a second reporter silently disconnected the first. Register an `ThrowableReporter`
-  instead; `Throwable.report(context)` sends to every one. Stack traces are still printed by default; release
-  `ErrorReporter.defaultHandler` to stop that.
+  `HttpFetcher.Interceptor { ... }` where a bare lambda was passed before.
+- **`Throwable_report` is now the `ThrowableReporter.global` registry.** Assigning the old variable replaced
+  whatever was there, so a second reporter silently disconnected the first. Register a `ThrowableReporter`
+  instead; `Throwable.report(context)` sends to every one. Stack traces are still printed by default; call
+  `ThrowableReporter.removeDefaultHandler()` to stop that.
+- **Crash fingerprints changed**, so existing groups don't continue: they no longer include exception messages
+  or JS column numbers, which split one crash into many groups.
+- Request spans replace path segments that look like ids, emails or tokens with `{id}`, and are `Error` for
+  status 400 and above. Relative URLs (same-origin requests on the web) get a `traceparent` whenever
+  `tracePropagationHosts` isn't empty.
+- Attributes are fitted to the server's limits before they're saved, since one record over them made the server
+  refuse its whole batch. `Telemetry.install` does nothing during server-side rendering.
 - **`HttpFetcher.platform` and `HttpFetcher.default` are now the objects `HttpFetcher.Platform` and
   `HttpFetcher.Default`.** `platformFetch(...)` and `platformWebSocket(...)` are gone; call
   `HttpFetcher.Platform.fetch(...)` and `HttpFetcher.Platform.webSocket(...)`. `HttpFetcher.intercepted` takes a
