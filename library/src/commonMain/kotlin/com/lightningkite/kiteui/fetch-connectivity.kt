@@ -217,15 +217,16 @@ public suspend fun ConnectivityGate.runRequest(
     tag: String,
     request: suspend () -> RequestResponse,
 ): RequestResponse {
+    val suppressed = coroutineContext[ConnectivityIssueSuppress.Key] != null
     suspend fun attempt(): RequestResponse {
         val response = request()
         if (response.status in Connectivity.stopConnectivityCodes) {
-            Connectivity.lastConnectivityIssueCode.value = response.status
+            if (!suppressed) Connectivity.lastConnectivityIssueCode.value = response.status
             throw response.connectivityFailure()
         }
         return response
     }
-    if (coroutineContext[ConnectivityIssueSuppress.Key] != null) return attempt()
+    if (suppressed) return attempt()
     return run(tag) {
         try {
             attempt()

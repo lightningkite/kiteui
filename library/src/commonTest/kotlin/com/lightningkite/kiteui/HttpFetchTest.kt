@@ -136,6 +136,15 @@ class HttpFetchTest {
         assertTrue(gate.gate.permit, "a successful request should leave the gate open")
     }
 
+    @Test
+    fun suppressedRequestsDontReportConnectivityIssues() = networkTest {
+        Connectivity.lastConnectivityIssueCode.value = 0
+        assertFailsWith<ServerUnavailableException> {
+            suppressConnectivityIssues { ConnectivityGate().runRequest("GET /status/503") { fetch("${TestServer.http}/status/503") } }
+        }
+        assertEquals(0.toShort(), Connectivity.lastConnectivityIssueCode.value)
+    }
+
     /** Large enough that a client has to deliver the body in pieces, small enough to stay quick. */
     private val downloadSize = 512 * 1024
 }
