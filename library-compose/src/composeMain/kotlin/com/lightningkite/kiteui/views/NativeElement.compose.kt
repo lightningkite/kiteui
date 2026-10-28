@@ -193,18 +193,22 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         val opacity = targetOpacity.toFloat()
         val duration = theme.theme.transitionDuration.inWholeMilliseconds.toInt()
         animation.job = launch(context) {
-            // Linear, like the web's.
-            fun <T, V : AnimationVector> Animatable<T, V>.animate(target: T) {
-                if (value != target) launch { animateTo(target, tween(duration, easing = LinearEasing)) }
+            coroutineScope {
+                // Linear, like the web's.
+                fun <T, V : AnimationVector> Animatable<T, V>.animate(target: T) {
+                    if (value != target) launch { animateTo(target, tween(duration, easing = LinearEasing)) }
+                }
+                animation.background.animate(theme.backgroundColor)
+                animation.outline.animate(theme.outlineColor)
+                animation.foreground.animate(theme.foregroundColor)
+                animation.alpha.animate(opacity)
+                animation.elevation.animate(theme.elevation)
+                animation.translation.animate(theme.transformation.translation)
+                animation.scale.animate(theme.transformation.scale)
+                animation.rotation.animate(theme.transformation.rotation.toFloat())
             }
-            animation.background.animate(theme.backgroundColor)
-            animation.outline.animate(theme.outlineColor)
-            animation.foreground.animate(theme.foregroundColor)
-            animation.alpha.animate(opacity)
-            animation.elevation.animate(theme.elevation)
-            animation.translation.animate(theme.transformation.translation)
-            animation.scale.animate(theme.transformation.scale)
-            animation.rotation.animate(theme.transformation.rotation.toFloat())
+            appearance = null
+            lastDecoration = null
         }
     }
 
