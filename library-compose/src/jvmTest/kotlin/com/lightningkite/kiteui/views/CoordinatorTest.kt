@@ -255,6 +255,76 @@ class CoordinatorTest {
         }
     }
 
+    // As on the web: the sheet slides up in and down out, and moves between states smoothly.  The test theme's
+    // transitions take 250ms.
+    @Test
+    fun bottomSheetAnimates() = runKiteUiTest {
+        mainClock.autoAdvance = false
+        lateinit var control: BottomSheetControl
+        val (_, frame) = show { text("Page behind") }
+        mainClock.advanceTimeBy(400)
+        runOnUiThread {
+            frame.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED, partialRatio = 0.4f) {
+                control = it
+                card.col { text("Sheet content") }
+            }
+        }
+        mainClock.advanceTimeBy(125)
+        val entering = bounds("Sheet content").top
+        mainClock.advanceTimeBy(200)
+        waitForIdle()
+        val partial = bounds("Sheet content").top
+        assertTrue(entering > partial + 50.dp, "the sheet should slide in from below, at $entering half way, resting at $partial")
+
+        runOnUiThread { runBlocking { control.state.set(BottomSheetState.EXPANDED) } }
+        mainClock.advanceTimeBy(125)
+        val expanding = bounds("Sheet content").top
+        mainClock.advanceTimeBy(200)
+        waitForIdle()
+        val expanded = bounds("Sheet content").top
+        assertTrue(expanding < partial - 20.dp && expanding > expanded + 20.dp, "expanding should move part way, from $partial to $expanded, got $expanding")
+
+        runOnUiThread { control.close() }
+        mainClock.advanceTimeBy(125)
+        val leaving = bounds("Sheet content").top
+        assertTrue(leaving > expanded + 50.dp, "the sheet should slide out downwards, at $leaving half way")
+        mainClock.advanceTimeBy(200)
+        waitForIdle()
+        onNodeWithText("Sheet content", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun slidingPanelsSlideInAndOut() = runKiteUiTest {
+        mainClock.autoAdvance = false
+        lateinit var left: SlidingPanelControl
+        lateinit var right: SlidingPanelControl
+        val (_, frame) = show { text("Page behind") }
+        mainClock.advanceTimeBy(400)
+        runOnUiThread {
+            frame.leftSlidingPanel(ratio = 0.25f) { left = it; card.col { text("Left panel") } }
+            frame.rightSlidingPanel { right = it; card.col { text("Right panel") } }
+        }
+        mainClock.advanceTimeBy(125)
+        val width = rootBounds().right
+        val leftEntering = bounds("Left panel").left
+        val rightEntering = bounds("Right panel").right
+        assertTrue(leftEntering < 0.dp, "the left panel should come in from the left, at $leftEntering half way")
+        assertTrue(rightEntering > width, "the right panel should come in from the right, at $rightEntering half way")
+        mainClock.advanceTimeBy(200)
+        waitForIdle()
+        assertTrue(bounds("Left panel").left >= 0.dp)
+        assertTrue(bounds("Right panel").right <= width)
+
+        runOnUiThread { left.close(); right.close() }
+        mainClock.advanceTimeBy(125)
+        assertTrue(bounds("Left panel").left < 0.dp, "the left panel should leave to the left")
+        assertTrue(bounds("Right panel").right > width, "the right panel should leave to the right")
+        mainClock.advanceTimeBy(200)
+        waitForIdle()
+        onNodeWithText("Left panel", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("Right panel", useUnmergedTree = true).assertDoesNotExist()
+    }
+
     @Test
     fun overlayDialogRendersOnTopAndCloses() = runKiteUiTest {
         var behindClicks = 0
