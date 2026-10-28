@@ -17,8 +17,19 @@ internal fun testTelemetry(
     )
 }
 
+// Claude: PlatformStorage throws in Android unit tests not run under Robolectric, and the SSR target's keeps nothing.
+// The outbox survives both, so these helpers do too, rather than depending on which test ran first.
+
 /** Forgets batches earlier tests persisted. In the browser they'd otherwise load into the next outbox from localStorage. */
-internal fun clearStoredTelemetry() = PlatformStorage.remove(TelemetryOutbox.STORAGE_KEY)
+internal fun clearStoredTelemetry() = try { PlatformStorage.remove(TelemetryOutbox.STORAGE_KEY) } catch (_: Throwable) {}
+
+/** Returns whether [PlatformStorage] keeps what's written to it on this platform. */
+internal fun storageKeepsValues(): Boolean = try {
+    PlatformStorage.set("kiteui.telemetry.probe", "1")
+    (PlatformStorage.get("kiteui.telemetry.probe") != null).also { PlatformStorage.remove("kiteui.telemetry.probe") }
+} catch (_: Throwable) {
+    false
+}
 
 internal fun Telemetry.recordedSpans(): List<RecordedSpan> {
     outbox.persist()
