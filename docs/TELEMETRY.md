@@ -115,13 +115,17 @@ On the web, tabs share one outbox, so concurrent tabs can occasionally duplicate
 
 ## Crash fingerprints
 
-Stack traces are normalized before hashing so the same crash groups together across builds:
+Stack traces are normalized before hashing so the same crash groups together, even across builds that only
+moved code within a file:
 
-1. Line numbers stripped: `Foo.kt:42` becomes `Foo.kt:?`
-2. Memory addresses stripped: `0x1a2b3c` becomes `0x???`
-3. Identity hashes stripped: `@deadbeef` becomes `@???`
-4. Top 10 frames only
-5. FNV-1a 64-bit hash of exception type + normalized stack, as 16 hex chars
+1. Exception messages dropped; the exception types and their cause chain are kept
+2. Line and column numbers stripped: `Foo.kt:42` becomes `Foo.kt:?`, and `app.js:1:2345` becomes `app.js:?`
+3. Memory addresses stripped: `0x1a2b3c` becomes `0x???`
+4. Identity hashes stripped: `@deadbeef` becomes `@???`
+5. Top 10 lines only
+6. FNV-1a 64-bit hash of the cause chain + normalized stack, as 16 hex chars
+
+Minified JS renames functions between builds, so web fingerprints usually change when the bundle does.
 
 The fingerprint becomes the record's `error.fingerprint`, the same attribute server errors use.
 
