@@ -307,8 +307,35 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             label = value
         }
 
+    // Scrolls the nearest scrolling ancestor only; the web scrolls every one.
     actual override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean) {
-        launch { bringIntoView.bringIntoView() }
+        val scroller = generateSequence(parent) { it.parent }.filterIsInstance<NativeElement>().firstOrNull { it.scrolling != null }
+        val target = screenRectangle()
+        val view = scroller?.screenRectangle()
+        // Not in a KiteUI scroller (a recycler, say), or not laid out yet.
+        if (scroller == null || target == null || view == null) {
+            launch { bringIntoView.bringIntoView() }
+            return
+        }
+        // How far to move the viewport along one axis.  Null is the web's "nearest": the least move that shows the
+        // element, so none if it's already in view.
+        fun move(align: Align?, start: Double, end: Double, viewStart: Double, viewEnd: Double): Double {
+            val toStart = start - viewStart
+            val toEnd = end - viewEnd
+            return when (align) {
+                Align.Start, Align.Stretch -> toStart
+                Align.Center -> (toStart + toEnd) / 2
+                Align.End -> toEnd
+                null -> if (toStart < 0 && toEnd < 0) maxOf(toStart, toEnd) else if (toStart > 0 && toEnd > 0) minOf(toStart, toEnd) else 0.0
+            }
+        }
+        val scrolling = scroller.scrolling!!
+        val scrolled = scrolling.viewport.state.get()
+        scrolling.scrollTo(
+            scrolled.left + move(horizontal, target.left, target.right, view.left, view.right),
+            scrolled.top + move(vertical, target.top, target.bottom, view.top, view.bottom),
+            animate,
+        )
     }
 
     // Applied by Render, since a FocusRequester only works once its element is composed.  Like the web, which

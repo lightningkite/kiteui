@@ -30,6 +30,47 @@ class LayoutTest {
         assertTrue(wrapped > oneLine * 2, "Expected the long text to wrap onto several lines, got $wrapped vs one line $oneLine")
     }
 
+    // Like the web's scrollIntoView: an alignment says where the element ends up, null scrolls as little as
+    // possible, and animate decides whether it jumps.
+    @Test
+    fun scrollIntoViewHonoursAlignmentAndAnimate() = runKiteUiTest {
+        mainClock.autoAdvance = false
+        val items = ArrayList<TextView>()
+        showKiteUi {
+            col {
+                sizeConstraints(height = 300.px).scrolling.col {
+                    gap = 0.px
+                    for (i in 0 until 50) items += sizeConstraints(height = 40.px).text("Item $i")
+                }
+            }
+        }
+        mainClock.advanceTimeBy(400)
+        val viewport = onNodeWithText("Item 0").getUnclippedBoundsInRoot().top
+        fun bounds(i: Int) = onNodeWithText("Item $i").getUnclippedBoundsInRoot()
+
+        runOnUiThread { items[20].scrollIntoView(null, Align.Center, animate = false) }
+        mainClock.advanceTimeBy(32)
+        assertEquals((viewport + 150.dp).value, ((bounds(20).top + bounds(20).bottom) / 2).value, 1f, "centered in the 300dp viewport")
+
+        // Already in view, so null doesn't move it.
+        val before = bounds(21).top
+        runOnUiThread { items[21].scrollIntoView(null, null, animate = false) }
+        mainClock.advanceTimeBy(32)
+        assertEquals(before, bounds(21).top)
+
+        // Further down, null brings it just into view, at the bottom.
+        runOnUiThread { items[30].scrollIntoView(null, null, animate = false) }
+        mainClock.advanceTimeBy(32)
+        assertEquals((viewport + 300.dp).value, bounds(30).bottom.value, 1f)
+
+        runOnUiThread { items[10].scrollIntoView(null, Align.Start, animate = true) }
+        mainClock.advanceTimeBy(48)
+        val moving = bounds(10).top
+        assertTrue(moving < viewport, "an animated scroll should still be on its way, at $moving")
+        mainClock.advanceTimeBy(1000)
+        assertEquals(viewport.value, bounds(10).top.value, 1f)
+    }
+
     // As with flex (and Android's fillViewport), scrolled content is at least as wide as the viewport,
     // so expanding spaces around narrow content center it.
     @Test
