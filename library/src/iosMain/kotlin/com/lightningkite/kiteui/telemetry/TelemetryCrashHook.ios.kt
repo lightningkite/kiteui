@@ -1,8 +1,5 @@
 package com.lightningkite.kiteui.telemetry
 
-import com.lightningkite.kiteui.PlatformStorage
-import platform.Foundation.NSUserDefaults
-
 // Only catches Kotlin/Native exceptions, not ObjC/Swift crashes.
 // setUnhandledExceptionHook replaces the default termination behavior,
 // so we must explicitly terminate after recording.
@@ -20,9 +17,4 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
             kotlin.system.exitProcess(1)
         }
     }
-}
-
-internal actual fun writeDurably(key: String, value: String) {
-    PlatformStorage.set(key, value)
-    NSUserDefaults.standardUserDefaults.synchronize()
 }

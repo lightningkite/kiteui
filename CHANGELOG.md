@@ -33,6 +33,10 @@
   `Release` that removes only that interceptor. `LogInterceptor` is now `Log.Interceptor`. `HttpFetcher.Interceptor` and
   `Action.Interceptor` are `fun interface`s; wrap lambdas in
   `HttpFetcher.Interceptor { ... }` where a bare lambda was passed before, such as to `HttpFetcher.intercepted`.
+- **`Throwable_report` is now the `ErrorReporter.global` registry.** Assigning the old variable replaced
+  whatever was there, so a second reporter silently disconnected the first. Register an `ThrowableReporter`
+  instead; `Throwable.report(context)` sends to every one. Stack traces are still printed by default; release
+  `ErrorReporter.defaultHandler` to stop that.
 - **`HttpFetcher.platform` and `HttpFetcher.default` are now the objects `HttpFetcher.Platform` and
   `HttpFetcher.Default`.** `platformFetch(...)` and `platformWebSocket(...)` are gone; call
   `HttpFetcher.Platform.fetch(...)` and `HttpFetcher.Platform.webSocket(...)`. `HttpFetcher.intercepted` takes a

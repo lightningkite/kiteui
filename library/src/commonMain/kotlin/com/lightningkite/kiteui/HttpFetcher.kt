@@ -99,7 +99,7 @@ public interface HttpFetcher {
      * did. New code should take an [HttpFetcher] parameter instead of reaching for this, so that
      * a test can supply its own.
      */
-    public object Default : HttpFetcher by Intercepted(PlatformHttpFetcher, Interceptor.global)
+    public companion object Default : HttpFetcher by Intercepted(PlatformHttpFetcher, Interceptor.global)
 }
 
 internal expect object PlatformHttpFetcher : HttpFetcher {

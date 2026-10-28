@@ -4,6 +4,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.utils.LiveRegistry
+import com.lightningkite.reactive.core.Release
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -94,8 +95,24 @@ public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: Stri
 public expect fun assertMainThread()
 
 public expect fun Throwable.printStackTrace2()
-public var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
-public fun Throwable.report(context: String = ""): Unit = Throwable_report(this, context)
+
+/** Observes every [report]ed throwable. */
+public fun interface ThrowableReporter {
+    public fun report(throwable: Throwable, context: String)
+
+    public companion object {
+        /** Every reporter, in registration order. */
+        public val global: LiveRegistry<ThrowableReporter> = LiveRegistry()
+
+        /** Removes the reporter that prints each reported throwable's stack trace, which is registered by default. */
+        public val removeDefaultHandler: Release = global.register { throwable, _ -> throwable.printStackTrace2() }
+    }
+}
+
+/** Sends this to every [ThrowableReporter] in [ThrowableReporter.global]. [context] says where it happened. */
+public fun Throwable.report(context: String = "") {
+    for (reporter in ThrowableReporter.global.snapshot()) reporter.report(this, context)
+}
 
 public expect fun Any?.identityHashCode(): Int
 
@@ -104,10 +121,10 @@ public inline fun Element.debugPrint(get: () -> String) {
         Log.tag("viewDebugTarget").info(get())
 }
 
-@Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
+@Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"), DeprecationLevel.ERROR)
 public typealias Console = Log
 
-@Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
+@Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"), DeprecationLevel.ERROR)
 public typealias ConsoleRoot = Log.Default
 
 public enum class LogLevel {

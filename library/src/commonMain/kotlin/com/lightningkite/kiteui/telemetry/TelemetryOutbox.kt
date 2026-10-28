@@ -13,6 +13,7 @@ import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
@@ -36,10 +37,10 @@ internal class TelemetryOutbox(
     private val lock = SynchronizedObject()
     private val spans = ArrayList<RecordedSpan>()
     private val logs = ArrayList<RecordedLog>()
-    private var droppedRecords = 0
     internal val batches: MutableList<TelemetryBatch> = load()
 
-    private var uploading = false
+    private val uploading = Mutex()
+    // Claude: only touched while holding uploading, so no lock.
     private var retryAt = Instant.DISTANT_PAST
     private var retryDelay = firstRetryDelay
 
@@ -50,23 +51,18 @@ internal class TelemetryOutbox(
 
     /** Moves buffered records into a new batch and saves the outbox. [durably] for the crash path, where the process is about to die. */
     fun persist(durably: Boolean = false): Unit = synchronized(lock) {
-        if (spans.isEmpty() && logs.isEmpty() && droppedRecords == 0) return
-        if (droppedRecords > 0) {
-            logs += RecordedLog(Clock.System.now(), LogLevel.Warn, "Dropped $droppedRecords telemetry records: the device's outbox was full", telemetryAttributesOf(droppedRecordsKey to droppedRecords.toLong()))
-            droppedRecords = 0
-        }
+        if (spans.isEmpty() && logs.isEmpty()) return
         batches += TelemetryBatch(resource, Clock.System.now(), spans.toList(), logs.toList())
         spans.clear()
         logs.clear()
         save(durably)
     }
 
+    /** Sends batches oldest first, unless an upload is already running or a failed one is still backing off. */
     suspend fun upload() {
-        synchronized(lock) {
-            if (uploading || Clock.System.now() < retryAt) return
-            uploading = true
-        }
+        if (!uploading.tryLock()) return
         try {
+            if (Clock.System.now() < retryAt) return
             withContext(TelemetryUploading) {
                 suppressConnectivityIssues {
                     while (true) {
@@ -80,32 +76,39 @@ internal class TelemetryOutbox(
                     }
                 }
             }
-            synchronized(lock) { retryDelay = firstRetryDelay }
+            retryDelay = firstRetryDelay
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             // LogRoot, not Log: Log is intercepted by telemetry, which would record this failure and retry it forever.
             LogRoot.tag("Telemetry").warn("Upload failed; retrying in $retryDelay: $e")
-            synchronized(lock) {
-                retryAt = Clock.System.now() + retryDelay
-                retryDelay = minOf(retryDelay * 2, maxRetryDelay)
-            }
+            retryAt = Clock.System.now() + retryDelay
+            retryDelay = minOf(retryDelay * 2, maxRetryDelay)
         } finally {
-            synchronized(lock) { uploading = false }
+            uploading.unlock()
         }
     }
 
-    /** Call holding [lock]. Drops the oldest batches while the outbox is over its size cap. */
+    /** Call holding [lock]. Drops the oldest batches while the outbox is over its size cap, noting the drop in the next batch. */
     private fun save(durably: Boolean) {
         var stored = json.encodeToString(serializer, batches)
+        var dropped = 0
         while (stored.length > MAX_STORED_CHARS && batches.size > 1) {
             val oldest = batches.removeAt(0)
-            droppedRecords += oldest.spans.size + oldest.logs.size
+            dropped += oldest.spans.size + oldest.logs.size
             stored = json.encodeToString(serializer, batches)
+        }
+        if (dropped > 0) {
+            logs += RecordedLog(
+                Clock.System.now(),
+                LogLevel.Warn,
+                "Dropped $dropped telemetry records: the device's outbox was full",
+                telemetryAttributesOf(droppedRecordsKey to dropped.toLong())
+            )
         }
         // Failing to store telemetry must not break the app code that happened to record it.
         try {
-            if (durably) writeDurably(STORAGE_KEY, stored) else PlatformStorage.set(STORAGE_KEY, stored)
+            PlatformStorage.set(STORAGE_KEY, stored, ensureOnDisk = durably)
         } catch (e: Exception) {
             LogRoot.tag("Telemetry").warn("Couldn't save telemetry: $e")
         }

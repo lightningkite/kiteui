@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.Build
 import com.lightningkite.kiteui.Connectivity
+import com.lightningkite.kiteui.ThrowableReporter
 import com.lightningkite.kiteui.HttpFetcher
 import com.lightningkite.kiteui.HttpHeaders
 import com.lightningkite.kiteui.HttpMethod
@@ -10,15 +11,14 @@ import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.RequestBody
 import com.lightningkite.kiteui.RequestResponse
-import com.lightningkite.kiteui.Throwable_report
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.viewPath
 import com.lightningkite.reactive.core.AppScope
-import com.lightningkite.reactive.core.Release
 import com.lightningkite.services.telemetry.LogLevel
 import com.lightningkite.services.telemetry.RecordedError
 import com.lightningkite.services.telemetry.RecordedLog
@@ -29,7 +29,6 @@ import com.lightningkite.services.telemetry.TelemetryKey
 import com.lightningkite.services.telemetry.TelemetryKeys
 import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -93,101 +92,36 @@ public class Telemetry(
 
     // ===== Installation =====
 
-    private var installed = false
-    // Flags rather than un-registering: other code may have wrapped these hooks after us.
-    private var throwableHookActive = false
-    private var crashHookActive = false
-    private var elementContext: ElementContext? = null
-    private var flushLoop: Job? = null
-    private val cleanups = ArrayList<Release>()
-
-    internal val actionInterceptor = Action.Interceptor { scope, title, proceed ->
-        // Actions run in AppScope by default, which doesn't carry the screen's attributes.
-        withContext(scope.coroutineContext[TelemetryAttributesElement] ?: EmptyCoroutineContext) {
-            span("action", title) { proceed() }
-        }
-    }
-    internal val logInterceptor = Log.Interceptor { level, tag, entries ->
-        val telemetryLevel = when (level) {
-            KiteUiLogLevel.ERROR -> LogLevel.Error
-            KiteUiLogLevel.WARN -> LogLevel.Warn
-            KiteUiLogLevel.INFO -> LogLevel.Info
-            KiteUiLogLevel.LOG -> LogLevel.Debug
-        }
-        if (telemetryLevel >= minLogLevel) {
-            val attributes = if (tag.isEmpty()) currentScreen else currentScreen + telemetryAttributesOf(logTag to tag)
-            enqueue { add(RecordedLog(Clock.System.now(), telemetryLevel, entries.joinToString(" "), attributes)) }
-        }
-    }
-    private val fetchInterceptor = HttpFetcher.Interceptor { url: String, method: HttpMethod, headers: HttpHeaders, body: RequestBody?, proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse ->
-        instrumentFetch(url, method, headers, body, proceed)
-    }
-    private val exceptionHandlerInterceptor = ExceptionHandler(Float.MAX_VALUE) { e, meta ->
-        val source = meta?.source
-        reportError(e, TelemetryAttributes {
-            if (source != null) {
-                source.underlyingNativeElement.coroutineContext[TelemetryAttributesElement]?.let { putAll(it.attributes) }
-                put(viewPathKey, source.viewPath())
-            }
-        })
-        null // observe only; let the app's handlers show it
-    }
-
-    /** Installs the global hooks and starts uploading. [navigator] is the one whose screen labels logs. */
+    /**
+     * Installs the global hooks and starts uploading, for the rest of the process. [navigator] is the one whose
+     * screen labels logs.
+     *
+     * Only one [Telemetry] can be installed.
+     */
     public fun install(context: ElementContext, navigator: PageNavigator) {
-        check(!installed) { "Telemetry.install() called twice. Call shutdown() first." }
-        installed = true
-        mainNavigator = navigator
+        check(Companion.installed == null) { "A Telemetry is already installed." }
         Companion.installed = this
+        mainNavigator = navigator
 
-        cleanups += HttpFetcher.Interceptor.global.register(fetchInterceptor)
-        cleanups += Action.Interceptor.global.register(actionInterceptor)
-        cleanups += Log.Interceptor.global.register(logInterceptor)
-        elementContext = context
-        context.exceptionHandlers += exceptionHandlerInterceptor
-        throwableHookActive = true
-        val previous = Throwable_report
-        Throwable_report = { throwable, where ->
-            previous(throwable, where)
-            if (throwableHookActive) reportError(throwable, telemetryAttributesOf(exceptionContext to where))
+        HttpFetcher.Interceptor.global.register(HttpFetcher.Interceptor(::instrumentFetch))
+        Action.Interceptor.global.register(actionInterceptor)
+        Log.Interceptor.global.register(logInterceptor)
+        context.exceptionHandlers += ExceptionHandler(Float.MAX_VALUE) { e, meta ->
+            reportElementError(e, meta?.source)
+            null // observe only; let the app's handlers show it
         }
+        ThrowableReporter.global.register { throwable, where ->
+            reportError(throwable, telemetryAttributesOf(exceptionContext to where))
+        }
+        installCrashHook(::recordCrash)
+        AppState.inForeground.addListener(::onForegroundChanged)
+        Connectivity.lastConnectivityIssueCode.addListener(::onConnectivityIssue)
 
         if (sampled) enqueue {
             add(RecordedSpan(traceId(), spanId(), null, "app", "start", constructedAt, Clock.System.now(),
                 TelemetryAttributes.empty, RecordedSpan.Outcome.Ok, null))
         }
-
-        cleanups += AppState.inForeground.addListener {
-            if (AppState.inForeground.value) {
-                event("app.foreground", currentScreen)
-            } else {
-                event("app.background", currentScreen)
-                // The OS may kill a backgrounded app without warning.
-                outbox.persist()
-                AppScope.launch { outbox.upload() }
-            }
-        }
-
-        cleanups += Connectivity.lastConnectivityIssueCode.addListener {
-            val code = Connectivity.lastConnectivityIssueCode.value
-            if (code != 0.toShort()) {
-                val attributes = telemetryAttributesOf(connectivityIssueCode to code.toLong())
-                enqueue {
-                    add(RecordedLog(Clock.System.now(), LogLevel.Warn, "Connectivity issue: status code $code", currentScreen + attributes))
-                }
-            }
-        }
-
-        crashHookActive = true
-        installCrashHook { throwable ->
-            if (crashHookActive) {
-                outbox.add(RecordedLog(Clock.System.now(), LogLevel.Error, throwable.message ?: throwable::class.simpleName ?: "Crash",
-                    currentScreen + telemetryAttributesOf(TelemetryKeys.Exception.escaped to true), error = throwable.toRecordedError()))
-                outbox.persist(durably = true)
-            }
-        }
-
-        flushLoop = AppScope.launch {
+        AppScope.launch {
             outbox.upload() // whatever earlier runs left behind
             while (true) {
                 delay(30.seconds)
@@ -197,17 +131,56 @@ public class Telemetry(
         }
     }
 
-    /** Removes the hooks [install] added. Records not yet persisted are lost; call [flush] first to keep them. */
-    internal fun shutdown() {
-        if (!installed) return
-        installed = false
-        Companion.installed = null
-        elementContext?.exceptionHandlers?.remove(exceptionHandlerInterceptor)
-        throwableHookActive = false
-        crashHookActive = false
-        cleanups.forEach { it() }
-        cleanups.clear()
-        flushLoop?.cancel()
+    internal val actionInterceptor = Action.Interceptor { scope, title, proceed ->
+        // Actions run in AppScope by default, which doesn't carry the screen's attributes.
+        withContext(scope.coroutineContext[TelemetryAttributesElement] ?: EmptyCoroutineContext) {
+            span("action", title) { proceed() }
+        }
+    }
+
+    internal val logInterceptor = Log.Interceptor { level, tag, entries ->
+        val telemetryLevel = when (level) {
+            KiteUiLogLevel.ERROR -> LogLevel.Error
+            KiteUiLogLevel.WARN -> LogLevel.Warn
+            KiteUiLogLevel.INFO -> LogLevel.Info
+            KiteUiLogLevel.LOG -> LogLevel.Debug
+        }
+        if (telemetryLevel >= minLogLevel) {
+            val attributes = if (tag.isEmpty()) currentScreen else currentScreen + telemetryAttributesOf(logTag to tag)
+            log(telemetryLevel, entries.joinToString(" "), attributes)
+        }
+    }
+
+    private fun reportElementError(throwable: Throwable, source: Element?) = reportError(throwable, TelemetryAttributes {
+        if (source != null) {
+            source.underlyingNativeElement.coroutineContext[TelemetryAttributesElement]?.let { putAll(it.attributes) }
+            put(viewPathKey, source.viewPath())
+        }
+    })
+
+    private fun onForegroundChanged() {
+        if (AppState.inForeground.value) {
+            event("app.foreground", currentScreen)
+        } else {
+            event("app.background", currentScreen)
+            // The OS may kill a backgrounded app without warning.
+            outbox.persist()
+            AppScope.launch { outbox.upload() }
+        }
+    }
+
+    private fun onConnectivityIssue() {
+        val code = Connectivity.lastConnectivityIssueCode.value
+        if (code != 0.toShort()) {
+            log(LogLevel.Warn, "Connectivity issue: status code $code", currentScreen + telemetryAttributesOf(connectivityIssueCode to code.toLong()))
+        }
+    }
+
+    // Claude: straight to the outbox rather than through enqueue, which may launch an upload the dying process can't finish.
+    private fun recordCrash(throwable: Throwable) {
+        outbox.add(RecordedLog(Clock.System.now(), LogLevel.Error, throwable.message ?: throwable::class.simpleName ?: "Crash",
+            currentScreen + telemetryAttributesOf(TelemetryKeys.Exception.escaped to true), error = throwable.toRecordedError()))
+        outbox.persist(durably = true)
     }
 
     // ===== Recording =====
@@ -216,13 +189,19 @@ public class Telemetry(
         outbox.add()
         if (outbox.bufferedRecords >= MAX_BUFFERED_RECORDS) {
             outbox.persist()
-            if (installed) AppScope.launch { outbox.upload() }
+            if (Companion.installed === this) AppScope.launch { outbox.upload() }
         }
     }
 
-    private fun event(name: String, attributes: TelemetryAttributes) = enqueue {
-        add(RecordedLog(Clock.System.now(), LogLevel.Info, name, attributes + telemetryAttributesOf(TelemetryKeys.Event.name to name)))
+    private fun log(level: LogLevel, message: String, attributes: TelemetryAttributes, error: RecordedError? = null) = enqueue {
+        add(RecordedLog(Clock.System.now(), level, message, attributes, error = error))
     }
+
+    private fun event(name: String, attributes: TelemetryAttributes) =
+        log(LogLevel.Info, name, attributes + telemetryAttributesOf(TelemetryKeys.Event.name to name))
+
+    internal fun reportError(throwable: Throwable, attributes: TelemetryAttributes): Unit =
+        log(LogLevel.Error, throwable.message ?: throwable::class.simpleName ?: "Error", currentScreen + attributes, throwable.toRecordedError())
 
     /** Runs [action] as span `owner.operation`, a child of the current span if there is one. */
     internal suspend fun <T> span(owner: String, operation: String, attributes: TelemetryAttributes = TelemetryAttributes.empty, action: suspend (ClientSpan) -> T): T {
@@ -247,11 +226,6 @@ public class Telemetry(
                     span.attributes, outcome, error))
             }
         }
-    }
-
-    internal fun reportError(throwable: Throwable, attributes: TelemetryAttributes): Unit = enqueue {
-        add(RecordedLog(Clock.System.now(), LogLevel.Error, throwable.message ?: throwable::class.simpleName ?: "Error",
-            currentScreen + attributes, error = throwable.toRecordedError()))
     }
 
     /** Saves what's been recorded and uploads it now, e.g. before the user signs out. */

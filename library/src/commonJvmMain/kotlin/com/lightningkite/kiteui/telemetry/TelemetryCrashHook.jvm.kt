@@ -1,7 +1,5 @@
 package com.lightningkite.kiteui.telemetry
 
-import com.lightningkite.kiteui.PlatformStorage
-
 internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
     val previous = Thread.getDefaultUncaughtExceptionHandler()
     Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
@@ -11,5 +9,3 @@ internal actual fun installCrashHook(onCrash: (Throwable) -> Unit) {
         previous?.uncaughtException(thread, throwable)
     }
 }
-
-internal actual fun writeDurably(key: String, value: String) = PlatformStorage.set(key, value)
