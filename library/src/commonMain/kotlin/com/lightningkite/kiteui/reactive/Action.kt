@@ -16,6 +16,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.*
 
+// Claude: call with the body in coroutineScope, so coroutines the body launches inherit what interceptors add to the context.
 private suspend fun runIntercepted(scope: CoroutineScope, title: String, action: suspend () -> Unit) {
     val chain = Action.Interceptor.global.snapshot().foldRight(action) { interceptor, next -> { interceptor.intercept(scope, title, next) } }
     chain()
@@ -232,7 +233,7 @@ public class RetryableAction(
             ) {
                 try {
                     val result = reactiveState {
-                        runIntercepted(scope, title) { action() }
+                        runIntercepted(scope, title) { coroutineScope { action() } }
                         true
                     }
                     done = true
@@ -320,7 +321,7 @@ public class DependentAction(
             ) {
                 try {
                     val result = reactiveState {
-                        runIntercepted(scope, title) { action() }
+                        runIntercepted(scope, title) { coroutineScope { action() } }
                         true
                     }
                     done = true

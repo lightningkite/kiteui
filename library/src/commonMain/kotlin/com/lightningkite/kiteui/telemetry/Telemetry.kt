@@ -132,8 +132,10 @@ public class Telemetry(
     }
 
     internal val actionInterceptor = Action.Interceptor { scope, title, proceed ->
-        // Actions run in AppScope by default, which doesn't carry the screen's attributes.
-        withContext(scope.coroutineContext[TelemetryAttributesElement] ?: EmptyCoroutineContext) {
+        // Actions run in AppScope by default, which carries neither the screen's attributes nor, for the halves of a
+        // combined action, the combined action's span.
+        val started = scope.coroutineContext
+        withContext((started[TelemetryAttributesElement] ?: EmptyCoroutineContext) + (started[ClientSpan] ?: EmptyCoroutineContext)) {
             span("action", title) { proceed() }
         }
     }
