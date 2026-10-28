@@ -47,8 +47,10 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
                             TelemetryKeys.App.screenId to Telemetry.spanId(),
                         )
                         val telemetry = Telemetry.installed
-                        if (telemetry != null) visit = this@swapView.launch(TelemetryAttributesElement(context.telemetryAttributes)) {
-                            telemetry.recordScreenVisit(navigator, load)
+                        if (telemetry != null) visit = this@swapView.withoutLoadingAnimations {
+                            launch(TelemetryAttributesElement(context.telemetryAttributes)) {
+                                telemetry.recordScreenVisit(navigator, load)
+                            }
                         }
                         // Claude: finally, because SwapView catches a failed render and the load would wait out its timeout.
                         try {

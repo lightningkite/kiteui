@@ -366,10 +366,12 @@ internal class TelemetryAttributesElement(val attributes: TelemetryAttributes) :
 }
 
 // Claude: ids, emails and tokens in a path identify users, and also stop requests to one route from grouping.
+// Hex covers UUIDs, ObjectIds and hashes; mixed case covers base64 and base62 tokens, since slugs are lowercase.
 private fun String.looksLikeAnId(): Boolean =
     '@' in this || contains("%40", ignoreCase = true) ||
         (isNotEmpty() && all { it.isDigit() }) ||
-        (length >= 16 && any { it.isDigit() })
+        (length >= 16 && all { it.digitToIntOrNull(16) != null || it == '-' }) ||
+        (length >= 20 && any { it.isUpperCase() } && any { it.isLowerCase() } && any { it.isDigit() })
 
 private fun Throwable.toRecordedError(): RecordedError = RecordedError(
     type = this::class.simpleName ?: "Unknown",

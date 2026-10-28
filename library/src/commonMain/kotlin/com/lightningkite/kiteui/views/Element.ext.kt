@@ -55,9 +55,8 @@ public expect val Element.areAnimationsEnabled: Boolean
  */
 public expect inline fun Element.withoutAnimation(action: () -> Unit)
 
-public inline fun Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHelpers.() -> Unit) {
+public inline fun <T> Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHelpers.() -> T): T =
     object : KiteUiCoroutineScopeHelpers, CoroutineScope by CoroutineScope(coroutineContext.minusKey(StatusListener.Key)) {}.run(block)
-}
 
 /**
  * Requests focus on this element, or on its first interactive descendant if this element

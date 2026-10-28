@@ -67,8 +67,8 @@ class InstrumentFetchTest {
     @Test
     fun idsEmailsAndTokensInThePathAreReplaced() = runTest {
         val t = testTelemetry()
-        captureHeaders(t, "https://example.com/v1/users/42/name@example.com/550e8400-e29b-41d4-a716-446655440000/verify/eyJhbGciOiJIUzI1NiJ9abc/a%40b.com/my-article")
-        assertEquals("/v1/users/{id}/{id}/{id}/verify/{id}/{id}/my-article", t.recordedSpans().single().attributes[TelemetryKeys.Url.path])
+        captureHeaders(t, "https://example.com/v1/users/42/name@example.com/550e8400-e29b-41d4-a716-446655440000/verify/eyJhbGciOiJIUzI1NiJ9abc/a%40b.com/my-article/release-notes-for-2024")
+        assertEquals("/v1/users/{id}/{id}/{id}/verify/{id}/{id}/my-article/release-notes-for-2024", t.recordedSpans().single().attributes[TelemetryKeys.Url.path])
     }
 
     @Test
