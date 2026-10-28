@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.views
 
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.test.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
@@ -219,6 +222,29 @@ class ImagesTest {
         val box = node.getUnclippedBoundsInRoot()
         assertEquals('G', shot.colorAt(root, box, 100.dp, 50.dp))
         assertEquals('R', shot.colorAt(root, box, 190.dp, 50.dp))
+    }
+
+    // Graph sizes its lines and labels with canvasUnits.
+    @Test
+    fun canvasUnitsAreTheCanvasPixels() = runKiteUiTest {
+        var canvasWidth = 0.0
+        val root = runBlocking(Dispatchers.Main) {
+            KiteUiRoot("kiteui-test", { testTheme }) {
+                col {
+                    sizeConstraints(width = 100.px, height = 50.px).canvas {
+                        delegate = object : CanvasDelegate() {
+                            override fun onResize(width: Double, height: Double) {
+                                canvasWidth = width
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        setContent { CompositionLocalProvider(LocalDensity provides Density(2f)) { root.Content() } }
+        waitForIdle()
+        assertEquals(200.0, canvasWidth)
+        assertEquals(canvasWidth, 100.px.canvasUnits)
     }
 
     @Test
