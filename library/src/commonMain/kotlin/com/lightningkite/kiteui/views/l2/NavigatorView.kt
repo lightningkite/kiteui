@@ -50,8 +50,12 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
                         if (telemetry != null) visit = this@swapView.launch(TelemetryAttributesElement(context.telemetryAttributes)) {
                             telemetry.recordScreenVisit(navigator, load)
                         }
-                        with(screen) { themed(MainContentSemantic).asMain.padded.render() }
-                        load.finishedRendering()
+                        // Claude: finally, because SwapView catches a failed render and the load would wait out its timeout.
+                        try {
+                            with(screen) { themed(MainContentSemantic).asMain.padded.render() }
+                        } finally {
+                            load.finishedRendering()
+                        }
                     }
                     // Tell assistive technology the screen changed, which it can't otherwise
                     // notice. Deliberately not requestFocus: keyboard focus landing on the new

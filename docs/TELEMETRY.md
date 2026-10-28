@@ -56,7 +56,7 @@ rendering `install` does nothing, so it's safe to call from `app()`.
 |---|---|
 | HTTP requests | Span `http.<METHOD>` with `http.request.method`, `url.path` (no query, no credentials), `server.address`, `http.response.status_code` |
 | Actions | Span `action.<title>`; requests made inside it are its children |
-| Screen visits | Span `screen.load`, ending when the screen has rendered and nothing in it is loading (cap 60 s), or `Cancelled` if the user leaves first. Events `app.screen.view_start` / `app.screen.view_end` |
+| Screen visits | Span `screen.load`, ending when the screen has rendered and nothing in it is loading, `Cancelled` if the user leaves first, or an `Error` after 60 s. A screen with something that stays loading, such as a `LateInitSignal` waiting for input, always ends in that error. Events `app.screen.view_start` / `app.screen.view_end` |
 | App start | Span `app.start`, from constructing `Telemetry` to `install` |
 | Logs | `Log` calls at `minLogLevel` and above (default `Warn`), labelled with the current screen |
 | Errors | Reported exceptions and exception-handler errors, as ERROR logs with a fingerprint |
