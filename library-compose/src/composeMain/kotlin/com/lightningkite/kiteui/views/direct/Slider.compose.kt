@@ -81,10 +81,11 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
         reactive { displayed = value() }
     }
 
+    // When max is below min (as while range sets min first), min wins, as on the web.
     private fun snapped(v: Float): Float {
-        val clamped = v.coerceIn(min, max)
+        val clamped = v.coerceAtMost(max).coerceAtLeast(min)
         val step = step ?: return clamped
-        return (min + ((clamped - min) / step).roundToInt() * step).coerceAtMost(max)
+        return (min + ((clamped - min) / step).roundToInt() * step).coerceAtMost(max).coerceAtLeast(min)
     }
 
     // The thumb's center travels from one radius in from the left edge to one radius in from the right.
@@ -133,7 +134,8 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
     @Composable
     override fun Content(modifier: Modifier) {
         val color = currentTheme.theme.foreground.closestColor().toCompose()
-        val fraction = (displayed - min) / (max - min)
+        // An empty range has its thumb at the start, as on the web.
+        val fraction = if (max > min) (displayed - min) / (max - min) else 0f
         // 8rem is about a browser's default range input width; stretched sliders fill their slot instead.
         Spacer(
             modifier
