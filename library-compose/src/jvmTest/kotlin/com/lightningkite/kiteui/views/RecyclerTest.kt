@@ -141,4 +141,20 @@ class RecyclerTest {
         awaitFirstVisible("Item 1", vertical = false)
         waitUntil(timeoutMillis = 3_000) { visibleItems(vertical = false) == listOf("Item 1") }
     }
+
+    // Its own scrollbar, since the list's content is a window onto the items rather than all of them.
+    @Test
+    fun draggingTheScrollbarMovesFar() = runKiteUiTest {
+        showList { cellsOf(items(1000)) }
+        val list = onNodeWithText("Item 0").onParent().getBoundsInRoot()
+        val x = list.right.value - 3f
+        val y = list.top.value + 5f
+        onRoot().performMouseInput {
+            moveTo(androidx.compose.ui.geometry.Offset(x, y))
+            press()
+            moveTo(androidx.compose.ui.geometry.Offset(x, y + 200f))
+            release()
+        }
+        waitUntil(timeoutMillis = 3_000) { visibleItems().firstOrNull()?.removePrefix("Item ")?.toInt()?.let { it > 300 } == true }
+    }
 }

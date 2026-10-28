@@ -237,7 +237,10 @@ internal class ScrollingBehaviorImpl(
         val y = (top * density).toFloat()
         val context = animationContext
         if (!animated || context == null) {
-            pendingJump = Offset(x, y)
+            // Like setting the web's scrollTop to what it is, a jump to here does nothing.  Recycler2 jumps to here
+            // in every layout pass, and queuing that jump would make another pass, forever.
+            val here = (!horizontal || abs(x - horizontalState.value) < 0.5f) && (!vertical || abs(y - verticalState.value) < 0.5f)
+            if (!here || pendingJump != null) pendingJump = Offset(x, y)
             return
         }
         element.launch(context) {
