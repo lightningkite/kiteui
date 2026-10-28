@@ -245,6 +245,41 @@ class ImagesTest {
         waitForIdle()
         assertEquals(200.0, canvasWidth)
         assertEquals(canvasWidth, 100.px.canvasUnits)
+
+    // Both GIFs are 20x20, red for 300ms and then blue for 300ms; one loops forever and the other plays once.
+    @Test
+    fun gifsAnimate() = runKiteUiTest {
+        lateinit var view: RawImageView
+        val root = showKiteUi {
+            col { sizeConstraints(width = 20.px, height = 20.px).rawImage(ImageResource("common/images/red-blue-looping.gif"), "gif") { view = this } }
+        }
+        waitForLoad(listOf(view))
+        fun color() = saveScreenshot(root, "gif").colorAt(root, onNodeWithContentDescription("gif").getUnclippedBoundsInRoot(), 10.dp, 10.dp)
+        waitUntil(timeoutMillis = 5_000) { color() == 'B' }
+        waitUntil(timeoutMillis = 5_000) { color() == 'R' }
+    }
+
+    @Test
+    fun gifsPlayOnlyWhileSeenAndRepeatAsOftenAsTheySay() = runKiteUiTest {
+        lateinit var view: RawImageView
+        var setVisible: (Boolean) -> Unit = {}
+        val root = showKiteUi {
+            col {
+                frame {
+                    setVisible = { visible = it }
+                    visible = false
+                    sizeConstraints(width = 20.px, height = 20.px).rawImage(ImageResource("common/images/red-blue-once.gif"), "gif") { view = this }
+                }
+            }
+        }
+        waitForLoad(listOf(view))
+        mainClock.advanceTimeBy(1_000)
+        runBlocking(Dispatchers.Main) { setVisible(true) }
+        fun color() = saveScreenshot(root, "gif-once").colorAt(root, onNodeWithContentDescription("gif").getUnclippedBoundsInRoot(), 10.dp, 10.dp)
+        assertEquals('R', color(), "it didn't play while invisible")
+        waitUntil(timeoutMillis = 5_000) { color() == 'B' }
+        mainClock.advanceTimeBy(1_000)
+        assertEquals('B', color(), "it played once")
     }
 
     @Test
