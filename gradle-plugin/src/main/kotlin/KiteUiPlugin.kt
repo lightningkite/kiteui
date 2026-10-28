@@ -106,7 +106,7 @@ class KiteUiPlugin : Plugin<Project> {
             task.outputs.file(out)
             task.inputs.files(resourceFolder)
             task.doLast {
-                resourcesJs(listOf(), resourceFolder.get(), out, ext)
+                resourcesJvm(resourceFolder.get(), out, ext)
             }
             tasks.matching { it.name == "compileKotlinJvm" }.configureEach { dependsOn(task) }
             tasks.matching { it.name == "kspKotlinJvm" }.configureEach { dependsOn(task) }
