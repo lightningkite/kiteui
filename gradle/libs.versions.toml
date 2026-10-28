@@ -12,13 +12,13 @@ fontbox = "3.0.8"
 glide = "5.0.7"
 jinput = "2.0.10"
 junit = "4.13.2"
-kotlin = "2.4.0"
+kotlin = "2.4.20"
 kotlinxCoroutinesCore = "1.11.0"
 kotlinxDatetime = "0.8.0"
 kotlinxSerializationJson = "1.11.0"
 ktorVersion = "3.5.2"
 ktx = "1.18.0"
-lightningServer = "5.4.0-prerelease-105-bf422bc1b"
+lightningServer = "5.4.0-prerelease-113-2148e0edd"
 lkGradleHelpers = "4.1.1"
 lottie = "6.7.1"
 material = "1.14.0"
@@ -35,7 +35,6 @@ timber = "5.0.1"
 transition = "1.7.2"
 uriEncoding = "0.0.1-6"
 vannitechPublishing = "0.37.0"
-jsPlainObjects = "2.4.20"
 kfc = "19.16.0"
 
 
@@ -107,4 +106,4 @@ roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 testing-manual = { id = "com.lightningkite.testing.manual", version = "0.0.9" }
 vannitechPublishing = { id = "com.vanniktech.maven.publish", version = { ref = "vannitechPublishing" } }
 kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
-kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }
+kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version.ref = "kotlin" }
