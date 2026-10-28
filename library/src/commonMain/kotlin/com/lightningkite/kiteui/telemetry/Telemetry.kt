@@ -260,7 +260,7 @@ public class Telemetry(
             .substringBefore("?").substringBefore("#") // queries carry tokens
         val attributes = TelemetryAttributes {
             put(TelemetryKeys.Http.requestMethod, method.name)
-            put(TelemetryKeys.Url.path, if (path.startsWith("/")) path else "/$path")
+            put(TelemetryKeys.Url.path, (if (path.startsWith("/")) path else "/$path").split('/').joinToString("/") { if (it.looksLikeAnId()) "{id}" else it })
             if (host.isNotEmpty()) put(TelemetryKeys.Server.address, host)
         }
         // Claude: a same-origin request goes to the app's own server, which is where propagation is wanted.
@@ -350,6 +350,12 @@ internal class ClientSpan(val traceId: String, val spanId: String, var attribute
 internal class TelemetryAttributesElement(val attributes: TelemetryAttributes) : AbstractCoroutineContextElement(Key) {
     companion object Key : CoroutineContext.Key<TelemetryAttributesElement>
 }
+
+// Claude: ids, emails and tokens in a path identify users, and also stop requests to one route from grouping.
+private fun String.looksLikeAnId(): Boolean =
+    '@' in this || contains("%40", ignoreCase = true) ||
+        (isNotEmpty() && all { it.isDigit() }) ||
+        (length >= 16 && any { it.isDigit() })
 
 private fun Throwable.toRecordedError(): RecordedError = RecordedError(
     type = this::class.simpleName ?: "Unknown",
