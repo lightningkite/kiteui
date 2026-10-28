@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -11,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.layout.times
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -50,6 +52,7 @@ import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.toByteArray
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.LocalVisible
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.toBrush
 import com.lightningkite.kiteui.views.toCompose
@@ -72,13 +75,14 @@ public actual abstract class RawImageViewLike(
 ) : NativeElement(context) {
     public actual abstract val state: Reactive<Unit>
     internal val loadState = RawReactive<Unit>()
-    private var bitmap: ImageBitmap? by mutableStateOf(null)
+    private var image: DecodedImage? by mutableStateOf(null)
+    private var inWindow by mutableStateOf(false)
 
     init {
         if (source is ImageVector) loadState.state = ReactiveState(Unit)
         else launch {
             loadState.state = try {
-                bitmap = loadImage(source)
+                image = loadImage(source)
                 ReactiveState(Unit)
             } catch (e: CancellationException) {
                 throw e
@@ -93,13 +97,22 @@ public actual abstract class RawImageViewLike(
     protected fun painter(): Painter? {
         val source = source
         if (source is ImageVector) return rememberVectorPainter(remember(source) { source.toCompose() })
-        val bitmap = bitmap ?: return null
+        val image = image ?: return null
+        var frame by remember(image) { mutableStateOf(image.firstFrame) }
+        val animation = remember(image) { image.animate?.invoke() }
+        // Animates only while it can be seen.
+        if (animation != null && inWindow && LocalVisible.current && opacity > 0.0) {
+            LaunchedEffect(animation) { animation.play { frame = it } }
+        }
         val density = LocalDensity.current.density
-        return remember(bitmap, density) { DpBitmapPainter(bitmap, density) }
+        return remember(frame, density) { DpBitmapPainter(frame, density) }
     }
 
     // Not Modifier.paint, which also changes the constraints the element is measured with.
-    protected fun Modifier.drawImage(painter: Painter?): Modifier = semantics {
+    // Only animations watch whether they're in the window, since watching every image would slow scrolling.
+    protected fun Modifier.drawImage(painter: Painter?): Modifier = (
+        if (image?.animate != null) onVisibilityChanged(minFractionVisible = 0f) { inWindow = it } else this
+    ).semantics {
         contentDescription = description
         role = Role.Image
     }.drawBehind {
@@ -260,10 +273,10 @@ private fun ImageVector.toCompose(): ComposeImageVector = ComposeImageVector.Bui
 
 // Decoded remote images by ImageRemote.cacheKey, as Glide's memory cache keeps them on Android.  The web relies on
 // the browser's HTTP cache instead.  Least recently used first; only touched on the main thread.
-private val remoteImages = LinkedHashMap<String, ImageBitmap>()
+private val remoteImages = LinkedHashMap<String, DecodedImage>()
 private const val remoteImagesMaxBytes = 128L * 1024 * 1024
 
-private suspend fun loadImage(source: ImageSource): ImageBitmap {
+private suspend fun loadImage(source: ImageSource): DecodedImage {
     val cacheKey = (source as? ImageRemote)?.takeIf { it.cacheStrategy != UrlCacheStrategy.None }?.cacheKey
     if (cacheKey != null) remoteImages.remove(cacheKey)?.let {
         remoteImages[cacheKey] = it
@@ -283,7 +296,7 @@ private suspend fun loadImage(source: ImageSource): ImageBitmap {
     val image = withContext(Dispatchers.Default) { decodeImage(bytes) }
     if (cacheKey != null) {
         remoteImages[cacheKey] = image
-        fun ImageBitmap.bytes() = width.toLong() * height * 4
+        fun DecodedImage.bytes() = firstFrame.width.toLong() * firstFrame.height * 4
         var total = remoteImages.values.sumOf { it.bytes() }
         while (total > remoteImagesMaxBytes && remoteImages.size > 1) {
             val oldest = remoteImages.keys.first()
@@ -293,6 +306,15 @@ private suspend fun loadImage(source: ImageSource): ImageBitmap {
     return image
 }
 
-internal expect fun decodeImage(bytes: ByteArray): ImageBitmap
+// An animated image (a GIF) decodes its later frames as they come due, which takes state, so each view gets its own animation.
+internal class DecodedImage(val firstFrame: ImageBitmap, val animate: (() -> ImageAnimation)?)
+
+internal interface ImageAnimation {
+    // Shows each frame after the first in turn, carrying on from where it was when last cancelled, and returns
+    // once the image has repeated as often as it says.
+    suspend fun play(show: (ImageBitmap) -> Unit)
+}
+
+internal expect fun decodeImage(bytes: ByteArray): DecodedImage
 internal expect suspend fun FileReference.readBytes(): ByteArray
 internal expect suspend fun ImageResource.readBytes(): ByteArray
