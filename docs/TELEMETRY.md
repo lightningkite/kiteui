@@ -47,7 +47,8 @@ uploads are accepted and simply have no `user.id`. The user is whoever is signed
 attributed to the next user. `flush()` waits for an upload already in progress and throws if the upload fails,
 for example offline; the records stay saved and are sent by a later upload.
 
-Install before the first `navigatorView` renders; screens shown earlier aren't recorded.
+Install before the first `navigatorView` renders; screens shown earlier aren't recorded. During server-side
+rendering `install` does nothing, so it's safe to call from `app()`.
 
 ## What's recorded
 
@@ -132,6 +133,7 @@ The fingerprint becomes the record's `error.fingerprint`, the same attribute ser
 | Platform | Crash hook | Limitation |
 |---|---|---|
 | Android | `Thread.setDefaultUncaughtExceptionHandler` | Chains to the previous handler |
+| Desktop (JVM) | `Thread.setDefaultUncaughtExceptionHandler` | Chains to the previous handler |
 | iOS | `kotlin.native.setUnhandledExceptionHook` | Only Kotlin exceptions, not ObjC/Swift crashes |
 | Web | `window.error` + `window.unhandledrejection` | |
 

@@ -16,6 +16,7 @@ import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.Element
+import com.lightningkite.kiteui.ssr.ssrResourceRegistry
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.viewPath
 import com.lightningkite.reactive.core.AppScope
@@ -96,9 +97,11 @@ public class Telemetry(
      * Installs the global hooks and starts uploading, for the rest of the process. [navigator] is the one whose
      * screen labels logs.
      *
-     * Only one [Telemetry] can be installed.
+     * Only one [Telemetry] can be installed. During server-side rendering this does nothing, since the app runs once
+     * per request inside the server's process, which isn't a client.
      */
     public fun install(context: ElementContext, navigator: PageNavigator) {
+        if (context.ssrResourceRegistry != null) return
         check(Companion.installed == null) { "A Telemetry is already installed." }
         Companion.installed = this
         mainNavigator = navigator
