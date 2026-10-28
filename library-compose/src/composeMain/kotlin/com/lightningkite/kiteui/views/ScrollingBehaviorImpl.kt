@@ -8,7 +8,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -22,6 +31,7 @@ import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -37,8 +47,7 @@ internal class ScrollingBehaviorImpl(
     private val verticalState = ScrollState(0)
     private var viewportSize by mutableStateOf(IntSize.Zero)
 
-    // TODO: scrollbars; desktop needs them since there's no touch scrolling.
-    override var showScrollBars: Boolean = true
+    override var showScrollBars: Boolean by mutableStateOf(true)
     override var snapToElements: Pair<Align?, Align?> = null to null
     override var scrollSnapStop: Boolean = false
     override var ignoreInteraction: Boolean by mutableStateOf(false)
@@ -170,9 +179,56 @@ internal class ScrollingBehaviorImpl(
             }
             .onSizeChanged { viewportSize = it }
             .nestedScroll(snapStopLimiter)
+            .drawWithContent {
+                drawContent()
+                if (!showScrollBars) return@drawWithContent
+                val color = element.theme.foreground.closestColor().toCompose().copy(alpha = 0.4f)
+                for (thumb in listOfNotNull(thumb(vertical = true, size), thumb(vertical = false, size))) {
+                    drawRoundRect(color, thumb.topLeft, thumb.size, CornerRadius(min(thumb.width, thumb.height) / 2))
+                }
+            }
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                // Before the content (the initial pass), so a drag on the thumb doesn't also press what's beneath it.
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                    if (!showScrollBars) return@awaitEachGesture
+                    val onVertical = thumb(vertical = true, size.toSize())?.contains(down.position) == true
+                    val onHorizontal = thumb(vertical = false, size.toSize())?.contains(down.position) == true
+                    if (!onVertical && !onHorizontal) return@awaitEachGesture
+                    val state = if (onVertical) verticalState else horizontalState
+                    val track = if (onVertical) size.height else size.width
+                    val thumbLength = thumb(onVertical, size.toSize())!!.let { if (onVertical) it.height else it.width }
+                    down.consume()
+                    var last = down.position
+                    while (true) {
+                        val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: break
+                        change.consume()
+                        if (!change.pressed) break
+                        val moved = if (onVertical) change.position.y - last.y else change.position.x - last.x
+                        last = change.position
+                        state.dispatchRawDelta(moved * state.maxValue / (track - thumbLength))
+                    }
+                }
+            }
         if (vertical) m = m.verticalScroll(verticalState, enabled = enabled)
         if (horizontal) m = m.horizontalScroll(horizontalState, enabled = enabled)
         return m
+    }
+
+    // Where the scrollbar's thumb is in the viewport, in px, if the content overflows along that axis.
+    private fun thumb(vertical: Boolean, viewport: Size): ComposeRect? {
+        if (vertical && !this.vertical || !vertical && !horizontal) return null
+        val state = if (vertical) verticalState else horizontalState
+        if (state.maxValue == 0) return null
+        val density = element.density
+        val thickness = 6f * density
+        val inset = 2f * density
+        val track = if (vertical) viewport.height else viewport.width
+        val length = (track * track / (track + state.maxValue)).coerceAtLeast(24f * density)
+        val start = state.value.toFloat() / state.maxValue * (track - length)
+        return if (vertical) ComposeRect(Offset(viewport.width - thickness - inset, start), Size(thickness, length))
+        else ComposeRect(Offset(start, viewport.height - thickness - inset), Size(length, thickness))
     }
 
     override fun scrollTo(left: Double, top: Double, animated: Boolean) {
