@@ -13,6 +13,25 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class LayoutTest {
+    // CSS break-all breaks inside words that would fit on the next line, so it needs fewer lines.
+    @Test
+    fun breakAllBreaksInsideWords() = runKiteUiTest {
+        val content = "abcdefghijklmn ".repeat(8).trim()
+        lateinit var normal: TextView
+        lateinit var breakAll: TextView
+        showKiteUi {
+            col {
+                sizeConstraints(width = 150.px).col {
+                    normal = text(content)
+                    breakAll = text(content).apply { wordBreak = WordBreak.BreakAll }
+                }
+            }
+        }
+        val normalHeight = runOnUiThread { normal.screenRectangle()!!.let { it.bottom - it.top } }
+        val breakAllHeight = runOnUiThread { breakAll.screenRectangle()!!.let { it.bottom - it.top } }
+        assertTrue(breakAllHeight < normalHeight, "break-all should fill its lines, taking $breakAllHeight against $normalHeight")
+    }
+
     @Test
     fun textWrapsInsideAWrappingRow() = runKiteUiTest {
         val long = "word ".repeat(80)
