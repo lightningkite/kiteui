@@ -255,7 +255,8 @@ class MediaTest {
         assertFalse(audio.isPlaying)
 
         audio.currentTime.set(250.milliseconds)
-        assertEquals(250.milliseconds, audio.currentTime.now())
+        // To the nearest frame.
+        assertEquals(250.0, audio.currentTime.now().toDouble(kotlin.time.DurationUnit.MILLISECONDS), 0.1)
 
         audio.loop = true
         audio.play()
