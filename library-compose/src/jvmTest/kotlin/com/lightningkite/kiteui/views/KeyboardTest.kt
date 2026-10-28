@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.Routes
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.appBase
@@ -110,6 +111,30 @@ class KeyboardTest {
         onNodeWithText("Popover content").assertExists()
         runBlocking(Dispatchers.Main) { root.onKeyEvent(keyDown(Key.Escape)) }
         waitUntilDoesNotExist(hasText("Popover content"))
+    }
+
+    // As on the web, Ctrl, Meta or Shift with Enter or Space runs a button's secondary action.
+    @Test
+    fun modifiedEnterOrSpaceRunsTheSecondaryAction() = runKiteUiTest {
+        var primary = 0
+        var secondary = 0
+        showApp {
+            button {
+                text("Open")
+                // Without the usual cap on how often an action runs, so presses in quick succession all count.
+                action = Action("Open", frequencyCap = null) { primary++ }
+                secondaryAction = Action("Open in new tab", frequencyCap = null) { secondary++ }
+            }
+        }
+        val button = onNodeWithText("Open")
+        button.requestFocus()
+        button.performKeyInput { pressKey(Key.Enter) }
+        waitUntil(timeoutMillis = 2_000) { primary == 1 }
+        button.performKeyInput { withKeyDown(Key.CtrlLeft) { pressKey(Key.Enter) } }
+        button.performKeyInput { withKeyDown(Key.MetaLeft) { pressKey(Key.Spacebar) } }
+        button.performKeyInput { withKeyDown(Key.ShiftLeft) { pressKey(Key.Enter) } }
+        waitUntil(timeoutMillis = 2_000) { secondary == 3 }
+        assertEquals(1, primary)
     }
 
     @Test
