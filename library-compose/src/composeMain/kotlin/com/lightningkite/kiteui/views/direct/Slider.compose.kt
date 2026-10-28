@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.drag
@@ -104,6 +105,7 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
             }
             .focusProperties { canFocus = active }
             .focusable(interactionSource = interactions.source)
+            .hoverable(interactions.source, enabled = active)
             .onKeyEvent {
                 if (!active || it.type != KeyEventType.KeyDown) return@onKeyEvent false
                 when (it.key) {

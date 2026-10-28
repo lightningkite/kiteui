@@ -33,13 +33,20 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
             override val state = sheet.state
             override fun close() = sheet.close()
         }
-        sheet.column = col {
+        sheet.column = beforeSetup { animateIn(ScreenTransitions.VerticalSlide.forward) }.col {
             gap = 0.px
             ignoreInteraction = true
             context.bottomSheet = sheet
             sheet.above = frame { ignoreInteraction = true }
             beforeSetup { sheet.content = underlyingNativeElement }.content(control)
-            reactive { sheet.fraction = sheet.fractionOf(sheet.state(), this@CoordinatorFrame.height()) }
+            var lastState = startState
+            reactive {
+                val state = sheet.state()
+                val fraction = sheet.fractionOf(state, this@CoordinatorFrame.height())
+                // Only state changes animate, not the frame's size changing.
+                if (state == lastState) withoutAnimation { sheet.fraction = fraction } else sheet.fraction = fraction
+                lastState = state
+            }
         }
     }
 
@@ -48,12 +55,14 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
 
     public actual fun leftSlidingPanel(ratio: Float?, blockBehind: Boolean, content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit) {
         lateinit var panel: Element
+        val transition = ScreenTransitions(ScreenTransition.Pop, ScreenTransition.Push, ScreenTransition.Fade)
         val control = object : SlidingPanelControl {
-            override fun close() { if (panel in children) removeChild(panel) }
+            override fun close() { if (panel in children) panel.animateOut(transition.reverse) { removeChild(panel) } }
         }
+        val writer = beforeSetup { animateIn(transition.forward) }
         panel = if (ratio == null) {
-            checkNotNull(produceAtMostOneView { align(Align.Start, Align.Stretch).content(control) })
-        } else row {
+            checkNotNull(writer.produceAtMostOneView { align(Align.Start, Align.Stretch).content(control) })
+        } else writer.row {
             gap = 0.px
             ignoreInteraction = true
             weight(ratio).content(control)
@@ -63,12 +72,14 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
 
     public actual fun rightSlidingPanel(ratio: Float?, blockBehind: Boolean, content: ElementWriter.CanAddShownWhen.(control: SlidingPanelControl) -> Unit) {
         lateinit var panel: Element
+        val transition = ScreenTransitions.HorizontalSlide
         val control = object : SlidingPanelControl {
-            override fun close() { if (panel in children) removeChild(panel) }
+            override fun close() { if (panel in children) panel.animateOut(transition.reverse) { removeChild(panel) } }
         }
+        val writer = beforeSetup { animateIn(transition.forward) }
         panel = if (ratio == null) {
-            checkNotNull(produceAtMostOneView { align(Align.End, Align.Stretch).content(control) })
-        } else row {
+            checkNotNull(writer.produceAtMostOneView { align(Align.End, Align.Stretch).content(control) })
+        } else writer.row {
             gap = 0.px
             ignoreInteraction = true
             weight(1f - ratio).frame { ignoreInteraction = true }
@@ -108,9 +119,8 @@ private class BottomSheet(
     var fraction: Float = 1f
         set(value) {
             field = value
-            above.shown = value < 1f
-            above.weight = 1f - value
-            content.weight = value
+            above.changeWeight(1f - value)
+            content.changeWeight(value)
         }
 
     // Collapsed shows peekSize of the content, as on Android.  (The web shows a collapsed sheet expanded.)
@@ -127,14 +137,14 @@ private class BottomSheet(
     fun close() {
         if (closed) return
         closed = true
-        frame.removeChild(column)
+        column.animateOut(ScreenTransitions.VerticalSlide.reverse) { frame.removeChild(column) }
     }
 
     fun dragBy(dp: Float) {
         val height = checkNotNull(frame.screenRectangle()) { "Dragging a bottom sheet that isn't laid out" }.height
         val next = (fraction - dp / height.toFloat()).coerceAtMost(1f)
         // Dragged off the bottom of the frame.
-        if (next <= 0f) close() else fraction = next
+        if (next <= 0f) close() else column.withoutAnimation { fraction = next }
     }
 
     // Settles at the nearest state, or closes if the bottom of the frame is nearer still.

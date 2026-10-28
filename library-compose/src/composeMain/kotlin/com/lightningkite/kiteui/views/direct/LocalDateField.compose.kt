@@ -21,6 +21,8 @@ import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.kiteui.views.hintColor
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
+import com.lightningkite.kiteui.views.cased
+import com.lightningkite.kiteui.views.casing
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactiveValue
@@ -73,13 +75,14 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
             enabled = enabled && takesInput,
             singleLine = true,
             textStyle = style,
+            visualTransformation = theme.font.casing,
             cursorBrush = SolidColor(color.toCompose()),
             interactionSource = interactions.source,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalDateField) }),
             decorationBox = { inner ->
                 Box {
-                    if (field.text.isEmpty()) BasicText("yyyy-mm-dd", style = style.copy(color = theme.hintColor))
+                    if (field.text.isEmpty()) BasicText(theme.font.cased("yyyy-mm-dd"), style = style.copy(color = theme.hintColor))
                     inner()
                 }
             },

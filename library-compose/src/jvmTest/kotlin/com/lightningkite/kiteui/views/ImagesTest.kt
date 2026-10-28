@@ -224,6 +224,25 @@ class ImagesTest {
         assertEquals('R', shot.colorAt(root, box, 190.dp, 50.dp))
     }
 
+    // The web's WheelEvent deltas are pixels: 100 a wheel notch in Chrome on Windows and Linux.
+    @Test
+    fun canvasWheelDeltasArePixels() = runKiteUiTest {
+        var wheel = 0.0
+        showKiteUi {
+            canvas {
+                delegate = object : CanvasDelegate() {
+                    override fun onWheel(x: Double, y: Double, z: Double): Boolean {
+                        wheel += y
+                        return true
+                    }
+                }
+            }
+        }
+        onRoot().performMouseInput { moveTo(center); scroll(1f) }
+        waitForIdle()
+        assertTrue(wheel >= 10.0, "a notch down should be many pixels, got $wheel")
+    }
+
     // Graph sizes its lines and labels with canvasUnits.
     @Test
     fun canvasUnitsAreTheCanvasPixels() = runKiteUiTest {

@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
@@ -22,6 +21,8 @@ import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.kiteui.views.hintColor
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
+import com.lightningkite.kiteui.views.cased
+import com.lightningkite.kiteui.views.casing
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactiveValue
@@ -61,12 +62,12 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
             textStyle = style,
             cursorBrush = SolidColor(color.toCompose()),
             interactionSource = interactions.source,
-            visualTransformation = if (hints.isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            visualTransformation = if (hints.isPassword) PasswordVisualTransformation() else theme.font.casing,
             keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@TextInput) }),
             decorationBox = { field ->
                 Box {
-                    if (text.isEmpty()) BasicText(hint, style = style.copy(color = theme.hintColor))
+                    if (text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     field()
                 }
             },

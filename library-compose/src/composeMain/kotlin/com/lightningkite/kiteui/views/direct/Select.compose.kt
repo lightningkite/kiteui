@@ -27,6 +27,7 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
+import com.lightningkite.kiteui.views.cased
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactive
@@ -77,7 +78,7 @@ public actual class Select actual constructor(context: ElementContext) : NativeI
         Box(modifier, propagateMinConstraints = true) {
             Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 BasicText(
-                    selected ?: "",
+                    theme.font.cased(selected ?: ""),
                     Modifier.weight(1f, fill = false).padding(end = theme.gap.toDp()),
                     style = theme.font.toTextStyle(color),
                     overflow = TextOverflow.Ellipsis,

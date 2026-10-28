@@ -23,6 +23,8 @@ import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.kiteui.views.hintColor
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
+import com.lightningkite.kiteui.views.cased
+import com.lightningkite.kiteui.views.casing
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactiveValue
@@ -62,12 +64,13 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
             },
             enabled = enabled && takesInput,
             textStyle = style,
+            visualTransformation = theme.font.casing,
             cursorBrush = SolidColor(color.toCompose()),
             interactionSource = interactions.source,
             keyboardOptions = keyboardHints.toKeyboardOptions(imeAction = ImeAction.Default),
             decorationBox = { field ->
                 Box {
-                    if (text.isEmpty()) BasicText(hint, style = style.copy(color = theme.hintColor))
+                    if (text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     field()
                 }
             },
