@@ -8,6 +8,7 @@ import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import com.lightningkite.kiteui.views.AndroidAppContext
 import com.lightningkite.reactive.core.*
+import io.ktor.util.toMap
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -41,92 +42,96 @@ public val client: HttpClient
 
 private val fetchLog = LogRoot.tag("fetch")
 
-public actual suspend fun platformFetch(
-    url: String,
-    method: HttpMethod,
-    headers: HttpHeaders,
-    body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
-): RequestResponse {
-    /**
-     * There is currently a bug in android fetch where after a sleep or lock state it will
-     * throw a UnknownHostException caused by a android.system.GaiException. To handle this
-     * added attempt and delay to wait for android fetch system to be ready
-     * https://github.com/square/okhttp/issues/8200
-     * https://cs.android.com/android/_/android/platform/frameworks/base/+/0fa9120b8f72916951b2d070afd6c3dfd3c13f77
-     **/
+internal actual object PlatformHttpFetcher : HttpFetcher {
+    actual override suspend fun fetch(
+        url: String,
+        method: HttpMethod,
+        headers: HttpHeaders,
+        body: RequestBody?,
+        onUploadProgress: ProgressCallback?,
+        onDownloadProgress: ProgressCallback?,
+    ): RequestResponse {
+        /**
+         * There is currently a bug in android fetch where after a sleep or lock state it will
+         * throw a UnknownHostException caused by a android.system.GaiException. To handle this
+         * added attempt and delay to wait for android fetch system to be ready
+         * https://github.com/square/okhttp/issues/8200
+         * https://cs.android.com/android/_/android/platform/frameworks/base/+/0fa9120b8f72916951b2d070afd6c3dfd3c13f77
+         **/
 
-    // https://github.com/square/okhttp/issues/8200
-    val maxRetries = 5
-    var attempt = 0
-    while (true) {
-        try {
-            attempt++
-            fetchLog.log("-> $method $url")
-            val response = client.request(url) {
-                this.method = when (method) {
-                    HttpMethod.GET -> io.ktor.http.HttpMethod.Get
-                    HttpMethod.POST -> io.ktor.http.HttpMethod.Post
-                    HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
-                    HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
-                    HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
-                    HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
-                }
-                headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
-                when (body) {
-                    is RequestBodyBlob -> {
-                        contentType(ContentType.parse(body.content.type))
-                        setBody(body.content.data)
+        // https://github.com/square/okhttp/issues/8200
+        val maxRetries = 5
+        var attempt = 0
+        while (true) {
+            try {
+                attempt++
+                fetchLog.log("-> $method $url")
+                val response = client.request(url) {
+                    this.method = when (method) {
+                        HttpMethod.GET -> io.ktor.http.HttpMethod.Get
+                        HttpMethod.POST -> io.ktor.http.HttpMethod.Post
+                        HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
+                        HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
+                        HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
+                        HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
                     }
-                    is RequestBodyFile -> {
-                        contentType(ContentType.parse(body.content.mimeType()))
+                    headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
+                    when (body) {
+                        is RequestBodyBlob -> {
+                            contentType(ContentType.parse(body.content.type))
+                            setBody(body.content.data)
+                        }
+                        is RequestBodyFile -> {
+                            contentType(ContentType.parse(body.content.mimeType()))
 
-                        val inputStream =
-                            AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)
-                                ?: body.content.uri.path?.let { path ->
-                                    val file = File(path)
-                                    if (file.exists()) file.inputStream() else null
-                                }
+                            val inputStream =
+                                AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)
+                                    ?: body.content.uri.path?.let { path ->
+                                        val file = File(path)
+                                        if (file.exists()) file.inputStream() else null
+                                    }
 
-                        if (inputStream != null) {
-                            setBody(object : OutgoingContent.ReadChannelContent() {
-                                override val contentType: ContentType = ContentType.parse(body.content.mimeType())
-                                override val contentLength: Long = body.bytes
-                                override fun readFrom(): ByteReadChannel = inputStream.toByteReadChannel()
-                            })
+                            if (inputStream != null) {
+                                setBody(object : OutgoingContent.ReadChannelContent() {
+                                    override val contentType: ContentType = ContentType.parse(body.content.mimeType())
+                                    override val contentLength: Long = body.bytes
+                                    override fun readFrom(): ByteReadChannel = inputStream.toByteReadChannel()
+                                })
+                            }
+                        }
+                        is RequestBodyText -> {
+                            contentType(ContentType.parse(body.type))
+                            setBody(body.content)
+                        }
+                        null -> {}
+                    }
+                    onUploadProgress?.let {
+                        onUpload { a, b ->
+                            it(a, b ?: -1L)
                         }
                     }
-                    is RequestBodyText -> {
-                        contentType(ContentType.parse(body.type))
-                        setBody(body.content)
-                    }
-                    null -> {}
-                }
-                onUploadProgress?.let {
-                    onUpload { a, b ->
-                        it(a, b ?: -1L)
+                    onDownloadProgress?.let {
+                        onDownload { a, b ->
+                            it(a, b ?: -1L)
+                        }
                     }
                 }
-                onDownloadProgress?.let {
-                    onDownload { a, b ->
-                        it(a, b ?: -1L)
-                    }
+                fetchLog.log("<- $method $url ${response.status}")
+                return RequestResponse(response)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                fetchLog.log("<X $method $url ${e::class.simpleName}: ${e.message}")
+                if (attempt >= maxRetries || e !is UnknownHostException) {
+                    throw classifyFetchFailure(e)
                 }
+                fetchLog.log("Retrying after 2 s...")
+                delay(2.seconds)
             }
-            fetchLog.log("<- $method $url ${response.status}")
-            return RequestResponse(response)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            fetchLog.log("<X $method $url ${e::class.simpleName}: ${e.message}")
-            if (attempt >= maxRetries || e !is UnknownHostException) {
-                throw classifyFetchFailure(e)
-            }
-            fetchLog.log("Retrying after 2 s...")
-            delay(2.seconds)
         }
     }
+
+    actual override fun webSocket(url: String): WebSocket = WebSocketWrapper(url)
 }
 
 /**
@@ -152,17 +157,11 @@ private fun classifyFetchFailure(e: Exception): FetchException {
     ) else ConnectionException("Network request failed", e)
 }
 
-public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
-    HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
+public actual fun HttpHeaders(map: Map<String, List<String>>): HttpHeaders =
+    HttpHeaders(map.mapKeysTo(HashMap<String, List<String>>()) { it.key.lowercase() })
 
-public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
-    HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
-
-public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
-    HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
-
-public actual class HttpHeaders(public val map: MutableMap<String, List<String>>) {
+// Claude: internal, or a MutableMap argument would pick this over HttpHeaders(Map), skipping the lowercasing.
+public actual class HttpHeaders internal constructor(public val map: MutableMap<String, List<String>>) {
     public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
@@ -176,6 +175,9 @@ public actual class HttpHeaders(public val map: MutableMap<String, List<String>>
     public actual fun set(name: String, value: String): Unit {
         map[name.lowercase()] = listOf(value)
     }
+
+    public actual fun copy(): HttpHeaders = HttpHeaders(map.toMutableMap())
+    public actual fun toMap(): Map<String, List<String>> = map.toMap()
 }
 
 public actual class RequestResponse(public val wraps: HttpResponse) {
@@ -204,13 +206,7 @@ public actual class RequestResponse(public val wraps: HttpResponse) {
         }
     }
 
-    public actual val headers: HttpHeaders
-        get() = HttpHeaders(
-            wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
-}
-
-public actual fun platformWebSocket(url: String): WebSocket {
-    return WebSocketWrapper(url)
+    public actual val headers: HttpHeaders get() = HttpHeaders(wraps.headers.toMap())
 }
 
 public class WebSocketWrapper(public val url: String) : WebSocket {

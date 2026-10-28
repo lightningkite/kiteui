@@ -2,6 +2,55 @@
 
 ## Unreleased
 
+### Telemetry (breaking)
+
+- **Telemetry now goes through your own server.** `Telemetry` is built with an `upload` function (normally
+  `telemetryUpload { api.clientTelemetry.ingest(it) }`, with lightning-server-kiteui's helper and Lightning
+  Server's `ClientTelemetryEndpoints`) instead of an OTLP endpoint and headers, so no telemetry token ships in the app. **Revoke any Grafana/OTLP token that shipped in a
+  client build.** The server adds `user.id` and forwards to its own backend. KiteUI now depends on
+  `com.lightningkite.services:telemetry-shared` (the client-safe upload format, not `basis`).
+- Records are saved to device storage and uploaded oldest first, so telemetry recorded offline or just
+  before a crash is sent on a later run. The `sendBeacon` crash path is gone.
+- Spans are short: requests, actions (`action.<title>`, with their requests as children) and screen loads
+  (`screen.load`, ending when the screen is usable). The page-long `page: X` spans and foreground session
+  span are gone. Logs and errors are labelled with the current screen rather than a guessed trace.
+- **Clients record no metrics.** There is no metrics API; `http.client.request.duration`,
+  `navigation.page_views`, `action.invocations` and `connectivity.issues` are gone (connectivity issues remain
+  WARN logs), and the server derives no metrics from client spans. Clients are untrusted, and metric
+  cardinality drives observability cost. Unsampled sessions record no spans.
+- **`Telemetry` no longer takes `serviceName`.** The server names client records `<projectName>-client` and
+  keeps only `service.version`, `os.type`, `session.id` and `app.debug` from the client, so a client can't
+  pose as the server. Uploads are rate limited server-side; a 429 is retried later.
+- `span(name) { }` is now `span(owner, operation, attributes) { }`, recording into the installed `Telemetry`
+  (it just runs the block when none is installed), and throws for an owner the server would refuse.
+- `Telemetry.flush()` saves and uploads now, waiting for an upload already running, and throws if the upload
+  fails. `Telemetry.clear()` deletes unsent records, for when a flush at sign-out fails.
+- Removed: `TelemetryConfig`, `exceptionAttributes` (use the new
+  `ElementContext.telemetryAttributes`), and `ActionInstrumentation`/`actionInstrumentors` (replaced by
+  `Action.Interceptor`, which wraps the action's run). `crash.fingerprint` is now `error.fingerprint`, and
+  `page.name` is `app.screen.name`. See `docs/TELEMETRY.md` for setup and dashboard migration.
+- **Interceptors are registered, not added to public lists.** `fetchInterceptors`, `Log.interceptors` and
+  `actionInterceptors` were mutable lists anyone could `clear()`. They are now `HttpFetcher.Interceptor.global`,
+  `Log.Interceptor.global` and `Action.Interceptor.global`, each a `LiveRegistry` whose `register(...)` returns a
+  `Release` that removes only that interceptor. `LogInterceptor` is now `Log.Interceptor`. `HttpFetcher.Interceptor` and
+  `Action.Interceptor` are `fun interface`s; wrap lambdas in
+  `HttpFetcher.Interceptor { ... }` where a bare lambda was passed before.
+- **`Throwable_report` is now the `ThrowableReporter.global` registry.** Assigning the old variable replaced
+  whatever was there, so a second reporter silently disconnected the first. Register a `ThrowableReporter`
+  instead; `Throwable.report(context)` sends to every one. Stack traces are still printed by default; call
+  `ThrowableReporter.removeDefaultHandler()` to stop that.
+- **Crash fingerprints changed**, so existing groups don't continue: they no longer include exception messages
+  or JS column numbers, which split one crash into many groups.
+- Request spans replace path segments that look like ids, emails or tokens with `{id}`, and are `Error` for
+  status 400 and above. Relative URLs (same-origin requests on the web) get a `traceparent` whenever
+  `tracePropagationHosts` isn't empty.
+- Attributes are fitted to the server's limits before they're saved, since one record over them made the server
+  refuse its whole batch. `Telemetry.install` does nothing during server-side rendering.
+- **`HttpFetcher.platform` and `HttpFetcher.default` are now the objects `HttpFetcher.Platform` and
+  `HttpFetcher.Default`.** `platformFetch(...)` and `platformWebSocket(...)` are gone; call
+  `HttpFetcher.Platform.fetch(...)` and `HttpFetcher.Platform.webSocket(...)`. `HttpFetcher.intercepted` takes a
+  `List`, and `HttpFetcher.Intercepted(fetcher, interceptors)` is the class behind it.
+
 ### Navigation
 
 - **Showing a page no longer focuses its first field.** `navigatorView` used to request focus on the

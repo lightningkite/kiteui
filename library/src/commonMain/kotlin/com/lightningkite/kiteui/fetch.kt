@@ -5,37 +5,25 @@ import kotlin.time.Duration
 public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
-    headers: HttpHeaders = httpHeaders(),
+    headers: HttpHeaders = HttpHeaders(),
     type: String = "text/plain",
     body: String
 ): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyText(body, type))
 public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
-    headers: HttpHeaders = httpHeaders(),
+    headers: HttpHeaders = HttpHeaders(),
     body: Blob
 ): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyBlob(body))
 public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
-    headers: HttpHeaders = httpHeaders(),
+    headers: HttpHeaders = HttpHeaders(),
     body: FileReference
 ): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
 
-/** Interceptor that wraps HTTP requests. Call [proceed] to continue the chain. */
-public typealias FetchInterceptor = suspend (
-    url: String,
-    method: HttpMethod,
-    headers: HttpHeaders,
-    body: RequestBody?,
-    proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse,
-) -> RequestResponse
-
-/** Interceptors applied to all [fetch] calls, in order. Each wraps the next in the chain. */
-public val fetchInterceptors: MutableList<FetchInterceptor> = mutableListOf()
-
 /**
- * Issues a request through [HttpFetcher.default], applying the global [fetchInterceptors].
+ * Issues a request through [HttpFetcher.Default], applying the interceptors in [HttpFetcher.Interceptor.global].
  *
  * Prefer taking an [HttpFetcher] and calling [HttpFetcher.fetch] on it. This function can only ever
  * reach the one process-wide chain, so code that calls it cannot be pointed at a fake and cannot be
@@ -44,24 +32,14 @@ public val fetchInterceptors: MutableList<FetchInterceptor> = mutableListOf()
 public suspend fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
-    headers: HttpHeaders = httpHeaders(),
+    headers: HttpHeaders = HttpHeaders(),
     body: RequestBody? = null,
     onUploadProgress: ProgressCallback? = null,
     onDownloadProgress: ProgressCallback? = null,
-): RequestResponse = HttpFetcher.default.fetch(url, method, headers, body, onUploadProgress, onDownloadProgress)
-
-public expect suspend fun platformFetch(
-    url: String,
-    method: HttpMethod = HttpMethod.GET,
-    headers: HttpHeaders = httpHeaders(),
-    body: RequestBody? = null,
-    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
-    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
-): RequestResponse
+): RequestResponse = HttpFetcher.Default.fetch(url, method, headers, body, onUploadProgress, onDownloadProgress)
 
 @Deprecated("Use webSocket, the proper spelling", ReplaceWith("webSocket")) public fun websocket(url: String): WebSocket = webSocket(url)
-public expect fun platformWebSocket(url: String): WebSocket
-public fun webSocket(url: String): WebSocket = HttpFetcher.default.webSocket(url)
+public fun webSocket(url: String): WebSocket = HttpFetcher.Default.webSocket(url)
 
 /** Any failure to complete an HTTP request. Retry [ConnectionException]; do not retry [RequestBlockedException]. */
 public sealed class FetchException(message: String, cause: Exception? = null): Exception(message, cause)
@@ -123,17 +101,34 @@ public class RequestBlockedException(message: String, cause: Exception? = null):
 
 public enum class HttpMethod { GET, POST, PUT, PATCH, DELETE, HEAD }
 
-public fun httpHeaders(vararg entries: Pair<String, String>): HttpHeaders = httpHeaders(entries.toList())
-public expect fun httpHeaders(map: Map<String, String> = mapOf()): HttpHeaders
-public expect fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders
-public expect fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders
-public expect fun httpHeaders(headers: HttpHeaders): HttpHeaders
+/** Returns headers holding every value in [map]. Names are case-insensitive. */
+public expect fun HttpHeaders(map: Map<String, List<String>> = emptyMap()): HttpHeaders
+
+public fun HttpHeaders(map: Map<String, String>): HttpHeaders = HttpHeaders(map.toList())
+public fun HttpHeaders(list: List<Pair<String, String>>): HttpHeaders = HttpHeaders(list.groupBy({ it.first.lowercase() }, { it.second }))
+public fun HttpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders = HttpHeaders(sequence.toList())
+public fun HttpHeaders(vararg entries: Pair<String, String>): HttpHeaders = HttpHeaders(entries.toList())
+
+public inline fun HttpHeaders(builder: HttpHeaders.() -> Unit): HttpHeaders = HttpHeaders().apply(builder)
+
+/** Returns headers holding these headers and [other], where a name in both takes only the values from [other]. */
+public operator fun HttpHeaders.plus(other: HttpHeaders): HttpHeaders = copy().apply {
+    for ((name, values) in other.toMap()) {
+        delete(name)
+        for (value in values) append(name, value)
+    }
+}
+
 public expect class HttpHeaders {
     public fun append(name: String, value: String)
     public fun delete(name: String)
     public fun get(name: String): String?
     public fun has(name: String): Boolean
     public fun set(name: String, value: String)
+    /** Returns a copy of these headers that can be changed without affecting them. */
+    public fun copy(): HttpHeaders
+    /** Returns every header name, lowercased, with its values. */
+    public fun toMap(): Map<String, List<String>>
 }
 
 public expect class RequestResponse {

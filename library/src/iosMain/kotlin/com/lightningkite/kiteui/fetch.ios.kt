@@ -45,102 +45,106 @@ public val client: HttpClient = HttpClient {
     install(HttpCache)
 }
 
-public actual suspend fun platformFetch(
-    url: String,
-    method: HttpMethod,
-    headers: HttpHeaders,
-    body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
-): RequestResponse {
-    return run {
-        try {
-            fetchLog.log("-> $method $url")
-            val response = run {
-                client.request(url) {
-                    this.method = when (method) {
-                        HttpMethod.GET -> io.ktor.http.HttpMethod.Get
-                        HttpMethod.POST -> io.ktor.http.HttpMethod.Post
-                        HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
-                        HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
-                        HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
-                        HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
-                    }
-                    headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
-                    when (body) {
-                        is RequestBodyBlob -> {
-                            contentType(ContentType.parse(body.content.type))
-                            setBody(body.content.data.toByteArray())
+internal actual object PlatformHttpFetcher : HttpFetcher {
+    actual override suspend fun fetch(
+        url: String,
+        method: HttpMethod,
+        headers: HttpHeaders,
+        body: RequestBody?,
+        onUploadProgress: ProgressCallback?,
+        onDownloadProgress: ProgressCallback?,
+    ): RequestResponse {
+        return run {
+            try {
+                fetchLog.log("-> $method $url")
+                val response = run {
+                    client.request(url) {
+                        this.method = when (method) {
+                            HttpMethod.GET -> io.ktor.http.HttpMethod.Get
+                            HttpMethod.POST -> io.ktor.http.HttpMethod.Post
+                            HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
+                            HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
+                            HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
+                            HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
                         }
+                        headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
+                        when (body) {
+                            is RequestBodyBlob -> {
+                                contentType(ContentType.parse(body.content.type))
+                                setBody(body.content.data.toByteArray())
+                            }
 
-                        is RequestBodyFile -> {
-                            // 1. Resolve the UTType just like before
-                            val type = body.content.suggestedType
-                                ?: (body.content.provider.registeredContentTypes.firstOrNull() as? UTType)
-                                ?: UTTypeData
+                            is RequestBodyFile -> {
+                                // 1. Resolve the UTType just like before
+                                val type = body.content.suggestedType
+                                    ?: (body.content.provider.registeredContentTypes.firstOrNull() as? UTType)
+                                    ?: UTTypeData
 
-                            // 2. FIX: Fallback to octet-stream instead of throwing an Exception
-                            val mimeString = type.preferredMIMEType ?: "application/octet-stream"
-                            contentType(ContentType.parse(mimeString))
+                                // 2. FIX: Fallback to octet-stream instead of throwing an Exception
+                                val mimeString = type.preferredMIMEType ?: "application/octet-stream"
+                                contentType(ContentType.parse(mimeString))
 
-                            val fileData = suspendCoroutine { continuation ->
-                                body.content.provider.loadDataRepresentationForContentType(type) { data, error ->
-                                    if (error != null) {
-                                        // If the specific type fails, sometimes falling back to UTTypeData works
-                                        if (type != UTTypeData) {
-                                            body.content.provider.loadDataRepresentationForContentType(UTTypeData) { data2, error2 ->
-                                                if(error2 != null) {
-                                                    continuation.resumeWithException(Exception(error2.description))
-                                                } else {
-                                                    val rawData = data2?.toByteArray() ?: throw Exception("Data is null")
-                                                    continuation.resume(rawData)
+                                val fileData = suspendCoroutine { continuation ->
+                                    body.content.provider.loadDataRepresentationForContentType(type) { data, error ->
+                                        if (error != null) {
+                                            // If the specific type fails, sometimes falling back to UTTypeData works
+                                            if (type != UTTypeData) {
+                                                body.content.provider.loadDataRepresentationForContentType(UTTypeData) { data2, error2 ->
+                                                    if(error2 != null) {
+                                                        continuation.resumeWithException(Exception(error2.description))
+                                                    } else {
+                                                        val rawData = data2?.toByteArray() ?: throw Exception("Data is null")
+                                                        continuation.resume(rawData)
+                                                    }
                                                 }
+                                            } else {
+                                                continuation.resumeWithException(Exception(error.description))
                                             }
                                         } else {
-                                            continuation.resumeWithException(Exception(error.description))
+                                            val rawData = data?.toByteArray() ?: throw Exception("Data is null")
+                                            continuation.resume(rawData)
                                         }
-                                    } else {
-                                        val rawData = data?.toByteArray() ?: throw Exception("Data is null")
-                                        continuation.resume(rawData)
                                     }
                                 }
+                                setBody(fileData)
                             }
-                            setBody(fileData)
-                        }
 
-                        is RequestBodyText -> {
-                            contentType(ContentType.parse(body.type))
-                            setBody(body.content)
-                        }
+                            is RequestBodyText -> {
+                                contentType(ContentType.parse(body.type))
+                                setBody(body.content)
+                            }
 
-                        null -> {}
-                    }
-                    onUploadProgress?.let {
-                        onUpload { a, b ->
-                            run {
-                                it(a, b ?: -1)
+                            null -> {}
+                        }
+                        onUploadProgress?.let {
+                            onUpload { a, b ->
+                                run {
+                                    it(a, b ?: -1)
+                                }
                             }
                         }
-                    }
-                    onDownloadProgress?.let {
-                        onDownload { a, b ->
-                            run {
-                                it(a, b ?: -1)
+                        onDownloadProgress?.let {
+                            onDownload { a, b ->
+                                run {
+                                    it(a, b ?: -1)
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            fetchLog.log("<- $method $url ${response.status}")
-            RequestResponse(response)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            fetchLog.log("<X $method $url ${e::class.simpleName}: ${e.message}")
-            throw classifyFetchFailure(e)
+                fetchLog.log("<- $method $url ${response.status}")
+                RequestResponse(response)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                fetchLog.log("<X $method $url ${e::class.simpleName}: ${e.message}")
+                throw classifyFetchFailure(e)
+            }
         }
     }
+
+    actual override fun webSocket(url: String): WebSocket = WebSocketWrapper(url)
 }
 
 /**
@@ -173,17 +177,11 @@ private fun classifyFetchFailure(e: Exception): FetchException {
     else ConnectionException("Network request failed", e)
 }
 
-public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
-    HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
+public actual fun HttpHeaders(map: Map<String, List<String>>): HttpHeaders =
+    HttpHeaders(map.mapKeysTo(HashMap<String, List<String>>()) { it.key.lowercase() })
 
-public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
-    HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
-
-public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
-    HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
-
-public actual class HttpHeaders(public val map: MutableMap<String, List<String>>) {
+// Claude: internal, or a MutableMap argument would pick this over HttpHeaders(Map), skipping the lowercasing.
+public actual class HttpHeaders internal constructor(public val map: MutableMap<String, List<String>>) {
     public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
@@ -197,6 +195,9 @@ public actual class HttpHeaders(public val map: MutableMap<String, List<String>>
     public actual fun set(name: String, value: String): Unit {
         map[name.lowercase()] = listOf(value)
     }
+
+    public actual fun copy(): HttpHeaders = HttpHeaders(map.toMutableMap())
+    public actual fun toMap(): Map<String, List<String>> = map.toMap()
 }
 
 public actual class RequestResponse(public val wraps: HttpResponse) {
@@ -223,13 +224,7 @@ public actual class RequestResponse(public val wraps: HttpResponse) {
         }
     }
 
-    public actual val headers: HttpHeaders
-        get() = HttpHeaders(
-            wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
-}
-
-public actual fun platformWebSocket(url: String): WebSocket {
-    return WebSocketWrapper(url)
+    public actual val headers: HttpHeaders get() = HttpHeaders(wraps.headers.toMap())
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")

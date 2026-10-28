@@ -1,11 +1,6 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.coroutines.*
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.minutes
@@ -222,15 +217,16 @@ public suspend fun ConnectivityGate.runRequest(
     tag: String,
     request: suspend () -> RequestResponse,
 ): RequestResponse {
+    val suppressed = coroutineContext[ConnectivityIssueSuppress.Key] != null
     suspend fun attempt(): RequestResponse {
         val response = request()
         if (response.status in Connectivity.stopConnectivityCodes) {
-            Connectivity.lastConnectivityIssueCode.value = response.status
+            if (!suppressed) Connectivity.lastConnectivityIssueCode.value = response.status
             throw response.connectivityFailure()
         }
         return response
     }
-    if (coroutineContext[ConnectivityIssueSuppress.Key] != null) return attempt()
+    if (suppressed) return attempt()
     return run(tag) {
         try {
             attempt()
@@ -262,11 +258,11 @@ public suspend fun ConnectivityGate.runRequest(
 public suspend fun connectivityFetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
-    headers: suspend () -> HttpHeaders = { httpHeaders() },
+    headers: suspend () -> HttpHeaders = { HttpHeaders() },
     body: RequestBody?,
 ): RequestResponse = Connectivity.fetchGate.runRequest("$method $url") {
     // headers() is called in here, not outside, so every retry carries a freshly computed set.
-    HttpFetcher.default.fetch(url = url, method = method, headers = headers(), body = body)
+    HttpFetcher.Default.fetch(url = url, method = method, headers = headers(), body = body)
 }
 
 public class ConnectivityIssueSuppress(): CoroutineContext.Element {

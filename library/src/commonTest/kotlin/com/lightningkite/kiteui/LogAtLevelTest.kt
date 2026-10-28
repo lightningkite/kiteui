@@ -16,12 +16,11 @@ class LogAtLevelTest : BaseUiTest() {
 
     private fun collecting(block: () -> Unit): List<Pair<LogLevel, String>> {
         val seen = mutableListOf<Pair<LogLevel, String>>()
-        val interceptor = LogInterceptor { level, _, entries -> seen.add(level to entries.joinToString(" ")) }
-        Log.interceptors.add(interceptor)
+        val release = Log.Interceptor.global.register(Log.Interceptor { level, _, entries -> seen.add(level to entries.joinToString(" ")) })
         try {
             block()
         } finally {
-            Log.interceptors.remove(interceptor)
+            release()
         }
         return seen
     }
