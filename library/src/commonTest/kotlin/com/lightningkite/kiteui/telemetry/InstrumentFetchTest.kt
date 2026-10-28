@@ -1,7 +1,11 @@
 package com.lightningkite.kiteui.telemetry
 
+import com.lightningkite.kiteui.HttpFetcher
 import com.lightningkite.kiteui.HttpHeaders
 import com.lightningkite.kiteui.HttpMethod
+import com.lightningkite.kiteui.TestServer
+import com.lightningkite.kiteui.networkTest
+import com.lightningkite.services.telemetry.RecordedSpan
 import com.lightningkite.services.telemetry.TelemetryKeys
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -125,6 +129,18 @@ class InstrumentFetchTest {
         val span = t.recordedSpans().single()
         assertEquals("ProceedCapture", span.error?.type)
         assertEquals("example.com", span.attributes[TelemetryKeys.Server.address])
+    }
+
+    @Test
+    fun errorStatusIsAnErrorSpan() = networkTest {
+        val t = testTelemetry()
+        for (path in listOf("hello", "status/500")) {
+            t.instrumentFetch("${TestServer.http}/$path", HttpMethod.GET, HttpHeaders(), null) { u, m, h, b -> HttpFetcher.Platform.fetch(u, m, h, b) }
+        }
+        val (ok, failed) = t.recordedSpans()
+        assertEquals(RecordedSpan.Outcome.Ok, ok.outcome)
+        assertEquals(RecordedSpan.Outcome.Error, failed.outcome)
+        assertEquals(500L, failed.attributes[TelemetryKeys.Http.responseStatusCode])
     }
 
     @Test

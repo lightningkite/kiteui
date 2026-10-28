@@ -215,7 +215,7 @@ public class Telemetry(
         var outcome = RecordedSpan.Outcome.Error
         var error: RecordedError? = null
         try {
-            return withContext(span) { action(span) }.also { outcome = RecordedSpan.Outcome.Ok }
+            return withContext(span) { action(span) }.also { outcome = if (span.failed) RecordedSpan.Outcome.Error else RecordedSpan.Outcome.Ok }
         } catch (e: CancellationException) {
             outcome = RecordedSpan.Outcome.Cancelled
             throw e
@@ -272,6 +272,7 @@ public class Telemetry(
             }
             val response = proceed(url, method, outHeaders, body)
             span.attributes += telemetryAttributesOf(TelemetryKeys.Http.responseStatusCode to response.status.toLong())
+            span.failed = response.status >= 400 // OpenTelemetry's rule for client spans
             response
         }
     }
@@ -335,6 +336,9 @@ public suspend fun <T> span(
 
 /** The span the current coroutine runs in; spans started inside it become its children. */
 internal class ClientSpan(val traceId: String, val spanId: String, var attributes: TelemetryAttributes) : AbstractCoroutineContextElement(Key) {
+    /** Set when the work returned normally but still failed, such as a request answered with an error status. */
+    var failed: Boolean = false
+
     companion object Key : CoroutineContext.Key<ClientSpan>
 }
 
