@@ -45,10 +45,10 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInParent
-import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onVisibilityChanged
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.node.DelegatingNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.PointerInputModifierNode
@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.lerp
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
@@ -324,7 +325,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     }
 
     // Compose positions are in pixels; KiteUI's are in dp.
-    public actual fun screenRectangle(): Rect? = coordinates?.takeIf { it.isAttached }?.boundsInWindow()?.toRect()
+    // Unclipped, like the web's getBoundingClientRect: a partly scrolled-out element keeps its whole size.
+    public actual fun screenRectangle(): Rect? = coordinates?.takeIf { it.isAttached }
+        ?.let { androidx.compose.ui.geometry.Rect(it.positionInWindow(), it.size.toSize()) }?.toRect()
     public actual fun parentRectangle(): Rect? = coordinates?.takeIf { it.isAttached }?.boundsInParent()?.toRect()
 
     private fun androidx.compose.ui.geometry.Rect.toRect() = Rect(
