@@ -65,6 +65,22 @@ class LayoutTest {
     }
 
     @Test
+    fun aspectRatioFollowsAHeightStretchedByARow() = runKiteUiTest {
+        var box: Frame? = null
+        showKiteUi {
+            col {
+                sizeConstraints(height = 100.px).row {
+                    sizeConstraints(aspectRatio = 2 to 1).frame { box = this }
+                    expanding.space()
+                }
+            }
+        }
+        val bounds = box!!.screenRectangle()!!
+        assertEquals(100.0, bounds.height, 1.0)
+        assertEquals(200.0, bounds.width, 1.0)
+    }
+
+    @Test
     fun swapViewKeepsShownWhenInCharge() = runKiteUiTest {
         val visible = Signal(false)
         showKiteUi {

@@ -528,9 +528,11 @@ private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, 
         maxHeight = maxHeight,
     )
     c.aspectRatio?.let { ratio ->
-        // Derive the unconstrained axis from the constrained one.
+        // Derive one axis from the other: from the height when only it is fixed (explicitly, or stretched by a row,
+        // as on Android), otherwise from the width if it's bounded.
+        val fromHeight = (own.hasFixedHeight && !own.hasFixedWidth) || !own.hasBoundedWidth
         own = when {
-            own.hasBoundedWidth && (height == null) -> {
+            !fromHeight -> {
                 val w = own.maxWidth
                 val h = (w / ratio).toInt().coerceIn(own.minHeight, own.maxHeight)
                 own.copy(minWidth = w, maxWidth = w, minHeight = h, maxHeight = h)
