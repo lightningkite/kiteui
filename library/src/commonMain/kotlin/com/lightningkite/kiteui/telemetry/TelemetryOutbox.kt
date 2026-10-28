@@ -49,8 +49,8 @@ internal class TelemetryOutbox(
 
     val bufferedRecords: Int get() = synchronized(lock) { spans.size + logs.size }
 
-    fun add(span: RecordedSpan): Unit = synchronized(lock) { spans += span }
-    fun add(log: RecordedLog): Unit = synchronized(lock) { logs += log }
+    fun add(span: RecordedSpan): Unit = synchronized(lock) { spans += span.copy(attributes = span.attributes.withinServerLimits()) }
+    fun add(log: RecordedLog): Unit = synchronized(lock) { logs += log.copy(attributes = log.attributes.withinServerLimits()) }
 
     /** Moves buffered records into a new batch and saves the outbox. [durably] for the crash path, where the process is about to die. */
     fun persist(durably: Boolean = false): Unit = synchronized(lock) {
@@ -136,8 +136,32 @@ internal class TelemetryOutbox(
         ArrayList()
     }
 
+    // Claude: the server refuses a whole batch for one record over its limits (Lightning Server's ClientTelemetryEndpoints),
+    // so attributes with invalid names or past the count are dropped and long values are cut short.
+    private fun TelemetryAttributes.withinServerLimits(): TelemetryAttributes {
+        val kept = map.entries.filter { NAME_PATTERN.matches(it.key.name) }.take(MAX_ATTRIBUTES)
+        if (kept.size == map.size && kept.all { it.value.fits() }) return this
+        @Suppress("UNCHECKED_CAST")
+        return TelemetryAttributes(kept.map { (key, value) -> TelemetryKey.Entry(key as TelemetryKey<Any>, value.cut()) })
+    }
+
+    private fun Any.fits(): Boolean = when (this) {
+        is String -> length <= MAX_VALUE_LENGTH
+        is List<*> -> all { it !is String || it.length <= MAX_VALUE_LENGTH }
+        else -> true
+    }
+
+    private fun Any.cut(): Any = when (this) {
+        is String -> take(MAX_VALUE_LENGTH)
+        is List<*> -> map { if (it is String) it.take(MAX_VALUE_LENGTH) else it }
+        else -> this
+    }
+
     companion object {
         const val STORAGE_KEY = "kiteui.telemetry.outbox"
+        const val MAX_ATTRIBUTES = 128
+        const val MAX_VALUE_LENGTH = 4096
+        val NAME_PATTERN = Regex("[A-Za-z][A-Za-z0-9_.-]{0,63}")
         const val MAX_STORED_CHARS = 512 * 1024
         val firstRetryDelay: Duration = 30.seconds
         val maxRetryDelay: Duration = 5.minutes

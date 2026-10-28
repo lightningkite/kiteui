@@ -4,6 +4,7 @@ import com.lightningkite.services.telemetry.LogLevel
 import com.lightningkite.services.telemetry.RecordedLog
 import com.lightningkite.services.telemetry.TelemetryAttributes
 import com.lightningkite.services.telemetry.TelemetryBatch
+import com.lightningkite.services.telemetry.TelemetryKey
 import com.lightningkite.services.telemetry.TelemetryKeys
 import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.coroutines.CompletableDeferred
@@ -107,6 +108,24 @@ class TelemetryOutboxTest {
         outbox.upload() // must return normally, or the periodic upload loop would end
 
         assertEquals("kept", outbox.batches.single().logs.single().message)
+    }
+
+    @Test
+    fun recordsAreMadeToFitTheServersLimits() {
+        val outbox = TelemetryOutbox(resource) {}
+        val attributes = TelemetryAttributes {
+            put(TelemetryKey.OfString("long"), "x".repeat(5000))
+            put(TelemetryKey.OfString("1 bad name"), "dropped")
+            repeat(200) { put(TelemetryKey.OfLong("n$it"), it) }
+        }
+        outbox.add(RecordedLog(Clock.System.now(), LogLevel.Warn, "m", attributes))
+        outbox.persist()
+
+        val kept = outbox.batches.single().logs.single().attributes
+        assertEquals(TelemetryOutbox.MAX_ATTRIBUTES, kept.map.size)
+        assertEquals(TelemetryOutbox.MAX_VALUE_LENGTH, kept[TelemetryKey.OfString("long")]!!.length)
+        assertTrue(kept.keys.none { it.name == "1 bad name" })
+        assertEquals(5L, kept[TelemetryKey.OfLong("n5")], "kept attributes keep their types")
     }
 
     @Test

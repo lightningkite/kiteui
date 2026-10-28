@@ -98,9 +98,10 @@ span("checkout", "submit", telemetryAttributesOf(TelemetryKey.OfString("checkout
 
 Without an installed `Telemetry`, `span` just runs its block. There is no client metrics API.
 
-The server rejects a batch (400, so it's dropped) if an owner or attribute name doesn't match
-`[A-Za-z][A-Za-z0-9_.-]{0,63}`, a record has more than 128 attributes, or an attribute value is longer than
-4096 characters.
+The server rejects a whole batch if an owner or attribute name doesn't match `[A-Za-z][A-Za-z0-9_.-]{0,63}`, a
+record has more than 128 attributes, or an attribute value is longer than 4096 characters. So `span` throws for an
+invalid owner, and before a record is saved, attributes with invalid names or past the 128th are dropped and longer
+values are cut to 4096 characters.
 
 ## Delivery
 

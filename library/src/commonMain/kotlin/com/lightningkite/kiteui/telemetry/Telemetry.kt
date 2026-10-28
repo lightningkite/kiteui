@@ -323,6 +323,9 @@ private class ScreenLoadTimeout : Exception("The screen wasn't usable within 60 
 /**
  * Records [action] as span `owner.operation` with the installed [Telemetry], as a child of the current span if
  * there is one. Just runs [action] when telemetry isn't installed.
+ *
+ * @throws IllegalArgumentException if [owner] doesn't start with a letter followed by up to 63 letters, digits,
+ *   `_`, `.` or `-`, which the server requires.
  */
 public suspend fun <T> span(
     owner: String,
@@ -330,6 +333,7 @@ public suspend fun <T> span(
     attributes: TelemetryAttributes = TelemetryAttributes.empty,
     action: suspend () -> T,
 ): T {
+    require(TelemetryOutbox.NAME_PATTERN.matches(owner)) { "Telemetry owner '$owner' must match ${TelemetryOutbox.NAME_PATTERN}." }
     val telemetry = Telemetry.installed ?: return action()
     return telemetry.span(owner, operation, attributes) { action() }
 }

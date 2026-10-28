@@ -130,6 +130,11 @@ class TelemetryTest {
     }
 
     @Test
+    fun spanOwnersMustBeValidNames() = runTest {
+        assertFailsWith<IllegalArgumentException> { span("check out", "pay") {} }
+    }
+
+    @Test
     fun actionCarriesTheScreenAttributesOfTheScopeItStartedFrom() = runTest {
         val t = testTelemetry()
         val elementScope = CoroutineScope(TelemetryAttributesElement(screenAttributes) + Job())
