@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class RecyclerTest {
@@ -156,5 +157,26 @@ class RecyclerTest {
             release()
         }
         waitUntil(timeoutMillis = 3_000) { visibleItems().firstOrNull()?.removePrefix("Item ")?.toInt()?.let { it > 300 } == true }
+    }
+
+    // Cells are sized before they're laid out; one whose wrapped text makes it taller mustn't overlap the next.
+    @Test
+    fun cellsOfDifferentHeightsDontOverlap() = runKiteUiTest {
+        showList {
+            children(items(50), id = { it }) { item ->
+                row {
+                    expanding.text { ::content { "Item ${item()} " + "word ".repeat(item() % 4 * 15) } }
+                    text("End")
+                }
+            }
+        }
+        val cells = onAllNodes(hasText("Item ", substring = true)).fetchSemanticsNodes()
+            .map { it.boundsInRoot }
+            .filter { it.height > 1f }
+            .sortedBy { it.top }
+        assertTrue(cells.size > 3, "Expected several cells on screen")
+        cells.zipWithNext().forEach { (above, below) ->
+            assertTrue(above.bottom <= below.top + 0.5f, "Cells overlap: $above and $below")
+        }
     }
 }
