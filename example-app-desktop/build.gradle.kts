@@ -56,6 +56,10 @@ kotlin {
 tasks.named<Test>("jvmTest") {
     systemProperty("java.awt.headless", "true")
     timeout.set(Duration.ofMinutes(5))
+    // PlatformStorage's files go here, not into the developer's real app-data folder.
+    val dataDirectory = layout.buildDirectory.dir("tmp/jvmTest/data").get().asFile
+    systemProperty("kiteui.dataDirectory", dataDirectory.absolutePath)
+    doFirst { dataDirectory.deleteRecursively() }
     // The example app turns on KiteUI's leak detector, which calls System.gc(); by default that's a full stop-the-world
     // collection, long enough to drop frames.
     jvmArgs("-XX:+ExplicitGCInvokesConcurrent")
