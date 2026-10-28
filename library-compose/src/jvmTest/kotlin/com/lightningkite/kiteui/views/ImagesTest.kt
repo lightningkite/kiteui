@@ -245,7 +245,7 @@ class ImagesTest {
         waitForIdle()
         assertEquals(200.0, canvasWidth)
         assertEquals(canvasWidth, 100.px.canvasUnits)
-
+    }
     // Both GIFs are 20x20, red for 300ms and then blue for 300ms; one loops forever and the other plays once.
     @Test
     fun gifsAnimate() = runKiteUiTest {
