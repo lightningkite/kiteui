@@ -61,6 +61,30 @@ class InstrumentFetchTest {
     }
 
     @Test
+    fun hostsMatchIgnoringCase() = runTest {
+        val t = testTelemetry(tracePropagationHosts = listOf("Example.com"))
+        assertTrue(captureHeaders(t, "https://API.EXAMPLE.COM/api").has("traceparent"))
+        assertEquals("api.example.com", t.recordedSpans().single().attributes[TelemetryKeys.Server.address])
+    }
+
+    @Test
+    fun ipv6HostKeepsItsBrackets() = runTest {
+        val t = testTelemetry()
+        captureHeaders(t, "http://[::1]:8080/api")
+        assertEquals("[::1]", t.recordedSpans().single().attributes[TelemetryKeys.Server.address])
+    }
+
+    @Test
+    fun relativeUrlsGoToTheOwnOriginAndArePropagatedTo() = runTest {
+        val t = testTelemetry(tracePropagationHosts = listOf("example.com"))
+        assertTrue(captureHeaders(t, "/api/items?token=secret").has("traceparent"))
+        val span = t.recordedSpans().single()
+        assertEquals("/api/items", span.attributes[TelemetryKeys.Url.path])
+        assertNull(span.attributes[TelemetryKeys.Server.address])
+        assertFalse(captureHeaders(testTelemetry(tracePropagationHosts = emptyList()), "/api/items").has("traceparent"))
+    }
+
+    @Test
     fun traceparentHasUnsampledFlagWhenNotSampled() = runTest {
         val t = testTelemetry(traceSamplingRate = 0.0)
         assertTrue(captureHeaders(t).get("traceparent")!!.endsWith("-00"))

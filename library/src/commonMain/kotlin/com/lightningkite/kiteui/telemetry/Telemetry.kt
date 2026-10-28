@@ -65,6 +65,7 @@ import com.lightningkite.kiteui.LogLevel as KiteUiLogLevel
  *   whether it was delivered or permanently refused.
  * @param traceSamplingRate the fraction of sessions whose spans are recorded.
  * @param tracePropagationHosts hosts (and their subdomains) that receive a `traceparent` header, linking their spans to ours.
+ *   Requests to relative URLs, which go to the web page's own origin, receive one whenever this isn't empty.
  */
 public class Telemetry(
     serviceVersion: String,
@@ -249,18 +250,24 @@ public class Telemetry(
     ): RequestResponse {
         if (currentCoroutineContext()[TelemetryUploading] != null) return proceed(url, method, headers, body)
 
-        // Strip credentials once, from the whole URL, so no attribute derived below can carry them.
-        // `proceed` still receives the untouched `url`, because the request itself may need them.
-        val afterScheme = url.withoutUserInfo().substringAfter("://").substringBefore("?").substringBefore("#") // queries carry tokens
-        val host = afterScheme.substringBefore("/").substringBefore(":")
+        // Claude: `user:pass@` can only appear in the authority, so taking the host after its last '@' drops credentials,
+        // and the path is read after the authority. A relative URL has no authority: it goes to the page's own origin.
+        val afterScheme = url.substringAfter("://", missingDelimiterValue = "")
+        val authority = afterScheme.takeWhile { it != '/' && it != '?' && it != '#' }
+        val hostAndPort = authority.substringAfterLast('@')
+        val host = (if (hostAndPort.startsWith("[")) hostAndPort.substringBefore("]") + "]" else hostAndPort.substringBefore(":")).lowercase()
+        val path = (if (afterScheme.isEmpty()) url else afterScheme.drop(authority.length))
+            .substringBefore("?").substringBefore("#") // queries carry tokens
         val attributes = TelemetryAttributes {
             put(TelemetryKeys.Http.requestMethod, method.name)
-            put(TelemetryKeys.Url.path, "/" + afterScheme.substringAfter("/", ""))
-            put(TelemetryKeys.Server.address, host)
+            put(TelemetryKeys.Url.path, if (path.startsWith("/")) path else "/$path")
+            if (host.isNotEmpty()) put(TelemetryKeys.Server.address, host)
         }
+        // Claude: a same-origin request goes to the app's own server, which is where propagation is wanted.
+        val propagate = if (host.isEmpty()) tracePropagationHosts.isNotEmpty() else tracePropagationHosts.any { host == it.lowercase() || host.endsWith(".${it.lowercase()}") }
         return span("http", method.name, attributes) { span ->
             val outHeaders = headers.copy()
-            if (tracePropagationHosts.any { host == it || host.endsWith(".$it") }) {
+            if (propagate) {
                 outHeaders.set("traceparent", "00-${span.traceId}-${span.spanId}-${if (sampled) "01" else "00"}")
             }
             val response = proceed(url, method, outHeaders, body)
@@ -342,26 +349,3 @@ private fun Throwable.toRecordedError(): RecordedError = RecordedError(
     stacktrace = stackTraceToString(),
     fingerprint = CrashFingerprint.generate(this),
 )
-
-/**
- * Returns this URL with any `user:pass@` userinfo removed from its authority.
- *
- * Credentials embedded in a URL are still credentials once they reach a telemetry backend, where
- * they are retained, indexed, and readable by anyone with dashboard access. Only the authority is
- * examined, because a bare `@` is legal in a path or query and must survive untouched.
- */
-private fun String.withoutUserInfo(): String {
-    val schemeEnd = indexOf("://")
-    if (schemeEnd < 0) return this
-    val authorityStart = schemeEnd + 3
-    var authorityEnd = length
-    for (i in authorityStart until length) {
-        if (this[i] == '/' || this[i] == '?' || this[i] == '#') {
-            authorityEnd = i
-            break
-        }
-    }
-    val at = lastIndexOf('@', authorityEnd - 1)
-    if (at < authorityStart) return this
-    return substring(0, authorityStart) + substring(at + 1)
-}
