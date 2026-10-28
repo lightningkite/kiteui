@@ -15,11 +15,12 @@ import kotlinx.coroutines.CoroutineScope
 public actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
     actual override val underlyingNativeElement: SwapView get() = this
 
-    private var current: Element? = null
+    // Usually one view, but as on the web, every view a swap writes is shown, and goes at the next.
+    private var current: List<Element> = emptyList()
 
-    // The old view animates out over the new one animating in, then goes, as on the web.
+    // The old views animate out over the new ones animating in, then go, as on the web.
     public actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit) {
-        var newView: Element? = null
+        val newViews = ArrayList<Element>()
         val writer = object : ViewWriter, CoroutineScope by this {
             override val context: ElementContext get() = this@SwapView.context
 
@@ -30,21 +31,20 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
 
             @OverrideOnly
             override fun addChild(element: Element) {
-                newView = element
+                newViews += element
             }
         }
         withoutAnimation { writer.createNewView() }
-        val old = current
-        current = newView
-        old?.animateOut(transition) {
+        for (old in current) old.animateOut(transition) {
             removeChild(old)
-            if (current == null) hasContent = false
+            if (current.isEmpty()) hasContent = false
         }
-        newView?.let {
-            addChild(it)
-            it.animateIn(transition)
-            hasContent = true
+        current = newViews
+        for (view in newViews) {
+            addChild(view)
+            view.animateIn(transition)
         }
+        if (newViews.isNotEmpty()) hasContent = true
     }
 
     // Separate from shown, which belongs to shownWhen.

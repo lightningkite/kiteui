@@ -140,6 +140,31 @@ class LayoutTest {
         assertEquals(200.0, bounds.width, 1.0)
     }
 
+    // As on the web, every view a swap writes is shown, and goes at the next swap.
+    @Test
+    fun swapViewShowsAndRemovesEveryViewWritten() = runKiteUiTest {
+        lateinit var swapView: SwapView
+        lateinit var first: TextView
+        lateinit var second: TextView
+        showKiteUi {
+            col {
+                swapView = swapView {
+                    swap {
+                        first = text("First")
+                        second = text("Second")
+                    }
+                }
+            }
+        }
+        onNodeWithText("First", useUnmergedTree = true).assertExists()
+        onNodeWithText("Second", useUnmergedTree = true).assertExists()
+        runOnUiThread { swapView.swap { text("Replacement") } }
+        waitForIdle()
+        onNodeWithText("First", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("Second", useUnmergedTree = true).assertDoesNotExist()
+        assertTrue(first.isShutdown && second.isShutdown, "the replaced views should be shut down")
+    }
+
     @Test
     fun swapViewKeepsShownWhenInCharge() = runKiteUiTest {
         val visible = Signal(false)
