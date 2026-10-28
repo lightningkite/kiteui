@@ -141,7 +141,8 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         )
     } else null
 
-    internal var coordinates: LayoutCoordinates? = null
+    // State so that a layout placing something against this element (a popover) runs again when it leaves the screen.
+    internal var coordinates: LayoutCoordinates? by mutableStateOf(null)
         private set
     private val bringIntoView = BringIntoViewRequester()
     private val focusRequester = FocusRequester()

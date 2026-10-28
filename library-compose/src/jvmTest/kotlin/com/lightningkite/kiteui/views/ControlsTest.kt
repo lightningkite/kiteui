@@ -318,6 +318,25 @@ class ControlsTest {
     }
 
     @Test
+    fun popoverClosesWhenItsAnchorLeaves() = runKiteUiTest {
+        val anchorShown = Signal(true)
+        show {
+            col {
+                shownWhen { anchorShown() }.button {
+                    text("Open")
+                    onClick { openPopover(PopoverPreferredDirection.belowCenter) { text("Popped") } }
+                }
+            }
+        }
+        onNodeWithText("Open").performClick()
+        waitForIdle()
+        onNodeWithText("Popped").assertExists()
+        anchorShown.value = false
+        // shownWhen reacts on the Swing thread, which waitForIdle doesn't track.
+        waitUntil { onAllNodesWithText("Popped").fetchSemanticsNodes().isEmpty() }
+    }
+
+    @Test
     fun dismissBackgroundIgnoresClicksOnItsContent() = runKiteUiTest {
         var dismissed = 0
         val root = show {
