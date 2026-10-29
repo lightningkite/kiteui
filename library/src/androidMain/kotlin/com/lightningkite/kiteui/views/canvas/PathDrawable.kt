@@ -66,6 +66,8 @@ internal fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOf
     }
 }
 
+public fun ImageVector.toDrawable(): Drawable = PathDrawable(this)
+
 internal class PathDrawable(public val vector: ImageVector) : Drawable() {
     public val drawingResources: DrawingResources = DrawingResources()
 
