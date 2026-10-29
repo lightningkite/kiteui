@@ -65,21 +65,28 @@ public class ContextAddon<T>(public val global: Boolean = false, public val init
     }
 }
 
-/** Returns a [ContextAddon] that defaults to [init]. */
-public fun <T> contextAddon(init: T): ContextAddon<T> = ContextAddon(global = false, init)
+/** Returns a [ContextAddon] that defaults to [init], with one value per element tree if [global]. */
+public fun <T> contextAddon(init: T, global: Boolean = false): ContextAddon<T> = ContextAddon(global, init)
 
-/** Returns a [ContextAddon] with no default, which throws [IllegalStateException] if read before it is set. */
-public fun <T> lateInitContextAddon(): ContextAddon<T> = ContextAddon(global = false, ContextAddon.Init.LateInit)
+/**
+ * Returns a [ContextAddon] with no default, which throws [IllegalStateException] if read before it is set, with one
+ * value per element tree if [global].
+ */
+public fun <T> lateInitContextAddon(global: Boolean = false): ContextAddon<T> = ContextAddon(global, ContextAddon.Init.LateInit)
 
-/** Returns a [ContextAddon] that defaults to the result of [init], called once per element tree on the first read. */
-public fun <T> lazyContextAddon(init: (ElementContext) -> T): ContextAddon<T> = ContextAddon(global = false, ContextAddon.Init.Lazy(init))
+/**
+ * Returns a [ContextAddon] that defaults to the result of [init], called once per element tree on the first read, with
+ * one value per element tree if [global].
+ */
+public fun <T> lazyContextAddon(global: Boolean = false, init: (ElementContext) -> T): ContextAddon<T> =
+    ContextAddon(global, ContextAddon.Init.Lazy(init))
 
-public var ElementContext.safeInsets: Reactive<Edges> by ContextAddon(global = true, Constant(Edges.ZERO))
+public var ElementContext.safeInsets: Reactive<Edges> by contextAddon(Constant(Edges.ZERO), global = true)
 
 /**
  * Custom CoroutineDispatcher to use for Elements created with this context.
  * If set, this dispatcher will be used instead of Dispatchers.Main.immediate.
  * This is primarily useful for SSR where we need synchronous reactive scope execution.
  */
-public var ElementContext.ssrDispatcher: CoroutineDispatcher? by ContextAddon(global = true, null)
+public var ElementContext.ssrDispatcher: CoroutineDispatcher? by contextAddon(null, global = true)
     @InternalKiteUi set

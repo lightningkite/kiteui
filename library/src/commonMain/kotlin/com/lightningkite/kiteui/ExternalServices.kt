@@ -97,10 +97,9 @@ public object ExternalServices {
     public fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null): Unit = ctx.openMap(latitude, longitude, label, zoom)
 }
 
-public val ElementContext.externalServices: ExternalServicesAccess by lazyContextAddon { externalServicesAccessDefault(it) }
+public var ElementContext.externalServices: ExternalServicesAccess by lazyContextAddon(global = true) { externalServicesAccessDefault(it) }
+    @InternalKiteUi set
 
-// by Claude - rContextAddonGenerate uses property.name as the ChainMap key.
-// The RContext extension below must use the same key to share the same instance.
 @Deprecated("Use directly through context", ReplaceWith("context.externalServices"))
 public val ViewWriter.externalServices: ExternalServicesAccess get() = context.externalServices
 

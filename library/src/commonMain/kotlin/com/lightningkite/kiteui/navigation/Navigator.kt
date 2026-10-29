@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.lateInitContextAddon
-import com.lightningkite.kiteui.views.ContextAddon
+import com.lightningkite.kiteui.views.lazyContextAddon
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
@@ -85,9 +85,9 @@ public expect fun PageNavigator.bindToPlatform(context: ElementContext)
 internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 
 /** The app's page navigator, shared by the whole element tree; `appBase` sets it. */
-public var ElementContext.pageNavigator: PageNavigator by ContextAddon(global = true, ContextAddon.Init.Lazy {
+public var ElementContext.pageNavigator: PageNavigator by lazyContextAddon(global = true) {
     throw IllegalStateException(
         "'ElementContext.pageNavigator' has not been initialized. " +
                 "It is recommended to call 'appBase { ... }' at the root of your app to properly initialize pageNavigator, as well as many other properties."
     )
-})
+}

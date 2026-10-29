@@ -33,7 +33,7 @@ public class Popover internal constructor(private val onClose: () -> Unit) {
     }
 }
 
-private var ElementContext.topPopover: Popover? by ContextAddon(global = true, null)
+private var ElementContext.topPopover: Popover? by contextAddon(null, global = true)
 
 /**
  * The open popover, or `null` if none is open.

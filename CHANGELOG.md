@@ -20,7 +20,14 @@
   - `popoverCloser`, `popoverParent` and `popoverKeepOpen` are gone; `closePopovers()`, `closeThisPopover()`,
     `closeSiblingPopovers()` and `keepPopoverOpen()` are deprecated.
   - Closing a popover twice now does nothing the second time.
-- `ElementContext.pageNavigator` is global: one navigator for the whole element tree, whichever element sets it.
+- `ElementContext.pageNavigator`, `externalServices`, `appName`, `appNavFactory` and `ssrResourceRegistry` are global:
+  one value for the whole element tree, whichever element sets it. Setting `externalServices` now needs
+  `@OptIn(InternalKiteUi::class)`.
+- `contextAddon`, `lazyContextAddon` and `lateInitContextAddon` take `global = true` for an addon with one value per
+  element tree. In `lazyContextAddon` it comes before `init`, so an `init` passed as a value rather than a trailing
+  lambda must be named: `lazyContextAddon(init = ::makeIt)`.
+- Each element tree now has its own back-dismissable dialog stack and `appNavFactory`; they were shared by every
+  tree in the process.
 - `ElementContext.splitExceptionHandlers()` is gone; `split()` now scopes exception handlers and addons
   together.
 

@@ -147,11 +147,12 @@ public object AiDriver {
  * Lazily installs a [MockExternalServices] on the root view's [RContext], wrapping the existing
  * external services as a delegate. Returns the mock instance. Subsequent calls return the same instance.
  */
+@OptIn(InternalKiteUi::class)
 public fun ensureMockExternalServices(root: Element): MockExternalServices {
     val existing = root.context.externalServices
     if (existing is MockExternalServices) return existing
     val mock = MockExternalServices(delegate = existing)
-    root.context.addons[ElementContext::externalServices.name] = mock
+    root.context.externalServices = mock
     return mock
 }
 

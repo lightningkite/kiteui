@@ -45,11 +45,9 @@ public interface AppNav {
 }
 
 
-public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> Unit> by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
-    Signal(
-        ViewWriter::appNavBottomTabs
-    )
-)
+public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> Unit> by lazyContextAddon(global = true) {
+    Signal(ViewWriter::appNavBottomTabs)
+}
 
 public fun ElementWriter.appNav(main: PageNavigator, setup: AppNav.() -> Unit) {
     return appBase(main) {

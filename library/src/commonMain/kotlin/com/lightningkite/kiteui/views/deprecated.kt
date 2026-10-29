@@ -184,8 +184,8 @@ public fun ElementWriter.alert(
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("contextAddon(init)"))
 public fun <T> rContextAddon(init: T): ContextAddon<T> = contextAddon(init)
 
-@Deprecated("Renamed to reflect change in receiver", ReplaceWith("lazyContextAddon(init)"))
-public fun <T> rContextAddonGenerate(init: (ElementContext) -> T): ContextAddon<T> = lazyContextAddon(init)
+@Deprecated("Renamed to reflect change in receiver", ReplaceWith("lazyContextAddon(init = init)"))
+public fun <T> rContextAddonGenerate(init: (ElementContext) -> T): ContextAddon<T> = lazyContextAddon(init = init)
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("lateInitContextAddon()"))
 public fun <T> rContextAddonInit(): ContextAddon<T> = lateInitContextAddon<T>()

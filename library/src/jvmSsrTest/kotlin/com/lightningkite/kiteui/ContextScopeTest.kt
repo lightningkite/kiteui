@@ -8,6 +8,8 @@ import com.lightningkite.kiteui.views.l2.titleDepth
 import com.lightningkite.kiteui.views.l2.titledSection
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.test.assertNull
 
 private var ElementContext.label: String by contextAddon("unset")
@@ -121,6 +123,23 @@ class ContextScopeTest {
             assertEquals(emptyList(), caught)
         } finally {
             tree.shutdown()
+        }
+    }
+
+    @Test
+    fun eachTreeHasItsOwnDialogStack() {
+        val a = elementTree {}
+        val b = elementTree {}
+        try {
+            var dismissed = false
+            val unregister = a.context.pushDismissableDialog { dismissed = true }
+            assertFalse(b.context.dismissTopDialog())
+            assertTrue(a.context.dismissTopDialog())
+            assertTrue(dismissed)
+            unregister()
+        } finally {
+            a.shutdown()
+            b.shutdown()
         }
     }
 }

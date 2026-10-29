@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.testing
 
 import com.lightningkite.kiteui.MockExternalServices
 import com.lightningkite.kiteui.OverrideOnly
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.externalServices
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.RContext
@@ -13,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 
+@OptIn(InternalKiteUi::class)
 actual fun uiTest(
     mockExternalServices: MockExternalServices?,
     content: ViewWriter.() -> Unit,
@@ -26,7 +28,7 @@ actual fun uiTest(
         val root = Frame(context)
         context.overlayFrame = root
         if (mockExternalServices != null) {
-            context.addons[ElementContext::externalServices.name] = mockExternalServices
+            context.externalServices = mockExternalServices
         }
         content(root)
         @OptIn(OverrideOnly::class)
