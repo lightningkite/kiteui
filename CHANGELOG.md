@@ -20,6 +20,7 @@
   - `popoverCloser`, `popoverParent` and `popoverKeepOpen` are gone; `closePopovers()`, `closeThisPopover()`,
     `closeSiblingPopovers()` and `keepPopoverOpen()` are deprecated.
   - Closing a popover twice now does nothing the second time.
+- `ElementContext.pageNavigator` is global: one navigator for the whole element tree, whichever element sets it.
 - `ElementContext.splitExceptionHandlers()` is gone; `split()` now scopes exception handlers and addons
   together.
 

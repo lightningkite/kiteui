@@ -1,11 +1,14 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.l2.titleDepth
 import com.lightningkite.kiteui.views.l2.titledSection
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 private var ElementContext.label: String by contextAddon("unset")
 
@@ -67,6 +70,55 @@ class ContextScopeTest {
             assertEquals(1, section.titleDepth)
             assertEquals(2, nested.titleDepth)
             assertEquals(0, tree.context.titleDepth)
+        } finally {
+            tree.shutdown()
+        }
+    }
+
+    // Claude: overlays are shown in, and read the context of, the overlay frame; the opener's scoped values
+    // (exception handlers, heading depth, the popover it's in) would be wrong there.
+    @Test
+    fun popoverContentDoesNotSeeTheOpenersValues() {
+        var seen: String? = null
+        val tree = elementTree {
+            val overlay = this
+            col {
+                context.label = "opener"
+                with(popoverWriter(overlay) {}) { col { seen = context.label } }
+            }
+        }
+        tree.shutdown()
+        assertEquals("unset", seen)
+    }
+
+    @Test
+    fun aDialogOpenedFromAPopoverIsNotInIt() {
+        var inside: Popover? = Popover {}
+        val tree = elementTree {
+            context.overlayFrame = this as ContainerElement
+            val overlay = this
+            with(popoverWriter(overlay) {}) {
+                col { context.overlay(modal = false) { col { inside = context.enclosingPopover } } }
+            }
+        }
+        tree.shutdown()
+        assertNull(inside)
+    }
+
+    @Test
+    fun errorsInAPopoverSkipTheOpenersHandlers() {
+        val caught = ArrayList<String>()
+        lateinit var inside: Element
+        val tree = elementTree {
+            val overlay = this
+            col {
+                context.exceptionHandlers += ExceptionHandler(1f) { e -> caught += e.message!!; {} }
+                with(popoverWriter(overlay) {}) { col { text { inside = this } } }
+            }
+        }
+        try {
+            inside.context.handleException(Exception("boom"))
+            assertEquals(emptyList(), caught)
         } finally {
             tree.shutdown()
         }

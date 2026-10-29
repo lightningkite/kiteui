@@ -65,14 +65,10 @@ public inline fun <T> Element.withoutLoadingAnimations(block: KiteUiCoroutineSco
  * Call this explicitly when a screen should open with a field ready to type in; nothing in
  * KiteUI focuses page content on its own, because doing so pops the soft keyboard on mobile.
  */
-public fun Element.requestFocusOrDescendant() {
-    if (this is InteractiveElement) {
-        requestFocus()
-    } else if (this is ElementWithChildren) {
-        findFirstInteractiveDescendant()?.requestFocus() ?: requestFocus()
-    } else {
-        requestFocus()
-    }
+public fun Element.requestFocusOrDescendant(): Unit = when (this) {
+    is InteractiveElement -> requestFocus()
+    is ElementWithChildren -> findFirstInteractiveDescendant()?.requestFocus() ?: requestFocus()
+    else -> requestFocus()
 }
 
 internal inline fun ContainerElement.beforeSetupContainer(crossinline action: Element.() -> Unit): ContainerElement =

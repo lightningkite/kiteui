@@ -11,7 +11,7 @@ public actual fun Element.openPopover(
 ) {
     var willRemove: Element? = null
     val f = overlayFrame
-    f.popoverWriter {
+    popoverWriter(f) {
         willRemove?.let { f.removeChild(it) }
         willRemove = null
     }.run {
