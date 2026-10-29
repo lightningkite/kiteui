@@ -10,4 +10,5 @@ public expect class MenuButton(context: ElementContext) : NativeInteractiveConta
     public fun opensMenu(createMenu: Frame.() -> Unit)
     public var requireClick: Boolean
     public var preferredDirection: PopoverPreferredDirection
+    public var role: String
 }

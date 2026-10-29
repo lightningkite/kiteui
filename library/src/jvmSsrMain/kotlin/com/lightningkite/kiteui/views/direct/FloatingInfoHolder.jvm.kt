@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.views.l2.*
 public actual class FloatingInfoHolder actual constructor(public val source: Element, public val anchor: Element?) {
     public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
     public actual var menuGenerator: Frame.() -> Unit = {}
+    public actual var popoverRole: String? = null
     private var existingView: Element? = null
 
     public actual fun open() {

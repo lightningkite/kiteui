@@ -22,6 +22,6 @@
     android:font="@font/fonts_roboto_700_italic" />
 <font
     android:fontStyle="italic"
-    android:fontWeight="400"
-    android:font="@font/fonts_roboto_400_italic" />
+    android:fontWeight="700"
+    android:font="@font/fonts_roboto_700_italic" />
     </font-family>

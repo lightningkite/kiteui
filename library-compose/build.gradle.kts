@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.plugin.serialization)
@@ -13,6 +15,15 @@ val library = project(":library").projectDir
 kotlin {
     explicitApi()
     jvm()
+
+    // Claude: a group (rather than dependsOn) keeps the default hierarchy template applied.
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        // This is 
+        common {
+            group("compose") { withJvm() }
+        }
+    }
 
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
@@ -34,14 +45,12 @@ kotlin {
             }
         }
         // Compose view implementations, kept free of JVM-only APIs so Android/iOS can reuse them later.
-        val composeMain = create("composeMain") {
-            dependsOn(commonMain)
+        getByName("composeMain") {
             dependencies {
                 api(libs.compose.foundation)
             }
         }
         getByName("jvmMain") {
-            dependsOn(composeMain)
             kotlin.srcDir("$library/src/commonJvmMain/kotlin")
             dependencies {
                 api(libs.compose.desktop)

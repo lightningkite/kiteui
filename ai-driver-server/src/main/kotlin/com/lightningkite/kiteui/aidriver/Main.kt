@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.aidriver
 
+import com.lightningkite.lightningserver.OverrideOnly
 import com.lightningkite.lightningserver.auth.noAuth
 import com.lightningkite.lightningserver.definition.*
 import com.lightningkite.lightningserver.serialization.registerBasicMediaTypeCoders
@@ -33,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -326,11 +328,41 @@ object AiDriverServer : ServerBuilder() {
 }
 
 internal object AppWebSocketHandler : WebSocketHandler<PathSpec0, Unit>,
-    DirectExecutableWebSocketHandler<PathSpec0> {
+    DirectExecutableWebSocketHandler<PathSpec0, Unit> {
     override val storageSerializer: KSerializer<Unit> = Unit.serializer()
 
+    @OverrideOnly
+    context(serverRuntime: ServerRuntime)
+    override suspend fun willConnect(request: WebSocketConnectRequest<PathSpec0>) {}
+
+    @OverrideOnly
+    context(serverRuntime: ServerRuntime)
+    override suspend fun didConnect(connection: WebSocketConnection<PathSpec0, Unit>) {}
+
+    @OverrideOnly
+    context(serverRuntime: ServerRuntime)
+    override suspend fun messageFromClient(
+        connection: WebSocketConnection<PathSpec0, Unit>,
+        frame: WebSocketFrame
+    ) {}
+
+    @OverrideOnly
+    context(serverRuntime: ServerRuntime)
+    override suspend fun messageFromSubscription(
+        connection: WebSocketConnection<PathSpec0, Unit>,
+        topic: WebSocketSubscriptionMessage<*, *>
+    ) {}
+
+    @OverrideOnly
+    context(serverRuntime: ServerRuntime)
+    override suspend fun disconnect(
+        connection: WebSocketConnection<PathSpec0, Unit>,
+        reason: WebSocketClose
+    ) {}
+
+    @OverrideOnly
+    context(server: ServerRuntime)
     override suspend fun handleDirect(
-        serverRuntime: ServerRuntime,
         request: WebSocketConnectRequest<PathSpec0>,
         incoming: ReceiveChannel<WebSocketFrame>,
         send: suspend (WebSocketFrame) -> Unit,
@@ -371,25 +403,6 @@ internal object AppWebSocketHandler : WebSocketHandler<PathSpec0, Unit>,
         }
     }
 
-    // Standard WebSocketHandler methods — unused because DirectExecutableWebSocketHandler takes priority
-    context(serverRuntime: ServerRuntime)
-    override suspend fun willConnect(request: WebSocketConnectRequest<PathSpec0>) = Unit
-
-    context(connection: WebSocketConnection<PathSpec0, Unit>)
-    override suspend fun didConnect() {
-    }
-
-    context(connection: WebSocketConnection<PathSpec0, Unit>)
-    override suspend fun messageFromClient(frame: WebSocketFrame) {
-    }
-
-    context(connection: WebSocketConnection<PathSpec0, Unit>)
-    override suspend fun messageFromSubscription(topic: WebSocketSubscriptionMessage<*, *>) {
-    }
-
-    context(connection: WebSocketConnection<PathSpec0, Unit>)
-    override suspend fun disconnect(reason: WebSocketClose) {
-    }
 }
 
 // ===================== ADB Reverse =====================
@@ -425,7 +438,7 @@ fun startAdbReverse(port: Int) {
             } catch (_: Exception) {
                 return@launch
             }
-            delay(5000)
+            delay(5.seconds)
         }
     }
 }

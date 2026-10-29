@@ -49,11 +49,16 @@ internal fun FutureElement.applyKeyboardHints(hints: KeyboardHints) {
             primaryAutocompleteValue = "tel"
         }
 
-        AutoComplete.OneTimeCode, null -> {
+        AutoComplete.OneTimeCode -> {
+            primaryAutocompleteValue = "one-time-code"
+        }
+
+        null -> {
             primaryAutocompleteValue = null
         }
     }
 
+    // Claude: autofill is opt-in; only inputs with a KeyboardHints autocomplete hint get it.
     attributes.autocomplete = listOfNotNull(
         primaryAutocompleteValue,
         "webauthn".takeIf { hints.includePasskeys }

@@ -4,11 +4,15 @@ import android.content.Context
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.text.LineBreakConfig
+import android.net.Uri
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.text.Html
+import android.text.SpannableString
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.text.style.URLSpan
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +24,8 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.FontAndStyle
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.WordBreak
+import com.lightningkite.kiteui.navigation.UrlLikePath
+import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 
@@ -115,7 +121,20 @@ public actual class TextView actual constructor(context: ElementContext) : Nativ
             native.isClickable = false
             native.isLongClickable = false
         }
-        native.text = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
+        val text = SpannableString(Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY))
+        // LinkMovementMethod hands every link to the OS, which can't open a path into this app.
+        for (span in text.getSpans(0, text.length, URLSpan::class.java)) {
+            val uri = Uri.parse(span.url)
+            if (uri.scheme != null || uri.authority != null) continue
+            text.setSpan(object : ClickableSpan() {
+                override fun onClick(widget: View) {
+                    val page = context.pageNavigator.routes.parse(UrlLikePath.fromUrlString(span.url))
+                    if (page != null) context.pageNavigator.navigate(page) else span.onClick(widget)
+                }
+            }, text.getSpanStart(span), text.getSpanEnd(span), text.getSpanFlags(span))
+            text.removeSpan(span)
+        }
+        native.text = text
     }
 }
 

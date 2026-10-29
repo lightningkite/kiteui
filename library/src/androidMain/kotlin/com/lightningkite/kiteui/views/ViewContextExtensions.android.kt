@@ -40,6 +40,9 @@ public actual fun ElementContext.overlay(
                 animateIn(transition.forward)
                 willRemove = this
             }.body(close)
+            if (modal) {
+                willRemove?.trapFocus()
+            }
         }
     }
 }

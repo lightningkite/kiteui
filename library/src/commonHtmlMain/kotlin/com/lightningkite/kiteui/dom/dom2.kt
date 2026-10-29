@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.dom
 
+import com.lightningkite.kiteui.navigation.UrlLikePath
+
 public expect abstract class EventTarget
 public expect open class Event {
     public fun preventDefault()
@@ -7,6 +9,13 @@ public expect open class Event {
     public fun stopImmediatePropagation()
     public open val target: EventTarget?
 }
+
+/** The app path of the same-origin link this click follows in the current tab, or null if it doesn't follow one. */
+internal expect fun Event.clickedSameOriginLink(): UrlLikePath?
+
+/** The app path [href] leads to, or null if it leads off this site. */
+internal expect fun appPathOf(href: String): UrlLikePath?
+
 public expect open class UIEvent: Event {
 }
 public expect open class KeyboardEvent: UIEvent {

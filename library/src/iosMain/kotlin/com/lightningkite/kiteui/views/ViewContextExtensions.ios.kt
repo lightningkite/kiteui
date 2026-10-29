@@ -50,9 +50,11 @@ public actual fun ElementContext.overlay(
         }
         viewController.definesPresentationContext = true
         viewController.modalPresentationStyle = UIModalPresentationOverFullScreen
+        var overlayRoot: Element? = null
         viewController.kiteUi(split(viewController)) {
             beforeSetup { themeChoice = ThemeDerivation { theme.withoutBack } }.frame {
                 context.overlayFrame = this
+                overlayRoot = this
                 body {
                     this@kiteUi.context.dismissSelf()
                 }
@@ -61,6 +63,7 @@ public actual fun ElementContext.overlay(
         AppScope.launch {
             delay(100)
             present(viewController)
+            overlayRoot?.trapFocus()
         }
     }
 }

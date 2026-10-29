@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.dom
 
+import com.lightningkite.kiteui.navigation.UrlLikePath
+
 public actual abstract class EventTarget
 public actual open class Event {
     public actual fun preventDefault(){}
@@ -7,6 +9,13 @@ public actual open class Event {
     public actual fun stopImmediatePropagation(){}
     public actual open val target: EventTarget? = null
 }
+
+internal actual fun Event.clickedSameOriginLink(): UrlLikePath? = null
+
+// The server doesn't know the origin it's served from, so only a bare path counts as this site.
+internal actual fun appPathOf(href: String): UrlLikePath? =
+    if (Regex("^([a-zA-Z][a-zA-Z0-9+.-]*:|//)").containsMatchIn(href)) null else UrlLikePath.fromUrlString(href)
+
 public actual open class UIEvent: Event() {
 }
 public actual open class KeyboardEvent: UIEvent() {

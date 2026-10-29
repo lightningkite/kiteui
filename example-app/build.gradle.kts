@@ -27,10 +27,10 @@ configure<KiteUiPluginExtension> {
 }
 
 rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
-    rootProject.the<YarnRootExtension>().yarnLockMismatchReportProperty =
+    rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
         YarnLockMismatchReport.WARNING // NONE | FAIL
-    rootProject.the<YarnRootExtension>().reportNewYarnLockProperty = true
-    rootProject.the<YarnRootExtension>().yarnLockAutoReplaceProperty = true
+    rootProject.the<YarnRootExtension>().reportNewYarnLock = true
+    rootProject.the<YarnRootExtension>().yarnLockAutoReplace = true
 }
 
 group = "com.lightningkite"

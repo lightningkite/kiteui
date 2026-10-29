@@ -174,7 +174,9 @@ public var basePath: String = ((document.getElementById("baseUrlLocation") as? H
     ?: "/")
     .also { Log.info("Base path is $it") }
 
-internal fun Location.urlLike() = UrlLikePath(
+internal fun Location.urlLike() = urlLike(pathname, search)
+
+internal fun urlLike(pathname: String, search: String) = UrlLikePath(
     segments = pathname.removePrefix("/" + basePath.substringAfter("://").substringAfter('/')).split('/')
         .filter { it.isNotBlank() }.map { decodeURIComponent(it) },
     parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
