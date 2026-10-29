@@ -52,7 +52,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
                     }
                     native.anchor = this@MenuButton.preferredDirection to this@MenuButton.native
                     onClick {
-                        closePopovers()
+                        context.currentPopover?.close()
                     }
                     themed(PopoverSemantic).frame {
                         createMenu()

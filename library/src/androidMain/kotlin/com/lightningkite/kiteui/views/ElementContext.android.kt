@@ -4,7 +4,7 @@ import android.content.res.Configuration
 import com.lightningkite.kiteui.KiteUiActivity
 import java.lang.ref.WeakReference
 
-public actual class ElementContext(activity: KiteUiActivity, parent: ElementContext? = null, shareAddons: Boolean = false): ElementContextCommonCode(parent, shareAddons) {
+public actual class ElementContext(activity: KiteUiActivity, parent: ElementContext? = null): ElementContextCommonCode(parent) {
     private val activityRef = WeakReference(activity)
 
     /**
@@ -30,12 +30,11 @@ public actual class ElementContext(activity: KiteUiActivity, parent: ElementCont
             }
         }
 
+    public actual val root: ElementContext = parent?.root ?: this
+
     // by Claude - use addons.child() for lazy parent lookup instead of copying
     public actual fun split(): ElementContext = activityOrNull?.let { ElementContext(it, parent = this) }
         ?: throw IllegalStateException("Cannot split RContext: Activity has been destroyed")
-
-    public actual fun splitExceptionHandlers(): ElementContext = activityOrNull?.let { ElementContext(it, parent = this, shareAddons = true) }
-        ?: throw IllegalStateException("Cannot split ElementContext: Activity has been destroyed")
 
     public actual var immersiveMode: Boolean = false
     public actual companion object {}

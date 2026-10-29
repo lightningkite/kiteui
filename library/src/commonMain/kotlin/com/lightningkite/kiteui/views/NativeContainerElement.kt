@@ -361,7 +361,7 @@ public expect abstract class NativeContainerElement(context: ElementContext) : C
  * @see ContainerElement for the public interface
  * @see NativeElement for the base element class
  */
-public abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context.splitExceptionHandlers()), ContainerElement {
+public abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context.split()), ContainerElement {
     override val underlyingNativeElement: NativeContainerElement get() = this as NativeContainerElement
 
     // --- CHILDREN ---

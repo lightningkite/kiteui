@@ -34,7 +34,7 @@ public actual fun Element.openPopover(
             }
             native.anchor = preferredDirection to (anchor ?: this@openPopover).native
             onClick {
-                context.closePopovers()
+                context.currentPopover?.close()
             }
             themed(PopoverSemantic).frame {
                 createMenu()

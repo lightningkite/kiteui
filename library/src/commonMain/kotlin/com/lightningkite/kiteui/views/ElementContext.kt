@@ -6,36 +6,58 @@ import com.lightningkite.kiteui.exceptions.ExceptionMessage
 import com.lightningkite.reactive.core.Release
 import kotlinx.coroutines.CoroutineDispatcher
 
-private const val DISPATCHER_KEY = "ssrDispatcher"
-
 /**
- * Custom CoroutineDispatcher to use for Elements created with this context.
- * If set, this dispatcher will be used instead of Dispatchers.Main.immediate.
- * This is primarily useful for SSR where we need synchronous reactive scope execution.
+ * Holds the values an element shares with the elements inside it, such as the page navigator, the overlay frame
+ * and exception handlers, along with the platform's handles (the activity on Android, the view controller on iOS).
+ *
+ * Every container has its own context, made with [split], and the elements inside it use that context. A value set
+ * on a context, usually through a [ContextAddon] property such as `context.pageNavigator`, is seen by everything
+ * inside that container and nothing outside it; reading a value finds the nearest context, from this one up through
+ * its [parent]s, that set it. Set values where everything that reads them can see them, such as at the root of the
+ * app, as `appBase` does.
  */
-public var ElementContext.ssrDispatcher: CoroutineDispatcher?
-    get() = addons[DISPATCHER_KEY] as? CoroutineDispatcher
-    set(value) { addons[DISPATCHER_KEY] = value }
-
 public expect class ElementContext: ElementContextCommonCode {
+    /**
+     * Returns a child context that reads this one's [addons] and [exceptionHandlers] until it sets its own.
+     *
+     * Each container makes one for its children, so a value set inside a container is seen by everything in it
+     * and nothing outside it.
+     */
     public fun split(): ElementContext
 
     /**
-     * Returns a child context with its own [exceptionHandlers] that shares [addons] with this one.
+     * Whether the platform is in dark mode, or `null` if it doesn't say.
      *
-     * Containers use this so errors are routed to the nearest enclosing handler without
-     * scoping addon writes or lengthening addon lookups.
+     * Always `null` on the web and desktop.
      */
-    public fun splitExceptionHandlers(): ElementContext
-
     public val darkMode: Boolean?
+
+    /**
+     * Whether the app asks to hide the system status bar.
+     *
+     * Only iOS acts on it, and only once the app's view controller is set up for it; see the iOS `ElementContext`.
+     */
     public var immersiveMode: Boolean
+
+    /** The context at the top of this one's [parent]s, shared by the whole element tree; this context if it has no parent. */
+    public val root: ElementContext
 
     public companion object
 }
 
-public abstract class ElementContextCommonCode(parent: ElementContext?, shareAddons: Boolean = false) {
-    public val addons: ChainMap<String, Any?> = if (shareAddons) parent!!.addons else parent?.addons?.child() ?: ChainMap()
+/** The platform-independent part of [ElementContext]; use [ElementContext] itself. */
+public abstract class ElementContextCommonCode(
+    /** The context this one was [split][ElementContext.split] from, or `null` for the root. */
+    public val parent: ElementContext?,
+) {
+    /**
+     * The values set on this context, falling back to its [parent]'s for any it hasn't set.
+     *
+     * Prefer [ContextAddon] properties to using this directly; they key values by property name.
+     */
+    public val addons: ChainMap<String, Any?> = parent?.addons?.child() ?: ChainMap()
+
+    /** The exception handlers added on this context, falling back to its [parent]'s for errors none of them handle. */
     public val exceptionHandlers: ExceptionHandlersTree = ExceptionHandlersTree(parent = parent?.exceptionHandlers)
 }
 
@@ -50,12 +72,18 @@ public fun ElementContext.exceptionMessage(exception: Exception, metadata: Excep
 public class ChainMap<K, V>(
     public val parent: ChainMap<K, V>? = null
 ) {
-    public val local: MutableMap<K, V> = HashMap<K, V>()
+    // Claude: most containers never set anything, so the map is made on first write.
+    private var local: HashMap<K, V>? = null
     public val root: ChainMap<K, V> = parent?.root ?: this
 
-    public fun containsKey(key: K): Boolean = local.containsKey(key) || (parent?.containsKey(key) == true)
-    public operator fun get(key: K): V? = if (local.containsKey(key)) local[key] else parent?.get(key)
-    public operator fun set(key: K, value: V) { local[key] = value }
+    public fun containsKey(key: K): Boolean = local?.containsKey(key) == true || (parent?.containsKey(key) == true)
+
+    @OptIn(ExperimentalStdlibApi::class)
+    public operator fun get(key: K): V? {
+        val local = local
+        return if (local != null) local.getOrElseIfMissing(key) { parent?.get(key) } else parent?.get(key)
+    }
+    public operator fun set(key: K, value: V) { (local ?: HashMap<K, V>().also { local = it })[key] = value }
 
     /** Returns existing value if found anywhere in the chain; otherwise writes [defaultValue] to the root and returns it. */
     public fun getOrPut(key: K, defaultValue: () -> V): V {
@@ -65,7 +93,7 @@ public class ChainMap<K, V>(
             return get(key) as V
         }
         val value = defaultValue()
-        root.local[key] = value
+        root[key] = value
         return value
     }
 
@@ -76,7 +104,7 @@ public class ChainMap<K, V>(
             return get(key) as V
         }
         val value = defaultValue()
-        local[key] = value
+        set(key, value)
         return value
     }
 

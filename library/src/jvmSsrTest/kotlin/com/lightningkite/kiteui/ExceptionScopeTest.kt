@@ -77,14 +77,4 @@ class ExceptionScopeTest {
             tree.shutdown()
         }
     }
-
-    @Test
-    fun addonsStillSharedAcrossContainers() {
-        val tree = elementTree { col { debugName = "a" }; col { debugName = "b" } }
-        try {
-            assertEquals(tree.findByName("a")!!.context.addons, tree.findByName("b")!!.context.addons)
-        } finally {
-            tree.shutdown()
-        }
-    }
 }

@@ -28,6 +28,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
     internal var blockView: Element? = null
     internal var closeView: Element? = null
     internal var existingView: Element? = null
+    private var opened: Popover? = null
 
     public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
     internal var currentDirection: PopoverPreferredDirection = preferredDirection
@@ -85,10 +86,10 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
         val popoverWriter = source.popoverWriter(source.context.overlayFrame) {
             removeElementFromOverlay()
         }
+        opened = popoverWriter.context.enclosingPopover
         val startedFocused = source.native.element == document.activeElement
         with(popoverWriter) {
             frame {
-                source.context.keepPopoverOpen(this)
                 if(source.context.addons == this.context.addons) throw Exception("NO NO NO")
                 currentDirection = preferredDirection
                 existingView = this
@@ -309,7 +310,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
 
                 val mouseMove = { it: Event ->
                     it as MouseEvent
-                    if (blockView == null && context.popoverKeepOpen <= 0) {
+                    if (blockView == null && opened?.child == null) {
                         val clientRect = ((anchor ?: source).native.element as HTMLElement).getBoundingClientRect()
                         val popUpRect = (native.element as HTMLElement).getBoundingClientRect()
                         val popUpDist = maxOf(
@@ -369,7 +370,7 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
     }
 
     public actual fun close() {
-        source.context.closeSiblingPopovers()
+        opened?.close()
     }
 }
 

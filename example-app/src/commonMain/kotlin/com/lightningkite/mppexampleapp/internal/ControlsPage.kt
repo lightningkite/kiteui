@@ -200,9 +200,9 @@ object ControlsPage : Page {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A"); onClick { context.closePopovers() } }
-                                            button { text("B"); onClick { context.closePopovers() } }
-                                            button { text("C"); onClick { context.closePopovers() } }
+                                            button { text("A"); onClick { context.currentPopover?.close() } }
+                                            button { text("B"); onClick { context.currentPopover?.close() } }
+                                            button { text("C"); onClick { context.currentPopover?.close() } }
                                         }
                                     }
                                 }
@@ -211,9 +211,9 @@ object ControlsPage : Page {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A"); onClick { context.closePopovers() } }
-                                            button { text("B"); onClick { context.closePopovers() } }
-                                            button { text("C"); onClick { context.closePopovers() } }
+                                            button { text("A"); onClick { context.currentPopover?.close() } }
+                                            button { text("B"); onClick { context.currentPopover?.close() } }
+                                            button { text("C"); onClick { context.currentPopover?.close() } }
                                         }
                                     }
                                 }
@@ -222,9 +222,9 @@ object ControlsPage : Page {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A"); onClick { context.closePopovers() } }
-                                            button { text("B"); onClick { context.closePopovers() } }
-                                            button { text("C"); onClick { context.closePopovers() } }
+                                            button { text("A"); onClick { context.currentPopover?.close() } }
+                                            button { text("B"); onClick { context.currentPopover?.close() } }
+                                            button { text("C"); onClick { context.currentPopover?.close() } }
                                         }
                                     }
                                 }
@@ -235,9 +235,9 @@ object ControlsPage : Page {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A"); onClick { context.closePopovers() } }
-                                button { text("B"); onClick { context.closePopovers() } }
-                                button { text("C"); onClick { context.closePopovers() } }
+                                button { text("A"); onClick { context.currentPopover?.close() } }
+                                button { text("B"); onClick { context.currentPopover?.close() } }
+                                button { text("C"); onClick { context.currentPopover?.close() } }
                             }
                         }
                     }
@@ -245,9 +245,9 @@ object ControlsPage : Page {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A"); onClick { context.closePopovers() } }
-                                button { text("B"); onClick { context.closePopovers() } }
-                                button { text("C"); onClick { context.closePopovers() } }
+                                button { text("A"); onClick { context.currentPopover?.close() } }
+                                button { text("B"); onClick { context.currentPopover?.close() } }
+                                button { text("C"); onClick { context.currentPopover?.close() } }
                             }
                         }
                     }
@@ -255,9 +255,9 @@ object ControlsPage : Page {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A"); onClick { context.closePopovers() } }
-                                button { text("B"); onClick { context.closePopovers() } }
-                                button { text("C"); onClick { context.closePopovers() } }
+                                button { text("A"); onClick { context.currentPopover?.close() } }
+                                button { text("B"); onClick { context.currentPopover?.close() } }
+                                button { text("C"); onClick { context.currentPopover?.close() } }
                             }
                         }
                     }

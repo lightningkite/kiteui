@@ -49,8 +49,8 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
             }
         }
         withoutAnimation {
-            context.bottomSheetState = expanded
             willRemove = beforeSetup { animateIn(transition.forward) }.col {
+                context.bottomSheetState = expanded
                 gap = 0.px
                 ignoreInteraction = true
                 expanding.shownWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED }.frame {

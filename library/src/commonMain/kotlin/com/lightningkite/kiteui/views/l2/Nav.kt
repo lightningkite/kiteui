@@ -33,7 +33,7 @@ import com.lightningkite.kiteui.views.atStart
 import com.lightningkite.kiteui.views.atTopEnd
 import com.lightningkite.kiteui.views.bar
 import com.lightningkite.kiteui.views.centered
-import com.lightningkite.kiteui.views.closePopovers
+import com.lightningkite.kiteui.views.currentPopover
 import com.lightningkite.kiteui.views.compact
 import com.lightningkite.kiteui.views.critical
 import com.lightningkite.kiteui.views.direct.*
@@ -737,7 +737,7 @@ private fun ElementWriter.CanAddTheme.renderAsMenus(
         opensMenu {
             themed(ListSemantic).col {
                 for (child in element.children) {
-                    renderAsMenus(child, direction, selectedPath, { context.closePopovers() }) {
+                    renderAsMenus(child, direction, selectedPath, { context.currentPopover?.close() }) {
                         navRowContent(child)
                     }
                 }

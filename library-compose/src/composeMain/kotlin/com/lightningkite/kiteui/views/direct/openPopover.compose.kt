@@ -24,7 +24,7 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
 public actual fun Element.openPopover(preferredDirection: PopoverPreferredDirection, anchor: Element?, createMenu: Frame.() -> Unit) {
-    val popover = Popover(source = this, anchor = anchor ?: this)
+    val popover = AnchoredPopover(source = this, anchor = anchor ?: this)
     popover.open(preferredDirection, createMenu)
     popover.block()
 }
@@ -34,8 +34,9 @@ public actual fun Element.openPopover(preferredDirection: PopoverPreferredDirect
  * Once [block]ed it closes on a click outside it.  Until then it closes when the pointer has left both
  * the popover and the anchor, unless something inside it is keeping it open.
  */
-internal class Popover(private val source: Element, private val anchor: Element) {
+internal class AnchoredPopover(private val source: Element, private val anchor: Element) {
     private var layer: PopoverLayer? = null
+    private var opened: Popover? = null
 
     fun open(direction: PopoverPreferredDirection, createMenu: Frame.() -> Unit) {
         if (layer != null) return
@@ -50,8 +51,8 @@ internal class Popover(private val source: Element, private val anchor: Element)
             layer?.let { overlay.removeChild(it) }
             layer = null
         }.run {
+            opened = context.enclosingPopover
             layer = write(PopoverLayer(context, anchor.underlyingNativeElement, direction, close = ::close)) {
-                source.context.keepPopoverOpen(this)
                 themed(PopoverSemantic).frame {
                     val popover = underlyingNativeElement
                     reactive {
@@ -68,7 +69,7 @@ internal class Popover(private val source: Element, private val anchor: Element)
     }
 
     fun close() {
-        source.context.closeSiblingPopovers()
+        opened?.close()
     }
 
     private fun closeIfAbandoned(popover: NativeElement) {
@@ -78,7 +79,7 @@ internal class Popover(private val source: Element, private val anchor: Element)
         layer.launch {
             delay(100.milliseconds)
             val hovered = anchor.underlyingNativeElement.hovered.value || popover.hovered.value
-            if (!layer.blocking && !hovered && layer.context.popoverKeepOpen <= 0) close()
+            if (!layer.blocking && !hovered && opened?.child == null) close()
         }
     }
 }

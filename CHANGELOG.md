@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+### Element context (breaking)
+
+- **A context value set inside a container is seen by everything in it and nothing outside it.** Containers
+  used to share one context with their parent, so setting a value (`context.titleDepth`, a navigator, an
+  addon of your own) leaked to siblings and ancestors. Code that set a value in a container and read it
+  outside must now set it where both can see it, usually further up.
+- `titledSection` headings nested inside content that renders later, such as a `forEach`, now get the right
+  level.
+- **Popovers are objects.** One popover is open at a time, along with the popovers opened from inside it such as
+  submenus; dialogs and overlays don't count. `context.currentPopover` is the open one and
+  `context.enclosingPopover` the one an element is in, both `null` when there is none. A `Popover` has
+  `close()`, which also closes the popovers opened from inside it, and `child`.
+  - A menu item closes the whole menu with `context.currentPopover?.close()`, replacing `closePopovers()`, which
+    also works from a dialog the menu opened. `closeThisPopover()` is `context.enclosingPopover?.close()`.
+  - A popover now stays open while one opened from inside it is, so `keepPopoverOpen()` does nothing.
+  - `popoverCloser`, `popoverParent` and `popoverKeepOpen` are gone; `closePopovers()`, `closeThisPopover()`,
+    `closeSiblingPopovers()` and `keepPopoverOpen()` are deprecated.
+  - Closing a popover twice now does nothing the second time.
+- `ElementContext.splitExceptionHandlers()` is gone; `split()` now scopes exception handlers and addons
+  together.
+
 ### Telemetry (breaking)
 
 - **Telemetry now goes through your own server.** `Telemetry` is built with an `upload` function (normally

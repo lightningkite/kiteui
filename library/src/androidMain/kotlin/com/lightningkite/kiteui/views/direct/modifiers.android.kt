@@ -369,7 +369,7 @@ public actual fun ElementWriter.hintPopover(
             // Reuses the same in-tree overlay popover MenuButton.opensMenu() is built on
             // (Element.openPopover, openPopover.android.kt) rather than a PopupWindow/AlertDialog,
             // so it gets the same theming, positioning against preferredDirection, and
-            // tap-outside-to-dismiss (via dismissBackground -> context.closePopovers()) for free -
+            // tap-outside-to-dismiss (via dismissBackground -> context.currentPopover?.close()) for free -
             // no separate window token to leak.
             openPopover(preferredDirection, createMenu = setup)
             true
