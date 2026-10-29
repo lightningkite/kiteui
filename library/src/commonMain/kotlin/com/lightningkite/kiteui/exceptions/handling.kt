@@ -14,6 +14,7 @@ import com.lightningkite.kiteui.views.l2.toast
 import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Release
+import com.lightningkite.reactive.core.Signal
 import kotlinx.datetime.TimeZone
 import kotlin.jvm.JvmName
 import kotlin.time.Clock
@@ -179,51 +180,45 @@ public interface ExceptionHandler {
     }
 }
 
-// One error dialog shows at a time, so a burst of errors doesn't stack dialogs.  Errors arriving meanwhile wait their
-// turn, and one that reads the same as an error already showing or waiting isn't shown again.  The first is showing.
-// show() tells whether the dialog opened: without an overlay frame it can't, and waiting on it would hold up the rest.
-private class ErrorDialog(val message: ExceptionMessage, val show: () -> Boolean)
-private val errorDialogs = ArrayList<ErrorDialog>()
-
-private fun showFirstErrorDialog() {
-    while (errorDialogs.isNotEmpty() && !errorDialogs.first().show()) errorDialogs.removeAt(0)
-}
+// One error dialog for the whole app, so a burst of errors doesn't stack dialogs: errors arriving while it's open
+// join it, and one that reads the same as an error already in it isn't repeated.
+private class ShownError(val message: ExceptionMessage, val stacktrace: String?)
+private val shownErrors = Signal<List<ShownError>>(listOf())
 
 private fun ElementContext.errorDialog(message: ExceptionMessage, stacktrace: String?) {
+    val alreadyOpen = shownErrors.value.isNotEmpty()
     // Actions are made fresh for each error, so they can't tell two errors apart.
-    if (errorDialogs.any { it.message.title == message.title && it.message.body == message.body }) return
-    errorDialogs += ErrorDialog(message) {
-        var opened = false
-        dialog { close ->
-            col {
-                opened = true
-                // However the dialog closes (its button, the background, back), the next error shows.
-                onRemove {
-                    errorDialogs.removeAt(0)
-                    showFirstErrorDialog()
-                }
-                h1(message.title)
-                text(message.body)
-
-                if (stacktrace != null) sizeConstraints(maxHeight = 15.rem).scrolling.subtext(stacktrace)
-
-                space(0.5)
-
-                row {
-                    for (action in message.actions) centered.important.buttonTheme.button {
-                        text(action.title)
-                        this.action = action
-                    }
-                    centered.card.buttonTheme.button {
-                        text("Close")
-                        onClick { close() }
+    if (shownErrors.value.any { it.message.title == message.title && it.message.body == message.body }) return
+    shownErrors.value += ShownError(message, stacktrace)
+    if (alreadyOpen) return
+    var opened = false
+    dialog { close ->
+        col {
+            opened = true
+            // However the dialog closes (its button, the background, back), the next error opens a new one.
+            onRemove { shownErrors.value = listOf() }
+            sizeConstraints(maxHeight = 30.rem).scrolling.colOfExpensive(shownErrors, animate = false) { error ->
+                col {
+                    h1(error.message.title)
+                    text(error.message.body)
+                    if (error.stacktrace != null) sizeConstraints(maxHeight = 15.rem).scrolling.subtext(error.stacktrace)
+                    if (error.message.actions.isNotEmpty()) row {
+                        for (action in error.message.actions) centered.important.buttonTheme.button {
+                            text(action.title)
+                            this.action = action
+                        }
                     }
                 }
             }
+            space(0.5)
+            centered.card.buttonTheme.button {
+                text("Close")
+                onClick { close() }
+            }
         }
-        opened
     }
-    if (errorDialogs.size == 1) showFirstErrorDialog()
+    // Without an overlay frame there's no dialog, and waiting on it would swallow every later error.
+    if (!opened) shownErrors.value = listOf()
 }
 
 /**

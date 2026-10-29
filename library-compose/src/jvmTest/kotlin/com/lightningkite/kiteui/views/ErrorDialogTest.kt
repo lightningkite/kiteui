@@ -8,13 +8,14 @@ import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalTestApi::class)
 class ErrorDialogTest {
     @Test
-    fun errorDialogsShowOneAtATime() = runKiteUiTest {
+    fun errorsShareOneDialog() = runKiteUiTest {
         lateinit var page: ElementContext
-        showKiteUi {
+        val root = showKiteUi {
             frame {
                 context.overlayFrame = this
                 context.exceptionHandlers.installStandardHandlers()
@@ -22,24 +23,25 @@ class ErrorDialogTest {
                 text("Page")
             }
         }
-        runBlocking(Dispatchers.Main) {
-            page.handleException(PlainTextException("First"))
-            page.handleException(PlainTextException("Second"))
-            page.handleException(PlainTextException("First"))
+        fun ComposeUiTest.count(text: String) = onAllNodesWithText(text).fetchSemanticsNodes().size
+        fun raise(vararg messages: String) = runBlocking(Dispatchers.Main) {
+            for (m in messages) page.handleException(PlainTextException(m))
         }
-        fun ComposeUiTest.shown(text: String) = onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
 
-        waitUntil { shown("First") }
-        onNodeWithText("Second").assertDoesNotExist()
-
-        onNodeWithText("Close").performClick()
-        waitUntil { shown("Second") && !shown("First") }
-
-        // The repeated "First" was dropped while it was waiting.
-        onNodeWithText("Close").performClick()
-        waitUntil { !shown("Second") }
+        raise("First", "Second", "First")
+        waitUntil { count("First") == 1 && count("Second") == 1 }
+        // One dialog, so one Close; the repeated First isn't shown twice.
+        assertEquals(1, count("Close"))
         waitForIdle()
-        onNodeWithText("First").assertDoesNotExist()
-        onNodeWithText("Close").assertDoesNotExist()
+        assertEquals(1, count("First"))
+        saveScreenshot(root, "error-dialog-combined")
+
+        onNodeWithText("Close").performClick()
+        waitUntil { count("First") == 0 && count("Second") == 0 }
+
+        // Once it's closed, the next error opens a new dialog.
+        raise("Third")
+        waitUntil { count("Third") == 1 }
+        assertEquals(1, count("Close"))
     }
 }
