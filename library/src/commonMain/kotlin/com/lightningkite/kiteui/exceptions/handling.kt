@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.kiteui.views.l2.toast
+import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Release
 import kotlinx.datetime.TimeZone
@@ -157,27 +158,7 @@ public interface ExceptionHandler {
          */
         public val messageDialog: ExceptionHandler = ExceptionHandler(0f) { exception, meta ->
             val message = exceptionMessage(exception, meta) ?: return@ExceptionHandler null
-
-            dialog { close ->
-                col {
-                    h1(message.title)
-                    text(message.body)
-
-                    space(0.5)
-
-                    row {
-                        for (action in message.actions) centered.important.buttonTheme.button {
-                            text(action.title)
-                            this.action = action
-                        }
-                        centered.card.buttonTheme.button {
-                            text("Close")
-                            onClick { close() }
-                        }
-                    }
-                }
-            }
-
+            errorDialog(message, stacktrace = null)
             return@ExceptionHandler {}
         }
 
@@ -192,32 +173,57 @@ public interface ExceptionHandler {
          */
         public val stacktraceDialog: ExceptionHandler = ExceptionHandler(0f) { exception, meta ->
             val message = exceptionMessage(exception, meta) ?: return@ExceptionHandler null
-
-            dialog { close ->
-                col {
-                    h1(message.title)
-                    text(message.body)
-
-                    sizeConstraints(maxHeight = 15.rem).scrolling.subtext(exception.stackTraceToString())
-
-                    space(0.5)
-
-                    row {
-                        for (action in message.actions) centered.important.buttonTheme.button {
-                            text(action.title)
-                            this.action = action
-                        }
-                        centered.card.buttonTheme.button {
-                            text("Close")
-                            onClick { close() }
-                        }
-                    }
-                }
-            }
-
+            errorDialog(message, stacktrace = exception.stackTraceToString())
             return@ExceptionHandler {}
         }
     }
+}
+
+// One error dialog shows at a time, so a burst of errors doesn't stack dialogs.  Errors arriving meanwhile wait their
+// turn, and one that reads the same as an error already showing or waiting isn't shown again.  The first is showing.
+// show() tells whether the dialog opened: without an overlay frame it can't, and waiting on it would hold up the rest.
+private class ErrorDialog(val message: ExceptionMessage, val show: () -> Boolean)
+private val errorDialogs = ArrayList<ErrorDialog>()
+
+private fun showFirstErrorDialog() {
+    while (errorDialogs.isNotEmpty() && !errorDialogs.first().show()) errorDialogs.removeAt(0)
+}
+
+private fun ElementContext.errorDialog(message: ExceptionMessage, stacktrace: String?) {
+    // Actions are made fresh for each error, so they can't tell two errors apart.
+    if (errorDialogs.any { it.message.title == message.title && it.message.body == message.body }) return
+    errorDialogs += ErrorDialog(message) {
+        var opened = false
+        dialog { close ->
+            col {
+                opened = true
+                // However the dialog closes (its button, the background, back), the next error shows.
+                onRemove {
+                    errorDialogs.removeAt(0)
+                    showFirstErrorDialog()
+                }
+                h1(message.title)
+                text(message.body)
+
+                if (stacktrace != null) sizeConstraints(maxHeight = 15.rem).scrolling.subtext(stacktrace)
+
+                space(0.5)
+
+                row {
+                    for (action in message.actions) centered.important.buttonTheme.button {
+                        text(action.title)
+                        this.action = action
+                    }
+                    centered.card.buttonTheme.button {
+                        text("Close")
+                        onClick { close() }
+                    }
+                }
+            }
+        }
+        opened
+    }
+    if (errorDialogs.size == 1) showFirstErrorDialog()
 }
 
 /**
