@@ -143,6 +143,7 @@ object RootPage : Page {
 
                 sectionLabel("Reactivity & State")
                 linkPage { ReactivityPage }
+                linkPage { LoadTrackingPage }
 
                 sectionLabel("Platform & Device")
                 linkPage { PlatformSpecificPage }
