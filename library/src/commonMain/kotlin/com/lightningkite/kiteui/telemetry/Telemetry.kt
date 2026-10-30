@@ -18,6 +18,7 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.ssr.ssrResourceRegistry
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.ElementContextElement
 import com.lightningkite.kiteui.views.viewPath
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.services.telemetry.LogLevel
@@ -88,8 +89,8 @@ public class Telemetry(
     )
     private val constructedAt = Clock.System.now()
 
-    /** The main navigator's current screen, for records made outside any coroutine. */
-    internal var currentScreen: TelemetryAttributes = TelemetryAttributes.empty
+    /** The context of the main navigator's current screen, for records made outside any element. */
+    internal var currentScreen: ElementContext? = null
     private var mainNavigator: PageNavigator? = null
 
     /**
@@ -104,6 +105,7 @@ public class Telemetry(
         check(Companion.installed == null) { "A Telemetry is already installed." }
         Companion.installed = this
         mainNavigator = navigator
+        screenVisitRecorder = ::recordScreenVisit
 
         HttpFetcher.Interceptor.global.register(HttpFetcher.Interceptor(::instrumentFetch))
         Action.Interceptor.global.register(actionInterceptor)
@@ -141,7 +143,7 @@ public class Telemetry(
         // Actions run in AppScope by default, which carries neither the screen's attributes nor, for the halves of a
         // combined action, the combined action's span.
         val started = scope.coroutineContext
-        withContext((started[TelemetryAttributesElement] ?: EmptyCoroutineContext) + (started[ClientSpan] ?: EmptyCoroutineContext)) {
+        withContext((started[ElementContextElement] ?: EmptyCoroutineContext) + (started[ClientSpan] ?: EmptyCoroutineContext)) {
             span("action", title) { proceed() }
         }
     }
@@ -154,23 +156,39 @@ public class Telemetry(
             KiteUiLogLevel.LOG -> LogLevel.Debug
         }
         if (telemetryLevel >= minLogLevel) {
-            val attributes = if (tag.isEmpty()) currentScreen else currentScreen + telemetryAttributesOf(logTag to tag)
+            val attributes = if (tag.isEmpty()) attributesFor(null) else attributesFor(null) + telemetryAttributesOf(logTag to tag)
             log(telemetryLevel, entries.joinToString(" "), attributes)
         }
     }
 
-    private fun reportElementError(throwable: Throwable, source: Element?) = reportError(throwable, TelemetryAttributes {
-        if (source != null) {
-            source.underlyingNativeElement.coroutineContext[TelemetryAttributesElement]?.let { putAll(it.attributes) }
-            put(viewPathKey, source.viewPath())
-        }
-    })
+    private fun reportElementError(throwable: Throwable, source: Element?) {
+        val attributes = if (source == null) attributesFor(null) else attributesFor(source.context) + telemetryAttributesOf(viewPathKey to source.viewPath())
+        logError(throwable, attributes)
+    }
+
+    /**
+     * Returns the attributes for a record made in [context]: its screen's name and visit id, then the app's
+     * [ElementContext.telemetryAttributes]. Outside any element, or in one outside any screen such as a dialog, the
+     * main navigator's current screen stands in.
+     */
+    private fun attributesFor(context: ElementContext?): TelemetryAttributes {
+        val at = context ?: currentScreen ?: return TelemetryAttributes.empty
+        val screen = at.screenVisit ?: currentScreen?.screenVisit
+        return (screen?.attributes ?: TelemetryAttributes.empty) + at.allTelemetryAttributes()
+    }
+
+    /** Returns the [telemetryAttributes] of this context and every one above it, nearer ones winning. */
+    private fun ElementContext.allTelemetryAttributes(): TelemetryAttributes {
+        val above = parent?.allTelemetryAttributes() ?: TelemetryAttributes.empty
+        val own = telemetryAttributes
+        return if (own.map.isEmpty()) above else above + own
+    }
 
     private fun onForegroundChanged() {
         if (AppState.inForeground.value) {
-            event("app.foreground", currentScreen)
+            event("app.foreground", attributesFor(null))
         } else {
-            event("app.background", currentScreen)
+            event("app.background", attributesFor(null))
             // The OS may kill a backgrounded app without warning.
             outbox.persist()
             AppScope.launch { outbox.upload() }
@@ -180,14 +198,14 @@ public class Telemetry(
     private fun onConnectivityIssue() {
         val code = Connectivity.lastConnectivityIssueCode.value
         if (code != 0.toShort()) {
-            log(LogLevel.Warn, "Connectivity issue: status code $code", currentScreen + telemetryAttributesOf(connectivityIssueCode to code.toLong()))
+            log(LogLevel.Warn, "Connectivity issue: status code $code", attributesFor(null) + telemetryAttributesOf(connectivityIssueCode to code.toLong()))
         }
     }
 
     // Claude: straight to the outbox rather than through enqueue, which may launch an upload the dying process can't finish.
     private fun recordCrash(throwable: Throwable) {
         outbox.add(RecordedLog(Clock.System.now(), LogLevel.Error, throwable.message ?: throwable::class.simpleName ?: "Crash",
-            currentScreen + telemetryAttributesOf(TelemetryKeys.Exception.escaped to true), error = throwable.toRecordedError()))
+            attributesFor(null) + telemetryAttributesOf(TelemetryKeys.Exception.escaped to true), error = throwable.toRecordedError()))
         outbox.persist(durably = true)
     }
 
@@ -206,14 +224,16 @@ public class Telemetry(
     private fun event(name: String, attributes: TelemetryAttributes) =
         log(LogLevel.Info, name, attributes + telemetryAttributesOf(TelemetryKeys.Event.name to name))
 
-    internal fun reportError(throwable: Throwable, attributes: TelemetryAttributes): Unit =
-        log(LogLevel.Error, throwable.message ?: throwable::class.simpleName ?: "Error", currentScreen + attributes, throwable.toRecordedError())
+    internal fun reportError(throwable: Throwable, attributes: TelemetryAttributes): Unit = logError(throwable, attributesFor(null) + attributes)
+
+    private fun logError(throwable: Throwable, attributes: TelemetryAttributes) =
+        log(LogLevel.Error, throwable.message ?: throwable::class.simpleName ?: "Error", attributes, throwable.toRecordedError())
 
     /** Runs [action] as span `owner.operation`, a child of the current span if there is one. */
     internal suspend fun <T> span(owner: String, operation: String, attributes: TelemetryAttributes = TelemetryAttributes.empty, action: suspend (ClientSpan) -> T): T {
         val context = currentCoroutineContext()
         val parent = context[ClientSpan]
-        val ambient = context[TelemetryAttributesElement]?.attributes ?: TelemetryAttributes.empty
+        val ambient = attributesFor(context[ElementContextElement]?.context)
         val span = ClientSpan(traceId = parent?.traceId ?: traceId(), spanId = spanId(), attributes = ambient + attributes)
         val start = Clock.System.now()
         var outcome = RecordedSpan.Outcome.Error
@@ -291,22 +311,22 @@ public class Telemetry(
         }
     }
 
-    /** Runs for as long as a screen is shown, with the screen's attributes in the coroutine context. */
-    internal suspend fun recordScreenVisit(navigator: PageNavigator, load: ScreenLoad) {
-        val screenAttributes = currentCoroutineContext()[TelemetryAttributesElement]?.attributes ?: TelemetryAttributes.empty
-        if (navigator === mainNavigator) currentScreen = screenAttributes
-        event("app.screen.view_start", screenAttributes)
+    /** Runs for as long as [visit] is shown, in the coroutine context of the screen's elements. */
+    internal suspend fun recordScreenVisit(navigator: PageNavigator, visit: ScreenVisit) {
+        val context = currentCoroutineContext()[ElementContextElement]?.context
+        if (navigator === mainNavigator) currentScreen = context
+        event("app.screen.view_start", attributesFor(context) + visit.attributes)
         try {
             try {
-                span("screen", "load") {
-                    withTimeoutOrNull(60.seconds) { load.usable.await() } ?: throw ScreenLoadTimeout()
+                span("screen", "load", visit.attributes) {
+                    withTimeoutOrNull(60.seconds) { visit.usable.await() } ?: throw ScreenLoadTimeout()
                 }
             } catch (_: ScreenLoadTimeout) {
                 // Recorded as the load span's error; the visit goes on.
             }
             awaitCancellation()
         } finally {
-            event("app.screen.view_end", screenAttributes)
+            event("app.screen.view_end", attributesFor(context) + visit.attributes)
         }
     }
 
@@ -358,11 +378,6 @@ internal class ClientSpan(val traceId: String, val spanId: String, var attribute
     var failed: Boolean = false
 
     companion object Key : CoroutineContext.Key<ClientSpan>
-}
-
-/** Attributes for everything recorded in this coroutine; elements carry their [ElementContext.telemetryAttributes]. */
-internal class TelemetryAttributesElement(val attributes: TelemetryAttributes) : AbstractCoroutineContextElement(Key) {
-    companion object Key : CoroutineContext.Key<TelemetryAttributesElement>
 }
 
 // Claude: ids, emails and tokens in a path identify users, and also stop requests to one route from grouping.

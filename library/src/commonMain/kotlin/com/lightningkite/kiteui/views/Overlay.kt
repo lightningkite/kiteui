@@ -7,7 +7,7 @@ import com.lightningkite.reactive.core.Release
 
 // Stack of dismiss lambdas for currently-open dismissable modal dialogs (topmost is last), one per element tree.
 // This lets back handlers (Android system back, browser back) dismiss the top dialog before navigating pages.
-private val ElementContext.dismissableDialogStack: MutableList<() -> Unit> by lazyContextAddon(global = true) { mutableListOf() }
+private val ElementContext.dismissableDialogStack: MutableList<() -> Unit> by lazyContextAddon(ContextAddon.Scope.Global) { mutableListOf() }
 
 /** Registers [dismiss] as the topmost open dialog; returns a lambda that unregisters it on close. */
 internal fun ElementContext.pushDismissableDialog(dismiss: () -> Unit): Release {

@@ -7,14 +7,10 @@ import com.lightningkite.kiteui.models.LiveRegionMode
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.themed
-import com.lightningkite.kiteui.telemetry.ScreenLoad
-import com.lightningkite.kiteui.telemetry.Telemetry
-import com.lightningkite.kiteui.telemetry.screenLoad
-import com.lightningkite.kiteui.telemetry.telemetryAttributes
+import com.lightningkite.kiteui.telemetry.ScreenVisit
+import com.lightningkite.kiteui.telemetry.screenVisit
+import com.lightningkite.kiteui.telemetry.screenVisitRecorder
 import com.lightningkite.reactive.context.awaitOnce
-import com.lightningkite.kiteui.telemetry.TelemetryAttributesElement
-import com.lightningkite.services.telemetry.TelemetryKeys
-import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -40,23 +36,17 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
                     context.pageNavigator = navigator
                     visit?.cancel()
                     if (screen != null) {
-                        val load = ScreenLoad()
-                        context.screenLoad = load
-                        context.telemetryAttributes += telemetryAttributesOf(
-                            TelemetryKeys.App.screenName to (screen::class.simpleName ?: "Unknown"),
-                            TelemetryKeys.App.screenId to Telemetry.spanId(),
-                        )
-                        val telemetry = Telemetry.installed
-                        if (telemetry != null) visit = this@swapView.withoutLoadingAnimations {
-                            launch(TelemetryAttributesElement(context.telemetryAttributes)) {
-                                telemetry.recordScreenVisit(navigator, load)
-                            }
+                        val screenVisit = ScreenVisit(screen::class.simpleName ?: "Unknown")
+                        context.screenVisit = screenVisit
+                        val record = screenVisitRecorder
+                        if (record != null) visit = this@swapView.withoutLoadingAnimations {
+                            launch(ElementContextElement(context)) { record(navigator, screenVisit) }
                         }
                         // Claude: finally, because SwapView catches a failed render and the load would wait out its timeout.
                         try {
                             with(screen) { themed(MainContentSemantic).asMain.padded.render() }
                         } finally {
-                            load.finishedRendering()
+                            screenVisit.finishedRendering()
                         }
                     }
                     // Tell assistive technology the screen changed, which it can't otherwise

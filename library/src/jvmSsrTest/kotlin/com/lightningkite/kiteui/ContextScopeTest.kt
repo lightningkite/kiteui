@@ -11,11 +11,34 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 
 private var ElementContext.label: String by contextAddon("unset")
+private val ElementContext.madeFrom: ElementContext by lazyContextAddon { it }
+private val ElementContext.madeFromGlobally: ElementContext by lazyContextAddon(ContextAddon.Scope.Global) { it }
 
 /** A value set in a container is seen by everything inside it and nothing outside it. */
 class ContextScopeTest {
+    @Test
+    fun aPlainDefaultIsNotStored() {
+        val root = ElementContext("/")
+        assertEquals("unset", root.split().label)
+        assertFalse(root.addons.containsKey("label"))
+    }
+
+    @Test
+    fun aMadeDefaultIsMadeFromTheContextReadAndSharedInsideIt() {
+        val root = ElementContext("/")
+        val section = root.split()
+        val inside = section.split()
+        assertSame(section, section.madeFrom)
+        assertSame(section, inside.madeFrom, "inside the reader, its default is seen as if set there")
+        val sibling = root.split()
+        assertSame(sibling, sibling.madeFrom, "a sibling makes its own")
+        assertFalse(root.addons.containsKey("madeFrom"))
+        assertSame(root, inside.madeFromGlobally, "a global default is made from the root")
+    }
+
     @Test
     fun valuesStayInsideTheContainerThatSetThem() {
         lateinit var nested: ElementContext

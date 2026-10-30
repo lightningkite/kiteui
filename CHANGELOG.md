@@ -23,9 +23,16 @@
 - `ElementContext.pageNavigator`, `externalServices`, `appName`, `appNavFactory` and `ssrResourceRegistry` are global:
   one value for the whole element tree, whichever element sets it. Setting `externalServices` now needs
   `@OptIn(InternalKiteUi::class)`.
-- `contextAddon`, `lazyContextAddon` and `lateInitContextAddon` take `global = true` for an addon with one value per
-  element tree. In `lazyContextAddon` it comes before `init`, so an `init` passed as a value rather than a trailing
-  lambda must be named: `lazyContextAddon(init = ::makeIt)`.
+- `ContextAddon`, `contextAddon`, `lazyContextAddon` and `lateInitContextAddon` take a `ContextAddon.Scope`:
+  `Cascading` (the default: seen inside the container that set it), `Global` (one value per element tree, whichever
+  element sets it) or `Local` (seen only by the context that set it). In `lazyContextAddon` the mode comes before
+  `init`, so an `init` passed as a value rather than a trailing lambda must be named: `lazyContextAddon(init = ::makeIt)`.
+- **Addon defaults are no longer stored on the root.** A `lazyContextAddon` default is made from the context being
+  read and stored there, so contexts inside it share it and others make their own; a `Global` one is made from the
+  root. It used to be made from whichever context read it first and stored on the root for the whole tree. A plain
+  `contextAddon` default isn't stored at all. `ChainMap.getOrElse` reads the chain without storing anything.
+- `ChainMap.getOrPutLocal`, which read the whole chain despite its name, is gone; `ChainMap.getLocalOrElse` reads only
+  the map's own value.
 - Each element tree now has its own back-dismissable dialog stack and `appNavFactory`; they were shared by every
   tree in the process.
 - `ElementContext.splitExceptionHandlers()` is gone; `split()` now scopes exception handlers and addons
@@ -73,6 +80,15 @@
 - Request spans replace path segments that look like ids, emails or tokens with `{id}`, and are `Error` for
   status 400 and above. Relative URLs (same-origin requests on the web) get a `traceparent` whenever
   `tracePropagationHosts` isn't empty.
+- **`ElementContext.telemetryAttributes` holds only the attributes that context adds**, and they are read when
+  something is recorded, so a change applies to everything recorded after it. A record gets the attributes of every
+  context from the root down, nearer values winning, as the server's `telemetryAttributes { }` does. Reading
+  `context.telemetryAttributes` no longer returns the root's or a parent's. Elements used to copy them when they were built, so attributes set later, such as after
+  sign-in, never appeared. Records made outside any screen, such as in a dialog, a background job or a log, now
+  carry the main navigator's current screen and the root context's attributes. `navigatorView` no longer adds the
+  screen's name and id to `telemetryAttributes`, so a screen's `context.telemetryAttributes` no longer contains them.
+- An app that never calls `Telemetry.install` or `span` no longer includes the telemetry code in its build;
+  `navigatorView` and every element used to reference it.
 - Attributes are fitted to the server's limits before they're saved, since one record over them made the server
   refuse its whole batch. `Telemetry.install` does nothing during server-side rendering.
 - **`HttpFetcher.platform` and `HttpFetcher.default` are now the objects `HttpFetcher.Platform` and

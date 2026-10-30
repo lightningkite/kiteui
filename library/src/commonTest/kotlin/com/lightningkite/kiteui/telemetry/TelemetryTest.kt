@@ -10,7 +10,6 @@ import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
@@ -24,10 +23,6 @@ import kotlin.test.assertTrue
 class TelemetryTest {
     private class Offline : Exception()
     private val navigator = PageNavigator { error("no routes in this test") }
-    private val screenAttributes = telemetryAttributesOf(
-        TelemetryKeys.App.screenName to "HomePage",
-        TelemetryKeys.App.screenId to "abc",
-    )
 
     @Test
     fun spanWithoutParentStartsATrace() = runTest {
@@ -55,16 +50,12 @@ class TelemetryTest {
     }
 
     @Test
-    fun spanCarriesAmbientAndItsOwnAttributes() = runTest {
+    fun spanCarriesItsOwnAttributes() = runTest {
         val t = testTelemetry()
         val step = TelemetryKey.OfString("checkout.step")
-        withContext(TelemetryAttributesElement(screenAttributes)) {
-            t.span("checkout", "pay", telemetryAttributesOf(step to "card")) {}
-        }
+        t.span("checkout", "pay", telemetryAttributesOf(step to "card")) {}
 
-        val span = t.recordedSpans().single()
-        assertEquals("HomePage", span.attributes[TelemetryKeys.App.screenName])
-        assertEquals("card", span.attributes[step])
+        assertEquals("card", t.recordedSpans().single().attributes[step])
     }
 
     @Test
@@ -99,14 +90,12 @@ class TelemetryTest {
     @Test
     fun reportErrorRecordsAnErrorLogWithFingerprint() {
         val t = testTelemetry()
-        t.currentScreen = screenAttributes
         t.reportError(IllegalStateException("boom"), telemetryAttributesOf(TelemetryKey.OfString("where") to "here"))
 
         val log = t.recordedLogs().single()
         assertEquals("boom", log.message)
         assertEquals("IllegalStateException", log.error?.type)
         assertTrue(log.error!!.fingerprint.isNotEmpty())
-        assertEquals("HomePage", log.attributes[TelemetryKeys.App.screenName])
         assertEquals("here", log.attributes[TelemetryKey.OfString("where")])
     }
 
@@ -130,11 +119,10 @@ class TelemetryTest {
     }
 
     @Test
-    fun actionCarriesTheScreenAttributesOfTheScopeItStartedFrom() = runTest {
+    fun aRequestInsideAnActionIsItsChild() = runTest {
         val t = testTelemetry()
-        val elementScope = CoroutineScope(TelemetryAttributesElement(screenAttributes) + Job())
-        // Runs here, outside elementScope, as an action with keepRunningWhile = AppScope would.
-        t.actionInterceptor.intercept(elementScope, "Save") {
+        // Runs here, outside the scope, as an action with keepRunningWhile = AppScope would.
+        t.actionInterceptor.intercept(CoroutineScope(Job()), "Save") {
             try {
                 t.instrumentFetch("https://example.com/save", HttpMethod.POST, HttpHeaders(), null) { _, _, _, _ -> throw Offline() }
             } catch (_: Offline) {}
@@ -143,17 +131,16 @@ class TelemetryTest {
         val action = t.recordedSpans().single { it.owner == "action" }
         val request = t.recordedSpans().single { it.owner == "http" }
         assertEquals("Save", action.operation)
-        assertEquals("HomePage", action.attributes[TelemetryKeys.App.screenName])
-        assertEquals(action.spanId, request.parentSpanId, "a request inside an action is its child")
+        assertEquals(action.spanId, request.parentSpanId)
         assertEquals(action.traceId, request.traceId)
     }
 
     @Test
     fun screenLoadEndsWhenTheScreenIsUsable() = runTest {
         val t = testTelemetry()
-        val load = ScreenLoad()
+        val load = ScreenVisit("HomePage")
         load.startedLoading()
-        val visit = launch(TelemetryAttributesElement(screenAttributes)) { t.recordScreenVisit(navigator, load) }
+        val visit = launch { t.recordScreenVisit(navigator, load) }
         load.finishedRendering()
         yield()
         assertTrue(t.recordedSpans().isEmpty(), "still loading")
@@ -171,9 +158,9 @@ class TelemetryTest {
     @Test
     fun aScreenThatNeverBecomesUsableIsAnErrorAfterSixtySeconds() = runTest {
         val t = testTelemetry()
-        val load = ScreenLoad()
+        val load = ScreenVisit("HomePage")
         load.startedLoading()
-        val visit = launch(TelemetryAttributesElement(screenAttributes)) { t.recordScreenVisit(navigator, load) }
+        val visit = launch { t.recordScreenVisit(navigator, load) }
         advanceTimeBy(61_000)
 
         assertEquals(RecordedSpan.Outcome.Error, t.recordedSpans().single().outcome)
@@ -184,9 +171,9 @@ class TelemetryTest {
     @Test
     fun leavingBeforeTheScreenIsUsableCancelsTheLoad() = runTest {
         val t = testTelemetry()
-        val load = ScreenLoad()
+        val load = ScreenVisit("HomePage")
         load.startedLoading()
-        val visit = launch(TelemetryAttributesElement(screenAttributes)) { t.recordScreenVisit(navigator, load) }
+        val visit = launch { t.recordScreenVisit(navigator, load) }
         yield()
         visit.cancel()
         visit.join()

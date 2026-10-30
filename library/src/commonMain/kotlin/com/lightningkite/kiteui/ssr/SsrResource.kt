@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.ssr
 
+import com.lightningkite.kiteui.views.ContextAddon
 import com.lightningkite.kiteui.views.contextAddon
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
@@ -28,7 +29,7 @@ public interface SsrResourceRegistry {
  * Get the SSR resource registry from the context, if available.
  * Only non-null when rendering on the server side.
  */
-public var ElementContext.ssrResourceRegistry: SsrResourceRegistry? by contextAddon(null, global = true)
+public var ElementContext.ssrResourceRegistry: SsrResourceRegistry? by contextAddon(null, ContextAddon.Scope.Global)
 
 /**
  * Create an SSR-aware resource that:

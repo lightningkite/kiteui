@@ -17,18 +17,43 @@ import kotlin.reflect.KProperty
  * public var ElementContext.accentLevel: Int by contextAddon(0)
  * ```
  *
- * Setting the property stores the value on that context, where it is seen by everything inside that container and
- * nothing outside it. Reading it returns the value from the nearest context that set it; if none did, the [init]
- * default is made once and stored on the root, so the whole tree shares it. A property is read when it is used, and
- * setting it later doesn't notify anything, so store a [Reactive][com.lightningkite.reactive.core.Reactive] for a
- * value that changes.
+ * Setting the property stores the value on that context, and [scope] determines which other contexts see it. If no
+ * context it can see has set a value, reading returns the default from [init]. A [lazy][Init.Lazy] default is made
+ * from the context being read and stored on it, as if set there; under [Scope.Global] it is made from the root.
+ *
+ * The property is read each time it is used, and setting it doesn't notify anything, so store a
+ * [Reactive][com.lightningkite.reactive.core.Reactive] for a value that changes.
  *
  * Values are keyed by the property's name, so two addon properties with the same name share a value.
- *
- * @param global `true` to keep one value for the whole element tree: setting the property from anywhere sets it
- * on the root.
  */
-public class ContextAddon<T>(public val global: Boolean = false, public val init: Init<T>) {
+public class ContextAddon<T>(public val scope: Scope = Scope.Cascading, public val init: Init<T>) {
+    /** Determines which contexts see a value set on a context. */
+    public enum class Scope {
+        /**
+         * A value set on any context is seen by every context in the element tree.
+         *
+         * The value is stored on the [root][ElementContext.root], so setting it from anywhere replaces it everywhere.
+         * This is not only the expected behavior for system-wide configuration, it also is much more efficient
+         * for lookups since the `root` can be checked without walking the context tree each time.
+         */
+        Global,
+
+        /**
+         * A value set on a context is seen by that context and every context inside it.
+         *
+         * Reading returns the value set on the nearest context, starting from this one and going up through its
+         * parents. A value set on a context further in replaces it only for that context and the ones inside it.
+         */
+        Cascading,
+
+        /**
+         * A value set on a context is seen only by that context.
+         *
+         * Contexts inside it read the default until they set their own.
+         */
+        Local,
+    }
+
     /** Makes an addon's value when it is read before anything has set it. */
     public fun interface Init<out T> {
         /** Returns the default value of [property], read from [context]. */
@@ -39,7 +64,7 @@ public class ContextAddon<T>(public val global: Boolean = false, public val init
             override fun get(context: ElementContext, property: KProperty<*>): T = value
         }
 
-        /** Defaults to the result of [init], called with the context of the first read. */
+        /** Defaults to the result of [init], called with the context being read the first time it has no value. */
         public data class Lazy<T>(val init: (ElementContext) -> T) : Init<T> {
             override fun get(context: ElementContext, property: KProperty<*>): T = init(context)
         }
@@ -51,42 +76,51 @@ public class ContextAddon<T>(public val global: Boolean = false, public val init
         }
     }
 
-    /** Creates an addon that defaults to [value]. */
-    public constructor(global: Boolean, value: T) : this(global, Init.Value(value))
-
-    private val ElementContext.targetAddons get() = if (this@ContextAddon.global) addons.root else addons
+    public constructor(mode: Scope, value: T) : this(mode, Init.Value(value))
 
     @Suppress("UNCHECKED_CAST")
-    public operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T =
-        thisRef.targetAddons.getOrPut(property.name) { init.get(thisRef, property) } as T
+    public operator fun getValue(thisRef: ElementContext, property: KProperty<*>): T = when (scope) {
+        Scope.Global -> thisRef.root.addons.getLocalOrElse(property.name) { default(thisRef.root, property) }
+        Scope.Cascading -> thisRef.addons.getOrElse(property.name) { default(thisRef, property) }
+        Scope.Local -> thisRef.addons.getLocalOrElse(property.name) { default(thisRef, property) }
+    } as T
+
+    // Claude: a Value default is the same object on every read, so only made defaults are stored.
+    private fun default(context: ElementContext, property: KProperty<*>): T {
+        val value = init.get(context, property)
+        if (init !is Init.Value) context.addons[property.name] = value
+        return value
+    }
 
     public operator fun setValue(thisRef: ElementContext, property: KProperty<*>, value: T) {
-        thisRef.targetAddons[property.name] = value
+        val target = if (scope == Scope.Global) thisRef.addons.root else thisRef.addons
+        target[property.name] = value
     }
 }
 
-/** Returns a [ContextAddon] that defaults to [init], with one value per element tree if [global]. */
-public fun <T> contextAddon(init: T, global: Boolean = false): ContextAddon<T> = ContextAddon(global, init)
+/** Returns a [ContextAddon] that defaults to [init]; see [ContextAddon.Scope] for [mode]. */
+public fun <T> contextAddon(init: T, mode: ContextAddon.Scope = ContextAddon.Scope.Cascading): ContextAddon<T> = ContextAddon(mode, init)
 
 /**
- * Returns a [ContextAddon] with no default, which throws [IllegalStateException] if read before it is set, with one
- * value per element tree if [global].
+ * Returns a [ContextAddon] with no default, which throws [IllegalStateException] if read before it is set; see
+ * [ContextAddon.Scope] for [mode].
  */
-public fun <T> lateInitContextAddon(global: Boolean = false): ContextAddon<T> = ContextAddon(global, ContextAddon.Init.LateInit)
+public fun <T> lateInitContextAddon(mode: ContextAddon.Scope = ContextAddon.Scope.Cascading): ContextAddon<T> =
+    ContextAddon(mode, ContextAddon.Init.LateInit)
 
 /**
- * Returns a [ContextAddon] that defaults to the result of [init], called once per element tree on the first read, with
- * one value per element tree if [global].
+ * Returns a [ContextAddon] that defaults to the result of [init], called on the first read that needs a default; see
+ * [ContextAddon.Scope] for [mode].
  */
-public fun <T> lazyContextAddon(global: Boolean = false, init: (ElementContext) -> T): ContextAddon<T> =
-    ContextAddon(global, ContextAddon.Init.Lazy(init))
+public fun <T> lazyContextAddon(mode: ContextAddon.Scope = ContextAddon.Scope.Cascading, init: (ElementContext) -> T): ContextAddon<T> =
+    ContextAddon(mode, ContextAddon.Init.Lazy(init))
 
-public var ElementContext.safeInsets: Reactive<Edges> by contextAddon(Constant(Edges.ZERO), global = true)
+public var ElementContext.safeInsets: Reactive<Edges> by contextAddon(Constant(Edges.ZERO), ContextAddon.Scope.Global)
 
 /**
  * Custom CoroutineDispatcher to use for Elements created with this context.
  * If set, this dispatcher will be used instead of Dispatchers.Main.immediate.
  * This is primarily useful for SSR where we need synchronous reactive scope execution.
  */
-public var ElementContext.ssrDispatcher: CoroutineDispatcher? by contextAddon(null, global = true)
+public var ElementContext.ssrDispatcher: CoroutineDispatcher? by contextAddon(null, ContextAddon.Scope.Global)
     @InternalKiteUi set

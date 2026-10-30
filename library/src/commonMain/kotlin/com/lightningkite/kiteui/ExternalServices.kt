@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.views.ContextAddon
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.lazyContextAddon
@@ -97,7 +98,7 @@ public object ExternalServices {
     public fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null): Unit = ctx.openMap(latitude, longitude, label, zoom)
 }
 
-public var ElementContext.externalServices: ExternalServicesAccess by lazyContextAddon(global = true) { externalServicesAccessDefault(it) }
+public var ElementContext.externalServices: ExternalServicesAccess by lazyContextAddon(ContextAddon.Scope.Global) { externalServicesAccessDefault(it) }
     @InternalKiteUi set
 
 @Deprecated("Use directly through context", ReplaceWith("context.externalServices"))

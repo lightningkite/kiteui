@@ -5,6 +5,8 @@ import com.lightningkite.kiteui.exceptions.ExceptionHandlersTree
 import com.lightningkite.kiteui.exceptions.ExceptionMessage
 import com.lightningkite.reactive.core.Release
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Holds the values an element shares with the elements inside it, such as the page navigator, the overlay frame
@@ -64,6 +66,11 @@ public abstract class ElementContextCommonCode(
 public fun ElementContext.handleException(exception: Exception, metadata: ExceptionHandler.Metadata? = null): Release? = exceptionHandlers.handle(this, exception, metadata)
 public fun ElementContext.exceptionMessage(exception: Exception, metadata: ExceptionHandler.Metadata? = null): ExceptionMessage? = exceptionHandlers.message(this, exception, metadata)
 
+/** The [ElementContext] of the element whose coroutines carry this. */
+internal class ElementContextElement(val context: ElementContext) : AbstractCoroutineContextElement(Key) {
+    companion object Key : CoroutineContext.Key<ElementContextElement>
+}
+
 // by Claude - scoped key-value store with parent chain for lazy lookup.
 // Reads check local first, then walk up the parent chain.
 // Explicit set() writes to local, shadowing the parent for that subtree.
@@ -83,30 +90,33 @@ public class ChainMap<K, V>(
         val local = local
         return if (local != null) local.getOrElseIfMissing(key) { parent?.get(key) } else parent?.get(key)
     }
+    /** Returns the value set on this map itself, ignoring its [parent]s, or the result of [default] if it has none. */
+    @Suppress("UNCHECKED_CAST")
+    public fun getLocalOrElse(key: K, default: () -> V): V {
+        val local = local
+        return if (local != null && local.containsKey(key)) local[key] as V else default()
+    }
     public operator fun set(key: K, value: V) { (local ?: HashMap<K, V>().also { local = it })[key] = value }
 
-    /** Returns existing value if found anywhere in the chain; otherwise writes [defaultValue] to the root and returns it. */
-    public fun getOrPut(key: K, defaultValue: () -> V): V {
-        get(key)?.let { return it }
-        if (containsKey(key)) {
-            @Suppress("UNCHECKED_CAST")
-            return get(key) as V
+    /**
+     * Returns the value from the nearest map in the chain, from this one up through its [parent]s, that has [key], or
+     * the result of [default] if none has.
+     *
+     * A key set to `null` counts as having a value.
+     */
+    @Suppress("UNCHECKED_CAST")
+    public fun getOrElse(key: K, default: () -> V): V {
+        var map: ChainMap<K, V>? = this
+        while (map != null) {
+            val local = map.local
+            if (local != null && local.containsKey(key)) return local[key] as V
+            map = map.parent
         }
-        val value = defaultValue()
-        root[key] = value
-        return value
+        return default()
     }
 
-    public fun getOrPutLocal(key: K, defaultValue: () -> V): V {
-        get(key)?.let { return it }
-        if (containsKey(key)) {
-            @Suppress("UNCHECKED_CAST")
-            return get(key) as V
-        }
-        val value = defaultValue()
-        set(key, value)
-        return value
-    }
+    /** Returns existing value if found anywhere in the chain; otherwise writes [defaultValue] to the root and returns it. */
+    public fun getOrPut(key: K, defaultValue: () -> V): V = getOrElse(key) { defaultValue().also { root[key] = it } }
 
     public fun child(): ChainMap<K, V> = ChainMap(this)
 }

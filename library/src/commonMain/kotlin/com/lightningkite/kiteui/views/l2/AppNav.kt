@@ -45,7 +45,7 @@ public interface AppNav {
 }
 
 
-public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> Unit> by lazyContextAddon(global = true) {
+public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> Unit> by lazyContextAddon(ContextAddon.Scope.Global) {
     Signal(ViewWriter::appNavBottomTabs)
 }
 

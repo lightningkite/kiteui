@@ -82,13 +82,24 @@ links its spans to the client's but samples them by its own rules.
 
 ### Screen attributes
 
-`navigatorView` sets `app.screen.name` and a per-visit `app.screen.id` on its screen's `ElementContext`. Every
-coroutine an element launches carries them, including actions started from it, so spans recorded there are
-labelled with the screen. Add app-wide attributes to the root context:
+Spans, logs and errors are labelled with the screen they were recorded on: `app.screen.name` and a per-visit
+`app.screen.id`, which `navigatorView` gives each screen it shows. That includes actions started from the screen's
+elements. Records made outside any screen, such as in a dialog or a background job, get the main navigator's current
+screen.
+
+Add your own attributes with `ElementContext.telemetryAttributes`. Put app-wide ones on the root context, and ones
+for part of a screen on its container:
 
 ```kotlin
 context.telemetryAttributes += telemetryAttributesOf(TelemetryKey.OfString("app.flavor") to "beta")
 ```
+
+Like the server's `telemetryAttributes { }`, each context holds only the attributes it adds. A record gets those of
+every context from the root down to where it was made, with nearer values replacing ones from above, and they're read
+each time something is recorded. So a change at the root, say after sign-in, reaches every screen, even ones already
+showing. A leaf element shares its container's context, so attributes it sets apply to its siblings too.
+
+An app that never calls `Telemetry.install` or `span` doesn't include the telemetry code in its build.
 
 ## Your own telemetry
 
