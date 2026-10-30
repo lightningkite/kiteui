@@ -98,22 +98,22 @@ public class ContextAddon<T>(public val scope: Scope = Scope.Cascading, public v
     }
 }
 
-/** Returns a [ContextAddon] that defaults to [init]; see [ContextAddon.Scope] for [mode]. */
-public fun <T> contextAddon(init: T, mode: ContextAddon.Scope = ContextAddon.Scope.Cascading): ContextAddon<T> = ContextAddon(mode, init)
+/** Returns a [ContextAddon] that defaults to [init]; see [ContextAddon.Scope] for [scope]. */
+public fun <T> contextAddon(init: T, scope: ContextAddon.Scope = ContextAddon.Scope.Cascading): ContextAddon<T> = ContextAddon(scope, init)
 
 /**
  * Returns a [ContextAddon] with no default, which throws [IllegalStateException] if read before it is set; see
- * [ContextAddon.Scope] for [mode].
+ * [ContextAddon.Scope] for [scope].
  */
-public fun <T> lateInitContextAddon(mode: ContextAddon.Scope = ContextAddon.Scope.Cascading): ContextAddon<T> =
-    ContextAddon(mode, ContextAddon.Init.LateInit)
+public fun <T> lateInitContextAddon(scope: ContextAddon.Scope = ContextAddon.Scope.Cascading): ContextAddon<T> =
+    ContextAddon(scope, ContextAddon.Init.LateInit)
 
 /**
  * Returns a [ContextAddon] that defaults to the result of [init], called on the first read that needs a default; see
- * [ContextAddon.Scope] for [mode].
+ * [ContextAddon.Scope] for [scope].
  */
-public fun <T> lazyContextAddon(mode: ContextAddon.Scope = ContextAddon.Scope.Cascading, init: (ElementContext) -> T): ContextAddon<T> =
-    ContextAddon(mode, ContextAddon.Init.Lazy(init))
+public fun <T> lazyContextAddon(scope: ContextAddon.Scope = ContextAddon.Scope.Cascading, init: (ElementContext) -> T): ContextAddon<T> =
+    ContextAddon(scope, ContextAddon.Init.Lazy(init))
 
 public var ElementContext.safeInsets: Reactive<Edges> by contextAddon(Constant(Edges.ZERO), ContextAddon.Scope.Global)
 

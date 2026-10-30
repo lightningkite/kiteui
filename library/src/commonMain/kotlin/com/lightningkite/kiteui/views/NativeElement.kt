@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
-import com.lightningkite.kiteui.telemetry.screenVisit
 import com.lightningkite.kiteui.utils.OrderedKeyedList
 import com.lightningkite.reactive.context.StatusListener
 import com.lightningkite.reactive.context.onRemove
@@ -480,7 +479,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
             override fun watchForegroundProcess(status: Reactive<*>): Release =
                 this@NativeElementCommonCode.watchForegroundProcess(status)
         },
-        ElementContextElement(context)
+        context
     )
 
     public var fullyStarted: Boolean = false
@@ -633,11 +632,11 @@ public abstract class NativeElementCommonCode internal constructor(override val 
         private val processes = HashSet<Reactive<*>>()
 
         private var exceptionCount = 0
-        private val screenVisit = if (foreground) null else context.screenVisit
+        private val loadTracker = if (foreground) null else context.loadTracker
         private var notReadyCount = 0
             set(value) {
-                if (field == 0 && value > 0) screenVisit?.startedLoading()
-                if (field > 0 && value == 0) screenVisit?.finishedLoading()
+                if (field == 0 && value > 0) loadTracker?.startedLoading()
+                if (field > 0 && value == 0) loadTracker?.finishedLoading()
                 field = value
             }
 

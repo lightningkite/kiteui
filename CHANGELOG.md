@@ -35,6 +35,14 @@
   the map's own value.
 - Each element tree now has its own back-dismissable dialog stack and `appNavFactory`; they were shared by every
   tree in the process.
+- **`ElementContext` is a coroutine context element**, and every coroutine an element launches carries it:
+  `currentCoroutineContext()[ElementContext]` is the context of the element that launched it.
+- **New `withLoadTracking()` modifier and `LoadTracker`.** `val section = withLoadTracking().col { }` gives the
+  column its own tracker, covering it and everything inside it; `section.context.loadTracker.loading()` reads whether
+  any of them is loading the data it shows, and `awaitOnce()` on the tracker waits until none is. Every element tree
+  has a root tracker covering the whole tree, and a tracker counts as loading for the one outside it, so nesting
+  them loses nothing. A tracker tells the one outside it only when it starts or stops loading, so nested trackers cost
+  no more than one. Custom components can report with `startedLoading()` and `finishedLoading()`.
 - `ElementContext.splitExceptionHandlers()` is gone; `split()` now scopes exception handlers and addons
   together.
 
@@ -83,12 +91,15 @@
 - **`ElementContext.telemetryAttributes` holds only the attributes that context adds**, and they are read when
   something is recorded, so a change applies to everything recorded after it. A record gets the attributes of every
   context from the root down, nearer values winning, as the server's `telemetryAttributes { }` does. Reading
-  `context.telemetryAttributes` no longer returns the root's or a parent's. Elements used to copy them when they were built, so attributes set later, such as after
-  sign-in, never appeared. Records made outside any screen, such as in a dialog, a background job or a log, now
-  carry the main navigator's current screen and the root context's attributes. `navigatorView` no longer adds the
-  screen's name and id to `telemetryAttributes`, so a screen's `context.telemetryAttributes` no longer contains them.
-- An app that never calls `Telemetry.install` or `span` no longer includes the telemetry code in its build;
-  `navigatorView` and every element used to reference it.
+  `context.telemetryAttributes` no longer returns the root's or a parent's. App-wide attributes now go on the new
+  `Telemetry.attributes`.
+- **Screens come from the navigator passed to `install`**, not from `navigatorView`, so an app's own navigator view
+  gets screen telemetry too. Everything recorded is labelled with that navigator's current page; a span is labelled
+  when it starts. `navigatorView` no longer adds the screen's name and id to `telemetryAttributes`.
+- `screen.load` now ends once the root context's `loadTracker` stops loading, which includes elements outside the
+  page such as a nav bar.
+- An app that never calls `Telemetry.install` or `span` no longer includes the telemetry code in its build; the UI
+  code no longer refers to it.
 - Attributes are fitted to the server's limits before they're saved, since one record over them made the server
   refuse its whole batch. `Telemetry.install` does nothing during server-side rendering.
 - **`HttpFetcher.platform` and `HttpFetcher.default` are now the objects `HttpFetcher.Platform` and

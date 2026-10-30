@@ -52,8 +52,9 @@ the next user, delete them when the flush fails:
 try { telemetry.flush() } catch (e: Exception) { telemetry.clear() }
 ```
 
-Install before the first `navigatorView` renders; screens shown earlier aren't recorded. During server-side
-rendering `install` does nothing, so it's safe to call from `app()`.
+Install before building the app's elements, at the start of `app()`. Screens are read from the `navigator` you pass,
+so any view that shows its pages works, not just `navigatorView`. A screen has loaded once the root context's
+`loadTracker`, which covers every element, stops loading. During server-side rendering `install` does nothing, so it's safe to call from `app()`.
 
 ## What's recorded
 
@@ -61,7 +62,7 @@ rendering `install` does nothing, so it's safe to call from `app()`.
 |---|---|
 | HTTP requests | Span `http.<METHOD>` with `http.request.method`, `url.path` (no query or credentials, and path segments that look like ids, emails or tokens replaced with `{id}`), `server.address`, `http.response.status_code`; an `Error` for status 400 and above |
 | Actions | Span `action.<title>`; requests and coroutines it starts, and the halves of an `a + b`, are its children |
-| Screen visits | Span `screen.load`, ending when the screen has rendered and nothing in it is loading, `Cancelled` if the user leaves first, or an `Error` after 60 s. A screen with something that stays loading, such as a `LateInitSignal` waiting for input, always ends in that error. Events `app.screen.view_start` / `app.screen.view_end` |
+| Screen visits | Span `screen.load`, ending when the page has rendered and the root context's `loadTracker` stops loading, `Cancelled` if the user leaves first, or an `Error` after 60 s. A screen with something that stays loading, such as a `LateInitSignal` waiting for input, always ends in that error. Events `app.screen.view_start` / `app.screen.view_end` |
 | App start | Span `app.start`, from constructing `Telemetry` to `install` |
 | Logs | `Log` calls at `minLogLevel` and above (default `Warn`), labelled with the current screen |
 | Errors | Reported exceptions and exception-handler errors, as ERROR logs with a fingerprint. An error that a handler nearer the element than the root's handles, such as `errorText`'s, isn't recorded, and an element's error can be recorded more than once |
@@ -82,22 +83,23 @@ links its spans to the client's but samples them by its own rules.
 
 ### Screen attributes
 
-Spans, logs and errors are labelled with the screen they were recorded on: `app.screen.name` and a per-visit
-`app.screen.id`, which `navigatorView` gives each screen it shows. That includes actions started from the screen's
-elements. Records made outside any screen, such as in a dialog or a background job, get the main navigator's current
-screen.
+Spans, logs and errors are labelled with the navigator's current page: `app.screen.name`, its class name, and
+`app.screen.id`, which is new each time the page is shown. A span is labelled when it starts, so a request started on
+one screen keeps that screen's label if it finishes on the next. Only the navigator passed to `install` is followed;
+pages of other navigators are labelled with its current page.
 
-Add your own attributes with `ElementContext.telemetryAttributes`. Put app-wide ones on the root context, and ones
-for part of a screen on its container:
+Add app-wide attributes to the `Telemetry`, and attributes for part of a screen to its container's context:
 
 ```kotlin
-context.telemetryAttributes += telemetryAttributesOf(TelemetryKey.OfString("app.flavor") to "beta")
+telemetry.attributes += telemetryAttributesOf(TelemetryKey.OfString("app.flavor") to "beta")
+context.telemetryAttributes += telemetryAttributesOf(TelemetryKey.OfString("checkout.step") to "card")
 ```
 
-Like the server's `telemetryAttributes { }`, each context holds only the attributes it adds. A record gets those of
-every context from the root down to where it was made, with nearer values replacing ones from above, and they're read
-each time something is recorded. So a change at the root, say after sign-in, reaches every screen, even ones already
-showing. A leaf element shares its container's context, so attributes it sets apply to its siblings too.
+Both are read each time something is recorded, so a change, say after sign-in, applies to everything recorded after
+it. Like the server's `telemetryAttributes { }`, each context holds only the attributes it adds: a record gets those of
+every context from the root down to where it was made, with nearer values replacing ones from above, and those
+replace the app-wide ones. A leaf element shares its container's context, so attributes it sets apply to its siblings
+too.
 
 An app that never calls `Telemetry.install` or `span` doesn't include the telemetry code in its build.
 
@@ -161,7 +163,7 @@ The fingerprint becomes the record's `error.fingerprint`, the same attribute ser
 3. Replace `Telemetry(TelemetryConfig(endpoint, headers, ...))` with the constructor above. Custom
    `counter`/`histogram` calls must become spans or logs.
 4. Replace `span("x") { }` with `span("owner", "x") { }`. `exceptionAttributes` is gone; `user.id`
-   comes from the server, and app-wide attributes go on the root `ElementContext.telemetryAttributes`.
+   comes from the server, and app-wide attributes go on `Telemetry.attributes`.
 5. Update dashboards: `page.name` is now `app.screen.name`, `crash.fingerprint` is `error.fingerprint`, and
    the client metrics `http.client.request.duration`, `navigation.page_views`, `action.invocations` and
    `connectivity.issues` are gone; use the `http.*`, `screen.load` and `action.*` spans and the connectivity

@@ -67,5 +67,5 @@ public actual class ElementContext(public val controller: UIViewController, pare
         }
     }
 
-    public actual companion object {}
+    public actual companion object : kotlin.coroutines.CoroutineContext.Key<ElementContext>
 }

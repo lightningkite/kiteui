@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.HttpMethod
 import com.lightningkite.kiteui.HttpHeaders
-import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.views.LoadTracker
 import com.lightningkite.services.telemetry.RecordedSpan
 import com.lightningkite.services.telemetry.TelemetryKey
 import com.lightningkite.services.telemetry.TelemetryKeys
@@ -22,7 +22,7 @@ import kotlin.test.assertTrue
 
 class TelemetryTest {
     private class Offline : Exception()
-    private val navigator = PageNavigator { error("no routes in this test") }
+    private val screen = telemetryAttributesOf(TelemetryKeys.App.screenName to "HomePage", TelemetryKeys.App.screenId to "abc")
 
     @Test
     fun spanWithoutParentStartsATrace() = runTest {
@@ -138,10 +138,9 @@ class TelemetryTest {
     @Test
     fun screenLoadEndsWhenTheScreenIsUsable() = runTest {
         val t = testTelemetry()
-        val load = ScreenVisit("HomePage")
+        val load = LoadTracker(outside = null)
         load.startedLoading()
-        val visit = launch { t.recordScreenVisit(navigator, load) }
-        load.finishedRendering()
+        val visit = launch { t.recordScreenVisit(screen, load) }
         yield()
         assertTrue(t.recordedSpans().isEmpty(), "still loading")
 
@@ -158,9 +157,9 @@ class TelemetryTest {
     @Test
     fun aScreenThatNeverBecomesUsableIsAnErrorAfterSixtySeconds() = runTest {
         val t = testTelemetry()
-        val load = ScreenVisit("HomePage")
+        val load = LoadTracker(outside = null)
         load.startedLoading()
-        val visit = launch { t.recordScreenVisit(navigator, load) }
+        val visit = launch { t.recordScreenVisit(screen, load) }
         advanceTimeBy(61_000)
 
         assertEquals(RecordedSpan.Outcome.Error, t.recordedSpans().single().outcome)
@@ -171,9 +170,9 @@ class TelemetryTest {
     @Test
     fun leavingBeforeTheScreenIsUsableCancelsTheLoad() = runTest {
         val t = testTelemetry()
-        val load = ScreenVisit("HomePage")
+        val load = LoadTracker(outside = null)
         load.startedLoading()
-        val visit = launch { t.recordScreenVisit(navigator, load) }
+        val visit = launch { t.recordScreenVisit(screen, load) }
         yield()
         visit.cancel()
         visit.join()

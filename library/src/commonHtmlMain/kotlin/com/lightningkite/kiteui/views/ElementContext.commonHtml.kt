@@ -21,5 +21,5 @@ public actual class ElementContext(
 
     public actual val root: ElementContext = parent?.root ?: this
 
-    public actual companion object
+    public actual companion object : kotlin.coroutines.CoroutineContext.Key<ElementContext>
 }

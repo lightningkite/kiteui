@@ -18,7 +18,13 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.Element
 import com.lightningkite.kiteui.ssr.ssrResourceRegistry
 import com.lightningkite.kiteui.views.ElementContext
-import com.lightningkite.kiteui.views.ElementContextElement
+import com.lightningkite.kiteui.views.LoadTracker
+import com.lightningkite.kiteui.views.loadTracker
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.reactive.context.awaitOnce
+import com.lightningkite.reactive.core.addAndRunListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import com.lightningkite.kiteui.views.viewPath
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.services.telemetry.LogLevel
@@ -89,13 +95,25 @@ public class Telemetry(
     )
     private val constructedAt = Clock.System.now()
 
-    /** The context of the main navigator's current screen, for records made outside any element. */
-    internal var currentScreen: ElementContext? = null
-    private var mainNavigator: PageNavigator? = null
+    /**
+     * Attributes added to everything this records, such as the signed-in user's plan.
+     *
+     * They are read each time something is recorded, so a change applies to everything recorded after it. Attributes
+     * for part of the app go on [ElementContext.telemetryAttributes], which replace these where they share a key.
+     */
+    public var attributes: TelemetryAttributes = TelemetryAttributes.empty
+
+    /** The name and visit id of the main navigator's current screen, which label everything recorded. */
+    internal var currentScreen: TelemetryAttributes = TelemetryAttributes.empty
+    private var shownPage: Page? = null
+    private var screenVisit: Job? = null
 
     /**
      * Installs the global hooks and starts uploading, for the rest of the process. [navigator] is the one whose
-     * screen labels logs.
+     * current page labels everything recorded.
+     *
+     * A screen has loaded once the root context's [loadTracker], which covers the whole element tree, is no longer
+     * loading.
      *
      * Only one [Telemetry] can be installed. During server-side rendering this does nothing, since the app runs once
      * per request inside the server's process, which isn't a client.
@@ -104,8 +122,8 @@ public class Telemetry(
         if (context.ssrResourceRegistry != null) return
         check(Companion.installed == null) { "A Telemetry is already installed." }
         Companion.installed = this
-        mainNavigator = navigator
-        screenVisitRecorder = ::recordScreenVisit
+        val loadTracker = context.root.loadTracker
+        navigator.currentPage.addAndRunListener { onPageShown(navigator.currentPage.state.getOrNull(), loadTracker) }
 
         HttpFetcher.Interceptor.global.register(HttpFetcher.Interceptor(::instrumentFetch))
         Action.Interceptor.global.register(actionInterceptor)
@@ -143,7 +161,7 @@ public class Telemetry(
         // Actions run in AppScope by default, which carries neither the screen's attributes nor, for the halves of a
         // combined action, the combined action's span.
         val started = scope.coroutineContext
-        withContext((started[ElementContextElement] ?: EmptyCoroutineContext) + (started[ClientSpan] ?: EmptyCoroutineContext)) {
+        withContext((started[ElementContext] ?: EmptyCoroutineContext) + (started[ClientSpan] ?: EmptyCoroutineContext)) {
             span("action", title) { proceed() }
         }
     }
@@ -166,15 +184,10 @@ public class Telemetry(
         logError(throwable, attributes)
     }
 
-    /**
-     * Returns the attributes for a record made in [context]: its screen's name and visit id, then the app's
-     * [ElementContext.telemetryAttributes]. Outside any element, or in one outside any screen such as a dialog, the
-     * main navigator's current screen stands in.
-     */
+    /** Returns the attributes for a record made in [context], or outside any element if it is `null`. */
     private fun attributesFor(context: ElementContext?): TelemetryAttributes {
-        val at = context ?: currentScreen ?: return TelemetryAttributes.empty
-        val screen = at.screenVisit ?: currentScreen?.screenVisit
-        return (screen?.attributes ?: TelemetryAttributes.empty) + at.allTelemetryAttributes()
+        val app = currentScreen + attributes
+        return if (context == null) app else app + context.allTelemetryAttributes()
     }
 
     /** Returns the [telemetryAttributes] of this context and every one above it, nearer ones winning. */
@@ -233,7 +246,7 @@ public class Telemetry(
     internal suspend fun <T> span(owner: String, operation: String, attributes: TelemetryAttributes = TelemetryAttributes.empty, action: suspend (ClientSpan) -> T): T {
         val context = currentCoroutineContext()
         val parent = context[ClientSpan]
-        val ambient = attributesFor(context[ElementContextElement]?.context)
+        val ambient = attributesFor(context[ElementContext])
         val span = ClientSpan(traceId = parent?.traceId ?: traceId(), spanId = spanId(), attributes = ambient + attributes)
         val start = Clock.System.now()
         var outcome = RecordedSpan.Outcome.Error
@@ -311,22 +324,33 @@ public class Telemetry(
         }
     }
 
-    /** Runs for as long as [visit] is shown, in the coroutine context of the screen's elements. */
-    internal suspend fun recordScreenVisit(navigator: PageNavigator, visit: ScreenVisit) {
-        val context = currentCoroutineContext()[ElementContextElement]?.context
-        if (navigator === mainNavigator) currentScreen = context
-        event("app.screen.view_start", attributesFor(context) + visit.attributes)
+    internal fun onPageShown(page: Page?, loadTracker: LoadTracker) {
+        if (page === shownPage) return
+        shownPage = page
+        screenVisit?.cancel()
+        val screen = if (page == null) TelemetryAttributes.empty else telemetryAttributesOf(
+            TelemetryKeys.App.screenName to (page::class.simpleName ?: "Unknown"),
+            TelemetryKeys.App.screenId to spanId(),
+        )
+        currentScreen = screen
+        // Claude: dispatched rather than immediate, so the navigator view has rendered the page before the load starts.
+        if (page != null) screenVisit = AppScope.launch(Dispatchers.Main) { recordScreenVisit(screen, loadTracker) }
+    }
+
+    /** Runs for as long as the screen labelled [screen] is shown; it has loaded the first time [loadTracker] is ready. */
+    internal suspend fun recordScreenVisit(screen: TelemetryAttributes, loadTracker: LoadTracker) {
+        event("app.screen.view_start", attributesFor(null) + screen)
         try {
             try {
-                span("screen", "load", visit.attributes) {
-                    withTimeoutOrNull(60.seconds) { visit.usable.await() } ?: throw ScreenLoadTimeout()
+                span("screen", "load", screen) {
+                    withTimeoutOrNull(60.seconds) { loadTracker.awaitOnce() } ?: throw ScreenLoadTimeout()
                 }
             } catch (_: ScreenLoadTimeout) {
                 // Recorded as the load span's error; the visit goes on.
             }
             awaitCancellation()
         } finally {
-            event("app.screen.view_end", attributesFor(context) + visit.attributes)
+            event("app.screen.view_end", attributesFor(null) + screen)
         }
     }
 

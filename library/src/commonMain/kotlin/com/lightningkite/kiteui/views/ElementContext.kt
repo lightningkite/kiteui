@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.exceptions.ExceptionHandlersTree
 import com.lightningkite.kiteui.exceptions.ExceptionMessage
 import com.lightningkite.reactive.core.Release
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -44,14 +43,17 @@ public expect class ElementContext: ElementContextCommonCode {
     /** The context at the top of this one's [parent]s, shared by the whole element tree; this context if it has no parent. */
     public val root: ElementContext
 
-    public companion object
+    /** The key of the [ElementContext] in a coroutine context, which elements put in every coroutine they launch. */
+    public companion object : CoroutineContext.Key<ElementContext>
 }
 
 /** The platform-independent part of [ElementContext]; use [ElementContext] itself. */
 public abstract class ElementContextCommonCode(
     /** The context this one was [split][ElementContext.split] from, or `null` for the root. */
     public val parent: ElementContext?,
-) {
+) : CoroutineContext.Element {
+    override val key: CoroutineContext.Key<*> get() = ElementContext
+
     /**
      * The values set on this context, falling back to its [parent]'s for any it hasn't set.
      *
@@ -65,11 +67,6 @@ public abstract class ElementContextCommonCode(
 
 public fun ElementContext.handleException(exception: Exception, metadata: ExceptionHandler.Metadata? = null): Release? = exceptionHandlers.handle(this, exception, metadata)
 public fun ElementContext.exceptionMessage(exception: Exception, metadata: ExceptionHandler.Metadata? = null): ExceptionMessage? = exceptionHandlers.message(this, exception, metadata)
-
-/** The [ElementContext] of the element whose coroutines carry this. */
-internal class ElementContextElement(val context: ElementContext) : AbstractCoroutineContextElement(Key) {
-    companion object Key : CoroutineContext.Key<ElementContextElement>
-}
 
 // by Claude - scoped key-value store with parent chain for lazy lookup.
 // Reads check local first, then walk up the parent chain.

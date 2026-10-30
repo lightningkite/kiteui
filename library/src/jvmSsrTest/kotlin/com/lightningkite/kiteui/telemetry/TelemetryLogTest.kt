@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui.telemetry
 
 import com.lightningkite.kiteui.Log
-import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.services.telemetry.LogLevel
 import com.lightningkite.services.telemetry.TelemetryKey
 import com.lightningkite.services.telemetry.TelemetryKeys
+import com.lightningkite.services.telemetry.telemetryAttributesOf
 import kotlin.test.*
 
 class TelemetryLogTest {
@@ -34,7 +34,7 @@ class TelemetryLogTest {
 
     @Test
     fun logsCarryTheCurrentScreenAndNoTraceIds() {
-        telemetry.currentScreen = ElementContext("/").apply { screenVisit = ScreenVisit("HomePage") }
+        telemetry.currentScreen = telemetryAttributesOf(TelemetryKeys.App.screenName to "HomePage")
         Log.warn("something went wrong")
 
         val log = telemetry.recordedLogs().single()

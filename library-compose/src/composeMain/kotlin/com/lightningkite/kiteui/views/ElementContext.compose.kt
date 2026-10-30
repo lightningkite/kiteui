@@ -9,5 +9,5 @@ public actual class ElementContext(parent: ElementContext? = null) : ElementCont
 
     public actual val root: ElementContext = parent?.root ?: this
 
-    public actual companion object
+    public actual companion object : kotlin.coroutines.CoroutineContext.Key<ElementContext>
 }

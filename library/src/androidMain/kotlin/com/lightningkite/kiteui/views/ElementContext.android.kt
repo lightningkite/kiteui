@@ -37,5 +37,5 @@ public actual class ElementContext(activity: KiteUiActivity, parent: ElementCont
         ?: throw IllegalStateException("Cannot split RContext: Activity has been destroyed")
 
     public actual var immersiveMode: Boolean = false
-    public actual companion object {}
+    public actual companion object : kotlin.coroutines.CoroutineContext.Key<ElementContext>
 }
