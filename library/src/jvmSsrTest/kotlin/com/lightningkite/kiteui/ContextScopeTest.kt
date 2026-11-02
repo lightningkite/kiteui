@@ -62,6 +62,23 @@ class ContextScopeTest {
     }
 
     @Test
+    fun aSwappedInViewDoesNotSeeTheValuesOfTheOneBefore() {
+        lateinit var swap: SwapView
+        lateinit var second: ElementContext
+        val tree = elementTree {
+            swap = swapView { }
+            swap.swap { context.label = "first"; text { } }
+            swap.swap { second = context; text { } }
+        }
+        try {
+            assertEquals("unset", second.label)
+            assertEquals("unset", swap.context.label)
+        } finally {
+            tree.shutdown()
+        }
+    }
+
+    @Test
     fun nestedValuesShadowWithoutChangingTheOuterOne() {
         lateinit var outer: ElementContext
         lateinit var inner: ElementContext

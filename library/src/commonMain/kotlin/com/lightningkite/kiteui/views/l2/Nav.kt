@@ -467,6 +467,23 @@ public fun ViewWriter.navTopBar(
         }
         frame { applySafeInsets(top = false) }
     }
+//    themed(OuterSemantic).withLoadingProgress { progress ->
+//        col {
+//            debugName = "nav-top-bar"
+//            nav.appBar(
+//                this,
+//                menuButtonFor = MediaQuery.MaxWidth(breakpoint),
+//                inlineLinksFor = MediaQuery.MinWidth(breakpoint),
+//            )
+//            shownWhen { progress() != null }.themed(SubtextSemantic).progressBar { ::ratio { progress() ?: 1f } }
+//            expanding.themed(OuterSemantic).frame {
+//                applySafeInsets(top = false)
+//                navigatorView(context.pageNavigator)
+//                nav.drawer(this, closeAbove = breakpoint)
+//            }
+//            frame { applySafeInsets(top = false) }
+//        }
+//    }
 }
 
 /**

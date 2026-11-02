@@ -93,7 +93,10 @@ public class ChainMap<K, V>(
         val local = local
         return if (local != null && local.containsKey(key)) local[key] as V else default()
     }
-    public operator fun set(key: K, value: V) { (local ?: HashMap<K, V>().also { local = it })[key] = value }
+    public operator fun set(key: K, value: V) {
+        val local = local ?: HashMap<K, V>().also { local = it }
+        local[key] = value
+    }
 
     /**
      * Returns the value from the nearest map in the chain, from this one up through its [parent]s, that has [key], or

@@ -43,6 +43,8 @@
   has a root tracker covering the whole tree, and a tracker counts as loading for the one outside it, so nesting
   them loses nothing. A tracker tells the one outside it only when it starts or stops loading, so nested trackers cost
   no more than one. Custom components can report with `startedLoading()` and `finishedLoading()`.
+- `SwapView.swap` gives each new view its own split of the swap view's context, so values a page sets in `render`
+  no longer carry over to the next page. `navigatorView` and other callers no longer need to `split()` themselves.
 - `ElementContext.splitExceptionHandlers()` is gone; `split()` now scopes exception handlers and addons
   together.
 

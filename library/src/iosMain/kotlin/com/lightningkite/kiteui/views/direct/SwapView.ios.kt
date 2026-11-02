@@ -15,6 +15,7 @@ import com.lightningkite.kiteui.views.extensionIgnoreInteraction
 import com.lightningkite.kiteui.views.informParentOfSizeChange
 import com.lightningkite.kiteui.views.produceExactlyOneElement
 import com.lightningkite.kiteui.views.produceAtMostOneView
+import com.lightningkite.kiteui.views.split
 import com.lightningkite.kiteui.views.withoutAnimation
 
 
@@ -41,7 +42,7 @@ public actual class SwapView actual constructor(context: ElementContext): Native
 
         var newView: Element? = null
         withoutAnimation {
-            newView = produceAtMostOneView { createNewView() }
+            newView = produceAtMostOneView { split().createNewView() }
             println("Swapping to $newView")
             currentView = newView
         }
