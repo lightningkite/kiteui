@@ -10,10 +10,10 @@
     android:font="@font/fonts_montserrat_700_normal" />
 <font
     android:fontStyle="italic"
-    android:fontWeight="700"
-    android:font="@font/fonts_montserrat_700_italic" />
-<font
-    android:fontStyle="italic"
     android:fontWeight="400"
     android:font="@font/fonts_montserrat_400_italic" />
+<font
+    android:fontStyle="italic"
+    android:fontWeight="700"
+    android:font="@font/fonts_montserrat_700_italic" />
     </font-family>

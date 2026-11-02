@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import platform.UIKit.UIAccessibilityPostNotification
 import platform.UIKit.UIAccessibilityScreenChangedNotification
+import platform.UIKit.accessibilityViewIsModal
 
 /**
  * iOS implementation of [trapFocus].

@@ -49,6 +49,14 @@ class MicroparseTest {
         """.trimIndent().parseMinimalHtmlNodes().let { println(it) }
     }
 
+    @Test fun whitespaceBetweenTagsCollapsesToOneSpace() {
+        // Rendered with `pre-line`, a kept newline here would show as a blank line between the paragraphs.
+        assertEquals(
+            "<p >a</p> <p ><b >b</b> <i >c</i></p>",
+            "<p>a</p>\n  <p><b>b</b> <i>c</i></p>".parseMinimalHtmlNodes().joinToString(""),
+        )
+    }
+
     @Test
     fun testPrinting() {
         """

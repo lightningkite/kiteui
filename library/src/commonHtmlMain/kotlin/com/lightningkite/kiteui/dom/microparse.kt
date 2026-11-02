@@ -137,7 +137,10 @@ public fun String.parseMinimalHtmlNodes(): List<MinimalHtmlNode> {
             }
         },
         onContent = {
-            if (it.isNotBlank()) stack.last().children.add(MinimalHtmlNode.Text(it))
+            // Whitespace between tags separates words ("<b>a</b> <i>b</i>"), so it has to survive.
+            // It's collapsed to one space because setBasicHtmlContent renders with `pre-line`, which
+            // would turn source indentation newlines between block tags into visible blank lines.
+            stack.last().children.add(MinimalHtmlNode.Text(if (it.isBlank()) " " else it))
         }
     )
     return stack.first().children

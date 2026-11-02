@@ -6,7 +6,7 @@ repositories {
 }
 dependencies {
     implementation(libs.kotlin.gradle.plugin.api)
-    implementation("org.apache.pdfbox:fontbox:3.0.8")
+    implementation(libs.fontbox)
 }
 kotlin {
     jvmToolchain(17)
