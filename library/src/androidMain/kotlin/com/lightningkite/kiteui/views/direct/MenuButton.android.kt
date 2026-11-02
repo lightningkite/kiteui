@@ -22,7 +22,6 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
                 val r = willRemove
                 willRemove = null
                 r?.let { context.overlayFrame.removeChild(it) }
-
             }.run {
                 willRemove = dismissBackground {
                     themeChoice += ThemeDerivation {
@@ -42,7 +41,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
                         ).withBack
                     }
                     onClick {
-                        context.closePopovers()
+                        context.currentPopover?.close()
                     }
                     themed(PopoverSemantic).frame {
                         configurePopoverLayout(

@@ -218,15 +218,8 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
         val rows = popoverRows ?: return
         popoverOpen = false
         popoverRows = null
-        // Closed through the popover's *own* context, not this field's.
-        //
-        // closePopovers() dismisses the popover the context is inside, walking up via
-        // popoverParent. This field is the popover's anchor, not its content, so its context has
-        // neither a closer nor a popover parent - calling it here did nothing at all, which is why
-        // picking a suggestion left the list on screen and why a query that stopped matching left
-        // an empty box behind. `rows` is the container created inside openPopover, so its context
-        // is inside the popover and resolves correctly.
-        rows.context.closePopovers()
+        // Claude: closed through `rows`, which is inside the popover; this field is only its anchor.
+        rows.context.enclosingPopover?.close()
     }
 
     /**

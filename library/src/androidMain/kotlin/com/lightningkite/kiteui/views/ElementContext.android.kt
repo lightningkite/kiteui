@@ -4,19 +4,19 @@ import android.content.res.Configuration
 import com.lightningkite.kiteui.KiteUiActivity
 import java.lang.ref.WeakReference
 
-public actual class ElementContext(activity: KiteUiActivity, parent: ElementContext? = null, shareAddons: Boolean = false): ElementContextCommonCode(parent, shareAddons) {
+public actual class ElementContext(activity: KiteUiActivity, parent: ElementContext? = null): ElementContextCommonCode(parent) {
     private val activityRef = WeakReference(activity)
 
     /**
-     * Returns the activity if it's still alive, or throws IllegalStateException if destroyed.
-     * Use this property when you absolutely need the activity and can't continue without it.
+     * Returns the Android activity. Throws [IllegalStateException] if it was destroyed.
+     *
+     * Use [activityOrNull] if it may be gone.
      */
     public val activity: KiteUiActivity
         get() = activityRef.get() ?: throw IllegalStateException("Activity has been destroyed")
 
     /**
-     * Returns the activity if it's still alive, or null if destroyed.
-     * Use this property when you want to check if the activity is still available.
+     * Returns the Android activity, or `null` if it was destroyed.
      */
     public val activityOrNull: KiteUiActivity?
         get() = activityRef.get()
@@ -30,13 +30,12 @@ public actual class ElementContext(activity: KiteUiActivity, parent: ElementCont
             }
         }
 
-    // by Claude - use addons.child() for lazy parent lookup instead of copying
-    public actual fun split(): ElementContext = activityOrNull?.let { ElementContext(it, parent = this) }
-        ?: throw IllegalStateException("Cannot split RContext: Activity has been destroyed")
+    public actual val root: ElementContext = parent?.root ?: this
 
-    public actual fun splitExceptionHandlers(): ElementContext = activityOrNull?.let { ElementContext(it, parent = this, shareAddons = true) }
-        ?: throw IllegalStateException("Cannot split ElementContext: Activity has been destroyed")
+    // by Claude - use addons.child() for lazy parent lookup instead of copying
+    public actual fun child(): ElementContext = activityOrNull?.let { ElementContext(it, parent = this) }
+        ?: throw IllegalStateException("Cannot make a child ElementContext: Activity has been destroyed")
 
     public actual var immersiveMode: Boolean = false
-    public actual companion object {}
+    public actual companion object : kotlin.coroutines.CoroutineContext.Key<ElementContext>
 }

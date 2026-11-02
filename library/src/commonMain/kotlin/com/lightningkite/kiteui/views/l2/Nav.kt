@@ -18,6 +18,7 @@ import com.lightningkite.kiteui.models.OuterSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.SelectedSemantic
+import com.lightningkite.kiteui.models.SubtextSemantic
 import com.lightningkite.kiteui.models.UnselectedSemantic
 import com.lightningkite.kiteui.models.dp
 import com.lightningkite.kiteui.models.px
@@ -33,7 +34,7 @@ import com.lightningkite.kiteui.views.atStart
 import com.lightningkite.kiteui.views.atTopEnd
 import com.lightningkite.kiteui.views.bar
 import com.lightningkite.kiteui.views.centered
-import com.lightningkite.kiteui.views.closePopovers
+import com.lightningkite.kiteui.views.currentPopover
 import com.lightningkite.kiteui.views.compact
 import com.lightningkite.kiteui.views.critical
 import com.lightningkite.kiteui.views.direct.*
@@ -43,6 +44,7 @@ import com.lightningkite.kiteui.views.nav
 import com.lightningkite.kiteui.views.padding
 import com.lightningkite.kiteui.views.textSize
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.kiteui.views.withLoadingProgress
 import com.lightningkite.reactive.context.ReactiveContext
 import com.lightningkite.reactive.context.awaitOnce
 import com.lightningkite.reactive.context.reactive
@@ -465,6 +467,23 @@ public fun ViewWriter.navTopBar(
         }
         frame { applySafeInsets(top = false) }
     }
+//    themed(OuterSemantic).withLoadingProgress { progress ->
+//        col {
+//            debugName = "nav-top-bar"
+//            nav.appBar(
+//                this,
+//                menuButtonFor = MediaQuery.MaxWidth(breakpoint),
+//                inlineLinksFor = MediaQuery.MinWidth(breakpoint),
+//            )
+//            shownWhen { progress() != null }.themed(SubtextSemantic).progressBar { ::ratio { progress() ?: 1f } }
+//            expanding.themed(OuterSemantic).frame {
+//                applySafeInsets(top = false)
+//                navigatorView(context.pageNavigator)
+//                nav.drawer(this, closeAbove = breakpoint)
+//            }
+//            frame { applySafeInsets(top = false) }
+//        }
+//    }
 }
 
 /**
@@ -737,7 +756,7 @@ private fun ElementWriter.CanAddTheme.renderAsMenus(
         opensMenu {
             themed(ListSemantic).col {
                 for (child in element.children) {
-                    renderAsMenus(child, direction, selectedPath, { context.closePopovers() }) {
+                    renderAsMenus(child, direction, selectedPath, { context.currentPopover?.close() }) {
                         navRowContent(child)
                     }
                 }

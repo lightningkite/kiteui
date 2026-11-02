@@ -24,7 +24,7 @@ public actual fun SwapView.nativeSwap(
         }
     }
     withoutAnimation {
-        createNewView()
+        withChildContext().createNewView()
     }
     children.lastOrNull().takeUnless { it == previousLast }?.let { newView ->
         previousLast = newView

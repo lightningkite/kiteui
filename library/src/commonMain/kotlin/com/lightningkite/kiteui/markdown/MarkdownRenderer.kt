@@ -164,6 +164,7 @@ private fun ViewWriter.renderBlock(node: MarkdownNode, config: MarkdownConfig) {
                     // that sink is the security boundary. Checking again would just be a second
                     // copy of the same rule to keep in sync.
                     to = node.url
+                    newTab = true
                     col {
                         node.children.forEach { child ->
                             renderBlock(child, config)

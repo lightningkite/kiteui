@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.exceptions.ExceptionHandlersTree
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.utils.LiveRegistry
 import com.lightningkite.reactive.context.DependencyChangeListener
 import com.lightningkite.reactive.context.awaitOnce
 import com.lightningkite.reactive.context.rerunOn
@@ -14,29 +15,32 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
-/**
- * Returned by [actionInstrumentors] to wrap an action's execution with telemetry or other instrumentation.
- * @param coroutineContext added to the launched coroutine (e.g. trace/span propagation)
- * @param onStart called at the start of the action coroutine (e.g. to set active span globals)
- * @param onEnd called in `finally` when the action completes or is cancelled
- */
-public class ActionInstrumentation(
-    public val coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    public val onStart: () -> Unit = {},
-    public val onEnd: () -> Unit = {},
-)
-
-/** Interceptors called on every [Action.startAction]. Each may return an [ActionInstrumentation] to wrap the action. */
-public val actionInstrumentors: MutableList<(scope: CoroutineScope, title: String) -> ActionInstrumentation?> = mutableListOf()
+// Claude: call with the body in coroutineScope, so coroutines the body launches inherit what interceptors add to the context.
+private suspend fun runIntercepted(scope: CoroutineScope, title: String, action: suspend () -> Unit) {
+    val chain = Action.Interceptor.global.snapshot().foldRight(action) { interceptor, next -> { interceptor.intercept(scope, title, next) } }
+    chain()
+}
 
 public interface Action: Reactive<Boolean> {
     public val title: String
     public val icon: Icon
     public fun startAction(scope: CoroutineScope)
     public operator fun plus(other: Action): Action
+
+    /**
+     * Wraps every run of an [Action]. Each must call [proceed] once.
+     *
+     * [scope] is the scope the action was started from, which is not the one it runs in when it has `keepRunningWhile`.
+     */
+    public fun interface Interceptor {
+        public suspend fun intercept(scope: CoroutineScope, title: String, proceed: suspend () -> Unit)
+
+        public companion object {
+            /** Every interceptor, first registered outermost. */
+            public val global: LiveRegistry<Interceptor> = LiveRegistry()
+        }
+    }
 
     public companion object {
         public var defaultClearErrorOnDependencyChange: Boolean = true
@@ -219,21 +223,17 @@ public class RetryableAction(
     override fun startAction(scope: CoroutineScope) {
         if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         lastJob?.cancel()
-        val instrumentations = actionInstrumentors.mapNotNull { it(scope, title) }
-        val extraContext = instrumentations.fold<ActionInstrumentation, CoroutineContext>(EmptyCoroutineContext) { acc, it -> acc + it.coroutineContext }
         lastJob = (keepRunningWhile ?: scope).let { calculationContext ->
             var done = false
             val job = calculationContext.launch(
-                context = extraContext,
                 start = if (calculationContext.coroutineContext[CoroutineDispatcher]?.isDispatchNeeded(
                         calculationContext.coroutineContext
                     ) == false
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
-                instrumentations.forEach { it.onStart() }
                 try {
                     val result = reactiveState {
-                        action()
+                        runIntercepted(scope, title) { coroutineScope { action() } }
                         true
                     }
                     done = true
@@ -241,8 +241,6 @@ public class RetryableAction(
                 } catch (e: Exception) {
                     if (e is CancellationException) throw e
                     reportTo.state = ReactiveState.exception(e)
-                } finally {
-                    instrumentations.forEach { it.onEnd() }
                 }
             }
 
@@ -312,21 +310,18 @@ public class DependentAction(
         if (ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         dependencyBlockStart()
         lastJob?.cancel()
-        val instrumentations = actionInstrumentors.mapNotNull { it(scope, title) }
-        val extraContext = instrumentations.fold<ActionInstrumentation, CoroutineContext>(EmptyCoroutineContext) { acc, it -> acc + it.coroutineContext }
         lastJob = (keepRunningWhile ?: scope).let { calculationContext ->
             var done = false
             val job = calculationContext.launch(
-                context = extraContext + this,
+                context = this,
                 start = if (calculationContext.coroutineContext[CoroutineDispatcher]?.isDispatchNeeded(
                         calculationContext.coroutineContext
                     ) == false
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
-                instrumentations.forEach { it.onStart() }
                 try {
                     val result = reactiveState {
-                        action()
+                        runIntercepted(scope, title) { coroutineScope { action() } }
                         true
                     }
                     done = true
@@ -336,7 +331,6 @@ public class DependentAction(
                     reportTo.state = ReactiveState.exception(e)
                 } finally {
                     dependencyBlockEnd()
-                    instrumentations.forEach { it.onEnd() }
                 }
             }
 

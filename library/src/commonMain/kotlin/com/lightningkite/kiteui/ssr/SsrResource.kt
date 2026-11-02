@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.ssr
 
+import com.lightningkite.kiteui.views.ContextAddon
+import com.lightningkite.kiteui.views.contextAddon
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.reactive.core.Reactive
@@ -23,15 +25,11 @@ public interface SsrResourceRegistry {
     public fun registerResource(resource: SsrResource<*>)
 }
 
-private const val SSR_REGISTRY_KEY = "ssrResourceRegistry"
-
 /**
  * Get the SSR resource registry from the context, if available.
  * Only non-null when rendering on the server side.
  */
-public var ElementContext.ssrResourceRegistry: SsrResourceRegistry?
-    get() = addons[SSR_REGISTRY_KEY] as? SsrResourceRegistry
-    set(value) { addons[SSR_REGISTRY_KEY] = value }
+public var ElementContext.ssrResourceRegistry: SsrResourceRegistry? by contextAddon(null, ContextAddon.Scope.Global)
 
 /**
  * Create an SSR-aware resource that:

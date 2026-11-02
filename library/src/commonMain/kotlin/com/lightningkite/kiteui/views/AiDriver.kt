@@ -42,8 +42,8 @@ public object AiDriver {
         tryAutoStartDaemon(port)
 
         // Install log interceptor that buffers for the driver's "logs" command
-        if (Log.interceptors.none { it is BufferingLogInterceptor }) {
-            Log.interceptors.add(BufferingLogInterceptor())
+        if (Log.Interceptor.global.snapshot().none { it is BufferingLogInterceptor }) {
+            Log.Interceptor.global.register(BufferingLogInterceptor())
         }
 
         val gate = ConnectivityGate()
@@ -147,11 +147,12 @@ public object AiDriver {
  * Lazily installs a [MockExternalServices] on the root view's [RContext], wrapping the existing
  * external services as a delegate. Returns the mock instance. Subsequent calls return the same instance.
  */
+@OptIn(InternalKiteUi::class)
 public fun ensureMockExternalServices(root: Element): MockExternalServices {
     val existing = root.context.externalServices
     if (existing is MockExternalServices) return existing
     val mock = MockExternalServices(delegate = existing)
-    root.context.addons[ElementContext::externalServices.name] = mock
+    root.context.externalServices = mock
     return mock
 }
 
@@ -245,7 +246,7 @@ public suspend fun handleCommand(command: String, root: Element?, navigator: Pag
 }
 
 /** Log interceptor that buffers log calls for the driver's "logs" command. */
-private class BufferingLogInterceptor : LogInterceptor {
+private class BufferingLogInterceptor : Log.Interceptor {
     override fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>) {
         LogBuffer.add(level.name, tag, entries.joinToString(" "))
     }

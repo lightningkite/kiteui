@@ -5,8 +5,8 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.4.20")
-    implementation("org.apache.pdfbox:fontbox:3.0.8")
+    implementation(libs.kotlin.gradle.plugin.api)
+    implementation(libs.fontbox)
 }
 kotlin {
     jvmToolchain(17)
@@ -15,8 +15,8 @@ kotlin {
 }
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     compilerOptions {
-        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)
-        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1)
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
     }
 }
 val src = file("../gradle-plugin/src/main/kotlin")

@@ -8,7 +8,7 @@ import kotlinx.coroutines.withTimeout
 /**
  * Runs [block] against the platform's real networking stack, on every target the library builds for.
  *
- * These tests are worth writing in common precisely because [platformFetch] and [platformWebSocket]
+ * These tests are worth writing in common precisely because the [HttpFetcher.Platform] implementations
  * are the least shared code in the library — four independent implementations over OkHttp,
  * NSURLSession, the browser, and Android's stack — and the contract they are meant to meet is
  * identical. A common test is the only place that claim can be checked.

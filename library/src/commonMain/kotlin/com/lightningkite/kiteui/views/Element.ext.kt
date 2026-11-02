@@ -55,9 +55,8 @@ public expect val Element.areAnimationsEnabled: Boolean
  */
 public expect inline fun Element.withoutAnimation(action: () -> Unit)
 
-public inline fun Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHelpers.() -> Unit) {
+public inline fun <T> Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHelpers.() -> T): T =
     object : KiteUiCoroutineScopeHelpers, CoroutineScope by CoroutineScope(coroutineContext.minusKey(StatusListener.Key)) {}.run(block)
-}
 
 /**
  * Requests focus on this element, or on its first interactive descendant if this element
@@ -66,14 +65,10 @@ public inline fun Element.withoutLoadingAnimations(block: KiteUiCoroutineScopeHe
  * Call this explicitly when a screen should open with a field ready to type in; nothing in
  * KiteUI focuses page content on its own, because doing so pops the soft keyboard on mobile.
  */
-public fun Element.requestFocusOrDescendant() {
-    if (this is InteractiveElement) {
-        requestFocus()
-    } else if (this is ElementWithChildren) {
-        findFirstInteractiveDescendant()?.requestFocus() ?: requestFocus()
-    } else {
-        requestFocus()
-    }
+public fun Element.requestFocusOrDescendant(): Unit = when (this) {
+    is InteractiveElement -> requestFocus()
+    is ElementWithChildren -> findFirstInteractiveDescendant()?.requestFocus() ?: requestFocus()
+    else -> requestFocus()
 }
 
 internal inline fun ContainerElement.beforeSetupContainer(crossinline action: Element.() -> Unit): ContainerElement =

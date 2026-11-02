@@ -60,7 +60,7 @@ public actual fun ElementWriter.hintPopover(
         // Reuses the same in-tree overlay popover MenuButton.opensMenu() and openPopover.ios.kt are
         // built on (Element.openPopover) rather than a UIPopoverPresentationController, so it gets
         // the same theming, positioning against preferredDirection, and tap-outside-to-dismiss
-        // (via dismissBackground -> context.closePopovers()) for free.
+        // (via dismissBackground -> context.currentPopover?.close()) for free.
         val trigger = HintPopoverTrigger(this, preferredDirection, setup)
         val rec = UILongPressGestureRecognizer(trigger, sel_registerName("longPress:"))
         // Containers turn interaction off in their initialisers (see LinearLayout and FlexLayout)

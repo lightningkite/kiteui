@@ -125,6 +125,7 @@ public interface CustomBlockHandler {
                         // No scheme check here: `to` validates on assignment on every platform,
                         // and that sink is the security boundary.
                         to = href
+                        newTab = true
                         col {
                             with(context) { children.forEach { renderNode(it) } }
                         }

@@ -18,7 +18,6 @@ import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.kiteui.views.l2.rawPopover
 import com.lightningkite.kiteui.views.l2.toast
 import com.lightningkite.reactive.context.ReactiveContext
-import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.Reactive
 import kotlinx.coroutines.CoroutineScope
 import kotlin.contracts.ExperimentalContracts
@@ -121,41 +120,19 @@ public val PlatformNavigator: PageNavigator get() = throw NotImplementedError()
 public var Element.safeInsets: Reactive<Edges>
     get() = context.safeInsets
     set(value) { context.safeInsets = value }
-@Deprecated("Use directly through context", ReplaceWith("context.popoverParent()"))
-public var Element.popoverParent: ContainerElement?
-    get() = context.popoverParent
-    set(value) { context.popoverParent = value }
-@Deprecated("Use directly through context", ReplaceWith("context.popoverCloser()"))
-public var Element.popoverCloser: (() -> Unit)?
-    get() = context.popoverCloser
-    set(value) { context.popoverCloser = value }
-@Deprecated("Use directly through context", ReplaceWith("context.popoverKeepOpen()"))
-public var Element.popoverKeepOpen: Int
-    get() = context.popoverKeepOpen
-    set(value) { context.popoverKeepOpen = value }
-
-@Deprecated("Use directly through context", ReplaceWith("context.closePopovers()"))
+@Deprecated("Use the popover directly", ReplaceWith("context.currentPopover?.close()"))
 public fun Element.closePopovers() {
-    popoverCloser?.invoke()
-    popoverCloser = null
-    popoverParent?.closePopovers()
+    context.currentPopover?.close()
 }
-@Deprecated("Use directly through context", ReplaceWith("context.closeThisPopover()"))
+@Deprecated("Use the popover directly", ReplaceWith("context.enclosingPopover?.close()"))
 public fun Element.closeThisPopover() {
-    popoverCloser?.invoke()
-    popoverCloser = null
-    popoverParent?.closeSiblingPopovers()
+    context.enclosingPopover?.close()
 }
-@Deprecated("Use directly through context", ReplaceWith("context.closeSiblingPopovers()"))
-public fun Element.closeSiblingPopovers() {
-    popoverCloser?.invoke()
-    popoverCloser = null
-}
-@Deprecated("Use directly through context", ReplaceWith("context.keepPopoverOpen()"))
-public fun Element.keepPopoverOpen(lifecycle: CoroutineScope) {
-    popoverKeepOpen++
-    lifecycle.onRemove { popoverKeepOpen-- }
-}
+@Suppress("DEPRECATION")
+@Deprecated("Use the popover directly", ReplaceWith("context.enclosingPopover?.child?.close()"))
+public fun Element.closeSiblingPopovers(): Unit = context.closeSiblingPopovers()
+@Deprecated("Popovers now stay open while one opened from inside them is.")
+public fun Element.keepPopoverOpen(@Suppress("UNUSED_PARAMETER") lifecycle: CoroutineScope) {}
 
 @Deprecated("Use `themeBase` directly", ReplaceWith("themeBase = NativeElementCommonCode.GetBaseTheme.fromParentNonCascading"))
 public var NativeElement.themeTakeNonCascadingFromParent: Boolean
@@ -207,8 +184,28 @@ public fun ElementWriter.alert(
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("contextAddon(init)"))
 public fun <T> rContextAddon(init: T): ContextAddon<T> = contextAddon(init)
 
-@Deprecated("Renamed to reflect change in receiver", ReplaceWith("lazyContextAddon(init)"))
-public fun <T> rContextAddonGenerate(init: (ElementContext) -> T): ContextAddon<T> = lazyContextAddon(init)
+@Deprecated("Renamed to reflect change in receiver", ReplaceWith("lazyContextAddon(init = init)"))
+public fun <T> rContextAddonGenerate(init: (ElementContext) -> T): ContextAddon<T> = lazyContextAddon(init = init)
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("lateInitContextAddon()"))
 public fun <T> rContextAddonInit(): ContextAddon<T> = lateInitContextAddon<T>()
+
+@Deprecated("Renamed", ReplaceWith("child()"))
+public fun ElementContext.split(): ElementContext = child()
+
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.split(): ElementWriter = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddScrolling.split(): ElementWriter.CanAddScrolling = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddSizing.split(): ElementWriter.CanAddSizing = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddTheme.split(): ElementWriter.CanAddTheme = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddShownWhen.split(): ElementWriter.CanAddShownWhen = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddWeight.split(): ElementWriter.CanAddWeight = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddAlignment.split(): ElementWriter.CanAddAlignment = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ViewWriter.split(): ViewWriter = withChildContext()

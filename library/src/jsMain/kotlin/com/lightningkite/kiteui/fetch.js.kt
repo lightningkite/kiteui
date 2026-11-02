@@ -1,11 +1,6 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.js.Promise
@@ -17,7 +12,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.Instant
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.get
@@ -32,7 +26,6 @@ import org.w3c.fetch.NO_STORE
 import org.w3c.fetch.RequestCache
 import org.w3c.fetch.RequestInit
 import org.w3c.fetch.RequestMode
-import org.w3c.fetch.Response
 import org.w3c.files.BlobPropertyBag
 import org.w3c.files.FilePropertyBag
 import org.w3c.files.File
@@ -42,60 +35,64 @@ import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 
 @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE", "UnsafeCastFromDynamic")
-public actual suspend fun platformFetch(
-    url: String,
-    method: HttpMethod,
-    headers: HttpHeaders,
-    body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
-): RequestResponse {
-    watchCspViolations()
-    return suspendCancellableCoroutine { cont ->
-        val request = XMLHttpRequest()
-        var cancelled = false
-        onUploadProgress?.let { p ->
-            request.upload.addEventListener("progress", { event ->
-                event as ProgressEvent
-                p(event.loaded.toLong(), event.total.toLong().let { if(it == 0L) -1 else it })
-            })
-        }
-        onDownloadProgress?.let { p ->
-            request.addEventListener("progress", { event ->
-                event as ProgressEvent
-                p(event.loaded.toLong(), event.total.toLong().let { if(it == 0L) -1 else it })
-            })
-        }
-        request.responseType = XMLHttpRequestResponseType.BLOB
-        request.open(method.name, url)
-        headers.forEach { key, value -> request.setRequestHeader(key, value) }
-        request.onloadend = { ev ->
-            if(request.status >= 100)
-                cont.resume(RequestResponse(request))
-            else if(!cancelled)
-                // Diagnosing costs a round trip, so it happens only once the request has already failed.
-                AppScope.launch { cont.resumeWithException(diagnoseFailure(url)) }
-        }
-        when (body) {
-            null -> request.send()
-            is RequestBodyBlob -> {
-                request.setRequestHeader("Content-Type", body.content.type)
-                request.send(body.content)
+internal actual object PlatformHttpFetcher : HttpFetcher {
+    actual override suspend fun fetch(
+        url: String,
+        method: HttpMethod,
+        headers: HttpHeaders,
+        body: RequestBody?,
+        onUploadProgress: ProgressCallback?,
+        onDownloadProgress: ProgressCallback?,
+    ): RequestResponse {
+        watchCspViolations()
+        return suspendCancellableCoroutine { cont ->
+            val request = XMLHttpRequest()
+            var cancelled = false
+            onUploadProgress?.let { p ->
+                request.upload.addEventListener("progress", { event ->
+                    event as ProgressEvent
+                    p(event.loaded.toLong(), event.total.toLong().let { if(it == 0L) -1 else it })
+                })
             }
-            is RequestBodyFile -> {
-                request.setRequestHeader("Content-Type", body.content.type)
-                request.send(body.content)
+            onDownloadProgress?.let { p ->
+                request.addEventListener("progress", { event ->
+                    event as ProgressEvent
+                    p(event.loaded.toLong(), event.total.toLong().let { if(it == 0L) -1 else it })
+                })
             }
-            is RequestBodyText -> {
-                request.setRequestHeader("Content-Type", body.type)
-                request.send(body.content)
+            request.responseType = XMLHttpRequestResponseType.BLOB
+            request.open(method.name, url)
+            headers.forEach { key, value -> request.setRequestHeader(key, value) }
+            request.onloadend = { ev ->
+                if(request.status >= 100)
+                    cont.resume(RequestResponse(request))
+                else if(!cancelled)
+                    // Diagnosing costs a round trip, so it happens only once the request has already failed.
+                    AppScope.launch { cont.resumeWithException(diagnoseFailure(url)) }
             }
-        }
-        cont.invokeOnCancellation {
-            cancelled = true
-            request.abort()
+            when (body) {
+                null -> request.send()
+                is RequestBodyBlob -> {
+                    request.setRequestHeader("Content-Type", body.content.type)
+                    request.send(body.content)
+                }
+                is RequestBodyFile -> {
+                    request.setRequestHeader("Content-Type", body.content.type)
+                    request.send(body.content)
+                }
+                is RequestBodyText -> {
+                    request.setRequestHeader("Content-Type", body.type)
+                    request.send(body.content)
+                }
+            }
+            cont.invokeOnCancellation {
+                cancelled = true
+                request.abort()
+            }
         }
     }
+
+    actual override fun webSocket(url: String): WebSocket = WebSocketWrapper(org.w3c.dom.WebSocket(url))
 }
 
 /** How long [serverReachable] waits before concluding that nothing is answering. */
@@ -187,34 +184,39 @@ private fun mixedContentBlocked(url: String): Boolean {
     return host != "localhost" && !host.endsWith(".localhost") && host != "127.0.0.1" && host != "[::1]" && host != "::1"
 }
 
-public actual fun httpHeaders(map: Map<String, String>): HttpHeaders = HttpHeaders().apply {
-    for (entry in map) {
-        append(entry.key, entry.value)
+public actual fun HttpHeaders(map: Map<String, List<String>>): HttpHeaders = HttpHeaders(Headers()).apply {
+    for ((name, values) in map) {
+        for (value in values) append(name, value)
     }
 }
 
-public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(init = headers)
-public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
-    for (entry in list) {
-        append(entry.first, entry.second)
+// Claude: a wrapper rather than a typealias, whose `Headers(init: dynamic)` constructor made every HttpHeaders(...) call ambiguous.
+public actual class HttpHeaders internal constructor(private val native: Headers) {
+    public actual fun append(name: String, value: String): Unit = native.append(name, value)
+    public actual fun delete(name: String): Unit = native.delete(name)
+    public actual fun get(name: String): String? = native.get(name)
+    public actual fun has(name: String): Boolean = native.has(name)
+    public actual fun set(name: String, value: String): Unit = native.set(name, value)
+    public actual fun copy(): HttpHeaders = HttpHeaders(Headers(native))
+
+    // Claude: the browser joins repeated values with ", ", so each name maps to one value here.
+    public actual fun toMap(): Map<String, List<String>> {
+        val result = HashMap<String, List<String>>()
+        forEach { name, value -> result[name] = listOf(value) }
+        return result
     }
-}
-public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
-    for (entry in sequence) {
-        append(entry.first, entry.second)
+
+    public fun forEach(action: (String, String) -> Unit) {
+        val keys = native.asDynamic().keys()
+        var nextKey: dynamic
+        do {
+            nextKey = keys.next()
+            if (nextKey.value != null && nextKey.value != undefined) {
+                val nextValue: String = native.get(nextKey.value).unsafeCast<String>()
+                action(nextKey.value, nextValue)
+            }
+        } while (!nextKey.done)
     }
-}
-public actual typealias HttpHeaders = Headers
-public fun HttpHeaders.forEach(action: (String, String) -> Unit) {
-    val keys = this.asDynamic().keys()
-    var nextKey: dynamic
-    do {
-        nextKey = keys.next()
-        if (nextKey.value != null && nextKey.value != undefined) {
-            val nextValue: String = this.asDynamic().get(nextKey.value).unsafeCast<String>()
-            action(nextKey.value, nextValue)
-        }
-    } while (!nextKey.done)
 }
 
 //actual class RequestResponse(val wraps: Response) {
@@ -260,7 +262,7 @@ public actual class RequestResponse(public val wraps: XMLHttpRequest) {
             }
     }
     public actual val headers: HttpHeaders by lazy {
-        httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.map {
+        HttpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.map {
             val s = it.split(":", limit = 2)
             s[0].trim() to s[1].trim()
         })
@@ -292,9 +294,6 @@ private val killAllSockets = BasicListenable().also {
         println("Killing all sockets")
         it.invokeAll()
     }
-}
-public actual fun platformWebSocket(url: String): WebSocket {
-    return WebSocketWrapper(org.w3c.dom.WebSocket(url))
 }
 
 public class WebSocketWrapper(public val native: org.w3c.dom.WebSocket, public val log: Log? = Log.tag("WS to ${native.url}").infoOrAbove()) : WebSocket {

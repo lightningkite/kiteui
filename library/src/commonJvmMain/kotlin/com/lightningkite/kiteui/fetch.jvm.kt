@@ -2,12 +2,8 @@
 
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+import io.ktor.util.toMap
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.okhttp.*
@@ -35,63 +31,67 @@ public val client: HttpClient by lazy { webSocketClient }
 
 private val fetchLog = LogRoot.tag("fetch")
 
-public actual suspend fun platformFetch(
-    url: String,
-    method: HttpMethod,
-    headers: HttpHeaders,
-    body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
-): RequestResponse {
-    try {
-        fetchLog.log("-> $method $url")
-        val response = client.request(url) {
-            this.method = when (method) {
-                HttpMethod.GET -> io.ktor.http.HttpMethod.Get
-                HttpMethod.POST -> io.ktor.http.HttpMethod.Post
-                HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
-                HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
-                HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
-                HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
-            }
-            headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
-            when (body) {
-                is RequestBodyBlob -> {
-                    contentType(ContentType.parse(body.content.type))
-                    setBody(body.content.data)
+internal actual object PlatformHttpFetcher : HttpFetcher {
+    actual override suspend fun fetch(
+        url: String,
+        method: HttpMethod,
+        headers: HttpHeaders,
+        body: RequestBody?,
+        onUploadProgress: ProgressCallback?,
+        onDownloadProgress: ProgressCallback?,
+    ): RequestResponse {
+        try {
+            fetchLog.log("-> $method $url")
+            val response = client.request(url) {
+                this.method = when (method) {
+                    HttpMethod.GET -> io.ktor.http.HttpMethod.Get
+                    HttpMethod.POST -> io.ktor.http.HttpMethod.Post
+                    HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
+                    HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
+                    HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
+                    HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
                 }
+                headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
+                when (body) {
+                    is RequestBodyBlob -> {
+                        contentType(ContentType.parse(body.content.type))
+                        setBody(body.content.data)
+                    }
 
-                is RequestBodyFile -> {
-                    contentType(ContentType.parse(body.content.mimeType()))
-                    setBody(body.content.file.readBytes())
-                }
+                    is RequestBodyFile -> {
+                        contentType(ContentType.parse(body.content.mimeType()))
+                        setBody(body.content.file.readBytes())
+                    }
 
-                is RequestBodyText -> {
-                    contentType(ContentType.parse(body.type))
-                    setBody(body.content)
-                }
+                    is RequestBodyText -> {
+                        contentType(ContentType.parse(body.type))
+                        setBody(body.content)
+                    }
 
-                null -> {}
-            }
-            onUploadProgress?.let {
-                onUpload { a, b ->
-                    it(a, b ?: -1)
+                    null -> {}
+                }
+                onUploadProgress?.let {
+                    onUpload { a, b ->
+                        it(a, b ?: -1)
+                    }
+                }
+                onDownloadProgress?.let {
+                    onDownload { a, b ->
+                        it(a, b ?: -1)
+                    }
                 }
             }
-            onDownloadProgress?.let {
-                onDownload { a, b ->
-                    it(a, b ?: -1)
-                }
-            }
+            fetchLog.log("<- $method $url ${response.status}")
+            return RequestResponse(response)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            fetchLog.log("<X $method $url ${e::class} ${e.message}")
+            throw classifyFetchFailure(e)
         }
-        fetchLog.log("<- $method $url ${response.status}")
-        return RequestResponse(response)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        fetchLog.log("<X $method $url ${e::class} ${e.message}")
-        throw classifyFetchFailure(e)
     }
+
+    actual override fun webSocket(url: String): WebSocket = WebSocketWrapper(url)
 }
 
 /**
@@ -115,17 +115,11 @@ private fun classifyFetchFailure(e: Exception): FetchException {
     ) else ConnectionException("Network request failed", e)
 }
 
-public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
-    HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
+public actual fun HttpHeaders(map: Map<String, List<String>>): HttpHeaders =
+    HttpHeaders(map.mapKeysTo(HashMap<String, List<String>>()) { it.key.lowercase() })
 
-public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
-    HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
-
-public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
-    HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
-
-public actual class HttpHeaders(public val map: MutableMap<String, List<String>>) {
+// Claude: internal, or a MutableMap argument would pick this over HttpHeaders(Map), skipping the lowercasing.
+public actual class HttpHeaders internal constructor(public val map: MutableMap<String, List<String>>) {
     public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
@@ -139,6 +133,9 @@ public actual class HttpHeaders(public val map: MutableMap<String, List<String>>
     public actual fun set(name: String, value: String): Unit {
         map[name.lowercase()] = listOf(value)
     }
+
+    public actual fun copy(): HttpHeaders = HttpHeaders(map.toMutableMap())
+    public actual fun toMap(): Map<String, List<String>> = map.toMap()
 }
 
 public actual class RequestResponse(public val wraps: HttpResponse) {
@@ -167,13 +164,7 @@ public actual class RequestResponse(public val wraps: HttpResponse) {
         }
     }
 
-    public actual val headers: HttpHeaders
-        get() = HttpHeaders(
-            wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
-}
-
-public actual fun platformWebSocket(url: String): WebSocket {
-    return WebSocketWrapper(url)
+    public actual val headers: HttpHeaders get() = HttpHeaders(wraps.headers.toMap())
 }
 
 public class WebSocketWrapper(public val url: String) : WebSocket {

@@ -2,6 +2,115 @@
 
 ## Unreleased
 
+### Element context (breaking)
+
+- **A context value set inside a container is seen by everything in it and nothing outside it.** Containers
+  used to share one context with their parent, so setting a value (`context.titleDepth`, a navigator, an
+  addon of your own) leaked to siblings and ancestors. Code that set a value in a container and read it
+  outside must now set it where both can see it, usually further up.
+- `titledSection` headings nested inside content that renders later, such as a `forEach`, now get the right
+  level.
+- **Popovers are objects.** One popover is open at a time, along with the popovers opened from inside it such as
+  submenus; dialogs and overlays don't count. `context.currentPopover` is the open one and
+  `context.enclosingPopover` the one an element is in, both `null` when there is none. A `Popover` has
+  `close()`, which also closes the popovers opened from inside it, and `child`.
+  - A menu item closes the whole menu with `context.currentPopover?.close()`, replacing `closePopovers()`, which
+    also works from a dialog the menu opened. `closeThisPopover()` is `context.enclosingPopover?.close()`.
+  - A popover now stays open while one opened from inside it is, so `keepPopoverOpen()` does nothing.
+  - `popoverCloser`, `popoverParent` and `popoverKeepOpen` are gone; `closePopovers()`, `closeThisPopover()`,
+    `closeSiblingPopovers()` and `keepPopoverOpen()` are deprecated.
+  - Closing a popover twice now does nothing the second time.
+- `ElementContext.pageNavigator`, `externalServices`, `appName`, `appNavFactory` and `ssrResourceRegistry` are global:
+  one value for the whole element tree, whichever element sets it. Setting `externalServices` now needs
+  `@OptIn(InternalKiteUi::class)`.
+- `ContextAddon`, `contextAddon`, `lazyContextAddon` and `lateInitContextAddon` take a `ContextAddon.Scope`:
+  `Cascading` (the default: seen inside the container that set it), `Global` (one value per element tree, whichever
+  element sets it) or `Local` (seen only by the context that set it). In `lazyContextAddon` the mode comes before
+  `init`, so an `init` passed as a value rather than a trailing lambda must be named: `lazyContextAddon(init = ::makeIt)`.
+- **Addon defaults are no longer stored on the root.** A `lazyContextAddon` default is made from the context being
+  read and stored there, so contexts inside it share it and others make their own; a `Global` one is made from the
+  root. It used to be made from whichever context read it first and stored on the root for the whole tree. A plain
+  `contextAddon` default isn't stored at all. `ChainMap.getOrElse` reads the chain without storing anything.
+- `ChainMap.getOrPutLocal`, which read the whole chain despite its name, is gone; `ChainMap.getLocalOrElse` reads only
+  the map's own value.
+- Each element tree now has its own back-dismissable dialog stack and `appNavFactory`; they were shared by every
+  tree in the process.
+- **`ElementContext` is a coroutine context element**, and every coroutine an element launches carries it:
+  `currentCoroutineContext()[ElementContext]` is the context of the element that launched it.
+- **New `withLoadTracking()` modifier and `LoadTracker`.** `val section = withLoadTracking().col { }` gives the
+  column its own tracker, covering it and everything inside it; `section.context.loadTracker.loading()` reads whether
+  any of them is loading the data it shows, and `awaitOnce()` on the tracker waits until none is. Every element tree
+  has a root tracker covering the whole tree, and a tracker counts as loading for the one outside it, so nesting
+  them loses nothing. A tracker tells the one outside it only when it starts or stops loading, so nested trackers cost
+  no more than one. Custom components can report with `startedLoading()` and `finishedLoading()`.
+- `SwapView.swap` gives each new view its own child of the swap view's context, so values a page sets in `render`
+  no longer carry over to the next page. `navigatorView` and other callers no longer need to make one themselves.
+- `ElementContext.split()` is renamed `child()`, and the writer modifier `split()` is renamed `withChildContext()`;
+  the old names are deprecated.
+- `ElementContext.splitExceptionHandlers()` is gone; `child()` now scopes exception handlers and addons
+  together.
+
+### Telemetry (breaking)
+
+- **Telemetry now goes through your own server.** `Telemetry` is built with an `upload` function (normally
+  `telemetryUpload { api.clientTelemetry.ingest(it) }`, with lightning-server-kiteui's helper and Lightning
+  Server's `ClientTelemetryEndpoints`) instead of an OTLP endpoint and headers, so no telemetry token ships in the app. **Revoke any Grafana/OTLP token that shipped in a
+  client build.** The server adds `user.id` and forwards to its own backend. KiteUI now depends on
+  `com.lightningkite.services:telemetry-shared` (the client-safe upload format, not `basis`).
+- Records are saved to device storage and uploaded oldest first, so telemetry recorded offline or just
+  before a crash is sent on a later run. The `sendBeacon` crash path is gone.
+- Spans are short: requests, actions (`action.<title>`, with their requests as children) and screen loads
+  (`screen.load`, ending when the screen is usable). The page-long `page: X` spans and foreground session
+  span are gone. Logs and errors are labelled with the current screen rather than a guessed trace.
+- **Clients record no metrics.** There is no metrics API; `http.client.request.duration`,
+  `navigation.page_views`, `action.invocations` and `connectivity.issues` are gone (connectivity issues remain
+  WARN logs), and the server derives no metrics from client spans. Clients are untrusted, and metric
+  cardinality drives observability cost. Unsampled sessions record no spans.
+- **`Telemetry` no longer takes `serviceName`.** The server names client records `<projectName>-client` and
+  keeps only `service.version`, `os.type`, `session.id` and `app.debug` from the client, so a client can't
+  pose as the server. Uploads are rate limited server-side; a 429 is retried later.
+- `span(name) { }` is now `span(owner, operation, attributes) { }`, recording into the installed `Telemetry`
+  (it just runs the block when none is installed), and throws for an owner the server would refuse.
+- `Telemetry.flush()` saves and uploads now, waiting for an upload already running, and throws if the upload
+  fails. `Telemetry.clear()` deletes unsent records, for when a flush at sign-out fails.
+- Removed: `TelemetryConfig`, `exceptionAttributes` (use the new
+  `ElementContext.telemetryAttributes`), and `ActionInstrumentation`/`actionInstrumentors` (replaced by
+  `Action.Interceptor`, which wraps the action's run). `crash.fingerprint` is now `error.fingerprint`, and
+  `page.name` is `app.screen.name`. See `docs/TELEMETRY.md` for setup and dashboard migration.
+- **Interceptors are registered, not added to public lists.** `fetchInterceptors`, `Log.interceptors` and
+  `actionInterceptors` were mutable lists anyone could `clear()`. They are now `HttpFetcher.Interceptor.global`,
+  `Log.Interceptor.global` and `Action.Interceptor.global`, each a `LiveRegistry` whose `register(...)` returns a
+  `Release` that removes only that interceptor. `LogInterceptor` is now `Log.Interceptor`. `HttpFetcher.Interceptor` and
+  `Action.Interceptor` are `fun interface`s; wrap lambdas in
+  `HttpFetcher.Interceptor { ... }` where a bare lambda was passed before.
+- **`Throwable_report` is now the `ThrowableReporter.global` registry.** Assigning the old variable replaced
+  whatever was there, so a second reporter silently disconnected the first. Register a `ThrowableReporter`
+  instead; `Throwable.report(context)` sends to every one. Stack traces are still printed by default; call
+  `ThrowableReporter.removeDefaultHandler()` to stop that.
+- **Crash fingerprints changed**, so existing groups don't continue: they no longer include exception messages
+  or JS column numbers, which split one crash into many groups.
+- Request spans replace path segments that look like ids, emails or tokens with `{id}`, and are `Error` for
+  status 400 and above. Relative URLs (same-origin requests on the web) get a `traceparent` whenever
+  `tracePropagationHosts` isn't empty.
+- **`ElementContext.telemetryAttributes` holds only the attributes that context adds**, and they are read when
+  something is recorded, so a change applies to everything recorded after it. A record gets the attributes of every
+  context from the root down, nearer values winning, as the server's `telemetryAttributes { }` does. Reading
+  `context.telemetryAttributes` no longer returns the root's or a parent's. App-wide attributes now go on the new
+  `Telemetry.attributes`.
+- **Screens come from the navigator passed to `install`**, not from `navigatorView`, so an app's own navigator view
+  gets screen telemetry too. Everything recorded is labelled with that navigator's current page; a span is labelled
+  when it starts. `navigatorView` no longer adds the screen's name and id to `telemetryAttributes`.
+- `screen.load` now ends once the root context's `loadTracker` stops loading, which includes elements outside the
+  page such as a nav bar.
+- An app that never calls `Telemetry.install` or `span` no longer includes the telemetry code in its build; the UI
+  code no longer refers to it.
+- Attributes are fitted to the server's limits before they're saved, since one record over them made the server
+  refuse its whole batch. `Telemetry.install` does nothing during server-side rendering.
+- **`HttpFetcher.platform` and `HttpFetcher.default` are now the objects `HttpFetcher.Platform` and
+  `HttpFetcher.Default`.** `platformFetch(...)` and `platformWebSocket(...)` are gone; call
+  `HttpFetcher.Platform.fetch(...)` and `HttpFetcher.Platform.webSocket(...)`. `HttpFetcher.intercepted` takes a
+  `List`, and `HttpFetcher.Intercepted(fetcher, interceptors)` is the class behind it.
+
 ### Navigation
 
 - **Showing a page no longer focuses its first field.** `navigatorView` used to request focus on the

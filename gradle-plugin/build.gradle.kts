@@ -2,7 +2,8 @@ import com.lightningkite.deployhelpers.*
 
 plugins {
     `java-gradle-plugin`
-    `kotlin-dsl`
+    kotlin("jvm")
+    alias(libs.plugins.kotlin.plugin.samWithReceiver)
     signing
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
@@ -17,11 +18,16 @@ gradlePlugin {
     }
 }
 
+// Claude: kotlin-dsl would do this for us; Gradle's Action lambdas use `this` as the receiver.
+samWithReceiver {
+    annotation("org.gradle.api.HasImplicitReceiver")
+}
 repositories {
     mavenCentral()
 }
 dependencies {
     implementation(libs.kotlin.gradle.plugin.api)
+    compileOnly(gradleKotlinDsl())
     implementation(libs.fontbox)
     testImplementation(libs.junit)
 }

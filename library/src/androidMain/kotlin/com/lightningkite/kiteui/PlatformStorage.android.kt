@@ -15,8 +15,10 @@ public actual object PlatformStorage {
         return preferences.getString(key, null)
     }
 
-    public actual fun set(key: String, value: String) {
-        preferences.edit().putString(key, value).apply()
+    public actual fun set(key: String, value: String, ensureOnDisk: Boolean) {
+        val editor = preferences.edit().putString(key, value)
+        // Claude: apply() writes asynchronously, and the write is lost if the process dies first.
+        if (ensureOnDisk) editor.commit() else editor.apply()
     }
 
     public actual fun remove(key: String) {

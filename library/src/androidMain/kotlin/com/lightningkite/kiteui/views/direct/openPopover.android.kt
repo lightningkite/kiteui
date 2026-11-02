@@ -4,7 +4,7 @@ import android.view.ViewGroup
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.Element
-import com.lightningkite.kiteui.views.closePopovers
+import com.lightningkite.kiteui.views.currentPopover
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.native
 import com.lightningkite.kiteui.views.popoverWriter
@@ -37,7 +37,7 @@ public actual fun Element.openPopover(
                 ).withBack
             }
             onClick {
-                context.closePopovers()
+                context.currentPopover?.close()
             }
 
             themed(PopoverSemantic).frame {

@@ -21,7 +21,7 @@ import org.robolectric.RobolectricTestRunner
 
 /**
  * Regression coverage for the reentrancy fix to `close()` in
- * [com.lightningkite.kiteui.views.overlay] (ViewContextExtensions.android.kt), fixed in
+ * [com.lightningkite.kiteui.views.overlay] (Overlay.android.kt), fixed in
  * 94f1ebe6b. The pre-fix `close` only nulled `willRemove` inside `animateOut`'s completion
  * callback, so a second invocation of `close()` before that callback ran would re-enter
  * `willRemove?.let { ... }`, call `animateOut`/`removeChild` a second time on the same element,
@@ -44,9 +44,9 @@ class OverlayCloseReentrancyTest {
             setTheme(R.style.Theme_Mppexample)
             with(viewWriter) {
                 frame {
-                    // Use the frame itself as the overlay container, same as appBase() does in
-                    // AppNavV2.kt (`coordinatorFrame { context.overlayFrame = this }`).
-                    context.overlayFrame = this
+                    // Use the frame itself as the overlay container. Set on the root context, since the
+                    // tests open overlays from there rather than from inside the frame as appBase() would.
+                    viewWriter.context.overlayFrame = this
                 }
             }
         }

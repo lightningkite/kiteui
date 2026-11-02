@@ -1,12 +1,14 @@
 package com.lightningkite.kiteui.testing
 
 import com.lightningkite.kiteui.MockExternalServices
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.externalServices
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 
+@OptIn(InternalKiteUi::class)
 actual fun uiTest(
     mockExternalServices: MockExternalServices?,
     content: ViewWriter.() -> Unit,
@@ -15,7 +17,7 @@ actual fun uiTest(
     val harness = TestHarness()
     val root = harness.render { content() }
     if (mockExternalServices != null) {
-        root.context.addons[ElementContext::externalServices.name] = mockExternalServices
+        root.context.externalServices = mockExternalServices
     }
 
     val backend = LocalUiTestBackend(

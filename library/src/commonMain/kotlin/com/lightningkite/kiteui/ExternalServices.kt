@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.views.ContextAddon
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.lazyContextAddon
@@ -97,10 +98,14 @@ public object ExternalServices {
     public fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null): Unit = ctx.openMap(latitude, longitude, label, zoom)
 }
 
-public val ElementContext.externalServices: ExternalServicesAccess by lazyContextAddon { externalServicesAccessDefault(it) }
+/**
+ * The platform's external services: file picker, downloads, clipboard, maps, calendar, and links.
+ *
+ * It defaults to the platform's own. Don't replace it unless you must.
+ */
+public var ElementContext.externalServices: ExternalServicesAccess by lazyContextAddon(ContextAddon.Scope.Global) { externalServicesAccessDefault(it) }
+    @InternalKiteUi set
 
-// by Claude - rContextAddonGenerate uses property.name as the ChainMap key.
-// The RContext extension below must use the same key to share the same instance.
 @Deprecated("Use directly through context", ReplaceWith("context.externalServices"))
 public val ViewWriter.externalServices: ExternalServicesAccess get() = context.externalServices
 

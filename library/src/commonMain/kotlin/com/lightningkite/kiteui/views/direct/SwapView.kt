@@ -14,6 +14,12 @@ public expect class SwapView(context: ElementContext) : ElementWithChildren, Nat
     override val underlyingNativeElement: SwapView
     override val children: List<Element>
 
+    /**
+     * Replaces the shown view with the one [createNewView] writes, animating the change with [transition].
+     *
+     * Each new view gets its own child of this view's context, so context values it sets aren't seen by the views
+     * shown before or after it.
+     */
     public fun swap(
         transition: ScreenTransition = ScreenTransition.Fade,
         createNewView: ViewWriter.() -> Unit

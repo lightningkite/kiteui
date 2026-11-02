@@ -16,7 +16,7 @@ public actual fun ElementContext.openBottomSheet(halfScreenRatio: Float, dim: Bo
                     expanding.space()
                     button {
                         icon(Icon.close, "close")
-                        onClick { context.closePopovers() }
+                        onClick { context.currentPopover?.close() }
                     }
                 }
                 expanding.view()
