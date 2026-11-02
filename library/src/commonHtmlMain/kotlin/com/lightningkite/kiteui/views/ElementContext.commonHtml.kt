@@ -12,7 +12,7 @@ public actual class ElementContext(
 
     internal val id: Int = Random.nextInt()
 
-    public actual fun split(): ElementContext = ElementContext(basePath, dynamicCss, kiteUiCss, this)
+    public actual fun child(): ElementContext = ElementContext(basePath, dynamicCss, kiteUiCss, this)
 
     public actual val darkMode: Boolean? get() = null
 

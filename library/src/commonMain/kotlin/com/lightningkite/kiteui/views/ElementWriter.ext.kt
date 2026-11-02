@@ -26,18 +26,26 @@ public fun ElementWriter.CanAddAlignment.beforeSetup(setup: Element.() -> Unit):
 public fun ViewWriter.beforeSetup(setup: Element.() -> Unit): ViewWriter = BeforeSetup(this, setup)
 
 
-private class Split(parent: ElementWriter) : ViewWriter, ElementWriter by parent {
-    override val context: ElementContext = parent.context.split()
+private class WithChildContext(parent: ElementWriter) : ViewWriter, ElementWriter by parent {
+    override val context: ElementContext = parent.context.child()
 }
 
-public fun ElementWriter.split(): ElementWriter = Split(this)
-public fun ElementWriter.CanAddScrolling.split(): ElementWriter.CanAddScrolling = Split(this)
-public fun ElementWriter.CanAddSizing.split(): ElementWriter.CanAddSizing = Split(this)
-public fun ElementWriter.CanAddTheme.split(): ElementWriter.CanAddTheme = Split(this)
-public fun ElementWriter.CanAddShownWhen.split(): ElementWriter.CanAddShownWhen = Split(this)
-public fun ElementWriter.CanAddWeight.split(): ElementWriter.CanAddWeight = Split(this)
-public fun ElementWriter.CanAddAlignment.split(): ElementWriter.CanAddAlignment = Split(this)
-public fun ViewWriter.split(): ViewWriter = Split(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.withChildContext(): ElementWriter = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddScrolling.withChildContext(): ElementWriter.CanAddScrolling = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddSizing.withChildContext(): ElementWriter.CanAddSizing = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddTheme.withChildContext(): ElementWriter.CanAddTheme = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddShownWhen.withChildContext(): ElementWriter.CanAddShownWhen = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddWeight.withChildContext(): ElementWriter.CanAddWeight = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddAlignment.withChildContext(): ElementWriter.CanAddAlignment = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ViewWriter.withChildContext(): ViewWriter = WithChildContext(this)
 
 
 /**

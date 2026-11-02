@@ -17,7 +17,7 @@ public expect class SwapView(context: ElementContext) : ElementWithChildren, Nat
     /**
      * Replaces the shown view with the one [createNewView] writes, animating the change with [transition].
      *
-     * Each new view gets its own split of this view's context, so context values it sets aren't seen by the views
+     * Each new view gets its own child of this view's context, so context values it sets aren't seen by the views
      * shown before or after it.
      */
     public fun swap(

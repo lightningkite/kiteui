@@ -6,9 +6,13 @@ import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
 public actual class ElementContext(public val controller: UIViewController, parent: ElementContext? = null) : ElementContextCommonCode(parent) {
-    // by Claude - use addons.child() for lazy parent lookup instead of copying
-    public actual fun split(): ElementContext = ElementContext(controller, parent = this)
-    public fun split(controller: UIViewController): ElementContext = ElementContext(controller, parent = this)
+    public actual fun child(): ElementContext = ElementContext(controller, parent = this)
+    /**
+     * Returns a child context for a new view controller, such as a presented modal.
+     */
+    public fun child(controller: UIViewController): ElementContext = ElementContext(controller, parent = this)
+    @Deprecated("Renamed", ReplaceWith("child(controller)"))
+    public fun split(controller: UIViewController): ElementContext = child(controller)
 
     public actual val root: ElementContext = parent?.root ?: this
 
@@ -19,10 +23,12 @@ public actual class ElementContext(public val controller: UIViewController, pare
             else -> null
         }
 
-    // !!! SETUP REQUIRED !!!
-    // To enable immersive mode for iOS, you must:
-    //    1) set "View controller-based status bar appearance" to YES in your Info.plist
-    //    2) override prefersStatusBarHidden in your view controller and point it to this variable
+    /**
+     * Set to `true` to hide the system status bar.
+     *
+     * Set "View controller-based status bar appearance" to YES in Info.plist. Then make your view controller's
+     * `prefersStatusBarHidden` return `context.immersiveMode`.
+     */
     public actual var immersiveMode: Boolean = false
         set(value) {
             if (field != value) {

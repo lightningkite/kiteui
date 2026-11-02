@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views
 
 public actual class ElementContext(parent: ElementContext? = null) : ElementContextCommonCode(parent) {
-    public actual fun split(): ElementContext = ElementContext(this)
+    public actual fun child(): ElementContext = ElementContext(this)
 
     // TODO: follow the OS dark mode setting.
     public actual val darkMode: Boolean? get() = null

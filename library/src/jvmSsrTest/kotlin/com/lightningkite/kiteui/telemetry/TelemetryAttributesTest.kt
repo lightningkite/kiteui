@@ -56,8 +56,8 @@ class TelemetryAttributesTest {
     fun aContainersAttributesAddToTheRootsWithoutCopyingThem() = runTest {
         val t = testTelemetry()
         val step = TelemetryKey.OfString("checkout.step")
-        val section = root.split().apply { telemetryAttributes += telemetryAttributesOf(step to "card") }
-        val override = section.split().apply { telemetryAttributes += telemetryAttributesOf(flavor to "local") }
+        val section = root.child().apply { telemetryAttributes += telemetryAttributesOf(step to "card") }
+        val override = section.child().apply { telemetryAttributes += telemetryAttributesOf(flavor to "local") }
         root.telemetryAttributes = telemetryAttributesOf(flavor to "gamma")
         withContext(section) { t.span("checkout", "pay") {} }
         withContext(override) { t.span("checkout", "confirm") {} }
@@ -75,7 +75,7 @@ class TelemetryAttributesTest {
         val t = testTelemetry()
         t.currentScreen = telemetryAttributesOf(TelemetryKeys.App.screenName to "HomePage")
         t.attributes = telemetryAttributesOf(flavor to "beta")
-        withContext(root.split()) { t.span("dialog", "confirm") {} }
+        withContext(root.child()) { t.span("dialog", "confirm") {} }
         t.reportError(IllegalStateException("boom"), TelemetryAttributes.empty)
 
         val records = t.recordedSpans().map { it.attributes } + t.recordedLogs().map { it.attributes }
@@ -86,7 +86,7 @@ class TelemetryAttributesTest {
     @Test
     fun actionCarriesTheAttributesOfTheScopeItStartedFrom() = runTest {
         val t = testTelemetry()
-        val section = root.split().apply { telemetryAttributes = telemetryAttributesOf(flavor to "beta") }
+        val section = root.child().apply { telemetryAttributes = telemetryAttributesOf(flavor to "beta") }
         // Runs here, outside the element's scope, as an action with keepRunningWhile = AppScope would.
         runCatching {
             t.actionInterceptor.intercept(CoroutineScope(section + Job()), "Save") {

@@ -18,19 +18,18 @@ import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * Tracks whether any element it covers is loading the data it shows, as a
- * [Reactive][com.lightningkite.reactive.core.Reactive] that is not ready while one is.
+ * Tells whether any element it covers is loading. It is a [Reactive] that is not ready while something loads.
  *
- * Every element reports to its context's [loadTracker]: the one of the nearest element made [withLoadTracking], or
- * the element tree's root tracker if there is none. A tracker counts as loading for the one outside it too, so the
- * root tracker covers the whole tree:
+ * Each element reports its loading to the closest [withLoadTracking] tracker around it. If there is none, it
+ * reports to the root tracker. A tracker also counts as loading for the tracker outside it. So the root tracker
+ * covers the whole app.
+ *
  * ```kotlin
  * val section = withLoadTracking().col { /* content */ }
  * shownWhen { section.context.loadTracker.loading() }.activityIndicator()
  * ```
  *
- * Reporting costs the same however deeply trackers are nested: a tracker tells the one outside it only when it starts
- * or stops loading, not about each element it covers.
+ * Nested trackers cost nothing extra.
  */
 public class LoadTracker internal constructor(
     private val outside: LoadTracker?,
@@ -42,7 +41,7 @@ public class LoadTracker internal constructor(
 
     private var load by loadCounter
 
-    /** Records that something this covers started loading; call [finishedLoading] once it has. */
+    /** Records that something started loading. Call [finishedLoading] when it is done. */
     internal fun startedLoading() {
         if (load++ == 0) {
             state = ReactiveState.notReady
@@ -50,7 +49,7 @@ public class LoadTracker internal constructor(
         outside?.startedLoading()
     }
 
-    /** Records that something [startedLoading] has finished. */
+    /** Records that something is done loading. */
     internal fun finishedLoading() {
         if (--load == 0) {
             state = ReactiveState(Unit)
@@ -65,16 +64,16 @@ public class LoadTracker internal constructor(
 private var ElementContext.nearestLoadTracker: LoadTracker? by contextAddon(null)
 private val ElementContext.rootLoadTracker: LoadTracker by lazyContextAddon(ContextAddon.Scope.Global) { LoadTracker(null) }
 
-/** The tracker elements in this context report their loading to; see [LoadTracker]. */
+/** The tracker that elements in this context report their loading to. */
 public val ElementContext.loadTracker: LoadTracker get() = nearestLoadTracker ?: rootLoadTracker
 
 private class WithLoadTracking(parent: ElementWriter, loadCounter: MutableReactiveValue<Int> = Signal(0)) : ViewWriter, ElementWriter by parent {
-    override val context: ElementContext = parent.context.split().also {
+    override val context: ElementContext = parent.context.child().also {
         it.nearestLoadTracker = LoadTracker(outside = it.loadTracker, loadCounter)
     }
 }
 
-/** Returns a writer whose element gets its own [LoadTracker], covering that element and everything inside it. */
+/** Returns a writer whose next element gets its own [LoadTracker]. It covers that element and everything inside it. */
 public fun ElementWriter.withLoadTracking(reportTo: MutableReactiveValue<Int> = Signal(0)): ElementWriter = WithLoadTracking(this, reportTo)
 public fun ElementWriter.CanAddScrolling.withLoadTracking(reportTo: MutableReactiveValue<Int> = Signal(0)): ElementWriter.CanAddScrolling = WithLoadTracking(this, reportTo)
 public fun ElementWriter.CanAddTheme.withLoadTracking(reportTo: MutableReactiveValue<Int> = Signal(0)): ElementWriter.CanAddTheme = WithLoadTracking(this, reportTo)

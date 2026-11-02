@@ -7,19 +7,21 @@ import kotlinx.coroutines.CoroutineScope
 /**
  * An open popover, such as a menu or a hint.
  *
- * One popover is open at a time, along with the popovers opened from inside it, such as submenus; opening another
- * closes it. Dialogs and other overlays aren't popovers. Find the open one with [ElementContext.currentPopover], and
- * the one an element is in with [ElementContext.enclosingPopover].
+ * Only one popover is open at a time, plus any opened from inside it, such as submenus. Opening another popover
+ * closes it. Dialogs aren't popovers.
+ *
+ * Use [ElementContext.currentPopover] to find the open one. Use [ElementContext.enclosingPopover] to find the one
+ * an element is in.
  */
 public class Popover internal constructor(private val onClose: () -> Unit) {
     internal var closed = false
         private set
     private var openChild: Popover? = null
 
-    /** The popover open from inside this one, or `null` if there is none. */
+    /** The popover opened from inside this one, or `null`. */
     public val child: Popover? get() = openChild?.takeUnless { it.closed }
 
-    /** Closes this popover and any opened from inside it. Does nothing if it is already closed. */
+    /** Closes this popover and any opened from inside it. Closing twice does nothing. */
     public fun close() {
         if (closed) return
         closed = true
@@ -38,13 +40,13 @@ private var ElementContext.topPopover: Popover? by contextAddon(null, ContextAdd
 /**
  * The open popover, or `null` if none is open.
  *
- * Closing it also closes any popovers opened from inside it, so this is the one a menu item closes once picked.
+ * A menu item calls `context.currentPopover?.close()` to close the whole menu.
  */
 public val ElementContext.currentPopover: Popover? get() = topPopover?.takeUnless { it.closed }
 
 private var ElementContext.inPopover: Popover? by contextAddon(null)
 
-/** The popover this context is inside, or `null` outside any popover. */
+/** The popover this element is in, or `null` if it is in none. */
 public val ElementContext.enclosingPopover: Popover? get() = inPopover?.takeUnless { it.closed }
 
 @Deprecated("Use the popover directly", ReplaceWith("currentPopover?.close()"))
@@ -87,7 +89,7 @@ private fun ElementContext.popoverWriter(overlay: ElementWriter, popoverRoot: Bo
         topPopover?.close()
         topPopover = opened
     }
-    val writer = object : ViewWriter, ElementWriter by overlay.split() {}
+    val writer = object : ViewWriter, ElementWriter by overlay.withChildContext() {}
     writer.context.inPopover = opened
     return writer
 }

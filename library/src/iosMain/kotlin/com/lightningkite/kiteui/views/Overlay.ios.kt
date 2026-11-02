@@ -51,7 +51,7 @@ public actual fun ElementContext.overlay(
         viewController.definesPresentationContext = true
         viewController.modalPresentationStyle = UIModalPresentationOverFullScreen
         var overlayRoot: Element? = null
-        viewController.kiteUi(split(viewController)) {
+        viewController.kiteUi(child(viewController)) {
             beforeSetup { themeChoice = ThemeDerivation { theme.withoutBack } }.frame {
                 context.overlayFrame = this
                 overlayRoot = this

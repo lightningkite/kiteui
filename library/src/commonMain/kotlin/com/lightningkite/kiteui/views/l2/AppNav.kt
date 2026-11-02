@@ -44,7 +44,11 @@ public interface AppNav {
     }
 }
 
-
+/**
+ * The function that writes the app's navigation UI, such as bottom tabs or a top bar.
+ *
+ * It defaults to bottom tabs. Set its value to change the layout.
+ */
 public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> Unit> by lazyContextAddon(ContextAddon.Scope.Global) {
     Signal(ViewWriter::appNavBottomTabs)
 }

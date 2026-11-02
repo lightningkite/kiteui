@@ -189,3 +189,23 @@ public fun <T> rContextAddonGenerate(init: (ElementContext) -> T): ContextAddon<
 
 @Deprecated("Renamed to reflect change in receiver", ReplaceWith("lateInitContextAddon()"))
 public fun <T> rContextAddonInit(): ContextAddon<T> = lateInitContextAddon<T>()
+
+@Deprecated("Renamed", ReplaceWith("child()"))
+public fun ElementContext.split(): ElementContext = child()
+
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.split(): ElementWriter = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddScrolling.split(): ElementWriter.CanAddScrolling = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddSizing.split(): ElementWriter.CanAddSizing = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddTheme.split(): ElementWriter.CanAddTheme = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddShownWhen.split(): ElementWriter.CanAddShownWhen = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddWeight.split(): ElementWriter.CanAddWeight = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ElementWriter.CanAddAlignment.split(): ElementWriter.CanAddAlignment = withChildContext()
+@Deprecated("Renamed", ReplaceWith("withChildContext()"))
+public fun ViewWriter.split(): ViewWriter = withChildContext()

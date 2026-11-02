@@ -245,7 +245,7 @@ Per platform:
 ### Screen visits
 - New `ElementContext.telemetryAttributes: TelemetryAttributes` addon. It inherits down the `ChainMap`, like `pageNavigator`.
 - `NativeElement.kt:483` replaces `TelemetryContext(element = ...)` with `TelemetryAttributesElement(context.telemetryAttributes)`. Every coroutine an element launches, including reactive loads and the fetches inside them, then carries the screen's attributes.
-- `navigatorView` (`views/l2/NavigatorView.kt`) sets the addon inside `with(split())`, next to `context.pageNavigator = navigator`: `TelemetryKeys.App.screenName` = page class simple name, and `TelemetryKeys.App.screenId` = fresh random id per visit.
+- `navigatorView` (`views/l2/NavigatorView.kt`) sets the addon inside `with(withChildContext())`, next to `context.pageNavigator = navigator`: `TelemetryKeys.App.screenName` = page class simple name, and `TelemetryKeys.App.screenId` = fresh random id per visit.
 - What a visit records, all short:
   - **Screen load.**
     - Owner `screen`, op `load`, launched in the screen's scope: `span("screen", "load") { usable.await() }`.

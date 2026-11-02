@@ -85,7 +85,11 @@ public expect fun PageNavigator.bindToPlatform(context: ElementContext)
 
 internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 
-/** The app's page navigator, shared by the whole element tree; `appBase` sets it. */
+/**
+ * The app's page navigator.
+ *
+ * `appBase` sets it; reading it before then throws [IllegalStateException].
+ */
 public var ElementContext.pageNavigator: PageNavigator by lazyContextAddon(ContextAddon.Scope.Global) {
     throw IllegalStateException(
         "'ElementContext.pageNavigator' has not been initialized. " +

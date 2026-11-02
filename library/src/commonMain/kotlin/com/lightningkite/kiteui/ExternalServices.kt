@@ -98,6 +98,11 @@ public object ExternalServices {
     public fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null): Unit = ctx.openMap(latitude, longitude, label, zoom)
 }
 
+/**
+ * The platform's external services: file picker, downloads, clipboard, maps, calendar, and links.
+ *
+ * It defaults to the platform's own. Don't replace it unless you must.
+ */
 public var ElementContext.externalServices: ExternalServicesAccess by lazyContextAddon(ContextAddon.Scope.Global) { externalServicesAccessDefault(it) }
     @InternalKiteUi set
 

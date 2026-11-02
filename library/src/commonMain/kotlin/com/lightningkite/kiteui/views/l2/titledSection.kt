@@ -7,6 +7,9 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.contextAddon
 
+/**
+ * How many [titledSection]s this context is inside. It picks the heading level. `0` outside any.
+ */
 public var ElementContext.titleDepth: Int by contextAddon(0)
 
 @Deprecated("Use directly through context", ReplaceWith("context.titleDepth"))

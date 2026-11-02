@@ -27,21 +27,30 @@ import kotlin.time.Clock
  * @param parent Optional parent tree to fall back to when no local handler matches
  */
 public class ExceptionHandlersTree(private val parent: ExceptionHandlersTree? = null) {
-    private val handlers = ArrayList<ExceptionHandler>()
-    private val messages = ArrayList<ExceptionToMessage>()
+    // Claude: every container has a tree and most never add anything, so the lists start as the shared empty list
+    // and are replaced on change.
+    private var handlers: List<ExceptionHandler> = emptyList()
+    private var messages: List<ExceptionToMessage> = emptyList()
 
     public fun add(handler: ExceptionHandler) {
-        handlers.add(handler)
-        handlers.sortWith(handlerComparator)
+        handlers = (handlers + handler).sortedWith(handlerComparator)
     }
 
     public fun add(message: ExceptionToMessage) {
-        messages.add(message)
-        messages.sortWith(messageComparator)
+        messages = (messages + message).sortedWith(messageComparator)
     }
 
-    public fun remove(handler: ExceptionHandler): Boolean = handlers.remove(handler) || parent?.remove(handler) == true
-    public fun remove(message: ExceptionToMessage): Boolean = messages.remove(message) || parent?.remove(message) == true
+    public fun remove(handler: ExceptionHandler): Boolean {
+        if (handler !in handlers) return parent?.remove(handler) == true
+        handlers = handlers - handler
+        return true
+    }
+
+    public fun remove(message: ExceptionToMessage): Boolean {
+        if (message !in messages) return parent?.remove(message) == true
+        messages = messages - message
+        return true
+    }
 
     public operator fun plusAssign(handler: ExceptionHandler): Unit = add(handler)
 

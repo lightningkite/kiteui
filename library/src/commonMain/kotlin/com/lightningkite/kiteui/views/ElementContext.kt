@@ -8,71 +8,80 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlin.coroutines.CoroutineContext
 
 /**
- * Holds the values an element shares with the elements inside it, such as the page navigator, the overlay frame
- * and exception handlers, along with the platform's handles (the activity on Android, the view controller on iOS).
+ * Holds values that elements share, such as the page navigator, the frame dialogs open in, and exception handlers.
+ * It also holds platform handles, such as the activity on Android and the view controller on iOS.
  *
- * Every container has its own context, made with [split], and the elements inside it use that context. A value set
- * on a context, usually through a [ContextAddon] property such as `context.pageNavigator`, is seen by everything
- * inside that container and nothing outside it; reading a value finds the nearest context, from this one up through
- * its [parent]s, that set it. Set values where everything that reads them can see them, such as at the root of the
- * app, as `appBase` does.
+ * Every element has one. In UI code, read it as `context`.
+ *
+ * Each container (col, row, frame...) gets its own [child] context. Leaf elements (text, buttons) share their
+ * container's context. A value set inside a container is seen by everything inside it. Nothing outside it sees
+ * the value.
+ * ```kotlin
+ * button { onClick { context.pageNavigator.navigate(SettingsPage) } }
+ * col {
+ *     context.accentLevel = 2   // seen by everything inside this col
+ *     text { }
+ * }
+ * text { }                      // does not see accentLevel = 2
+ * ```
+ * Add your own values with [ContextAddon] properties.
+ *
+ * It is also a coroutine context element. Coroutines an element launches carry it.
  */
 public expect class ElementContext: ElementContextCommonCode {
     /**
-     * Returns a child context that reads this one's [addons] and [exceptionHandlers] until it sets its own.
+     * Returns a new context inside this one.
      *
-     * Each container makes one for its children, so a value set inside a container is seen by everything in it
-     * and nothing outside it.
+     * It sees this context's values. Values set on it stay inside it. Containers call this for their children.
      */
-    public fun split(): ElementContext
+    public fun child(): ElementContext
 
     /**
-     * Whether the platform is in dark mode, or `null` if it doesn't say.
+     * Returns `true` if the platform is in dark mode, `false` if light, or `null` if unknown.
      *
-     * Always `null` on the web and desktop.
+     * Always `null` on web and desktop. Android and iOS read the system setting.
      */
     public val darkMode: Boolean?
 
     /**
-     * Whether the app asks to hide the system status bar.
+     * Set to `true` to hide the system status bar. Only iOS uses it.
      *
-     * Only iOS acts on it, and only once the app's view controller is set up for it; see the iOS `ElementContext`.
+     * Your view controller's `prefersStatusBarHidden` must read this property.
      */
     public var immersiveMode: Boolean
 
-    /** The context at the top of this one's [parent]s, shared by the whole element tree; this context if it has no parent. */
+    /** The top context of the app. Every context is inside it. */
     public val root: ElementContext
 
-    /** The key of the [ElementContext] in a coroutine context, which elements put in every coroutine they launch. */
+    /** The key of [ElementContext] in a coroutine context. */
     public companion object : CoroutineContext.Key<ElementContext>
 }
 
-/** The platform-independent part of [ElementContext]; use [ElementContext] itself. */
+/** Shared code for [ElementContext]. Use [ElementContext] instead. */
 public abstract class ElementContextCommonCode(
-    /** The context this one was [split][ElementContext.split] from, or `null` for the root. */
+    /** The context this one was made from with [ElementContext.child], or `null` for the root. */
     public val parent: ElementContext?,
 ) : CoroutineContext.Element {
     override val key: CoroutineContext.Key<*> get() = ElementContext
 
     /**
-     * The values set on this context, falling back to its [parent]'s for any it hasn't set.
+     * Holds the values of addon properties, by name.
      *
-     * Prefer [ContextAddon] properties to using this directly; they key values by property name.
+     * Use [ContextAddon] properties instead of reading this directly.
      */
     public val addons: ChainMap<String, Any?> = parent?.addons?.child() ?: ChainMap()
 
-    /** The exception handlers added on this context, falling back to its [parent]'s for errors none of them handle. */
+    /** The exception handlers added on this context. If none of them handle an error, [parent]'s handlers get it. */
     public val exceptionHandlers: ExceptionHandlersTree = ExceptionHandlersTree(parent = parent?.exceptionHandlers)
 }
 
+/** Gives [exception] to this context's exception handlers. Returns the cleanup to run later if one handles it, or `null`. */
 public fun ElementContext.handleException(exception: Exception, metadata: ExceptionHandler.Metadata? = null): Release? = exceptionHandlers.handle(this, exception, metadata)
+
+/** Gives [exception] to this context's exception handlers. Returns the message to show if one handles it, or `null`. */
 public fun ElementContext.exceptionMessage(exception: Exception, metadata: ExceptionHandler.Metadata? = null): ExceptionMessage? = exceptionHandlers.message(this, exception, metadata)
 
-// by Claude - scoped key-value store with parent chain for lazy lookup.
-// Reads check local first, then walk up the parent chain.
-// Explicit set() writes to local, shadowing the parent for that subtree.
-// getOrPut() writes new defaults to the root so they're shared across all children.
-// Not a MutableMap — the parent chain semantics don't match the MutableMap contract.
+/** A map that also reads from its [parent] for keys it doesn't have. Addon properties are stored in it. */
 public class ChainMap<K, V>(
     public val parent: ChainMap<K, V>? = null
 ) {
@@ -87,7 +96,7 @@ public class ChainMap<K, V>(
         val local = local
         return if (local != null) local.getOrElseIfMissing(key) { parent?.get(key) } else parent?.get(key)
     }
-    /** Returns the value set on this map itself, ignoring its [parent]s, or the result of [default] if it has none. */
+    /** Returns the value at [key] in this map only, ignoring [parent]. Returns [default] if it isn't set here. */
     @Suppress("UNCHECKED_CAST")
     public fun getLocalOrElse(key: K, default: () -> V): V {
         val local = local
@@ -99,10 +108,9 @@ public class ChainMap<K, V>(
     }
 
     /**
-     * Returns the value from the nearest map in the chain, from this one up through its [parent]s, that has [key], or
-     * the result of [default] if none has.
+     * Returns the value at [key], looking in this map first and then in [parent]. Returns [default] if no map has it.
      *
-     * A key set to `null` counts as having a value.
+     * A key set to `null` counts as set.
      */
     @Suppress("UNCHECKED_CAST")
     public fun getOrElse(key: K, default: () -> V): V {
@@ -115,7 +123,7 @@ public class ChainMap<K, V>(
         return default()
     }
 
-    /** Returns existing value if found anywhere in the chain; otherwise writes [defaultValue] to the root and returns it. */
+    /** Returns the value at [key] if any map has it. Otherwise saves [defaultValue] on the [root] map and returns it. */
     public fun getOrPut(key: K, defaultValue: () -> V): V = getOrElse(key) { defaultValue().also { root[key] = it } }
 
     public fun child(): ChainMap<K, V> = ChainMap(this)

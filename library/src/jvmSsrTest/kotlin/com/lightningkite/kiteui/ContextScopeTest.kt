@@ -22,18 +22,18 @@ class ContextScopeTest {
     @Test
     fun aPlainDefaultIsNotStored() {
         val root = ElementContext("/")
-        assertEquals("unset", root.split().label)
+        assertEquals("unset", root.child().label)
         assertFalse(root.addons.containsKey("label"))
     }
 
     @Test
     fun aMadeDefaultIsMadeFromTheContextReadAndSharedInsideIt() {
         val root = ElementContext("/")
-        val section = root.split()
-        val inside = section.split()
+        val section = root.child()
+        val inside = section.child()
         assertSame(section, section.madeFrom)
         assertSame(section, inside.madeFrom, "inside the reader, its default is seen as if set there")
-        val sibling = root.split()
+        val sibling = root.child()
         assertSame(sibling, sibling.madeFrom, "a sibling makes its own")
         assertFalse(root.addons.containsKey("madeFrom"))
         assertSame(root, inside.madeFromGlobally, "a global default is made from the root")

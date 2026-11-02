@@ -23,8 +23,8 @@ class ContextAddonScopeTest {
     @Test
     fun aGlobalValueSetAnywhereIsSeenEverywhere() {
         val root = ElementContext("/")
-        val deep = root.split().split()
-        val sibling = root.split()
+        val deep = root.child().child()
+        val sibling = root.child()
         deep.globalLabel = "deep"
         assertEquals("deep", root.globalLabel)
         assertEquals("deep", sibling.globalLabel)
@@ -35,9 +35,9 @@ class ContextAddonScopeTest {
     @Test
     fun aCascadingValueIsSeenInsideButNotAboveOrBeside() {
         val root = ElementContext("/")
-        val section = root.split()
-        val deep = section.split().split()
-        val sibling = root.split()
+        val section = root.child()
+        val deep = section.child().child()
+        val sibling = root.child()
         section.cascadingLabel = "section"
         assertEquals("section", deep.cascadingLabel)
         assertEquals("unset", root.cascadingLabel)
@@ -47,8 +47,8 @@ class ContextAddonScopeTest {
     @Test
     fun aCascadingValueSetAfterAChildIsMadeIsSeenByIt() {
         val root = ElementContext("/")
-        val section = root.split()
-        val inside = section.split()
+        val section = root.child()
+        val inside = section.child()
         section.cascadingLabel = "later"
         assertEquals("later", inside.cascadingLabel)
     }
@@ -56,16 +56,16 @@ class ContextAddonScopeTest {
     @Test
     fun aCascadingNullHidesTheDefault() {
         val root = ElementContext("/")
-        val section = root.split()
+        val section = root.child()
         section.cascadingLabel = null
-        assertNull(section.split().cascadingLabel)
+        assertNull(section.child().cascadingLabel)
     }
 
     @Test
     fun aLocalValueIsSeenOnlyWhereItWasSet() {
         val root = ElementContext("/")
-        val section = root.split()
-        val inside = section.split()
+        val section = root.child()
+        val inside = section.child()
         section.localLabel = "section"
         assertEquals("section", section.localLabel)
         assertEquals("unset", inside.localLabel)
@@ -74,8 +74,8 @@ class ContextAddonScopeTest {
 
     @Test
     fun aLocalMadeDefaultIsKeptPerContext() {
-        val section = ElementContext("/").split()
-        val inside = section.split()
+        val section = ElementContext("/").child()
+        val inside = section.child()
         assertSame(section.localToken, section.localToken)
         assertNotSame(section.localToken, inside.localToken)
     }
@@ -102,24 +102,24 @@ class ContextAddonScopeTest {
     fun aGlobalLateInitIsSetForEveryContextAtOnce() {
         val root = ElementContext("/")
         assertFailsWith<IllegalStateException> { root.globalLate }
-        root.split().globalLate = "set"
-        assertEquals("set", root.split().globalLate)
+        root.child().globalLate = "set"
+        assertEquals("set", root.child().globalLate)
     }
 
     @Test
     fun aCascadingLateInitThrowsOutsideWhereItWasSet() {
         val root = ElementContext("/")
-        val section = root.split()
+        val section = root.child()
         section.cascadingLate = "set"
-        assertEquals("set", section.split().cascadingLate)
+        assertEquals("set", section.child().cascadingLate)
         assertFailsWith<IllegalStateException> { root.cascadingLate }
     }
 
     @Test
     fun aLocalLateInitThrowsInsideWhereItWasSet() {
-        val section = ElementContext("/").split()
+        val section = ElementContext("/").child()
         section.localLate = "set"
         assertEquals("set", section.localLate)
-        assertFailsWith<IllegalStateException> { section.split().localLate }
+        assertFailsWith<IllegalStateException> { section.child().localLate }
     }
 }
