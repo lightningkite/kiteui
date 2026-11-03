@@ -5,7 +5,7 @@ import kotlin.js.Date
 import kotlin.time.toJSDate
 
 
-actual fun LocalDate.renderToString(
+public actual fun LocalDate.renderToString(
     size: RenderSize,
     includeWeekday: Boolean,
     includeYear: Boolean,
@@ -36,7 +36,7 @@ actual fun LocalDate.renderToString(
         })
 }
 
-actual fun LocalTime.renderToString(size: RenderSize): String {
+public actual fun LocalTime.renderToString(size: RenderSize): String {
     return this.atDate(1970, 1, 1).toInstant(TimeZone.currentSystemDefault()).toJSDate()
         .toLocaleTimeString(options = dateLocaleOptions {
             this.hour = "numeric"
@@ -44,7 +44,7 @@ actual fun LocalTime.renderToString(size: RenderSize): String {
         })
 }
 
-actual fun LocalDateTime.renderToString(
+public actual fun LocalDateTime.renderToString(
     size: RenderSize,
     includeWeekday: Boolean,
     includeYear: Boolean,
@@ -76,8 +76,8 @@ actual fun LocalDateTime.renderToString(
     })
 }
 
-actual fun TimeZone.renderToString(size: RenderSize): String = this.id
-actual fun DayOfWeek.renderToString(size: RenderSize): String =
+public actual fun TimeZone.renderToString(size: RenderSize): String = this.id
+public actual fun DayOfWeek.renderToString(size: RenderSize): String =
     LocalDate(2024, 1, 1).plus(DatePeriod(days = this.ordinal)).atTime(12, 0)
         .toInstant(TimeZone.currentSystemDefault()).toJSDate().toLocaleDateString(options = dateLocaleOptions {
         this.day = undefined

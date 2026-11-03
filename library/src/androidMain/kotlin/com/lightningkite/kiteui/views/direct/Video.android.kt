@@ -18,15 +18,15 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(UnstableApi::class)
-actual class RawVideoView actual constructor(
+public actual class RawVideoView actual constructor(
     context: ElementContext,
-    actual val source: VideoSource,
-    actual val description: String,
+    public actual val source: VideoSource,
+    public actual val description: String,
     @get:OptIn(UnstableApi::class)
-    actual val scaleType: ImageScaleType,
-    actual val preloadHint: PreloadHint,
+    public actual val scaleType: ImageScaleType,
+    public actual val preloadHint: PreloadHint,
 ) : NativeElement(context) {
-    override val native = PlayerView(context.activity).apply {
+    override val native: PlayerView = PlayerView(context.activity).apply {
         player = ExoPlayer.Builder(context.activity).build()
         contentDescription = description
         resizeMode = when (scaleType) {
@@ -37,7 +37,7 @@ actual class RawVideoView actual constructor(
     }
 
     private val _state = RawReactive<Unit>()
-    actual val state: Reactive<Unit> = _state
+    public actual val state: Reactive<Unit> = _state
 
     init {
         when (val value = source) {
@@ -53,7 +53,6 @@ actual class RawVideoView actual constructor(
                     _state.state = ReactiveState.exception(Exception(e))
                 }
             }
-            else -> {}
         }
         native.player!!.prepare()
         val l = object : Player.Listener {
@@ -76,7 +75,7 @@ actual class RawVideoView actual constructor(
         }
     }
 
-    actual val time: MutableReactive<Double> = object : MutableReactive<Double> {
+    public actual val time: MutableReactive<Double> = object : MutableReactive<Double> {
         override suspend fun set(value: Double) {
             native.player!!.seekTo((value * 1000.0).toLong())
         }
@@ -99,7 +98,7 @@ actual class RawVideoView actual constructor(
         }
     }
 
-    actual val currentTime: MutableReactive<Duration> = object : MutableReactive<Duration> {
+    public actual val currentTime: MutableReactive<Duration> = object : MutableReactive<Duration> {
         override suspend fun set(value: Duration) {
             native.player!!.seekTo(value.inWholeMilliseconds)
         }
@@ -122,7 +121,7 @@ actual class RawVideoView actual constructor(
         }
     }
 
-    actual val playing: MutableReactive<Boolean> = object : MutableReactive<Boolean> {
+    public actual val playing: MutableReactive<Boolean> = object : MutableReactive<Boolean> {
         override suspend fun set(value: Boolean) {
             if (value) {
                 native.player!!.play()
@@ -144,7 +143,7 @@ actual class RawVideoView actual constructor(
         }
     }
 
-    actual val volume: MutableReactive<Float> = object : MutableReactive<Float> {
+    public actual val volume: MutableReactive<Float> = object : MutableReactive<Float> {
         override suspend fun set(value: Float) {
             native.player!!.volume = value
         }
@@ -162,7 +161,7 @@ actual class RawVideoView actual constructor(
         }
     }
 
-    actual val sourceDuration: Reactive<Double?> = object : Reactive<Double?> {
+    public actual val sourceDuration: Reactive<Double?> = object : Reactive<Double?> {
         override val state: ReactiveState<Double?>
             get() {
                 val d = native.player!!.duration
@@ -181,19 +180,19 @@ actual class RawVideoView actual constructor(
         }
     }
 
-    actual var showControls: Boolean
+    public actual var showControls: Boolean
         get() = native.useController
         set(value) {
             native.useController = value
         }
 
-    actual var loop: Boolean
+    public actual var loop: Boolean
         get() = native.player!!.repeatMode == Player.REPEAT_MODE_ONE
         set(value) {
             native.player!!.repeatMode = if (value) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
         }
 
-    actual val completedPlay: Listenable = object: Listenable {
+    public actual val completedPlay: Listenable = object: Listenable {
         override fun addListener(listener: () -> Unit): () -> Unit {
             val l = object : Player.Listener {
                 override fun onPlaybackStateChanged(state: Int) {
@@ -206,7 +205,7 @@ actual class RawVideoView actual constructor(
             return { native.player!!.removeListener(l) }
         }
     }
-    actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = listOf()
+    public actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = listOf()
 }
 
 //actual fun Video.onComplete(action: () -> Unit) {

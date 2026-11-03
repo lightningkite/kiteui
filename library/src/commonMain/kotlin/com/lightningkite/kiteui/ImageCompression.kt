@@ -13,7 +13,7 @@ import com.lightningkite.kiteui.models.ImageRaw
  * @param quality JPEG compression quality, 0.0 (smallest) to 1.0 (highest).
  * @throws IllegalArgumentException if the file is not a decodable image.
  */
-expect suspend fun ImageLocal.compressed(
+public expect suspend fun ImageLocal.compressed(
     maxWidth: Int = 2048,
     maxHeight: Int = 2048,
     quality: Float = 0.8f

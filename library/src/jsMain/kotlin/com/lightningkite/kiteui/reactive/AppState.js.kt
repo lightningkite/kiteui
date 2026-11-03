@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.dom.KeyboardEvent
+import com.lightningkite.kiteui.locale.LanguageCode
 import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.models.px
@@ -21,8 +22,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.dom.events.Event
 
-actual object AppState {
-    actual val animationFrame: Listenable
+public actual object AppState {
+    public actual val animationFrame: Listenable
         get() = _AnimationFrame
     internal val _windowInfo = Signal(
         WindowStatistics(
@@ -43,17 +44,23 @@ actual object AppState {
             }
         })
     }
-    actual val windowInfo: ReactiveValue<WindowStatistics>
+    public actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo
-    actual val inForeground: ReactiveValue<Boolean>
+    public actual val inForeground: ReactiveValue<Boolean>
         get() = _InForeground
     internal val _softInputOpen = Signal(false)
-    actual val softInputOpen: ReactiveValue<Boolean>
+    public actual val softInputOpen: ReactiveValue<Boolean>
         get() = _softInputOpen
+
+    internal val _systemLanguages = Signal(currentSystemLanguages()).also { signal ->
+        window.addEventListener("languagechange", { _: Event -> signal.value = currentSystemLanguages() })
+    }
+    public actual val systemLanguages: ReactiveValue<List<LanguageCode>>
+        get() = _systemLanguages
 
     private var currentLock: WakeLockSentinel? = null
     private var currentLockCount = 0
-    actual fun keepScreenOn(scope: CoroutineScope) {
+    public actual fun keepScreenOn(scope: CoroutineScope) {
         if (currentLockCount++ == 0) {
             AppScope.launch {
                 try {
@@ -74,7 +81,7 @@ actual object AppState {
         }
     }
 
-    val _lastUniversalKeyboardInput = reactiveProcess<KeyCodeWithModifiers> {
+    public val _lastUniversalKeyboardInput: Reactive<KeyCodeWithModifiers> = reactiveProcess<KeyCodeWithModifiers> {
         val l = { ev: Event ->
             ev as KeyboardEvent
             emit(
@@ -94,7 +101,7 @@ actual object AppState {
             window.removeEventListener("keydown", l)
         }
     }
-    actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): () -> Unit {
+    public actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): () -> Unit {
         val l = { ev: Event ->
             ev as KeyboardEvent
             if (handler(
@@ -117,26 +124,33 @@ actual object AppState {
     }
 }
 
-external interface WakeLockSentinel {
-    val released: Boolean
-    fun release(): Promise<Unit>
+/** [navigator.languages](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/languages), ordered by preference; falls back to the singular `navigator.language` when the browser doesn't support it. */
+private fun currentSystemLanguages(): List<LanguageCode> {
+    val languages = window.navigator.languages
+    return if (languages.isNotEmpty()) languages.map { LanguageCode(it) }
+    else listOf(LanguageCode(window.navigator.language))
+}
+
+public external interface WakeLockSentinel {
+    public val released: Boolean
+    public fun release(): Promise<Unit>
 }
 
 private object _AnimationFrame : Listenable {
     override fun addListener(listener: () -> Unit): () -> Unit {
         var end = false
         var sub: (Double) -> Unit = {}
+        var pendingId = 0
         sub = label@{
+            if (end) return@label
             listener()
-            if (end) {
-                // Done!
-            } else {
-                window.requestAnimationFrame(sub)
-            }
+            pendingId = window.requestAnimationFrame(sub)
         }
-        window.requestAnimationFrame(sub)
+        pendingId = window.requestAnimationFrame(sub)
         return {
             end = true
+            // Cancel the already-scheduled frame so the listener isn't invoked one more time after unsubscribing.
+            window.cancelAnimationFrame(pendingId)
         }
     }
 }

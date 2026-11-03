@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.UnsafeModifier
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.SizeConstraints
@@ -67,6 +68,7 @@ object ShorthandBuilderPage : Page {
             override fun writeAfterLabel(sb: StringBuilder, node: Node, indent: Int) = textCallSuffix(sb, node)
         },
         Image('i', false, "image", "URL of image") {
+            @OptIn(UnsafeModifier::class)
             override fun ElementWriter.render(node: Node) {
                 val seed = nextImageSeed()
                 withUnsafeModifiers().sizedBox(SizeConstraints(width = 6.rem, height = 6.rem)).image {
@@ -349,6 +351,7 @@ object ShorthandBuilderPage : Page {
     private fun nextImageSeed(): Int = (imageSeedCounter++).absoluteValue
 
     /** Applies parsed modifiers in KiteUI's enforced order, then dispatches to the element kind. */
+    @OptIn(UnsafeModifier::class)
     private fun ElementWriter.renderNode(node: Node) {
         val byKind: Map<ModKind, Mod> = node.mods.groupBy { it.kind }.mapValues { it.value.last() }
         val unsafe: ViewWriter = this.withUnsafeModifiers()

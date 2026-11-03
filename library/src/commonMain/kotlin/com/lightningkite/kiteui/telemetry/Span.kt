@@ -38,7 +38,7 @@ internal var activeSpanId: String = ""
  * If telemetry is not installed or the current trace is not sampled,
  * the block executes normally with no overhead beyond a context check.
  */
-suspend fun <T> span(
+public suspend fun <T> span(
     name: String,
     attributes: List<OtlpKeyValue> = emptyList(),
     block: suspend () -> T,

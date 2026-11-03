@@ -229,11 +229,11 @@ object MultiplatformPage : DocPage {
                                 Platform.Web -> {
                                     // Browser back button works automatically
                                     // Deep linking just works
-                                    pageNavigator.navigate(DetailPage(id = "123"))
+                                    context.pageNavigator.navigate(DetailPage(id = "123"))
                                 }
                                 else -> {
                                     // Mobile: Stack-based navigation
-                                    pageNavigator.navigate(DetailPage(id = "123"))
+                                    context.pageNavigator.navigate(DetailPage(id = "123"))
                                     // Back button pops navigation stack
                                 }
                             }

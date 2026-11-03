@@ -163,7 +163,7 @@ object SsrServer {
         theme = defaultTheme,
         basePath = "/",
         document = createDocument(),
-        appWrapper = { navigator, dialog -> app(navigator, dialog) }
+        appWrapper = { navigator -> app(navigator) }
     )
 
     /**

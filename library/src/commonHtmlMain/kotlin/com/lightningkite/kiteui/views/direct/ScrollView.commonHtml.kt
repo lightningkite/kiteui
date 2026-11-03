@@ -11,7 +11,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-expect class ScrollingBehaviorImpl constructor(
+public expect class ScrollingBehaviorImpl constructor(
     on: Element,
     horizontal: Boolean,
     vertical: Boolean
@@ -35,6 +35,8 @@ expect class ScrollingBehaviorImpl constructor(
      override var scrollSnapStop: Boolean
 
      override var ignoreInteraction: Boolean
+
+     override var userScrollEnabled: Boolean
 
      override fun scrollTo(left: Double, top: Double, animated: Boolean)
 

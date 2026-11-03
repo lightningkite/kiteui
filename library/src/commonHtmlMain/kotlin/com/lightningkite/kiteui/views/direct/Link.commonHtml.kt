@@ -6,10 +6,11 @@ import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class Link actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
-    override val driverActions get() = super.driverActions + linkDriverActions()
+public actual class Link actual constructor(context: ElementContext) : NativeContainerElementWithSecondaryAction(context) {
+    override val driverActions: AiDriver.Actions get() = super.driverActions + linkDriverActions()
     override fun nativeSetAction(action: Action?) {
         native.setAttribute("aria-label", accessibleLabel ?: action?.title)
     }
@@ -37,8 +38,8 @@ actual class Link actual constructor(context: ElementContext) : NativeContainerE
         Frame.internalAddChildStack(this, index, element)
     }
 
-    actual var onNavigator: PageNavigator = context.mainPageNavigator
-    actual var to: (() -> Page)? = null
+    public actual var onNavigator: PageNavigator = context.mainPageNavigator
+    public actual var to: (() -> Page)? = null
         set(value) {
             field = value
             value?.invoke()?.let {
@@ -48,11 +49,11 @@ actual class Link actual constructor(context: ElementContext) : NativeContainerE
             } ?: run { native.attributes.href = "" }
         }
 
-    actual inline var newTab: Boolean
+    public actual inline var newTab: Boolean
         get() = native.attributes.target == "_blank"
         set(value) {
             native.attributes.target = if (value) "_blank" else "_self"
         }
 
-    actual var resetsStack: Boolean = false
+    public actual var resetsStack: Boolean = false
 }

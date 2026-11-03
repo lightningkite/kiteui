@@ -670,23 +670,23 @@ private val combinedAnimationWorker = label@{
 }
 
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
+internal inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
     asDynamic().animate(keyframes, options) as Animation
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun HTMLElement.getAnimations(): Array<Animation> = asDynamic().getAnimations as Array<Animation>
-external interface Animation {
-    var oncancel: ((Event) -> Unit)?
-    var onfinish: ((Event) -> Unit)?
-    var onremove: ((Event) -> Unit)?
-    fun cancel()
-    fun commitStyles()
-    fun finish()
-    fun pause()
-    fun play()
-    fun reverse()
-    var currentTime: Double
-    var startTime: Double
+internal inline fun HTMLElement.getAnimations(): Array<Animation> = asDynamic().getAnimations as Array<Animation>
+internal external interface Animation {
+    public var oncancel: ((Event) -> Unit)?
+    public var onfinish: ((Event) -> Unit)?
+    public var onremove: ((Event) -> Unit)?
+    public fun cancel()
+    public fun commitStyles()
+    public fun finish()
+    public fun pause()
+    public fun play()
+    public fun reverse()
+    public var currentTime: Double
+    public var startTime: Double
 }
 
 private fun forEach(receiver: Json, action: (key: String, value: dynamic) -> Unit) {

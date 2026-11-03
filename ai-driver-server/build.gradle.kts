@@ -11,7 +11,6 @@ application {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.addAll("-Xcontext-parameters")
         optIn.addAll("kotlin.time.ExperimentalTime")
     }
 }

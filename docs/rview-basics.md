@@ -1,8 +1,18 @@
-# RView Basics
+# RView Basics (Historical Reference)
 
-## Overview
+> **This document describes the old `RView`-based API, which no longer exists.**
+> The RView → Element split has landed on `version-8`. The current model is:
+> - `Element` (interface) + `NativeElement` (platform implementation) replace `RView`
+> - `ElementContext` replaces `RContext`
+> - `ElementWriter` replaces `ViewWriter`, with type-enforced modifier ordering
+>
+> See [MIGRATION.md](../MIGRATION.md) for the migration rationale and current patterns.
 
-`RView` is the foundational class for all views in the KiteUI framework. It provides a platform-agnostic abstraction over native UI components, allowing you to write UI code once and have it run on Android, iOS, Web (JS), and JVM platforms.
+---
+
+## Overview (Historical)
+
+`RView` was the foundational class for all views in the KiteUI framework before the version-8 refactor. This document is retained as a historical reference for understanding the pre-migration architecture. All new code should use `Element`/`NativeElement` and `ElementWriter` instead.
 
 ## Key Concepts
 

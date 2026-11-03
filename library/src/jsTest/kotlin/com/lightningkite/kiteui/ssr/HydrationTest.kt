@@ -10,8 +10,11 @@ class HydrationTest {
 
     @BeforeTest
     fun setUp() {
-        // Clear HydrationContext before each test to ensure isolation
+        // Clear HydrationContext before each test to ensure isolation.
+        // clear() deliberately leaves the hydration counters alone (see its KDoc), so tests that
+        // assert on them need resetStats() too.
         HydrationContext.clear()
+        HydrationContext.resetStats()
 
         // Remove any leftover __SSR_DATA__ elements from previous tests
         document.getElementById("__SSR_DATA__")?.let { document.body?.removeChild(it) }
@@ -21,6 +24,7 @@ class HydrationTest {
     fun tearDown() {
         // Clean up after each test
         HydrationContext.clear()
+        HydrationContext.resetStats()
         document.getElementById("__SSR_DATA__")?.let { document.body?.removeChild(it) }
     }
 
@@ -363,6 +367,36 @@ class HydrationTest {
 
         // Verify ID remains null
         assertNull(future.id, "ID should remain null when SSR element has no ID")
+    }
+
+    @Test
+    fun testMismatchCounterTracksFailedHydrations() {
+        // Create SSR element with a different tag than expected
+        val ssrElement = document.createElement("span") as HTMLElement
+        val future = FutureElement().apply { tag = "div" }
+
+        assertEquals(0, HydrationContext.mismatchedElements, "Should start with no recorded mismatches")
+
+        future.hydrate(ssrElement)
+
+        assertEquals(1, HydrationContext.mismatchedElements, "A tag mismatch should increment the counter")
+    }
+
+    @Test
+    fun testMismatchCounterSurvivesClear() {
+        // The counter is meant to stay readable (e.g. from devtools) after hydration completes -
+        // clear() only tears down the resource cache, not the stats. resetStats() is what a test
+        // (or a future page load, via initFromDom()) uses to zero it back out.
+        val ssrElement = document.createElement("span") as HTMLElement
+        val future = FutureElement().apply { tag = "div" }
+        future.hydrate(ssrElement)
+        assertEquals(1, HydrationContext.mismatchedElements)
+
+        HydrationContext.clear()
+        assertEquals(1, HydrationContext.mismatchedElements, "clear() should not reset the mismatch counter")
+
+        HydrationContext.resetStats()
+        assertEquals(0, HydrationContext.mismatchedElements, "resetStats() should reset the mismatch counter")
     }
 
     @Test

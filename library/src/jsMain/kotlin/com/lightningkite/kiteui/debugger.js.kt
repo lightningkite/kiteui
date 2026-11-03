@@ -1,21 +1,21 @@
 package com.lightningkite.kiteui
 
-var debug: Boolean = true
-actual fun debugger() {
+public var debug: Boolean = true
+public actual fun debugger() {
     if(debug) js("debugger;")
 }
 
-actual fun gc(): GCInfo {
+public actual fun gc(): GCInfo {
     return GCInfo(-1L)
 }
-actual fun cleanImageCache() {
+public actual fun cleanImageCache() {
 }
-actual fun gcReport() {}
+public actual fun gcReport() {}
 
-actual fun assertMainThread() {
+public actual fun assertMainThread() {
 }
 
-actual fun Throwable.printStackTrace2() {
+public actual fun Throwable.printStackTrace2() {
     printStackTrace()
 //    val stack = this.asDynamic().stack
 //    if (stack is String) {
@@ -29,30 +29,37 @@ actual fun Throwable.printStackTrace2() {
 //    }
 }
 
-actual object LogRoot: Log {
+public actual object LogRoot: Log {
     private val platform = PlatformLog("")
+    actual override val tag: String get() = platform.tag
     actual override fun tag(tag: String): Log = platform.tag(tag)
-    actual override fun log(vararg entries: Any?) = platform.log(*entries)
-    actual override fun error(vararg entries: Any?) = platform.error(*entries)
-    actual override fun info(vararg entries: Any?) = platform.info(*entries)
-    actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
+    actual override val level: LogLevel get() = platform.level
+    actual override fun withLevel(level: LogLevel): Log = platform.withLevel(level)
+    actual override fun log(vararg entries: Any?): Unit = platform.log(*entries)
+    actual override fun info(vararg entries: Any?): Unit = platform.info(*entries)
+    actual override fun warn(vararg entries: Any?): Unit = platform.warn(*entries)
+    actual override fun error(vararg entries: Any?): Unit = platform.error(*entries)
 }
-private class PlatformLog(val tag: String): Log {
-    override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
+private class PlatformLog(override val tag: String, override val level: LogLevel = LogLevel.LOG): Log {
+    override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag, level)
+    override fun withLevel(level: LogLevel): Log = PlatformLog(tag, level)
     override fun log(vararg entries: Any?) {
+        if (level < LogLevel.LOG) return
         console.log(tag, *entries)
     }
 
-    override fun error(vararg entries: Any?) {
-        console.error(tag, *entries)
-    }
-
     override fun info(vararg entries: Any?) {
+        if (level < LogLevel.INFO) return
         console.info(tag, *entries)
     }
 
     override fun warn(vararg entries: Any?) {
+        if (level < LogLevel.WARN) return
         console.warn(tag, *entries)
+    }
+
+    override fun error(vararg entries: Any?) {
+        console.error(tag, *entries)
     }
 }
 
@@ -60,8 +67,8 @@ private external interface WeakRef<T> {
     fun deref(): T?
 }
 
-actual class WeakReference<T: Any> actual constructor(referred: T) {
-    actual fun get(): T? = native?.deref()
+public actual class WeakReference<T: Any> actual constructor(referred: T) {
+    public actual fun get(): T? = native?.deref()
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     private val native: WeakRef<T>? = try {
         js("WeakRef(referred)") as? WeakRef<T>
@@ -84,7 +91,7 @@ actual class WeakReference<T: Any> actual constructor(referred: T) {
 //""")
 private var counter = 1
 private var counterSymbol = js("Symbol(\"IDHC\")")
-actual fun Any?.identityHashCode(): Int {
+public actual fun Any?.identityHashCode(): Int {
     if (this == null) return 0 else {
         val e = asDynamic()[counterSymbol]
         if (e != null) return e as Int

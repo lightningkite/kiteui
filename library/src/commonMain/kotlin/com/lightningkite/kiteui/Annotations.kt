@@ -2,16 +2,16 @@ package com.lightningkite.kiteui
 
 @Repeatable
 @Target(AnnotationTarget.CLASS)
-annotation class Routable(val path: String)
+public annotation class Routable(val path: String)
 
 @Target(AnnotationTarget.CLASS)
-annotation class FallbackRoute
+public annotation class FallbackRoute
 
 @Target(AnnotationTarget.PROPERTY)
-annotation class QueryParameter(val name: String = "")
+public annotation class QueryParameter(val name: String = "")
 
 @Target(AnnotationTarget.PROPERTY)
-annotation class Hash
+public annotation class Hash
 
 @Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
@@ -20,7 +20,7 @@ annotation class Hash
     level = RequiresOptIn.Level.WARNING,
     message = "This may change, use it at your own risk"
 )
-annotation class InternalKiteUi
+public annotation class InternalKiteUi
 
 @Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.FUNCTION)
@@ -37,7 +37,7 @@ annotation class InternalKiteUi
  * components so they can control and bind resources to their own lifetime, but should _not_ be
  * called outside internal code as it could cause lifecycle bugs.
  * */
-annotation class OverrideOnly
+public annotation class OverrideOnly
 
 @Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
@@ -46,7 +46,7 @@ annotation class OverrideOnly
     level = RequiresOptIn.Level.WARNING,
     message = "This may change, use it at your own risk"
 )
-annotation class ExperimentalKiteUi
+public annotation class ExperimentalKiteUi
 
 @Suppress("ExperimentalAnnotationRetention")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
@@ -55,7 +55,35 @@ annotation class ExperimentalKiteUi
     level = RequiresOptIn.Level.WARNING,
     message = "This hasn't been tested thoroughly enough to recommend use.  Use at your own risk."
 )
-annotation class Untested
+public annotation class Untested
+
+/**
+ * Marks an API whose *signature* is stable but whose *appearance* is not.
+ *
+ * These are the opinionated, batteries-included components: you hand them your data and KiteUI
+ * decides how it looks. That decision gets refined between releases - spacing, breakpoints,
+ * which control a group collapses into, whether a label survives at a given width. Your code keeps
+ * compiling and keeps meaning the same thing; the pixels move.
+ *
+ * The practical consequences:
+ * - Don't pin screenshot or golden-HTML tests to these components. Test what they *do* - that the
+ *   right destination is selected, that the menu opens - not what they render.
+ *   Wrap them or rebuild from the lower-level components if you need a look that holds still.
+ * - Don't target their internal structure from CSS or from element-tree lookups.
+ *
+ * Opt in once at the file or module level and forget about it:
+ * ```kotlin
+ * @file:OptIn(EvolvingAppearance::class)
+ * ```
+ */
+@Suppress("ExperimentalAnnotationRetention")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "The API here is stable, but its appearance is refined between releases. Don't depend on the exact visual result - notably, don't pin screenshot tests to it."
+)
+public annotation class EvolvingAppearance
 
 
 /**
@@ -109,4 +137,4 @@ annotation class Untested
 @Suppress("ExperimentalAnnotationRetention")
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn("Applying modifiers in the wrong order can lead to subtle bugs.", RequiresOptIn.Level.WARNING)
-annotation class UnsafeModifier
+public annotation class UnsafeModifier

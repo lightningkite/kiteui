@@ -4,6 +4,6 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 
 
-expect class ProgressBar(context: ElementContext) : NativeElement {
-    var ratio: Float
+public expect class ProgressBar(context: ElementContext) : NativeElement {
+    public var ratio: Float
 }

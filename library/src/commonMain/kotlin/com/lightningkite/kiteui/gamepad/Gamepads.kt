@@ -26,12 +26,12 @@ import com.lightningkite.reactive.core.ReactiveValue
  */
 @ExperimentalKiteUi
 @Untested
-expect object Gamepads {
+public expect object Gamepads {
     /**
      * Maximum number of gamepads supported simultaneously.
      * Typically 4 on most platforms.
      */
-    val maxGamepads: Int
+    public val maxGamepads: Int
     
     /**
      * Gets the reactive state for a specific gamepad index.
@@ -39,25 +39,25 @@ expect object Gamepads {
      * @param index The gamepad index (0 to maxGamepads-1)
      * @return A reactive value containing the current gamepad state
      */
-    fun gamepad(index: Int): ReactiveValue<GamepadState>
+    public fun gamepad(index: Int): ReactiveValue<GamepadState>
     
     /**
      * Gets the list of all connected gamepad indices.
      * This is a reactive value that updates when controllers connect/disconnect.
      */
-    val connectedGamepads: ReactiveValue<List<Int>>
+    public val connectedGamepads: ReactiveValue<List<Int>>
     
     /**
      * Listenable that fires when a gamepad is connected or disconnected.
      */
-    val onConnectionChange: Listenable
+    public val onConnectionChange: Listenable
     
     /**
      * Polls all gamepads and updates their state.
      * This is called automatically on animation frame when polling is started,
      * but can be called manually for more frequent polling if needed.
      */
-    fun poll()
+    public fun poll()
     
     /**
      * Starts polling gamepads automatically on each animation frame.
@@ -65,11 +65,11 @@ expect object Gamepads {
      * entering a screen that needs gamepad input.
      * Safe to call multiple times (will only start once).
      */
-    fun startPolling()
+    public fun startPolling()
     
     /**
      * Stops automatic polling. Use when gamepad input is not needed
      * to save resources.
      */
-    fun stopPolling()
+    public fun stopPolling()
 }

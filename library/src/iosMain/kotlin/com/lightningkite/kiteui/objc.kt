@@ -6,4 +6,4 @@ import platform.CoreGraphics.CGColorRef
 import platform.Foundation.CFBridgingRelease
 
 
-fun CGColorRef.toObjcId(): Any = CFBridgingRelease(CFRetain(this))!!
+public fun CGColorRef.toObjcId(): Any = CFBridgingRelease(CFRetain(this))!!

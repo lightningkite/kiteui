@@ -20,8 +20,8 @@ import platform.darwin.sel_registerName
 import kotlin.math.min
 
 @OptIn(ExperimentalForeignApi::class)
-actual object Gamepads {
-    actual val maxGamepads: Int = 4
+public actual object Gamepads {
+    public actual val maxGamepads: Int = 4
 
     private val gamepadStates = Array(maxGamepads) { Signal(GamepadState.DISCONNECTED) }
     private val _connectedGamepads = Signal(emptyList<Int>())
@@ -30,13 +30,13 @@ actual object Gamepads {
     private var polling = false
     private var pollListenerRemove: (() -> Unit)? = null
 
-    actual fun gamepad(index: Int): ReactiveValue<GamepadState> {
+    public actual fun gamepad(index: Int): ReactiveValue<GamepadState> {
         require(index in 0 until maxGamepads) { "Gamepad index $index out of range 0..$maxGamepads" }
         return gamepadStates[index]
     }
 
-    actual val connectedGamepads: ReactiveValue<List<Int>> get() = _connectedGamepads
-    actual val onConnectionChange: Listenable get() = _onConnectionChange
+    public actual val connectedGamepads: ReactiveValue<List<Int>> get() = _connectedGamepads
+    public actual val onConnectionChange: Listenable get() = _onConnectionChange
 
     private val observer = object : NSObject() {
         @Suppress("unused")
@@ -83,7 +83,7 @@ actual object Gamepads {
         }
     }
 
-    actual fun poll() {
+    public actual fun poll() {
         @Suppress("UNCHECKED_CAST")
         val controllers = GCController.controllers() as List<GCController>
 
@@ -169,14 +169,14 @@ actual object Gamepads {
         }
     }
 
-    actual fun startPolling() {
+    public actual fun startPolling() {
         if (polling) return
         polling = true
         updateConnectedList()
         pollListenerRemove = AppState.animationFrame.addListener { poll() }
     }
 
-    actual fun stopPolling() {
+    public actual fun stopPolling() {
         polling = false
         pollListenerRemove?.invoke()
         pollListenerRemove = null

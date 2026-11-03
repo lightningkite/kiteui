@@ -268,7 +268,9 @@ internal fun String.localizer(out: MutableSet<NeededStringTemplate>) {
                         printlnParenLevel = -1
                     }
                 }
-                if (c == ' ' && codeStack.last().parenLevel == codeStack.last().parenLevel) annotationParenLevel
+                // Paren-less annotation (e.g. `@JvmStatic`): a space at the same paren level as the
+                // '@' means no argument list followed, so the annotation-exclusion window closes here.
+                if (c == ' ' && codeStack.last().parenLevel == annotationParenLevel) annotationParenLevel = -1
             }
         } catch (e: Exception) {
             throw Exception(

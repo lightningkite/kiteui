@@ -19,16 +19,16 @@ import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransform3DMakeScale
 import platform.UIKit.*
 
-actual class IconView actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = NIconView()
-    actual var source: Icon?
+public actual class IconView actual constructor(context: ElementContext): NativeElement(context) {
+    override val native: NIconView = NIconView()
+    public actual var source: Icon?
         get() = native.icon
         set(value) {
             native.icon = value
         }
-    actual var description: String?
+    public actual var description: String?
         get() {
-            return native.accessibilityLabel.toString()
+            return native.accessibilityLabel
         }
         set(value) {
             native.accessibilityLabel = value
@@ -42,7 +42,7 @@ actual class IconView actual constructor(context: ElementContext): NativeElement
 
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingRulesProtocol {
+public actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingRulesProtocol {
     init {
         userInteractionEnabled = false
         if (ENABLE_DYNAMIC_TYPE) {
@@ -52,25 +52,25 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingR
         }
     }
 
-    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
-    override fun getSpacingOverrideProperty() = spacingOverride
+    internal val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
     override fun drawLayer(layer: CALayer, inContext: CGContextRef?) {
         super.drawLayer(layer, inContext)
     }
     private var iconLayer: CALayer? = null
-    var icon: Icon? = null
+    internal var icon: Icon? = null
         set(value) {
             field = value
             refresh()
             informParentOfSizeChange()
         }
-    var iconPaint: Paint = Color.black
+    internal var iconPaint: Paint = Color.black
         set(value) {
             field = value
             refresh()
         }
-    var iconOriginalSize: Pair<CGFloat, CGFloat> = 1.0 to 1.0
+    internal var iconOriginalSize: Pair<CGFloat, CGFloat> = 1.0 to 1.0
     private fun refresh() {
         iconLayer?.removeFromSuperlayer()
         iconLayer = icon?.toImageSource(iconPaint)?.caLayer()?.also {

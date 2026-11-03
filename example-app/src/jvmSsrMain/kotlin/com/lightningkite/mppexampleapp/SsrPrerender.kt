@@ -2,11 +2,8 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.ssr.SsrRouter
-import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.direct.*
 import java.io.File
 import kotlin.reflect.full.createInstance
-import kotlin.reflect.full.isSubclassOf
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -27,7 +24,7 @@ object SsrPrerender {
         routes = AutoRoutes,
         theme = defaultTheme,
         basePath = "/",
-        appWrapper = { navigator, dialog -> app(navigator, dialog) }
+        appWrapper = { navigator -> app(navigator) }
     )
 
     /**
@@ -48,7 +45,7 @@ object SsrPrerender {
 
                     // For classes, try to create a default instance (works for no-arg constructors)
                     else -> try {
-                        pageClass.createInstance() as Page
+                        pageClass.createInstance()
                     } catch (e: Exception) {
                         // Skip pages that require constructor arguments - they'll be in manualRoutes
                         null

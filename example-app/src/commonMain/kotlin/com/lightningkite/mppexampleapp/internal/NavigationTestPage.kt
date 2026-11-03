@@ -26,7 +26,7 @@ object NavigationTestPage : Page, CanBlockBack {
                 card.button {
                     text { content = label }
                     onClick {
-                        appNavFactory set value
+                        context.appNavFactory set value
                     }
                 }
             }

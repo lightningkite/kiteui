@@ -1,11 +1,13 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kotlinx.serialization.uri.encodeURIComponent
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLScriptElement
@@ -18,7 +20,7 @@ import kotlin.js.json
 
 // by Claude
 
-class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
+public class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAccess {
 
     override fun openLink(url: String, newTab: Boolean) {
         window.open(url, if (newTab) "_blank" else "_self")
@@ -28,11 +30,11 @@ class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAcce
         openTab("https://www.google.com/maps/@${latitude},${longitude},${zoom ?: 16}")
     }
 
-    override suspend fun requestFile(mimeTypes: List<String>) = ctx.requestFileInput(mimeTypes, {}).firstOrNull()
-    override suspend fun requestFiles(mimeTypes: List<String>) = ctx.requestFileInput(mimeTypes, { multiple = true })
-    override suspend fun requestCaptureSelf(mimeTypes: List<String>) =
+    override suspend fun requestFile(mimeTypes: List<String>): FileReference? = ctx.requestFileInput(mimeTypes, {}).firstOrNull()
+    override suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> = ctx.requestFileInput(mimeTypes, { multiple = true })
+    override suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? =
         ctx.requestFileInput(mimeTypes, { setAttribute("capture", "user") }).firstOrNull()
-    override suspend fun requestCaptureEnvironment(mimeTypes: List<String>) =
+    override suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? =
         ctx.requestFileInput(mimeTypes, { setAttribute("capture", "environment") }).firstOrNull()
 
     override fun setClipboardText(value: String) {
@@ -99,8 +101,8 @@ class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAcce
         fun LocalDateTime.format() = buildString {
             if (zone.id != "SYSTEM") { append("TZID="); append(zone.id); append(':') }
             append(year.toString().padStart(4, '0'))
-            append(monthNumber.toString().padStart(2, '0'))
-            append(dayOfMonth.toString().padStart(2, '0'))
+            append(month.number.toString().padStart(2, '0'))
+            append(day.toString().padStart(2, '0'))
             append('T')
             append(hour.toString().padStart(2, '0'))
             append(minute.toString().padStart(2, '0'))
@@ -130,7 +132,7 @@ class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAcce
                         latitude = result.coords.latitude,
                         longitude = result.coords.longitude,
                         accuracyInMeters = result.coords.accuracy,
-                    ), null)
+                    ))
                 },
                 { error: dynamic ->
                     cont.resumeWithException(Exception("Geolocation error: $error"))
@@ -141,7 +143,7 @@ class JsExternalServices(private val ctx: ElementContext) : ExternalServicesAcce
     }
 }
 
-actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = JsExternalServices(context)
+public actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = JsExternalServices(context)
 
 private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
@@ -151,7 +153,7 @@ private fun removeFileInput() {
     lastFileInput = null
 }
 
-suspend fun ElementContext.requestFileInput(
+public suspend fun ElementContext.requestFileInput(
     mimeTypes: List<String>,
     setup: HTMLInputElement.() -> Unit
 ): List<FileReference> = suspendCancellableCoroutine {

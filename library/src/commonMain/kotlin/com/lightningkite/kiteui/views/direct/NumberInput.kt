@@ -6,10 +6,10 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.reactive.core.*
 
-expect class NumberInput(context: ElementContext) : NativeElementWithAction {
-    val content: MutableReactiveValue<Double?>
-    var keyboardHints: KeyboardHints
-    var hint: String
-    var range: ClosedRange<Double>?
-    var align: Align?
+public expect class NumberInput(context: ElementContext) : NativeElementWithAction {
+    public val content: MutableReactiveValue<Double?>
+    public var keyboardHints: KeyboardHints
+    public var hint: String
+    public var range: ClosedRange<Double>?
+    public var align: Align?
 }

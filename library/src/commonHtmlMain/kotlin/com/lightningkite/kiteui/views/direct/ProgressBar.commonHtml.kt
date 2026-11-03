@@ -4,13 +4,13 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.valueDouble
 
-actual class ProgressBar actual constructor(context: ElementContext): NativeElement(context) {
+public actual class ProgressBar actual constructor(context: ElementContext): NativeElement(context) {
     init {
         native.tag = "progress"
         native.setAttribute("aria-label", "Progress")
     }
 
-    actual var ratio: Float
+    public actual var ratio: Float
         get() = native.attributes.valueDouble?.toFloat() ?: 0f
         set(value) {
             native.attributes.valueDouble = value.toDouble()

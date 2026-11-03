@@ -188,7 +188,7 @@ object CustomComponentsPage : DocPage {
                         shownWhen { showDialog() } - confirmDialog(
                             message = "Are you sure?",
                             onConfirm = {
-                                toast("Confirmed!")
+                                context.toast("Confirmed!")
                                 showDialog.value = false
                             },
                             onCancel = {
@@ -226,7 +226,7 @@ object CustomComponentsPage : DocPage {
                             shownWhen { showDialog() }.confirmDialog(
                                 message = "Are you sure?",
                                 onConfirm = {
-                                    toast("Confirmed!")
+                                    context.toast("Confirmed!")
                                     showDialog.value = false
                                 },
                                 onCancel = {
@@ -379,7 +379,7 @@ object CustomComponentsPage : DocPage {
                                         userListItem(
                                             name = user.name,
                                             email = user.email,
-                                            onClick = { pageNavigator.navigate(UserPage(user.id)) }
+                                            onClick = { context.pageNavigator.navigate(UserPage(user.id)) }
                                         )
                                     }
                                 }

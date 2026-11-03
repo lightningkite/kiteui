@@ -24,5 +24,4 @@ inline fun ElementWriter.code(setup: Code.() -> Unit = {}): Code {
     return write(Code(context) , setup)
 }
 
-@ViewDsl
 fun ElementWriter.code(content: String) = code { this.content = content }

@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.views.direct.*
 @Routable("popover-testing")
 object PopoverTestingPage : Page {
     override fun ElementWriter.CanAddTheme.render(): Unit {
-        frame {
+        scrolling.frame {
             fun ElementWriter.testGrouping() = col {
                 for (horizontal in listOf(false, true)) {
                     for (after in listOf(false, true)) {
@@ -60,16 +60,25 @@ object PopoverTestingPage : Page {
                         }
                     }
                 }
+
+                row {
+                    var anchorTarget: Element? = null
+                    button {
+                        anchorTarget = this
+                        text("Anchor Target")
+                    }
+                    space()
+                    button {
+                        text("Open at Target")
+                        onClick {
+                            openPopover(PopoverPreferredDirection.belowCenter, anchorTarget) {
+                                text("Anchored to Target!")
+                            }
+                        }
+                    }
+                }
             }
-            atTopStart.testGrouping()
-            atTopCenter.testGrouping()
-            atTopEnd.testGrouping()
-            atCenterStart.testGrouping()
-            centered.testGrouping()
-            atCenterEnd.testGrouping()
-            atBottomStart.testGrouping()
-            atBottomCenter.testGrouping()
-            atBottomEnd.testGrouping()
+            testGrouping()
         }
     }
 }

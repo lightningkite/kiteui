@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui
 
-expect object PlatformStorage {
-    fun get(key: String): String?
-    fun set(key: String, value: String)
-    fun remove(key: String)
+public expect object PlatformStorage {
+    public fun get(key: String): String?
+    public fun set(key: String, value: String)
+    public fun remove(key: String)
 }

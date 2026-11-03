@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Log
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
 import com.lightningkite.kiteui.views.*
@@ -18,23 +19,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
-class DragDropReordering(
+public class DragDropReordering(
     private val scope: CoroutineScope,
-    val mimeType: String = "application/kiteui-index",
-    val reorder: suspend (Move) -> Unit
+    public val mimeType: String = "application/kiteui-index",
+    public val reorder: suspend (Move) -> Unit
 ) {
-    object HalfGap : Semantic("halfgap") {
+    public object HalfGap : Semantic("halfgap") {
         override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
             cascading = false,
             gap = theme.gap / 2,
         )
     }
 
-    fun encode(index: Int) = DragData("Source Index", mimeType, index.toString())
-    fun decode(data: DragData) = data[mimeType]?.toInt()
+    public fun encode(index: Int): DragData = DragData("Source Index", mimeType, index.toString())
+    public fun decode(data: DragData): Int? = data[mimeType]?.toInt()
 
-    data class Move(val start: Int, val end: Int) {
-        fun <T> reorder(list: List<T>) =
+    public data class Move(val start: Int, val end: Int) {
+        public fun <T> reorder(list: List<T>): List<T> =
             if (start == end) list
             else list
                 .toMutableList()
@@ -42,9 +43,9 @@ class DragDropReordering(
                 .toList()
     }
 
-    val willMove = Signal<Move?>(null)
+    public val willMove: Signal<Move?> = Signal<Move?>(null)
 
-    inner class Delegate(val index: Reactive<Int>) : DropTargetDelegate {
+    public inner class Delegate(public val index: Reactive<Int>) : DropTargetDelegate {
         override fun enter(event: DragEvent): Boolean =
             decode(event.data)
                 ?.let { source ->
@@ -74,7 +75,8 @@ class DragDropReordering(
     }
 }
 
-fun <T> ContainerElement.forEachReorderable(
+@PublishedApi
+internal fun <T> ContainerElement.renderReorderableList(
     items: Reactive<List<T>>,
     reorder: suspend (DragDropReordering.Move) -> Unit,
     separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
@@ -83,10 +85,12 @@ fun <T> ContainerElement.forEachReorderable(
 ) {
     val handler = DragDropReordering(this, reorder = reorder)
 
-    (this@forEachReorderable as? LinearLayoutElement)?.gap = 0.px
+    (this@renderReorderableList as? LinearLayoutElement)?.gap = 0.px
 
-    forEachUpdating(
-        remember { items().mapIndexed { idx, it -> IndexedValue(idx, it) } }
+    renderList(
+        remember { items().mapIndexed { idx, it -> IndexedValue(idx, it) } },
+        placeholders = 5,
+        beforeModifier = { this }
     ) { indexed ->
         val item = indexed.lens { it.value }
         val idx = indexed.lens { it.index }
@@ -97,6 +101,11 @@ fun <T> ContainerElement.forEachReorderable(
             themeChoice += DragDropReordering.HalfGap
             dropTargetDelegate = handler.Delegate(idx)
 
+            // Drop indicators use `visible`, not `shown`, on purpose: `visible` keeps the
+            // separator's space reserved at all times, so revealing an indicator mid-drag only
+            // repaints. Using `shown` would insert and remove the separator from layout, shifting
+            // every following item each time the hovered drop target changes - the list would
+            // jitter under the pointer during the drag, which is exactly when stability matters.
             beforeSetup {
                 ::visible shown@{
                     val move = handler.willMove() ?: return@shown false
@@ -120,13 +129,50 @@ fun <T> ContainerElement.forEachReorderable(
     }
 }
 
-class RecyclerReorderable<T, ID>(
-    val wraps: RecyclerViewRendererSet<T, ID>,
-    val view: Recycler2,
-    val separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
+public inline fun <T, C : ContainerElement> ElementWriter.renderReorderableListIn(
+    container: ElementWriter.(C.() -> Unit) -> C,
+    items: Reactive<List<T>>,
+    noinline reorder: suspend (DragDropReordering.Move) -> Unit,
+    noinline separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
+    noinline dataTransform: (DragData) -> DragData = { it },
+    noinline render: ViewWriter.(Reactive<T>) -> Unit
+): C {
+    var setupCalled = false
+    val result = container {
+        setupCalled = true
+        renderReorderableList(items, reorder, separator, dataTransform, render)
+    }
+    if (!setupCalled) context.handleException(
+        Exception("renderListIn: container lambda did not call the setup lambda. Use a DSL function reference like ElementWriter::col or ElementWriter::row, or ensure your custom lambda invokes the passed setup function, e.g., { setup -> col { setup() } }"),
+        ExceptionHandler.Metadata(
+            source = result,
+            process = null,
+            foregroundProcess = null,
+            context = mapOf(
+                "container type" to result::class.toString(),
+                "items" to (items.state.getOrNull()?.toString() ?: "NotReady"),
+            )
+        )
+    )
+    return result
+}
+
+@Deprecated("Use renderReorderableListIn")
+public fun <T> ContainerElement.forEachReorderable(
+    items: Reactive<List<T>>,
+    reorder: suspend (DragDropReordering.Move) -> Unit,
+    separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
+    dataTransform: (DragData) -> DragData = { it },
+    render: ViewWriter.(Reactive<T>) -> Unit
+): Unit = renderReorderableList(items, reorder, separator, dataTransform, render)
+
+public class RecyclerReorderable<T, ID>(
+    public val wraps: RecyclerViewRendererSet<T, ID>,
+    public val view: Recycler2,
+    public val separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
     reorder: suspend (DragDropReordering.Move) -> Unit
 ) : RecyclerViewRendererSet<T, ID> {
-    val handler = DragDropReordering(view, reorder = reorder)
+    public val handler: DragDropReordering = DragDropReordering(view, reorder = reorder)
 
     override fun id(item: T): ID = wraps.id(item)
 
@@ -134,8 +180,8 @@ class RecyclerReorderable<T, ID>(
         view.gap = 0.px
     }
 
-    inner class ReorderWrapper(
-        val renderer: RecyclerViewRenderer<T>
+    public inner class ReorderWrapper(
+        public val renderer: RecyclerViewRenderer<T>
     ) : RecyclerViewRenderer<T> {
         @OptIn(ExperimentalKiteUi::class)
         override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): Unit = with(viewWriter) {
@@ -146,6 +192,10 @@ class RecyclerReorderable<T, ID>(
 
                 dropTargetDelegate = handler.Delegate(index)
 
+                // Drop indicators use `visible`, not `shown`, on purpose - see the matching note in
+                // renderReorderableList. Reserving the separator's space at all times means
+                // revealing an indicator repaints instead of reflowing every following item, so
+                // the list does not jitter under the pointer mid-drag.
                 beforeSetup {
                     ::visible shown@{
                         val move = handler.willMove() ?: return@shown false
@@ -159,7 +209,7 @@ class RecyclerReorderable<T, ID>(
                 }, data, index)
 
                 beforeSetup {
-                    ::shown shown@{
+                    ::visible shown@{
                         val move = handler.willMove() ?: return@shown false
                         val i = index()
                         move.end == i && move.start < i
@@ -172,7 +222,7 @@ class RecyclerReorderable<T, ID>(
     override fun renderer(item: T): RecyclerViewRenderer<T> = ReorderWrapper(wraps.renderer(item))
 }
 
-fun <T, ID> Recycler2.childrenReorderable(
+public fun <T, ID> Recycler2.childrenReorderable(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     reorder: suspend (DragDropReordering.Move) -> Unit,

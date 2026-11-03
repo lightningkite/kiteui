@@ -44,7 +44,7 @@ class SsrResource<T : Any>(
     private val loader: suspend () -> T
 ) : Reactive<T> {
 
-    private val _state = Property<ReactiveState<T>>(ReactiveState.notReady)
+    private val _state = Signal<ReactiveState<T>>(ReactiveState.notReady)
     private var loadJob: Job? = null
 
     override val state: ReactiveState<T>

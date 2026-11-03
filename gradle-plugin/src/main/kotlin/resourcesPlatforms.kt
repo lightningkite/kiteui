@@ -18,8 +18,6 @@ internal fun resourcesCommon(resourceFolder: File, out: File, ext: KiteUiPluginE
                     usesBlob = true; "suspend fun ${r.name}(): Blob"
                 }
                 is Resource.ImageVector -> "val ${r.name}: ImageVector"
-
-                else -> ""
             }
         }
 
@@ -73,8 +71,6 @@ internal fun resourcesJs(gitIgnores: List<File>, resourceFolder: File, out: File
                 }
 
                 is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
-
-                else -> ""
             }
         }
 
@@ -93,6 +89,59 @@ internal fun resourcesJs(gitIgnores: List<File>, resourceFolder: File, out: File
     
     $imports
     
+    actual object Resources {
+        $lines
+    }
+            """.trimIndent()
+    )
+}
+
+internal fun resourcesJvm(resourceFolder: File, out: File, ext: KiteUiPluginExtension) {
+    var usesBlob = false
+    val lines = resourceFolder.resources()
+        .entries
+        .sortedBy { it.key }
+        .joinToString("\n    ") {
+            when (val r = it.value) {
+                is Resource.Font -> {
+                    val normal = r.normal.entries.joinToString { "${it.key} to \"common/${it.value.relativeFile.toString().replace(File.separatorChar, '/')}\"" }
+                    val italics = r.italics.entries.joinToString { "${it.key} to \"common/${it.value.relativeFile.toString().replace(File.separatorChar, '/')}\"" }
+                    "actual val ${r.name}: Font = Font(cssFontFamilyName = \"${r.name}\", direct = FontDirect(normal = mapOf($normal), italics = mapOf($italics)))"
+                }
+
+                is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(\"common/${
+                    r.relativeFile.toString().replace(File.separatorChar, '/')
+                }\")"
+
+                is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"common/${
+                    r.relativeFile.toString().replace(File.separatorChar, '/')
+                }\")"
+
+                is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(\"common/${
+                    r.relativeFile.toString().replace(File.separatorChar, '/')
+                }\")"
+
+                is Resource.Binary -> {
+                    usesBlob = true
+                    val path = "common/${r.relativeFile.toString().replace(File.separatorChar, '/')}"
+                    val mimeType = java.net.URLConnection.guessContentTypeFromName(r.source.name) ?: "application/octet-stream"
+                    "actual suspend fun ${r.name}(): Blob = Blob((Resources::class.java.classLoader.getResourceAsStream(\"$path\") ?: error(\"Resource not found on the classpath: $path\")).use { it.readBytes() }, \"$mimeType\")"
+                }
+
+                is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
+            }
+        }
+
+    val imports = mutableListOf("import com.lightningkite.kiteui.models.*")
+        .also { if (usesBlob) it.add("import com.lightningkite.kiteui.Blob") }
+        .joinToString("\n")
+
+    out.writeText(
+        """
+    package ${ext.packageName}
+
+    $imports
+
     actual object Resources {
         $lines
     }
@@ -228,8 +277,6 @@ internal fun resourcesIos(
                 }
 
                 is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
-
-                else -> ""
             }
         }
 
@@ -319,7 +366,7 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
     val lines = resources
         .joinToString("\n    ") {
             when (val r = it.value) {
-                is Resource.Font -> "actual val ${r.name}: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.${it.key.snakeCase()})"
+                is Resource.Font -> "actual val ${r.name}: Font = Font { AndroidAppContext.applicationCtx.resources.getFont(R.font.${it.key.snakeCase()}) }"
                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(R.drawable.${it.key.snakeCase()})"
                 is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(R.raw.${it.key.snakeCase()})"
                 is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(R.raw.${it.key.snakeCase()})"
@@ -332,7 +379,6 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
 
                     "actual suspend fun ${r.name}(): Blob = Blob(AndroidAppContext.applicationCtx.resources.openRawResource(R.raw.${it.key.snakeCase()}).readBytes(), \"$mimeType\")"
                 }
-                else -> ""
             }
         }
 

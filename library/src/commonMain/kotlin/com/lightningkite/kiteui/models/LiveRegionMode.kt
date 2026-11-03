@@ -6,7 +6,7 @@ package com.lightningkite.kiteui.models
  * Maps to `aria-live` on web, `accessibilityLiveRegion` on Android,
  * and `UIAccessibility` notifications on iOS.
  */
-enum class LiveRegionMode {
+public enum class LiveRegionMode {
     /** No live region announcements (default). */
     None,
     /** Announces updates at the next graceful opportunity (e.g., end of current speech). */

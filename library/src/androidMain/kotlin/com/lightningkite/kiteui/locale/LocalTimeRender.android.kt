@@ -6,7 +6,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-actual fun LocalDate.renderToString(
+public actual fun LocalDate.renderToString(
     size: RenderSize,
     includeWeekday: Boolean,
     includeYear: Boolean,
@@ -19,10 +19,10 @@ actual fun LocalDate.renderToString(
     }).format(this.atTime(LocalTime(12, 0)).toJavaLocalDateTime().atZone(ZoneId.systemDefault()))
 }
 
-actual fun LocalTime.renderToString(size: RenderSize): String  {
+public actual fun LocalTime.renderToString(size: RenderSize): String  {
     return DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).format(this.atDate(LocalDate(1970, 1, 1)).toJavaLocalDateTime().atZone(ZoneId.systemDefault()))
 }
-actual fun LocalDateTime.renderToString(
+public actual fun LocalDateTime.renderToString(
     size: RenderSize,
     includeWeekday: Boolean,
     includeYear: Boolean,
@@ -35,5 +35,5 @@ actual fun LocalDateTime.renderToString(
     }, FormatStyle.SHORT).format(this.toJavaLocalDateTime().atZone(ZoneId.systemDefault()))
 }
 
-actual fun TimeZone.renderToString(size: RenderSize): String = this.toString()
-actual fun DayOfWeek.renderToString(size: RenderSize): String = this.toString()
+public actual fun TimeZone.renderToString(size: RenderSize): String = this.toString()
+public actual fun DayOfWeek.renderToString(size: RenderSize): String = this.toString()

@@ -2,4 +2,4 @@ package com.lightningkite.kiteui
 
 import kotlin.js.Date
 
-actual fun clockMillis(): Double = Date.now()
+public actual fun clockMillis(): Double = Date.now()

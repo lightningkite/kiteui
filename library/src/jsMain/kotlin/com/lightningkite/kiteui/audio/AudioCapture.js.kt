@@ -17,14 +17,14 @@ import kotlin.math.sqrt
  * JavaScript/Web implementation of AudioCapture using Web Audio API.
  * Uses getUserMedia for microphone access and ScriptProcessorNode for audio data.
  */
-actual class AudioCapture actual constructor(actual val format: AudioFormat) {
+public actual class AudioCapture actual constructor(public actual val format: AudioFormat) {
     private val _hasPermission = Signal(false)
     private val _isCapturing = Signal(false)
     private val _level = Signal(0f)
 
-    actual val hasPermission: Reactive<Boolean> = _hasPermission
-    actual val isCapturing: Reactive<Boolean> = _isCapturing
-    actual val level: Reactive<Float> = _level
+    public actual val hasPermission: Reactive<Boolean> = _hasPermission
+    public actual val isCapturing: Reactive<Boolean> = _isCapturing
+    public actual val level: Reactive<Float> = _level
 
     private var audioContext: VoiceAudioContext? = null
     private var mediaStream: MediaStream? = null
@@ -32,11 +32,11 @@ actual class AudioCapture actual constructor(actual val format: AudioFormat) {
     private var processorNode: ScriptProcessorNode? = null
     private var onDataCallback: ((ByteArray) -> Unit)? = null
 
-    actual fun onAudioData(action: (ByteArray) -> Unit) {
+    public actual fun onAudioData(action: (ByteArray) -> Unit) {
         onDataCallback = action
     }
 
-    actual suspend fun start(): Boolean {
+    public actual suspend fun start(): Boolean {
         try {
             // Request microphone access with audio constraints
             val audioConstraints = json(
@@ -95,7 +95,7 @@ actual class AudioCapture actual constructor(actual val format: AudioFormat) {
         }
     }
 
-    actual fun stop() {
+    public actual fun stop() {
         try {
             processorNode?.disconnect()
             sourceNode?.disconnect()
@@ -109,7 +109,7 @@ actual class AudioCapture actual constructor(actual val format: AudioFormat) {
         }
     }
 
-    actual fun release() {
+    public actual fun release() {
         stop()
         try {
             audioContext?.close()
@@ -136,55 +136,55 @@ actual class AudioCapture actual constructor(actual val format: AudioFormat) {
 
 // External declarations for Web Audio API
 
-external class VoiceAudioContext(options: dynamic = definedExternally) {
-    val destination: AudioDestinationNode
-    val sampleRate: Double
-    val state: String
-    fun createMediaStreamSource(stream: MediaStream): MediaStreamAudioSourceNode
-    fun createScriptProcessor(bufferSize: Int, numberOfInputChannels: Int, numberOfOutputChannels: Int): ScriptProcessorNode
-    fun createBufferSource(): AudioBufferSourceNode
-    fun createBuffer(numberOfChannels: Int, length: Int, sampleRate: Int): AudioBuffer
-    fun createGain(): GainNode
-    fun resume(): Promise<Unit>
-    fun close(): Promise<Unit>
+public external class VoiceAudioContext(options: dynamic = definedExternally) {
+    public val destination: AudioDestinationNode
+    public val sampleRate: Double
+    public val state: String
+    public fun createMediaStreamSource(stream: MediaStream): MediaStreamAudioSourceNode
+    public fun createScriptProcessor(bufferSize: Int, numberOfInputChannels: Int, numberOfOutputChannels: Int): ScriptProcessorNode
+    public fun createBufferSource(): AudioBufferSourceNode
+    public fun createBuffer(numberOfChannels: Int, length: Int, sampleRate: Int): AudioBuffer
+    public fun createGain(): GainNode
+    public fun resume(): Promise<Unit>
+    public fun close(): Promise<Unit>
 }
 
-external class AudioDestinationNode : AudioNode
+public external class AudioDestinationNode : AudioNode
 
-open external class AudioNode {
-    fun connect(destination: AudioNode): AudioNode
-    fun disconnect()
+public open external class AudioNode {
+    public fun connect(destination: AudioNode): AudioNode
+    public fun disconnect()
 }
 
-external class MediaStreamAudioSourceNode : AudioNode
+public external class MediaStreamAudioSourceNode : AudioNode
 
-external class ScriptProcessorNode : AudioNode {
-    var onaudioprocess: ((AudioProcessingEvent) -> Unit)?
+public external class ScriptProcessorNode : AudioNode {
+    public var onaudioprocess: ((AudioProcessingEvent) -> Unit)?
 }
 
-external class AudioProcessingEvent {
-    val inputBuffer: AudioBuffer
-    val outputBuffer: AudioBuffer
+public external class AudioProcessingEvent {
+    public val inputBuffer: AudioBuffer
+    public val outputBuffer: AudioBuffer
 }
 
-external class AudioBuffer {
-    val numberOfChannels: Int
-    val length: Int
-    val sampleRate: Double
-    val duration: Double
-    fun getChannelData(channel: Int): Float32Array
+public external class AudioBuffer {
+    public val numberOfChannels: Int
+    public val length: Int
+    public val sampleRate: Double
+    public val duration: Double
+    public fun getChannelData(channel: Int): Float32Array
 }
 
-external class AudioBufferSourceNode : AudioNode {
-    var buffer: AudioBuffer?
-    fun start(time: Double = definedExternally)
-    fun stop(time: Double = definedExternally)
+public external class AudioBufferSourceNode : AudioNode {
+    public var buffer: AudioBuffer?
+    public fun start(time: Double = definedExternally)
+    public fun stop(time: Double = definedExternally)
 }
 
-external class GainNode : AudioNode {
-    val gain: AudioParam
+public external class GainNode : AudioNode {
+    public val gain: AudioParam
 }
 
-external class AudioParam {
-    var value: Float
+public external class AudioParam {
+    public var value: Float
 }

@@ -20,9 +20,12 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.jvm.javaio.toByteReadChannel
 import io.ktor.websocket.*
 import java.net.UnknownHostException
+import java.net.UnknownServiceException
+import javax.net.ssl.SSLException
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
@@ -31,14 +34,14 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 
-val client: HttpClient
+public val client: HttpClient
     get() {
         return AndroidAppContext.ktorClient
     }
 
 private val fetchLog = LogRoot.tag("fetch")
 
-actual suspend fun fetchRaw(
+public actual suspend fun platformFetch(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -118,7 +121,7 @@ actual suspend fun fetchRaw(
         } catch (e: Exception) {
             fetchLog.log("<X $method $url ${e::class.simpleName}: ${e.message}")
             if (attempt >= maxRetries || e !is UnknownHostException) {
-                throw ConnectionException("Network request failed", e)
+                throw classifyFetchFailure(e)
             }
             fetchLog.log("Retrying after 2 s...")
             delay(2.seconds)
@@ -126,36 +129,59 @@ actual suspend fun fetchRaw(
     }
 }
 
-actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
+/**
+ * Sorts a failed request into one the network might yet satisfy and one Android has decided against.
+ *
+ * Ktor wraps engine failures at varying depths, so the whole cause chain is considered.
+ */
+private fun classifyFetchFailure(e: Exception): FetchException {
+    val blocked = generateSequence<Throwable>(e) { it.cause }.take(10).firstOrNull {
+        when (it) {
+            // OkHttp reports a missing INTERNET permission this way.
+            is SecurityException -> true
+            // Raised when the network security config forbids the scheme, cleartext http being the usual case.
+            is UnknownServiceException -> true
+            // A rejected or pinned certificate. Grouped here because no amount of retrying changes the
+            // verdict, even though the cause is often a server whose certificate needs attention.
+            is SSLException -> true
+            else -> false
+        }
+    }
+    return if (blocked != null) RequestBlockedException(
+        "Android refused the request: ${blocked::class.simpleName}: ${blocked.message}", e
+    ) else ConnectionException("Network request failed", e)
+}
+
+public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
-actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
-    actual fun append(name: String, value: String): Unit {
+public actual class HttpHeaders(public val map: MutableMap<String, List<String>>) {
+    public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
 
-    actual fun delete(name: String): Unit {
+    public actual fun delete(name: String): Unit {
         map.remove(name.lowercase())
     }
 
-    actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
-    actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
-    actual fun set(name: String, value: String): Unit {
+    public actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
+    public actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
+    public actual fun set(name: String, value: String): Unit {
         map[name.lowercase()] = listOf(value)
     }
 }
 
-actual class RequestResponse(val wraps: HttpResponse) {
-    actual val status: Short get() = wraps.status.value.toShort()
-    actual val ok: Boolean get() = wraps.status.isSuccess()
-    actual suspend fun text(): String {
+public actual class RequestResponse(public val wraps: HttpResponse) {
+    public actual val status: Short get() = wraps.status.value.toShort()
+    public actual val ok: Boolean get() = wraps.status.isSuccess()
+    public actual suspend fun text(): String {
         try {
             val result = wraps.bodyAsText()
             return result
@@ -166,7 +192,7 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual suspend fun blob(): Blob {
+    public actual suspend fun blob(): Blob {
         try {
             val result = wraps.body<ByteArray>()
                 .let { Blob(it, wraps.contentType()?.toString() ?: "application/octet-stream") }
@@ -178,39 +204,54 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual val headers: HttpHeaders
+    public actual val headers: HttpHeaders
         get() = HttpHeaders(
             wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
-actual fun websocket(url: String): WebSocket {
+public actual fun platformWebSocket(url: String): WebSocket {
     return WebSocketWrapper(url)
 }
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-class WebSocketWrapper(val url: String) : WebSocket {
-    val closeReason = Channel<CloseReason>()
-    val sending = Channel<Frame>(10)
-    var stayOn = true
-    val onOpen = ArrayList<() -> Unit>()
+public class WebSocketWrapper(public val url: String) : WebSocket {
+    /**
+     * The close this socket has been asked to perform, handed to the coroutine that owns the
+     * session.
+     *
+     * Buffered and dropping later requests rather than a rendezvous channel: [close] cannot suspend,
+     * so on a rendezvous channel `trySend` fails unless that coroutine happens to be parked on a
+     * receive at that instant — and it is not yet parked while the `onOpen` handlers are running, so
+     * closing a socket as soon as it connects did nothing at all. The first request is the one that
+     * counts; a second close has nothing left to say.
+     */
+    public val closeReason: Channel<CloseReason> = Channel<CloseReason>(1, BufferOverflow.DROP_LATEST)
+
+    /**
+     * Frames waiting for the socket to be ready for them. Unbounded because [send] cannot suspend:
+     * with a bounded buffer `trySend` discards whatever overflows it, so a caller that sends faster
+     * than the socket drains loses messages and is never told.
+     */
+    public val sending: Channel<Frame> = Channel<Frame>(Channel.UNLIMITED)
+    public var stayOn: Boolean = true
+    public val onOpen: MutableList<() -> Unit> = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    val onClose = ArrayList<(Short) -> Unit>()
+    public val onClose: MutableList<(Short) -> Unit> = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    val onMessage = ArrayList<(String) -> Unit>()
+    public val onMessage: MutableList<(String) -> Unit> = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    val onBinaryMessage = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage: MutableList<(Blob) -> Unit> = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }
@@ -229,7 +270,6 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         attempt++
                         client.webSocket(url) {
                             attempt = 0 // Reset on successful connection
-                            var onCloseFired = false
                             withContext(Dispatchers.Main) {
                                 onOpen.forEach { it() }
                             }
@@ -242,20 +282,13 @@ class WebSocketWrapper(val url: String) : WebSocket {
                                 }
                             }
                             launch {
+                                // Only asks the session to close; the one report of it happens below, so that a
+                                // close this client began and one the server began are told the same way.
                                 try {
-                                    this@WebSocketWrapper.closeReason.receive().let { reason ->
-                                        close(reason)
-                                        withContext(Dispatchers.Main) {
-                                            if (!onCloseFired) {
-                                                onCloseFired = true
-                                                onClose.forEach { it(reason.code) }
-                                            }
-                                        }
-                                    }
+                                    close(this@WebSocketWrapper.closeReason.receive())
                                 } catch (e: ClosedReceiveChannelException) {
                                 }
                             }
-                            var reason: CloseReason? = null
                             while (stayOn) {
                                 try {
                                     when (val x = incoming.receive()) {
@@ -273,10 +306,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
                                             }
                                         }
 
-                                        is Frame.Close -> {
-                                            reason = x.readReason()
-                                            break
-                                        }
+                                        is Frame.Close -> break
 
                                         else -> {}
                                     }
@@ -284,11 +314,14 @@ class WebSocketWrapper(val url: String) : WebSocket {
                                     break // by Claude — channel closed, exit loop
                                 }
                             }
+                            // The session's own `closeReason`, not this wrapper's channel of the same name.
+                            // Ktor's session performs the closing handshake itself and never hands the Close
+                            // frame to `incoming`, so the code is read here rather than in the loop above. It is
+                            // the code both peers settled on: a close this client asked for comes back echoed.
+                            // Null only when the connection ended without a handshake at all.
+                            val code = closeReason.await()?.code ?: 0
                             withContext(Dispatchers.Main) {
-                                if (!onCloseFired) {
-                                    onCloseFired = true
-                                    onClose.forEach { it(reason?.code ?: 0) }
-                                }
+                                onClose.forEach { it(code) }
                             }
                         }
                         break // Normal exit from webSocket block, don't retry
@@ -323,7 +356,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 
     override fun send(data: Blob) {
-        sending.trySend(Frame.Binary(false, data.data))
+        sending.trySend(Frame.Binary(true, data.data))
     }
 
     override fun onOpen(action: () -> Unit) {
@@ -343,10 +376,10 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 }
 
-actual class FileReference(val uri: Uri)
+public actual class FileReference(public val uri: Uri)
 
 // by Claude - create FileReference from raw bytes for testing/mocking
-actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
+public actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference {
     // by Claude - use a subdirectory so the original fileName is preserved for fileName()
     val cacheDir = AndroidAppContext.applicationCtx.cacheDir
     val dir = java.io.File(cacheDir, "kiteui-mock-${System.nanoTime()}")
@@ -356,8 +389,8 @@ actual fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, file
     return FileReference(Uri.fromFile(tempFile))
 }
 
-actual fun Blob.mimeType() = type
-actual fun FileReference.mimeType() = when (uri.scheme) {
+public actual fun Blob.mimeType(): String = type
+public actual fun FileReference.mimeType(): String = when (uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
         ?: MimeTypeMap.getSingleton()
             .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))         // if it is null with the content resolver check if it is an app scope file
@@ -368,7 +401,7 @@ actual fun FileReference.mimeType() = when (uri.scheme) {
     else -> null
 } ?: "*/*"
 
-actual fun FileReference.fileName(): String {
+public actual fun FileReference.fileName(): String {
     return AndroidAppContext.applicationCtx.contentResolver
         .query(uri, null, null, null, null)
         ?.use { cursor ->
@@ -382,10 +415,10 @@ actual fun FileReference.fileName(): String {
         ?: return "Unknown File Name"
 }
 
-actual class Blob(val data: ByteArray, val type: String)
+public actual class Blob(public val data: ByteArray, public val type: String)
 
-actual fun Blob.bytes(): Long = data.size.toLong()
-actual fun FileReference.bytes(): Long {
+public actual fun Blob.bytes(): Long = data.size.toLong()
+public actual fun FileReference.bytes(): Long {
     return AndroidAppContext.applicationCtx.contentResolver
         .query(uri, null, null, null, null)
         ?.use { cursor ->
@@ -406,8 +439,8 @@ actual fun FileReference.bytes(): Long {
 //    }
 //}
 
-actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
-actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) {
+public actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
+public actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) {
     withContext(Dispatchers.IO) {
         AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)?.reader(Charsets.UTF_8)?.readText()
             ?: uri.path?.let { path ->
@@ -417,8 +450,8 @@ actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) 
     }
 }
 
-actual fun String.toBlob(contentType: String): Blob = toByteArray(Charsets.UTF_8).toBlob(contentType)
-actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this, contentType)
+public actual fun String.toBlob(contentType: String): Blob = toByteArray(Charsets.UTF_8).toBlob(contentType)
+public actual fun ByteArray.toBlob(contentType: String): Blob = Blob(this, contentType)
 
-actual suspend fun Blob.toByteArray(): ByteArray = data
+public actual suspend fun Blob.toByteArray(): ByteArray = data
 

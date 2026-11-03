@@ -24,6 +24,7 @@ import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSNumber
+import platform.Foundation.NSThread
 import platform.Foundation.NSValue
 import platform.UIKit.*
 import platform.darwin.*
@@ -32,21 +33,21 @@ import platform.objc.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.experimental.ExperimentalNativeApi
 
-fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> Unit) {
+public fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> Unit) {
     setup({ theme }, app)
 }
 
-fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> Unit) {
+public fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> Unit) {
     setup({ themeReadable.invoke() }, app)
 }
 
 
-class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: WeakReference<UIView>) : NSObject() {
-    var keyboardAnimationDuration: Double = 0.25
+public class KeyboardObserver(public val bottom: WeakReference<NSLayoutConstraint>, public val view: WeakReference<UIView>) : NSObject() {
+    public var keyboardAnimationDuration: Double = 0.25
     internal var gestureDelegate: KeyboardDismissGestureDelegate? = null
 
     @ObjCAction
-    fun keyboardWillChangeFrame(notification: NSNotification?) {
+    public fun keyboardWillChangeFrame(notification: NSNotification?) {
         val userInfo = notification?.userInfo ?: return
         val keyboardFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue ?: return
         val keyboardHeight = cgRectValue(keyboardFrameValue).useContents { size.height }
@@ -62,14 +63,14 @@ class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: 
     }
 
     @ObjCAction
-    fun keyboardWillHideNotification() {
+    public fun keyboardWillHideNotification() {
 //            UIView.animateWithDuration(keyboardAnimationDuration) {
         bottom.get()?.constant = 0.0
 //            }
     }
 
     @ObjCAction
-    fun hideKeyboardWhenTappedAround() {
+    public fun hideKeyboardWhenTappedAround() {
         view.get()?.findFirstResponderChild()?.resignFirstResponder()
     }
 }
@@ -99,7 +100,7 @@ internal class KeyboardDismissGestureDelegate : NSObject(), UIGestureRecognizerD
 
 }
 
-fun UIViewController.kiteUi(context: ElementContext = ElementContext(this@kiteUi), app: ViewWriter.() -> Unit) {
+public fun UIViewController.kiteUi(context: ElementContext = ElementContext(this@kiteUi), app: ViewWriter.() -> Unit) {
     definesPresentationContext = true
     val job = SupervisorJob()
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -199,7 +200,7 @@ private class RemoveView(var onRemove: (() -> Boolean)? = null) : UIView(CGRectM
     }
 }
 
-fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
+public fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
     val systemBarBackground = UIView()
 
     view.addSubview(systemBarBackground)

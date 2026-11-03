@@ -9,14 +9,15 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.MutableReactiveValue
 import android.widget.CheckBox as AndroidCheckBox
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class Checkbox actual constructor(context: ElementContext): NativeInteractiveElement(context) {
+public actual class Checkbox actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     actual override val underlyingNativeElement: Checkbox get() = this
 
     override val driverValue: String? get() = checkboxDriverValue()
-    override val driverActions get() = super.driverActions + checkboxDriverActions()
-    override val native = AndroidCheckBox(context.activity)
+    override val driverActions: AiDriver.Actions get() = super.driverActions + checkboxDriverActions()
+    override val native: AndroidCheckBox = AndroidCheckBox(context.activity)
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
@@ -31,7 +32,7 @@ actual class Checkbox actual constructor(context: ElementContext): NativeInterac
         )
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
+    public actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 
     init {
         checked.addListener {

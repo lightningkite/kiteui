@@ -68,8 +68,8 @@ object ResourcesPage: DocPage {
                 backgroundAudio(Resources.audioTaunt, 0.1f) { isPlaying() }
             """.trimIndent()) {
                 val soundEffectPool = SoundEffectPool()
-                val playing = Property(false)
-                val status = Property("Click a button to play audio")
+                val playing = Signal(false)
+                val status = Signal("Click a button to play audio")
                 col {
                     row {
                         expanding.button {

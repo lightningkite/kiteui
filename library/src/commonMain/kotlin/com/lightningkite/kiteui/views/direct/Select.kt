@@ -5,8 +5,8 @@ import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.*
 
-expect class Select(context: ElementContext) : NativeInteractiveElement {
-    fun <T> bind(
+public expect class Select(context: ElementContext) : NativeInteractiveElement {
+    public fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
         render: (T) -> String

@@ -18,35 +18,68 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
 import org.w3c.dom.HTMLAudioElement
+import org.w3c.dom.events.Event
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
-actual class SoundEffectPool actual constructor(concurrency: Int) {
+public actual class SoundEffectPool actual constructor(concurrency: Int) {
 
     // Web doesn't need the provided limit from [concurrency], so we ignore it.
 
-    private val context = AudioContext()
+    private val context: AudioContext get() = SharedAudioContext.context
 
-    actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
+    public actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
         // An AudioBufferSourceNode can only be played once so we must create a new instance every time we want to play
         // a sound
+        // Browsers create an AudioContext already suspended and leave it that way until the page
+        // has user activation. A suspended context's clock does not advance, so the sound is not
+        // merely silent - it never reaches its end either, and `onended` never fires, which is why
+        // the returned handle used to report isPlaying forever. Chrome resumes on a user gesture by
+        // itself; Firefox and Safari do not, so it has to be asked for explicitly.
+        //
+        // Deliberately not awaited: without user activation the promise can stay pending
+        // indefinitely, and awaiting it would hang play() rather than just delaying audio. The
+        // source is scheduled either way and plays once the context does resume.
+        if (context.state != "running") {
+            context.resume().catch {
+                // The browser refusing until the user interacts is normal, not a fault to report.
+                if (it.message?.contains("NotAllowedError") != true) {
+                    Exception("Failed to resume the audio context", it).report()
+                }
+            }
+        }
+
         val bufferSource = context.createBufferSource()
         bufferSource.buffer = preloadInternal(sound)
-        bufferSource.connect(context.destination)
+        // An AudioBufferSourceNode has no volume control of its own, so route it through a gain node to get one.
+        val gain = context.createGain()
+        bufferSource.connect(gain)
+        gain.connect(context.destination)
         bufferSource.start()
+
+        // The Web Audio API offers no "is this source still running" query, so track it ourselves.
+        var playing = true
+        bufferSource.onended = { playing = false }
 
         return object : PlayingSoundEffect {
             override var volume: Float
-                get() = TODO()
-                set(value) {}
+                get() = gain.gain.value
+                set(value) {
+                    gain.gain.value = value
+                }
+
+            /** A source node cannot be restarted once stopped, so setting this to `true` is ignored. */
             override var isPlaying: Boolean
-                get() = TODO()
-                set(value) {}
+                get() = playing
+                set(value) {
+                    if (!value) stop()
+                }
 
             override fun stop() {
+                playing = false
                 bufferSource.stop()
             }
         }
@@ -78,50 +111,97 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
                         val arrayBuffer = response.arrayBuffer().await()
                         context.decodeAudioData(arrayBuffer).await()
                     }
-
-                    else -> TODO()  // Not sure why this else branch is necessary as AudioSource is a sealed class
                 }
             }
         }.await()
     }
 
-    actual suspend fun preload(sound: AudioSource) {
+    public actual suspend fun preload(sound: AudioSource) {
         preloadInternal(sound)
     }
 
-    actual fun unload(sound: AudioSource) {
+    public actual fun unload(sound: AudioSource) {
         // Not necessary for JS implementation; UIAudioPool holds no references to UIAudioSegment so they are unloaded
         // when garbage collected
     }
 }
 
-external class AudioContext() {
-    fun createChannelMerger(numberOfInputs: Int): ChannelMergerNode
-    fun createBufferSource(): AudioBufferSourceNode
-    fun decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer>
-    val destination: AudioDestinationNode
+public external class AudioContext() {
+    public fun createChannelMerger(numberOfInputs: Int): ChannelMergerNode
+    public fun createBufferSource(): AudioBufferSourceNode
+    public fun createGain(): GainNode
+    public fun decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer>
+    public val destination: AudioDestinationNode
+    /** "suspended", "running" or "closed". A context is created suspended. */
+    public val state: String
+    public fun resume(): Promise<Unit>
+    public fun addEventListener(event: String, listener: (Event) -> Unit)
 }
 
-open external class AudioNode {
-    fun connect(node: AudioNode)
-    fun connect(node: AudioNode, outputIndex: Int, inputIndex: Int)
+/**
+ * The single [AudioContext] shared by every [SoundEffectPool] on web.
+ *
+ * Browsers create an AudioContext suspended and leave it that way until the page has user
+ * activation. A context per pool meant every pool needed its own gesture to unlock it, and a
+ * gesture anywhere else in the page did nothing for it. One shared context fixes that: it listens
+ * for the first gesture anywhere in the document and resumes itself there, so unlocking happens
+ * once and every pool benefits. It's built lazily, so nothing is constructed until audio is
+ * actually used.
+ */
+public object SharedAudioContext {
+    private val enabledChange = BasicListenable()
+
+    internal val context: AudioContext by lazy {
+        val ctx = AudioContext()
+        document.addEventListener("touchstart", { _ -> requestUnlock() })
+        document.addEventListener("click", { _ -> requestUnlock() })
+        document.addEventListener("mousedown", { _ -> requestUnlock() })
+        document.addEventListener("keydown", { _ -> requestUnlock() })
+        // Capture phase so a video's own "play" event, which does not bubble, still reaches us.
+        val playOptions = js("({capture: true})")
+        document.addEventListener("play", { _ -> requestUnlock() }, playOptions)
+        ctx.addEventListener("statechange") { enabledChange.invokeAll() }
+        ctx
+    }
+
+    /** Resumes the shared context if it's suspended. Safe to call from any gesture handler. */
+    public fun requestUnlock() {
+        if (context.state == "suspended") context.resume()
+    }
+
+    /** Whether the shared context can currently produce sound. Updates as it unlocks. */
+    public val enabled: Reactive<Boolean> = enabledChange.lensListenable { context.state == "running" }
 }
 
-external class ChannelMergerNode : AudioNode
-
-external class AudioBufferSourceNode : AudioNode {
-    var buffer: AudioBuffer
-    fun start()
-    fun stop()
+public open external class AudioNode {
+    public fun connect(node: AudioNode)
+    public fun connect(node: AudioNode, outputIndex: Int, inputIndex: Int)
 }
 
-external class AudioBuffer {
-    val duration: Double
+public external class ChannelMergerNode : AudioNode
+
+public external class GainNode : AudioNode {
+    public val gain: AudioParam
 }
 
-external class AudioDestinationNode : AudioNode
+public external class AudioParam {
+    public var value: Float
+}
 
-actual suspend fun AudioSource.load(): PlayableAudio {
+public external class AudioBufferSourceNode : AudioNode {
+    public var buffer: AudioBuffer
+    public fun start()
+    public fun stop()
+    public var onended: (() -> Unit)?
+}
+
+public external class AudioBuffer {
+    public val duration: Double
+}
+
+public external class AudioDestinationNode : AudioNode
+
+public actual suspend fun AudioSource.load(): PlayableAudio {
     return suspendCancellableCoroutine { cont ->
         val native = document.createElement("audio") as HTMLAudioElement
         native.hidden = true
@@ -188,7 +268,6 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             is AudioRaw -> native.src = URL.createObjectURL(Blob(arrayOf(value.data)))
             is AudioResource -> native.src = basePath + value.relativeUrl
             is AudioLocal -> native.src = URL.createObjectURL(value.file)
-            else -> {}
         }
         native.load()
         cont.invokeOnCancellation {

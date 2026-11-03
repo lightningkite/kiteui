@@ -213,7 +213,10 @@ class UiTestScope(val backend: UiTestBackend) {
     /** Assert that a view's driver value matches. */
     suspend fun assertValue(target: String, expected: String) {
         val snapshot = snapshot(target)
-        if (!snapshot.contains("= \"$expected\"")) {
+        // The first line of a snapshot is always `target` itself; the remaining lines are
+        // descendants, so checking the full text would match on an unrelated child's value.
+        val ownLine = snapshot.lineSequence().firstOrNull().orEmpty()
+        if (!ownLine.contains("= \"$expected\"")) {
             throw AssertionError("Expected value '$expected' for '$target' but snapshot:\n$snapshot")
         }
     }
@@ -288,6 +291,28 @@ class UiTestScope(val backend: UiTestBackend) {
             snapshot(id)
         } catch (e: DriverActionException) {
             throw AssertionError("Expected view '$id' to exist but it was not found", e)
+        }
+    }
+
+    /**
+     * Asserts that the view matching [query] has at least one clickable ancestor (i.e. is enabled/interactive).
+     * Fails if [findClickable] returns an empty list.
+     */
+    suspend fun assertEnabled(query: String) {
+        val results = findClickable(query)
+        if (results.isEmpty()) {
+            throw AssertionError("Expected '$query' to be enabled (have a clickable ancestor) but findClickable returned empty")
+        }
+    }
+
+    /**
+     * Asserts that the view matching [query] has no clickable ancestor (i.e. is disabled or has no action).
+     * Fails if [findClickable] returns a non-empty list.
+     */
+    suspend fun assertDisabled(query: String) {
+        val results = findClickable(query)
+        if (results.isNotEmpty()) {
+            throw AssertionError("Expected '$query' to be disabled (no clickable ancestor) but findClickable returned: $results")
         }
     }
 }

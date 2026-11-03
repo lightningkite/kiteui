@@ -15,17 +15,18 @@ import platform.UIKit.isAccessibilityElement
 import platform.UIKit.setAccessibilityTraits
 import platform.UIKit.setAccessibilityValue
 import platform.UIKit.setIsAccessibilityElement
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     actual override val underlyingNativeElement: Checkbox get() = this
 
     override val driverValue: String? get() = checkboxDriverValue()
-    override val driverActions get() = super.driverActions + checkboxDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + checkboxDriverActions()
     override val native: WrapperView = WrapperView()
-    val button = FrameLayoutButton()
+    internal val button: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = button
-    override val addChildTarget get() = button
+    override val addChildTarget: FrameLayoutButton get() = button
 
     init {
         setupControl()
@@ -37,7 +38,7 @@ actual class Checkbox actual constructor(context: ElementContext) : NativeIntera
     }
 
     private val _checked = Signal(false)
-    actual val checked: MutableReactiveValue<Boolean> get() = _checked
+    public actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
         _checked.addListener {

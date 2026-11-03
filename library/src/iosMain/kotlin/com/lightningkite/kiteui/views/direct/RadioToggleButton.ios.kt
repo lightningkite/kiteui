@@ -6,14 +6,15 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import platform.UIKit.UIControl
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = radioToggleDriverValue()
-    override val driverActions get() = super.driverActions + radioToggleDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + radioToggleDriverActions()
     override val native: FrameLayoutButton = FrameLayoutButton()
     override val control: UIControl get() = native
     private val _checked = Signal(false)
-    actual val checked: MutableReactiveValue<Boolean> get() = _checked
+    public actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
         setupControl()

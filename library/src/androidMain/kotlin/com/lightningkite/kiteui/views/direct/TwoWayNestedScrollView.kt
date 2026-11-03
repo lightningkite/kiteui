@@ -21,7 +21,6 @@ import android.widget.ScrollView
 import androidx.annotation.RestrictTo
 import androidx.core.view.*
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
-import androidx.core.view.accessibility.AccessibilityRecordCompat
 import androidx.core.widget.EdgeEffectCompat
 import kotlin.math.abs
 import kotlin.math.max
@@ -33,7 +32,7 @@ import kotlin.math.min
  * as both a nested scrolling parent and child on both new and old versions of Android.
  * Nested scrolling is enabled by default.
  */
-class TwoWayNestedScrollView @JvmOverloads constructor(
+public class TwoWayNestedScrollView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) :
@@ -48,7 +47,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      *
      * @see .setOnScrollChangeListener
      */
-    interface OnScrollChangeListener {
+    internal interface OnScrollChangeListener {
         /**
          * Called when the scroll position of a view changes.
          *
@@ -58,7 +57,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
          * @param oldScrollX Previous horizontal scroll origin.
          * @param oldScrollY Previous vertical scroll origin.
          */
-        fun onScrollChange(
+        public fun onScrollChange(
             v: TwoWayNestedScrollView?, scrollX: Int, scrollY: Int,
             oldScrollX: Int, oldScrollY: Int
         )
@@ -67,7 +66,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
     private var mLastScroll: Long = 0
 
     private val mTempRect = Rect()
-    var mScroller: OverScroller? = null
+    internal var mScroller: OverScroller? = null
     private var mEdgeGlowLeft: EdgeEffect? = null
     private var mEdgeGlowTop: EdgeEffect? = null
     private var mEdgeGlowRight: EdgeEffect? = null
@@ -122,7 +121,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
     /**
      * Whether arrow scrolling is animated.
      */
-    var isSmoothScrollingEnabled: Boolean = true
+    internal var isSmoothScrollingEnabled: Boolean = true
 
     private var mTouchSlop = 0
     private var mMinimumVelocity = 0
@@ -155,7 +154,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
 
     private var mOnScrollChangeListener: OnScrollChangeListener? = null
 
-    var isFillViewport: Boolean
+    internal var isFillViewport: Boolean
         /**
          * Indicates whether this ScrollView's content is stretched to fill the viewport.
          *
@@ -455,14 +454,14 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         return 1.0f
     }
 
-    val maxScrollAmountX: Int
+    internal val maxScrollAmountX: Int
         /**
          * @return The maximum amount this scroll view will scroll in response to
          * an arrow event.
          */
         get() = (MAX_SCROLL_FACTOR * width).toInt()
 
-    val maxScrollAmountY: Int
+    internal val maxScrollAmountY: Int
         /**
          * @return The maximum amount this scroll view will scroll in response to
          * an arrow event.
@@ -514,7 +513,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * @see android.view.View.getScrollX
      * @see android.view.View.getScrollY
      */
-    fun setOnScrollChangeListener(l: OnScrollChangeListener?) {
+    internal fun setOnScrollChangeListener(l: OnScrollChangeListener?) {
         mOnScrollChangeListener = l
     }
 
@@ -554,8 +553,10 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         }
     }
 
-    var lockX: Boolean = false
-    var lockY: Boolean = false
+    /** Off ignores new touch and mouse-wheel scrolling; a drag already under way carries on. scrollTo still works. */
+    internal var userScrollEnabled: Boolean = true
+    internal var lockX: Boolean = false
+    internal var lockY: Boolean = false
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -620,7 +621,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param event The key event to execute.
      * @return Return true if the event was handled, else false.
      */
-    fun executeKeyEvent(event: KeyEvent): Boolean {
+    internal fun executeKeyEvent(event: KeyEvent): Boolean {
         mTempRect.setEmpty()
 
         if (!canScrollX() && !canScrollY()) {
@@ -725,6 +726,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         if ((action == MotionEvent.ACTION_MOVE) && mIsBeingDragged) {
             return true
         }
+        if (!userScrollEnabled && !mIsBeingDragged) return false
 
         when (action and MotionEvent.ACTION_MASK) {
             MotionEvent.ACTION_MOVE -> run label@{
@@ -812,7 +814,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
                 mActivePointerId = INVALID_POINTER
                 recycleVelocityTracker()
                 if (mScroller!!.springBack(scrollX, scrollY, 0, scrollRangeX, 0, scrollRangeY)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 stopNestedScroll(ViewCompat.TYPE_TOUCH)
             }
@@ -828,6 +830,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
+        if (!userScrollEnabled && !mIsBeingDragged && ev.actionMasked == MotionEvent.ACTION_DOWN) return false
         initVelocityTrackerIfNotExists()
 
         val actionMasked = ev.actionMasked
@@ -1003,7 +1006,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
                         if (mEdgeGlowTop != null
                             && (!mEdgeGlowLeft!!.isFinished || !mEdgeGlowTop!!.isFinished || !mEdgeGlowRight!!.isFinished || !mEdgeGlowBottom!!.isFinished)
                         ) {
-                            ViewCompat.postInvalidateOnAnimation(this)
+                            this.postInvalidateOnAnimation()
                         }
                     }
                 }
@@ -1025,7 +1028,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
                         0, scrollRangeY
                     )
                 ) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 mActivePointerId = INVALID_POINTER
                 endDrag()
@@ -1034,7 +1037,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
             MotionEvent.ACTION_CANCEL -> {
                 if (mIsBeingDragged && childCount > 0) {
                     if (mScroller!!.springBack(scrollX, scrollY, 0, scrollRangeX, 0, scrollRangeY)) {
-                        ViewCompat.postInvalidateOnAnimation(this)
+                        this.postInvalidateOnAnimation()
                     }
                 }
                 mActivePointerId = INVALID_POINTER
@@ -1069,7 +1072,6 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         if (pointerId == mActivePointerId) {
             // This was our active pointer going up. Choose a new
             // active pointer and adjust accordingly.
-            // TODO: Make this decision more intelligent.
             val newPointerIndex = if (pointerIndex == 0) 1 else 0
             mLastMotionX = ev.getX(newPointerIndex).toInt()
             mLastMotionY = ev.getY(newPointerIndex).toInt()
@@ -1081,6 +1083,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        if (!userScrollEnabled) return super.onGenericMotionEvent(event)
         if ((event.source and InputDeviceCompat.SOURCE_CLASS_POINTER) != 0) {
             when (event.action) {
                 MotionEvent.ACTION_SCROLL -> {
@@ -1159,7 +1162,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         super.scrollTo(scrollX, scrollY)
     }
 
-    fun overScrollByCompat(
+    internal fun overScrollByCompat(
         deltaX: Int, deltaY: Int,
         scrollX: Int, scrollY: Int,
         scrollRangeX: Int, scrollRangeY: Int,
@@ -1221,7 +1224,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         return clampedX && clampedY
     }
 
-    val scrollRangeX: Int
+    internal val scrollRangeX: Int
         get() {
             var scrollRange = 0
             if (childCount > 0) {
@@ -1234,7 +1237,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
             return scrollRange
         }
 
-    val scrollRangeY: Int
+    internal val scrollRangeY: Int
         get() {
             var scrollRange = 0
             if (childCount > 0) {
@@ -1341,7 +1344,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * [android.view.View.FOCUS_DOWN] to go one page down
      * @return true if the key event is consumed by this method, false otherwise
      */
-    fun pageScroll(direction: Int): Boolean {
+    internal fun pageScroll(direction: Int): Boolean {
         val down = direction == FOCUS_DOWN
         val height = height
 
@@ -1380,7 +1383,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * [android.view.View.FOCUS_DOWN] to go the bottom
      * @return true if the key event is consumed by this method, false otherwise
      */
-    fun fullScroll(direction: Int): Boolean {
+    internal fun fullScroll(direction: Int): Boolean {
         val down = direction == FOCUS_DOWN
         val height = height
 
@@ -1445,7 +1448,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * pressed
      * @return True if we consumed the event, false otherwise
      */
-    fun arrowScroll(direction: Int): Boolean {
+    internal fun arrowScroll(direction: Int): Boolean {
         var currentFocused = findFocus()
         if (currentFocused === this) currentFocused = null
 
@@ -1560,7 +1563,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param dx the number of pixels to scroll by on the X axis
      * @param dy the number of pixels to scroll by on the Y axis
      */
-    fun smoothScrollBy(dx: Int, dy: Int) {
+    internal fun smoothScrollBy(dx: Int, dy: Int) {
         smoothScrollBy(dx, dy, DEFAULT_SMOOTH_SCROLL_DURATION, false)
     }
 
@@ -1571,7 +1574,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param dy the number of pixels to scroll by on the Y axis
      * @param scrollDurationMs the duration of the smooth scroll operation in milliseconds
      */
-    fun smoothScrollBy(dx: Int, dy: Int, scrollDurationMs: Int) {
+    internal fun smoothScrollBy(dx: Int, dy: Int, scrollDurationMs: Int) {
         smoothScrollBy(dx, dy, scrollDurationMs, false)
     }
 
@@ -1621,7 +1624,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param x the position where to scroll on the X axis
      * @param y the position where to scroll on the Y axis
      */
-    fun smoothScrollTo(x: Int, y: Int) {
+    internal fun smoothScrollTo(x: Int, y: Int) {
         smoothScrollTo(x, y, DEFAULT_SMOOTH_SCROLL_DURATION, false)
     }
 
@@ -1632,7 +1635,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param y the position where to scroll on the Y axis
      * @param scrollDurationMs the duration of the smooth scroll operation in milliseconds
      */
-    fun smoothScrollTo(x: Int, y: Int, scrollDurationMs: Int) {
+    internal fun smoothScrollTo(x: Int, y: Int, scrollDurationMs: Int) {
         smoothScrollTo(x, y, scrollDurationMs, false)
     }
 
@@ -1644,7 +1647,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param withNestedScrolling whether to include nested scrolling operations.
      */
     // This should be considered private, it is package private to avoid a synthetic ancestor.
-    fun smoothScrollTo(x: Int, y: Int, withNestedScrolling: Boolean) {
+    internal fun smoothScrollTo(x: Int, y: Int, withNestedScrolling: Boolean) {
         smoothScrollTo(x, y, DEFAULT_SMOOTH_SCROLL_DURATION, withNestedScrolling)
     }
 
@@ -1657,7 +1660,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * @param withNestedScrolling whether to include nested scrolling operations.
      */
     // This should be considered private, it is package private to avoid a synthetic ancestor.
-    fun smoothScrollTo(x: Int, y: Int, scrollDurationMs: Int, withNestedScrolling: Boolean) {
+    internal fun smoothScrollTo(x: Int, y: Int, scrollDurationMs: Int, withNestedScrolling: Boolean) {
         smoothScrollBy(x - scrollX, y - scrollY, scrollDurationMs, withNestedScrolling)
     }
 
@@ -1858,7 +1861,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         }
 
         if (!mScroller!!.isFinished) {
-            ViewCompat.postInvalidateOnAnimation(this)
+            this.postInvalidateOnAnimation()
         } else {
             stopNestedScroll(ViewCompat.TYPE_NON_TOUCH)
         }
@@ -1875,7 +1878,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         }
         mLastScrollerX = scrollX
         mLastScrollerY = scrollY
-        ViewCompat.postInvalidateOnAnimation(this)
+        this.postInvalidateOnAnimation()
     }
 
     private fun abortAnimatedScroll() {
@@ -1943,15 +1946,11 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
 
         val fadingEdge = horizontalFadingEdgeLength
 
-        // TODO: screenTop should be incremented by fadingEdge * getTopFadingEdgeStrength (but for
-        // the target scroll distance).
         // leave room for top fading edge as long as rect isn't at very top
         if (rect.left > 0) {
             screenLeft += fadingEdge
         }
 
-        // TODO: screenBottom should be decremented by fadingEdge * getBottomFadingEdgeStrength (but
-        // for the target scroll distance).
         // leave room for bottom fading edge as long as rect isn't at very bottom
         val child = getChildAt(0)
         val lp = child.layoutParams as LayoutParams
@@ -2015,15 +2014,11 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
 
         val fadingEdge = verticalFadingEdgeLength
 
-        // TODO: screenTop should be incremented by fadingEdge * getTopFadingEdgeStrength (but for
-        // the target scroll distance).
         // leave room for top fading edge as long as rect isn't at very top
         if (rect.top > 0) {
             screenTop += fadingEdge
         }
 
-        // TODO: screenBottom should be decremented by fadingEdge * getBottomFadingEdgeStrength (but
-        // for the target scroll distance).
         // leave room for bottom fading edge as long as rect isn't at very bottom
         val child = getChildAt(0)
         val lp = child.layoutParams as LayoutParams
@@ -2214,7 +2209,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * numbers mean that the finger/cursor is moving down the screen,
      * which means we want to scroll towards the top.
      */
-    fun fling(velocityX: Int, velocityY: Int) {
+    internal fun fling(velocityX: Int, velocityY: Int) {
         if (childCount > 0) {
             mScroller!!.fling(
                 scrollX, scrollY,  // start
@@ -2266,7 +2261,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
             }
         }
     }
-    fun scrollToIgnoringClamp(x: Int, y: Int) {
+    internal fun scrollToIgnoringClamp(x: Int, y: Int) {
         super.scrollTo(x, y)
         mScroller?.finalX
     }
@@ -2309,7 +2304,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
                 canvas.rotate(-90f, height / 2f, height / 2f)
                 mEdgeGlowLeft!!.setSize(height, width)
                 if (mEdgeGlowLeft!!.draw(canvas)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 canvas.restoreToCount(restoreCount)
             }
@@ -2330,7 +2325,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
                 canvas.translate(xTranslation.toFloat(), yTranslation.toFloat())
                 mEdgeGlowTop!!.setSize(width, height)
                 if (mEdgeGlowTop!!.draw(canvas)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 canvas.restoreToCount(restoreCount)
             }
@@ -2352,7 +2347,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
                 canvas.rotate(90f, width / 2f, width / 2f)
                 mEdgeGlowRight!!.setSize(height, width)
                 if (mEdgeGlowRight!!.draw(canvas)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 canvas.restoreToCount(restoreCount)
             }
@@ -2374,7 +2369,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
                 canvas.rotate(180f, width.toFloat(), 0f)
                 mEdgeGlowBottom!!.setSize(width, height)
                 if (mEdgeGlowBottom!!.draw(canvas)) {
-                    ViewCompat.postInvalidateOnAnimation(this)
+                    this.postInvalidateOnAnimation()
                 }
                 canvas.restoreToCount(restoreCount)
             }
@@ -2521,15 +2516,15 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
             event.isScrollable = scrollable
             event.scrollX = nsvHost.scrollX
             event.scrollY = nsvHost.scrollY
-            AccessibilityRecordCompat.setMaxScrollX(event, nsvHost.scrollRangeX)
-            AccessibilityRecordCompat.setMaxScrollY(event, nsvHost.scrollRangeY)
+            event.maxScrollX = nsvHost.scrollRangeX
+            event.maxScrollY = nsvHost.scrollRangeY
         }
     }
 
-    companion object {
-        const val ANIMATED_SCROLL_GAP: Int = 250
+    public companion object {
+        internal const val ANIMATED_SCROLL_GAP: Int = 250
 
-        const val MAX_SCROLL_FACTOR: Float = 0.5f
+        internal const val MAX_SCROLL_FACTOR: Float = 0.5f
 
         private const val TAG = "TwoWayNestedScrollView"
         private const val DEFAULT_SMOOTH_SCROLL_DURATION = 250

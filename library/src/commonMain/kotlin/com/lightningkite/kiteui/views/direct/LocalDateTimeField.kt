@@ -6,7 +6,7 @@ import com.lightningkite.reactive.core.*
 import kotlinx.datetime.LocalDateTime
 
 
-expect class LocalDateTimeField(context: ElementContext) : NativeElementWithAction {
-    val content: MutableReactiveValue<LocalDateTime?>
-    var range: ClosedRange<LocalDateTime>?
+public expect class LocalDateTimeField(context: ElementContext) : NativeElementWithAction {
+    public val content: MutableReactiveValue<LocalDateTime?>
+    public var range: ClosedRange<LocalDateTime>?
 }

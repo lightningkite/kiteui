@@ -9,10 +9,10 @@ import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.reactive.core.*
 
 
-expect class TextArea(context: ElementContext) : ElementWithAction, NativeElement {
-    val content: MutableReactiveValue<String>
-    var keyboardHints: KeyboardHints
-    var hint: String
+public expect class TextArea(context: ElementContext) : ElementWithAction, NativeElement {
+    public val content: MutableReactiveValue<String>
+    public var keyboardHints: KeyboardHints
+    public var hint: String
 
     override var action: Action?
     override var enabled: Boolean

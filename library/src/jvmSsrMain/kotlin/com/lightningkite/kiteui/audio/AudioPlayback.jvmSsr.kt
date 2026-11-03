@@ -8,32 +8,32 @@ import com.lightningkite.reactive.core.Reactive
  * SSR stub for AudioPlayback.
  * Audio playback is not available during server-side rendering.
  */
-actual class AudioPlayback actual constructor(actual val format: AudioFormat) {
-    actual val isPlaying: Reactive<Boolean> = Constant(false)
-    actual val bufferedDurationMs: Reactive<Long> = Constant(0L)
-    actual var volume: Float = 1f
+public actual class AudioPlayback actual constructor(public actual val format: AudioFormat) {
+    public actual val isPlaying: Reactive<Boolean> = Constant(false)
+    public actual val bufferedDurationMs: Reactive<Long> = Constant(0L)
+    public actual var volume: Float = 1f
 
-    actual fun enqueue(data: ByteArray) {
+    public actual fun enqueue(data: ByteArray) {
         // No-op for SSR
     }
 
-    actual fun start() {
+    public actual fun start() {
         // No-op for SSR
     }
 
-    actual fun stop() {
+    public actual fun stop() {
         // No-op for SSR
     }
 
-    actual fun clearBuffer() {
+    public actual fun clearBuffer() {
         // No-op for SSR
     }
 
-    actual fun onBufferEmpty(action: () -> Unit) {
+    public actual fun onBufferEmpty(action: () -> Unit) {
         // No-op for SSR
     }
 
-    actual fun release() {
+    public actual fun release() {
         // No-op for SSR
     }
 }

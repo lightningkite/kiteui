@@ -16,6 +16,7 @@ import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.icon
 import com.lightningkite.kiteui.views.dynamicTheme
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.*
@@ -403,7 +404,7 @@ object CheatSheet : DocPage {
                                     text("A dangerous button")
                                     action = Action("Explode") {
                                         delay(1.seconds)
-                                        toast("KABOOM!!!")
+                                        context.toast("KABOOM!!!")
                                     }
                                 }
                             }
@@ -1265,7 +1266,7 @@ object CheatSheet : DocPage {
                                 button {
                                     text("Show Toast")
                                     action = Action("Show toast") {
-                                        toast("I am a toast!")
+                                        context.toast("I am a toast!")
                                     }
                                 }
                             }
@@ -1290,7 +1291,7 @@ object CheatSheet : DocPage {
                                 button {
                                     text("Do a dangerous thing")
                                     onClick {
-                                        confirmDanger(
+                                        context.confirmDanger(
                                             "Danger",
                                             "Are you sure you wish to do this dangerous thing?"
                                         ) {
@@ -1315,7 +1316,7 @@ object CheatSheet : DocPage {
                                 button {
                                     text("Alert Me")
                                     onClick {
-                                        alert("Alert", "This is an alert")
+                                        context.alert("Alert", "This is an alert")
                                     }
                                 }
                             }
@@ -1323,24 +1324,20 @@ object CheatSheet : DocPage {
                     }
                     titledSection("Other (not yet categorized)") {
                         example(
-                            name = "forEach",
+                            name = "colOfExpensive",
                             description = "",
                             code = """
                             val fruits = listOf("Apples", "Oranges", "Plums", "Bananas", "Cherries")
 
-                            col {
-                                forEach(remember { fruits }) { fruit ->
-                                    card.text(fruit)
-                                }
+                            colOfExpensive(remember { fruits }) { fruit ->
+                                card.text(fruit)
                             }
                     """.trimIndent(),
                             result = {
                                 val fruits = listOf("Apples", "Oranges", "Plums", "Bananas", "Cherries")
 
-                                col {
-                                    forEach(remember { fruits }) { fruit ->
-                                        card.text(fruit)
-                                    }
+                                colOfExpensive(remember { fruits }) { fruit ->
+                                    card.text(fruit)
                                 }
                             }
                         )

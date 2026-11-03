@@ -9,7 +9,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import org.w3c.dom.HTMLImageElement
 
-actual fun RawImageViewLike.nativeLoad(url: String?) {
+public actual fun RawImageViewLike.nativeLoad(url: String?) {
     native.onElement {
         it as HTMLImageElement
         it.alt = description  // by Claude - SEO alt attribute on actual DOM element

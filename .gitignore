@@ -2,6 +2,7 @@ Pods
 .gradle
 .idea
 .kotlin
+.kotlin-locks
 build
 *.xcworkspace
 *.hprof
@@ -29,3 +30,4 @@ screenshot-*.png
 .fork/
 .env
 tmp
+secrets.properties

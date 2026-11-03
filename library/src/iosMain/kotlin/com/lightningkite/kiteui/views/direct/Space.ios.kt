@@ -11,8 +11,8 @@ import platform.UIKit.UIView
 
 
 
-actual class Space actual constructor(context: ElementContext, private val multiplier: Double): NativeElement(context) {
-    override val native = NSpace()
+public actual class Space actual constructor(context: ElementContext, private val multiplier: Double): NativeElement(context) {
+    override val native: NSpace = NSpace()
 
     override fun nativeApplyTheme(theme: ThemeAndBack) {
         super.nativeApplyTheme(theme)
@@ -21,7 +21,7 @@ actual class Space actual constructor(context: ElementContext, private val multi
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NSpace(var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+public actual class NSpace(public var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = natSize
 }
 

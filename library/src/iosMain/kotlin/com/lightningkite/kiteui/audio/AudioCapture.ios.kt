@@ -15,23 +15,23 @@ import kotlin.math.sqrt
  * Uses input node with tap to capture PCM audio data.
  */
 @OptIn(ExperimentalForeignApi::class)
-actual class AudioCapture actual constructor(actual val format: AudioFormat) {
+public actual class AudioCapture actual constructor(public actual val format: AudioFormat) {
     private val _hasPermission = Signal(false)
     private val _isCapturing = Signal(false)
     private val _level = Signal(0f)
 
-    actual val hasPermission: Reactive<Boolean> = _hasPermission
-    actual val isCapturing: Reactive<Boolean> = _isCapturing
-    actual val level: Reactive<Float> = _level
+    public actual val hasPermission: Reactive<Boolean> = _hasPermission
+    public actual val isCapturing: Reactive<Boolean> = _isCapturing
+    public actual val level: Reactive<Float> = _level
 
     private var audioEngine: AVAudioEngine? = null
     private var onDataCallback: ((ByteArray) -> Unit)? = null
 
-    actual fun onAudioData(action: (ByteArray) -> Unit) {
+    public actual fun onAudioData(action: (ByteArray) -> Unit) {
         onDataCallback = action
     }
 
-    actual suspend fun start(): Boolean {
+    public actual suspend fun start(): Boolean {
         // Request microphone permission
         val permissionGranted = suspendCoroutine<Boolean> { cont ->
             AVAudioSession.sharedInstance().requestRecordPermission { granted ->
@@ -93,14 +93,14 @@ actual class AudioCapture actual constructor(actual val format: AudioFormat) {
         }
     }
 
-    actual fun stop() {
+    public actual fun stop() {
         audioEngine?.inputNode?.removeTapOnBus(0u)
         audioEngine?.stop()
         _isCapturing.value = false
         _level.value = 0f
     }
 
-    actual fun release() {
+    public actual fun release() {
         stop()
         audioEngine = null
         onDataCallback = null

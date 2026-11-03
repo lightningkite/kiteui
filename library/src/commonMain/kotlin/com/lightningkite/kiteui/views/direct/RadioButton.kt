@@ -7,9 +7,9 @@ import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.*
 
 
-expect class RadioButton(context: ElementContext) : InteractiveElement, NativeElement {
+public expect class RadioButton(context: ElementContext) : InteractiveElement, NativeElement {
     override val underlyingNativeElement: RadioButton
 
-    val checked: MutableReactiveValue<Boolean>
+    public val checked: MutableReactiveValue<Boolean>
     override var enabled: Boolean
 }

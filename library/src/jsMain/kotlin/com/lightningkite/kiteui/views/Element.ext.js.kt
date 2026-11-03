@@ -3,14 +3,14 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.views.direct.suppressMutationObserverForClass
 import org.w3c.dom.HTMLElement
 
-actual inline fun Element.withoutAnimation(action: () -> Unit) {
+public actual inline fun Element.withoutAnimation(action: () -> Unit) {
     (native.element as? HTMLElement)?.withoutAnimation(action) ?: action()
 }
 
-var animationsEnabled: Boolean = true
-actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled
+public var animationsEnabled: Boolean = true
+public actual val Element.areAnimationsEnabled: Boolean get() = animationsEnabled
 
-inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
+public inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
     val animate = animationsEnabled
     try {
         if (animate) {

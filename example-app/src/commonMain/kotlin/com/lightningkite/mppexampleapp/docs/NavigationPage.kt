@@ -2,13 +2,12 @@ package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -67,7 +66,7 @@ object NavigationPage: DocPage {
                 """
                 button {
                     onClick { 
-                        pageNavigator.navigate(DocSearchPage)
+                        context.pageNavigator.navigate(DocSearchPage)
                     }
                     centered.row {
                         centered.icon(Icon.arrowBack, "Back")
@@ -78,7 +77,7 @@ object NavigationPage: DocPage {
             ) {
                 button {
                     onClick {
-                        pageNavigator.navigate(DocSearchPage)
+                        context.pageNavigator.navigate(DocSearchPage)
                     }
                     centered.row {
                         centered.icon(Icon.arrowBack, "Back")
@@ -92,7 +91,7 @@ object NavigationPage: DocPage {
                 col {
                     button {
                         onClick {
-                            pageNavigator.goBack()
+                            context.pageNavigator.goBack()
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -101,7 +100,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            pageNavigator.replace(DocSearchPage)
+                            context.pageNavigator.replace(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -110,7 +109,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            pageNavigator.reset(DocSearchPage)
+                            context.pageNavigator.reset(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -123,7 +122,7 @@ object NavigationPage: DocPage {
                 col {
                     button {
                         onClick {
-                            pageNavigator.goBack()
+                            context.pageNavigator.goBack()
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -132,7 +131,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            pageNavigator.replace(DocSearchPage)
+                            context.pageNavigator.replace(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -141,7 +140,7 @@ object NavigationPage: DocPage {
                     }
                     button {
                         onClick {
-                            pageNavigator.reset(DocSearchPage)
+                            context.pageNavigator.reset(DocSearchPage)
                         }
                         row {
                             centered.icon(Icon.arrowBack, "Back")
@@ -158,22 +157,16 @@ object NavigationPage: DocPage {
                 button {
                     text("Open a dialog")
                     onClick {
-                        dialogPageNavigator.navigate(object: Page {
-                            override fun ElementWriter.CanAddTheme.render(): Unit = run {
-                                frame {
-                                    centered.card.col {
-                                        h1("Hello!")
-                                        text("This is a dialog.")
-                                        button {
-                                            centered.text("Dismiss")
-                                            onClick {
-                                                pageNavigator.dismiss()
-                                            }
-                                        }
-                                    }
+                        context.dialog { close ->
+                            card.col {
+                                h1("Hello!")
+                                text("This is a dialog.")
+                                button {
+                                    centered.text("Dismiss")
+                                    onClick { close() }
                                 }
                             }
-                        })
+                        }
                     }
                 }
             """.trimIndent()
@@ -181,22 +174,16 @@ object NavigationPage: DocPage {
                 button {
                     text("Open a dialog")
                     onClick {
-                        dialogPageNavigator.navigate(object: Page {
-                            override fun ElementWriter.CanAddTheme.render(): Unit = run {
-                                frame {
-                                    centered.card.col {
-                                        h1("Hello!")
-                                        text("This is a dialog.")
-                                        button {
-                                            centered.text("Dismiss")
-                                            onClick {
-                                                pageNavigator.dismiss()
-                                            }
-                                        }
-                                    }
+                        context.dialog { close ->
+                            card.col {
+                                h1("Hello!")
+                                text("This is a dialog.")
+                                button {
+                                    centered.text("Dismiss")
+                                    onClick { close() }
                                 }
                             }
-                        })
+                        }
                     }
                 }
             }

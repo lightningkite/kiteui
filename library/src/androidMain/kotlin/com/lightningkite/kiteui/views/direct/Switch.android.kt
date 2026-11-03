@@ -8,11 +8,12 @@ import androidx.core.view.ViewCompat
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
-actual class Switch actual constructor(context: ElementContext): NativeInteractiveElement(context) {
+public actual class Switch actual constructor(context: ElementContext): NativeInteractiveElement(context) {
     override val driverValue: String? get() = switchDriverValue()
-    override val driverActions get() = super.driverActions + switchDriverActions()
-    override val native = android.widget.Switch(context.activity)
+    override val driverActions: AiDriver.Actions get() = super.driverActions + switchDriverActions()
+    override val native: android.widget.Switch = android.widget.Switch(context.activity)
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun nativeApplyTheme(theme: ThemeAndBack) {
@@ -32,7 +33,7 @@ actual class Switch actual constructor(context: ElementContext): NativeInteracti
         )
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
+    public actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 
     init {
         checked.addListener {

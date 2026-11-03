@@ -10,7 +10,7 @@ private val enabledTheming = NativeElementCommonCode.ThemePipeline.ThemeForEleme
 }
 
 @OptIn(ExperimentalKiteUi::class)
-actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
+public actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
     actual override var enabled: Boolean
         get() = native.isEnabled
         set(value) {
@@ -22,16 +22,21 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
         themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)
         themePipeline.add(ThemePipeline.Step.elementStatus, enabledTheming)
     }
+
+    public actual open var required: Boolean = false
 }
 
 @OptIn(ExperimentalKiteUi::class)
-actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
+public actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
     actual override var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
             refreshTheming()
         }
+
+    public actual open var accessibleExpanded: Boolean? = null
+    public actual open var accessibleOpensDialog: Boolean = false
 
     init {
         themePipeline.add(ThemePipeline.Step.elementStyling, ClickableSemantic)

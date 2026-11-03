@@ -7,7 +7,7 @@ import kotlin.math.sqrt
  * Convert PCM16 (Int16 little-endian) byte array to Float32 normalized array.
  * Each pair of bytes becomes a float value from -1.0 to 1.0.
  */
-fun ByteArray.pcm16ToFloat32(): FloatArray {
+public fun ByteArray.pcm16ToFloat32(): FloatArray {
     val samples = size / 2
     val result = FloatArray(samples)
     for (i in 0 until samples) {
@@ -22,7 +22,7 @@ fun ByteArray.pcm16ToFloat32(): FloatArray {
 /**
  * Convert Float32 normalized array (-1.0 to 1.0) to PCM16 byte array (little-endian).
  */
-fun FloatArray.float32ToPcm16(): ByteArray {
+public fun FloatArray.float32ToPcm16(): ByteArray {
     val result = ByteArray(size * 2)
     for (i in indices) {
         val sample = (this[i].coerceIn(-1f, 1f) * 32767).toInt()
@@ -36,7 +36,7 @@ fun FloatArray.float32ToPcm16(): ByteArray {
  * Calculate RMS (Root Mean Square) level from PCM16 data.
  * Returns a value from 0.0 to 1.0 representing audio amplitude.
  */
-fun ByteArray.calculatePcm16Level(): Float {
+public fun ByteArray.calculatePcm16Level(): Float {
     if (size < 2) return 0f
     val samples = size / 2
     var sumSquares = 0.0
@@ -55,7 +55,7 @@ fun ByteArray.calculatePcm16Level(): Float {
  * Resample PCM16 audio from one sample rate to another using linear interpolation.
  * This is a simple resampling method suitable for voice audio.
  */
-fun ByteArray.resamplePcm16(fromRate: Int, toRate: Int): ByteArray {
+public fun ByteArray.resamplePcm16(fromRate: Int, toRate: Int): ByteArray {
     if (fromRate == toRate) return this
 
     val inputSamples = size / 2

@@ -17,7 +17,7 @@ import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
 import kotlin.math.*
 
-class ScrollView(
+public class ScrollView(
     context: ElementContext,
     override val horizontal: Boolean,
     override val vertical: Boolean
@@ -26,7 +26,7 @@ class ScrollView(
     private var vx = VelocityTracker.obtain()
     private var vy = VelocityTracker.obtain()
     @SuppressLint("ClickableViewAccessibility")
-    override val native = TwoWayNestedScrollView(context.activity).apply {
+    override val native: TwoWayNestedScrollView = TwoWayNestedScrollView(context.activity).apply {
         lockX = !horizontal
         lockY = !vertical
         isFillViewport = true
@@ -43,6 +43,7 @@ class ScrollView(
         }
         val touches = HashSet<Int>()
         setOnTouchListener { v, event ->
+            if (!userScrollEnabled && event.actionMasked == MotionEvent.ACTION_DOWN) return@setOnTouchListener false
             vx.addMovement(event)
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
@@ -88,7 +89,7 @@ class ScrollView(
                 * ppi
                 * 0.84f);
         val l =
-            ln((INFLEXION * abs(velocity.toDouble()) / (SCROLL_FRICTION * mPhysicalCoeff)).toDouble())
+            ln(INFLEXION * abs(velocity.toDouble()) / (SCROLL_FRICTION * mPhysicalCoeff))
         val decelMinusOne = DECELERATION_RATE - 1.0
         return ((SCROLL_FRICTION * mPhysicalCoeff
                 * exp(DECELERATION_RATE / decelMinusOne * l))).toFloat()
@@ -222,8 +223,8 @@ class ScrollView(
                 debugPrint { "Reading actual viewport, got ${native.scrollX}, ${native.scrollY}" }
                 return ReactiveState(
                     Rect.fromSize(
-                        (native.scrollX ?: 0).toDouble(),
-                        (native.scrollY ?: 0).toDouble(),
+                        native.scrollX.toDouble(),
+                        native.scrollY.toDouble(),
                         native.width.toDouble(),
                         native.height.toDouble(),
                     )
@@ -254,6 +255,11 @@ class ScrollView(
 
     override var snapToElements: Pair<Align?, Align?> = null to null
     override var scrollSnapStop: Boolean = false
+    override var userScrollEnabled: Boolean
+        get() = native.userScrollEnabled
+        set(value) {
+            native.userScrollEnabled = value
+        }
     private val _directlyInteractingWithScroller = Signal(false)
     override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
@@ -302,8 +308,8 @@ class ScrollView(
         }
     }
 
-    var queuedJumpX = -1.0
-    var queuedJumpY = -1.0
+    internal var queuedJumpX: Double = -1.0
+    internal var queuedJumpY: Double = -1.0
     override fun scrollToKeepAnimations(x: Double, y: Double) {
 //        native.mScroller?.abortAnimation()
         queuedJumpX = x

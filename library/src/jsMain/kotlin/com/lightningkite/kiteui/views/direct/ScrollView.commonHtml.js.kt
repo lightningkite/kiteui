@@ -1,3 +1,5 @@
+@file:OptIn(com.lightningkite.reactive.core.InternalReactiveApi::class)
+
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.afterTimeout
@@ -19,12 +21,12 @@ import kotlinx.dom.addClass
 import org.w3c.dom.*
 
 
-actual class ScrollingBehaviorImpl actual constructor(
-    val on: Element,
+public actual class ScrollingBehaviorImpl actual constructor(
+    internal val on: Element,
     actual override val horizontal: Boolean,
     actual override val vertical: Boolean
 ) : ScrollingBehaviors {
-    val native = on.native
+    internal val native: FutureElement = on.native
 
     init {
 //        native.style.lineHeight = "0px"
@@ -95,7 +97,7 @@ actual class ScrollingBehaviorImpl actual constructor(
             )
         }
     }
-    val _directlyInteractingWithScroller = Signal(false)
+    internal val _directlyInteractingWithScroller: Signal<Boolean> = Signal(false)
     actual override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     init {
@@ -150,6 +152,15 @@ actual class ScrollingBehaviorImpl actual constructor(
         get() = throw UnsupportedOperationException("Ignoring ScrollView interaction is not supported for web targets")
         set(value) {}
 
+    // overflow: hidden stops touch, wheel and keyboard scrolling but still lets scrollTo move it.
+    actual override var userScrollEnabled: Boolean = true
+        set(value) {
+            field = value
+            val overflow = if (value) "auto" else "hidden"
+            if (horizontal) native.style.overflowX = overflow
+            if (vertical) native.style.overflowY = overflow
+        }
+
     actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         on.debugPrint { ("ScrollView.scrollTo($left, $top, $animated)") }
         disableSnapTemporarily()
@@ -175,7 +186,7 @@ actual class ScrollingBehaviorImpl actual constructor(
     }
 
     private var scrollToInstance = 0
-    fun disableSnapTemporarily() {
+    internal fun disableSnapTemporarily() {
         native.classes.removeAll { it.startsWith("snapTo-") }
         native.setStyleProperty("scroll-snap-type", "unset")
     }

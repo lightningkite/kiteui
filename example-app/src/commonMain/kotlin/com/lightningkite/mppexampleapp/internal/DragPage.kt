@@ -47,6 +47,8 @@ object DragPage : Page {
 
             h4("Reorderable List")
             themed(ListSemantic).col {
+                @OptIn(InternalKiteUi::class)
+                @Suppress("DEPRECATION")
                 forEachReorderable(
                     numbers,
                     reorder = { move ->
@@ -59,7 +61,7 @@ object DragPage : Page {
                     }
                 ) { number ->
                     card.dynamicThemed { Highlight(number()) }.frame {
-                        
+
                         centered.text { ::content { number().toString() } }
                     }
                 }
@@ -68,7 +70,7 @@ object DragPage : Page {
             space()
 
             h4("Recycler Reorderable")
-            sizeConstraints(height = 20.rem).onNext(ListSemantic).recyclerView {
+            sizeConstraints(height = 20.rem).themed(ListSemantic).recyclerView {
                 placer = RecyclerViewPlacerVerticalGrid(3)
                 childrenReorderable(
                     numbers,
@@ -115,6 +117,8 @@ object DragPage : Page {
                             return true
                         }
                     }
+                    @OptIn(InternalKiteUi::class)
+                    @Suppress("DEPRECATION")
                     forEachAnimated(left) {
                         card.text {
                             content = it
@@ -131,6 +135,8 @@ object DragPage : Page {
                             return true
                         }
                     }
+                    @OptIn(InternalKiteUi::class)
+                    @Suppress("DEPRECATION")
                     forEachAnimated(right) {
                         card.text {
                             content = it

@@ -32,9 +32,11 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.cocoapods) apply false
     alias(libs.plugins.kotlin.plugin.serialization) apply false
+    alias(libs.plugins.kotlin.plugin.compose) apply false
+    alias(libs.plugins.compose.multiplatform) apply false
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.testing.manual) apply false
-    alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.androidKmpLibrary) apply false
     alias(libs.plugins.vannitechPublishing) apply false
     alias(libs.plugins.dokka) apply false
 }

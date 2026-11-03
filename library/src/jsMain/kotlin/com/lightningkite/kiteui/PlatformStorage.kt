@@ -2,16 +2,16 @@ package com.lightningkite.kiteui
 
 import kotlinx.browser.window
 
-actual object PlatformStorage {
-    actual fun get(key: String): String? {
+public actual object PlatformStorage {
+    public actual fun get(key: String): String? {
         return window.localStorage.getItem(key)
     }
 
-    actual fun set(key: String, value: String) {
+    public actual fun set(key: String, value: String) {
         window.localStorage.setItem(key, value)
     }
 
-    actual fun remove(key: String) {
+    public actual fun remove(key: String) {
         window.localStorage.removeItem(key)
     }
 }

@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kotlinx.serialization.uri.encodeURIComponent
 import com.lightningkite.reactive.core.AppScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -20,10 +21,12 @@ import kotlin.io.encoding.ExperimentalEncodingApi
  * AI Driver client — connects to a relay server via WebSocket and handles text commands.
  * Each command is a plain string; the response is a plain string sent back on the same socket.
  */
-object AiDriver {
+public object AiDriver {
     private val log = LogRoot.tag("AiDriver")
 
-    fun connect(
+    public typealias Actions = Map<String, suspend (List<String>) -> String>
+
+    public fun connect(
         appName: String,
         platform: String = Platform.current.name.lowercase(),
         postfix: String? = buildString {
@@ -44,7 +47,7 @@ object AiDriver {
         }
 
         val gate = ConnectivityGate()
-        val ws = retryWebsocket(
+        val ws = retryWebSocket(
             url = "ws://$host:$port?app=${encodeURIComponent(appName)}&platform=${encodeURIComponent(platform)}&postfix=${encodeURIComponent(postfix ?: "x")}",
             pingTime = 30_000,
             gate = gate,
@@ -63,7 +66,10 @@ object AiDriver {
                     log.info("Got command $message")
                     val response = handleCommand(message.trim(), rootView(), navigator())
                     ws.send(response)
-                } catch (e: Exception) {
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    // Not just Exception: an Error (such as a backend's TODO()) would otherwise leave the caller waiting.
                     try {
                         ws.send("ERROR: ${e::class.simpleName}: ${e.message}")
                     } catch (_: Exception) {
@@ -73,12 +79,12 @@ object AiDriver {
             }
         }
 
-        // Activate the WebSocket — retryWebsocket uses lazy connection via beginUse()
+        // Activate the WebSocket — retryWebSocket uses lazy connection via beginUse()
         ws.beginUse()
     }
 
-    object Defaults {
-        fun defaultDriverActions(element: Element): Map<String, suspend (List<String>) -> String> = buildMap {
+    public object Defaults {
+        public fun defaultDriverActions(element: Element): AiDriver.Actions = buildMap {
             put("snapshot") { args -> element.driverSnapshot(parseSnapshotOptions(args.toTypedArray())) }
             put("screenshot") { element.driverScreenshot() }
             put("find") { args -> element.driverFind(args.firstOrNull() ?: "", args.contains("--hidden")) }
@@ -114,7 +120,7 @@ object AiDriver {
             }
         }
 
-        fun defaultDriverDisplay(element: Element, options: Element.DriverSnapshotOptions): String = buildString {
+        public fun defaultDriverDisplay(element: Element, options: Element.DriverSnapshotOptions): String = buildString {
             val name = element.debugName
             if (name != null) {
                 append("$name: ")
@@ -127,7 +133,6 @@ object AiDriver {
             }
             append(element::class.simpleName)
             element.driverValue?.let { append(" = \"$it\"") }
-//            element.htmlElementTag?.let { append(" ($it)") } TODO: htmlElementTag
             if (!element.shown) append(" (hidden)")
             else if (!element.visible) append(" (invisible)")
             if (options.includeActions) element.driverActions.keys
@@ -142,7 +147,7 @@ object AiDriver {
  * Lazily installs a [MockExternalServices] on the root view's [RContext], wrapping the existing
  * external services as a delegate. Returns the mock instance. Subsequent calls return the same instance.
  */
-fun ensureMockExternalServices(root: Element): MockExternalServices {
+public fun ensureMockExternalServices(root: Element): MockExternalServices {
     val existing = root.context.externalServices
     if (existing is MockExternalServices) return existing
     val mock = MockExternalServices(delegate = existing)
@@ -151,7 +156,7 @@ fun ensureMockExternalServices(root: Element): MockExternalServices {
 }
 
 @OptIn(ExperimentalEncodingApi::class)
-suspend fun handleCommand(command: String, root: Element?, navigator: PageNavigator?): String {
+public suspend fun handleCommand(command: String, root: Element?, navigator: PageNavigator?): String {
     if (command.isBlank()) throw DriverActionException("empty command")
 
     val parts = command.split('\t')
@@ -163,13 +168,13 @@ suspend fun handleCommand(command: String, root: Element?, navigator: PageNaviga
         "navigate" -> {
             if (navigator == null) throw DriverActionException("no navigator available")
             val route = action ?: throw DriverActionException("no route specified")
-            navigator.navigateUrlLikePath(route) ?: throw DriverActionException("route '$route' not found")
+            if (!navigator.navigateUrlLikePath(route)) throw DriverActionException("route '$route' not found")
             "OK"
         }
         "reset" -> {
             if (navigator == null) throw DriverActionException("no navigator available")
             val route = action ?: throw DriverActionException("no route specified")
-            navigator.resetUrlLikePath(route) ?: throw DriverActionException("route '$route' not found")
+            if (!navigator.resetUrlLikePath(route)) throw DriverActionException("route '$route' not found")
             "OK"
         }
         "url" -> {
@@ -178,7 +183,8 @@ suspend fun handleCommand(command: String, root: Element?, navigator: PageNaviga
                 ?: throw DriverActionException("no current page")
             val rendered = navigator.routes.render(currentPage)
                 ?: throw DriverActionException("current page has no route")
-            rendered.urlLikePath.render()
+            // The relay ignores blank replies, and the home page renders to an empty path.
+            "/" + rendered.urlLikePath.render()
         }
         "back" -> {
             if (navigator == null) throw DriverActionException("no navigator available")

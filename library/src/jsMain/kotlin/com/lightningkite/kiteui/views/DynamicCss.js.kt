@@ -16,18 +16,18 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 
-external interface BaseUrlScript {
-    val baseUrl: String
+internal external interface BaseUrlScript {
+    public val baseUrl: String
 }
 
-actual class DynamicCss actual constructor(actual val basePath: String) {
-    val customStyleSheetElement: HTMLStyleElement by lazy {
+public actual class DynamicCss actual constructor(public actual val basePath: String) {
+    internal val customStyleSheetElement: HTMLStyleElement by lazy {
         val sheet = document.createElement("style") as HTMLStyleElement
         sheet.title = "generated-css"
         document.head!!.appendChild(sheet)
         sheet
     }
-    val customStyleSheet: CSSStyleSheet by lazy {
+    internal val customStyleSheet: CSSStyleSheet by lazy {
         customStyleSheetElement
         document.styleSheets.let {
             for (i in 0 until it.length) {
@@ -39,7 +39,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     }
 
     private val fontHandled = HashSet<String>()
-    actual fun font(font: Font): String {
+    public actual fun font(font: Font): String {
         if (!fontHandled.add(font.cssFontFamilyName)) return font.cssFontFamilyName
         if (font.url != null) {
             document.head!!.appendChild((document.createElement("link") as HTMLLinkElement).apply {
@@ -59,7 +59,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
         return font.cssFontFamilyName
     }
 
-    actual fun rule(rule: String, index: Int): Int {
+    public actual fun rule(rule: String, index: Int): Int {
         try {
             return customStyleSheet.insertRule(rule, index)
         } catch (e: Throwable) {
@@ -67,7 +67,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
         }
     }
 
-    var queue: Json = json()
+    internal var queue: Json = json()
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     private fun Json.subObj(key: String) = this.get(key) as? Json ?: run {
         val obj = json()
@@ -78,19 +78,19 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     private fun jsonForEach(obj: Json, action: (key: String, value: Any?) -> Unit) =
         js("for (var key in obj) { action(key, obj[key]) }")
 
-    actual fun add(selector: String, key: String, value: String, media: String) {
+    public actual fun add(selector: String, key: String, value: String, media: String) {
         queue.subObj(media).subObj(selector).set(key, value)
     }
-    actual fun emit(): String {
+    public actual fun emit(): String {
         return customStyleSheet.cssRules.let {
             (0..<it.length).asSequence().mapNotNull { i -> it.get(i) }.joinToString("\n") { it.cssText }
         }
     }
 
-    var flushTotal: Duration = 0.seconds
-    var ruleTotal = 0
+    internal var flushTotal: Duration = 0.seconds
+    internal var ruleTotal: Int = 0
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-    actual fun flush() {
+    public actual fun flush() {
         measureTime {
             jsonForEach(queue) { media, it ->
                 val wrapInMedia = media.isNotBlank()

@@ -6,7 +6,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.js.Promise
 
-actual inline fun afterTimeout(milliseconds: Long, crossinline action: () -> Unit): () -> Unit {
+public actual inline fun afterTimeout(milliseconds: Long, crossinline action: () -> Unit): () -> Unit {
     val handle = window.setTimeout({ ->
         action()
     }, milliseconds.toInt())
@@ -15,7 +15,7 @@ actual inline fun afterTimeout(milliseconds: Long, crossinline action: () -> Uni
     }
 }
 
-suspend fun <T> Promise<T>.await(): T = suspendCancellableCoroutine { cont ->
+public suspend fun <T> Promise<T>.await(): T = suspendCancellableCoroutine { cont ->
     then(
         onFulfilled = {
             cont.resume(it)

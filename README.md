@@ -1,3 +1,5 @@
+<img src="logo.svg" alt="KiteUI" width="96">
+
 # KiteUI
 
 [![Maven Central Version](https://img.shields.io/maven-central/v/com.lightningkite.kiteui/library)](https://central.sonatype.com/artifact/com.lightningkite.kiteui/library)
@@ -7,7 +9,7 @@
 [![CI Status](https://img.shields.io/github/actions/workflow/status/lightningkite/kiteui/publishInternal.yml)](https://github.com/lightningkite/kiteui/publishInternal.yml)
 [![KDoc](https://img.shields.io/badge/docs-kdoc-blue)](https://lightningkite-maven.s3.us-west-2.amazonaws.com/com/lightningkite/kiteui/library/docs/index.html)
 
-![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?logo=kotlin&label=2.2.0)
+![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?logo=kotlin&label=2.3.20)
 ![Android](https://img.shields.io/badge/platform-android-blue)
 ![JVM](https://img.shields.io/badge/platform-jvm-blue)
 ![JS](https://img.shields.io/badge/platform-js-blue)

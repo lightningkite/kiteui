@@ -8,7 +8,7 @@ package com.lightningkite.kiteui.models
  * into the straight edges. On platforms without native support, the radius is
  * reduced to approximate the visual appearance.
  */
-enum class CornerShape {
+public enum class CornerShape {
     Circular,
     Continuous
 }

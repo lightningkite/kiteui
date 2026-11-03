@@ -26,7 +26,7 @@ object PongSamplePage : Page {
             val dg = PongDelegate()
             delegate = dg
             var last = clockMillis()
-            reactiveScope {
+            reactive {
                 rerunOn(AppState.animationFrame)
                 val now = clockMillis()
                 val diff = now - last

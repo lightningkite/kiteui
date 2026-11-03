@@ -150,7 +150,7 @@ internal class TelemetryExporter(private val config: TelemetryConfig) {
             // fetchRaw (not fetch) to bypass fetchInterceptors — using fetch here would
             // cause infinite recursion: export → fetch → telemetry interceptor → export → ...
             val response = suppressConnectivityIssues {
-                fetchRaw(
+                platformFetch(
                     url = config.endpoint.trimEnd('/') + path,
                     method = HttpMethod.POST,
                     headers = httpHeaders(

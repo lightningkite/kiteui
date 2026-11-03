@@ -4,7 +4,7 @@ import android.view.ViewGroup
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 
-val Element.lparams: ViewGroup.LayoutParams
+public val Element.lparams: ViewGroup.LayoutParams
     get() {
         val parent = parent
         val parentElement = parent?.native

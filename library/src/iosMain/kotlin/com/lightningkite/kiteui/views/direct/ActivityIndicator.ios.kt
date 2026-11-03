@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.UIActivityIndicatorView
 
-actual class ActivityIndicator actual constructor(context: ElementContext): NativeElement(context) {
-    override val native = UIActivityIndicatorView().apply {
+public actual class ActivityIndicator actual constructor(context: ElementContext): NativeElement(context) {
+    override val native: UIActivityIndicatorView = UIActivityIndicatorView().apply {
         hidden = false
         startAnimating()
         extensionSizeConstraints = SizeConstraints(minWidth = 1.rem, minHeight = 1.rem)

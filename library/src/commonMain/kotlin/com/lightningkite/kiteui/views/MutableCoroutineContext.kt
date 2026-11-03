@@ -8,13 +8,16 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * This is *much* faster than the standard `kotlinx-coroutines` implementation, which uses a linked list.
  * */
-class MutableCoroutineContext: CoroutineContext {
-    val list = ArrayList<CoroutineContext.Element>()
+public class MutableCoroutineContext: CoroutineContext {
+    public val list: MutableList<CoroutineContext.Element> = ArrayList<CoroutineContext.Element>()
 
-    fun add(context: CoroutineContext) {
+    public fun add(context: CoroutineContext) {
         context.fold(Unit) { _, element -> add(element) }
     }
-    fun add(element: CoroutineContext.Element) {
+    // Like any CoroutineContext, a later element replaces the one with its key.  kotlinx.coroutines walks contexts
+    // with fold, so a replaced element left behind (the element's Job, under a coroutine's own) breaks checks such as Flow's.
+    public fun add(element: CoroutineContext.Element) {
+        list.removeAll { it.key == element.key }
         list.add(element)
     }
 
@@ -45,24 +48,24 @@ class MutableCoroutineContext: CoroutineContext {
     }
 }
 
-fun coroutineContextOf(vararg elements: CoroutineContext.Element): CoroutineContext {
-    return MutableCoroutineContext().apply {
-        list.addAll(elements)
-    }
-}
-
-fun mutableCoroutineContextOf(vararg elements: CoroutineContext.Element): MutableCoroutineContext {
-    return MutableCoroutineContext().apply {
-        list.addAll(elements)
-    }
-}
-
-fun coroutineContextOf(vararg elements: CoroutineContext): CoroutineContext {
+public fun coroutineContextOf(vararg elements: CoroutineContext.Element): CoroutineContext {
     return MutableCoroutineContext().apply {
         for (e in elements) add(e)
     }
 }
 
-inline fun buildCoroutineContext(setup: MutableCoroutineContext.() -> Unit): CoroutineContext {
+public fun mutableCoroutineContextOf(vararg elements: CoroutineContext.Element): MutableCoroutineContext {
+    return MutableCoroutineContext().apply {
+        for (e in elements) add(e)
+    }
+}
+
+public fun coroutineContextOf(vararg elements: CoroutineContext): CoroutineContext {
+    return MutableCoroutineContext().apply {
+        for (e in elements) add(e)
+    }
+}
+
+public inline fun buildCoroutineContext(setup: MutableCoroutineContext.() -> Unit): CoroutineContext {
     return MutableCoroutineContext().apply(setup)
 }

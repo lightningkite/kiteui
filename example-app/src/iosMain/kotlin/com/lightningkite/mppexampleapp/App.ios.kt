@@ -15,9 +15,8 @@ fun root(viewController: UIViewController) {
 //    RViewHelper.leakDetection = true
     viewController.setup(appTheme) {
 //        mainPageNavigator = PageNavigator { AutoRoutes }
-//        dialogPageNavigator = PageNavigator { AutoRoutes }
 //        LeakCheckerScreen.render(this)
-        app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
+        app(PageNavigator { AutoRoutes })
 //        col {
 //            text("Hello world")
 //            button {

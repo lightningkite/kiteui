@@ -29,36 +29,36 @@ import com.lightningkite.reactive.core.Reactive
  */
 @ExperimentalKiteUi
 @Untested
-expect class AudioCapture(format: AudioFormat = AudioFormat()) {
+public expect class AudioCapture(format: AudioFormat = AudioFormat()) {
     /** The audio format being captured */
-    val format: AudioFormat
+    public val format: AudioFormat
 
     /** Whether microphone permission has been granted */
-    val hasPermission: Reactive<Boolean>
+    public val hasPermission: Reactive<Boolean>
 
     /** Whether capture is currently active */
-    val isCapturing: Reactive<Boolean>
+    public val isCapturing: Reactive<Boolean>
 
     /** Current audio level (0.0 to 1.0) for visualization, updated in real-time */
-    val level: Reactive<Float>
+    public val level: Reactive<Float>
 
     /**
      * Register callback for audio data.
      * Called with PCM16 byte arrays as audio is captured.
      * @param action Callback receiving PCM16 audio bytes
      */
-    fun onAudioData(action: (ByteArray) -> Unit)
+    public fun onAudioData(action: (ByteArray) -> Unit)
 
     /**
      * Start capturing audio from the microphone.
      * Requests permission if not already granted.
      * @return true if capture started successfully, false if permission denied or error occurred
      */
-    suspend fun start(): Boolean
+    public suspend fun start(): Boolean
 
     /** Stop capturing audio */
-    fun stop()
+    public fun stop()
 
     /** Release all resources. Instance should not be used after calling this. */
-    fun release()
+    public fun release()
 }

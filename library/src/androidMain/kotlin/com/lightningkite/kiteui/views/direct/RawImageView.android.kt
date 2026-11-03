@@ -41,19 +41,84 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-actual abstract class RawImageViewLike constructor(
-    context: RContext,
-    actual val source: ImageSource,
-    actual val description: String,
-    actual val scaleType: ImageScaleType,
+internal class DeferredGlideSizeCallbacks {
+    private val callbacks = ArrayList<SizeReadyCallback>()
+    private var dispatchScheduled = false
+    private var generation = 0
+    private var latestWidth = 0
+    private var latestHeight = 0
+
+    val hasCallbacks: Boolean get() = callbacks.isNotEmpty()
+
+    fun add(callback: SizeReadyCallback) {
+        callbacks.add(callback)
+    }
+
+    fun addWithSize(callback: SizeReadyCallback, width: Int, height: Int) {
+        callbacks.add(callback)
+        dispatch(width, height)
+    }
+
+    fun remove(callback: SizeReadyCallback) {
+        callbacks.remove(callback)
+        if (callbacks.isEmpty()) cancelPendingDispatch()
+    }
+
+    fun clear() {
+        callbacks.clear()
+        cancelPendingDispatch()
+    }
+
+    fun dispatch(width: Int, height: Int) {
+        if (callbacks.isEmpty()) return
+        latestWidth = width
+        latestHeight = height
+        if (dispatchScheduled) return
+
+        dispatchScheduled = true
+        val scheduledGeneration = generation
+        afterTimeout(0L) {
+            if (scheduledGeneration != generation) return@afterTimeout
+            dispatchScheduled = false
+            val pending = callbacks.toList()
+            callbacks.clear()
+            val measuredWidth = latestWidth
+            val measuredHeight = latestHeight
+            latestWidth = 0
+            latestHeight = 0
+            pending.forEach { it.onSizeReady(measuredWidth, measuredHeight) }
+        }
+    }
+
+    private fun cancelPendingDispatch() {
+        generation++
+        dispatchScheduled = false
+        latestWidth = 0
+        latestHeight = 0
+    }
+}
+
+private fun measuredSize(widthSpec: Int, heightSpec: Int): Pair<Int, Int>? {
+    val width =
+        if (MeasureSpec.getMode(widthSpec) > 0) MeasureSpec.getSize(widthSpec) else AppState.windowInfo.value.width.value.toInt()
+    val height =
+        if (MeasureSpec.getMode(heightSpec) > 0) MeasureSpec.getSize(heightSpec) else AppState.windowInfo.value.height.value.toInt()
+    return if (width != 0 && height != 0) width to height else null
+}
+
+public actual abstract class RawImageViewLike constructor(
+    context: ElementContext,
+    public actual val source: ImageSource,
+    public actual val description: String,
+    public actual val scaleType: ImageScaleType,
 ) : NativeElement(context){
-    actual abstract val state: Reactive<Unit>
+    public actual abstract val state: Reactive<Unit>
 }
 
 
 
-actual class RawImageView actual constructor(
-    context: RContext,
+public actual class RawImageView actual constructor(
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -121,13 +186,12 @@ actual class RawImageView actual constructor(
                 native.setImageDrawable(PathDrawable(value))
                 _state.state = ReactiveState(Unit)
             }
-            else -> TODO()
         }
     }
 
 
-    class GlideImageView(context: Context) : AppCompatImageView(context) {
-        var ignoreNaturalSize: Boolean = false
+    public class GlideImageView(context: Context) : AppCompatImageView(context) {
+        internal var ignoreNaturalSize: Boolean = false
             set(value) {
                 field = value
                 requestLayout()
@@ -137,65 +201,64 @@ actual class RawImageView actual constructor(
             this.clipToOutline = true
         }
 
-        var widthMeasureSpecLast = 0
-        var heightMeasureSpecLast = 0
+        internal var widthMeasureSpecLast: Int = 0
+        internal var heightMeasureSpecLast: Int = 0
+        private var measureDepth: Int = 0
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-            if (this !in animatingSize) {
-                widthMeasureSpecLast = widthMeasureSpec
-                heightMeasureSpecLast = heightMeasureSpec
-                if (callbacks.isNotEmpty()) {
-                    val width =
-                        if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
-                    val height =
-                        if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
-                    if (width != 0 && height != 0) {
-                        callbacks.toList().forEach { cb -> cb.onSizeReady(width, height) }
-                        callbacks.clear()
+            measureDepth++
+            try {
+                if (this !in animatingSize) {
+                    widthMeasureSpecLast = widthMeasureSpec
+                    heightMeasureSpecLast = heightMeasureSpec
+                    if (sizeReadyCallbacks.hasCallbacks) {
+                        measuredSize(widthMeasureSpecLast, heightMeasureSpecLast)?.let { (width, height) ->
+                            sizeReadyCallbacks.dispatch(width, height)
+                        }
                     }
                 }
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+                if (ignoreNaturalSize) setMeasuredDimension(0, 0)
+            } finally {
+                measureDepth--
             }
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-            if(ignoreNaturalSize) setMeasuredDimension(0, 0)
         }
 
-        val callbacks = ArrayList<SizeReadyCallback>()
+        internal val sizeReadyCallbacks = DeferredGlideSizeCallbacks()
 
-        val target = object : ImageViewTarget<Drawable>(this) {
+        internal val target: ImageViewTarget<Drawable> = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {
                 this@GlideImageView.setImageDrawable(resource)
             }
 
             @SuppressLint("MissingSuperCall")
             override fun getSize(cb: SizeReadyCallback) {
-                if (widthMeasureSpecLast != 0) {
-                    val width =
-                        if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
-                    val height =
-                        if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
-                    if (width != 0 && height != 0) {
-                        cb.onSizeReady(width, height)
-                    }
+                val size =
+                    if (widthMeasureSpecLast != 0) measuredSize(widthMeasureSpecLast, heightMeasureSpecLast) else null
+                if (size == null) {
+                    sizeReadyCallbacks.add(cb)
+                } else if (measureDepth > 0 || isInLayout) {
+                    sizeReadyCallbacks.addWithSize(cb, size.first, size.second)
                 } else {
-                    callbacks.add(cb)
+                    cb.onSizeReady(size.first, size.second)
                 }
             }
 
             @SuppressLint("MissingSuperCall")
             override fun removeCallback(cb: SizeReadyCallback) {
-                callbacks.remove(cb)
+                sizeReadyCallbacks.remove(cb)
             }
 
             @SuppressLint("MissingSuperCall")
             override fun onLoadCleared(placeholder: Drawable?) {
-                callbacks.clear()
+                sizeReadyCallbacks.clear()
             }
         }
     }
 }
 
 
-actual class SizelessRawImageView actual constructor(
-    context: RContext,
+public actual class SizelessRawImageView actual constructor(
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -260,86 +323,85 @@ actual class SizelessRawImageView actual constructor(
             is ImageRemote -> Glide.with(native).load(glideUrl(value)).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> native.setImageDrawable(PathDrawable(value))
-            else -> TODO()
         }
     }
 
 
-    class GlideImageView(context: Context) : AppCompatImageView(context) {
+    public class GlideImageView(context: Context) : AppCompatImageView(context) {
         init {
             this.adjustViewBounds = true
             this.clipToOutline = true
         }
 
 
-        var widthMeasureSpecLast = 0
-        var heightMeasureSpecLast = 0
+        internal var widthMeasureSpecLast: Int = 0
+        internal var heightMeasureSpecLast: Int = 0
+        private var measureDepth: Int = 0
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-            if (this !in animatingSize) {
-                widthMeasureSpecLast = widthMeasureSpec
-                heightMeasureSpecLast = heightMeasureSpec
-                if (callbacks.isNotEmpty()) {
-                    val width =
-                        if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
-                    val height =
-                        if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
-                    if (width != 0 && height != 0) {
-                        callbacks.toList().forEach { cb -> cb.onSizeReady(width, height) }
-                        callbacks.clear()
+            measureDepth++
+            try {
+                if (this !in animatingSize) {
+                    widthMeasureSpecLast = widthMeasureSpec
+                    heightMeasureSpecLast = heightMeasureSpec
+                    if (sizeReadyCallbacks.hasCallbacks) {
+                        measuredSize(widthMeasureSpecLast, heightMeasureSpecLast)?.let { (width, height) ->
+                            sizeReadyCallbacks.dispatch(width, height)
+                        }
                     }
                 }
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+                setMeasuredDimension(
+                    when (View.MeasureSpec.getMode(widthMeasureSpec)) {
+                        MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(widthMeasureSpec)
+                        else -> 0
+                    },
+                    when (View.MeasureSpec.getMode(heightMeasureSpec)) {
+                        MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(heightMeasureSpec)
+                        else -> 0
+                    }
+                )
+            } finally {
+                measureDepth--
             }
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-            setMeasuredDimension(
-                when(View.MeasureSpec.getMode(widthMeasureSpec)) {
-                    MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(widthMeasureSpec)
-                    else -> 0
-                },
-                when(View.MeasureSpec.getMode(heightMeasureSpec)) {
-                    MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(heightMeasureSpec)
-                    else -> 0
-                }
-            )
         }
 
-        val callbacks = ArrayList<SizeReadyCallback>()
+        internal val sizeReadyCallbacks = DeferredGlideSizeCallbacks()
 
-        val target = object : ImageViewTarget<Drawable>(this) {
+
+        internal val target: ImageViewTarget<Drawable> = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {
                 this@GlideImageView.setImageDrawable(resource)
             }
 
             @SuppressLint("MissingSuperCall")
             override fun getSize(cb: SizeReadyCallback) {
-                if (widthMeasureSpecLast != 0) {
-                    val width =
-                        if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
-                    val height =
-                        if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
-                    if (width != 0 && height != 0) {
-                        cb.onSizeReady(width, height)
-                    }
+                val size =
+                    if (widthMeasureSpecLast != 0) measuredSize(widthMeasureSpecLast, heightMeasureSpecLast) else null
+                if (size == null) {
+                    sizeReadyCallbacks.add(cb)
+                } else if (measureDepth > 0 || isInLayout) {
+                    sizeReadyCallbacks.addWithSize(cb, size.first, size.second)
                 } else {
-                    callbacks.add(cb)
+                    cb.onSizeReady(size.first, size.second)
                 }
             }
 
             @SuppressLint("MissingSuperCall")
             override fun removeCallback(cb: SizeReadyCallback) {
-                callbacks.remove(cb)
+                sizeReadyCallbacks.remove(cb)
             }
 
             @SuppressLint("MissingSuperCall")
             override fun onLoadCleared(placeholder: Drawable?) {
-                callbacks.clear()
+                sizeReadyCallbacks.clear()
             }
         }
     }
 }
 
 
-actual class RawImageViewZoomable actual constructor(
-    context: RContext,
+public actual class RawImageViewZoomable actual constructor(
+    context: ElementContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
@@ -348,7 +410,7 @@ actual class RawImageViewZoomable actual constructor(
     actual override val state: Reactive<Unit> = _state
     override val native: PhotoView = PhotoView(context.activity)
     private val _zoomState = Signal<ZoomState>(native.imageMatrix)
-    actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
+    public actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
     init {
         native.setOnScaleChangeListener { _, _, _ -> zoomState.value = native.imageMatrix }
         native.setOnViewDragListener { _, _ -> zoomState.value = native.imageMatrix }
@@ -396,12 +458,11 @@ actual class RawImageViewZoomable actual constructor(
                 native.setImageDrawable(PathDrawable(value))
                 _state.state = ReactiveState(Unit)
             }
-            else -> TODO()
         }
     }
 }
 
-actual typealias ZoomState = Matrix
+public actual typealias ZoomState = Matrix
 
 // Returns a GlideUrl whose disk-cache key respects the ImageRemote's cacheStrategy.
 // PathOnly strips query parameters so that rotating S3 signatures don't cause cache misses.

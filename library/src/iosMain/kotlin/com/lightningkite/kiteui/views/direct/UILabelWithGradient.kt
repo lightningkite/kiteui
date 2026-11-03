@@ -22,18 +22,18 @@ import kotlin.experimental.ExperimentalNativeApi
 
 
 @OptIn(ExperimentalNativeApi::class)
-class UILabelWithGradient(val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
+internal class UILabelWithGradient(public val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false
     }
 
-    val uiViewWithLabelMask = UIView(bounds).apply {
+    public val uiViewWithLabelMask: UIView = UIView(bounds).apply {
         backgroundColor = UIColor.grayColor
         userInteractionEnabled = false
     }.also(::addSubview)
 
-    val label = UILabel().also {
+    public val label: UILabel = UILabel().also {
         userInteractionEnabled = false
         uiViewWithLabelMask.addSubview(it)
         uiViewWithLabelMask.maskView = it
@@ -49,7 +49,7 @@ class UILabelWithGradient(val context: WeakReference<RContext>) : UIView(CGRectZ
             }
             field = value
         }
-    var foreground: Paint = Color.black
+    public var foreground: Paint = Color.black
         set(f) {
             field = f
             when (f) {
@@ -124,7 +124,7 @@ class UILabelWithGradient(val context: WeakReference<RContext>) : UIView(CGRectZ
 
 
     @ObjCAction
-    fun handleLink() {
+    public fun handleLink() {
         val text = label.attributedText ?: return
         val locationOfTouchInLabel = recognizer.locationInView(uiViewWithLabelMask)
         val layoutManager = NSLayoutManager()
@@ -161,7 +161,7 @@ class UILabelWithGradient(val context: WeakReference<RContext>) : UIView(CGRectZ
 
     }
 
-    val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
+    public val recognizer: UITapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
     internal fun linkSetup(active: Boolean) {
         userInteractionEnabled = active
         uiViewWithLabelMask.userInteractionEnabled = active

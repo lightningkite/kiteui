@@ -57,7 +57,7 @@ class TelemetryMetricsTest {
         counter.add(1)
         val snapshot = counter.snapshot(Telemetry.nanosString())!!
         assertEquals(2, snapshot.sum!!.aggregationTemporality, "Should use CUMULATIVE temporality")
-        assertEquals(true, snapshot.sum!!.isMonotonic)
+        assertEquals(true, snapshot.sum.isMonotonic)
     }
 
     // --- HistogramAggregator ---
@@ -96,7 +96,7 @@ class TelemetryMetricsTest {
         val second = hist.snapshot(Telemetry.nanosString())
         assertNotNull(second)
         assertEquals(2L, second.histogram!!.dataPoints.single().count)
-        assertEquals(300.0, second.histogram!!.dataPoints.single().sum)
+        assertEquals(300.0, second.histogram.dataPoints.single().sum)
     }
 
     @Test

@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.autocomplete
 import com.lightningkite.kiteui.views.inputMode
 import com.lightningkite.kiteui.views.type
 
-fun FutureElement.applyKeyboardHints(hints: KeyboardHints) {
+internal fun FutureElement.applyKeyboardHints(hints: KeyboardHints) {
     attributes.type = when (hints.type) {
         KeyboardType.Text -> "text"
         KeyboardType.Decimal -> "text"
@@ -49,11 +49,16 @@ fun FutureElement.applyKeyboardHints(hints: KeyboardHints) {
             primaryAutocompleteValue = "tel"
         }
 
-        AutoComplete.OneTimeCode, null -> {
+        AutoComplete.OneTimeCode -> {
+            primaryAutocompleteValue = "one-time-code"
+        }
+
+        null -> {
             primaryAutocompleteValue = null
         }
     }
 
+    // Claude: autofill is opt-in; only inputs with a KeyboardHints autocomplete hint get it.
     attributes.autocomplete = listOfNotNull(
         primaryAutocompleteValue,
         "webauthn".takeIf { hints.includePasskeys }

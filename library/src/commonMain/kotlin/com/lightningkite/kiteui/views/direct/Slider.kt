@@ -4,36 +4,56 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.NativeInteractiveElement
 import com.lightningkite.reactive.core.*
+import kotlin.math.floor
 
 /**
  * A slider component that allows users to select a value from a continuous range.
  */
-expect class Slider(context: ElementContext) : NativeInteractiveElement {
+public expect class Slider(context: ElementContext) : NativeInteractiveElement {
     /**
      * The current value of the slider, between 0.0 and 1.0.
      */
-    val value: MutableReactiveValue<Float>
+    public val value: MutableReactiveValue<Float>
     
     /**
      * The minimum value of the slider.
      */
-    var min: Float
+    public var min: Float
     
     /**
      * The maximum value of the slider.
      */
-    var max: Float
+    public var max: Float
     
     /**
-     * The step size for the slider. If null, the slider is continuous.
+     * The step size for the slider. If null, the slider is continuous.  A step that isn't positive becomes 1, as
+     * an HTML range input treats it.
      */
-    var step: Float?
+    public var step: Float?
+}
+
+// Every platform's step setter goes through this, so they agree.
+internal fun Float?.validSliderStep(): Float? = this?.let { if (it > 0f) it else 1f }
+
+/**
+ * The value a slider holds when given [value], on every platform, as an HTML range input does: a max below the min
+ * counts as the min; the value is kept within them; and with a step, it goes to the nearest step from the min (the
+ * greater one when halfway), but never past the max.
+ */
+internal fun sliderValue(value: Float, min: Float, max: Float, step: Float?): Float {
+    val top = max.coerceAtLeast(min)
+    val clamped = value.coerceIn(min, top)
+    if (step == null) return clamped
+    // The small allowance keeps float error from losing a step (1 / 0.1f is 9.99999...).
+    val nearest = floor((clamped - min) / step + 0.5f + 1e-4f)
+    val lastBelowTop = floor((top - min) / step + 1e-4f)
+    return min + minOf(nearest, lastBelowTop) * step
 }
 
 /**
  * Sets the value range for the slider.
  */
-fun Slider.range(min: Float, max: Float, step: Float? = null) {
+public fun Slider.range(min: Float, max: Float, step: Float? = null) {
     this.min = min
     this.max = max
     this.step = step
@@ -42,7 +62,7 @@ fun Slider.range(min: Float, max: Float, step: Float? = null) {
 /**
  * Sets the value range for the slider using integers.
  */
-fun Slider.range(min: Int, max: Int, step: Int? = null) {
+public fun Slider.range(min: Int, max: Int, step: Int? = null) {
     this.min = min.toFloat()
     this.max = max.toFloat()
     this.step = step?.toFloat()

@@ -13,8 +13,8 @@ import platform.UIKit.UIControl
 // NOTE: If you edit these make sure to edit TextArea as well, it does not inherit but should have similar behavior
 
 @OptIn(ExperimentalKiteUi::class)
-actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
-    abstract val control: UIControl
+public actual abstract class NativeInteractiveElement actual constructor(context: ElementContext) : NativeElement(context), InteractiveElement {
+    public abstract val control: UIControl
 
     actual override var enabled: Boolean
         get() = control.enabled
@@ -23,7 +23,9 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
             refreshTheming()
         }
 
-    companion object {
+    public actual open var required: Boolean = false
+
+    public companion object {
         private val statusThemes = ThemePipeline.ThemeForElement { e ->
             val e = e.underlyingNativeElement as NativeInteractiveElement
 
@@ -45,8 +47,8 @@ actual abstract class NativeInteractiveElement actual constructor(context: Eleme
 }
 
 @OptIn(ExperimentalKiteUi::class)
-actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
-    abstract val control: UIControl
+public actual abstract class NativeInteractiveContainerElement actual constructor(context: ElementContext) : NativeContainerElement(context), InteractiveElement {
+    public abstract val control: UIControl
 
     actual override var enabled: Boolean
         get() = control.enabled
@@ -54,7 +56,10 @@ actual abstract class NativeInteractiveContainerElement actual constructor(conte
             control.enabled = value
         }
 
-    companion object {
+    public actual open var accessibleExpanded: Boolean? = null
+    public actual open var accessibleOpensDialog: Boolean = false
+
+    public companion object {
         private val statusThemes = ThemePipeline.ThemeForElement { e ->
             val e = e.underlyingNativeElement as NativeInteractiveContainerElement
 

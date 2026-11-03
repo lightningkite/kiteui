@@ -8,36 +8,36 @@ import com.lightningkite.reactive.core.*
 import kotlin.time.Duration
 
 
-expect class RawVideoView(
+public expect class RawVideoView(
     context: ElementContext,
     source: VideoSource,
     description: String,
     scaleType: ImageScaleType,
     preloadHint: PreloadHint = PreloadHint.METADATA,
 ) : NativeElement {
-    val source: VideoSource
-    val description: String
-    val scaleType: ImageScaleType
-    val preloadHint: PreloadHint
-    val state: Reactive<Unit>
-    val seekableTimeRanges: List<ClosedFloatingPointRange<Double>>
+    public val source: VideoSource
+    public val description: String
+    public val scaleType: ImageScaleType
+    public val preloadHint: PreloadHint
+    public val state: Reactive<Unit>
+    public val seekableTimeRanges: List<ClosedFloatingPointRange<Double>>
 
     @Deprecated("Use currentTime instead")
-    val time: MutableReactive<Double>
-    val currentTime: MutableReactive<Duration>
+    public val time: MutableReactive<Double>
+    public val currentTime: MutableReactive<Duration>
 
     /**
      * The duration of the video in seconds.
      */
-    val sourceDuration: Reactive<Double?>
-    val playing: MutableReactive<Boolean>
-    val volume: MutableReactive<Float>
-    var showControls: Boolean
-    var loop: Boolean
-    val completedPlay: Listenable
+    public val sourceDuration: Reactive<Double?>
+    public val playing: MutableReactive<Boolean>
+    public val volume: MutableReactive<Float>
+    public var showControls: Boolean
+    public var loop: Boolean
+    public val completedPlay: Listenable
 }
 
-enum class PreloadHint {
+public enum class PreloadHint {
     NONE,
     METADATA,
     ALL

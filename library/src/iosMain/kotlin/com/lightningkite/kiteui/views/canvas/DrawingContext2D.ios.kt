@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.canvas
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.addLine
-import com.lightningkite.kiteui.views.direct.arcTo
 import com.lightningkite.kiteui.views.toUIFontWeight
 import com.lightningkite.kiteui.views.toUiColor
 import kotlinx.cinterop.*
@@ -14,17 +13,17 @@ import platform.UIKit.*
 import kotlin.math.*
 
 @OptIn(ExperimentalForeignApi::class)
-actual abstract class DrawingContext2D {
-    actual abstract fun save()
-    actual abstract fun restore()
-    actual abstract fun scale(x: Double, y: Double)
-    actual abstract fun rotate(angle: Double)
-    actual abstract fun translate(x: Double, y: Double)
-    actual abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
+public actual abstract class DrawingContext2D {
+    public actual abstract fun save()
+    public actual abstract fun restore()
+    public actual abstract fun scale(x: Double, y: Double)
+    public actual abstract fun rotate(angle: Double)
+    public actual abstract fun translate(x: Double, y: Double)
+    public actual abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
 
-    actual abstract var globalAlpha: Double
-    actual abstract var globalCompositeOperation: String
-    actual abstract var imageSmoothingEnabled: Boolean
+    public actual abstract var globalAlpha: Double
+    public actual abstract var globalCompositeOperation: String
+    public actual abstract var imageSmoothingEnabled: Boolean
 
     //  actual abstract   var imageSmoothingQuality: ImageSmoothingQuality
 //  actual abstract   var strokeStyle: dynamic
@@ -36,13 +35,13 @@ actual abstract class DrawingContext2D {
 //  actual abstract   fun createLinearGradient(x0: Double, y0: Double, x1: Double, y1: Double): CanvasGradient
 //  actual abstract   fun createRadialGradient(x0: Double, y0: Double, r0: Double, x1: Double, y1: Double, r1: Double): CanvasGradient
 //  actual abstract   fun createPattern(image: CanvasImageSource, repetition: String): CanvasPattern?
-    actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun beginPath()
+    public actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun beginPath()
 
     //  actual abstract   fun fill(path: Path2D, fillRule: CanvasFillRule)
-    actual abstract fun stroke()
+    public actual abstract fun stroke()
 //  actual abstract   fun stroke(path: Path2D)
 
 //  actual abstract   fun clip(fillRule: CanvasFillRule)
@@ -82,19 +81,19 @@ actual abstract class DrawingContext2D {
 //    actual abstract fun removeHitRegion(id: String)
 //    actual abstract fun clearHitRegions()
 
-    actual abstract var lineWidth: Double
+    public actual abstract var lineWidth: Double
 
     //  actual abstract   var lineCap: CanvasLineCap
 //  actual abstract   var lineJoin: CanvasLineJoin
-    actual abstract var miterLimit: Double
-    actual abstract var lineDashOffset: Double
-    abstract fun setLineDash(segments: Array<Double>)
-    abstract fun getLineDash(): Array<Double>
-    actual abstract fun closePath()
-    actual abstract fun moveTo(x: Double, y: Double)
-    actual abstract fun lineTo(x: Double, y: Double)
-    actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
-    actual abstract fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double)
+    public actual abstract var miterLimit: Double
+    public actual abstract var lineDashOffset: Double
+    public abstract fun setLineDash(segments: Array<Double>)
+    public abstract fun getLineDash(): Array<Double>
+    public actual abstract fun closePath()
+    public actual abstract fun moveTo(x: Double, y: Double)
+    public actual abstract fun lineTo(x: Double, y: Double)
+    public actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
+    public actual abstract fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double)
 //    actual abstract fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double)
 //    actual abstract fun arcTo(
 //        x1: Double,
@@ -106,19 +105,19 @@ actual abstract class DrawingContext2D {
 //        rotation: Double
 //    )
 
-    actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
 //    actual abstract fun arc(x: Double, y: Double, radius: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
 //    actual abstract fun ellipse(x: Double, y: Double, radiusX: Double, radiusY: Double, rotation: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
 }
 
 
-class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val height: Double) : DrawingContext2D() {
-    override fun save() = CGContextSaveGState(wraps)
-    override fun restore() = CGContextRestoreGState(wraps)
-    override fun scale(x: Double, y: Double) = CGContextScaleCTM(wraps, x, y)
-    override fun rotate(angle: Double) = CGContextRotateCTM(wraps, angle)
-    override fun translate(x: Double, y: Double) = CGContextTranslateCTM(wraps, x, y)
-    override fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) = CGContextConcatCTM(
+public class DrawingContext2DImpl(public val wraps: CGContextRef, public val width: Double, public val height: Double) : DrawingContext2D() {
+    override fun save(): Unit = CGContextSaveGState(wraps)
+    override fun restore(): Unit = CGContextRestoreGState(wraps)
+    override fun scale(x: Double, y: Double): Unit = CGContextScaleCTM(wraps, x, y)
+    override fun rotate(angle: Double): Unit = CGContextRotateCTM(wraps, angle)
+    override fun translate(x: Double, y: Double): Unit = CGContextTranslateCTM(wraps, x, y)
+    override fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double): Unit = CGContextConcatCTM(
         wraps, CGAffineTransformMake(
             a, b, c, d, e, f
         )
@@ -158,7 +157,7 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
             CGContextSetAllowsAntialiasing(wraps, value)
         }
 
-    override fun clearRect(x: Double, y: Double, w: Double, h: Double) =
+    override fun clearRect(x: Double, y: Double, w: Double, h: Double): Unit =
         CGContextClearRect(wraps, CGRectMake(x, y, w, h))
 
     override fun fillRect(x: Double, y: Double, w: Double, h: Double) {
@@ -178,11 +177,11 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
             else -> CGContextFillRect(wraps, CGRectMake(x, y, w, h))
         }
     }
-    override fun strokeRect(x: Double, y: Double, w: Double, h: Double) =
+    override fun strokeRect(x: Double, y: Double, w: Double, h: Double): Unit =
         CGContextStrokeRect(wraps, CGRectMake(x, y, w, h))
 
-    override fun beginPath() = CGContextBeginPath(wraps)
-    override fun stroke() = CGContextStrokePath(wraps)
+    override fun beginPath(): Unit = CGContextBeginPath(wraps)
+    override fun stroke(): Unit = CGContextStrokePath(wraps)
     private var lastLineWidth = 0.0
     override var lineWidth: Double
         get() = lastLineWidth
@@ -225,30 +224,16 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
             }
         }
     }
-    override fun closePath() = CGContextClosePath(wraps)
-    override fun moveTo(x: Double, y: Double) = CGContextMoveToPoint(wraps, x, y)
-    override fun lineTo(x: Double, y: Double) = CGContextAddLineToPoint(wraps, x, y)
-    override fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double) =
+    override fun closePath(): Unit = CGContextClosePath(wraps)
+    override fun moveTo(x: Double, y: Double): Unit = CGContextMoveToPoint(wraps, x, y)
+    override fun lineTo(x: Double, y: Double): Unit = CGContextAddLineToPoint(wraps, x, y)
+    override fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double): Unit =
         CGContextAddQuadCurveToPoint(wraps, cpx, cpy, x, y)
 
-    override fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double) =
+    override fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double): Unit =
         CGContextAddCurveToPoint(wraps, cp1x, cp1y, cp2x, cp2y, x, y)
 
-//    override fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double) = arcTo(
-//        x1, y1, x2, y2, radius, radius, 0.0
-//    )
-//
-//    override fun arcTo(
-//        x1: Double,
-//        y1: Double,
-//        x2: Double,
-//        y2: Double,
-//        radiusX: Double,
-//        radiusY: Double,
-//        rotation: Double
-//    ) = TODO()
-
-    override fun rect(x: Double, y: Double, w: Double, h: Double) = CGContextAddRect(wraps, CGRectMake(x, y, w, h))
+    override fun rect(x: Double, y: Double, w: Double, h: Double): Unit = CGContextAddRect(wraps, CGRectMake(x, y, w, h))
 
     internal var textAlign: TextAlign = TextAlign.start
     internal var font: UIFont = UIFont.systemFontOfSize(12.0)
@@ -347,7 +332,7 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
 }
 
 
-actual fun DrawingContext2D.appendArc(
+public actual fun DrawingContext2D.appendArc(
     x: Double,
     y: Double,
     radius: Double,
@@ -367,7 +352,7 @@ actual fun DrawingContext2D.appendArc(
 }
 
 
-actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
+public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
     val attrs = mapOf<Any?, Any?>(
         NSFontAttributeName to (this as DrawingContext2DImpl).font,
         NSForegroundColorAttributeName to this.fill.closestColor().toUiColor(),
@@ -385,7 +370,10 @@ actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
     )
     val ns = (text as NSString)
     val sizeTaken = ns.sizeWithAttributes(attrs).useContents { width }
-    val height = font.lineHeight
+    // drawAtPoint's origin is the top of the text's bounding box, but (x, y) here is meant to be
+    // the baseline (matching Android's canvas.drawText and web's fillText), so shift up by the
+    // ascender rather than the full lineHeight, which also includes descent/leading.
+    val ascent = font.ascender
     var dx = x
     var dy = y
     when((this as DrawingContext2DImpl).textAlign) {
@@ -397,7 +385,7 @@ actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
             dx -= sizeTaken / 2
         }
     }
-    dy -= height
+    dy -= ascent
     (text as NSString).drawAtPoint(
         CGPointMake(dx, dy),
         withAttributes = attrs
@@ -405,7 +393,7 @@ actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
 }
 
 
-actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double): Unit {
+public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double): Unit {
     val attrs = mapOf<Any?, Any?>(
         NSFontAttributeName to (this as DrawingContext2DImpl).font,
         NSStrokeColorAttributeName to this.stroke.closestColor().toUiColor(),
@@ -424,7 +412,9 @@ actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double)
     )
     val ns = (text as NSString)
     val sizeTaken = ns.sizeWithAttributes(attrs).useContents { width }
-    val height = font.lineHeight
+    // See drawText: shift up by the ascender to convert baseline (x, y) into drawAtPoint's
+    // top-of-bounding-box origin.
+    val ascent = font.ascender
     var dx = x
     var dy = y
     when((this as DrawingContext2DImpl).textAlign) {
@@ -436,24 +426,24 @@ actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double)
             dx -= sizeTaken / 2
         }
     }
-    dy -= height
+    dy -= ascent
     (text as NSString).drawAtPoint(
         CGPointMake(dx, dy),
         withAttributes = attrs
     )
 }
 
-actual fun DrawingContext2D.font(size: Double, value: FontAndStyle): Unit {
+public actual fun DrawingContext2D.font(size: Double, value: FontAndStyle): Unit {
     (this as DrawingContext2DImpl).font =
         value.font.get(size, value.weight.toUIFontWeight(), value.italic)
 }
 
-actual fun DrawingContext2D.textAlign(alignment: TextAlign): Unit {
+public actual fun DrawingContext2D.textAlign(alignment: TextAlign): Unit {
     (this as DrawingContext2DImpl).textAlign = alignment
 }
 
 
-actual fun DrawingContext2D.fill(): Unit {
+public actual fun DrawingContext2D.fill(): Unit {
     val impl = this as DrawingContext2DImpl
     when (val paint = impl.fill) {
         is LinearGradient -> {
@@ -472,7 +462,7 @@ actual fun DrawingContext2D.fill(): Unit {
     }
 }
 
-actual fun DrawingContext2D.fillEvenOdd(): Unit {
+public actual fun DrawingContext2D.fillEvenOdd(): Unit {
     val impl = this as DrawingContext2DImpl
     when (val paint = impl.fill) {
         is LinearGradient -> {
@@ -491,7 +481,7 @@ actual fun DrawingContext2D.fillEvenOdd(): Unit {
     }
 }
 
-actual var DrawingContext2D.strokePaint: Paint
+public actual var DrawingContext2D.strokePaint: Paint
     get() = (this as DrawingContext2DImpl).stroke
     set(value) {
         (this as DrawingContext2DImpl).stroke = value
@@ -505,7 +495,7 @@ actual var DrawingContext2D.strokePaint: Paint
         )
     }
 
-actual var DrawingContext2D.fillPaint: Paint
+public actual var DrawingContext2D.fillPaint: Paint
     get() = (this as DrawingContext2DImpl).fill
     set(value) {
         (this as DrawingContext2DImpl).fill = value
@@ -519,18 +509,18 @@ actual var DrawingContext2D.fillPaint: Paint
         )
     }
 
-actual val DrawingContext2D.width: Double get() = (this as DrawingContext2DImpl).width
+public actual val DrawingContext2D.width: Double get() = (this as DrawingContext2DImpl).width
 
-actual val DrawingContext2D.height: Double get() = (this as DrawingContext2DImpl).height
+public actual val DrawingContext2D.height: Double get() = (this as DrawingContext2DImpl).height
 
 
-actual fun DrawingContext2D.clear() {
+public actual fun DrawingContext2D.clear() {
     (this as DrawingContext2DImpl).wraps.let {
         CGContextClearRect(it, CGRectMake(0.0, 0.0, width, height))
     }
 }
 
-actual var DrawingContext2D.lineCapStyle: LineCap
+public actual var DrawingContext2D.lineCapStyle: LineCap
     get() = (this as DrawingContext2DImpl).let { impl ->
         when (impl._lineCap) {
             CGLineCap.kCGLineCapButt -> LineCap.butt
@@ -550,7 +540,7 @@ actual var DrawingContext2D.lineCapStyle: LineCap
         }
     }
 
-actual var DrawingContext2D.lineJoinStyle: LineJoin
+public actual var DrawingContext2D.lineJoinStyle: LineJoin
     get() = (this as DrawingContext2DImpl).let { impl ->
         when (impl._lineJoin) {
             CGLineJoin.kCGLineJoinMiter -> LineJoin.miter
@@ -574,12 +564,12 @@ actual var DrawingContext2D.lineJoinStyle: LineJoin
 // Clipping
 // ============================================================================
 
-actual fun DrawingContext2D.clip() {
+public actual fun DrawingContext2D.clip() {
     val impl = this as DrawingContext2DImpl
     CGContextClip(impl.wraps)
 }
 
-actual fun DrawingContext2D.clip(fillRule: FillRule) {
+public actual fun DrawingContext2D.clip(fillRule: FillRule) {
     val impl = this as DrawingContext2DImpl
     when (fillRule) {
         FillRule.nonzero -> CGContextClip(impl.wraps)
@@ -587,7 +577,7 @@ actual fun DrawingContext2D.clip(fillRule: FillRule) {
     }
 }
 
-actual fun DrawingContext2D.resetClip() {
+public actual fun DrawingContext2D.resetClip() {
     val impl = this as DrawingContext2DImpl
     // CoreGraphics doesn't have a direct resetClip, so we restore to full canvas
     // This requires that we've saved state before clipping. As a fallback,
@@ -599,13 +589,13 @@ actual fun DrawingContext2D.resetClip() {
 // Line Dash
 // ============================================================================
 
-actual fun DrawingContext2D.setLineDash(segments: List<Double>) {
+public actual fun DrawingContext2D.setLineDash(segments: List<Double>) {
     val impl = this as DrawingContext2DImpl
     impl._lineDashSegments = segments.toDoubleArray()
     impl.applyLineDash()
 }
 
-actual fun DrawingContext2D.getLineDash(): List<Double> {
+public actual fun DrawingContext2D.getLineDash(): List<Double> {
     val impl = this as DrawingContext2DImpl
     return impl._lineDashSegments.toList()
 }
@@ -614,7 +604,7 @@ actual fun DrawingContext2D.getLineDash(): List<Double> {
 // Text Metrics
 // ============================================================================
 
-actual fun DrawingContext2D.measureText(text: String): TextMetrics {
+public actual fun DrawingContext2D.measureText(text: String): TextMetrics {
     val impl = this as DrawingContext2DImpl
     val attrs = mapOf<Any?, Any?>(
         NSFontAttributeName to impl.font
@@ -638,7 +628,7 @@ actual fun DrawingContext2D.measureText(text: String): TextMetrics {
 // Shapes
 // ============================================================================
 
-actual fun DrawingContext2D.roundRect(x: Double, y: Double, width: Double, height: Double, radius: Double) {
+public actual fun DrawingContext2D.roundRect(x: Double, y: Double, width: Double, height: Double, radius: Double) {
     val impl = this as DrawingContext2DImpl
     val path = CGPathCreateWithRoundedRect(
         CGRectMake(x, y, width, height),
@@ -649,7 +639,7 @@ actual fun DrawingContext2D.roundRect(x: Double, y: Double, width: Double, heigh
     CGContextAddPath(impl.wraps, path)
 }
 
-actual fun DrawingContext2D.roundRect(
+public actual fun DrawingContext2D.roundRect(
     x: Double, y: Double, width: Double, height: Double,
     topLeftRadius: Double, topRightRadius: Double,
     bottomRightRadius: Double, bottomLeftRadius: Double
@@ -690,7 +680,7 @@ actual fun DrawingContext2D.roundRect(
     CGContextClosePath(impl.wraps)
 }
 
-actual fun DrawingContext2D.ellipse(
+public actual fun DrawingContext2D.ellipse(
     x: Double, y: Double,
     radiusX: Double, radiusY: Double,
     rotation: Double,
@@ -725,11 +715,11 @@ actual fun DrawingContext2D.ellipse(
 // Hit Testing
 // ============================================================================
 
-actual fun DrawingContext2D.isPointInPath(x: Double, y: Double): Boolean {
+public actual fun DrawingContext2D.isPointInPath(x: Double, y: Double): Boolean {
     return isPointInPath(x, y, FillRule.nonzero)
 }
 
-actual fun DrawingContext2D.isPointInPath(x: Double, y: Double, fillRule: FillRule): Boolean {
+public actual fun DrawingContext2D.isPointInPath(x: Double, y: Double, fillRule: FillRule): Boolean {
     val impl = this as DrawingContext2DImpl
     val path = CGContextCopyPath(impl.wraps) ?: return false
     // CGPathContainsPoint's last parameter is eoFill: true for even-odd, false for non-zero winding
@@ -741,7 +731,7 @@ actual fun DrawingContext2D.isPointInPath(x: Double, y: Double, fillRule: FillRu
 // Shadows
 // ============================================================================
 
-actual var DrawingContext2D.shadowBlur: Double
+public actual var DrawingContext2D.shadowBlur: Double
     get() = (this as DrawingContext2DImpl)._shadowBlur
     set(value) {
         val impl = this as DrawingContext2DImpl
@@ -749,7 +739,7 @@ actual var DrawingContext2D.shadowBlur: Double
         impl.applyShadow()
     }
 
-actual var DrawingContext2D.shadowColorValue: Color
+public actual var DrawingContext2D.shadowColorValue: Color
     get() = (this as DrawingContext2DImpl)._shadowColor
     set(value) {
         val impl = this as DrawingContext2DImpl
@@ -757,7 +747,7 @@ actual var DrawingContext2D.shadowColorValue: Color
         impl.applyShadow()
     }
 
-actual var DrawingContext2D.shadowOffsetX: Double
+public actual var DrawingContext2D.shadowOffsetX: Double
     get() = (this as DrawingContext2DImpl)._shadowOffsetX
     set(value) {
         val impl = this as DrawingContext2DImpl
@@ -765,7 +755,7 @@ actual var DrawingContext2D.shadowOffsetX: Double
         impl.applyShadow()
     }
 
-actual var DrawingContext2D.shadowOffsetY: Double
+public actual var DrawingContext2D.shadowOffsetY: Double
     get() = (this as DrawingContext2DImpl)._shadowOffsetY
     set(value) {
         val impl = this as DrawingContext2DImpl
@@ -777,7 +767,7 @@ actual var DrawingContext2D.shadowOffsetY: Double
 // Transform
 // ============================================================================
 
-actual fun DrawingContext2D.getTransform(): TransformMatrix {
+public actual fun DrawingContext2D.getTransform(): TransformMatrix {
     val impl = this as DrawingContext2DImpl
     val ctm = CGContextGetCTM(impl.wraps)
     return ctm.useContents {
@@ -792,7 +782,7 @@ actual fun DrawingContext2D.getTransform(): TransformMatrix {
     }
 }
 
-actual fun DrawingContext2D.setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) {
+public actual fun DrawingContext2D.setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) {
     val impl = this as DrawingContext2DImpl
     // Get current transform and compute its inverse to reset
     val current = CGContextGetCTM(impl.wraps)

@@ -17,8 +17,9 @@ import kotlinx.coroutines.launch
 import platform.UIKit.UIModalPresentationOverFullScreen
 import platform.UIKit.UIViewController
 
-actual fun ElementContext.overlay(
+public actual fun ElementContext.overlay(
     modal: Boolean,
+    navClosable: Boolean,
     transition: ScreenTransitions,
     body: ContainerElement.(remove: () -> Unit) -> Unit
 ) {
@@ -49,10 +50,11 @@ actual fun ElementContext.overlay(
         }
         viewController.definesPresentationContext = true
         viewController.modalPresentationStyle = UIModalPresentationOverFullScreen
+        var overlayRoot: Element? = null
         viewController.kiteUi(split(viewController)) {
             beforeSetup { themeChoice = ThemeDerivation { theme.withoutBack } }.frame {
-                context.coordinatorFrame = null
                 context.overlayFrame = this
+                overlayRoot = this
                 body {
                     this@kiteUi.context.dismissSelf()
                 }
@@ -61,6 +63,7 @@ actual fun ElementContext.overlay(
         AppScope.launch {
             delay(100)
             present(viewController)
+            overlayRoot?.trapFocus()
         }
     }
 }

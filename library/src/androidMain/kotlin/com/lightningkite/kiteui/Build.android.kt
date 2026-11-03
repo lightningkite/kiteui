@@ -5,8 +5,8 @@ import android.content.pm.PackageInfo
 import com.lightningkite.kiteui.views.AndroidAppContext
 
 
-actual object Build {
-    actual val version: String
+public actual object Build {
+    public actual val version: String
         get() {
             try {
                 val pInfo: PackageInfo = AndroidAppContext.applicationCtx.packageManager.getPackageInfo(
@@ -18,7 +18,7 @@ actual object Build {
                 return "?"
             }
         }
-    actual val debug: Boolean
+    public actual val debug: Boolean
         get() {
             try {
                 return AndroidAppContext.applicationCtx.applicationInfo.flags.and(ApplicationInfo.FLAG_DEBUGGABLE) != 0

@@ -1,33 +1,45 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.l2.RecyclerViewRendererSet.Companion.MultiBuilder
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+import com.lightningkite.reactive.context.ReactiveContext
+import com.lightningkite.reactive.context.reactive
+import com.lightningkite.reactive.core.Reactive
 
-fun <T, ID> Recycler2.children(items: Reactive<List<T>>, id: (T)->ID, render: ViewWriter.(value: Reactive<T>) -> Unit): Unit {
+/**
+ * Configures the recycler to display [items] using keyed ID diffing with virtualization.
+ */
+public fun <T, ID> Recycler2.children(items: Reactive<List<T>>, id: (T)->ID, render: ViewWriter.(value: Reactive<T>) -> Unit): Unit {
     rendererSet = RecyclerViewRendererSet.single(id, render)
     reactive {
         data = RecyclerViewData.fromList(items())
     }
 }
-fun <T, ID> Recycler2.children(items: ReactiveContext.()->List<T>, id: (T)->ID, render: ViewWriter.(value: Reactive<T>) -> Unit): Unit {
+
+/**
+ * Configures the recycler to display [items] using keyed ID diffing with virtualization.
+ */
+public fun <T, ID> Recycler2.children(items: ReactiveContext.()->List<T>, id: (T)->ID, render: ViewWriter.(value: Reactive<T>) -> Unit): Unit {
     rendererSet = RecyclerViewRendererSet.single(id, render)
     reactive {
         data = RecyclerViewData.fromList(items())
     }
 }
-fun <T, ID> Recycler2.childrenMultipleTypes(items: Reactive<List<T>>, id: (T)->ID, renderers: MultiBuilder<T, ID>.() -> Unit): Unit {
+
+/**
+ * Configures the recycler to display [items] with multiple renderer types.
+ */
+public fun <T, ID> Recycler2.childrenMultipleTypes(items: Reactive<List<T>>, id: (T)->ID, renderers: MultiBuilder<T, ID>.() -> Unit): Unit {
     rendererSet = RecyclerViewRendererSet.multi(id, renderers)
     reactive {
         data = RecyclerViewData.fromList(items())
     }
 }
-fun <T, ID> Recycler2.childrenMultipleTypes(items: ReactiveContext.()->List<T>, id: (T)->ID, renderers: MultiBuilder<T, ID>.() -> Unit): Unit {
+
+/**
+ * Configures the recycler to display [items] with multiple renderer types.
+ */
+public fun <T, ID> Recycler2.childrenMultipleTypes(items: ReactiveContext.()->List<T>, id: (T)->ID, renderers: MultiBuilder<T, ID>.() -> Unit): Unit {
     rendererSet = RecyclerViewRendererSet.multi(id, renderers)
     reactive {
         data = RecyclerViewData.fromList(items())

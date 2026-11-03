@@ -5,19 +5,27 @@ import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
+public actual class RadioToggleButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverValue: String? get() = radioToggleDriverValue()
-    override val driverActions get() = super.driverActions + radioToggleDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + radioToggleDriverActions()
 
-    val input = FutureElement().apply {
+    internal val input = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
         attributes.type = "radio"
         classes.add("checkResponsive")
-        attributes.hidden = true
-        style.display = "none"
+        // Keep the native radio in the accessibility tree and keyboard-focusable, but hide it
+        // visually (display:none / visibility:hidden would remove it from the a11y tree).
+        setStyleProperty("position", "absolute")
+        setStyleProperty("opacity", "0")
+        setStyleProperty("width", "1px")
+        setStyleProperty("height", "1px")
+        setStyleProperty("margin", "-1px")
+        setStyleProperty("overflow", "hidden")
+        setStyleProperty("clip-path", "inset(50%)")
     }
 
     init {
@@ -25,21 +33,15 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
         native.classes.add("kiteui-stack")
         native.classes.add("checkResponsive")
         native.classes.add("clickable")
-        native.attributes.tabIndex = 0
-        native.addEventListener("keydown", { ev ->
-            ev as KeyboardEvent
-            if (ev.code == KeyCodes.space || ev.code == KeyCodes.enter) {
-                ev.preventDefault()
-            }
-        })
-        native.addEventListener("keyup", { ev ->
-            ev as KeyboardEvent
-            if (ev.code == KeyCodes.space || ev.code == KeyCodes.enter) {
-                input.click()
-                ev.preventDefault()
-            }
-        })
+        native.setStyleProperty("position", "relative")
         native.appendChild(input)
+        input.addEventListener("keydown", { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.enter) {
+                ev.preventDefault()
+                input.click()
+            }
+        })
     }
 
     override fun nativeAddChild(index: Int, element: Element) {
@@ -47,7 +49,7 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
         Frame.internalAddChildStack(this, index, element)
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = input.vprop(
+    public actual val checked: MutableReactiveValue<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value }
@@ -59,19 +61,14 @@ actual class RadioToggleButton actual constructor(context: ElementContext) : Nat
             input.attributes.disabled = !value
             input.setAttribute("aria-disabled", if (value) null else "true")
             native.attributes.disabled = !value
-            native.setAttribute("aria-disabled", if (value) null else "true")
         }
 
     init {
-        native.setAttribute("role", "radio")
-        native.setAttribute("aria-checked", "false")
         checked.addListener {
             if (checked.value) {
                 native.classes.add("checked")
-                native.setAttribute("aria-checked", "true")
             } else {
                 native.classes.remove("checked")
-                native.setAttribute("aria-checked", "false")
             }
         }
     }

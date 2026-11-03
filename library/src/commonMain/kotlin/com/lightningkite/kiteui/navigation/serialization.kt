@@ -9,7 +9,7 @@ import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.properties.Properties
 
-var DefaultSerializersModule: SerializersModule = EmptySerializersModule()
+public var DefaultSerializersModule: SerializersModule = EmptySerializersModule()
     set(value) {
         field = value
         DefaultJsonCurrent = Json {
@@ -25,9 +25,9 @@ private var DefaultJsonCurrent: Json = Json {
     ignoreUnknownKeys = true
 }
 
-val DefaultJson: Json get() = DefaultJsonCurrent
+public val DefaultJson: Json get() = DefaultJsonCurrent
 private var UrlPropertiesCurrent: Properties = Properties(DefaultSerializersModule)
-val UrlProperties: Properties get() = UrlPropertiesCurrent
+public val UrlProperties: Properties get() = UrlPropertiesCurrent
 
 private var DefaultUriFormatCurrent: UriFormat = UriFormat(DefaultSerializersModule)
-val DefaultUriFormat: UriFormat get() = DefaultUriFormatCurrent
+public val DefaultUriFormat: UriFormat get() = DefaultUriFormatCurrent

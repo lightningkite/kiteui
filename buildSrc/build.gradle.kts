@@ -1,15 +1,19 @@
 plugins {
     `kotlin-dsl`
+    kotlin("plugin.serialization") version embeddedKotlinVersion
 }
 repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.3.20")
-    implementation("org.apache.pdfbox:fontbox:2.0.27")
+    implementation(libs.kotlin.gradle.plugin.api)
+    implementation(libs.fontbox)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 }
 kotlin {
     jvmToolchain(17)
+    // Build logic for this repo only. src/main/kotlin is a gitignored copy of the gradle-plugin sources (see below).
+    sourceSets.main { kotlin.srcDir("src/buildLogic/kotlin") }
 }
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     compilerOptions {

@@ -11,7 +11,7 @@ import platform.UIKit.UIView
 
 
 
-class WrapperView : UIView(CGRectZero.readValue()) {
+public class WrapperView : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false

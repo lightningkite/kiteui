@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 
 
-actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
+public actual class SwapView actual constructor(context: ElementContext) : NativeContainerElement(context) {
     actual override val underlyingNativeElement: SwapView get() = this
 
     init {
@@ -19,19 +19,19 @@ actual class SwapView actual constructor(context: ElementContext) : NativeContai
         Frame.internalAddChildStack(this, index, element)
     }
 
-    var previousLast: Element? = null
-    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit) {
+    internal var previousLast: Element? = null
+    public actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit) {
         nativeSwap(transition, createNewView)
     }
 }
 
-expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit)
+public expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit)
 //{
 //    val keyframeName = KiteUiCss.transition(transition)
 //
 //    val myStyle = window.getComputedStyle(native)
 //    val transitionTime = myStyle.transitionDuration.takeUnless { it.isBlank() } ?: "0.15"
-//    val transitionMs = Duration.parseOrNull(transitionTime)?.inWholeMilliseconds ?: 150L
+//    val transitionMs = Duration.parse(transitionTime)?.inWholeMilliseconds ?: 150L
 //    native.children.let { (0 until it.length).map { i -> it.get(i) } }.filterIsInstance<HTMLElement>()
 //        .forEach { view ->
 //            if (view.asDynamic().__ROCK__removing) return@forEach

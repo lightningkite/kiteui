@@ -1,7 +1,9 @@
 // by Claude
 package com.lightningkite.mppexampleapp.internal
 
+import com.lightningkite.kiteui.ExperimentalKiteUi
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.Untested
 import com.lightningkite.kiteui.camera.BarcodeFormat
 import com.lightningkite.kiteui.camera.BarcodeResult
 import com.lightningkite.kiteui.camera.cameraPreview
@@ -18,6 +20,7 @@ import com.lightningkite.reactive.core.Signal
 object CameraScannerTestPage : Page {
     override val title: Reactive<String> = Constant("Camera Scanner Test")
 
+    @OptIn(ExperimentalKiteUi::class, Untested::class)
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
         val scannedBarcodes = Signal<List<BarcodeResult>>(emptyList())
         val captureCount = Signal(0)

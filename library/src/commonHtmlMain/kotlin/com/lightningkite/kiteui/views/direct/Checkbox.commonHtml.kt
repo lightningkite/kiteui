@@ -3,13 +3,14 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.kiteui.views.AiDriver
 
 
-actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
+public actual class Checkbox actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     actual override val underlyingNativeElement: Checkbox get() = this
 
     override val driverValue: String? get() = checkboxDriverValue()
-    override val driverActions get() = super.driverActions + checkboxDriverActions()
+    override val driverActions: AiDriver.Actions get() = super.driverActions + checkboxDriverActions()
     init {
         themeChoice += ClickableSemantic
         native.tag = "input"
@@ -19,7 +20,7 @@ actual class Checkbox actual constructor(context: ElementContext) : NativeIntera
         native.classes.add("clickable")
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = native.vprop(
+    public actual val checked: MutableReactiveValue<Boolean> = native.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value }

@@ -4,8 +4,8 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.mainPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.navigation.mainPageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.AppState
@@ -87,6 +87,6 @@ object AnimationTest2Page : Page {
 
     private suspend fun ViewWriter.fakeLogin(email: Signal<String>) {
         fetch("fake-login/${email.await()}")
-        pageNavigator.navigate(ControlsPage)
+        context.pageNavigator.navigate(ControlsPage)
     }
 }

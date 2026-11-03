@@ -10,7 +10,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
-actual val RawVideoView.nativeTime: MutableReactive<Duration>
+public actual val RawVideoView.nativeTime: MutableReactive<Duration>
     get() = remember {
         rerunOn(AppState.animationFrame)
         (this@nativeTime.native.element as? HTMLVideoElement)?.currentTime?.seconds ?: Duration.ZERO
@@ -28,7 +28,7 @@ actual val RawVideoView.nativeTime: MutableReactive<Duration>
 //            }
 //        }
 //    )
-actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
+public actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
     get() = native.vprop(
         eventName = "timeupdate",
         get = { (this.element as? HTMLVideoElement)?.paused?.not() ?: (native.attributes.autoplay != null) },
@@ -44,7 +44,7 @@ actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
             }
         }
     )
-actual val RawVideoView.nativeVolume: MutableReactive<Float>
+public actual val RawVideoView.nativeVolume: MutableReactive<Float>
     get() = native.vprop(
         eventName = "volumechange",
         get = { (this.element as? HTMLVideoElement)?.volume?.toFloat() ?: 1f },
@@ -55,7 +55,7 @@ actual val RawVideoView.nativeVolume: MutableReactive<Float>
         }
     )
 
-actual fun RawVideoView.nativeLoad(url: String?) {
+public actual fun RawVideoView.nativeLoad(url: String?) {
     native.onElement {
         val v = it as HTMLVideoElement
         v.addEventListener("error", { _state.state = ReactiveState.exception(Exception("Failed to load video")) })
@@ -64,13 +64,13 @@ actual fun RawVideoView.nativeLoad(url: String?) {
         v.src = url ?: ""
     }
 }
-actual val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>>
+public actual val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>>
     get() {
         return (native.element as? HTMLVideoElement)?.seekable?.let {
             (0 until it.length).map { i -> it.start(i)..it.end(i) }
         } ?: listOf()
     }
-actual val RawVideoView.nativeDuration: Reactive<Double?>
+public actual val RawVideoView.nativeDuration: Reactive<Double?>
     get() = native.vread(
         eventName = "durationchange",
         get = {

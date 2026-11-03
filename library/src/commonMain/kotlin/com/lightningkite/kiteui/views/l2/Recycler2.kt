@@ -19,13 +19,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class Recycler2(
-    val outerFrame: Frame,
-    val vertical: Boolean,
-    val refreshAction: Action?,
-    var log: Log?
+public class Recycler2(
+    public val outerFrame: Frame,
+    public val vertical: Boolean,
+    public val refreshAction: Action?,
+    public var log: Log?
 ) : ElementWithChildren, Element by outerFrame {
-    constructor(
+    public constructor(
         context: ElementContext,
         vertical: Boolean = true,
         refreshAction: Action? = null,
@@ -44,7 +44,7 @@ class Recycler2(
 
     override val children: List<Element> get() = cells.children
 
-    var gap: Dimension?
+    public var gap: Dimension?
         get() = cells.gap
         set(value) {
             cells.gap = value
@@ -56,33 +56,39 @@ class Recycler2(
             cells.paddingByEdge = value
         }
 
-    var recycling: Boolean = true
+    public var recycling: Boolean = true
 
     private val _centerIndex = Signal(0)
     private val _displayedRangeFirst = Signal(0)
-    val firstIndex: Reactive<Int> = _displayedRangeFirst.withWrite {
+    public val firstIndex: Reactive<Int> = _displayedRangeFirst.withWrite {
         if (it != _displayedRangeFirst.value)
             scrollToIndex(it, Align.Start)
     }
     private val _displayedRangeLast = Signal(0)
-    val lastIndex: Reactive<Int> = _displayedRangeLast.withWrite {
+    public val lastIndex: Reactive<Int> = _displayedRangeLast.withWrite {
         if (it != _displayedRangeLast.value)
             scrollToIndex(it, Align.End)
     }
-    val centerIndex: MutableReactive<Int> = _centerIndex.withWrite {
+    public val centerIndex: MutableReactive<Int> = _centerIndex.withWrite {
         if (it != _centerIndex.value)
             scrollToIndex(it, Align.Center)
     }
 
-    var snapToElements: Align? = null
+    public var snapToElements: Align? = null
         set(value) {
             field = value
             scroll.snapToElements = if (vertical) null to value else value to null
         }
-    var scrollSnapStop: Boolean = false
+    public var scrollSnapStop: Boolean = false
         set(value) {
             field = value
             scroll.scrollSnapStop = value
+        }
+
+    public var userScrollEnabled: Boolean
+        get() = scroll.userScrollEnabled
+        set(value) {
+            scroll.userScrollEnabled = value
         }
 
     init {
@@ -119,18 +125,18 @@ class Recycler2(
             else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem))
                 .scrolling(vertical = this@Recycler2.vertical, horizontal = !this@Recycler2.vertical) {
                     this@Recycler2.fakeScroll = this
-                    ignoreInteraction = Platform.current != Platform.Web
+                    ignoreInteraction = !fakeScrollIsDraggable
                 }
                 .programmatic {
                     this@Recycler2.fakeScrollContent = this
-                    ignoreInteraction = Platform.current != Platform.Web
+                    ignoreInteraction = !fakeScrollIsDraggable
                     themed(ThemeDerivation {
                         it.copy(
                             id = "scrollindicator",
                             background = it.foreground.applyAlpha(0.5f)
                         ).withBack
                     }).unpadded.frame {
-                        ignoreInteraction = Platform.current != Platform.Web
+                        ignoreInteraction = !fakeScrollIsDraggable
                         this@Recycler2.fakeScrollIndicator = this
                         opacity = 0.0
                     }
@@ -138,23 +144,23 @@ class Recycler2(
         }
     }
 
-    var overdraw = AppState.windowInfo.value.height.viewUnits / 3.0
+    public var overdraw: Double = AppState.windowInfo.value.height.viewUnits / 3.0
 
     private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor.SpecificElement(0, Align.Start)
 
-    var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1)
+    public var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1)
         set(value) {
             field = value
             log?.log("placer set calls invalidateLayout()")
             cells.invalidateLayout()
         }
-    var data: RecyclerViewData<*, *>? = RecyclerViewData.Empty
+    public var data: RecyclerViewData<*, *>? = RecyclerViewData.Empty
         set(value) {
             field = value
             log?.log("data set calls invalidateLayout()")
             cells.invalidateLayout()
         }
-    var rendererSet: RecyclerViewRendererSet<*, *>? = RecyclerViewRendererSet.Empty
+    public var rendererSet: RecyclerViewRendererSet<*, *>? = RecyclerViewRendererSet.Empty
         set(value) {
             field = value
             (cells.children.lastIndex downTo 1).forEach { cells.removeChild(it) }
@@ -168,7 +174,7 @@ class Recycler2(
     private var reuseableCells = ArrayList<MyCell<*>>()
     private val usedCells = HashSet<MyCell<*>>() // by Claude - reused across layout passes to avoid allocation
 
-    fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
+    public fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
         activeCells.find { it.index == toIndex }?.let {
             // Nice!  Just scroll away!
             scroll.scrollTo(
@@ -253,8 +259,11 @@ class Recycler2(
                     } else {
                         val index = if (this@Recycler2.activeCells.isEmpty()) -1
                         else if (index > this@Recycler2.activeCells.last().index) -1
-                        else if (index < this@Recycler2.activeCells.first().index) 0
+                        // +1 on the found/not-found cases below: children[0] is the scrollSentinel,
+                        // so positions among activeCells must be shifted past it.
+                        else if (index < this@Recycler2.activeCells.first().index) 1
                         else this@Recycler2.activeCells.binarySearchBy(index) { it.index }
+                            .let { if (it < 0) -it - 1 else it } + 1
                         if (index == -1) this@Recycler2.cells.addChild(element)
                         else this@Recycler2.cells.addChild(index, element)
                     }
@@ -356,7 +365,7 @@ class Recycler2(
     private var indicatorShown: Boolean = false
     private fun setFakeScrollByRatio(start: Double, end: Double) {
         log?.log("setFakeScrollByRatio $start - $end")
-        if (Platform.current == Platform.Web) {
+        if (fakeScrollIsDraggable) {
             val vp = fakeScroll.viewport.state.getOrNull() ?: return
             val vps = if (vertical) vp.height else vp.width
             fakeScrollSize = vps / (end - start)
@@ -414,9 +423,7 @@ class Recycler2(
 
         override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
             // nothing to do.
-            if (Platform.current == Platform.Web) {
-                log?.log("")
-                suppressFakeScrollEvent = true
+            if (fakeScrollIsDraggable) {
                 val s = min(within.width, within.height)
                 if (vertical) {
                     inProgress.place(
@@ -435,11 +442,17 @@ class Recycler2(
                         bottom = 1.0,
                     )
                 }
-                fakeScroll.scrollTo(
-                    if (vertical) 0.0 else fakeScrollOffset,
-                    if (vertical) fakeScrollOffset else 0.0,
-                    false
-                )
+                // Scrolling to where it already is fires no scroll event, so it mustn't set the flag, which would
+                // then swallow the user's next real scroll of the fake scrollbar.
+                val current = fakeScroll.viewport.state.getOrNull()?.let { if (vertical) it.top else it.left }
+                if (current == null || abs(current - fakeScrollOffset) >= 0.5) {
+                    suppressFakeScrollEvent = true
+                    fakeScroll.scrollTo(
+                        if (vertical) 0.0 else fakeScrollOffset,
+                        if (vertical) fakeScrollOffset else 0.0,
+                        false
+                    )
+                }
             } else {
                 if (vertical) {
                     val size = ((fakeScrollIndicatorEnd - fakeScrollIndicatorStart) * within.height)
@@ -473,7 +486,7 @@ class Recycler2(
 
     init {
         fakeScrollContent.delegate = fakeScrollLayoutDelegate
-        if (Platform.current == Platform.Web) {
+        if (fakeScrollIsDraggable) {
             var lastSize: Size = Size.Zero
             cells.reactive {
                 val fsv = fakeScroll.viewport()
@@ -669,7 +682,7 @@ class Recycler2(
                         val id = rendererSet.id(item)
                         //Pulling a cell should prefer (in order) same item ID, off-screen, create new
                         // O(1) ID lookup via map instead of O(n) linear scan - by Claude
-                        (activeCellsByID.remove(id)?.also {
+                        (activeCellsByID.remove(id)?.takeIf { it.type == renderer }?.also {
                             // Same item ID: Data change should be animated here
                             it.onPullForPlacing(size, ReactiveState(item), index, inProgress)
                         } ?: reuseableCells.takeIf { recycling }?.popOrNull { it.type == renderer }?.also {
@@ -983,6 +996,10 @@ class Recycler2(
 
 }
 
+// Where there's a mouse to drag it, the fake scroll is a real scroller, whose scrollbar the user can drag across
+// the whole list; elsewhere it's only an indicator.
+private val fakeScrollIsDraggable: Boolean get() = Platform.current == Platform.Web || Platform.current == Platform.Desktop
+
 internal fun <T> MutableList<T>.popOrNull(): T? = if (!isEmpty()) removeAt(lastIndex) else null
 internal fun <T> MutableList<T>.popOrNull(condition: (T) -> Boolean): T? = indexOfFirst(condition).let { if (it != -1) removeAt(it) else null }
 internal fun rectOverlaps(
@@ -996,7 +1013,7 @@ internal fun rectOverlaps(
     b2: Double,
 ): Boolean = l1 < r2 && r1 > l2 && t1 < b2 && b1 > t2
 
-fun estimateJumpAnchor(
+internal fun estimateJumpAnchor(
     activeCells: List<RecyclerViewPlaceable>,
     vertical: Boolean,
     viewport: Rect

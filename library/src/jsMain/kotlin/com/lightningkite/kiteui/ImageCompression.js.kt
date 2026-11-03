@@ -11,7 +11,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.js.Promise
 
-actual suspend fun ImageLocal.compressed(
+public actual suspend fun ImageLocal.compressed(
     maxWidth: Int,
     maxHeight: Int,
     quality: Float

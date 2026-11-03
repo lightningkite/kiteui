@@ -1,18 +1,18 @@
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.LogRoot
-import com.lightningkite.kiteui.decodeURIComponent
-import com.lightningkite.kiteui.encodeURIComponent
+import com.lightningkite.kotlinx.serialization.uri.decodeURIComponent
+import com.lightningkite.kotlinx.serialization.uri.encodeURIComponent
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.core.*
 import kotlin.reflect.KClass
 
-class Routes(
-    val parsers: List<(UrlLikePath) -> Page?>,
-    val renderers: Map<KClass<out Page>, (Page) -> RouteRendered?>,
-    val fallback: Page = Page.Direct("Not Found") {
+public class Routes(
+    public val parsers: List<(UrlLikePath) -> Page?>,
+    public val renderers: Map<KClass<out Page>, (Page) -> RouteRendered?>,
+    public val fallback: Page = Page.Direct("Not Found") {
         frame {
             centered.col {
                 h1("Not Found")
@@ -21,46 +21,62 @@ class Routes(
         }
     }
 ) {
-    fun render(screen: Page) = renderers.get(screen::class)?.invoke(screen)
-    fun parse(path: UrlLikePath): Page? = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
-    fun parseOrFallback(path: UrlLikePath) =
+    public fun render(screen: Page): RouteRendered? = renderers.get(screen::class)?.invoke(screen)
+
+    /**
+     * Resolves [path] to the first matching [Page], or null if no route matches it.
+     *
+     * Every path reaching this function came from outside the application - an OS deep link, an
+     * HTTP request line, a restored navigation stack, a link inside user content - so a path that
+     * a generated parser cannot decode is bad input, not a programming error. Generated parsers
+     * decode segments into typed parameters and raise on garbage (`/user/abc` where an Int is
+     * expected), which is reported here as "no route matched" rather than propagating: an
+     * unroutable URL must produce a 404 or the fallback page, never a crash on input an attacker
+     * or a stale bookmark controls. The exception is logged so genuine parser faults stay visible.
+     */
+    public fun parse(path: UrlLikePath): Page? =
         try {
-            parse(path) ?: fallback
-        } catch(e: Exception) {
+            parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
+        } catch (e: Exception) {
             LogRoot.warn("Encountered exception when parsing route: $e")
-            fallback
+            null
         }
+
+    /** Like [parse], but substitutes [fallback] - typically a "not found" page - for an unroutable path. */
+    public fun parseOrFallback(path: UrlLikePath): Page = parse(path) ?: fallback
 }
 
-data class RouteRendered(
+public data class RouteRendered(
     val urlLikePath: UrlLikePath,
     val listenables: List<Listenable>
 )
 
-data class UrlLikePath(
+public data class UrlLikePath(
     val segments: List<String>,
     val parameters: Map<String, String>
 ) {
-    companion object {
-        val EMPTY = UrlLikePath(listOf(), mapOf())
+    public companion object {
+        public val EMPTY: UrlLikePath = UrlLikePath(listOf(), mapOf())
 
-        fun fromParts(pathname: String, search: String) = UrlLikePath(
-            segments = pathname.split('/').filter { it.isNotBlank() },
+        public fun fromParts(pathname: String, search: String): UrlLikePath = UrlLikePath(
+            segments = pathname.split('/').filter { it.isNotBlank() }.map { decodeURIComponent(it) },
             parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
-                .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
+                .associate { decodeURIComponent(it.substringBefore('=')) to decodeURIComponent(it.substringAfter('=')) }
         )
 
-        fun fromUrlString(url: String): UrlLikePath {
-            val parts = url.split("?")
-            return fromParts(parts.getOrNull(0) ?: "", parts.getOrNull(1) ?: "")
+        public fun fromUrlString(url: String): UrlLikePath {
+            // Only the first '?' separates path from query; a literal '?' is legal inside the
+            // query per RFC 3986. Splitting on every occurrence silently discarded everything
+            // after the second one, so "/p?redirect=/other?a=b" lost "a=b" with no error.
+            return fromParts(url.substringBefore('?'), url.substringAfter('?', ""))
         }
     }
 
     // by Claude - removed debug println that fired on every route render
-    fun render() = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
+    public fun render(): String = segments.joinToString("/") { encodeURIComponent(it) } + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
         "&",
         "?"
-    ) { "${it.key}=${encodeURIComponent(it.value)}" } ?: "")
+    ) { "${encodeURIComponent(it.key)}=${encodeURIComponent(it.value)}" } ?: "")
 
 }
 

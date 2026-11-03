@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.models
 
 
-fun Theme.Companion.y2026(primary: HSPColor = HSPColor(hue = 0.6.turns, saturation = 1f, brightness = 1f)): Theme =
+public fun Theme.Companion.y2026(primary: HSPColor = HSPColor(hue = 0.6.turns, saturation = 1f, brightness = 1f)): Theme =
     run {
         val backgroundGradient = LinearGradient(
             stops = listOf(

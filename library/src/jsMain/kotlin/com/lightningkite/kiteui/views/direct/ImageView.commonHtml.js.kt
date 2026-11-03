@@ -12,16 +12,16 @@ import org.w3c.dom.get
 import org.w3c.dom.url.URL
 
 @JsName("createObjectURLBlob")
-actual fun createObjectURL(blob: Blob): String {
+public actual fun createObjectURL(blob: Blob): String {
     return URL.Companion.createObjectURL(blob)
 }
 
 @JsName("createObjectURLFileReference")
-actual fun createObjectURL(fileReference: FileReference): String {
+public actual fun createObjectURL(fileReference: FileReference): String {
     return URL.createObjectURL(fileReference)
 }
 
 // by Claude - revoke blob URLs to prevent memory leaks
-actual fun revokeObjectURL(url: String) {
+public actual fun revokeObjectURL(url: String) {
     URL.revokeObjectURL(url)
 }

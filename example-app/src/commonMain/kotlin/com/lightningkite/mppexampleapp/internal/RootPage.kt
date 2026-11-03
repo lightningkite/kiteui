@@ -68,7 +68,6 @@ object RootPage : Page {
                 sectionLabel("Core UI & Controls")
                 linkPage { ControlsPage }
                 linkPage { TestRepeatableModifiers }
-                linkPage { ThemesPage }
                 linkPage { ColorTestPage }
                 linkPage { SliderExamplePage }
                 linkPage { DialogSamplesPage }
@@ -101,6 +100,7 @@ object RootPage : Page {
                 linkPage { NestedPopoverTestPage }
 
                 sectionLabel("Recycler / Lists")
+                linkPage { ListTestPage }
                 linkPage { RecyclerViewTestPage }
                 linkPage { Recycler2TestPage }
                 linkPage { RecyclerFilterTestPage }
@@ -114,11 +114,13 @@ object RootPage : Page {
                 sectionLabel("Media")
                 linkPage { ImageTestPage }
                 linkPage { ImageReloadTestPage }
+                linkPage { MediaViewTransitionTestPage }
                 linkPage { VideoElementPage }
                 linkPage { AudioPage }
                 linkPage { AudioTestPage }
                 linkPage { CameraScannerTestPage }
                 linkPage { MarkdownDemoPage }
+                linkPage { MapViewTestPage }
 
                 sectionLabel("Animation")
                 linkPage { ShownWhenTransitionPage }
@@ -169,7 +171,6 @@ object RootPage : Page {
                             }
                             icon(Icon.Companion.chevronRight, "Open")
                         }
-                        transitionId = "test-id"
                     }
                 }
 

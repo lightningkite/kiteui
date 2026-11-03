@@ -2,6 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.navigation.UrlLikePath
+import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.openTab
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.debugPrint
@@ -16,16 +18,16 @@ import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 
 @OptIn(ExperimentalNativeApi::class)
-class UILabelWithLayerBackground(val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
+public class UILabelWithLayerBackground(internal val context: WeakReference<RContext>) : UIView(CGRectZero.readValue()) {
     init {
         userInteractionEnabled = false
     }
 
-    val label = UILabel().also {
+    public val label: UILabel = UILabel().also {
         userInteractionEnabled = false
     }.also(::addSubview)
 
-    var foreground: Paint = Color.black
+    internal var foreground: Paint = Color.black
         set(f) {
             field = f
             label.textColor = when (f) {
@@ -71,7 +73,7 @@ class UILabelWithLayerBackground(val context: WeakReference<RContext>) : UIView(
 
 
     @ObjCAction
-    fun handleLink() {
+    public fun handleLink() {
         val text = label.attributedText ?: return
         val locationOfTouchInLabel = recognizer.locationInView(this)
         val layoutManager = NSLayoutManager()
@@ -101,14 +103,20 @@ class UILabelWithLayerBackground(val context: WeakReference<RContext>) : UIView(
 
         val link = label.attributedText?.attribute(NSLinkAttributeName, indexOfCharacter, effectiveRange = null)
 
-        when(link) {
-            is NSURL -> context.get()?.openTab(link.toString())
-            is NSString -> context.get()?.openTab(link as String)
+        val url = when(link) {
+            is NSURL -> link.toString()
+            is NSString -> link as String
+            else -> return
         }
+        val context = context.get() ?: return
+        // openTab hands every link to the OS, which can't open a path into this app.
+        val isAppPath = NSURL.URLWithString(url)?.let { it.scheme == null && it.host == null } == true
+        val page = if (isAppPath) context.pageNavigator.routes.parse(UrlLikePath.fromUrlString(url)) else null
+        if (page != null) context.pageNavigator.navigate(page) else context.openTab(url)
 
     }
 
-    val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
+    internal val recognizer: UITapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
     internal fun linkSetup(active: Boolean) {
         userInteractionEnabled = active
         label.userInteractionEnabled = active

@@ -4,7 +4,7 @@ package com.lightningkite.kiteui.gamepad
  * Represents the current state of a gamepad controller.
  * All values are raw input data without high-level mapping.
  */
-data class GamepadState(
+public data class GamepadState(
     /** Unique identifier for this controller */
     val id: String,
     
@@ -62,8 +62,8 @@ data class GamepadState(
     // Timestamp for delta calculations
     val timestamp: Long
 ) {
-    companion object {
-        val DISCONNECTED = GamepadState(
+    public companion object {
+        public val DISCONNECTED: GamepadState = GamepadState(
             id = "",
             name = "Disconnected",
             connected = false,
@@ -85,7 +85,7 @@ data class GamepadState(
 /**
  * Event representing a gamepad connection state change.
  */
-data class GamepadConnectionEvent(
+public data class GamepadConnectionEvent(
     val index: Int,
     val id: String,
     val name: String,

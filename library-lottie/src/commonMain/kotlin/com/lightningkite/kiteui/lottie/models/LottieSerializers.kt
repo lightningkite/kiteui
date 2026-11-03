@@ -48,7 +48,6 @@ object LottieAnimatedValueSerializer : KSerializer<LottieAnimatedValue> {
                     }
                 }
             }
-            else -> LottieAnimatedValue()
         }
     }
 

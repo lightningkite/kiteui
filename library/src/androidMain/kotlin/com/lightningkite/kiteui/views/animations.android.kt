@@ -20,7 +20,7 @@ private fun Transformation.applyToView(view: android.view.View) {
 private fun ScreenTransition.toInterpolator() =
     PathInterpolator(easing.x1, easing.y1, easing.x2, easing.y2)
 
-actual fun Element.animateIn(
+public actual fun Element.animateIn(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {
@@ -45,7 +45,7 @@ actual fun Element.animateIn(
         .start()
 }
 
-actual fun Element.animateOut(
+public actual fun Element.animateOut(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {

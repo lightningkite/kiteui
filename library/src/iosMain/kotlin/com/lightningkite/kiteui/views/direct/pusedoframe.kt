@@ -11,7 +11,7 @@ import platform.UIKit.UIScrollView
 import platform.UIKit.UIView
 
 
-fun UIView.setPsuedoframe(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
+internal fun UIView.setPsuedoframe(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
     if(this is UIScrollView) {
         setFrame(CGRectMake(x, y, width, height))
     } else {
@@ -28,7 +28,7 @@ fun UIView.setPsuedoframe(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloa
 }
 
 
-fun UIView.setPsuedoframe(value: CValue<CGRect>) {
+internal fun UIView.setPsuedoframe(value: CValue<CGRect>) {
 //    setFrame(value)
     setBounds(
         CGRectMake(

@@ -1,27 +1,29 @@
 package com.lightningkite.kiteui
 
-suspend inline fun fetch(
+import kotlin.time.Duration
+
+public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     type: String = "text/plain",
     body: String
-) = fetch(url = url, method = method, headers = headers, body = RequestBodyText(body, type))
-suspend inline fun fetch(
+): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyText(body, type))
+public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: Blob
-) = fetch(url = url, method = method, headers = headers, body = RequestBodyBlob(body))
-suspend inline fun fetch(
+): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyBlob(body))
+public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: FileReference
-) = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
+): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
 
 /** Interceptor that wraps HTTP requests. Call [proceed] to continue the chain. */
-typealias FetchInterceptor = suspend (
+public typealias FetchInterceptor = suspend (
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -30,28 +32,25 @@ typealias FetchInterceptor = suspend (
 ) -> RequestResponse
 
 /** Interceptors applied to all [fetch] calls, in order. Each wraps the next in the chain. */
-val fetchInterceptors: MutableList<FetchInterceptor> = mutableListOf()
+public val fetchInterceptors: MutableList<FetchInterceptor> = mutableListOf()
 
-suspend fun fetch(
+/**
+ * Issues a request through [HttpFetcher.default], applying the global [fetchInterceptors].
+ *
+ * Prefer taking an [HttpFetcher] and calling [HttpFetcher.fetch] on it. This function can only ever
+ * reach the one process-wide chain, so code that calls it cannot be pointed at a fake and cannot be
+ * tested against connectivity failures.
+ */
+public suspend fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: RequestBody? = null,
-    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
-    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
-): RequestResponse {
-    val interceptors = fetchInterceptors.toList()
-    var proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse = { u, m, h, b ->
-        fetchRaw(u, m, h, b, onUploadProgress, onDownloadProgress)
-    }
-    for (interceptor in interceptors.asReversed()) {
-        val next = proceed
-        proceed = { u, m, h, b -> interceptor(u, m, h, b, next) }
-    }
-    return proceed(url, method, headers, body)
-}
+    onUploadProgress: ProgressCallback? = null,
+    onDownloadProgress: ProgressCallback? = null,
+): RequestResponse = HttpFetcher.default.fetch(url, method, headers, body, onUploadProgress, onDownloadProgress)
 
-expect suspend fun fetchRaw(
+public expect suspend fun platformFetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
@@ -60,72 +59,130 @@ expect suspend fun fetchRaw(
     onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
 ): RequestResponse
 
-class ConnectionException(message: String, cause: Exception? = null): Exception(message, cause)
+@Deprecated("Use webSocket, the proper spelling", ReplaceWith("webSocket")) public fun websocket(url: String): WebSocket = webSocket(url)
+public expect fun platformWebSocket(url: String): WebSocket
+public fun webSocket(url: String): WebSocket = HttpFetcher.default.webSocket(url)
 
-enum class HttpMethod { GET, POST, PUT, PATCH, DELETE, HEAD }
+/** Any failure to complete an HTTP request. Retry [ConnectionException]; do not retry [RequestBlockedException]. */
+public sealed class FetchException(message: String, cause: Exception? = null): Exception(message, cause)
 
-fun httpHeaders(vararg entries: Pair<String, String>) = httpHeaders(entries.toList())
-expect fun httpHeaders(map: Map<String, String> = mapOf()): HttpHeaders
-expect fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders
-expect fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders
-expect fun httpHeaders(headers: HttpHeaders): HttpHeaders
-expect class HttpHeaders {
-    fun append(name: String, value: String)
-    fun delete(name: String)
-    fun get(name: String): String?
-    fun has(name: String): Boolean
-    fun set(name: String, value: String)
+/**
+ * The request could not reach the server: offline, DNS failure, connection refused, or timeout.
+ * Transient, so [ConnectivityGate] retries these with backoff.
+ *
+ * Open so that failures which *did* reach a server can refine it. Every subtype is still retryable,
+ * which keeps existing `catch (e: ConnectionException)` correct; the subtype only tells
+ * [ConnectivityGate] how to schedule the retry.
+ *
+ * A bare [ConnectionException] means no server was reached, so the fault is local and uncorrelated
+ * across clients. Recovery is driven by the platform reporting connectivity again rather than by the
+ * backoff timer, and needs no jitter — one device's network returning says nothing about anyone
+ * else's.
+ */
+public open class ConnectionException(message: String, cause: Exception? = null): FetchException(message, cause)
+
+/**
+ * A server answered and reported itself unable to serve the request (502, 503).
+ *
+ * Distinct from a bare [ConnectionException] because the fault is shared: a deploy or a crash fails
+ * every client at once, so their retries are synchronized and arrive as one spike on a server that is
+ * still coming up. [ConnectivityGate] jitters these to spread the herd, and no platform signal can
+ * announce the recovery, so the timer is the only way back.
+ */
+public class ServerUnavailableException(message: String, cause: Exception? = null): ConnectionException(message, cause)
+
+/**
+ * A server answered and asked us to slow down (429, 420).
+ *
+ * [retryAfter] carries the server's own instruction from the `Retry-After` header when it sent one,
+ * which takes precedence over computed backoff — the server knows when it will be ready and we do
+ * not. Jittered like [ServerUnavailableException], and for the same reason: a shared limit trips for
+ * many clients at once, and `Retry-After` hands them all an identical deadline to pile onto.
+ *
+ * Unlike the other cases the app is not broken here, merely throttled, so this is worth surfacing
+ * without blocking the UI.
+ */
+public class RateLimitedException(
+    message: String,
+    public val retryAfter: Duration? = null,
+    cause: Exception? = null,
+): ConnectionException(message, cause)
+
+/**
+ * The platform refused to issue the request on our behalf: a CORS rejection or mixed content in the
+ * browser, App Transport Security on iOS, the cleartext policy or a missing INTERNET permission on
+ * Android, or a certificate the platform would not accept.
+ *
+ * Deliberately not a [ConnectionException]. The refusal follows from the app's configuration and the
+ * platform's policy rather than from the state of the network, so it will fail identically forever;
+ * retrying spends requests to leave the user watching a spinner that can never resolve.
+ * [ConnectivityGate] therefore lets it propagate to the caller, who should surface it as the
+ * configuration error it is.
+ */
+public class RequestBlockedException(message: String, cause: Exception? = null): FetchException(message, cause)
+
+public enum class HttpMethod { GET, POST, PUT, PATCH, DELETE, HEAD }
+
+public fun httpHeaders(vararg entries: Pair<String, String>): HttpHeaders = httpHeaders(entries.toList())
+public expect fun httpHeaders(map: Map<String, String> = mapOf()): HttpHeaders
+public expect fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders
+public expect fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders
+public expect fun httpHeaders(headers: HttpHeaders): HttpHeaders
+public expect class HttpHeaders {
+    public fun append(name: String, value: String)
+    public fun delete(name: String)
+    public fun get(name: String): String?
+    public fun has(name: String): Boolean
+    public fun set(name: String, value: String)
 }
 
-expect class RequestResponse {
-    val status: Short
-    val ok: Boolean
-    val headers: HttpHeaders
-    suspend fun text(): String
-    suspend fun blob(): Blob
+public expect class RequestResponse {
+    public val status: Short
+    public val ok: Boolean
+    public val headers: HttpHeaders
+    public suspend fun text(): String
+    public suspend fun blob(): Blob
 }
 
-expect class Blob
-expect class FileReference
+public expect class Blob
+public expect class FileReference
 
-expect fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference
+public expect fun createFileReferenceFromBytes(bytes: ByteArray, mimeType: String, fileName: String): FileReference
 
-expect fun String.toBlob(contentType: String = "text/plain"): Blob
-expect fun ByteArray.toBlob(contentType: String = "text/plain"): Blob
-expect fun Blob.mimeType(): String
-expect fun Blob.bytes(): Long
-expect suspend fun Blob.toByteArray(): ByteArray
-expect suspend fun Blob.text(): String
-expect fun FileReference.mimeType():String
-expect fun FileReference.bytes():Long
-expect fun FileReference.fileName():String
-expect suspend fun FileReference.text(): String
+public expect fun String.toBlob(contentType: String = "text/plain"): Blob
+public expect fun ByteArray.toBlob(contentType: String = "text/plain"): Blob
+public expect fun Blob.mimeType(): String
+public expect fun Blob.bytes(): Long
+public expect suspend fun Blob.toByteArray(): ByteArray
+public expect suspend fun Blob.text(): String
+public expect fun FileReference.mimeType():String
+public expect fun FileReference.bytes():Long
+public expect fun FileReference.fileName():String
+public expect suspend fun FileReference.text(): String
 
-sealed interface RequestBody {
-    val type: String
-    val bytes: Long
+public sealed interface RequestBody {
+    public val type: String
+    public val bytes: Long
 }
-data class RequestBodyText(val content: String, override val type: String): RequestBody {
+public data class RequestBodyText(val content: String, override val type: String): RequestBody {
     override val bytes: Long get() = content.encodeToByteArray().size.toLong()
 }
-data class RequestBodyBlob(val content: Blob): RequestBody {
+public data class RequestBodyBlob(val content: Blob): RequestBody {
     override val type: String get() = content.mimeType()
     override val bytes: Long get() = content.bytes()
 }
-data class RequestBodyFile(val content: FileReference): RequestBody {
+public data class RequestBodyFile(val content: FileReference): RequestBody {
     override val type: String get() = content.mimeType()
     override val bytes: Long get() = content.bytes()
 }
 
-expect fun websocket(url: String): WebSocket
-
-interface WebSocket {
-    fun close(code: Short, reason: String)
-    fun send(data: String)
-    fun send(data: Blob)
-    fun onOpen(action: ()->Unit)
-    fun onMessage(action: (String)->Unit)
-    fun onBinaryMessage(action: (Blob)->Unit)
-    fun onClose(action: (Short)->Unit)
-    fun cancel() { close(1000, "Closed normally") }
+public interface WebSocket {
+    public fun close(code: Short, reason: String)
+    public fun send(data: String)
+    public fun send(data: Blob)
+    public fun onOpen(action: ()->Unit)
+    public fun onMessage(action: (String)->Unit)
+    public fun onBinaryMessage(action: (Blob)->Unit)
+    public fun onClose(action: (Short)->Unit)
+    public fun cancel() { close(1000, "Closed normally") }
 }

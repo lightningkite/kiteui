@@ -14,12 +14,12 @@ import com.lightningkite.kiteui.views.direct.textInput
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.fieldTheme
 import com.lightningkite.kiteui.views.l2.children
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.shared
+import com.lightningkite.reactive.core.remember
+import com.lightningkite.reactive.core.Signal
 
 @Routable("recycler-filter-test")
 object RecyclerFilterTestPage : Page {
-    val searchText = Property("")
+    val searchText = Signal("")
 
     override fun ElementWriter.CanAddTheme.render(): Unit {
         col {
@@ -32,9 +32,9 @@ object RecyclerFilterTestPage : Page {
             }
 
             expanding.col {
-                expanding.onNext(ListSemantic).recyclerView {
+                expanding.themed(ListSemantic).recyclerView {
                     children(
-                        items = shared {
+                        items = remember {
                             listOf("asdf", "asdf1", "qwerty").filter {
                                 it.contains(searchText().lowercase())
                             }

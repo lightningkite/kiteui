@@ -7,7 +7,7 @@ import kotlinx.browser.window
 import org.w3c.dom.*
 import kotlin.math.roundToInt
 
-actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
+public actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
     delegate?.let { value ->
         value.invalidate = {
             native.onElement {
@@ -24,7 +24,7 @@ actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
     }
 }
 
-actual fun Canvas.setupResizeListener() {
+public actual fun Canvas.setupResizeListener() {
     native.onElement { htmlNative ->
         htmlNative as HTMLCanvasElement
         val observer = ResizeObserver { _, _ ->

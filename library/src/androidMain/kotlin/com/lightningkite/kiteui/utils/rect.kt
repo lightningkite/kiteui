@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.utils
 import android.view.View
 import com.lightningkite.kiteui.models.Rect
 
-fun View.getBoundariesInWindow(): Rect {
+public fun View.getBoundariesInWindow(): Rect {
     val posInWindow = IntArray(2)
     getLocationInWindow(posInWindow)
     return Rect(
