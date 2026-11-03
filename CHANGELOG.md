@@ -124,6 +124,10 @@
   on the container on web (via `tabindex="-1"`), a screen-changed notification on iOS, and an
   accessibility pane title - taken from `Page.title` - on Android.
 
+### HTTP
+
+- `HttpHeaders.delete` is renamed to `remove`, matching Kotlin's collections. `delete` is deprecated.
+
 ### WebSockets
 
 Found by the new cross-platform networking tests, all in the Ktor-backed implementations (JVM/SSR,

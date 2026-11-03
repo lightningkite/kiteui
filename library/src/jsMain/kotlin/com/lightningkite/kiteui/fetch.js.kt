@@ -193,7 +193,7 @@ public actual fun HttpHeaders(map: Map<String, List<String>>): HttpHeaders = Htt
 // Claude: a wrapper rather than a typealias, whose `Headers(init: dynamic)` constructor made every HttpHeaders(...) call ambiguous.
 public actual class HttpHeaders internal constructor(private val native: Headers) {
     public actual fun append(name: String, value: String): Unit = native.append(name, value)
-    public actual fun delete(name: String): Unit = native.delete(name)
+    public actual fun remove(name: String): Unit = native.delete(name)
     public actual fun get(name: String): String? = native.get(name)
     public actual fun has(name: String): Boolean = native.has(name)
     public actual fun set(name: String, value: String): Unit = native.set(name, value)
