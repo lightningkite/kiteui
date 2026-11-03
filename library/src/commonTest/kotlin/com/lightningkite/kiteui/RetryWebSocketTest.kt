@@ -44,6 +44,32 @@ class RetryWebSocketTest {
         }
     }
 
+    /**
+     * Listeners act on [RetryWebSocket.connected] - LSK's SharedCollectionUpdatesSocket sends its subscription
+     * from onOpen only if it reads `true` - so the state has to change before they are told.
+     */
+    @Test
+    fun listenersSeeTheStateTheyAreToldAbout() = networkTest {
+        val socket = retryWebSocket(
+            url = "${TestServer.ws}/ws/session",
+            pingTime = retryPingTime,
+            gate = ConnectivityGate(),
+        )
+        val seenOnOpen = Channel<Boolean?>(Channel.UNLIMITED)
+        val seenOnClose = Channel<Boolean?>(Channel.UNLIMITED)
+        socket.onOpen { seenOnOpen.trySend(socket.connected.state.getOrNull()) }
+        socket.onClose { seenOnClose.trySend(socket.connected.state.getOrNull()) }
+        val release = socket.beginUse()
+        try {
+            assertEquals(true, seenOnOpen.receive(), "onOpen ran before the socket reported itself connected")
+            socket.send(TestServer.dropCommand)
+            assertEquals(false, seenOnClose.receive(), "onClose ran while the socket still reported itself connected")
+        } finally {
+            release()
+            socket.close(1000, "test finished")
+        }
+    }
+
     /** [RetryWebSocket.connected] is what a UI binds to, so it has to report a live socket. */
     @Test
     fun reportsWhenItIsConnected() = networkTest {

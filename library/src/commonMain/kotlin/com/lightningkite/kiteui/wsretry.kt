@@ -121,29 +121,11 @@ public fun retryWebSocket(
         current.socket?.close(1000, "Reconnecting")
         current.socket = underlyingSocket().also { socket ->
             var pings: Job? = null
+            // State changes before listeners hear about them: a listener that checks `connected` in onOpen (as
+            // SharedCollectionUpdatesSocket does before sending its subscription) must see `true`, and `false` in onClose.
             socket.onOpen {
                 if (id != current.id) return@onOpen
                 log?.log("$id onOpen")
-                onOpenList.toList().forEach { l -> l() }
-            }
-            socket.onMessage {
-                if (id != current.id) return@onMessage
-                log?.log("$id onMessage $it")
-                lastPong = clockMillis()
-                if (it.isNotBlank()) onMessageList.toList().forEach { l -> l(it) }
-            }
-            socket.onBinaryMessage {
-                if (id != current.id) return@onBinaryMessage
-                log?.log("$id onBinaryMessage $it")
-                onBinaryMessageList.toList().forEach { l -> l(it) }
-            }
-            socket.onClose {
-                if (id != current.id) return@onClose
-                log?.log("$id onClose $it")
-                onCloseList.toList().forEach { l -> l(it) }
-            }
-            socket.onOpen {
-                if (id != current.id) return@onOpen
                 lastConnect = clockMillis()
                 lastPong = lastConnect
                 connectedSignal.value = true
@@ -167,11 +149,25 @@ public fun retryWebSocket(
                         }
                     }
                 }
+                onOpenList.toList().forEach { l -> l() }
+            }
+            socket.onMessage {
+                if (id != current.id) return@onMessage
+                log?.log("$id onMessage $it")
+                lastPong = clockMillis()
+                if (it.isNotBlank()) onMessageList.toList().forEach { l -> l(it) }
+            }
+            socket.onBinaryMessage {
+                if (id != current.id) return@onBinaryMessage
+                log?.log("$id onBinaryMessage $it")
+                onBinaryMessageList.toList().forEach { l -> l(it) }
             }
             socket.onClose {
                 if (id != current.id) return@onClose
+                log?.log("$id onClose $it")
                 pings?.cancel()
                 connectedSignal.value = false
+                onCloseList.toList().forEach { l -> l(it) }
             }
         }
     }
