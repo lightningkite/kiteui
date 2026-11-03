@@ -24,7 +24,10 @@ public actual object PlatformStorage {
     private fun storage() = checkNotNull(storage) { "PlatformStorage used before a KiteUiRoot set the app id." }
 
     public actual fun get(key: String): String? = storage().get(key)
-    public actual fun set(key: String, value: String): Unit = storage().set(key, value)
+    public actual fun set(key: String, value: String, ensureOnDisk: Boolean) {
+        storage().set(key, value)
+        if (ensureOnDisk) storage().save()
+    }
     public actual fun remove(key: String): Unit = storage().remove(key)
 
     private fun appDataFolder(): File {
