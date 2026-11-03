@@ -114,14 +114,17 @@ public inline fun HttpHeaders(builder: HttpHeaders.() -> Unit): HttpHeaders = Ht
 /** Returns headers holding these headers and [other], where a name in both takes only the values from [other]. */
 public operator fun HttpHeaders.plus(other: HttpHeaders): HttpHeaders = copy().apply {
     for ((name, values) in other.toMap()) {
-        delete(name)
+        remove(name)
         for (value in values) append(name, value)
     }
 }
 
+@Deprecated("Use remove", ReplaceWith("remove(name)"))
+public fun HttpHeaders.delete(name: String): Unit = remove(name)
+
 public expect class HttpHeaders {
     public fun append(name: String, value: String)
-    public fun delete(name: String)
+    public fun remove(name: String)
     public fun get(name: String): String?
     public fun has(name: String): Boolean
     public fun set(name: String, value: String)

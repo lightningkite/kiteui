@@ -186,7 +186,7 @@ public actual class HttpHeaders internal constructor(public val map: MutableMap<
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
 
-    public actual fun delete(name: String): Unit {
+    public actual fun remove(name: String): Unit {
         map.remove(name.lowercase())
     }
 
