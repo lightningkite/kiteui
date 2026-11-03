@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.views
 
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.test.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
@@ -221,6 +224,83 @@ class ImagesTest {
         assertEquals('R', shot.colorAt(root, box, 190.dp, 50.dp))
     }
 
+    // The web's WheelEvent deltas are pixels: 100 a wheel notch in Chrome on Windows and Linux.
+    @Test
+    fun canvasWheelDeltasArePixels() = runKiteUiTest {
+        var wheel = 0.0
+        showKiteUi {
+            canvas {
+                delegate = object : CanvasDelegate() {
+                    override fun onWheel(x: Double, y: Double, z: Double): Boolean {
+                        wheel += y
+                        return true
+                    }
+                }
+            }
+        }
+        onRoot().performMouseInput { moveTo(center); scroll(1f) }
+        waitForIdle()
+        assertTrue(wheel >= 10.0, "a notch down should be many pixels, got $wheel")
+    }
+
+    // Graph sizes its lines and labels with canvasUnits.
+    @Test
+    fun canvasUnitsAreTheCanvasPixels() = runKiteUiTest {
+        var canvasWidth = 0.0
+        val root = runBlocking(Dispatchers.Main) {
+            KiteUiRoot("kiteui-test", { testTheme }) {
+                col {
+                    sizeConstraints(width = 100.px, height = 50.px).canvas {
+                        delegate = object : CanvasDelegate() {
+                            override fun onResize(width: Double, height: Double) {
+                                canvasWidth = width
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        setContent { CompositionLocalProvider(LocalDensity provides Density(2f)) { root.Content() } }
+        waitForIdle()
+        assertEquals(200.0, canvasWidth)
+        assertEquals(canvasWidth, 100.px.canvasUnits)
+    }
+    // Both GIFs are 20x20, red for 300ms and then blue for 300ms; one loops forever and the other plays once.
+    @Test
+    fun gifsAnimate() = runKiteUiTest {
+        lateinit var view: RawImageView
+        val root = showKiteUi {
+            col { sizeConstraints(width = 20.px, height = 20.px).rawImage(ImageResource("common/images/red-blue-looping.gif"), "gif") { view = this } }
+        }
+        waitForLoad(listOf(view))
+        fun color() = saveScreenshot(root, "gif").colorAt(root, onNodeWithContentDescription("gif").getUnclippedBoundsInRoot(), 10.dp, 10.dp)
+        waitUntil(timeoutMillis = 5_000) { color() == 'B' }
+        waitUntil(timeoutMillis = 5_000) { color() == 'R' }
+    }
+
+    @Test
+    fun gifsPlayOnlyWhileSeenAndRepeatAsOftenAsTheySay() = runKiteUiTest {
+        lateinit var view: RawImageView
+        var setVisible: (Boolean) -> Unit = {}
+        val root = showKiteUi {
+            col {
+                frame {
+                    setVisible = { visible = it }
+                    visible = false
+                    sizeConstraints(width = 20.px, height = 20.px).rawImage(ImageResource("common/images/red-blue-once.gif"), "gif") { view = this }
+                }
+            }
+        }
+        waitForLoad(listOf(view))
+        mainClock.advanceTimeBy(1_000)
+        runBlocking(Dispatchers.Main) { setVisible(true) }
+        fun color() = saveScreenshot(root, "gif-once").colorAt(root, onNodeWithContentDescription("gif").getUnclippedBoundsInRoot(), 10.dp, 10.dp)
+        assertEquals('R', color(), "it didn't play while invisible")
+        waitUntil(timeoutMillis = 5_000) { color() == 'B' }
+        mainClock.advanceTimeBy(1_000)
+        assertEquals('B', color(), "it played once")
+    }
+
     @Test
     fun canvasDrawsTheHtmlCanvasApi() = runKiteUiTest {
         var draws = 0
@@ -404,5 +484,35 @@ class ImagesTest {
         onRoot().performTouchInput { click(Offset((box.left.value + 100) * root.density, (box.top.value + 50) * root.density)) }
         waitForIdle()
         assertEquals(listOf(100.0 * root.density to 50.0 * root.density), pointerDowns)
+    }
+
+    @Test
+    fun canvasRadialGradientsStartAtTheirFocus() = runKiteUiTest {
+        val delegate = object : CanvasDelegate() {
+            override fun draw(context: DrawingContext2D) = with(context) {
+                fillPaint = RadialGradient(
+                    listOf(GradientStop(0f, Color.white), GradientStop(1f, Color.blue)),
+                    cx = 100.0, cy = 50.0, radius = 50.0, fx = 60.0, fy = 50.0,
+                )
+                fillRect(0.0, 0.0, width, height)
+            }
+        }
+        var canvas: Canvas? = null
+        val root = showKiteUi {
+            col {
+                sizeConstraints(width = 200.px, height = 100.px).canvas {
+                    this.delegate = delegate
+                    canvas = this
+                }
+            }
+        }
+        val shot = saveScreenshot(root, "canvas-focal-gradient")
+        val bounds = canvas!!.screenRectangle()!!
+        val box = DpRect(bounds.left.toFloat().dp, bounds.top.toFloat().dp, bounds.right.toFloat().dp, bounds.bottom.toFloat().dp)
+        fun at(x: Double, y: Double) = shot.colorAt(root, box, (x / root.density).toFloat().dp, (y / root.density).toFloat().dp)
+
+        // Centered, this point would be 80% of the way out; from the focus it's the first stop.
+        assertEquals('W', at(60.0, 50.0), "the focus")
+        assertEquals('B', at(140.0, 50.0), "near the edge")
     }
 }

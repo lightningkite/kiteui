@@ -17,7 +17,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.VisualTransformation
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
@@ -25,6 +24,8 @@ import com.lightningkite.kiteui.views.NativeElementWithAction
 import com.lightningkite.kiteui.views.hintColor
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
+import com.lightningkite.kiteui.views.cased
+import com.lightningkite.kiteui.views.casing
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactiveValue
@@ -90,12 +91,12 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
             textStyle = style,
             cursorBrush = SolidColor(color.toCompose()),
             interactionSource = interactions.source,
-            visualTransformation = if (hints.isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            visualTransformation = if (hints.isPassword) PasswordVisualTransformation() else theme.font.casing,
             keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@AutoCompleteTextField) }),
             decorationBox = { innerField ->
                 Box {
-                    if (field.text.isEmpty()) BasicText(hint, style = style.copy(color = theme.hintColor))
+                    if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     innerField()
                     if (showsList) list.Render(owner = this@AutoCompleteTextField, focusable = false)
                 }

@@ -125,18 +125,18 @@ public class Recycler2(
             else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem))
                 .scrolling(vertical = this@Recycler2.vertical, horizontal = !this@Recycler2.vertical) {
                     this@Recycler2.fakeScroll = this
-                    ignoreInteraction = Platform.current != Platform.Web
+                    ignoreInteraction = !fakeScrollIsDraggable
                 }
                 .programmatic {
                     this@Recycler2.fakeScrollContent = this
-                    ignoreInteraction = Platform.current != Platform.Web
+                    ignoreInteraction = !fakeScrollIsDraggable
                     themed(ThemeDerivation {
                         it.copy(
                             id = "scrollindicator",
                             background = it.foreground.applyAlpha(0.5f)
                         ).withBack
                     }).unpadded.frame {
-                        ignoreInteraction = Platform.current != Platform.Web
+                        ignoreInteraction = !fakeScrollIsDraggable
                         this@Recycler2.fakeScrollIndicator = this
                         opacity = 0.0
                     }
@@ -365,7 +365,7 @@ public class Recycler2(
     private var indicatorShown: Boolean = false
     private fun setFakeScrollByRatio(start: Double, end: Double) {
         log?.log("setFakeScrollByRatio $start - $end")
-        if (Platform.current == Platform.Web) {
+        if (fakeScrollIsDraggable) {
             val vp = fakeScroll.viewport.state.getOrNull() ?: return
             val vps = if (vertical) vp.height else vp.width
             fakeScrollSize = vps / (end - start)
@@ -423,9 +423,7 @@ public class Recycler2(
 
         override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
             // nothing to do.
-            if (Platform.current == Platform.Web) {
-                log?.log("")
-                suppressFakeScrollEvent = true
+            if (fakeScrollIsDraggable) {
                 val s = min(within.width, within.height)
                 if (vertical) {
                     inProgress.place(
@@ -444,11 +442,17 @@ public class Recycler2(
                         bottom = 1.0,
                     )
                 }
-                fakeScroll.scrollTo(
-                    if (vertical) 0.0 else fakeScrollOffset,
-                    if (vertical) fakeScrollOffset else 0.0,
-                    false
-                )
+                // Scrolling to where it already is fires no scroll event, so it mustn't set the flag, which would
+                // then swallow the user's next real scroll of the fake scrollbar.
+                val current = fakeScroll.viewport.state.getOrNull()?.let { if (vertical) it.top else it.left }
+                if (current == null || abs(current - fakeScrollOffset) >= 0.5) {
+                    suppressFakeScrollEvent = true
+                    fakeScroll.scrollTo(
+                        if (vertical) 0.0 else fakeScrollOffset,
+                        if (vertical) fakeScrollOffset else 0.0,
+                        false
+                    )
+                }
             } else {
                 if (vertical) {
                     val size = ((fakeScrollIndicatorEnd - fakeScrollIndicatorStart) * within.height)
@@ -482,7 +486,7 @@ public class Recycler2(
 
     init {
         fakeScrollContent.delegate = fakeScrollLayoutDelegate
-        if (Platform.current == Platform.Web) {
+        if (fakeScrollIsDraggable) {
             var lastSize: Size = Size.Zero
             cells.reactive {
                 val fsv = fakeScroll.viewport()
@@ -991,6 +995,10 @@ public class Recycler2(
 
 
 }
+
+// Where there's a mouse to drag it, the fake scroll is a real scroller, whose scrollbar the user can drag across
+// the whole list; elsewhere it's only an indicator.
+private val fakeScrollIsDraggable: Boolean get() = Platform.current == Platform.Web || Platform.current == Platform.Desktop
 
 internal fun <T> MutableList<T>.popOrNull(): T? = if (!isEmpty()) removeAt(lastIndex) else null
 internal fun <T> MutableList<T>.popOrNull(condition: (T) -> Boolean): T? = indexOfFirst(condition).let { if (it != -1) removeAt(it) else null }

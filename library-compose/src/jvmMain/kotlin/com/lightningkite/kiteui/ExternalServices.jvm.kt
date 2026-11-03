@@ -9,6 +9,8 @@ import kotlinx.datetime.toInstant
 import java.awt.Desktop
 import java.awt.FileDialog
 import java.awt.Frame
+import java.awt.GraphicsEnvironment
+import java.awt.HeadlessException
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.io.File
@@ -24,6 +26,7 @@ import kotlin.time.toJavaInstant
 /** Downloads go into [home]'s `Downloads` or `Pictures` folder. */
 public class DesktopExternalServices(private val home: File = File(System.getProperty("user.home"))) : ExternalServicesAccess {
     override fun openLink(url: String, newTab: Boolean) {
+        requireDisplay("open $url")
         Desktop.getDesktop().browse(URI(url))
     }
 
@@ -40,6 +43,7 @@ public class DesktopExternalServices(private val home: File = File(System.getPro
     override suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? = requestFile(mimeTypes)
 
     private fun chooseFiles(mimeTypes: List<String>, multiple: Boolean): List<FileReference> {
+        requireDisplay("show a file dialog (under the AI driver, queue a file with `mock file` first)")
         val dialog = FileDialog(null as Frame?, if (multiple) "Choose files" else "Choose a file", FileDialog.LOAD)
         dialog.isMultipleMode = multiple
         // Windows' native dialog ignores this filter and shows every file.
@@ -87,6 +91,7 @@ public class DesktopExternalServices(private val home: File = File(System.getPro
 
     // The web downloads an .ics file; opening one hands it to the user's calendar app.
     override fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone) {
+        requireDisplay("open the event in a calendar app")
         val file = File.createTempFile("event", ".ics")
         file.deleteOnExit()
         file.writeText(icsEvent(title, description, location, start.toInstant(zone), end.toInstant(zone), Clock.System.now()))
@@ -97,6 +102,11 @@ public class DesktopExternalServices(private val home: File = File(System.getPro
 }
 
 public actual fun externalServicesAccessDefault(context: ElementContext): ExternalServicesAccess = DesktopExternalServices()
+
+// AWT's own HeadlessException has no message, so it wouldn't say what was attempted.
+internal fun requireDisplay(attempt: String) {
+    if (GraphicsEnvironment.isHeadless()) throw HeadlessException("Can't $attempt: there is no display (headless mode).")
+}
 
 private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 

@@ -1,0 +1,29 @@
+package com.lightningkite.kiteui.map
+
+import com.lightningkite.kiteui.models.ImageSource
+import com.lightningkite.kiteui.views.ElementContext
+import com.lightningkite.kiteui.views.NativeElement
+import com.lightningkite.services.data.GeoCoordinate
+import kotlin.uuid.Uuid
+
+actual class MapView actual constructor(
+    context: ElementContext, disableAttribution: I_SWEAR_ON_MY_JOB?, val interactive: Boolean
+) : NativeElement(context), BaseProperties {
+    init {
+        native.tag = "div"
+        native.classes.add("map-view-ssr-placeholder")
+    }
+
+    actual override var style: Style = Style.Demo
+    actual val images: MutableMap<Uuid, ImageSource> = LinkedHashMap()
+    actual val sources: MutableMap<Uuid, Source<*, *>> = LinkedHashMap()
+    actual val layers: MutableMap<Uuid, Layer<*>?> = LinkedHashMap()
+
+    internal actual val preInit: PreInit
+        get() = TODO("Not yet implemented")
+    actual val camera: Camera
+        get() = TODO("Not yet implemented")
+}
+
+actual fun MapView.onClick(callback: (where: GeoCoordinate) -> Unit) {
+}
