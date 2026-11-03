@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.map
 
-import cocoapods.MapLibre.*
+import swiftPMImport.com.lightningkite.kiteui.library.map.*
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElement
@@ -169,8 +169,9 @@ actual class MapView actual constructor(
             // Dispatch asynchronously so this returns before cancelTransitions() fires.
             // cancelTransitions() synchronously drains callbacks on iOS, which can resume
             // suspended coroutines; callers need a chance to cancel their jobs first.
+            // cancelTransitions is private MapLibre API, so it isn't in the imported headers.
             val view = mlnMapView
-            dispatch_async(dispatch_get_main_queue()) { view.cancelTransitions() }
+            dispatch_async(dispatch_get_main_queue()) { view.performSelector(sel_registerName("cancelTransitions")) }
         }
 
         private fun Camera.AnimateTo.toMLNCamera(): MLNMapCamera {

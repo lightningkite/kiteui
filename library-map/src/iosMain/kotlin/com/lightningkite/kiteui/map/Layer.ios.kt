@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.map
 
-import cocoapods.MapLibre.*
+import swiftPMImport.com.lightningkite.kiteui.library.map.*
 import kotlinx.cinterop.*
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement

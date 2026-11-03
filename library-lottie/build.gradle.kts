@@ -1,19 +1,14 @@
 import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.cocoapods) apply false
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.androidKmpLibrary)
     signing
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
 }
-
-// Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
-if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
 
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -32,16 +27,8 @@ kotlin {
         iosArm64()
         iosSimulatorArm64()
         iosX64()
-        // Note: CocoaPods integration for lottie-ios is disabled due to cinterop commonizer
-        // issues with Metal framework types. The iOS implementation uses a placeholder.
-        // For production iOS apps, use native Swift Lottie integration directly.
-        // No `cocoapods {}` accessor, since the plugin isn't applied in the plugins block.
-        (this as ExtensionAware).extensions.configure<CocoapodsExtension> {
-            summary = "KiteUI Lottie Animation Support"
-            homepage = "https://github.com/lightningkite/kiteui"
-            version = "1.0"
-            ios.deploymentTarget = "14.0"
-        }
+        // The iOS implementation is a placeholder: importing lottie-ios ran into cinterop commonizer
+        // issues with Metal framework types.  For production iOS apps, use Swift Lottie directly.
     }
 
     js {

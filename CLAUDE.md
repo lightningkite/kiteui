@@ -232,7 +232,7 @@ Theme switches should typically be applied to containers (`col`, `row`, `frame`,
 ## Platform Targets
 
 - **Android** - Min SDK varies, uses native Android views
-- **iOS** - Deployment target 14.0, uses CocoaPods
+- **iOS** - Deployment target 14.0, native dependencies via SwiftPM import (`swiftPMDependencies`)
 - **JVM** - Desktop/server support
 - **JS** - Web target with Vite bundling
 
