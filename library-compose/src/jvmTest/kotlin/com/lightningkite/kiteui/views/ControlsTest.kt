@@ -102,6 +102,52 @@ class ControlsTest {
     }
 
     @Test
+    fun sliderTakesTheHoverTheme() = runKiteUiTest {
+        lateinit var slider: Slider
+        show { col { slider = slider { } } }
+        val rest = slider.themeAndBack
+        onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).performMouseInput { moveTo(center) }
+        waitForIdle()
+        assertTrue(slider.themeAndBack != rest, "hovering should change the slider's theme")
+        onRoot().performMouseInput { moveTo(Offset(width - 1f, height - 1f)) }
+        waitForIdle()
+        assertEquals(rest, slider.themeAndBack)
+    }
+
+    // range sets min first, above the old max.  As the web's range input, the value then sits at min.
+    @Test
+    fun sliderTakesRangesAboveOrOnTheOldOne() = runKiteUiTest {
+        lateinit var above: Slider
+        lateinit var empty: Slider
+        val root = show {
+            col {
+                above = slider { range(18f, 100f) }
+                empty = slider { range(5, 5) }
+            }
+        }
+        assertEquals(18f, above.value.value)
+        assertEquals(5f, empty.value.value)
+        // An empty range draws its thumb at the start, as the web does.
+        val node = onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))[1]
+        val bounds = node.getUnclippedBoundsInRoot()
+        val image = saveScreenshot(root, "slider-empty")
+        val y = with(density) { (bounds.top + 2.dp).roundToPx() }
+        val start = image.getRGB(with(density) { (bounds.left + 8.dp).roundToPx() }, y)
+        val end = image.getRGB(with(density) { (bounds.right - 8.dp).roundToPx() }, y)
+        assertTrue(start != end, "expected the thumb at the start")
+    }
+
+    // An HTML range input treats a step that isn't positive as 1, and every platform follows it.
+    @Test
+    fun sliderStepsOfZeroAreOnes() = runKiteUiTest {
+        lateinit var slider: Slider
+        show { slider = slider { range(0f, 10f, 0f) } }
+        assertEquals(1f, slider.step)
+        slider.value.value = 3.4f
+        assertEquals(3f, slider.value.value)
+    }
+
+    @Test
     fun sliderFollowsAReactiveMax() = runKiteUiTest {
         val max = Signal(10f)
         lateinit var slider: Slider
@@ -292,6 +338,25 @@ class ControlsTest {
         onNodeWithText("Popped").performClick()
         waitForIdle()
         onNodeWithText("Popped").assertExists()
+    }
+
+    @Test
+    fun popoverClosesWhenItsAnchorLeaves() = runKiteUiTest {
+        val anchorShown = Signal(true)
+        show {
+            col {
+                shownWhen { anchorShown() }.button {
+                    text("Open")
+                    onClick { openPopover(PopoverPreferredDirection.belowCenter) { text("Popped") } }
+                }
+            }
+        }
+        onNodeWithText("Open").performClick()
+        waitForIdle()
+        onNodeWithText("Popped").assertExists()
+        anchorShown.value = false
+        // shownWhen reacts on the Swing thread, which waitForIdle doesn't track.
+        waitUntil { onAllNodesWithText("Popped").fetchSemanticsNodes().isEmpty() }
     }
 
     @Test

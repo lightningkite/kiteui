@@ -45,10 +45,10 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInParent
-import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onVisibilityChanged
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.node.DelegatingNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.PointerInputModifierNode
@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.lerp
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
@@ -141,7 +142,8 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         )
     } else null
 
-    internal var coordinates: LayoutCoordinates? = null
+    // State so that a layout placing something against this element (a popover) runs again when it leaves the screen.
+    internal var coordinates: LayoutCoordinates? by mutableStateOf(null)
         private set
     private val bringIntoView = BringIntoViewRequester()
     private val focusRequester = FocusRequester()
@@ -193,18 +195,22 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         val opacity = targetOpacity.toFloat()
         val duration = theme.theme.transitionDuration.inWholeMilliseconds.toInt()
         animation.job = launch(context) {
-            // Linear, like the web's.
-            fun <T, V : AnimationVector> Animatable<T, V>.animate(target: T) {
-                if (value != target) launch { animateTo(target, tween(duration, easing = LinearEasing)) }
+            coroutineScope {
+                // Linear, like the web's.
+                fun <T, V : AnimationVector> Animatable<T, V>.animate(target: T) {
+                    if (value != target) launch { animateTo(target, tween(duration, easing = LinearEasing)) }
+                }
+                animation.background.animate(theme.backgroundColor)
+                animation.outline.animate(theme.outlineColor)
+                animation.foreground.animate(theme.foregroundColor)
+                animation.alpha.animate(opacity)
+                animation.elevation.animate(theme.elevation)
+                animation.translation.animate(theme.transformation.translation)
+                animation.scale.animate(theme.transformation.scale)
+                animation.rotation.animate(theme.transformation.rotation.toFloat())
             }
-            animation.background.animate(theme.backgroundColor)
-            animation.outline.animate(theme.outlineColor)
-            animation.foreground.animate(theme.foregroundColor)
-            animation.alpha.animate(opacity)
-            animation.elevation.animate(theme.elevation)
-            animation.translation.animate(theme.transformation.translation)
-            animation.scale.animate(theme.transformation.scale)
-            animation.rotation.animate(theme.transformation.rotation.toFloat())
+            appearance = null
+            lastDecoration = null
         }
     }
 
@@ -301,8 +307,35 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             label = value
         }
 
+    // Scrolls the nearest scrolling ancestor only; the web scrolls every one.
     actual override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean) {
-        launch { bringIntoView.bringIntoView() }
+        val scroller = generateSequence(parent) { it.parent }.filterIsInstance<NativeElement>().firstOrNull { it.scrolling != null }
+        val target = screenRectangle()
+        val view = scroller?.screenRectangle()
+        // Not in a KiteUI scroller (a recycler, say), or not laid out yet.
+        if (scroller == null || target == null || view == null) {
+            launch { bringIntoView.bringIntoView() }
+            return
+        }
+        // How far to move the viewport along one axis.  Null is the web's "nearest": the least move that shows the
+        // element, so none if it's already in view.
+        fun move(align: Align?, start: Double, end: Double, viewStart: Double, viewEnd: Double): Double {
+            val toStart = start - viewStart
+            val toEnd = end - viewEnd
+            return when (align) {
+                Align.Start, Align.Stretch -> toStart
+                Align.Center -> (toStart + toEnd) / 2
+                Align.End -> toEnd
+                null -> if (toStart < 0 && toEnd < 0) maxOf(toStart, toEnd) else if (toStart > 0 && toEnd > 0) minOf(toStart, toEnd) else 0.0
+            }
+        }
+        val scrolling = scroller.scrolling!!
+        val scrolled = scrolling.viewport.state.get()
+        scrolling.scrollTo(
+            scrolled.left + move(horizontal, target.left, target.right, view.left, view.right),
+            scrolled.top + move(vertical, target.top, target.bottom, view.top, view.bottom),
+            animate,
+        )
     }
 
     // Applied by Render, since a FocusRequester only works once its element is composed.  Like the web, which
@@ -324,7 +357,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     }
 
     // Compose positions are in pixels; KiteUI's are in dp.
-    public actual fun screenRectangle(): Rect? = coordinates?.takeIf { it.isAttached }?.boundsInWindow()?.toRect()
+    // Unclipped, like the web's getBoundingClientRect: a partly scrolled-out element keeps its whole size.
+    public actual fun screenRectangle(): Rect? = coordinates?.takeIf { it.isAttached }
+        ?.let { androidx.compose.ui.geometry.Rect(it.positionInWindow(), it.size.toSize()) }?.toRect()
     public actual fun parentRectangle(): Rect? = coordinates?.takeIf { it.isAttached }?.boundsInParent()?.toRect()
 
     private fun androidx.compose.ui.geometry.Rect.toRect() = Rect(
@@ -523,9 +558,11 @@ private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, 
         maxHeight = maxHeight,
     )
     c.aspectRatio?.let { ratio ->
-        // Derive the unconstrained axis from the constrained one.
+        // Derive one axis from the other: from the height when only it is fixed (explicitly, or stretched by a row,
+        // as on Android), otherwise from the width if it's bounded.
+        val fromHeight = (own.hasFixedHeight && !own.hasFixedWidth) || !own.hasBoundedWidth
         own = when {
-            own.hasBoundedWidth && (height == null) -> {
+            !fromHeight -> {
                 val w = own.maxWidth
                 val h = (w / ratio).toInt().coerceIn(own.minHeight, own.maxHeight)
                 own.copy(minWidth = w, maxWidth = w, minHeight = h, maxHeight = h)
