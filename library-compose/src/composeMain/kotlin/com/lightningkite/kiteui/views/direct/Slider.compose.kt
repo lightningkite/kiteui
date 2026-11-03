@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.drag
@@ -34,7 +35,6 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactiveValue
 import com.lightningkite.reactive.core.Release
 import com.lightningkite.reactive.core.Signal
-import kotlin.math.roundToInt
 
 public actual class Slider actual constructor(context: ElementContext) : NativeInteractiveElement(context) {
     override val driverValue: String? get() = sliderDriverValue()
@@ -48,7 +48,7 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
         override var value: Float
             get() = current.value
             set(value) {
-                current.value = snapped(value)
+                current.value = sliderValue(value, min, max, step)
             }
 
         override fun addListener(listener: () -> Unit): Release = current.addListener(listener)
@@ -73,18 +73,12 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
     public actual var step: Float?
         get() = stepState
         set(value) {
-            stepState = value
+            stepState = value.validSliderStep()
             this.value.value = this.value.value
         }
 
     init {
         reactive { displayed = value() }
-    }
-
-    private fun snapped(v: Float): Float {
-        val clamped = v.coerceIn(min, max)
-        val step = step ?: return clamped
-        return (min + ((clamped - min) / step).roundToInt() * step).coerceAtMost(max)
     }
 
     // The thumb's center travels from one radius in from the left edge to one radius in from the right.
@@ -103,6 +97,7 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
             }
             .focusProperties { canFocus = active }
             .focusable(interactionSource = interactions.source)
+            .hoverable(interactions.source, enabled = active)
             .onKeyEvent {
                 if (!active || it.type != KeyEventType.KeyDown) return@onKeyEvent false
                 when (it.key) {
@@ -133,7 +128,8 @@ public actual class Slider actual constructor(context: ElementContext) : NativeI
     @Composable
     override fun Content(modifier: Modifier) {
         val color = currentTheme.theme.foreground.closestColor().toCompose()
-        val fraction = (displayed - min) / (max - min)
+        // An empty range has its thumb at the start, as on the web.
+        val fraction = if (max > min) (displayed - min) / (max - min) else 0f
         // 8rem is about a browser's default range input width; stretched sliders fill their slot instead.
         Spacer(
             modifier

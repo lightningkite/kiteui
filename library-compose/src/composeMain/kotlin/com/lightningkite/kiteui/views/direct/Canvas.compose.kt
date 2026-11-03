@@ -84,7 +84,10 @@ public actual class Canvas actual constructor(context: ElementContext) : NativeE
                                 PointerEventType.Release -> delegate.onPointerUp(id, x, y, width, height)
                                 // The web cancels on pointerleave too.
                                 PointerEventType.Exit -> delegate.onPointerCancel(id, x, y, width, height)
-                                PointerEventType.Scroll -> delegate.onWheel(change.scrollDelta.x.toDouble(), change.scrollDelta.y.toDouble(), 0.0)
+                                PointerEventType.Scroll -> {
+                                    val pixels = change.scrollDelta * wheelPixelsPerUnit
+                                    delegate.onWheel(pixels.x.toDouble(), pixels.y.toDouble(), 0.0)
+                                }
                                 else -> false
                             }
                             if (handled) change.consume()
@@ -103,3 +106,6 @@ public actual class Canvas actual constructor(context: ElementContext) : NativeE
         )
     }
 }
+
+// The web's wheel deltas are pixels; Compose's are wheel notches, or fractions of one for a trackpad.
+internal expect val wheelPixelsPerUnit: Float

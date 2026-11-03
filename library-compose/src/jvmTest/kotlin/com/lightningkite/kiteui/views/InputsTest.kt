@@ -29,6 +29,28 @@ class InputsTest {
         signal.value == value
     }
 
+    // As on the web, Enter in a single-line field runs its action.
+    @Test
+    fun enterInSingleLineFieldsRunsTheAction() = runKiteUiTest {
+        val submitted = ArrayList<String>()
+        fun submit(name: String) = Action(name, frequencyCap = null) { submitted += name }
+        showKiteUi {
+            col {
+                fieldTheme.textInput { action = submit("text") }
+                fieldTheme.numberInput { action = submit("number") }
+                fieldTheme.phoneNumberInput { action = submit("formatted") }
+                fieldTheme.autoCompleteTextField { action = submit("autocomplete") }
+                fieldTheme.localDateField { action = submit("date") }
+            }
+        }
+        for (i in 0 until 5) {
+            field(i).performClick()
+            field(i).performKeyInput { pressKey(Key.Enter) }
+        }
+        waitUntil("all submitted, got $submitted", 2_000) { submitted.size == 5 }
+        assertEquals(listOf("text", "number", "formatted", "autocomplete", "date"), submitted)
+    }
+
     @Test
     fun textAreaTakesLinesAndSubmitsOnEnter() = runKiteUiTest {
         val notes = Signal("")
@@ -113,6 +135,35 @@ class InputsTest {
         awaitText(0, "1999-12-31")
         awaitText(1, "23:05")
         awaitText(2, "")
+    }
+
+    // Like the web's text-transform: fields, hints and selects show their text in capitals, and a field's value
+    // keeps what was typed.
+    @Test
+    fun allCapsShowsCapitalsWithoutChangingValues() = runKiteUiTest {
+        val name = Signal("")
+        val fruit = Signal("Banana")
+        showKiteUi {
+            col {
+                allCaps.fieldTheme.textInput { hint = "Your name"; content bind name }
+                allCaps.fieldTheme.textArea { hint = "Notes" }
+                allCaps.fieldTheme.numberInput { hint = "Amount" }
+                allCaps.fieldTheme.select { bind(fruit, Constant(listOf("Apple", "Banana"))) { it } }
+            }
+        }
+        onNodeWithText("YOUR NAME", useUnmergedTree = true).assertExists()
+        onNodeWithText("NOTES", useUnmergedTree = true).assertExists()
+        onNodeWithText("AMOUNT", useUnmergedTree = true).assertExists()
+        onNodeWithText("BANANA").performClick()
+        waitForIdle()
+        // The list is styled by the select's surroundings, like other popovers.
+        onNodeWithText("Apple").performClick()
+        awaitValue(fruit, "Apple")
+        onNodeWithText("APPLE").assertExists()
+
+        field(0).performTextInput("ada")
+        awaitValue(name, "ada")
+        field(0).assertTextEquals("ADA")
     }
 
     @Test

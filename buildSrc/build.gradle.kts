@@ -1,5 +1,6 @@
 plugins {
     `kotlin-dsl`
+    kotlin("plugin.serialization") version embeddedKotlinVersion
 }
 repositories {
     mavenCentral()
@@ -7,6 +8,7 @@ repositories {
 dependencies {
     implementation(libs.kotlin.gradle.plugin.api)
     implementation(libs.fontbox)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 }
 kotlin {
     jvmToolchain(17)

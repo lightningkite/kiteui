@@ -1,3 +1,4 @@
+import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
@@ -5,6 +6,9 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.kotlin.plugin.compose)
     alias(libs.plugins.compose.multiplatform)
+    signing
+    alias(libs.plugins.vannitechPublishing)
+    alias(libs.plugins.dokka)
 }
 
 // Kotlin allows one JVM target per module and :library's is jvmSsr, so this backend compiles
@@ -83,7 +87,12 @@ dependencies {
 // Tests render offscreen; without this, AWT tries to reach the window server.
 tasks.named<Test>("jvmTest") {
     systemProperty("java.awt.headless", "true")
-    // PlatformStorage's preferences live in memory, not in the developer's real ones.
-    systemProperty("java.util.prefs.PreferencesFactory", "com.lightningkite.kiteui.InMemoryPreferencesFactory")
+    // PlatformStorage's files go here, not into the developer's real app-data folder.
+    val dataDirectory = layout.buildDirectory.dir("tmp/jvmTest/data").get().asFile
+    systemProperty("kiteui.dataDirectory", dataDirectory.absolutePath)
+    doFirst { dataDirectory.deleteRecursively() }
 }
 
+lkLibrary("lightningkite", "kiteui") {
+    description.set("KiteUI on Compose Multiplatform, for desktop")
+}

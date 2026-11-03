@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.models
 
 import androidx.compose.ui.unit.Dp
+import com.lightningkite.kiteui.reactive.AppState
 
 
 // Dimensions are Compose dp. CSS px are also density-independent, so px == dp here, as on the web.
@@ -18,7 +19,8 @@ public actual val Double.dp: Dimension get() = Dimension(toFloat())
 
 public actual val Dimension.px: Double get() = value.toDouble()
 public actual val Dimension.viewUnits: Double get() = value.toDouble()
-public actual val Dimension.canvasUnits: Double get() = value.toDouble()
+// A canvas draws in the window's pixels, as on every other platform.
+public actual val Dimension.canvasUnits: Double get() = value.toDouble() * AppState.windowInfo.value.density
 
 public actual inline operator fun Dimension.plus(other: Dimension): Dimension = Dimension(value + other.value)
 public actual inline operator fun Dimension.minus(other: Dimension): Dimension = Dimension(value - other.value)
