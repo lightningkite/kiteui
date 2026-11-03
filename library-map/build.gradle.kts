@@ -12,7 +12,7 @@ plugins {
 }
 
 val maplibreWebVersion = "6.12.0"
-val minMapLibreIosVersion = "6.0"
+val minMapLibreIosVersion = "6.0.0"
 
 val generateMapLibreLayerTypes = tasks.register("generateMapLibreLayerTypes") {
     description = "Regenerate the MapLibre layer types from the MapLibre style spec"
