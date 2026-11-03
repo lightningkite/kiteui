@@ -1,0 +1,91 @@
+{
+  "object" : {
+    "artifacts" : [
+      {
+        "kind" : {
+          "xcframework" : {
+
+          }
+        },
+        "packageRef" : {
+          "identity" : "maplibre-gl-native-distribution",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/maplibre/maplibre-gl-native-distribution.git",
+          "name" : "MapLibre Native"
+        },
+        "path" : "/Users/jivie/Projects/kiteui/.swiftpm-locks/default/swiftPMCheckout/artifacts/maplibre-gl-native-distribution/MapLibre/MapLibre.xcframework",
+        "source" : {
+          "checksum" : "de3aaa435dd86768b06d90245e630d068dd7eef1491afae7217d1654c52c462a",
+          "type" : "remote",
+          "url" : "https://github.com/maplibre/maplibre-native/releases/download/ios-v6.31.0/MapLibre.dynamic.xcframework.zip"
+        },
+        "targetName" : "MapLibre"
+      }
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "_example-app",
+          "kind" : "fileSystem",
+          "location" : "/Users/jivie/Projects/kiteui/.swiftpm-locks/default/swiftImport/subpackages/_example-app",
+          "name" : "_example-app"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/jivie/Projects/kiteui/.swiftpm-locks/default/swiftImport/subpackages/_example-app"
+        },
+        "subpath" : "_example-app"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "_library-map",
+          "kind" : "fileSystem",
+          "location" : "/Users/jivie/Projects/kiteui/.swiftpm-locks/default/swiftImport/subpackages/_library-map",
+          "name" : "_library-map"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/jivie/Projects/kiteui/.swiftpm-locks/default/swiftImport/subpackages/_library-map"
+        },
+        "subpath" : "_library-map"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "_library_map",
+          "kind" : "fileSystem",
+          "location" : "/Users/jivie/Projects/kiteui/.swiftpm-locks/default/swiftImport/subpackages/_library_map",
+          "name" : "_library_map"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/jivie/Projects/kiteui/.swiftpm-locks/default/swiftImport/subpackages/_library_map"
+        },
+        "subpath" : "_library_map"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "maplibre-gl-native-distribution",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/maplibre/maplibre-gl-native-distribution.git",
+          "name" : "MapLibre Native"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "13e41ab3d77ff5113e7e5d4ee87803b1f81f5683",
+            "version" : "6.31.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "maplibre-gl-native-distribution"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}
