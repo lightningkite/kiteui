@@ -453,6 +453,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A05281D73907B8810B69F1DF,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -467,7 +468,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A05281D73907B8810B69F1DF,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -588,6 +588,9 @@
 			dependencies = (
 			);
 			name = "KiteUI Example App";
+			packageProductDependencies = (
+				53411A0A4CF141308627944E,
+			);
 			productName = "KiteUI Example App";
 			productReference = 188D8B952B2B9CB400732A2E;
 			productType = "com.apple.product-type.application";
@@ -596,7 +599,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 188D8BC22B2B9CB600732A2E;
 			buildPhases = (
-				E7384053104AE4C1A14E4891,
 				188D8BA72B2B9CB500732A2E,
 				188D8BA82B2B9CB500732A2E,
 				188D8BA92B2B9CB500732A2E,
@@ -615,7 +617,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 188D8BC52B2B9CB600732A2E;
 			buildPhases = (
-				A95902DB9BEBEC4EDB3A868E,
 				188D8BB12B2B9CB600732A2E,
 				188D8BB22B2B9CB600732A2E,
 				188D8BB32B2B9CB600732A2E,
@@ -626,9 +627,6 @@
 				188D8BB72B2B9CB600732A2E,
 			);
 			name = "KiteUI Example AppUITests";
-			packageProductDependencies = (
-				53411A0A4CF141308627944E,
-			);
 			productName = "KiteUI Example AppUITests";
 			productReference = 188D8BB52B2B9CB600732A2E;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -737,44 +735,6 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		514B2EDD29D87A17E42007AC = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Compile Kotlin Framework";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :example-app:embedAndSignAppleFrameworkForXcode -i";
-		};
-		A95902DB9BEBEC4EDB3A868E = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Compile Kotlin Framework";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :example-app:embedAndSignAppleFrameworkForXcode -i";
-		};
-		E7384053104AE4C1A14E4891 = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
