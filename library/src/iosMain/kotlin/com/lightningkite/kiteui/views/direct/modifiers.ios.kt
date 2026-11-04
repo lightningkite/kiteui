@@ -181,6 +181,8 @@ public actual fun ElementWriter.CanAddShownWhen.shownWhen(default: Boolean, tran
         var lastCommitted = 0
         reactive {
             val value = condition()
+            // same as the `shown` setter - resign focus as the hide begins, so the keyboard leaves with the fade instead of staying stuck on an invisible field.
+            if (!value) native.findFirstResponderChild()?.resignFirstResponder()
             val myRun = ++runNumber
             if (animationsEnabled) {
                 if (native.hidden) {

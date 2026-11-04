@@ -71,7 +71,8 @@ public class KeyboardObserver(public val bottom: WeakReference<NSLayoutConstrain
 
     @ObjCAction
     public fun hideKeyboardWhenTappedAround() {
-        view.get()?.findFirstResponderChild()?.resignFirstResponder()
+        // endEditing walks hidden subtrees too, unlike findFirstResponderChild, so a tap can still clear a keyboard whose focused field has since been hidden.
+        view.get()?.endEditing(true)
     }
 }
 
