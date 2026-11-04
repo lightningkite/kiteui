@@ -44,6 +44,7 @@ public fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWrite
 
 public class KeyboardObserver(public val bottom: WeakReference<NSLayoutConstraint>, public val view: WeakReference<UIView>) : NSObject() {
     public var keyboardAnimationDuration: Double = 0.25
+    internal var gestureDelegate: KeyboardDismissGestureDelegate? = null
 
     @ObjCAction
     public fun keyboardWillChangeFrame(notification: NSNotification?) {
@@ -70,8 +71,34 @@ public class KeyboardObserver(public val bottom: WeakReference<NSLayoutConstrain
 
     @ObjCAction
     public fun hideKeyboardWhenTappedAround() {
-        view.get()?.findFirstResponderChild()?.resignFirstResponder()
+        // endEditing walks hidden subtrees too, unlike findFirstResponderChild, so a tap can still clear a keyboard whose focused field has since been hidden.
+        view.get()?.endEditing(true)
     }
+}
+
+internal class KeyboardDismissGestureDelegate : NSObject(), UIGestureRecognizerDelegateProtocol {
+    override fun gestureRecognizer(
+        gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWithGestureRecognizer: UIGestureRecognizer
+    ): Boolean = true
+
+    override fun gestureRecognizer(
+        gestureRecognizer: UIGestureRecognizer,
+        shouldReceiveTouch: UITouch
+    ): Boolean {
+        var view = shouldReceiveTouch.view
+
+        while (view != null) {
+            if (view is UITextField || view is UITextView) {
+                return false
+            }
+
+            view = view.superview
+        }
+
+        return true
+    }
+
 }
 
 public fun UIViewController.kiteUi(context: ElementContext = ElementContext(this@kiteUi), app: ViewWriter.() -> Unit) {
@@ -122,8 +149,11 @@ public fun UIViewController.kiteUi(context: ElementContext = ElementContext(this
         `object` = null
     )
 
+    val gestureDelegate = KeyboardDismissGestureDelegate()
+    observer.gestureDelegate = gestureDelegate
     val g = UITapGestureRecognizer(target = observer, action = sel_registerName("hideKeyboardWhenTappedAround"))
     g.cancelsTouchesInView = false
+    g.delegate = gestureDelegate
     view.addGestureRecognizer(g)
 
     val safeInsets = {
