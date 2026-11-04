@@ -7,60 +7,175 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		183A2D592B335230001011C3 /* test.m in Sources */ = {isa = PBXBuildFile; fileRef = 183A2D582B335230001011C3 /* test.m */; };
-		188D8B992B2B9CB400732A2E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8B982B2B9CB400732A2E /* AppDelegate.swift */; };
-		188D8B9B2B2B9CB400732A2E /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8B9A2B2B9CB400732A2E /* SceneDelegate.swift */; };
-		188D8B9D2B2B9CB400732A2E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8B9C2B2B9CB400732A2E /* ViewController.swift */; };
-		188D8BA02B2B9CB400732A2E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 188D8B9E2B2B9CB400732A2E /* Main.storyboard */; };
-		188D8BA22B2B9CB500732A2E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 188D8BA12B2B9CB500732A2E /* Assets.xcassets */; };
-		188D8BA52B2B9CB500732A2E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 188D8BA32B2B9CB500732A2E /* LaunchScreen.storyboard */; };
-		188D8BB02B2B9CB500732A2E /* KiteUi_Example_AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8BAF2B2B9CB500732A2E /* KiteUi_Example_AppTests.swift */; };
-		188D8BBA2B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8BB92B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift */; };
-		188D8BBC2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8BBB2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift */; };
-		18D0BEC62C2488B100145B47 /* audioTaunt.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEA92C2488B100145B47 /* audioTaunt.mp3 */; };
-		18D0BEC72C2488B100145B47 /* fontsGoldman-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEAA2C2488B100145B47 /* fontsGoldman-bold.ttf */; };
-		18D0BEC82C2488B100145B47 /* fontsGoldman-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEAB2C2488B100145B47 /* fontsGoldman-normal.ttf */; };
-		18D0BEC92C2488B100145B47 /* fontsMontserrat-bold-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEAC2C2488B100145B47 /* fontsMontserrat-bold-italic.ttf */; };
-		18D0BECA2C2488B100145B47 /* fontsMontserrat-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEAD2C2488B100145B47 /* fontsMontserrat-bold.ttf */; };
-		18D0BECB2C2488B100145B47 /* fontsMontserrat-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEAE2C2488B100145B47 /* fontsMontserrat-italic.ttf */; };
-		18D0BECC2C2488B100145B47 /* fontsMontserrat-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEAF2C2488B100145B47 /* fontsMontserrat-normal.ttf */; };
-		18D0BECD2C2488B100145B47 /* fontsOpensans-OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB02C2488B100145B47 /* fontsOpensans-OpenSans-Bold.ttf */; };
-		18D0BECE2C2488B100145B47 /* fontsOpensans-OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB12C2488B100145B47 /* fontsOpensans-OpenSans-BoldItalic.ttf */; };
-		18D0BECF2C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB22C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBold.ttf */; };
-		18D0BED02C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB32C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf */; };
-		18D0BED12C2488B100145B47 /* fontsOpensans-OpenSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB42C2488B100145B47 /* fontsOpensans-OpenSans-Italic.ttf */; };
-		18D0BED22C2488B100145B47 /* fontsOpensans-OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB52C2488B100145B47 /* fontsOpensans-OpenSans-Light.ttf */; };
-		18D0BED32C2488B100145B47 /* fontsOpensans-OpenSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB62C2488B100145B47 /* fontsOpensans-OpenSans-LightItalic.ttf */; };
-		18D0BED42C2488B100145B47 /* fontsOpensans-OpenSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB72C2488B100145B47 /* fontsOpensans-OpenSans-Medium.ttf */; };
-		18D0BED52C2488B100145B47 /* fontsOpensans-OpenSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB82C2488B100145B47 /* fontsOpensans-OpenSans-MediumItalic.ttf */; };
-		18D0BED62C2488B100145B47 /* fontsOpensans-OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEB92C2488B100145B47 /* fontsOpensans-OpenSans-Regular.ttf */; };
-		18D0BED72C2488B100145B47 /* fontsOpensans-OpenSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEBA2C2488B100145B47 /* fontsOpensans-OpenSans-SemiBold.ttf */; };
-		18D0BED82C2488B100145B47 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEBB2C2488B100145B47 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf */; };
-		18D0BED92C2488B100145B47 /* fontsRoboto-bold-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEBC2C2488B100145B47 /* fontsRoboto-bold-italic.ttf */; };
-		18D0BEDA2C2488B100145B47 /* fontsRoboto-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEBD2C2488B100145B47 /* fontsRoboto-bold.ttf */; };
-		18D0BEDB2C2488B100145B47 /* fontsRoboto-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEBE2C2488B100145B47 /* fontsRoboto-italic.ttf */; };
-		18D0BEDC2C2488B100145B47 /* fontsRoboto-light-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEBF2C2488B100145B47 /* fontsRoboto-light-Italic.ttf */; };
-		18D0BEDD2C2488B100145B47 /* fontsRoboto-light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEC02C2488B100145B47 /* fontsRoboto-light.ttf */; };
-		18D0BEDE2C2488B100145B47 /* fontsRoboto-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEC12C2488B100145B47 /* fontsRoboto-normal.ttf */; };
-		18D0BEDF2C2488B100145B47 /* fontsRobotoLight-light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEC22C2488B100145B47 /* fontsRobotoLight-light.ttf */; };
-		18D0BEE02C2488B100145B47 /* fontsRobotoLightItalic-light-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEC32C2488B100145B47 /* fontsRobotoLightItalic-light-Italic.ttf */; };
-		18D0BEE12C2488B100145B47 /* videoBack.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEC42C2488B100145B47 /* videoBack.mp4 */; };
-		42A14485E002F8337D8BB087 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A2721654A7CDCC6EE6C3645 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */; };
-		A78A875C27130211427E0574 /* Pods_KiteUI_Example_AppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B242D9E7C7808CAD984BEEA /* Pods_KiteUI_Example_AppTests.framework */; };
-		BF760C9B7BD68B7D6EA77F19 /* Pods_KiteUI_Example_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AF43AC53E97996A9401CD99 /* Pods_KiteUI_Example_App.framework */; };
+		183A2D592B335230001011C3 = {
+			isa = PBXBuildFile;
+			fileRef = 183A2D582B335230001011C3;
+		};
+		188D8B992B2B9CB400732A2E = {
+			isa = PBXBuildFile;
+			fileRef = 188D8B982B2B9CB400732A2E;
+		};
+		188D8B9B2B2B9CB400732A2E = {
+			isa = PBXBuildFile;
+			fileRef = 188D8B9A2B2B9CB400732A2E;
+		};
+		188D8B9D2B2B9CB400732A2E = {
+			isa = PBXBuildFile;
+			fileRef = 188D8B9C2B2B9CB400732A2E;
+		};
+		188D8BA02B2B9CB400732A2E = {
+			isa = PBXBuildFile;
+			fileRef = 188D8B9E2B2B9CB400732A2E;
+		};
+		188D8BA22B2B9CB500732A2E = {
+			isa = PBXBuildFile;
+			fileRef = 188D8BA12B2B9CB500732A2E;
+		};
+		188D8BA52B2B9CB500732A2E = {
+			isa = PBXBuildFile;
+			fileRef = 188D8BA32B2B9CB500732A2E;
+		};
+		188D8BB02B2B9CB500732A2E = {
+			isa = PBXBuildFile;
+			fileRef = 188D8BAF2B2B9CB500732A2E;
+		};
+		188D8BBA2B2B9CB600732A2E = {
+			isa = PBXBuildFile;
+			fileRef = 188D8BB92B2B9CB600732A2E;
+		};
+		188D8BBC2B2B9CB600732A2E = {
+			isa = PBXBuildFile;
+			fileRef = 188D8BBB2B2B9CB600732A2E;
+		};
+		18D0BEC62C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEA92C2488B100145B47;
+		};
+		18D0BEC72C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEAA2C2488B100145B47;
+		};
+		18D0BEC82C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEAB2C2488B100145B47;
+		};
+		18D0BEC92C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEAC2C2488B100145B47;
+		};
+		18D0BECA2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEAD2C2488B100145B47;
+		};
+		18D0BECB2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEAE2C2488B100145B47;
+		};
+		18D0BECC2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEAF2C2488B100145B47;
+		};
+		18D0BECD2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB02C2488B100145B47;
+		};
+		18D0BECE2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB12C2488B100145B47;
+		};
+		18D0BECF2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB22C2488B100145B47;
+		};
+		18D0BED02C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB32C2488B100145B47;
+		};
+		18D0BED12C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB42C2488B100145B47;
+		};
+		18D0BED22C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB52C2488B100145B47;
+		};
+		18D0BED32C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB62C2488B100145B47;
+		};
+		18D0BED42C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB72C2488B100145B47;
+		};
+		18D0BED52C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB82C2488B100145B47;
+		};
+		18D0BED62C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEB92C2488B100145B47;
+		};
+		18D0BED72C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEBA2C2488B100145B47;
+		};
+		18D0BED82C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEBB2C2488B100145B47;
+		};
+		18D0BED92C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEBC2C2488B100145B47;
+		};
+		18D0BEDA2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEBD2C2488B100145B47;
+		};
+		18D0BEDB2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEBE2C2488B100145B47;
+		};
+		18D0BEDC2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEBF2C2488B100145B47;
+		};
+		18D0BEDD2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEC02C2488B100145B47;
+		};
+		18D0BEDE2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEC12C2488B100145B47;
+		};
+		18D0BEDF2C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEC22C2488B100145B47;
+		};
+		18D0BEE02C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEC32C2488B100145B47;
+		};
+		18D0BEE12C2488B100145B47 = {
+			isa = PBXBuildFile;
+			fileRef = 18D0BEC42C2488B100145B47;
+		};
+		A05281D73907B8810B69F1DF = {
+			isa = PBXBuildFile;
+			productRef = 53411A0A4CF141308627944E;
+		};
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		188D8BAC2B2B9CB500732A2E /* PBXContainerItemProxy */ = {
+		188D8BAC2B2B9CB500732A2E = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 188D8B8D2B2B9CB400732A2E /* Project object */;
+			containerPortal = 188D8B8D2B2B9CB400732A2E;
 			proxyType = 1;
 			remoteGlobalIDString = 188D8B942B2B9CB400732A2E;
 			remoteInfo = "KiteUI Example App";
 		};
-		188D8BB62B2B9CB600732A2E /* PBXContainerItemProxy */ = {
+		188D8BB62B2B9CB600732A2E = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 188D8B8D2B2B9CB400732A2E /* Project object */;
+			containerPortal = 188D8B8D2B2B9CB400732A2E;
 			proxyType = 1;
 			remoteGlobalIDString = 188D8B942B2B9CB400732A2E;
 			remoteInfo = "KiteUI Example App";
@@ -68,82 +183,291 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		183A2D572B33522F001011C3 /* KiteUI Example App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "KiteUI Example App-Bridging-Header.h"; sourceTree = "<group>"; };
-		183A2D582B335230001011C3 /* test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = test.m; sourceTree = "<group>"; };
-		188D8B952B2B9CB400732A2E /* KiteUI Example App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KiteUI Example App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		188D8B982B2B9CB400732A2E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		188D8B9A2B2B9CB400732A2E /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		188D8B9C2B2B9CB400732A2E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		188D8B9F2B2B9CB400732A2E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		188D8BA12B2B9CB500732A2E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		188D8BA42B2B9CB500732A2E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		188D8BA62B2B9CB500732A2E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		188D8BAB2B2B9CB500732A2E /* KiteUI Example AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KiteUI Example AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		188D8BAF2B2B9CB500732A2E /* KiteUi_Example_AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiteUi_Example_AppTests.swift; sourceTree = "<group>"; };
-		188D8BB52B2B9CB600732A2E /* KiteUI Example AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KiteUI Example AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		188D8BB92B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiteUi_Example_AppUITests.swift; sourceTree = "<group>"; };
-		188D8BBB2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiteUi_Example_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		18D0BEA92C2488B100145B47 /* audioTaunt.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = audioTaunt.mp3; sourceTree = "<group>"; };
-		18D0BEAA2C2488B100145B47 /* fontsGoldman-bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsGoldman-bold.ttf"; sourceTree = "<group>"; };
-		18D0BEAB2C2488B100145B47 /* fontsGoldman-normal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsGoldman-normal.ttf"; sourceTree = "<group>"; };
-		18D0BEAC2C2488B100145B47 /* fontsMontserrat-bold-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserrat-bold-italic.ttf"; sourceTree = "<group>"; };
-		18D0BEAD2C2488B100145B47 /* fontsMontserrat-bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserrat-bold.ttf"; sourceTree = "<group>"; };
-		18D0BEAE2C2488B100145B47 /* fontsMontserrat-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserrat-italic.ttf"; sourceTree = "<group>"; };
-		18D0BEAF2C2488B100145B47 /* fontsMontserrat-normal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserrat-normal.ttf"; sourceTree = "<group>"; };
-		18D0BEB02C2488B100145B47 /* fontsOpensans-OpenSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Bold.ttf"; sourceTree = "<group>"; };
-		18D0BEB12C2488B100145B47 /* fontsOpensans-OpenSans-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-BoldItalic.ttf"; sourceTree = "<group>"; };
-		18D0BEB22C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
-		18D0BEB32C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
-		18D0BEB42C2488B100145B47 /* fontsOpensans-OpenSans-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Italic.ttf"; sourceTree = "<group>"; };
-		18D0BEB52C2488B100145B47 /* fontsOpensans-OpenSans-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Light.ttf"; sourceTree = "<group>"; };
-		18D0BEB62C2488B100145B47 /* fontsOpensans-OpenSans-LightItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-LightItalic.ttf"; sourceTree = "<group>"; };
-		18D0BEB72C2488B100145B47 /* fontsOpensans-OpenSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Medium.ttf"; sourceTree = "<group>"; };
-		18D0BEB82C2488B100145B47 /* fontsOpensans-OpenSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-MediumItalic.ttf"; sourceTree = "<group>"; };
-		18D0BEB92C2488B100145B47 /* fontsOpensans-OpenSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Regular.ttf"; sourceTree = "<group>"; };
-		18D0BEBA2C2488B100145B47 /* fontsOpensans-OpenSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-SemiBold.ttf"; sourceTree = "<group>"; };
-		18D0BEBB2C2488B100145B47 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
-		18D0BEBC2C2488B100145B47 /* fontsRoboto-bold-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-bold-italic.ttf"; sourceTree = "<group>"; };
-		18D0BEBD2C2488B100145B47 /* fontsRoboto-bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-bold.ttf"; sourceTree = "<group>"; };
-		18D0BEBE2C2488B100145B47 /* fontsRoboto-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-italic.ttf"; sourceTree = "<group>"; };
-		18D0BEBF2C2488B100145B47 /* fontsRoboto-light-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-light-Italic.ttf"; sourceTree = "<group>"; };
-		18D0BEC02C2488B100145B47 /* fontsRoboto-light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-light.ttf"; sourceTree = "<group>"; };
-		18D0BEC12C2488B100145B47 /* fontsRoboto-normal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-normal.ttf"; sourceTree = "<group>"; };
-		18D0BEC22C2488B100145B47 /* fontsRobotoLight-light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoLight-light.ttf"; sourceTree = "<group>"; };
-		18D0BEC32C2488B100145B47 /* fontsRobotoLightItalic-light-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoLightItalic-light-Italic.ttf"; sourceTree = "<group>"; };
-		18D0BEC42C2488B100145B47 /* videoBack.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = videoBack.mp4; sourceTree = "<group>"; };
-		1AF43AC53E97996A9401CD99 /* Pods_KiteUI_Example_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		22734415A23BDBD0238C030E /* Pods-KiteUI Example AppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example AppTests.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example AppTests/Pods-KiteUI Example AppTests.debug.xcconfig"; sourceTree = "<group>"; };
-		2BFC183D917364913C567D4A /* Pods-KiteUI Example App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App.release.xcconfig"; sourceTree = "<group>"; };
-		2C5BD3042E632E094BECD1AA /* Pods-KiteUI Example AppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example AppTests.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example AppTests/Pods-KiteUI Example AppTests.release.xcconfig"; sourceTree = "<group>"; };
-		7B242D9E7C7808CAD984BEEA /* Pods_KiteUI_Example_AppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_AppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		829423F84D6BB1151175BFC1 /* Pods-KiteUI Example App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App.debug.xcconfig"; sourceTree = "<group>"; };
-		852CE10B3DB74495323BC0AA /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		9A2721654A7CDCC6EE6C3645 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C5A08FC331FF7CA44B30E3DE /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; sourceTree = "<group>"; };
+		183A2D572B33522F001011C3 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = "KiteUI Example App-Bridging-Header.h";
+			sourceTree = "<group>";
+		};
+		183A2D582B335230001011C3 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = test.m;
+			sourceTree = "<group>";
+		};
+		188D8B952B2B9CB400732A2E = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = "KiteUI Example App.app";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		188D8B982B2B9CB400732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = AppDelegate.swift;
+			sourceTree = "<group>";
+		};
+		188D8B9A2B2B9CB400732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = SceneDelegate.swift;
+			sourceTree = "<group>";
+		};
+		188D8B9C2B2B9CB400732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ViewController.swift;
+			sourceTree = "<group>";
+		};
+		188D8B9F2B2B9CB400732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.storyboard;
+			name = Base;
+			path = Base.lproj/Main.storyboard;
+			sourceTree = "<group>";
+		};
+		188D8BA12B2B9CB500732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder.assetcatalog;
+			path = Assets.xcassets;
+			sourceTree = "<group>";
+		};
+		188D8BA42B2B9CB500732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.storyboard;
+			name = Base;
+			path = Base.lproj/LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		188D8BA62B2B9CB500732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			path = Info.plist;
+			sourceTree = "<group>";
+		};
+		188D8BAB2B2B9CB500732A2E = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.cfbundle;
+			includeInIndex = 0;
+			path = "KiteUI Example AppTests.xctest";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		188D8BAF2B2B9CB500732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = KiteUi_Example_AppTests.swift;
+			sourceTree = "<group>";
+		};
+		188D8BB52B2B9CB600732A2E = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.cfbundle;
+			includeInIndex = 0;
+			path = "KiteUI Example AppUITests.xctest";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		188D8BB92B2B9CB600732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = KiteUi_Example_AppUITests.swift;
+			sourceTree = "<group>";
+		};
+		188D8BBB2B2B9CB600732A2E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = KiteUi_Example_AppUITestsLaunchTests.swift;
+			sourceTree = "<group>";
+		};
+		18D0BEA92C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = audio.mp3;
+			path = audioTaunt.mp3;
+			sourceTree = "<group>";
+		};
+		18D0BEAA2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsGoldman-bold.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEAB2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsGoldman-normal.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEAC2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsMontserrat-bold-italic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEAD2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsMontserrat-bold.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEAE2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsMontserrat-italic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEAF2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsMontserrat-normal.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB02C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-Bold.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB12C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-BoldItalic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB22C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-ExtraBold.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB32C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-ExtraBoldItalic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB42C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-Italic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB52C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-Light.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB62C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-LightItalic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB72C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-Medium.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB82C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-MediumItalic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEB92C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-Regular.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEBA2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-SemiBold.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEBB2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsOpensans-OpenSans-SemiBoldItalic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEBC2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsRoboto-bold-italic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEBD2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsRoboto-bold.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEBE2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsRoboto-italic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEBF2C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsRoboto-light-Italic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEC02C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsRoboto-light.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEC12C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsRoboto-normal.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEC22C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsRobotoLight-light.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEC32C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = "fontsRobotoLightItalic-light-Italic.ttf";
+			sourceTree = "<group>";
+		};
+		18D0BEC42C2488B100145B47 = {
+			isa = PBXFileReference;
+			lastKnownFileType = file;
+			path = videoBack.mp4;
+			sourceTree = "<group>";
+		};
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		188D8B922B2B9CB400732A2E /* Frameworks */ = {
+		188D8B922B2B9CB400732A2E = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF760C9B7BD68B7D6EA77F19 /* Pods_KiteUI_Example_App.framework in Frameworks */,
+				A05281D73907B8810B69F1DF,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		188D8BA82B2B9CB500732A2E /* Frameworks */ = {
+		188D8BA82B2B9CB500732A2E = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A78A875C27130211427E0574 /* Pods_KiteUI_Example_AppTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		188D8BB22B2B9CB600732A2E /* Frameworks */ = {
+		188D8BB22B2B9CB600732A2E = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				42A14485E002F8337D8BB087 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,182 +477,164 @@
 		188D8B8C2B2B9CB400732A2E = {
 			isa = PBXGroup;
 			children = (
-				188D8B972B2B9CB400732A2E /* KiteUI Example App */,
-				188D8BAE2B2B9CB500732A2E /* KiteUI Example AppTests */,
-				188D8BB82B2B9CB600732A2E /* KiteUI Example AppUITests */,
-				188D8B962B2B9CB400732A2E /* Products */,
-				29745E8A69D3C935444F19BF /* Pods */,
-				C1FB2C7A445BD8EB3D0417CD /* Frameworks */,
+				188D8B972B2B9CB400732A2E,
+				188D8BAE2B2B9CB500732A2E,
+				188D8BB82B2B9CB600732A2E,
+				188D8B962B2B9CB400732A2E,
+				29745E8A69D3C935444F19BF,
 			);
 			sourceTree = "<group>";
 		};
-		188D8B962B2B9CB400732A2E /* Products */ = {
+		188D8B962B2B9CB400732A2E = {
 			isa = PBXGroup;
 			children = (
-				188D8B952B2B9CB400732A2E /* KiteUI Example App.app */,
-				188D8BAB2B2B9CB500732A2E /* KiteUI Example AppTests.xctest */,
-				188D8BB52B2B9CB600732A2E /* KiteUI Example AppUITests.xctest */,
+				188D8B952B2B9CB400732A2E,
+				188D8BAB2B2B9CB500732A2E,
+				188D8BB52B2B9CB600732A2E,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		188D8B972B2B9CB400732A2E /* KiteUI Example App */ = {
+		188D8B972B2B9CB400732A2E = {
 			isa = PBXGroup;
 			children = (
-				18D0BEC52C2488B100145B47 /* resourcesFromCommon */,
-				188D8B982B2B9CB400732A2E /* AppDelegate.swift */,
-				188D8B9A2B2B9CB400732A2E /* SceneDelegate.swift */,
-				188D8B9C2B2B9CB400732A2E /* ViewController.swift */,
-				188D8B9E2B2B9CB400732A2E /* Main.storyboard */,
-				188D8BA12B2B9CB500732A2E /* Assets.xcassets */,
-				188D8BA32B2B9CB500732A2E /* LaunchScreen.storyboard */,
-				188D8BA62B2B9CB500732A2E /* Info.plist */,
-				183A2D582B335230001011C3 /* test.m */,
-				183A2D572B33522F001011C3 /* KiteUI Example App-Bridging-Header.h */,
+				18D0BEC52C2488B100145B47,
+				188D8B982B2B9CB400732A2E,
+				188D8B9A2B2B9CB400732A2E,
+				188D8B9C2B2B9CB400732A2E,
+				188D8B9E2B2B9CB400732A2E,
+				188D8BA12B2B9CB500732A2E,
+				188D8BA32B2B9CB500732A2E,
+				188D8BA62B2B9CB500732A2E,
+				183A2D582B335230001011C3,
+				183A2D572B33522F001011C3,
 			);
 			path = "KiteUI Example App";
 			sourceTree = "<group>";
 		};
-		188D8BAE2B2B9CB500732A2E /* KiteUI Example AppTests */ = {
+		188D8BAE2B2B9CB500732A2E = {
 			isa = PBXGroup;
 			children = (
-				188D8BAF2B2B9CB500732A2E /* KiteUi_Example_AppTests.swift */,
+				188D8BAF2B2B9CB500732A2E,
 			);
 			path = "KiteUI Example AppTests";
 			sourceTree = "<group>";
 		};
-		188D8BB82B2B9CB600732A2E /* KiteUI Example AppUITests */ = {
+		188D8BB82B2B9CB600732A2E = {
 			isa = PBXGroup;
 			children = (
-				188D8BB92B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift */,
-				188D8BBB2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift */,
+				188D8BB92B2B9CB600732A2E,
+				188D8BBB2B2B9CB600732A2E,
 			);
 			path = "KiteUI Example AppUITests";
 			sourceTree = "<group>";
 		};
-		18D0BEC52C2488B100145B47 /* resourcesFromCommon */ = {
+		18D0BEC52C2488B100145B47 = {
 			isa = PBXGroup;
 			children = (
-				18D0BEA92C2488B100145B47 /* audioTaunt.mp3 */,
-				18D0BEAA2C2488B100145B47 /* fontsGoldman-bold.ttf */,
-				18D0BEAB2C2488B100145B47 /* fontsGoldman-normal.ttf */,
-				18D0BEAC2C2488B100145B47 /* fontsMontserrat-bold-italic.ttf */,
-				18D0BEAD2C2488B100145B47 /* fontsMontserrat-bold.ttf */,
-				18D0BEAE2C2488B100145B47 /* fontsMontserrat-italic.ttf */,
-				18D0BEAF2C2488B100145B47 /* fontsMontserrat-normal.ttf */,
-				18D0BEB02C2488B100145B47 /* fontsOpensans-OpenSans-Bold.ttf */,
-				18D0BEB12C2488B100145B47 /* fontsOpensans-OpenSans-BoldItalic.ttf */,
-				18D0BEB22C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBold.ttf */,
-				18D0BEB32C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf */,
-				18D0BEB42C2488B100145B47 /* fontsOpensans-OpenSans-Italic.ttf */,
-				18D0BEB52C2488B100145B47 /* fontsOpensans-OpenSans-Light.ttf */,
-				18D0BEB62C2488B100145B47 /* fontsOpensans-OpenSans-LightItalic.ttf */,
-				18D0BEB72C2488B100145B47 /* fontsOpensans-OpenSans-Medium.ttf */,
-				18D0BEB82C2488B100145B47 /* fontsOpensans-OpenSans-MediumItalic.ttf */,
-				18D0BEB92C2488B100145B47 /* fontsOpensans-OpenSans-Regular.ttf */,
-				18D0BEBA2C2488B100145B47 /* fontsOpensans-OpenSans-SemiBold.ttf */,
-				18D0BEBB2C2488B100145B47 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf */,
-				18D0BEBC2C2488B100145B47 /* fontsRoboto-bold-italic.ttf */,
-				18D0BEBD2C2488B100145B47 /* fontsRoboto-bold.ttf */,
-				18D0BEBE2C2488B100145B47 /* fontsRoboto-italic.ttf */,
-				18D0BEBF2C2488B100145B47 /* fontsRoboto-light-Italic.ttf */,
-				18D0BEC02C2488B100145B47 /* fontsRoboto-light.ttf */,
-				18D0BEC12C2488B100145B47 /* fontsRoboto-normal.ttf */,
-				18D0BEC22C2488B100145B47 /* fontsRobotoLight-light.ttf */,
-				18D0BEC32C2488B100145B47 /* fontsRobotoLightItalic-light-Italic.ttf */,
-				18D0BEC42C2488B100145B47 /* videoBack.mp4 */,
+				18D0BEA92C2488B100145B47,
+				18D0BEAA2C2488B100145B47,
+				18D0BEAB2C2488B100145B47,
+				18D0BEAC2C2488B100145B47,
+				18D0BEAD2C2488B100145B47,
+				18D0BEAE2C2488B100145B47,
+				18D0BEAF2C2488B100145B47,
+				18D0BEB02C2488B100145B47,
+				18D0BEB12C2488B100145B47,
+				18D0BEB22C2488B100145B47,
+				18D0BEB32C2488B100145B47,
+				18D0BEB42C2488B100145B47,
+				18D0BEB52C2488B100145B47,
+				18D0BEB62C2488B100145B47,
+				18D0BEB72C2488B100145B47,
+				18D0BEB82C2488B100145B47,
+				18D0BEB92C2488B100145B47,
+				18D0BEBA2C2488B100145B47,
+				18D0BEBB2C2488B100145B47,
+				18D0BEBC2C2488B100145B47,
+				18D0BEBD2C2488B100145B47,
+				18D0BEBE2C2488B100145B47,
+				18D0BEBF2C2488B100145B47,
+				18D0BEC02C2488B100145B47,
+				18D0BEC12C2488B100145B47,
+				18D0BEC22C2488B100145B47,
+				18D0BEC32C2488B100145B47,
+				18D0BEC42C2488B100145B47,
 			);
 			path = resourcesFromCommon;
 			sourceTree = "<group>";
 		};
-		29745E8A69D3C935444F19BF /* Pods */ = {
+		29745E8A69D3C935444F19BF = {
 			isa = PBXGroup;
 			children = (
-				829423F84D6BB1151175BFC1 /* Pods-KiteUI Example App.debug.xcconfig */,
-				2BFC183D917364913C567D4A /* Pods-KiteUI Example App.release.xcconfig */,
-				852CE10B3DB74495323BC0AA /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */,
-				C5A08FC331FF7CA44B30E3DE /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */,
-				22734415A23BDBD0238C030E /* Pods-KiteUI Example AppTests.debug.xcconfig */,
-				2C5BD3042E632E094BECD1AA /* Pods-KiteUI Example AppTests.release.xcconfig */,
 			);
 			path = Pods;
-			sourceTree = "<group>";
-		};
-		C1FB2C7A445BD8EB3D0417CD /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				1AF43AC53E97996A9401CD99 /* Pods_KiteUI_Example_App.framework */,
-				9A2721654A7CDCC6EE6C3645 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */,
-				7B242D9E7C7808CAD984BEEA /* Pods_KiteUI_Example_AppTests.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		188D8B942B2B9CB400732A2E /* KiteUI Example App */ = {
+		188D8B942B2B9CB400732A2E = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 188D8BBF2B2B9CB600732A2E /* Build configuration list for PBXNativeTarget "KiteUI Example App" */;
+			buildConfigurationList = 188D8BBF2B2B9CB600732A2E;
 			buildPhases = (
-				DC80531564B5B179B785E1BB /* [CP] Check Pods Manifest.lock */,
-				188D8B912B2B9CB400732A2E /* Sources */,
-				188D8B922B2B9CB400732A2E /* Frameworks */,
-				188D8B932B2B9CB400732A2E /* Resources */,
-				6C3B83100C1A2B1A5FCCBA4E /* [CP] Embed Pods Frameworks */,
+				514B2EDD29D87A17E42007AC,
+				188D8B912B2B9CB400732A2E,
+				188D8B922B2B9CB400732A2E,
+				188D8B932B2B9CB400732A2E,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = "KiteUI Example App";
+			packageProductDependencies = (
+				53411A0A4CF141308627944E,
+			);
 			productName = "KiteUI Example App";
-			productReference = 188D8B952B2B9CB400732A2E /* KiteUI Example App.app */;
+			productReference = 188D8B952B2B9CB400732A2E;
 			productType = "com.apple.product-type.application";
 		};
-		188D8BAA2B2B9CB500732A2E /* KiteUI Example AppTests */ = {
+		188D8BAA2B2B9CB500732A2E = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 188D8BC22B2B9CB600732A2E /* Build configuration list for PBXNativeTarget "KiteUI Example AppTests" */;
+			buildConfigurationList = 188D8BC22B2B9CB600732A2E;
 			buildPhases = (
-				FF433D4783069D4AB7558D44 /* [CP] Check Pods Manifest.lock */,
-				188D8BA72B2B9CB500732A2E /* Sources */,
-				188D8BA82B2B9CB500732A2E /* Frameworks */,
-				188D8BA92B2B9CB500732A2E /* Resources */,
+				188D8BA72B2B9CB500732A2E,
+				188D8BA82B2B9CB500732A2E,
+				188D8BA92B2B9CB500732A2E,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				188D8BAD2B2B9CB500732A2E /* PBXTargetDependency */,
+				188D8BAD2B2B9CB500732A2E,
 			);
 			name = "KiteUI Example AppTests";
 			productName = "KiteUI Example AppTests";
-			productReference = 188D8BAB2B2B9CB500732A2E /* KiteUI Example AppTests.xctest */;
+			productReference = 188D8BAB2B2B9CB500732A2E;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		188D8BB42B2B9CB600732A2E /* KiteUI Example AppUITests */ = {
+		188D8BB42B2B9CB600732A2E = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 188D8BC52B2B9CB600732A2E /* Build configuration list for PBXNativeTarget "KiteUI Example AppUITests" */;
+			buildConfigurationList = 188D8BC52B2B9CB600732A2E;
 			buildPhases = (
-				66665D559DB9AE1D702DC902 /* [CP] Check Pods Manifest.lock */,
-				188D8BB12B2B9CB600732A2E /* Sources */,
-				188D8BB22B2B9CB600732A2E /* Frameworks */,
-				188D8BB32B2B9CB600732A2E /* Resources */,
-				69CAEBBC5AE10BF266FFB417 /* [CP] Embed Pods Frameworks */,
+				188D8BB12B2B9CB600732A2E,
+				188D8BB22B2B9CB600732A2E,
+				188D8BB32B2B9CB600732A2E,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				188D8BB72B2B9CB600732A2E /* PBXTargetDependency */,
+				188D8BB72B2B9CB600732A2E,
 			);
 			name = "KiteUI Example AppUITests";
 			productName = "KiteUI Example AppUITests";
-			productReference = 188D8BB52B2B9CB600732A2E /* KiteUI Example AppUITests.xctest */;
+			productReference = 188D8BB52B2B9CB600732A2E;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		188D8B8D2B2B9CB400732A2E /* Project object */ = {
+		188D8B8D2B2B9CB400732A2E = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
@@ -349,7 +655,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 188D8B902B2B9CB400732A2E /* Build configuration list for PBXProject "KiteUI Example App" */;
+			buildConfigurationList = 188D8B902B2B9CB400732A2E;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -358,64 +664,67 @@
 				Base,
 			);
 			mainGroup = 188D8B8C2B2B9CB400732A2E;
-			productRefGroup = 188D8B962B2B9CB400732A2E /* Products */;
+			packageReferences = (
+				4BFBE3F64480364D81D1A7E9,
+			);
+			productRefGroup = 188D8B962B2B9CB400732A2E;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				188D8B942B2B9CB400732A2E /* KiteUI Example App */,
-				188D8BAA2B2B9CB500732A2E /* KiteUI Example AppTests */,
-				188D8BB42B2B9CB600732A2E /* KiteUI Example AppUITests */,
+				188D8B942B2B9CB400732A2E,
+				188D8BAA2B2B9CB500732A2E,
+				188D8BB42B2B9CB600732A2E,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		188D8B932B2B9CB400732A2E /* Resources */ = {
+		188D8B932B2B9CB400732A2E = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				18D0BED32C2488B100145B47 /* fontsOpensans-OpenSans-LightItalic.ttf in Resources */,
-				18D0BED92C2488B100145B47 /* fontsRoboto-bold-italic.ttf in Resources */,
-				18D0BECD2C2488B100145B47 /* fontsOpensans-OpenSans-Bold.ttf in Resources */,
-				18D0BECB2C2488B100145B47 /* fontsMontserrat-italic.ttf in Resources */,
-				18D0BEC72C2488B100145B47 /* fontsGoldman-bold.ttf in Resources */,
-				18D0BEDC2C2488B100145B47 /* fontsRoboto-light-Italic.ttf in Resources */,
-				188D8BA52B2B9CB500732A2E /* LaunchScreen.storyboard in Resources */,
-				18D0BEDB2C2488B100145B47 /* fontsRoboto-italic.ttf in Resources */,
-				188D8BA22B2B9CB500732A2E /* Assets.xcassets in Resources */,
-				18D0BED42C2488B100145B47 /* fontsOpensans-OpenSans-Medium.ttf in Resources */,
-				18D0BED02C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf in Resources */,
-				18D0BEDF2C2488B100145B47 /* fontsRobotoLight-light.ttf in Resources */,
-				18D0BECA2C2488B100145B47 /* fontsMontserrat-bold.ttf in Resources */,
-				18D0BED72C2488B100145B47 /* fontsOpensans-OpenSans-SemiBold.ttf in Resources */,
-				18D0BEC62C2488B100145B47 /* audioTaunt.mp3 in Resources */,
-				18D0BED62C2488B100145B47 /* fontsOpensans-OpenSans-Regular.ttf in Resources */,
-				18D0BEDA2C2488B100145B47 /* fontsRoboto-bold.ttf in Resources */,
-				18D0BEE12C2488B100145B47 /* videoBack.mp4 in Resources */,
-				188D8BA02B2B9CB400732A2E /* Main.storyboard in Resources */,
-				18D0BED12C2488B100145B47 /* fontsOpensans-OpenSans-Italic.ttf in Resources */,
-				18D0BEDD2C2488B100145B47 /* fontsRoboto-light.ttf in Resources */,
-				18D0BEC82C2488B100145B47 /* fontsGoldman-normal.ttf in Resources */,
-				18D0BED52C2488B100145B47 /* fontsOpensans-OpenSans-MediumItalic.ttf in Resources */,
-				18D0BECF2C2488B100145B47 /* fontsOpensans-OpenSans-ExtraBold.ttf in Resources */,
-				18D0BED22C2488B100145B47 /* fontsOpensans-OpenSans-Light.ttf in Resources */,
-				18D0BEE02C2488B100145B47 /* fontsRobotoLightItalic-light-Italic.ttf in Resources */,
-				18D0BEC92C2488B100145B47 /* fontsMontserrat-bold-italic.ttf in Resources */,
-				18D0BECE2C2488B100145B47 /* fontsOpensans-OpenSans-BoldItalic.ttf in Resources */,
-				18D0BED82C2488B100145B47 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf in Resources */,
-				18D0BECC2C2488B100145B47 /* fontsMontserrat-normal.ttf in Resources */,
-				18D0BEDE2C2488B100145B47 /* fontsRoboto-normal.ttf in Resources */,
+				18D0BED32C2488B100145B47,
+				18D0BED92C2488B100145B47,
+				18D0BECD2C2488B100145B47,
+				18D0BECB2C2488B100145B47,
+				18D0BEC72C2488B100145B47,
+				18D0BEDC2C2488B100145B47,
+				188D8BA52B2B9CB500732A2E,
+				18D0BEDB2C2488B100145B47,
+				188D8BA22B2B9CB500732A2E,
+				18D0BED42C2488B100145B47,
+				18D0BED02C2488B100145B47,
+				18D0BEDF2C2488B100145B47,
+				18D0BECA2C2488B100145B47,
+				18D0BED72C2488B100145B47,
+				18D0BEC62C2488B100145B47,
+				18D0BED62C2488B100145B47,
+				18D0BEDA2C2488B100145B47,
+				18D0BEE12C2488B100145B47,
+				188D8BA02B2B9CB400732A2E,
+				18D0BED12C2488B100145B47,
+				18D0BEDD2C2488B100145B47,
+				18D0BEC82C2488B100145B47,
+				18D0BED52C2488B100145B47,
+				18D0BECF2C2488B100145B47,
+				18D0BED22C2488B100145B47,
+				18D0BEE02C2488B100145B47,
+				18D0BEC92C2488B100145B47,
+				18D0BECE2C2488B100145B47,
+				18D0BED82C2488B100145B47,
+				18D0BECC2C2488B100145B47,
+				18D0BEDE2C2488B100145B47,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		188D8BA92B2B9CB500732A2E /* Resources */ = {
+		188D8BA92B2B9CB500732A2E = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		188D8BB32B2B9CB600732A2E /* Resources */ = {
+		188D8BB32B2B9CB600732A2E = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -425,165 +734,84 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		66665D559DB9AE1D702DC902 /* [CP] Check Pods Manifest.lock */ = {
+		514B2EDD29D87A17E42007AC = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
 			);
-			name = "[CP] Check Pods Manifest.lock";
+			name = "Compile Kotlin Framework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-KiteUI Example App-KiteUI Example AppUITests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		69CAEBBC5AE10BF266FFB417 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		6C3B83100C1A2B1A5FCCBA4E /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		DC80531564B5B179B785E1BB /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-KiteUI Example App-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FF433D4783069D4AB7558D44 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-KiteUI Example AppTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :example-app:embedAndSignAppleFrameworkForXcode -i";
 		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		188D8B912B2B9CB400732A2E /* Sources */ = {
+		188D8B912B2B9CB400732A2E = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				188D8B9D2B2B9CB400732A2E /* ViewController.swift in Sources */,
-				183A2D592B335230001011C3 /* test.m in Sources */,
-				188D8B992B2B9CB400732A2E /* AppDelegate.swift in Sources */,
-				188D8B9B2B2B9CB400732A2E /* SceneDelegate.swift in Sources */,
+				188D8B9D2B2B9CB400732A2E,
+				183A2D592B335230001011C3,
+				188D8B992B2B9CB400732A2E,
+				188D8B9B2B2B9CB400732A2E,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		188D8BA72B2B9CB500732A2E /* Sources */ = {
+		188D8BA72B2B9CB500732A2E = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				188D8BB02B2B9CB500732A2E /* KiteUi_Example_AppTests.swift in Sources */,
+				188D8BB02B2B9CB500732A2E,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		188D8BB12B2B9CB600732A2E /* Sources */ = {
+		188D8BB12B2B9CB600732A2E = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				188D8BBC2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift in Sources */,
-				188D8BBA2B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift in Sources */,
+				188D8BBC2B2B9CB600732A2E,
+				188D8BBA2B2B9CB600732A2E,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		188D8BAD2B2B9CB500732A2E /* PBXTargetDependency */ = {
+		188D8BAD2B2B9CB500732A2E = {
 			isa = PBXTargetDependency;
-			target = 188D8B942B2B9CB400732A2E /* KiteUI Example App */;
-			targetProxy = 188D8BAC2B2B9CB500732A2E /* PBXContainerItemProxy */;
+			target = 188D8B942B2B9CB400732A2E;
+			targetProxy = 188D8BAC2B2B9CB500732A2E;
 		};
-		188D8BB72B2B9CB600732A2E /* PBXTargetDependency */ = {
+		188D8BB72B2B9CB600732A2E = {
 			isa = PBXTargetDependency;
-			target = 188D8B942B2B9CB400732A2E /* KiteUI Example App */;
-			targetProxy = 188D8BB62B2B9CB600732A2E /* PBXContainerItemProxy */;
+			target = 188D8B942B2B9CB400732A2E;
+			targetProxy = 188D8BB62B2B9CB600732A2E;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		188D8B9E2B2B9CB400732A2E /* Main.storyboard */ = {
+		188D8B9E2B2B9CB400732A2E = {
 			isa = PBXVariantGroup;
 			children = (
-				188D8B9F2B2B9CB400732A2E /* Base */,
+				188D8B9F2B2B9CB400732A2E,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
-		188D8BA32B2B9CB500732A2E /* LaunchScreen.storyboard */ = {
+		188D8BA32B2B9CB500732A2E = {
 			isa = PBXVariantGroup;
 			children = (
-				188D8BA42B2B9CB500732A2E /* Base */,
+				188D8BA42B2B9CB500732A2E,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -591,7 +819,7 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		188D8BBD2B2B9CB600732A2E /* Debug */ = {
+		188D8BBD2B2B9CB600732A2E = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -654,7 +882,7 @@
 			};
 			name = Debug;
 		};
-		188D8BBE2B2B9CB600732A2E /* Release */ = {
+		188D8BBE2B2B9CB600732A2E = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -710,9 +938,8 @@
 			};
 			name = Release;
 		};
-		188D8BC02B2B9CB600732A2E /* Debug */ = {
+		188D8BC02B2B9CB600732A2E = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 829423F84D6BB1151175BFC1 /* Pods-KiteUI Example App.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -720,6 +947,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KiteUI Example App/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -742,9 +970,8 @@
 			};
 			name = Debug;
 		};
-		188D8BC12B2B9CB600732A2E /* Release */ = {
+		188D8BC12B2B9CB600732A2E = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2BFC183D917364913C567D4A /* Pods-KiteUI Example App.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -752,6 +979,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KiteUI Example App/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -773,15 +1001,15 @@
 			};
 			name = Release;
 		};
-		188D8BC32B2B9CB600732A2E /* Debug */ = {
+		188D8BC32B2B9CB600732A2E = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 22734415A23BDBD0238C030E /* Pods-KiteUI Example AppTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				MARKETING_VERSION = "version-4-SNAPSHOT";
@@ -794,15 +1022,15 @@
 			};
 			name = Debug;
 		};
-		188D8BC42B2B9CB600732A2E /* Release */ = {
+		188D8BC42B2B9CB600732A2E = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2C5BD3042E632E094BECD1AA /* Pods-KiteUI Example AppTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				MARKETING_VERSION = "version-4-SNAPSHOT";
@@ -815,14 +1043,14 @@
 			};
 			name = Release;
 		};
-		188D8BC62B2B9CB600732A2E /* Debug */ = {
+		188D8BC62B2B9CB600732A2E = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 852CE10B3DB74495323BC0AA /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = "version-4-SNAPSHOT";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-AppUITests";
@@ -834,14 +1062,14 @@
 			};
 			name = Debug;
 		};
-		188D8BC72B2B9CB600732A2E /* Release */ = {
+		188D8BC72B2B9CB600732A2E = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C5A08FC331FF7CA44B30E3DE /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = "version-4-SNAPSHOT";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-AppUITests";
@@ -856,43 +1084,57 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		188D8B902B2B9CB400732A2E /* Build configuration list for PBXProject "KiteUI Example App" */ = {
+		188D8B902B2B9CB400732A2E = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				188D8BBD2B2B9CB600732A2E /* Debug */,
-				188D8BBE2B2B9CB600732A2E /* Release */,
+				188D8BBD2B2B9CB600732A2E,
+				188D8BBE2B2B9CB600732A2E,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		188D8BBF2B2B9CB600732A2E /* Build configuration list for PBXNativeTarget "KiteUI Example App" */ = {
+		188D8BBF2B2B9CB600732A2E = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				188D8BC02B2B9CB600732A2E /* Debug */,
-				188D8BC12B2B9CB600732A2E /* Release */,
+				188D8BC02B2B9CB600732A2E,
+				188D8BC12B2B9CB600732A2E,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		188D8BC22B2B9CB600732A2E /* Build configuration list for PBXNativeTarget "KiteUI Example AppTests" */ = {
+		188D8BC22B2B9CB600732A2E = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				188D8BC32B2B9CB600732A2E /* Debug */,
-				188D8BC42B2B9CB600732A2E /* Release */,
+				188D8BC32B2B9CB600732A2E,
+				188D8BC42B2B9CB600732A2E,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		188D8BC52B2B9CB600732A2E /* Build configuration list for PBXNativeTarget "KiteUI Example AppUITests" */ = {
+		188D8BC52B2B9CB600732A2E = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				188D8BC62B2B9CB600732A2E /* Debug */,
-				188D8BC72B2B9CB600732A2E /* Release */,
+				188D8BC62B2B9CB600732A2E,
+				188D8BC72B2B9CB600732A2E,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		4BFBE3F64480364D81D1A7E9 = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = KotlinMultiplatformLinkedPackage;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		53411A0A4CF141308627944E = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KotlinMultiplatformLinkedPackage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = 188D8B8D2B2B9CB400732A2E /* Project object */;
+	rootObject = 188D8B8D2B2B9CB400732A2E;
 }

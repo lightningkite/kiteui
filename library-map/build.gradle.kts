@@ -1,10 +1,8 @@
 import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.cocoapods) apply false
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.androidKmpLibrary)
     signing
@@ -13,11 +11,8 @@ plugins {
     alias(libs.plugins.kjsplain)
 }
 
-// Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
-if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
-
 val maplibreWebVersion = "6.12.0"
-val minMapLibreIosVersion = "6.0"
+val minMapLibreIosVersion = "6.0.0"
 
 val generateMapLibreLayerTypes = tasks.register("generateMapLibreLayerTypes") {
     description = "Regenerate the MapLibre layer types from the MapLibre style spec"
@@ -61,15 +56,12 @@ kotlin {
         iosArm64()
         iosSimulatorArm64()
         iosX64()
-        // No `cocoapods {}` accessor, since the plugin isn't applied in the plugins block.
-        (this as ExtensionAware).extensions.configure<CocoapodsExtension> {
-            summary = "KiteUI Map Support"
-            homepage = "https://github.com/lightningkite/kiteui"
-            version = "1.0"
-            ios.deploymentTarget = "14.0"
-            pod("MapLibre") {
-                version = "~> $minMapLibreIosVersion"
-            }
+        swiftPMDependencies {
+            swiftPackage(
+                url = url("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
+                version = from(minMapLibreIosVersion),
+                products = listOf(product("MapLibre")),
+            )
         }
     }
     js { browser() }
@@ -118,42 +110,6 @@ kotlin {
         }
 
         val jvmSsrMain = getByName("jvmSsrMain")
-    }
-}
-
-if (iosEnabled) {
-    afterEvaluate {
-        val xcframeworkDir = file("build/cocoapods/synthetic/ios/Pods/MapLibre/MapLibre.xcframework")
-        val defFile = file("build/cocoapods/defs/MapLibre.def")
-
-        val patchMapLibreDef = tasks.register("patchMapLibreDef") {
-            dependsOn("generateDefMapLibre", "podInstallSyntheticIos")
-            doLast {
-                if (!defFile.exists()) return@doLast
-                var content = defFile.readText()
-                if ("-F" !in content) {
-                    val arm64 = xcframeworkDir.resolve("ios-arm64").absolutePath
-                    val sim = xcframeworkDir.resolve("ios-arm64_x86_64-simulator").absolutePath
-                    content = content.replace(
-                        "linkerOpts = -framework MapLibre",
-                        "linkerOpts.ios_arm64 = -framework MapLibre -F$arm64\n" +
-                        "linkerOpts.ios_simulator_arm64 = -framework MapLibre -F$sim\n" +
-                        "linkerOpts.ios_x64 = -framework MapLibre -F$sim"
-                    )
-                }
-                if ("cancelTransitions" !in content) {
-                    content += "\n---\n" +
-                        "@interface MLNMapView (KiteUIPrivate)\n" +
-                        "- (void)cancelTransitions;\n" +
-                        "@end\n"
-                }
-                defFile.writeText(content)
-            }
-        }
-
-        tasks.withType<org.jetbrains.kotlin.gradle.tasks.CInteropProcess>()
-            .matching { it.name.contains("MapLibre") }
-            .configureEach { dependsOn(patchMapLibreDef) }
     }
 }
 

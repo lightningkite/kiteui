@@ -55,6 +55,14 @@ class PlatformStorageTest {
     }
 
     @Test
+    fun ensureOnDiskSavesBeforeReturning() = runKiteUiTest {
+        showKiteUi {}
+        PlatformStorage.set("key", "value", ensureOnDisk = true)
+        val file = java.io.File(System.getProperty("kiteui.dataDirectory")).resolve("${PlatformStorage.appId}/storage.json")
+        assertEquals("value", JsonFileStorage(file).get("key"))
+    }
+
+    @Test
     fun refusesToSwitchApps() = runKiteUiTest {
         showKiteUi {}
         assertFailsWith<IllegalStateException> { PlatformStorage.appId = "some-other-app" }
