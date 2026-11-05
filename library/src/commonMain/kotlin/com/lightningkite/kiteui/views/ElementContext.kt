@@ -20,14 +20,22 @@ public var ElementContext.ssrDispatcher: CoroutineDispatcher?
 public expect class ElementContext: ElementContextCommonCode {
     public fun split(): ElementContext
 
+    /**
+     * Returns a child context with its own [exceptionHandlers] that shares [addons] with this one.
+     *
+     * Containers use this so errors are routed to the nearest enclosing handler without
+     * scoping addon writes or lengthening addon lookups.
+     */
+    public fun splitExceptionHandlers(): ElementContext
+
     public val darkMode: Boolean?
     public var immersiveMode: Boolean
 
     public companion object
 }
 
-public abstract class ElementContextCommonCode(parent: ElementContext?) {
-    public val addons: ChainMap<String, Any?> = parent?.addons?.child() ?: ChainMap()
+public abstract class ElementContextCommonCode(parent: ElementContext?, shareAddons: Boolean = false) {
+    public val addons: ChainMap<String, Any?> = if (shareAddons) parent!!.addons else parent?.addons?.child() ?: ChainMap()
     public val exceptionHandlers: ExceptionHandlersTree = ExceptionHandlersTree(parent = parent?.exceptionHandlers)
 }
 

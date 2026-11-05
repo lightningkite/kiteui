@@ -5,9 +5,10 @@ import platform.UIKit.UIApplication
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
-public actual class ElementContext(public val controller: UIViewController, public val parent: ElementContext? = null) : ElementContextCommonCode(parent) {
+public actual class ElementContext(public val controller: UIViewController, public val parent: ElementContext? = null, shareAddons: Boolean = false) : ElementContextCommonCode(parent, shareAddons) {
     // by Claude - use addons.child() for lazy parent lookup instead of copying
     public actual fun split(): ElementContext = ElementContext(controller, parent = this)
+    public actual fun splitExceptionHandlers(): ElementContext = ElementContext(controller, parent = this, shareAddons = true)
     public fun split(controller: UIViewController): ElementContext = ElementContext(controller, parent = this)
 
     public actual val darkMode: Boolean?

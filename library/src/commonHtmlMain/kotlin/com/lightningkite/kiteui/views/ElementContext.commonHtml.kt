@@ -7,12 +7,14 @@ public actual class ElementContext(
     public val basePath: String,
     public val dynamicCss: DynamicCss = DynamicCss(basePath),
     public val kiteUiCss: KiteUiCss = KiteUiCss(dynamicCss),
-    parent: ElementContext? = null
-) : ElementContextCommonCode(parent) {
+    parent: ElementContext? = null,
+    shareAddons: Boolean = false
+) : ElementContextCommonCode(parent, shareAddons) {
 
     internal val id: Int = Random.nextInt()
 
     public actual fun split(): ElementContext = ElementContext(basePath, dynamicCss, kiteUiCss, this)
+    public actual fun splitExceptionHandlers(): ElementContext = ElementContext(basePath, dynamicCss, kiteUiCss, this, shareAddons = true)
 
     public actual val darkMode: Boolean? get() = null
 
