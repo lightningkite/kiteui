@@ -14,6 +14,7 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.reactive.Action
 import androidx.compose.ui.state.ToggleableState
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
@@ -417,5 +418,32 @@ class ControlsTest {
         onNodeWithText("Behind").performClick()
         waitForIdle()
         assertEquals(1, clicks)
+    }
+
+    // Like the web's dblclick: both clicks run first, and it reaches the element's ancestors too.
+    @Test
+    fun doubleClicksFollowTheirClicks() = runKiteUiTest {
+        val events = ArrayList<String>()
+        showKiteUi {
+            col {
+                (underlyingNativeElement as NativeElement).onDoubleClick = { events += "row double" }
+                button {
+                    text("Item")
+                    // Uncapped, since a capped action would ignore the second click.
+                    action = Action("Click", frequencyCap = null) { events += "click" }
+                    (underlyingNativeElement as NativeElement).onDoubleClick = { events += "double" }
+                }
+            }
+        }
+        onNodeWithText("Item").performMouseInput { doubleClick() }
+        waitForIdle()
+        assertEquals(listOf("click", "click", "double", "row double"), events)
+
+        events.clear()
+        onNodeWithText("Item").performMouseInput { click() }
+        mainClock.advanceTimeBy(1000)
+        onNodeWithText("Item").performMouseInput { click() }
+        waitForIdle()
+        assertEquals(listOf("click", "click"), events, "clicks a second apart aren't a double-click")
     }
 }

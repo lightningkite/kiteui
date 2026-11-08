@@ -460,6 +460,7 @@ fun main(args: Array<String>) {
             enginePubSub.useDefault()
             engineCache.useDefault()
             forceWebSocketPubSub.useDefault()
+            webSocketSettings.useDefault()
             ktorRunConfig set KtorRuntimeSettings(host = "127.0.0.1", port = port)
         }
         start(Netty)

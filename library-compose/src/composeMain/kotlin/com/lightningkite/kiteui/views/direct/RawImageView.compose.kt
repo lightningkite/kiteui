@@ -225,14 +225,17 @@ private class NaturalSize(val painter: Painter?) : MeasurePolicy {
         return layout(width, height) {}
     }
 
+    // Claude: the size given here is usually a cap (e.g. a max size above), not a fixed one, so like Compose's Image
+    // these shrink to fit it but never grow past the natural size.  Otherwise a small icon under maxWidth = 12.rem
+    // made its row 12rem tall.
     override fun IntrinsicMeasureScope.maxIntrinsicWidth(measurables: List<IntrinsicMeasurable>, height: Int): Int {
         val natural = painter?.intrinsicSize ?: return 0
-        return if (height == Constraints.Infinity) natural.width.roundToInt() else (height * natural.width / natural.height).roundToInt()
+        return (natural.width * min(1f, height / natural.height)).roundToInt()
     }
 
     override fun IntrinsicMeasureScope.maxIntrinsicHeight(measurables: List<IntrinsicMeasurable>, width: Int): Int {
         val natural = painter?.intrinsicSize ?: return 0
-        return if (width == Constraints.Infinity) natural.height.roundToInt() else (width * natural.height / natural.width).roundToInt()
+        return (natural.height * min(1f, width / natural.width)).roundToInt()
     }
 
     override fun IntrinsicMeasureScope.minIntrinsicWidth(measurables: List<IntrinsicMeasurable>, height: Int): Int =

@@ -177,6 +177,8 @@ public actual class CoordinatorDragHandle actual constructor(context: ElementCon
         }
     }
 
+    override val handCursor: Boolean get() = true
+
     override fun inputModifier(takesInput: Boolean): Modifier {
         val sheet = sheet ?: return Modifier
         var m = Modifier.clickable(interactions.source, indication = null, enabled = enabled && takesInput) {

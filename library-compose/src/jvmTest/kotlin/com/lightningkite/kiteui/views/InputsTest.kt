@@ -15,6 +15,10 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.math.abs
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
 
 @OptIn(ExperimentalTestApi::class)
 class InputsTest {
@@ -71,6 +75,56 @@ class InputsTest {
         field(0).assertTextEquals("one\ntwo")
         notes.value = "replaced"
         awaitText(0, "replaced")
+    }
+
+    // Like setting an <input>'s value: a prefilled field gets typed onto the end, not the start.
+    @Test
+    fun valuesSetFromOutsidePutTheCursorAtTheEnd() = runKiteUiTest {
+        val name = Signal("")
+        val notes = Signal("")
+        showKiteUi {
+            col {
+                fieldTheme.textInput { content bind name }
+                fieldTheme.textArea { content bind notes }
+            }
+        }
+        name.value = "Old name"
+        notes.value = "Old notes"
+        awaitText(0, "Old name")
+        awaitText(1, "Old notes")
+        for ((index, text) in listOf(0 to "Old name", 1 to "Old notes")) {
+            assertEquals(TextRange(text.length), field(index).fetchSemanticsNode().config[SemanticsProperties.TextSelectionRange])
+        }
+        field(0).performTextInput("!")
+        awaitValue(name, "Old name!")
+    }
+
+    // Like an <input>: when a row stretches a single-line field, its text stays centered vertically.
+    @Test
+    fun stretchedFieldsCenterTheirText() = runKiteUiTest {
+        val root = showKiteUi {
+            col {
+                row {
+                    sizeConstraints(width = 10.px, height = 80.px).space()
+                    fieldTheme.textInput { content.value = "Text" }
+                }
+            }
+        }
+        waitForIdle()
+        val shot = saveScreenshot(root, "stretched-field")
+        val box = field(0).getUnclippedBoundsInRoot()
+        // 80dp, less the field's padding.
+        assertTrue(box.height > 40.dp, "the row stretches the field, got ${box.height}")
+        // In pixels, inside the field's outline.
+        val d = root.density
+        val left = (box.left.value * d).toInt()
+        val top = ((box.top.value + 4) * d).toInt()
+        val bottom = ((box.bottom.value - 4) * d).toInt()
+        // Rows where the start of the field differs from its empty end hold the text.
+        val background = shot.getRGB(((box.right.value - 20) * d).toInt(), (top + bottom) / 2)
+        val textRows = (top until bottom).filter { y -> ((left + 8 * d).toInt() until (left + 60 * d).toInt()).any { x -> shot.getRGB(x, y) != background } }
+        val textCenter = (textRows.first() + textRows.last()) / 2f
+        assertTrue(abs(textCenter - (top + bottom) / 2f) < 4 * d, "text centered at $textCenter, field spans $top..$bottom")
     }
 
     @Test

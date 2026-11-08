@@ -120,16 +120,19 @@ class KiteUiPlugin : Plugin<Project> {
             task.dependsOn("kiteuiResourcesCommon")
             group = "kiteui"
             val out = project.file("build/generated/kiteui-jvmSsr/Resources.jvm.kt")
-            val gitIgnore = project.file("src/jvmSsrMain/resources/common/.gitignore")
             task.outputs.file(out)
-            task.outputs.file(gitIgnore)
             task.inputs.files(resourceFolder)
             task.doLast {
-                resourcesJs(listOf(gitIgnore), resourceFolder.get(), out, ext)
+                resourcesJvm(resourceFolder.get(), out, ext)
             }
             tasks.matching { it.name == "compileKotlinJvmSsr" }.configureEach { dependsOn(task) }
             tasks.matching { it.name == "kspKotlinJvmSsr" }.configureEach { dependsOn(task) }
-            tasks.matching { it.name == "jvmSsrProcessResources" }.configureEach { dependsOn(task) }
+            // Claude: as in kiteuiResourcesJvm, binary resources load from `common/<path>` on the classpath.  Apps that
+            // run the Compose desktop backend on this target need the rest there too.
+            tasks.withType(ProcessResources::class.java).matching { it.name == "jvmSsrProcessResources" }.configureEach {
+                dependsOn(task)
+                from(resourceFolder) { into("common") }
+            }
         }
 
         tasks.register("kiteuiResourcesIos").apply {

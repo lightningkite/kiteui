@@ -33,6 +33,8 @@ public actual class ToggleButton actual constructor(context: ElementContext) : N
         }
     }
 
+    override val handCursor: Boolean get() = true
+
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier.toggleable(
         value = isChecked,
         interactionSource = interactions.source,

@@ -33,6 +33,8 @@ public actual class RadioToggleButton actual constructor(context: ElementContext
         }
     }
 
+    override val handCursor: Boolean get() = true
+
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier.selectable(
         selected = isChecked,
         interactionSource = interactions.source,

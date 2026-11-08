@@ -41,7 +41,12 @@ public class Interactions internal constructor(private val element: NativeElemen
             if (hovered) t += HoverSemantic
             if (pressed) t += DownSemantic
             if (focused) t += FocusSemantic
-            t
+            // Claude: on the web these states are CSS that recolors the element; whether it's padded comes from its
+            // resting theme.  Their withBack themes would otherwise add padding while hovered.
+            ThemeDerivation { theme ->
+                val state = t(theme)
+                if (state.drawBackground) state.theme.withBackNoPadding else state.theme.withoutBack
+            }
         })
     }
 

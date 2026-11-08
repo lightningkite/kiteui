@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -14,6 +16,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
@@ -38,10 +42,14 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
     public actual var hint: String by mutableStateOf("")
     public actual var align: Align? by mutableStateOf(null)
 
-    private var text by mutableStateOf("")
+    private var field by mutableStateOf(TextFieldValue(""))
 
     init {
-        reactive { text = content() }
+        // Claude: like setting an <input>'s value, a change from outside puts the cursor at the end.
+        reactive {
+            val text = content()
+            if (text != field.text) field = TextFieldValue(text, TextRange(text.length))
+        }
     }
 
     @Composable
@@ -51,10 +59,10 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
         val hints = keyboardHints
         val style = theme.font.toTextStyle(color.toCompose(), align ?: theme.font.align)
         BasicTextField(
-            value = text,
+            value = field,
             onValueChange = {
-                text = it
-                content.value = it
+                field = it
+                content.value = it.text
             },
             modifier = modifier,
             enabled = enabled && takesInput,
@@ -65,13 +73,25 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
             visualTransformation = if (hints.isPassword) PasswordVisualTransformation() else theme.font.casing,
             keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@TextInput) }),
-            decorationBox = { field ->
-                Box {
-                    if (text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
-                    field()
+            decorationBox = { inner ->
+                SingleLineDecoration {
+                    if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
+                    inner()
                 }
             },
         )
+    }
+}
+
+/**
+ * Lays out a single-line field's text and placeholder ([content]) like an <input>: centered vertically when the
+ * field is taller than its text, as when a row stretches it.
+ */
+@Composable
+internal fun SingleLineDecoration(content: @Composable () -> Unit) {
+    // Claude: the text field gives this its own size as minimum constraints, which the inner Box doesn't pass on.
+    Box(contentAlignment = Alignment.CenterStart) {
+        Box(Modifier.fillMaxWidth()) { content() }
     }
 }
 

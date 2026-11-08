@@ -34,6 +34,8 @@ public actual class MenuButton actual constructor(context: ElementContext) : Nat
         popover.block()
     }
 
+    override val handCursor: Boolean get() = true
+
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,

@@ -19,6 +19,8 @@ public actual class Link actual constructor(context: ElementContext) : NativeCon
     public actual var newTab: Boolean = false
     public actual var resetsStack: Boolean = false
 
+    override val handCursor: Boolean get() = true
+
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,

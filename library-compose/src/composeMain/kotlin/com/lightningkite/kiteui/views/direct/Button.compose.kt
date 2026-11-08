@@ -31,6 +31,8 @@ public actual class Button actual constructor(context: ElementContext) : NativeC
         hasSecondaryAction = action != null
     }
 
+    override val handCursor: Boolean get() = true
+
     @OptIn(ExperimentalFoundationApi::class)
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier
         // As on the web, Ctrl, Meta or Shift with Enter or Space runs the secondary action.  Both the press and the

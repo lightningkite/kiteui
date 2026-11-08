@@ -187,14 +187,16 @@ class AnimationTest {
     fun dialogsFadeOutBeforeGoing() = runKiteUiTest {
         mainClock.autoAdvance = false
         lateinit var close: () -> Unit
+        lateinit var page: ElementContext
         showKiteUi {
             frame {
                 context.overlayFrame = this
+                page = context
                 text("Page")
             }
         }
         runOnUiThread {
-            KiteUiRoot.current!!.context.overlay(transition = ScreenTransitions.Fade) { remove ->
+            page.overlay(transition = ScreenTransitions.Fade) { remove ->
                 close = remove
                 centered.card.text("Dialog")
             }

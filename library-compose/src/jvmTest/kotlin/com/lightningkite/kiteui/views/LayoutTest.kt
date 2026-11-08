@@ -178,4 +178,40 @@ class LayoutTest {
         // shownWhen reacts on the Swing thread, which waitForIdle doesn't track.
         waitUntil { onAllNodesWithText("Swapped in", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
     }
+
+    // Browsers ignore negative padding; Compose throws on it, which took down the whole window.
+    @Test
+    fun negativePaddingCountsAsNone() = runKiteUiTest {
+        showKiteUi {
+            col {
+                frame {
+                    paddingByEdge = Edges(left = 4.px, top = 0.px, bottom = 0.px, right = (-8).px)
+                    text("Inside")
+                }
+            }
+        }
+        assertEquals(4.dp, onNodeWithText("Inside").getUnclippedBoundsInRoot().left)
+    }
+
+    // As on the web, hovering recolors a button but doesn't pad one whose theme leaves it unpadded.
+    @Test
+    fun hoverDoesNotAddPadding() = runKiteUiTest {
+        showKiteUi {
+            col {
+                themed(UnpaddedClickables).col {
+                    button { text("Item"); onClick { } }
+                }
+            }
+        }
+        val before = onNodeWithText("Item").getUnclippedBoundsInRoot()
+        onNodeWithText("Item").performMouseInput { moveTo(center) }
+        waitForIdle()
+        assertEquals(before, onNodeWithText("Item").getUnclippedBoundsInRoot())
+    }
+}
+
+private object UnpaddedClickables : Semantic("unpadded-clickables") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+        semanticOverrides = SemanticOverrides(ClickableSemantic.override { it.withoutBack }),
+    )
 }

@@ -152,6 +152,31 @@ class ImagesTest {
     }
 
     @Test
+    fun maxSizeDoesNotGrowARow() = runKiteUiTest {
+        val views = mutableListOf<RawImageViewLike>()
+        val root = showKiteUi {
+            col {
+                row {
+                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px).rawImage(vector, "vector") { views += this }
+                    text("label")
+                }
+                row {
+                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px).rawImage(ImageResource("common/images/test-pattern.png"), "png") { views += this }
+                    text("label")
+                }
+            }
+        }
+        waitForLoad(views)
+        saveScreenshot(root, "image-max-size-rows")
+
+        // Like an <img> with max-width and max-height: the row is as tall as its text (or the 20dp image), not 100dp.
+        for (name in listOf("vector", "png")) {
+            val box = onNodeWithContentDescription(name).getUnclippedBoundsInRoot()
+            assertTrue(box.height < 30.dp, "$name's row grew to ${box.height}")
+        }
+    }
+
+    @Test
     fun remoteImagesAreCachedPerStrategy() = runKiteUiTest {
         val current = Signal<ImageRemote?>(null)
         var view: RawImageView? = null

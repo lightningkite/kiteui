@@ -16,6 +16,8 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
@@ -38,10 +40,14 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
     public actual var keyboardHints: KeyboardHints by mutableStateOf(KeyboardHints())
     public actual var hint: String by mutableStateOf("")
 
-    private var text by mutableStateOf("")
+    private var field by mutableStateOf(TextFieldValue(""))
 
     init {
-        reactive { text = content() }
+        // Claude: like setting a <textarea>'s value, a change from outside puts the cursor at the end.
+        reactive {
+            val text = content()
+            if (text != field.text) field = TextFieldValue(text, TextRange(text.length))
+        }
     }
 
     @Composable
@@ -50,10 +56,10 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
         val color = theme.foreground.closestColor()
         val style = theme.font.toTextStyle(color.toCompose())
         BasicTextField(
-            value = text,
+            value = field,
             onValueChange = {
-                text = it
-                content.value = it
+                field = it
+                content.value = it.text
             },
             // As on the web: with an action, Enter submits and Shift+Enter makes a new line.
             modifier = modifier.onPreviewKeyEvent {
@@ -68,10 +74,10 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
             cursorBrush = SolidColor(color.toCompose()),
             interactionSource = interactions.source,
             keyboardOptions = keyboardHints.toKeyboardOptions(imeAction = ImeAction.Default),
-            decorationBox = { field ->
+            decorationBox = { inner ->
                 Box {
-                    if (text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
-                    field()
+                    if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
+                    inner()
                 }
             },
         )

@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -79,7 +78,7 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@FormattedTextInput) }),
             decorationBox = { inner ->
-                Box {
+                SingleLineDecoration {
                     if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     inner()
                 }

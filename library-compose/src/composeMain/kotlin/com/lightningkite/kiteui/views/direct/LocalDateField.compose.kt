@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -81,7 +80,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalDateField) }),
             decorationBox = { inner ->
-                Box {
+                SingleLineDecoration {
                     if (field.text.isEmpty()) BasicText(theme.font.cased("yyyy-mm-dd"), style = style.copy(color = theme.hintColor))
                     inner()
                 }

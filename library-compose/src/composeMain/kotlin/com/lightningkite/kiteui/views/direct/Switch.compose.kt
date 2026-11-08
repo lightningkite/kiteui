@@ -47,6 +47,8 @@ public actual class Switch actual constructor(context: ElementContext) : NativeI
 
     override fun refreshPadding() {}
 
+    override val handCursor: Boolean get() = true
+
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier.toggleable(
         value = isChecked,
         interactionSource = interactions.source,

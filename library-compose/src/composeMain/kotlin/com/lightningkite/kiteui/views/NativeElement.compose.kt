@@ -43,6 +43,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
+import androidx.compose.ui.node.currentValueOf
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.layout
@@ -62,6 +70,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
+import androidx.compose.ui.unit.coerceAtLeast
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.lerp
 import com.lightningkite.kiteui.InternalKiteUi
@@ -478,7 +488,13 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         }
         scrolling?.let { m = it.applyTo(m, takesInput) }
         val p = padding
-        m = m.padding(start = p.left.toDp(), top = p.top.toDp(), end = p.right.toDp(), bottom = p.bottom.toDp())
+        // Claude: Compose throws on negative padding; browsers ignore it, so it counts as none here.
+        m = m.padding(
+            start = p.left.toDp().coerceAtLeast(0.dp),
+            top = p.top.toDp().coerceAtLeast(0.dp),
+            end = p.right.toDp().coerceAtLeast(0.dp),
+            bottom = p.bottom.toDp().coerceAtLeast(0.dp),
+        )
         // Last, so that a view's own semantics still give the node its bounds (the view's, inside the padding).
         val label = label
         val paneTitle = paneTitle
@@ -497,10 +513,23 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     // doesn't take input, so that the modifiers keep their shape (see Render).
     protected open fun inputModifier(takesInput: Boolean): Modifier = Modifier
 
+    /** Whether the mouse pointer turns into a hand over this while it takes input, as the web's `.clickable` does. */
+    internal open val handCursor: Boolean get() = false
+
+    /**
+     * Runs when this, or something inside it, is double-clicked with the primary button, like the web's `dblclick`.
+     *
+     * The two clicks still run as clicks first.  It goes to the clicked element, then to its ancestors in turn.
+     */
+    public var onDoubleClick: (() -> Unit)? = null
+
     // It must apply its modifier to exactly one root layout node.
     @Composable
     protected abstract fun Content(modifier: Modifier)
 }
+
+// The release (by its time) that an element has taken as a double-click, so its ancestors don't take it too.
+private var claimedDoubleClick = -1L
 
 // Any pointer input node takes the pointer over the element's bounds so, as on the web, it doesn't reach what's
 // behind (a dialog card over a page).  So, like Compose's clickable, this only has one while it's enabled.
@@ -510,24 +539,71 @@ private data class HoverElement(val element: NativeElement, val enabled: Boolean
 }
 
 private class HoverNode(private var element: NativeElement, enabled: Boolean) : DelegatingNode() {
-    private var tracking: Tracking? = if (enabled) delegate(Tracking()) else null
+    private var tracking: Tracking? = null
+    private var cursor: Modifier.Node? = null
+
+    init {
+        update(element, enabled)
+    }
 
     fun update(element: NativeElement, enabled: Boolean) {
         this.element = element
-        val tracking = tracking
-        if (enabled && tracking == null) this.tracking = delegate(Tracking())
-        if (!enabled && tracking != null) {
-            undelegate(tracking)
-            this.tracking = null
+        tracking = tracking.delegatedWhile(enabled) { Tracking() }
+        // Claude: Compose's hover icon node class is internal, so it's made by the public modifier's element.
+        cursor = cursor.delegatedWhile(enabled && element.handCursor) {
+            (Modifier.pointerHoverIcon(PointerIcon.Hand) as ModifierNodeElement<*>).create()
         }
     }
 
-    private inner class Tracking : Modifier.Node(), PointerInputModifierNode {
+    // This node, delegated to while [on], else null.
+    private fun <T : DelegatableNode> T?.delegatedWhile(on: Boolean, create: () -> T): T? = when {
+        on && this == null -> delegate(create())
+        !on && this != null -> {
+            undelegate(this)
+            null
+        }
+        else -> this
+    }
+
+    private inner class Tracking : Modifier.Node(), PointerInputModifierNode, CompositionLocalConsumerModifierNode {
+        private var lastClickTime = 0L
+        private var lastClickPosition: Offset? = null
+        private var doubleClicked = false
+
+        @OptIn(ExperimentalComposeUiApi::class)
         override fun onPointerEvent(pointerEvent: PointerEvent, pass: PointerEventPass, bounds: IntSize) {
-            if (pass != PointerEventPass.Main) return
             when (pointerEvent.type) {
-                PointerEventType.Enter -> element.hovered.value = true
-                PointerEventType.Exit -> element.hovered.value = false
+                PointerEventType.Enter -> if (pass == PointerEventPass.Main) element.hovered.value = true
+                PointerEventType.Exit -> if (pass == PointerEventPass.Main) element.hovered.value = false
+                PointerEventType.Release -> when {
+                    pass == PointerEventPass.Main && pointerEvent.button == PointerButton.Primary -> {
+                        val click = pointerEvent.changes.first()
+                        val last = lastClickPosition
+                        val config = currentValueOf(LocalViewConfiguration)
+                        val isDouble = last != null &&
+                            click.uptimeMillis - lastClickTime <= config.doubleTapTimeoutMillis &&
+                            (click.position - last).getDistance() <= config.touchSlop
+                        lastClickTime = click.uptimeMillis
+                        lastClickPosition = if (isDouble) null else click.position
+                        // Claude: the main pass reaches the innermost element first, which takes it for everyone.
+                        if (isDouble && claimedDoubleClick != click.uptimeMillis) {
+                            claimedDoubleClick = click.uptimeMillis
+                            doubleClicked = true
+                        }
+                    }
+                    // Claude: launched from the final pass, after the clicks' actions launched, so they run first,
+                    // like the web's click, click, dblclick.  Then it bubbles up, like dblclick.
+                    pass == PointerEventPass.Final && doubleClicked -> {
+                        doubleClicked = false
+                        val clicked = element
+                        clicked.launch {
+                            generateSequence<Element>(clicked) { it.parent }
+                                .map { it.underlyingNativeElement }
+                                .distinct()
+                                .forEach { it.onDoubleClick?.invoke() }
+                        }
+                    }
+                }
             }
         }
 
