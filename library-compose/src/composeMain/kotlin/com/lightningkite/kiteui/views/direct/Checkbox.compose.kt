@@ -67,7 +67,7 @@ public actual class Checkbox actual constructor(context: ElementContext) : Nativ
         // borders of a small box rotated 45 degrees.
         Spacer(
             modifier
-                .requiredSize(25.dp)
+                .requiredSize(sizeConstraints.clampSize(25.dp, 25.dp))
                 .alpha(if (checked) 1f else 0.75f)
                 .drawBehind {
                     val border = 0.1.rem.toDp().toPx()

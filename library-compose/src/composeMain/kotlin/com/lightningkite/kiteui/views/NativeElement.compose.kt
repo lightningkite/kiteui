@@ -67,6 +67,7 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
@@ -657,6 +658,13 @@ private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, 
 }
 
 private val Float.dp: Dp get() = Dp(this)
+
+// A check control's size, as the web's CSS sets it: a width and height marked !important, so a stretching parent
+// can't change them, but a min or max size still does, the min winning.
+internal fun SizeConstraints?.clampSize(width: Dp, height: Dp): DpSize {
+    fun clamp(size: Dp, min: Dimension?, max: Dimension?) = maxOf(min?.toDp() ?: 0.dp, minOf(max?.toDp() ?: Dp.Infinity, size))
+    return DpSize(clamp(width, this?.minWidth, this?.maxWidth), clamp(height, this?.minHeight, this?.maxHeight))
+}
 
 // What theme transitions animate.  Without a background, a theme's colours are transparent (so they fade in place
 // rather than through black), and it has no elevation or transform, as on the web.

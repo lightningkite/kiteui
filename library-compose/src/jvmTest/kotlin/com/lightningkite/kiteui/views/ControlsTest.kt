@@ -79,6 +79,31 @@ class ControlsTest {
         waitUntil { onNode(hasRole(Role.Switch)).fetchSemanticsNode().config[SemanticsProperties.ToggleableState] == ToggleableState.Off }
     }
 
+    // The web fixes a check control's width and height with !important, which a min or max size still overrides.
+    @Test
+    fun checkControlsGrowToTheirMinimumSize() = runKiteUiTest {
+        lateinit var checkbox: Checkbox
+        lateinit var radio: RadioButton
+        lateinit var switch: Switch
+        val root = show {
+            row {
+                padding = 10.px
+                checkbox = sizeConstraints(minWidth = 40.px, minHeight = 40.px).checkbox()
+                radio = sizeConstraints(minWidth = 40.px, minHeight = 40.px).radioButton()
+                switch = sizeConstraints(minWidth = 80.px, minHeight = 40.px).switch()
+            }
+        }
+        val image = saveScreenshot(root, "check-controls-min-size")
+        for (view in listOf(checkbox, radio, switch)) {
+            val bounds = runOnUiThread { view.screenRectangle()!! }
+            assertEquals(if (view == switch) 80.0 else 40.0, bounds.right - bounds.left, 0.5, "${view::class.simpleName} width")
+            val y = with(density) { ((bounds.top + bounds.bottom) / 2).dp.roundToPx() }
+            val background = image.getRGB(with(density) { (bounds.left - 5).dp.roundToPx() }, y)
+            val edge = image.getRGB(with(density) { (bounds.left + 1).dp.roundToPx() }, y)
+            assertTrue(edge != background, "${view::class.simpleName} should be drawn out to its edge")
+        }
+    }
+
     @Test
     fun sliderClampsAndSteps() = runKiteUiTest {
         lateinit var slider: Slider

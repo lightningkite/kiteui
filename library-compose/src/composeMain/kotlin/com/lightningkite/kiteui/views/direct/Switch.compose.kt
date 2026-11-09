@@ -65,7 +65,7 @@ public actual class Switch actual constructor(context: ElementContext) : NativeI
         // The web's colors and geometry, including its fixed green: the thumb overhangs the track slightly.
         Spacer(
             modifier
-                .requiredSize(3.rem.toDp(), 1.5.rem.toDp())
+                .requiredSize(sizeConstraints.clampSize(3.rem.toDp(), 1.5.rem.toDp()))
                 .drawBehind {
                     drawRoundRect(
                         color = if (checked) Color(0xFF20A020) else foreground.copy(alpha = foreground.alpha * 0.2f),
