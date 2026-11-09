@@ -94,7 +94,7 @@ public actual class AutoCompleteTextField actual constructor(context: ElementCon
             keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@AutoCompleteTextField) }),
             decorationBox = { innerField ->
-                SingleLineDecoration {
+                SingleLineDecoration(theme.font) {
                     if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     innerField()
                     if (showsList) list.Render(owner = this@AutoCompleteTextField, focusable = false)

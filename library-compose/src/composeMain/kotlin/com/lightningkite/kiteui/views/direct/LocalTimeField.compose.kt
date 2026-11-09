@@ -81,7 +81,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalTimeField) }),
             decorationBox = { inner ->
-                SingleLineDecoration {
+                SingleLineDecoration(theme.font) {
                     if (field.text.isEmpty()) BasicText(theme.font.cased("hh:mm"), style = style.copy(color = theme.hintColor))
                     inner()
                 }

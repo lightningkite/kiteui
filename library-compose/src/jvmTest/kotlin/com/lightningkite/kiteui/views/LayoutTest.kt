@@ -54,6 +54,22 @@ class LayoutTest {
         assertEquals(lineHeight + 4, height(area), 0.5, "text area")
     }
 
+    // Compose caps a single-line field at its line's height as Skia reports it, which for some fonts and sizes (the
+    // default font at 14px and 1.5, Inter at 16px and 1.5) is a pixel short of the line-height the text is laid out in.
+    @Test
+    fun aSingleLineFieldIsAsTallAsItsLineHeight() = runKiteUiTest {
+        lateinit var field: TextInput
+        showKiteUi {
+            col {
+                themed(ThemeDerivation { it.copy(id = "lines", font = it.font.copy(size = 14.px, lineSpacingMultiplier = 1.5)).withoutBack }).col {
+                    field = unpadded.textInput { content.value = "One line" }
+                }
+            }
+        }
+        val height = runOnUiThread { field.screenRectangle()!!.let { it.bottom - it.top } }
+        assertEquals(21.0, height, 0.5)
+    }
+
     @Test
     fun textWrapsInsideAWrappingRow() = runKiteUiTest {
         val long = "word ".repeat(80)

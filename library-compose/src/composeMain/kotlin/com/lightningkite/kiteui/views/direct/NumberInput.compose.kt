@@ -84,7 +84,7 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
             keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@NumberInput) }),
             decorationBox = { inner ->
-                SingleLineDecoration {
+                SingleLineDecoration(theme.font) {
                     if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     inner()
                 }

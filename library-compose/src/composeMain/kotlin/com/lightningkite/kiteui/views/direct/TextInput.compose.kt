@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
@@ -74,7 +75,7 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
             keyboardOptions = hints.toKeyboardOptions(imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@TextInput) }),
             decorationBox = { inner ->
-                SingleLineDecoration {
+                SingleLineDecoration(theme.font) {
                     if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     inner()
                 }
@@ -84,14 +85,16 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
 }
 
 /**
- * Lays out a single-line field's text and placeholder ([content]) like an <input>: centered vertically when the
- * field is taller than its text, as when a row stretches it.
+ * Lays out a single-line field's text and placeholder ([content]) like an <input>: one line-height of [font] tall,
+ * centered vertically when the field is taller, as when a row stretches it.
  */
 @Composable
-internal fun SingleLineDecoration(content: @Composable () -> Unit) {
+internal fun SingleLineDecoration(font: FontAndStyle, content: @Composable () -> Unit) {
     // Claude: the text field gives this its own size as minimum constraints, which the inner Box doesn't pass on.
     Box(contentAlignment = Alignment.CenterStart) {
-        Box(Modifier.fillMaxWidth()) { content() }
+        // Compose caps a single-line field at its line's height as Skia reports it, which for some fonts and sizes is
+        // a pixel short of the line-height the text is laid out in.  The text keeps its place at the top.
+        Box(Modifier.fillMaxWidth().heightIn(min = (font.size * font.lineSpacingMultiplier.toFloat()).toDp())) { content() }
     }
 }
 

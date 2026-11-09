@@ -80,7 +80,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalDateField) }),
             decorationBox = { inner ->
-                SingleLineDecoration {
+                SingleLineDecoration(theme.font) {
                     if (field.text.isEmpty()) BasicText(theme.font.cased("yyyy-mm-dd"), style = style.copy(color = theme.hintColor))
                     inner()
                 }
