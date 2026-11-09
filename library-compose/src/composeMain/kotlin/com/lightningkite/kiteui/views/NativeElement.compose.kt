@@ -473,6 +473,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             val width = d.outlineWidth.toPx()
             // Inset by half the stroke, so that like Modifier.border's it lies inside the bounds.
             val border = d.shape.createOutline(Size(size.width - width, size.height - width), layoutDirection, this)
+            // On the web, a row or column's children paint under its outline, but a stack's children have a z-index
+            // and images are positioned, which paints them over it.
+            val outlineOverContent = this@NativeElement is NativeLinearLayoutElement
             onDrawWithContent {
                 // Plain colours animate; gradients change at once.
                 when {
@@ -480,11 +483,12 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
                     a != null && d.background is Color -> drawOutline(shape, a.background.value)
                     else -> drawOutline(shape, backgroundBrush)
                 }
-                drawContent()
+                if (outlineOverContent) drawContent()
                 if (width > 0f) translate(width / 2, width / 2) {
                     if (a != null && d.outline is Color) drawOutline(border, a.outline.value, style = Stroke(width))
                     else drawOutline(border, outlineBrush, style = Stroke(width))
                 }
+                if (!outlineOverContent) drawContent()
             }
         }
         scrolling?.let { m = it.applyTo(m, takesInput) }
