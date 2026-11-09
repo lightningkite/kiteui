@@ -179,15 +179,20 @@ public actual class CoordinatorDragHandle actual constructor(context: ElementCon
 
     override val handCursor: Boolean get() = true
 
+    override val driverActions: AiDriver.Actions get() = super.driverActions + dragHandleDriverActions(click = sheet?.let { ::toggle })
+
+    private fun toggle() {
+        val sheet = sheet!!
+        sheet.state.value = when (sheet.state.value) {
+            BottomSheetState.EXPANDED -> BottomSheetState.PARTIALLY_EXPANDED
+            BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetState.EXPANDED
+            BottomSheetState.COLLAPSED -> BottomSheetState.PARTIALLY_EXPANDED
+        }
+    }
+
     override fun inputModifier(takesInput: Boolean): Modifier {
         val sheet = sheet ?: return Modifier
-        var m = Modifier.clickable(interactions.source, indication = null, enabled = enabled && takesInput) {
-            sheet.state.value = when (sheet.state.value) {
-                BottomSheetState.EXPANDED -> BottomSheetState.PARTIALLY_EXPANDED
-                BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetState.EXPANDED
-                BottomSheetState.COLLAPSED -> BottomSheetState.PARTIALLY_EXPANDED
-            }
-        }
+        var m = Modifier.clickable(interactions.source, indication = null, enabled = enabled && takesInput, onClick = ::toggle)
         if (sheet.draggable) m = m.draggable(dragging, Orientation.Vertical, enabled && takesInput, interactions.source, onDragStopped = { sheet.settle() })
         return m
     }

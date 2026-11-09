@@ -124,6 +124,12 @@ public fun MenuButton.menuDriverActions(
     }
 }
 
+// --- CoordinatorDragHandle ---
+
+public fun CoordinatorDragHandle.dragHandleDriverActions(click: (() -> Unit)?): AiDriver.Actions = buildMap {
+    click?.let { fn -> put("click") { fn(); "OK" } }
+}
+
 // --- DismissBackground ---
 
 // "dismiss", not "click": findClickable would lead from a dialog's text to its background, though clicking the text doesn't dismiss.

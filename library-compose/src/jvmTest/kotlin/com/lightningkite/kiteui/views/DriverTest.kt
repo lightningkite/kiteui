@@ -85,6 +85,23 @@ class DriverTest {
     }
 
     @Test
+    fun theDriverClicksABottomSheetsHandleToToggleIt() = runKiteUiTest {
+        lateinit var frame: CoordinatorFrame
+        lateinit var control: BottomSheetControl
+        val (root, navigator) = showApp { frame = coordinatorFrame { text("Page behind") } }
+        runOnUiThread {
+            frame.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) {
+                control = it
+                col { coordinatorDragHandle(); text("Sheet content") }
+            }
+        }
+        waitForIdle()
+        val path = runBlocking(Dispatchers.Main) { handleCommand("root\tfind\tCoordinatorDragHandle", root.root, navigator) }.substringBefore(":")
+        assertEquals("OK", runBlocking(Dispatchers.Main) { handleCommand("$path\tclick", root.root, navigator) })
+        assertEquals(BottomSheetState.EXPANDED, control.state.state.getOrNull())
+    }
+
+    @Test
     fun theDriversBackClosesTheTopDialogBeforeThePage() = runKiteUiTest {
         lateinit var frame: ContainerElement
         val (root, navigator) = showApp { frame = this }
