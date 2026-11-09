@@ -187,9 +187,12 @@ public suspend fun handleCommand(command: String, root: Element?, navigator: Pag
             // The relay ignores blank replies, and the home page renders to an empty path.
             "/" + rendered.urlLikePath.render()
         }
-        "back" -> {
-            if (navigator == null) throw DriverActionException("no navigator available")
-            if (navigator.goBack()) "OK" else throw DriverActionException("can't go back, already at root")
+        // Like a user's back (the browser's, Android's, or Alt+Left on desktop), it closes the top dialog before any page.
+        "back" -> when {
+            root != null && root.context.dismissTopDialog() -> "OK"
+            navigator == null -> throw DriverActionException("no navigator available")
+            navigator.goBack() -> "OK"
+            else -> throw DriverActionException("can't go back, already at root")
         }
         "logs" -> {
             val count = action?.toIntOrNull() ?: 50

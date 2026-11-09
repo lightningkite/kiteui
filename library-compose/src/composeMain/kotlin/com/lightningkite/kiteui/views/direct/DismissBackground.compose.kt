@@ -30,6 +30,8 @@ public actual class DismissBackground actual constructor(context: ElementContext
         onClick = action
     }
 
+    override val driverActions: AiDriver.Actions get() = super.driverActions + dismissBackgroundDriverActions(onClick)
+
     // Not clickable: like the web's div, the background is no Tab stop.
     override fun inputModifier(takesInput: Boolean): Modifier = onClick?.let { action ->
         Modifier.pointerInput(action, takesInput) { if (takesInput) detectTapGestures { launch { action() } } }

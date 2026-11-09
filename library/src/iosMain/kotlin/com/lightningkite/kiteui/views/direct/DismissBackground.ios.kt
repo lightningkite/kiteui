@@ -24,11 +24,16 @@ import platform.darwin.sel_registerName
 
 public actual class DismissBackground actual constructor(context: ElementContext) : NativeContainerElement(context) {
     override val native: NDismissBackground = NDismissBackground()
+    private var onClick: (suspend () -> Unit)? = null
+
     public actual fun onClick(action: suspend () -> Unit) {
+        onClick = action
         native.onClick = {
             launch { action() }
         }
     }
+
+    override val driverActions: AiDriver.Actions get() = super.driverActions + dismissBackgroundDriverActions(onClick)
 
     @OverrideOnly
     override fun onStartup() {

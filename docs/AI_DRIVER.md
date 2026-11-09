@@ -98,7 +98,7 @@ kiteui-drive <app> root findClickable "query"      # Find clickable ancestors of
 kiteui-drive <app> <path> snapshot                 # Snapshot a single element subtree
 kiteui-drive <app> navigate /some/route            # Navigate to URL path
 kiteui-drive <app> url                             # Get current page URL
-kiteui-drive <app> back back                       # Go back in navigation
+kiteui-drive <app> back back                       # Close the top dialog, or else go back in navigation
 kiteui-drive <app> logs 50                         # Get recent log entries
 
 # Mocking external services (file picker, geolocation, etc.)
@@ -216,6 +216,7 @@ This is especially useful for AI agents and E2E tests — instead of finding a t
 | Slider | `setValue` (number) | current number |
 | Select | `setValue` | selected display text |
 | Link | `click` | — |
+| DismissBackground (a dialog's backdrop) | `dismiss` | — |
 | Any view | `snapshot`, `screenshot`, `find`, `findClickable`, `scroll`, `scrollIntoView` | — |
 | View with dragData | `getDragData` | — |
 | View with dropTarget | `drop` (base64 drag data) | — |
@@ -377,7 +378,7 @@ Requires: relay server running + app connected. Same `UiTestScope` API — tests
 | **Navigation** | |
 | `navigate(route)` | Navigate to URL path |
 | `url()` | Get current page URL |
-| `back()` | Go back in navigation |
+| `back()` | Close the top dialog, or else go back in navigation |
 | **Mocking** | |
 | `mockFile(bytes, mime, name)` | Queue a mock file for next file picker call |
 | `mockFileCancel()` | Queue a null (cancelled) file picker response |

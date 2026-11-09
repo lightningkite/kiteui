@@ -16,12 +16,17 @@ public actual class DismissBackground actual constructor(context: ElementContext
     }
 
     override val native: FrameLayout = FrameLayout(context.activity)
+    private var onClick: (suspend () -> Unit)? = null
+
     public actual fun onClick(action: suspend () -> Unit) {
+        onClick = action
         val action = Action("Dismiss", Icon.close) { action() }
         native.setOnClickListener { _ ->
             action.startAction(this)
         }
     }
+
+    override val driverActions: AiDriver.Actions get() = super.driverActions + dismissBackgroundDriverActions(onClick)
 
     @OverrideOnly
     override fun onStartup() {

@@ -120,6 +120,13 @@ public fun MenuButton.menuDriverActions(
     }
 }
 
+// --- DismissBackground ---
+
+// "dismiss", not "click": findClickable would lead from a dialog's text to its background, though clicking the text doesn't dismiss.
+public fun DismissBackground.dismissBackgroundDriverActions(onClick: (suspend () -> Unit)?): AiDriver.Actions = buildMap {
+    onClick?.let { action -> put("dismiss") { action(); "OK" } }
+}
+
 // --- AutoCompleteTextField ---
 
 public fun AutoCompleteTextField.autoCompleteDriverValue(): String = redactedDriverValue(keyboardHints, content.value)
