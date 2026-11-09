@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -96,6 +97,8 @@ public fun FontAndStyle.toTextStyle(color: ComposeColor, align: Align = this.ali
     fontStyle = if (italic) FontStyle.Italic else FontStyle.Normal,
     fontSize = size.value.sp,
     lineHeight = lineSpacingMultiplier.em,
+    // Compose trims the leading above the first line and below the last by default; CSS keeps it, centering each line in its line-height.
+    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
     letterSpacing = additionalLetterSpacing.value.sp,
     textDecoration = TextDecoration.combine(
         listOfNotNull(

@@ -32,6 +32,26 @@ class LayoutTest {
         assertTrue(breakAllHeight < normalHeight, "break-all should fill its lines, taking $breakAllHeight against $normalHeight")
     }
 
+    // CSS gives a line of text its whole line-height, half the leading above and half below, even when it's the only line.
+    @Test
+    fun aLineOfTextTakesItsWholeLineHeight() = runKiteUiTest {
+        lateinit var label: TextView
+        lateinit var field: TextInput
+        lateinit var area: TextArea
+        showKiteUi {
+            col {
+                label = text("One line")
+                field = unpadded.textInput { content.value = "One line" }
+                area = unpadded.textArea { content.value = "One line" }
+            }
+        }
+        val lineHeight = testTheme.font.size.value * testTheme.font.lineSpacingMultiplier
+        for (view in listOf(label, field, area)) {
+            val height = runOnUiThread { view.screenRectangle()!!.let { it.bottom - it.top } }
+            assertEquals(lineHeight, height, 0.5, "${view::class.simpleName} height")
+        }
+    }
+
     @Test
     fun textWrapsInsideAWrappingRow() = runKiteUiTest {
         val long = "word ".repeat(80)
