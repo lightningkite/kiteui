@@ -48,6 +48,25 @@ class DriverTest {
     }
 
     @Test
+    fun theDriverDismissesAMenuLikeAClickOutside() = runKiteUiTest {
+        val (root, navigator) = showApp {
+            menuButton {
+                requireClick = true
+                opensMenu { text("First item") }
+                text("Menu")
+            }
+        }
+        onNodeWithText("Menu").performClick()
+        waitForIdle()
+        onNodeWithText("First item").assertExists()
+
+        val found = runBlocking(Dispatchers.Main) { handleCommand("root\tfind\tdismiss", root.root, navigator) }
+        val path = found.substringBefore(":")
+        assertEquals("OK", runBlocking(Dispatchers.Main) { handleCommand("$path\tdismiss", root.root, navigator) })
+        waitUntilDoesNotExist(hasText("First item"))
+    }
+
+    @Test
     fun theDriversBackClosesTheTopDialogBeforeThePage() = runKiteUiTest {
         lateinit var frame: ContainerElement
         val (root, navigator) = showApp { frame = this }

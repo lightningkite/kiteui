@@ -216,7 +216,7 @@ This is especially useful for AI agents and E2E tests — instead of finding a t
 | Slider | `setValue` (number) | current number |
 | Select | `setValue` | selected display text |
 | Link | `click` | — |
-| DismissBackground (a dialog's backdrop) | `dismiss` | — |
+| DismissBackground (a dialog's backdrop), or what blocks behind an open menu | `dismiss` | — |
 | Any view | `snapshot`, `screenshot`, `find`, `findClickable`, `scroll`, `scrollIntoView` | — |
 | View with dragData | `getDragData` | — |
 | View with dropTarget | `drop` (base64 drag data) | — |

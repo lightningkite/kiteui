@@ -56,6 +56,9 @@ public actual class FloatingInfoHolder actual constructor(public val source: Ele
         o.addChild(
             o.children.indexOf(v),
             object : NativeElement(o.context) {
+                // Like a DismissBackground's, which is what blocks a popover on Android and iOS.
+                override val driverActions: AiDriver.Actions get() = super.driverActions + mapOf("dismiss" to { _ -> close(); "OK" })
+
                 init {
                     native.tag = "div"
                     native.addEventListener("click") {
