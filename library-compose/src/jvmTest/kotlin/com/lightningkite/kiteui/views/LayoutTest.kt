@@ -146,6 +146,22 @@ class LayoutTest {
         assertEquals(3.0, (three / one).toDouble(), 0.05)
     }
 
+    // The web's space has a min-width of the theme's gap, and CSS lets a min-width beat a smaller width.
+    @Test
+    fun aSpaceIsNeverNarrowerThanTheGap() = runKiteUiTest {
+        showKiteUi {
+            row {
+                gap = 0.px
+                text("Before")
+                sizeConstraints(width = 2.px).space()
+                text("After")
+            }
+        }
+        val before = onNodeWithText("Before").getUnclippedBoundsInRoot()
+        val after = onNodeWithText("After").getUnclippedBoundsInRoot()
+        assertEquals(testTheme.gap.toDp(), after.left - before.right)
+    }
+
     @Test
     fun aspectRatioFollowsAHeightStretchedByARow() = runKiteUiTest {
         var box: Frame? = null

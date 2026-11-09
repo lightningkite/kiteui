@@ -13,6 +13,7 @@ public actual class Space actual constructor(context: ElementContext, public val
     @Composable
     override fun Content(modifier: Modifier) {
         val size = (currentTheme.theme.gap * multiplier).toDp()
-        Spacer(modifier.sizeIn(minWidth = size, minHeight = size))
+        // Ahead of the element's own sizing, so that like the web's min-width it wins over a smaller explicit size.
+        Spacer(Modifier.sizeIn(minWidth = size, minHeight = size).then(modifier))
     }
 }
