@@ -238,6 +238,22 @@ class LayoutTest {
         assertEquals(30.dp, bounds("MaxHeight").height)
     }
 
+    // The web's gap minimum is a class's min-width, which the space's own (inline) min-width replaces.
+    @Test
+    fun aSpacesOwnMinimumReplacesTheGap() = runKiteUiTest {
+        showKiteUi {
+            row {
+                gap = 0.px
+                text("Before")
+                sizeConstraints(minWidth = 4.px).space()
+                text("After")
+            }
+        }
+        val before = onNodeWithText("Before").getUnclippedBoundsInRoot()
+        val after = onNodeWithText("After").getUnclippedBoundsInRoot()
+        assertEquals(4.dp, after.left - before.right)
+    }
+
     @Test
     fun aspectRatioFollowsAHeightStretchedByARow() = runKiteUiTest {
         var box: Frame? = null
