@@ -179,6 +179,36 @@ class LayoutTest {
         waitUntil { onAllNodesWithText("Swapped in", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
     }
 
+    // On the web, a scroller with no size limit grows to its content; Compose throws on an unbounded scroller.
+    @Test
+    fun nestedScrollersGrowToTheirContent() = runKiteUiTest {
+        lateinit var innerCol: RowOrCol
+        lateinit var innerRow: RowOrCol
+        showKiteUi {
+            col {
+                sizeConstraints(height = 300.px).scrolling.col {
+                    // Sized on the other axis only because a bare `scrolling` here is NativeElement's internal member.
+                    innerCol = sizeConstraints(width = 200.px).scrolling.col {
+                        gap = 0.px
+                        padding = 0.px
+                        for (i in 0 until 20) sizeConstraints(height = 40.px).text("Row $i")
+                    }
+                }
+                sizeConstraints(width = 300.px).scrollingHorizontally.row {
+                    innerRow = sizeConstraints(height = 40.px).scrollingHorizontally.row {
+                        gap = 0.px
+                        padding = 0.px
+                        for (i in 0 until 20) sizeConstraints(width = 40.px).text("Column $i")
+                    }
+                }
+            }
+        }
+        val colHeight = runOnUiThread { innerCol.screenRectangle()!!.let { it.bottom - it.top } }
+        assertEquals(800.0, colHeight, 1.0)
+        val rowWidth = runOnUiThread { innerRow.screenRectangle()!!.let { it.right - it.left } }
+        assertEquals(800.0, rowWidth, 1.0)
+    }
+
     // Browsers ignore negative padding; Compose throws on it, which took down the whole window.
     @Test
     fun negativePaddingCountsAsNone() = runKiteUiTest {

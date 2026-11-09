@@ -165,7 +165,16 @@ internal class ScrollingBehaviorImpl(
     fun applyTo(modifier: Modifier, elementTakesInput: Boolean): Modifier {
         val enabled = elementTakesInput && !ignoreInteraction && userScrollEnabled
         var m = modifier
-            .layout { measurable, constraints ->
+            .layout { measurable, unbounded ->
+                // Compose's scroll modifiers throw when nothing limits their size (a scroller inside another);
+                // the web's overflow: auto grows to its content then, so this limits it to that.
+                var constraints = unbounded
+                if (horizontal && !constraints.hasBoundedWidth) constraints = constraints.copy(
+                    maxWidth = measurable.maxIntrinsicWidth(constraints.maxHeight).coerceAtLeast(constraints.minWidth)
+                )
+                if (vertical && !constraints.hasBoundedHeight) constraints = constraints.copy(
+                    maxHeight = measurable.maxIntrinsicHeight(constraints.maxWidth).coerceAtLeast(constraints.minHeight)
+                )
                 val placeable = measurable.measure(constraints)
                 pendingJump?.let { jump ->
                     pendingJump = null
