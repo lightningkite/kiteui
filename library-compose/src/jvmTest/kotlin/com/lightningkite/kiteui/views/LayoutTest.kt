@@ -146,6 +146,22 @@ class LayoutTest {
         assertEquals(3.0, (three / one).toDouble(), 0.05)
     }
 
+    // CSS flex-grow factors that add up to less than 1 take only that fraction of the free space.
+    @Test
+    fun weightsUnderOneLeaveSpaceUnused() = runKiteUiTest {
+        showKiteUi {
+            col {
+                sizeConstraints(width = 400.px).row {
+                    gap = 0.px
+                    weight(0.25f).text("Quarter")
+                    weight(0.5f).text("Half")
+                }
+            }
+        }
+        assertEquals(100.dp, onNodeWithText("Quarter").getUnclippedBoundsInRoot().width)
+        assertEquals(200.dp, onNodeWithText("Half").getUnclippedBoundsInRoot().width)
+    }
+
     // The web's space has a min-width of the theme's gap, and CSS lets a min-width beat a smaller width.
     @Test
     fun aSpaceIsNeverNarrowerThanTheGap() = runKiteUiTest {
