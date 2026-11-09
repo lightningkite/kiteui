@@ -2,9 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -23,14 +21,18 @@ import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.toCompose
 
 public actual class CircularProgress actual constructor(context: ElementContext) : NativeElement(context) {
-    public actual var ratio: Float by mutableStateOf(0f)
+    private val shownRatio = mutableStateOf(0f)
+    public actual var ratio: Float
+        get() = shownRatio.value
+        set(value) { shownRatio.value = value.coerceIn(0f, 1f) }
 
     @Composable
     override fun Content(modifier: Modifier) {
         val theme = currentTheme.theme
         val fill = theme.foreground.closestColor().toCompose()
         val track = theme.background.closestColor().toCompose()
-        val ratio = ratio.coerceIn(0f, 1f)
+        // As the web, whose CSS draws a ring of NaN as empty.
+        val ratio = if (shownRatio.value.isNaN()) 0f else shownRatio.value
         Spacer(
             modifier
                 // Square, like the web's aspect-ratio: 1, taking its side from whichever axis is fixed.

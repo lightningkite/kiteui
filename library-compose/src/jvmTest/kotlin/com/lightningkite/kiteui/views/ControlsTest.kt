@@ -205,6 +205,18 @@ class ControlsTest {
         assertEquals(0.4f, bar.config[SemanticsProperties.ProgressBarRangeInfo].current)
     }
 
+    // The web's ring takes any ratio, clamped, and CSS draws a ring of NaN as empty.
+    @Test
+    fun circularProgressClampsAndDrawsNaNEmpty() = runKiteUiTest {
+        lateinit var ring: CircularProgress
+        show { circularProgress { ring = this } }
+        runBlocking(Dispatchers.Main) { ring.ratio = 1.5f }
+        assertEquals(1f, ring.ratio)
+        runBlocking(Dispatchers.Main) { ring.ratio = 0f / 0f }
+        val node = onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).fetchSemanticsNode()
+        assertEquals(0f, node.config[SemanticsProperties.ProgressBarRangeInfo].current)
+    }
+
     @Test
     fun linksNavigateAndRejectUnsafeUrls() = runKiteUiTest {
         val navigator = PageNavigator { Routes(listOf(), mapOf()) }
