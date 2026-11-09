@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
@@ -92,9 +92,10 @@ public actual class TextInput actual constructor(context: ElementContext) : Nati
 internal fun SingleLineDecoration(font: FontAndStyle, content: @Composable () -> Unit) {
     // Claude: the text field gives this its own size as minimum constraints, which the inner Box doesn't pass on.
     Box(contentAlignment = Alignment.CenterStart) {
-        // Compose caps a single-line field at its line's height as Skia reports it, which for some fonts and sizes is
-        // a pixel short of the line-height the text is laid out in.  The text keeps its place at the top.
-        Box(Modifier.fillMaxWidth().heightIn(min = (font.size * font.lineSpacingMultiplier.toFloat()).toDp())) { content() }
+        // Compose sizes a single-line field to its line as Skia reports it: for some fonts and sizes a pixel short of
+        // the line-height the text is laid out in, and while it's empty, the font's own line height, which can be a
+        // few pixels more.  The text keeps its place at the top.
+        Box(Modifier.fillMaxWidth().height((font.size * font.lineSpacingMultiplier.toFloat()).toDp())) { content() }
     }
 }
 

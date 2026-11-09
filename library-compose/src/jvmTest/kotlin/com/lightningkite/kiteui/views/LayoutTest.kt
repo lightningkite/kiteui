@@ -92,6 +92,26 @@ class LayoutTest {
         assertEquals(33.0 + 7.0, runOnUiThread { rowBox.screenRectangle()!!.top } - frameTop - testTheme.gap.value, "in a row")
     }
 
+    // While empty, Compose sizes a field's line from the font's own line height, which can be a few pixels more.
+    @Test
+    fun anEmptyFieldIsAsTallAsItsLineHeight() = runKiteUiTest {
+        val sizes = listOf(12, 13, 14, 15, 16, 17, 18, 20, 24)
+        val fields = arrayOfNulls<TextInput>(sizes.size)
+        showKiteUi {
+            col {
+                sizes.forEachIndexed { i, size ->
+                    themed(ThemeDerivation { it.copy(id = "lines$size", font = it.font.copy(size = size.px, lineSpacingMultiplier = 1.5)).withoutBack }).col {
+                        fields[i] = unpadded.textInput { hint = "Shown while empty" }
+                    }
+                }
+            }
+        }
+        sizes.forEachIndexed { i, size ->
+            val height = runOnUiThread { fields[i]!!.screenRectangle()!!.let { it.bottom - it.top } }
+            assertEquals(size * 1.5, height, 0.5, "at ${size}px")
+        }
+    }
+
     @Test
     fun textWrapsInsideAWrappingRow() = runKiteUiTest {
         val long = "word ".repeat(80)
