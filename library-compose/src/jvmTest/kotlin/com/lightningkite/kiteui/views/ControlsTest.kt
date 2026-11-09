@@ -82,6 +82,25 @@ class ControlsTest {
         waitUntil { onNode(hasRole(Role.Switch)).fetchSemanticsNode().config[SemanticsProperties.ToggleableState] == ToggleableState.Off }
     }
 
+    // The web's `.checkbox.checkbox.checkbox { opacity: 0.75 }` outranks its `.checkbox:checked { opacity: 1 }`.
+    @Test
+    fun checkboxesAreThreeQuartersOpaqueCheckedOrNot() = runKiteUiTest {
+        lateinit var unchecked: Checkbox
+        lateinit var checked: Checkbox
+        val root = show {
+            row {
+                unchecked = checkbox()
+                checked = checkbox { this.checked.value = true }
+            }
+        }
+        val image = saveScreenshot(root, "checkbox-opacity")
+        fun leftBorder(view: Checkbox): Int {
+            val bounds = runOnUiThread { view.screenRectangle()!! }
+            return image.getRGB(with(density) { bounds.left.dp.roundToPx() }, with(density) { ((bounds.top + bounds.bottom) / 2).dp.roundToPx() })
+        }
+        assertEquals(leftBorder(unchecked), leftBorder(checked))
+    }
+
     // The web fixes a check control's width and height with !important, which a min or max size still overrides.
     @Test
     fun checkControlsGrowToTheirMinimumSize() = runKiteUiTest {

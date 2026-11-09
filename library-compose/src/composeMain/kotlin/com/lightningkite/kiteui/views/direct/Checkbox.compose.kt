@@ -68,7 +68,8 @@ public actual class Checkbox actual constructor(context: ElementContext) : Nativ
         Spacer(
             modifier
                 .requiredSize(sizeConstraints.clampSize(25.dp, 25.dp))
-                .alpha(if (checked) 1f else 0.75f)
+                // Checked too: the web's .checkbox:checked { opacity: 1 } is outranked by its .checkbox.checkbox.checkbox.
+                .alpha(0.75f)
                 .drawBehind {
                     val border = 0.1.rem.toDp().toPx()
                     drawRoundRect(
