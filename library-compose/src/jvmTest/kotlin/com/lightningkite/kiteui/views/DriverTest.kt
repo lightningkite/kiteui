@@ -67,6 +67,24 @@ class DriverTest {
     }
 
     @Test
+    fun theDriversLinkClickRunsTheLinksActionsAsARealClickDoes() = runKiteUiTest {
+        val ran = ArrayList<String>()
+        val (root, navigator) = showApp {
+            link {
+                to = { Page.Direct("Second") { text("Second page") } }
+                onClick { ran += "click" }
+                onNavigate { ran += "navigate" }
+                text("Go")
+            }
+        }
+        val path = runBlocking(Dispatchers.Main) { handleCommand("root\tfindClickable\tGo", root.root, navigator) }.substringBefore(":")
+        assertEquals("OK", runBlocking(Dispatchers.Main) { handleCommand("$path\tclick", root.root, navigator) })
+        waitForIdle()
+        assertEquals(listOf("click", "navigate"), ran)
+        assertEquals(2, navigator.stack.value.size)
+    }
+
+    @Test
     fun theDriversBackClosesTheTopDialogBeforeThePage() = runKiteUiTest {
         lateinit var frame: ContainerElement
         val (root, navigator) = showApp { frame = this }
