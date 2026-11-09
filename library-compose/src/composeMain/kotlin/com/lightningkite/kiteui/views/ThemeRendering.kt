@@ -31,7 +31,8 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 
 public fun Color.toCompose(): ComposeColor = ComposeColor(red, green, blue, alpha)
 
-internal val Theme.hintColor: ComposeColor get() = foreground.closestColor().withAlpha(0.5f).toCompose()
+// As the web's ::placeholder: the text color, at 30% opacity.
+internal val Theme.hintColor: ComposeColor get() = foreground.closestColor().let { it.withAlpha(it.alpha * 0.3f) }.toCompose()
 
 public fun Paint.toBrush(): Brush = when (this) {
     is Color -> SolidColor(toCompose())

@@ -33,6 +33,13 @@ class InputsTest {
         signal.value == value
     }
 
+    // As the web's `.kui::placeholder { color: currentcolor; opacity: 0.3 }`.
+    @Test
+    fun hintsAreTheForegroundAtThirtyPercent() {
+        val theme = testTheme.copy(id = "half-red", foreground = Color.red.withAlpha(0.5f))
+        assertEquals(Color.red.withAlpha(0.15f).toCompose(), theme.hintColor)
+    }
+
     // As on the web, Enter in a single-line field runs its action.
     @Test
     fun enterInSingleLineFieldsRunsTheAction() = runKiteUiTest {
