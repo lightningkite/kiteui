@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
-import kotlinx.coroutines.launch
 import com.lightningkite.kiteui.views.AiDriver
 
 
@@ -20,15 +19,11 @@ public actual class Link actual constructor(context: ElementContext) : NativeCon
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
         native.addEventListener("click") {
-            launch {
-                action?.startAction(this@launch)
-                if (newTab) return@launch
-                it.preventDefault() // don't use href
-                to?.invoke()?.let { to ->
-                    onNavigateAction?.startAction(this@launch)
-                    if (resetsStack) onNavigator.reset(to)
-                    else onNavigator.navigate(to)
-                }
+            // In a new tab the browser follows the href itself.
+            if (newTab) action?.startAction(this@Link)
+            else {
+                it.preventDefault()
+                performClick()
             }
         }
     }

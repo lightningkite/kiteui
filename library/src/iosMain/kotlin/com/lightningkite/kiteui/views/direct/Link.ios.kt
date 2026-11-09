@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.navigation.mainPageNavigator
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeContainerElementWithSecondaryAction
 import com.lightningkite.reactive.context.onRemove
-import kotlinx.coroutines.launch
 import platform.UIKit.UIAccessibilityTraitLink
 import platform.UIKit.UIControl
 import platform.UIKit.accessibilityTraits
@@ -19,16 +18,7 @@ public actual class Link actual constructor(context: ElementContext): NativeCont
     override val control: UIControl get() = native
 
     init {
-        onRemove(native.setOnClick {
-            launch {
-                action?.startAction(this@launch)
-                to?.invoke()?.let { to ->
-                    onNavigateAction?.startAction(this@launch)
-                    if (resetsStack) onNavigator.reset(to)
-                    else onNavigator.navigate(to)
-                }
-            }
-        })
+        onRemove(native.setOnClick { performClick() })
     }
 
     init {

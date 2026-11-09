@@ -99,14 +99,9 @@ public fun Slider.sliderDriverActions(): AiDriver.Actions = mapOf(
 
 // --- Link ---
 
-// As a real click on every backend: the action, then the navigation and its onNavigate.
 public fun Link.linkDriverActions(): AiDriver.Actions = buildMap {
     if (to != null || action != null) put("click") {
-        action?.startAction(this@linkDriverActions)
-        to?.invoke()?.let { page ->
-            onNavigateAction?.startAction(this@linkDriverActions)
-            if (resetsStack) onNavigator.reset(page) else onNavigator.navigate(page)
-        }
+        performClick()
         "OK"
     }
 }

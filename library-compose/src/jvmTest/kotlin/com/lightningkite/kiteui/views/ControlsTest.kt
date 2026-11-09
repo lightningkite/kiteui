@@ -245,19 +245,20 @@ class ControlsTest {
     @Test
     fun linksNavigateAndRejectUnsafeUrls() = runKiteUiTest {
         val navigator = PageNavigator { Routes(listOf(), mapOf()) }
-        var clicked = 0
+        val ran = ArrayList<String>()
         lateinit var external: ExternalLink
         val root = show {
             context.pageNavigator = navigator
             col {
                 link {
                     to = { Page.Empty }
-                    onClick { clicked++ }
+                    onClick { ran += "click" }
+                    onNavigate { ran += "navigate" }
                     text("Go")
                 }
                 external = externalLink {
                     to = "javascript:alert(1)"
-                    onClick { clicked++ }
+                    onClick { ran += "external" }
                     text("Unsafe")
                 }
             }
@@ -265,10 +266,11 @@ class ControlsTest {
         onNodeWithText("Go").performClick()
         waitForIdle()
         assertEquals(listOf<Page>(Page.Empty), navigator.stack.value)
+        assertEquals(listOf("click", "navigate"), ran)
         assertNull(external.to)
         onNodeWithText("Unsafe").performClick()
         waitForIdle()
-        assertEquals(2, clicked)
+        assertEquals(listOf("click", "navigate", "external"), ran)
     }
 
     @Test
