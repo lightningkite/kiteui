@@ -25,7 +25,8 @@ private val IntrinsicMeasurable.element: NativeElement get() = (parentData as La
 private fun Align?.stretches() = this == null || this == Align.Stretch
 
 private fun Align?.offset(free: Int): Int = when (this) {
-    Align.Center -> free / 2
+    // The web centers at the half pixel and paints rounded half up, as Compose's own Alignment.Center does.
+    Align.Center -> (free / 2f).roundToInt()
     Align.End -> free
     else -> 0
 }

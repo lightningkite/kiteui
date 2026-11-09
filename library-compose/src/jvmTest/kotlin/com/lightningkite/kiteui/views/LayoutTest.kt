@@ -70,6 +70,28 @@ class LayoutTest {
         assertEquals(21.0, height, 0.5)
     }
 
+    // The web centers at a half pixel and paints there rounded to the nearest, half up.
+    @Test
+    fun centeringLeavesTheOddPixelAbove() = runKiteUiTest {
+        lateinit var frame: Frame
+        lateinit var box: Frame
+        lateinit var rowBox: Frame
+        showKiteUi {
+            col {
+                frame = sizeConstraints(width = 100.px, height = 33.px).frame {
+                    box = centered.sizeConstraints(width = 20.px, height = 20.px).frame { }
+                }
+                sizeConstraints(height = 33.px).row {
+                    rowBox = centered.sizeConstraints(width = 20.px, height = 20.px).frame { }
+                }
+            }
+        }
+        val frameTop = runOnUiThread { frame.screenRectangle()!!.top }
+        assertEquals(7.0, runOnUiThread { box.screenRectangle()!!.top } - frameTop, "in a frame")
+        assertEquals(40.0, runOnUiThread { box.screenRectangle()!!.left } - runOnUiThread { frame.screenRectangle()!!.left }, "across a frame")
+        assertEquals(33.0 + 7.0, runOnUiThread { rowBox.screenRectangle()!!.top } - frameTop - testTheme.gap.value, "in a row")
+    }
+
     @Test
     fun textWrapsInsideAWrappingRow() = runKiteUiTest {
         val long = "word ".repeat(80)
