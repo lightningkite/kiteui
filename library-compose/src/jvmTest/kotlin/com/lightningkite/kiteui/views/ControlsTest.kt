@@ -6,6 +6,8 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
 import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
@@ -22,6 +24,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import java.awt.image.BufferedImage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -157,9 +160,11 @@ class ControlsTest {
         val node = onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))[1]
         val bounds = node.getUnclippedBoundsInRoot()
         val image = saveScreenshot(root, "slider-empty")
-        val y = with(density) { (bounds.top + 2.dp).roundToPx() }
-        val start = image.getRGB(with(density) { (bounds.left + 8.dp).roundToPx() }, y)
-        val end = image.getRGB(with(density) { (bounds.right - 8.dp).roundToPx() }, y)
+        val padding = empty.appliedPadding
+        // Just above the track, where only the thumb draws.
+        val y = with(density) { ((bounds.top + bounds.bottom) / 2 - 6.dp).roundToPx() }
+        val start = image.getRGB(with(density) { (bounds.left + padding.left.toDp() + 8.dp).roundToPx() }, y)
+        val end = image.getRGB(with(density) { (bounds.right - padding.right.toDp() - 8.dp).roundToPx() }, y)
         assertTrue(start != end, "expected the thumb at the start")
     }
 
@@ -185,12 +190,15 @@ class ControlsTest {
         slider.value.value = 5f
         val node = onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))
         val bounds = node.getUnclippedBoundsInRoot()
+        val padding = slider.appliedPadding
         // Just above the track, where only the thumb draws.
         fun thumbIsAt(fraction: Float): Boolean {
             val image = saveScreenshot(root, "slider-max")
             val radius = 8.dp
-            val x = bounds.left + radius + (bounds.width - radius * 2) * fraction
-            val y = bounds.top + radius - 6.dp
+            val start = bounds.left + padding.left.toDp() + radius
+            val end = bounds.right - padding.right.toDp() - radius
+            val x = start + (end - start) * fraction
+            val y = (bounds.top + bounds.bottom) / 2 - 6.dp
             val pixel = image.getRGB(with(density) { x.roundToPx() }, with(density) { y.roundToPx() })
             val background = image.getRGB(with(density) { bounds.left.roundToPx() }, with(density) { y.roundToPx() })
             return pixel != background
@@ -199,6 +207,42 @@ class ControlsTest {
         max.value = 20f
         waitUntil(timeoutMillis = 2_000) { node.fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].range.endInclusive == 20f }
         assertTrue(thumbIsAt(0.25f) && !thumbIsAt(0.5f), "the thumb didn't move when max changed")
+    }
+
+    // As Chrome draws a range input: padding narrows the thumb's travel and adds to the height, while the
+    // grey, 8px track spans the whole element.
+    @Test
+    fun sliderDrawsAsChromesRangeInput() = runKiteUiTest {
+        lateinit var slider: Slider
+        val root = show {
+            col {
+                slider = slider {
+                    range(0, 10)
+                    paddingByEdge = Edges(horizontal = 16.px, vertical = 8.px)
+                }
+            }
+        }
+        slider.value.value = 5f
+        val node = onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))
+        fun showsValue(value: Float) = node.fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].current == value
+        waitUntil(timeoutMillis = 2_000) { showsValue(5f) }
+        val bounds = node.getUnclippedBoundsInRoot()
+        assertEquals(32.dp, bounds.height)
+        val accent = slider.theme.foreground.closestColor().toCompose().toArgb()
+        val centerY = (bounds.top + bounds.bottom) / 2
+        fun BufferedImage.at(x: Dp, y: Dp) = getRGB(with(density) { x.roundToPx() }, with(density) { y.roundToPx() })
+
+        var image = saveScreenshot(root, "slider-padded")
+        val background = image.at(bounds.left + 2.dp, bounds.top + 2.dp)
+        assertEquals(accent, image.at(bounds.left + 4.dp, centerY), "the filled track reaches into the padding")
+        assertEquals(0xFFEFEFEF.toInt(), image.at(bounds.right - 6.dp, centerY), "the empty track reaches into the padding")
+        assertEquals(background, image.at(bounds.right - 6.dp, centerY - 5.dp), "the track is 8px tall")
+
+        slider.value.value = 0f
+        waitUntil(timeoutMillis = 2_000) { showsValue(0f) }
+        image = saveScreenshot(root, "slider-padded-start")
+        assertEquals(accent, image.at(bounds.left + 24.dp, centerY - 6.dp), "the thumb starts inside the padding")
+        assertEquals(background, image.at(bounds.left + 8.dp, centerY - 6.dp))
     }
 
     @Test
