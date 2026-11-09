@@ -540,4 +540,29 @@ class ImagesTest {
         assertEquals('W', at(60.0, 50.0), "the focus")
         assertEquals('B', at(140.0, 50.0), "near the edge")
     }
+
+    // As in the web's SVG, a vector path's gradient spans that path's own bounds, whatever size the vector is drawn at.
+    @Test
+    fun vectorGradientsSpanTheirPath() = runKiteUiTest {
+        val gradient = ImageVector(
+            50.px, 50.px, viewBoxMinX = 100, viewBoxMinY = 100, viewBoxWidth = 200, viewBoxHeight = 200,
+            paths = listOf(
+                ImageVector.Path(
+                    fillColor = LinearGradient(listOf(GradientStop(0f, Color.red), GradientStop(1f, Color.blue))),
+                    path = "M150,150 L250,150 L250,250 L150,250 Z",
+                ),
+            ),
+        )
+        val views = mutableListOf<RawImageViewLike>()
+        val root = showKiteUi {
+            col {
+                sizeConstraints(width = 200.px, height = 200.px).rawImage(gradient, "gradient", ImageScaleType.Stretch) { views += this }
+            }
+        }
+        waitForLoad(views)
+        val shot = saveScreenshot(root, "vector-gradient")
+        val box = onNodeWithContentDescription("gradient").getUnclippedBoundsInRoot()
+        // The path covers the middle half of the 200dp image.
+        assertEquals("RB", "${shot.colorAt(root, box, 52.dp, 100.dp)}${shot.colorAt(root, box, 148.dp, 100.dp)}")
+    }
 }
