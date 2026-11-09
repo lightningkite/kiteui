@@ -623,19 +623,24 @@ private class HoverNode(private var element: NativeElement, enabled: Boolean) : 
 }
 
 /**
- * Explicit sizes are capped by the space the parent has, as Android does.  When the parent asks for more
- * (a stretched slot), Compose centers the smaller result in it, which also matches Android.
+ * As in CSS, a min size beats a max size, which beats an explicit size.  The result is capped by the space the
+ * parent has, as Android does.  When the parent asks for more (a stretched slot), Compose centers the smaller
+ * result in it, which also matches Android.
  */
 private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, incoming ->
     fun Dimension?.toPx(): Int? = this?.let { it.value.dp.roundToPx() }
-    val width = c.width.toPx()?.coerceAtMost(incoming.maxWidth)
-    val height = c.height.toPx()?.coerceAtMost(incoming.maxHeight)
-    val maxWidth = width ?: minOf(incoming.maxWidth, c.maxWidth.toPx() ?: Constraints.Infinity)
-    val maxHeight = height ?: minOf(incoming.maxHeight, c.maxHeight.toPx() ?: Constraints.Infinity)
+    val ownMinWidth = c.minWidth.toPx() ?: 0
+    val ownMaxWidth = maxOf(ownMinWidth, c.maxWidth.toPx() ?: Constraints.Infinity)
+    val ownMinHeight = c.minHeight.toPx() ?: 0
+    val ownMaxHeight = maxOf(ownMinHeight, c.maxHeight.toPx() ?: Constraints.Infinity)
+    val width = c.width.toPx()?.coerceIn(ownMinWidth, ownMaxWidth)?.coerceAtMost(incoming.maxWidth)
+    val height = c.height.toPx()?.coerceIn(ownMinHeight, ownMaxHeight)?.coerceAtMost(incoming.maxHeight)
+    val maxWidth = width ?: minOf(incoming.maxWidth, ownMaxWidth)
+    val maxHeight = height ?: minOf(incoming.maxHeight, ownMaxHeight)
     var own = Constraints(
-        minWidth = width ?: maxOf(incoming.minWidth, c.minWidth.toPx() ?: 0).coerceAtMost(maxWidth),
+        minWidth = width ?: maxOf(incoming.minWidth, ownMinWidth).coerceAtMost(maxWidth),
         maxWidth = maxWidth,
-        minHeight = height ?: maxOf(incoming.minHeight, c.minHeight.toPx() ?: 0).coerceAtMost(maxHeight),
+        minHeight = height ?: maxOf(incoming.minHeight, ownMinHeight).coerceAtMost(maxHeight),
         maxHeight = maxHeight,
     )
     c.aspectRatio?.let { ratio ->

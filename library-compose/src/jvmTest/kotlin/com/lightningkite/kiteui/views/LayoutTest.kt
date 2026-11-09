@@ -178,6 +178,28 @@ class LayoutTest {
         assertEquals(testTheme.gap.toDp(), after.left - before.right)
     }
 
+    // In CSS a min size beats a max size, which beats an explicit size.
+    @Test
+    fun minAndMaxSizesBeatAnExplicitSize() = runKiteUiTest {
+        showKiteUi {
+            col {
+                sizeConstraints(width = 50.px, minWidth = 80.px).text("Min")
+                sizeConstraints(width = 300.px, maxWidth = 120.px).text("Max")
+                sizeConstraints(width = 300.px, minWidth = 90.px, maxWidth = 60.px).text("Both")
+                sizeConstraints(minWidth = 90.px, maxWidth = 60.px).text("NoWidth")
+                sizeConstraints(height = 10.px, minHeight = 40.px).text("MinHeight")
+                sizeConstraints(height = 300.px, maxHeight = 30.px).text("MaxHeight")
+            }
+        }
+        fun bounds(text: String) = onNodeWithText(text).getUnclippedBoundsInRoot()
+        assertEquals(80.dp, bounds("Min").width)
+        assertEquals(120.dp, bounds("Max").width)
+        assertEquals(90.dp, bounds("Both").width)
+        assertEquals(90.dp, bounds("NoWidth").width)
+        assertEquals(40.dp, bounds("MinHeight").height)
+        assertEquals(30.dp, bounds("MaxHeight").height)
+    }
+
     @Test
     fun aspectRatioFollowsAHeightStretchedByARow() = runKiteUiTest {
         var box: Frame? = null
