@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
@@ -22,7 +20,15 @@ import com.lightningkite.kiteui.views.NativeElement
 import com.lightningkite.kiteui.views.toCompose
 
 public actual class ProgressBar actual constructor(context: ElementContext) : NativeElement(context) {
-    public actual var ratio: Float by mutableStateOf(0f)
+    private val shownRatio = mutableStateOf(0f)
+    public actual var ratio: Float
+        get() = shownRatio.value
+        set(value) {
+            // As the web's <progress>, whose value throws on a non-finite number.  Compose would otherwise only
+            // find it while drawing, which a composition can't recover from.
+            require(value.isFinite()) { "ProgressBar.ratio must be a finite number, but was $value" }
+            shownRatio.value = value
+        }
 
     // The web's <progress> is always bare: its theme colors the bar, but it draws no background box or padding.
     override fun nativeApplyTheme(theme: ThemeAndBack) {

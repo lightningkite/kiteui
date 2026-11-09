@@ -195,6 +195,16 @@ class ControlsTest {
         saveScreenshot(root, "progress")
     }
 
+    // As the web's <progress>, a ratio that isn't a number is rejected where it's set, and the bar keeps the last one.
+    @Test
+    fun progressBarRejectsNaN() = runKiteUiTest {
+        val ratio = Signal(0.4f)
+        show { progressBar { ::ratio { ratio() } } }
+        runBlocking(Dispatchers.Main) { ratio.value = 0f / 0f }
+        val bar = onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).fetchSemanticsNode()
+        assertEquals(0.4f, bar.config[SemanticsProperties.ProgressBarRangeInfo].current)
+    }
+
     @Test
     fun linksNavigateAndRejectUnsafeUrls() = runKiteUiTest {
         val navigator = PageNavigator { Routes(listOf(), mapOf()) }
