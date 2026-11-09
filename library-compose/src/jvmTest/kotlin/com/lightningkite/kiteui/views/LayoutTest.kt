@@ -46,10 +46,12 @@ class LayoutTest {
             }
         }
         val lineHeight = testTheme.font.size.value * testTheme.font.lineSpacingMultiplier
-        for (view in listOf(label, field, area)) {
-            val height = runOnUiThread { view.screenRectangle()!!.let { it.bottom - it.top } }
-            assertEquals(lineHeight, height, 0.5, "${view::class.simpleName} height")
-        }
+        fun height(view: NativeElement) = runOnUiThread { view.screenRectangle()!!.let { it.bottom - it.top } }
+        assertEquals(lineHeight, height(label), 0.5, "text")
+        assertEquals(lineHeight, height(field), 0.5, "text input")
+        // The web's textarea is sized by a hidden copy of its text with 2px padding all round, while the textarea's own
+        // padding is reset to none, so it's 4px taller than its lines.
+        assertEquals(lineHeight + 4, height(area), 0.5, "text area")
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.unit.dp
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
@@ -75,7 +77,9 @@ public actual class TextArea actual constructor(context: ElementContext) : Nativ
             interactionSource = interactions.source,
             keyboardOptions = keyboardHints.toKeyboardOptions(imeAction = ImeAction.Default),
             decorationBox = { inner ->
-                Box {
+                // The web sizes a textarea by a hidden copy of its text padded 2px all round, but leaves the textarea's
+                // own text unpadded at the top, so the field is 4px taller than its lines.
+                Box(Modifier.padding(bottom = 4.dp)) {
                     if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     inner()
                 }
