@@ -86,10 +86,9 @@ private class SizeStyles(val width: String, val maxWidth: String, val height: St
 
 // While its wrapper animates, a child is pinned to the wrapper's size.  Unpinning must give back the
 // child's own inline sizes (from sizeConstraints, or the stack's 100%), which the pin overwrote.
-private val unpinnedSizes = HashMap<HTMLElement, SizeStyles>()
-
+// They're kept on the element itself, so an element removed mid-animation takes them with it.
 private fun HTMLElement.pinSize(to: SizeStyles) {
-    unpinnedSizes.getOrPut(this) { SizeStyles(this) }
+    if (asDynamic().__unpinnedSize == null) asDynamic().__unpinnedSize = SizeStyles(this)
     to.applyTo(this)
 }
 
@@ -97,7 +96,9 @@ private fun HTMLElement.pinSizeTo(wrapper: HTMLElement) =
     pinSize(SizeStyles("${wrapper.clientWidth}px", "unset", "${wrapper.clientHeight}px", "unset"))
 
 private fun HTMLElement.unpinSize() {
-    unpinnedSizes.remove(this)?.applyTo(this)
+    val own = asDynamic().__unpinnedSize as? SizeStyles ?: return
+    asDynamic().__unpinnedSize = null
+    own.applyTo(this)
 }
 
 private data class OngoingAnimation(
