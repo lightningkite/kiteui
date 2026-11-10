@@ -406,7 +406,6 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         // modifier), and those lists are reused by other nodes, whose modifiers (and so elements, and their
         // subtrees) then outlive them.  See the plan's known issues and PureComposeRetentionTest.
         var m = modifier
-            .onPlaced { coordinates = it }
             .bringIntoViewRequester(bringIntoView)
             .focusRequester(focusRequester)
         if (collapsible) m = m
@@ -424,6 +423,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
                 layout(width, height) { placeable.place(0, 0) }
             }
         sizeConstraints?.let { m = m.sized(it) }
+        // Inside the sizing, so that like the web's getBoundingClientRect this is the element's own box, even where it
+        // overflows the space its parent gave it.
+        m = m.onPlaced { coordinates = it }
         val takesInput = takesInput
         m = m.then(inputModifier(takesInput)).then(HoverElement(this, takesInput))
         val theme = currentTheme
@@ -624,8 +626,9 @@ private class HoverNode(private var element: NativeElement, enabled: Boolean) : 
 
 /**
  * As in CSS, a min size beats a max size, which beats an explicit size.  The result is capped by the space the
- * parent has, as Android does.  When the parent asks for more (a stretched slot), Compose centers the smaller
- * result in it, which also matches Android.
+ * parent has, as Android does, except that as in CSS the element's own min size beats that too: it overflows the
+ * parent from the start.  When the parent asks for more (a stretched slot), Compose centers the smaller result in it,
+ * which also matches Android.
  */
 private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, incoming ->
     fun Dimension?.toPx(): Int? = this?.let { it.value.dp.roundToPx() }
@@ -633,10 +636,12 @@ private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, 
     val ownMaxWidth = maxOf(ownMinWidth, c.maxWidth.toPx() ?: Constraints.Infinity)
     val ownMinHeight = c.minHeight.toPx() ?: 0
     val ownMaxHeight = maxOf(ownMinHeight, c.maxHeight.toPx() ?: Constraints.Infinity)
-    val width = c.width.toPx()?.coerceIn(ownMinWidth, ownMaxWidth)?.coerceAtMost(incoming.maxWidth)
-    val height = c.height.toPx()?.coerceIn(ownMinHeight, ownMaxHeight)?.coerceAtMost(incoming.maxHeight)
-    val maxWidth = width ?: minOf(incoming.maxWidth, ownMaxWidth)
-    val maxHeight = height ?: minOf(incoming.maxHeight, ownMaxHeight)
+    val roomWidth = maxOf(incoming.maxWidth, ownMinWidth)
+    val roomHeight = maxOf(incoming.maxHeight, ownMinHeight)
+    val width = c.width.toPx()?.coerceIn(ownMinWidth, ownMaxWidth)?.coerceAtMost(roomWidth)
+    val height = c.height.toPx()?.coerceIn(ownMinHeight, ownMaxHeight)?.coerceAtMost(roomHeight)
+    val maxWidth = width ?: minOf(roomWidth, ownMaxWidth)
+    val maxHeight = height ?: minOf(roomHeight, ownMaxHeight)
     var own = Constraints(
         minWidth = width ?: maxOf(incoming.minWidth, ownMinWidth).coerceAtMost(maxWidth),
         maxWidth = maxWidth,
@@ -662,8 +667,11 @@ private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, 
         }
     }
     val placeable = measurable.measure(own)
-    // Coerced because intrinsic measurement reports the content's own size, ignoring explicit ones.
-    layout(own.constrainWidth(placeable.width), own.constrainHeight(placeable.height)) { placeable.place(0, 0) }
+    // Coerced because intrinsic measurement reports the content's own size, ignoring explicit ones.  Reporting no
+    // more than the parent's space keeps Compose from centering an overflowing element on it.
+    val reportedWidth = minOf(own.constrainWidth(placeable.width), incoming.maxWidth)
+    val reportedHeight = minOf(own.constrainHeight(placeable.height), incoming.maxHeight)
+    layout(reportedWidth, reportedHeight) { placeable.place(0, 0) }
 }
 
 private val Float.dp: Dp get() = Dp(this)

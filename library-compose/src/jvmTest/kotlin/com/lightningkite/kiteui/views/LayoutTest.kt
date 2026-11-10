@@ -258,6 +258,32 @@ class LayoutTest {
         assertEquals(30.dp, bounds("MaxHeight").height)
     }
 
+    // As in CSS, an element's own min size beats the space its parent has: it overflows the parent, from the start.
+    @Test
+    fun aMinSizeOverflowsItsParent() = runKiteUiTest {
+        lateinit var parent: Frame
+        lateinit var min: Frame
+        lateinit var explicit: Frame
+        showKiteUi {
+            col {
+                sizeConstraints(height = 48.px).unpadded.frame {
+                    parent = this
+                    sizeConstraints(minHeight = 52.px).unpadded.frame { min = this }
+                }
+                sizeConstraints(height = 48.px).unpadded.frame {
+                    sizeConstraints(height = 10.px, minHeight = 52.px).unpadded.frame { explicit = this }
+                }
+            }
+        }
+        val parentBounds = runOnUiThread { parent.screenRectangle()!! }
+        val minBounds = runOnUiThread { min.screenRectangle()!! }
+        val explicitBounds = runOnUiThread { explicit.screenRectangle()!! }
+        assertEquals(48.0, parentBounds.height, 0.5)
+        assertEquals(parentBounds.top, minBounds.top, 0.5)
+        assertEquals(52.0, minBounds.height, 0.5)
+        assertEquals(52.0, explicitBounds.height, 0.5)
+    }
+
     // The web's gap minimum is a class's min-width, which the space's own (inline) min-width replaces.
     @Test
     fun aSpacesOwnMinimumReplacesTheGap() = runKiteUiTest {
