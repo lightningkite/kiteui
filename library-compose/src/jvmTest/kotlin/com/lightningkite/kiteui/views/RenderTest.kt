@@ -8,6 +8,8 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.math.abs
 
 @OptIn(ExperimentalTestApi::class)
 class RenderTest {
@@ -68,6 +70,43 @@ class RenderTest {
         assertEquals(0xFFFF0000.toInt(), leftEdge(stack), "a stack's child should cover its outline")
         assertEquals(0xFF0000FF.toInt(), leftEdge(row), "a row's outline should cover its child")
     }
+
+    @Test
+    fun elevationCastsTheWebsBoxShadow() = runKiteUiTest {
+        lateinit var box: Frame
+        val root = showKiteUi {
+            frame {
+                themed(WhitePage).frame {
+                    box = centered.sizeConstraints(width = 200.px, height = 100.px).themed(Raised).frame { }
+                }
+            }
+        }
+        val image = saveScreenshot(root, "elevation-shadow")
+        val bounds = runOnUiThread { box.screenRectangle()!! }
+        fun grey(x: Double, y: Double): Int {
+            val rgb = image.getRGB(with(density) { x.dp.roundToPx() }, with(density) { y.dp.roundToPx() })
+            return minOf(rgb shr 16 and 0xFF, rgb shr 8 and 0xFF, rgb and 0xFF)
+        }
+        val centerX = (bounds.left + bounds.right) / 2
+        val centerY = (bounds.top + bounds.bottom) / 2
+        val below = List(20) { grey(centerX, bounds.bottom + it) }
+        val right = List(20) { grey(bounds.right + it, centerY) }
+        // Chrome's, for the same box with KiteUiCss's box-shadow.
+        val chromeBelow = listOf(165, 179, 204, 221, 232, 239, 246, 251, 253, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255)
+        val chromeRight = listOf(227, 235, 242, 247, 250, 252, 253, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255)
+        fun close(a: List<Int>, b: List<Int>) = a.zip(b).all { (x, y) -> abs(x - y) <= 4 }
+        assertTrue(close(below, chromeBelow), "below: $below, Chrome's: $chromeBelow")
+        assertTrue(close(right, chromeRight), "right: $right, Chrome's: $chromeRight")
+    }
+}
+
+private object WhitePage : Semantic("white-page") {
+    override fun default(theme: Theme): ThemeAndBack = theme.alter(background = Color.white, outlineWidth = 0.px, elevation = 0.px).withBackNoPadding
+}
+
+private object Raised : Semantic("raised-box") {
+    override fun default(theme: Theme): ThemeAndBack =
+        theme.alter(background = Color.white, outlineWidth = 0.px, elevation = 4.px, cornerRadii = CornerRadii.Fixed(8.px)).withBackNoPadding
 }
 
 private object Outlined : Semantic("outlined") {

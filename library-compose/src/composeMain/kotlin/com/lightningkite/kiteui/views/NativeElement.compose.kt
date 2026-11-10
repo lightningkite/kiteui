@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
@@ -443,9 +444,6 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             val pose = (if (screen?.entering == true) screen.transition.entryTransform else screen?.transition?.exitTransform) ?: Transformation()
             val fade = if (screen?.transition?.fade == true) 1f - away else 1f
             alpha = fade * if (visible) a?.alpha?.value ?: targetOpacity.toFloat() else 0f
-            shadowElevation = (a?.elevation?.value ?: theme.elevation).toPx()
-            shape = d?.shape ?: RectangleShape
-            this.clip = clip
             val t = a?.translation?.value ?: transform.translation
             // The pose's translation is a fraction of the element's own size, like CSS's translate(%).
             translationX = t.x.dp.toPx() + (pose.translationX * size.width * away).toFloat()
@@ -456,6 +454,15 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             rotationZ = (a?.rotation?.value ?: transform.rotation.toFloat()) + (pose.rotation * away).toFloat()
             rotationX = (transform.rotationX + pose.rotationX * away).toFloat()
             rotationY = (transform.rotationY + pose.rotationY * away).toFloat()
+        }
+        // Between the layers: inside the transform, which moves it with the element, and outside the clip, which would
+        // cut it off.
+        m = m.drawBehind {
+            if (d != null) drawElevationShadow(d.shape.createOutline(size, layoutDirection, this), (a?.elevation?.value ?: theme.elevation).toPx())
+        }
+        m = m.graphicsLayer {
+            shape = d?.shape ?: RectangleShape
+            this.clip = clip
         }
         var inWindow by remember { mutableStateOf(false) }
         // Watching every element would slow scrolling, so only those that have faded do, from then on.

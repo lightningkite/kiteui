@@ -38,7 +38,7 @@ Resource codegen: the gradle plugin's JVM output already emits commonHtml-shaped
 - `RowCollapsingToColumn` switches the same layout's orientation from `AppState.windowInfo().width`, ignoring weights in column mode.  `RowWrapping` uses `FlowRow`.  `ProgrammaticLayout` is a `Layout` that calls the delegate's measure/place.  `spacingOverrideBeforeNext` is a no-op (deprecated everywhere).
 
 **Theming.** `nativeApplyTheme` stores the `ThemeAndBack`; `Render` turns it into modifiers:
-- With `drawBackground`: a `graphicsLayer` with the shadow (and opacity and transform), a `drawWithCache` drawing the background and the border (inset like `Modifier.border`; drawn by hand so animated colours are read while drawing), `clip(shape)`.
+- With `drawBackground`: a `graphicsLayer` with the opacity and transform, the web's box-shadow for the elevation drawn by hand (`drawElevationShadow`: Compose's elevation shadows are far lighter), a `graphicsLayer` clipping to the shape, a `drawWithCache` drawing the background and the border (inset like `Modifier.border`; drawn by hand so animated colours are read while drawing).
 - Then `padding(appliedPadding)`.
 - Corner radii resolve each `CornerRadii` variant against the parent's `spacingForChildCornerRadii`.  Paints map to `SolidColor`, `Brush.linearGradient` (exact angle, which is better than Android) and `Brush.radialGradient`.  `FadingColor` backgrounds fade between their colours; elsewhere it is the base colour.
 - Text reads `theme.font` (`FontFamily`, weight, italic, size, line height, letter spacing, all-caps, underline/strike, alignment) via a `TextStyle`.
