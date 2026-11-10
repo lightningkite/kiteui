@@ -82,23 +82,27 @@ class ControlsTest {
         waitUntil { onNode(hasRole(Role.Switch)).fetchSemanticsNode().config[SemanticsProperties.ToggleableState] == ToggleableState.Off }
     }
 
-    // The web's `.checkbox.checkbox.checkbox { opacity: 0.75 }` outranks its `.checkbox:checked { opacity: 1 }`.
     @Test
-    fun checkboxesAreThreeQuartersOpaqueCheckedOrNot() = runKiteUiTest {
+    fun checkedCheckboxesAreFullyOpaqueAndUncheckedThreeQuarters() = runKiteUiTest {
         lateinit var unchecked: Checkbox
         lateinit var checked: Checkbox
         val root = show {
             row {
+                padding = 10.px
                 unchecked = checkbox()
                 checked = checkbox { this.checked.value = true }
             }
         }
         val image = saveScreenshot(root, "checkbox-opacity")
-        fun leftBorder(view: Checkbox): Int {
+        // Drawing at opacity a over the background moves each channel a of the way from background to border color.
+        fun distanceFromBackground(view: Checkbox): Int {
             val bounds = runOnUiThread { view.screenRectangle()!! }
-            return image.getRGB(with(density) { bounds.left.dp.roundToPx() }, with(density) { ((bounds.top + bounds.bottom) / 2).dp.roundToPx() })
+            val y = with(density) { ((bounds.top + bounds.bottom) / 2).dp.roundToPx() }
+            val border = java.awt.Color(image.getRGB(with(density) { bounds.left.dp.roundToPx() }, y))
+            val background = java.awt.Color(image.getRGB(with(density) { (bounds.left - 5).dp.roundToPx() }, y))
+            return (background.red - border.red) + (background.green - border.green) + (background.blue - border.blue)
         }
-        assertEquals(leftBorder(unchecked), leftBorder(checked))
+        assertEquals(0.75, distanceFromBackground(unchecked).toDouble() / distanceFromBackground(checked), 0.05)
     }
 
     // The web fixes a check control's width and height with !important, which a min or max size still overrides.
