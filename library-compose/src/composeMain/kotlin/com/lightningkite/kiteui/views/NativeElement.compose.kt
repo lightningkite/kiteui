@@ -27,14 +27,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -444,6 +446,10 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             val pose = (if (screen?.entering == true) screen.transition.entryTransform else screen?.transition?.exitTransform) ?: Transformation()
             val fade = if (screen?.transition?.fade == true) 1f - away else 1f
             alpha = fade * if (visible) a?.alpha?.value ?: targetOpacity.toFloat() else 0f
+            // A clipping layer would cut off the shadow, so an elevated element clips its content as it draws it
+            // instead.  Clipping that way costs more, about 8% on the scroll benchmark when every element does it.
+            shape = d?.shape ?: RectangleShape
+            this.clip = clip && (a?.elevation?.value ?: theme.elevation) == 0.dp
             val t = a?.translation?.value ?: transform.translation
             // The pose's translation is a fraction of the element's own size, like CSS's translate(%).
             translationX = t.x.dp.toPx() + (pose.translationX * size.width * away).toFloat()
@@ -454,15 +460,6 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             rotationZ = (a?.rotation?.value ?: transform.rotation.toFloat()) + (pose.rotation * away).toFloat()
             rotationX = (transform.rotationX + pose.rotationX * away).toFloat()
             rotationY = (transform.rotationY + pose.rotationY * away).toFloat()
-        }
-        // Between the layers: inside the transform, which moves it with the element, and outside the clip, which would
-        // cut it off.
-        m = m.drawBehind {
-            if (d != null) drawElevationShadow(d.shape.createOutline(size, layoutDirection, this), (a?.elevation?.value ?: theme.elevation).toPx())
-        }
-        m = m.graphicsLayer {
-            shape = d?.shape ?: RectangleShape
-            this.clip = clip
         }
         var inWindow by remember { mutableStateOf(false) }
         // Watching every element would slow scrolling, so only those that have faded do, from then on.
@@ -485,19 +482,23 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             // On the web, a row or column's children paint under its outline, but a stack's children have a z-index
             // and images are positioned, which paints them over it.
             val outlineOverContent = this@NativeElement is NativeLinearLayoutElement
+            val contentClip = if (clip) Path().apply { addOutline(shape) } else null
             onDrawWithContent {
+                val elevation = (a?.elevation?.value ?: theme.elevation).toPx()
+                drawElevationShadow(shape, elevation)
+                fun content() = if (contentClip != null && elevation > 0f) clipPath(contentClip) { this@onDrawWithContent.drawContent() } else drawContent()
                 // Plain colours animate; gradients change at once.
                 when {
                     fading != null -> drawOutline(shape, fading.value)
                     a != null && d.background is Color -> drawOutline(shape, a.background.value)
                     else -> drawOutline(shape, backgroundBrush)
                 }
-                if (outlineOverContent) drawContent()
+                if (outlineOverContent) content()
                 if (width > 0f) translate(width / 2, width / 2) {
                     if (a != null && d.outline is Color) drawOutline(border, a.outline.value, style = Stroke(width))
                     else drawOutline(border, outlineBrush, style = Stroke(width))
                 }
-                if (!outlineOverContent) drawContent()
+                if (!outlineOverContent) content()
             }
         }
         scrolling?.let { m = it.applyTo(m, takesInput) }

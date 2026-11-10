@@ -91,6 +91,8 @@ tasks.named<Test>("jvmTest") {
     val dataDirectory = layout.buildDirectory.dir("tmp/jvmTest/data").get().asFile
     systemProperty("kiteui.dataDirectory", dataDirectory.absolutePath)
     doFirst { dataDirectory.deleteRecursively() }
+    // Benchmarks are slow and print rather than assert: run them with -Pbenchmark.
+    if (!project.hasProperty("benchmark")) filter { excludeTestsMatching("*Benchmark") }
 }
 
 lkLibrary("lightningkite", "kiteui") {

@@ -77,7 +77,7 @@ class RenderTest {
         val root = showKiteUi {
             frame {
                 themed(WhitePage).frame {
-                    box = centered.sizeConstraints(width = 200.px, height = 100.px).themed(Raised).frame { }
+                    box = centered.sizeConstraints(width = 200.px, height = 100.px).themed(Raised).frame { themed(RedSquare).frame { } }
                 }
             }
         }
@@ -97,11 +97,17 @@ class RenderTest {
         fun close(a: List<Int>, b: List<Int>) = a.zip(b).all { (x, y) -> abs(x - y) <= 4 }
         assertTrue(close(below, chromeBelow), "below: $below, Chrome's: $chromeBelow")
         assertTrue(close(right, chromeRight), "right: $right, Chrome's: $chromeRight")
+        assertTrue(grey(bounds.left, bounds.top) > 200, "the rounded corner should clip the red content")
     }
 }
 
 private object WhitePage : Semantic("white-page") {
     override fun default(theme: Theme): ThemeAndBack = theme.alter(background = Color.white, outlineWidth = 0.px, elevation = 0.px).withBackNoPadding
+}
+
+private object RedSquare : Semantic("red-square") {
+    override fun default(theme: Theme): ThemeAndBack =
+        theme.alter(background = Color.red, outlineWidth = 0.px, elevation = 0.px, cornerRadii = CornerRadii.Fixed(0.px)).withBackNoPadding
 }
 
 private object Raised : Semantic("raised-box") {

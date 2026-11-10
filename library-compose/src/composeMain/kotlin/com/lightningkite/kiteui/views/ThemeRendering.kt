@@ -1,20 +1,21 @@
 package com.lightningkite.kiteui.views
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.boundingRect
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.addOutline
-import androidx.compose.ui.graphics.skiaPaint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.MaskFilter
-import androidx.compose.ui.graphics.Paint as ComposePaint
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import org.jetbrains.skia.RRect
+import org.jetbrains.skia.Paint as SkiaPaint
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -102,19 +103,18 @@ internal fun DrawScope.drawElevationShadow(outline: Outline, elevation: Float) {
         is Outline.Generic -> error("Only rounded rectangles cast shadows")
     }
     fun shadow(offsetY: Float, blur: Float, spread: Float, alpha: Float) {
+        val rect = box.boundingRect.inflate(spread).translate(0f, offsetY)
         // As in CSS, spread grows the corners' radii with the box.
-        fun CornerRadius.spread() = CornerRadius(maxOf(0f, x + spread), maxOf(0f, y + spread))
-        val shadowBox = RoundRect(
-            box.boundingRect.inflate(spread).translate(0f, offsetY),
-            box.topLeftCornerRadius.spread(), box.topRightCornerRadius.spread(),
-            box.bottomRightCornerRadius.spread(), box.bottomLeftCornerRadius.spread(),
-        )
-        val paint = ComposePaint().apply {
-            color = ComposeColor.Black.copy(alpha = alpha)
+        val radii = listOf(box.topLeftCornerRadius, box.topRightCornerRadius, box.bottomRightCornerRadius, box.bottomLeftCornerRadius)
+            .flatMap { listOf(maxOf(0f, it.x + spread), maxOf(0f, it.y + spread)) }
+        // A rounded rectangle, not a path: Skia caches its blur, which makes scrolling past shadows several times faster.
+        val shadowBox = RRect.makeComplexLTRB(rect.left, rect.top, rect.right, rect.bottom, radii.toFloatArray())
+        val paint = SkiaPaint().apply {
+            color = ComposeColor.Black.copy(alpha = alpha).toArgb()
             // CSS blurs with a standard deviation of half the blur radius.
-            skiaPaint.maskFilter = MaskFilter.makeBlur(FilterBlurMode.NORMAL, blur / 2)
+            maskFilter = MaskFilter.makeBlur(FilterBlurMode.NORMAL, blur / 2)
         }
-        drawIntoCanvas { it.drawPath(Path().apply { addRoundRect(shadowBox) }, paint) }
+        drawIntoCanvas { it.nativeCanvas.drawRRect(shadowBox, paint) }
     }
     clipPath(Path().apply { addOutline(outline) }, ClipOp.Difference) {
         shadow(offsetY = elevation * 1.5f, blur = elevation / 2, spread = -elevation, alpha = 0.2f)
