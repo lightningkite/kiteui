@@ -4,7 +4,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.navigation.RouteRendered
 import com.lightningkite.kiteui.navigation.Routes
+import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.appBase
 import com.lightningkite.kiteui.views.l2.dialog
@@ -138,4 +140,19 @@ class DriverTest {
             assertEquals(line, command("${line.substringBefore(": ")}\tsnapshot").lines().first())
         }
     }
+
+    // As the web's address bar, which a page without a route (a full-screen image, say) leaves as it was.
+    @Test
+    fun theDriversUrlIsTheTopmostPageWithARoute() {
+        val navigator = PageNavigator {
+            Routes(parsers = listOf(), renderers = mapOf(Routed::class to { RouteRendered(UrlLikePath(listOf("routed"), mapOf()), listOf()) }))
+        }
+        navigator.navigate(Routed)
+        navigator.navigate(Page.Direct("No route") { })
+        assertEquals("/routed", runBlocking { handleCommand("url", null, navigator) })
+    }
+}
+
+private object Routed : Page {
+    override fun ElementWriter.CanAddTheme.render() {}
 }

@@ -180,10 +180,10 @@ public suspend fun handleCommand(command: String, root: Element?, navigator: Pag
         }
         "url" -> {
             if (navigator == null) throw DriverActionException("no navigator available")
-            val currentPage = navigator.stack.value.lastOrNull()
-                ?: throw DriverActionException("no current page")
-            val rendered = navigator.routes.render(currentPage)
-                ?: throw DriverActionException("current page has no route")
+            // As the web's address bar, which a page without a route (a full-screen image, say) leaves showing the
+            // last page that had one.
+            val rendered = navigator.stack.value.asReversed().firstNotNullOfOrNull { navigator.routes.render(it) }
+                ?: throw DriverActionException("no page in the stack has a route")
             // The relay ignores blank replies, and the home page renders to an empty path.
             "/" + rendered.urlLikePath.render()
         }

@@ -97,7 +97,7 @@ kiteui-drive <app> root find "query"               # Find views by name/value/ty
 kiteui-drive <app> root findClickable "query"      # Find clickable ancestors of matching views
 kiteui-drive <app> <path> snapshot                 # Snapshot a single element subtree
 kiteui-drive <app> navigate /some/route            # Navigate to URL path
-kiteui-drive <app> url                             # Get current page URL
+kiteui-drive <app> url                             # Get the URL the web would show: the topmost page with a route
 kiteui-drive <app> back back                       # Close the top dialog, or else go back in navigation
 kiteui-drive <app> logs 50                         # Get recent log entries
 
@@ -378,7 +378,7 @@ Requires: relay server running + app connected. Same `UiTestScope` API — tests
 | `drop(target, data)` | Drop base64 drag data onto view |
 | **Navigation** | |
 | `navigate(route)` | Navigate to URL path |
-| `url()` | Get current page URL |
+| `url()` | Get the URL the web would show: the topmost page with a route |
 | `back()` | Close the top dialog, or else go back in navigation |
 | **Mocking** | |
 | `mockFile(bytes, mime, name)` | Queue a mock file for next file picker call |
