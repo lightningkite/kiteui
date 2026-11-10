@@ -102,7 +102,7 @@ kiteui-drive <app> back back                       # Close the top dialog, or el
 kiteui-drive <app> logs 50                         # Get recent log entries
 
 # Mocking external services (file picker, geolocation, etc.)
-kiteui-drive <app> mock file <base64> <mime> <name> # Queue a mock file for next requestFile()
+kiteui-drive <app> mock file <base64> <mime> <name> # Queue a mock file for the next file request (requestFiles takes all)
 kiteui-drive <app> mock fileNull                    # Queue a null (user cancelled) file response
 kiteui-drive <app> mock geolocation <lat> <lon> [accuracy]  # Queue a mock geolocation
 kiteui-drive <app> mock calls                       # Show recorded external service calls
@@ -236,7 +236,7 @@ Queues a file for the next `requestFile()`, `requestFiles()`, `requestCaptureSel
 mock	file	<base64-bytes>	<mimeType>	<fileName>
 ```
 
-Multiple files can be queued — they're consumed FIFO.
+Multiple files can be queued, and are consumed in order: a single-file request takes the next one, and a multi-file request (`requestFiles()`, as a multi-select picker) takes all of them, so queue exactly the files one pick should return.  A queued `fileNull` is a cancellation: a multi-file request leaves it out, so with nothing else queued it returns no files.
 
 ### mock fileNull
 

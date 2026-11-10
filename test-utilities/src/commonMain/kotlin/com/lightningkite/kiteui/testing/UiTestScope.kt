@@ -171,7 +171,8 @@ class UiTestScope(val backend: UiTestBackend) {
     // --- Mock external services ---
 
     /**
-     * Queue a mock file for the next `requestFile()` / `requestFiles()` / `requestCapture*()` call.
+     * Queue a mock file for the next `requestFile()` / `requestFiles()` / `requestCapture*()` call.  `requestFiles()` takes every
+     * queued file.
      * The file is created from [bytes] with the given [mimeType] and [fileName].
      *
      * Lazily installs a [MockExternalServices] wrapper if one isn't already present.

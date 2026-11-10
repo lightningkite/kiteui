@@ -2,6 +2,8 @@ package com.lightningkite.kiteui.views
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.*
+import com.lightningkite.kiteui.MockExternalServices
+import com.lightningkite.kiteui.createFileReferenceFromBytes
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.RouteRendered
@@ -150,6 +152,16 @@ class DriverTest {
         navigator.navigate(Routed)
         navigator.navigate(Page.Direct("No route") { })
         assertEquals("/routed", runBlocking { handleCommand("url", null, navigator) })
+    }
+
+    // Queued for a multi-file pick, files must not be left over for the next, unrelated request.
+    @Test
+    fun aMultiFileRequestTakesEveryQueuedFile() {
+        val mock = MockExternalServices()
+        val files = listOf("a.png", "b.png").map { createFileReferenceFromBytes(ByteArray(1), "image/png", it) }
+        mock.pendingFileResponses.addAll(files)
+        assertEquals(files, runBlocking { mock.requestFiles(listOf("image/*")) })
+        assertEquals(0, mock.pendingFileResponses.size)
     }
 }
 
