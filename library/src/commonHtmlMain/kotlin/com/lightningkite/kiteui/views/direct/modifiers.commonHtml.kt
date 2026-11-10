@@ -300,6 +300,11 @@ internal class PassthroughContainer(context: ElementContext): NativeContainerEle
         // Fill the main axis; the cross axis fills automatically via flex's default align-items: stretch.
         element.underlyingNativeElement.native.style.flexGrow = "1"
     }
+
+    @Suppress("DEPRECATION")
+    @Deprecated("Will probably be removed in the future.")
+    override val spacingForChildCornerRadii: Dimension
+        get() = parent?.spacingForChildCornerRadii ?: 0.px
 }
 
 public actual fun ElementWriter.CanAddTheme.asHeading(level: Int): ElementWriter.CanAddTheme = ApplyTag("h${level.coerceIn(1, 6)}", this)

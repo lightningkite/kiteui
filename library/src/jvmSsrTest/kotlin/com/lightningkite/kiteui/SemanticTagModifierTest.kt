@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +49,21 @@ class SemanticTagModifierTest {
         val inner = wrapper.children[0]
         assertEquals("button", inner.tag)
         assertEquals("1", inner.style["flex-grow"], "child must grow to fill the wrapper's main axis")
+    }
+
+    // Corner radii that adapt to spacing read --parentSpacing, which must be the row's gap, not the theme's.
+    @Test
+    fun tagWrapperPassesItsParentsSpacingThrough() {
+        val tree = elementTree {
+            row {
+                gap = 3.px
+                asListItem.button { }
+            }
+        }
+        val inner = tree.firstChild.native.children[0].children[0]
+        assertEquals("button", inner.tag)
+        assertEquals(3.px.value.toString(), inner.style["--parentSpacing"])
+        tree.shutdown()
     }
 
     @Test
