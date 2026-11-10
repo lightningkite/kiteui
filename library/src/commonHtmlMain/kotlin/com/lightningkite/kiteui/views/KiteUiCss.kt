@@ -428,7 +428,7 @@ public class KiteUiCss(
                 transition-duration: var(--transition-duration, 0.25s);
             }
 
-            .checkbox:checked {
+            .checkbox.checkbox.checkbox:checked {
                 opacity: 1;
             }
 
