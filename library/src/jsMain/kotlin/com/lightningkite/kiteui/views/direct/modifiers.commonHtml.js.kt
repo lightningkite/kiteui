@@ -73,6 +73,33 @@ private val showHideAnimating = HashMap<ContainerElement, OngoingAnimation>()
 // by Claude - tracking ongoing weight animations
 private val weightAnimating = HashMap<ContainerElement, OngoingWeightAnimation>()
 
+private class SizeStyles(val width: String, val maxWidth: String, val height: String, val maxHeight: String) {
+    constructor(of: HTMLElement) : this(of.style.width, of.style.maxWidth, of.style.height, of.style.maxHeight)
+
+    fun applyTo(element: HTMLElement) {
+        element.style.width = width
+        element.style.maxWidth = maxWidth
+        element.style.height = height
+        element.style.maxHeight = maxHeight
+    }
+}
+
+// While its wrapper animates, a child is pinned to the wrapper's size.  Unpinning must give back the
+// child's own inline sizes (from sizeConstraints, or the stack's 100%), which the pin overwrote.
+private val unpinnedSizes = HashMap<HTMLElement, SizeStyles>()
+
+private fun HTMLElement.pinSize(to: SizeStyles) {
+    unpinnedSizes.getOrPut(this) { SizeStyles(this) }
+    to.applyTo(this)
+}
+
+private fun HTMLElement.pinSizeTo(wrapper: HTMLElement) =
+    pinSize(SizeStyles("${wrapper.clientWidth}px", "unset", "${wrapper.clientHeight}px", "unset"))
+
+private fun HTMLElement.unpinSize() {
+    unpinnedSizes.remove(this)?.applyTo(this)
+}
+
 private data class OngoingAnimation(
     val on: ContainerElement,
     val from: Json,
@@ -85,10 +112,7 @@ private data class OngoingAnimation(
     val myElement = on.native.element as HTMLElement
     val child = on.children[0].native.element as HTMLElement
     var animation: Animation? = null
-    private var widthChildResume: String = ""
-    private var maxWidthChildResume: String = ""
-    private var heightChildResume: String = ""
-    private var maxHeightChildResume: String = ""
+    private var pinnedResume: SizeStyles? = null
     fun animRatio() = animation!!.currentTime.toFloat() / totalTime
     val job = Job(on.coroutineContext.job)
     init {
@@ -142,10 +166,7 @@ private data class OngoingAnimation(
         myElement.hidden = !goal
         (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         myElement.classList.remove("animatingShowHide")
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        child.unpinSize()
     }
 
     fun pretendEnd() {
@@ -153,23 +174,14 @@ private data class OngoingAnimation(
         animation!!.pause()
         myElement.hidden = !goal
 //        forEach(to) { k, v -> myElement.style.setProperty(k, v) }
-        widthChildResume = child.style.width
-        maxWidthChildResume = child.style.maxWidth
-        heightChildResume = child.style.height
-        maxHeightChildResume = child.style.maxHeight
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        pinnedResume = SizeStyles(child)
+        child.unpinSize()
     }
 
     fun continueNow() {
         log?.info("continueNow")
         myElement.hidden = false
-        child.style.width = widthChildResume
-        child.style.maxWidth = maxWidthChildResume
-        child.style.height = heightChildResume
-        child.style.maxHeight = maxHeightChildResume
+        child.pinSize(pinnedResume!!)
         animation!!.play()
     }
 }
@@ -189,10 +201,7 @@ private class OngoingWeightAnimation(
     val myElement = on.native.element as HTMLElement
     val child = on.children[0].native.element as HTMLElement
     var animation: Animation? = null
-    private var widthChildResume: String = ""
-    private var maxWidthChildResume: String = ""
-    private var heightChildResume: String = ""
-    private var maxHeightChildResume: String = ""
+    private var pinnedResume: SizeStyles? = null
     // by Claude - saved inline styles for pretendEnd/continueNow
     private var savedFlexGrow: String = ""
     private var savedFlexShrink: String = ""
@@ -240,11 +249,7 @@ private class OngoingWeightAnimation(
         myElement.style.flexShrink = "$toWeight"
         myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
         (on.parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
-        // Unlock child dimensions
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        child.unpinSize()
     }
 
     fun cancel() {
@@ -253,11 +258,7 @@ private class OngoingWeightAnimation(
         closed = true
         job.cancel()
         myElement.classList.remove("animatingShowHide")
-        // Unlock child dimensions
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        child.unpinSize()
     }
 
     // by Claude - pretendEnd must cancel the animation (not just pause) because Web Animations
@@ -274,15 +275,8 @@ private class OngoingWeightAnimation(
         myElement.style.flexGrow = "$toWeight"
         myElement.style.flexShrink = "$toWeight"
         myElement.style.flexBasis = if (toWeight != 0f) "0" else "auto"
-        // Save and unlock child dimensions for measurement
-        widthChildResume = child.style.width
-        maxWidthChildResume = child.style.maxWidth
-        heightChildResume = child.style.height
-        maxHeightChildResume = child.style.maxHeight
-        child.style.width = "100%"
-        child.style.removeProperty("maxWidth")
-        child.style.height = "100%"
-        child.style.removeProperty("maxHeight")
+        pinnedResume = SizeStyles(child)
+        child.unpinSize()
     }
 
     // by Claude - continueNow recreates the animation since we had to cancel it in pretendEnd
@@ -292,11 +286,7 @@ private class OngoingWeightAnimation(
         myElement.style.flexGrow = savedFlexGrow
         myElement.style.flexShrink = savedFlexShrink
         myElement.style.flexBasis = savedFlexBasis
-        // Restore locked child dimensions
-        child.style.width = widthChildResume
-        child.style.maxWidth = maxWidthChildResume
-        child.style.height = heightChildResume
-        child.style.maxHeight = maxHeightChildResume
+        child.pinSize(pinnedResume!!)
         // Recreate the animation from saved progress
         totalTime = on.theme.transitionDuration.inWholeMilliseconds.toDouble()
         animation = myElement.animate(
@@ -386,10 +376,7 @@ private val combinedAnimationWorker = label@{
             if (request.goal) return@forEach
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
-            child.style.width = myElement.clientWidth.toString() + "px"
-            child.style.maxWidth = "unset"
-            child.style.height = myElement.clientHeight.toString() + "px"
-            child.style.maxHeight = "unset"
+            child.pinSizeTo(myElement)
         }
 
         currentWeightQueue?.forEach { (on, weights) ->
@@ -397,10 +384,7 @@ private val combinedAnimationWorker = label@{
             if (toWeight >= fromWeight) return@forEach  // Not shrinking
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
-            child.style.width = myElement.clientWidth.toString() + "px"
-            child.style.maxWidth = "unset"
-            child.style.height = myElement.clientHeight.toString() + "px"
-            child.style.maxHeight = "unset"
+            child.pinSizeTo(myElement)
         }
 
         val displayValuesPreHide = currentShowHideQueue?.asSequence()
@@ -473,10 +457,7 @@ private val combinedAnimationWorker = label@{
             if (!request.goal) return@forEach
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
-            child.style.width = myElement.clientWidth.toString() + "px"
-            child.style.maxWidth = "unset"
-            child.style.height = myElement.clientHeight.toString() + "px"
-            child.style.maxHeight = "unset"
+            child.pinSizeTo(myElement)
             log?.info("  View ${on.children.singleOrNull()?.debugName} appearing locked to ${myElement.clientWidth}px x ${myElement.clientHeight}px")
         }
 
@@ -485,10 +466,7 @@ private val combinedAnimationWorker = label@{
             if (toWeight < fromWeight) return@forEach  // Not expanding
             val myElement = on.native.element as HTMLElement
             val child = on.children[0].native.element as HTMLElement
-            child.style.width = myElement.clientWidth.toString() + "px"
-            child.style.maxWidth = "unset"
-            child.style.height = myElement.clientHeight.toString() + "px"
-            child.style.maxHeight = "unset"
+            child.pinSizeTo(myElement)
             log?.info("  Weight ${on.children.singleOrNull()?.debugName} expanding locked to ${myElement.clientWidth}px x ${myElement.clientHeight}px")
         }
 
