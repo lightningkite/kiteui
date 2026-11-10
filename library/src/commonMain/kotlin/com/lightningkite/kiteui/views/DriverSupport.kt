@@ -23,7 +23,8 @@ public fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Eleme
         }
 
         repeat(depth) { append("  ") }
-
+        append(view.driverPath())
+        append(": ")
         appendLine(line)
 
         for (child in view.driverChildren()) walk(child, depth + 1)
@@ -39,31 +40,24 @@ public fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Eleme
  */
 public fun Element.driverFind(query: String, includeHidden: Boolean = false): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
-    val results = mutableListOf<Pair<String, Element>>()
-    fun walk(view: Element, pathPrefix: String) {
+    val results = mutableListOf<Element>()
+    fun walk(view: Element) {
         if (!includeHidden && !(view.shown && view.visible)) return
-        val segment = view.debugName ?: view.parent?.children?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
-        // Named views reset the path prefix — resolveDriverPath deep-searches for the first
-        // named segment, so the full ancestor chain is unnecessary. This keeps paths short
-        // (e.g. "email" instead of "0/1/email"). Requires debugNames to be unique within a subtree.
-        val path = if (pathPrefix.isEmpty() || segment.toIntOrNull() == null) segment else "$pathPrefix/$segment"
         val nameMatch = view.debugName?.contains(query, ignoreCase = true) == true
         val valueMatch = view.driverValue?.contains(query, ignoreCase = true) == true
         val typeMatch = view::class.simpleName?.contains(query, ignoreCase = true) == true
         val actionMatch = view.driverActions.keys.any { it !in baseActions && it.contains(query, ignoreCase = true) }
         if (nameMatch || valueMatch || typeMatch || actionMatch) {
-            results.add(path to view)
+            results.add(view)
         }
-        for (child in view.driverChildren()) walk(child, path)
+        for (child in view.driverChildren()) walk(child)
     }
-    // Start from root's children so returned paths align with resolveDriverPath's indexing.
-    // resolveDriverPath("0") means root.driverChildren[0], so paths must be relative to root's children.
-    for (child in this@driverFind.driverChildren()) walk(child, "")
+    for (child in this@driverFind.driverChildren()) walk(child)
     if (results.isEmpty()) {
         append("No views matching '$query'")
     } else {
-        for ((path, view) in results) {
-            appendLine("$path: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
+        for (view in results) {
+            appendLine("${view.driverPath()}: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
         }
     }
 }
@@ -75,14 +69,12 @@ public fun Element.driverFind(query: String, includeHidden: Boolean = false): St
  */
 public fun Element.driverFindClickable(query: String, includeHidden: Boolean = false): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
-    val viewPaths = mutableMapOf<Element, String>()
+    val searched = mutableSetOf<Element>()
     val matches = mutableListOf<Element>()
 
-    fun walk(view: Element, pathPrefix: String) {
+    fun walk(view: Element) {
         if (!includeHidden && !(view.shown && view.visible)) return
-        val segment = view.debugName ?: view.parent?.children?.indexOf(view)?.takeIf { it >= 0 }?.toString() ?: "0"
-        val path = if (pathPrefix.isEmpty() || segment.toIntOrNull() == null) segment else "$pathPrefix/$segment"
-        viewPaths[view] = path
+        searched.add(view)
         val nameMatch = view.debugName?.contains(query, ignoreCase = true) == true
         val valueMatch = view.driverValue?.contains(query, ignoreCase = true) == true
         val typeMatch = view::class.simpleName?.contains(query, ignoreCase = true) == true
@@ -90,21 +82,16 @@ public fun Element.driverFindClickable(query: String, includeHidden: Boolean = f
         if (nameMatch || valueMatch || typeMatch || actionMatch) {
             matches.add(view)
         }
-        for (child in view.driverChildren()) walk(child, path)
+        for (child in view.driverChildren()) walk(child)
     }
-    // Start from root's children so returned paths align with resolveDriverPath's indexing.
-    for (child in this@driverFindClickable.driverChildren()) walk(child, "")
+    for (child in this@driverFindClickable.driverChildren()) walk(child)
 
-    val seen = mutableSetOf<Element>()
-    val results = mutableListOf<Pair<String, Element>>()
+    val results = mutableSetOf<Element>()
     for (match in matches) {
         var current: Element? = match
-        while (current != null && current in viewPaths) {
+        while (current != null && current in searched) {
             if (current.driverActions.containsKey("click")) {
-                if (seen.add(current)) {
-                    val path = viewPaths[current] ?: break
-                    results.add(path to current)
-                }
+                results.add(current)
                 break
             }
             current = current.parent
@@ -114,35 +101,23 @@ public fun Element.driverFindClickable(query: String, includeHidden: Boolean = f
     if (results.isEmpty()) {
         append("No clickable views matching '$query'")
     } else {
-        for ((path, view) in results) {
-            appendLine("$path: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
+        for (view in results) {
+            appendLine("${view.driverPath()}: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
         }
     }
 }
 
 /**
- * Returns the full driver path for this element from the root.
- *
- * Builds a path using debugName for named elements and numeric indices for unnamed elements.
- * The path can be used with [resolveDriverPath] to locate this element.
- *
- * Examples:
- * - Named element at root: "email"
- * - Unnamed at index 0 of root: "0"
- * - Named element nested: "form/submitButton"
- * - Unnamed at index 1 under named "form": "form/1"
- * - Root element: "" (empty string)
+ * The shortest path [resolveDriverPath] finds this element by from the root: its name, if it's the first view with it
+ * (names are deep-searched), or else its parent's path and its index.  Children of the root are just their index.
  */
-public fun Element.driverPath(options: Element.DriverSnapshotOptions): String =
-    generateSequence(this) { it.parent }
-        .map { current ->
-            current.debugName
-                ?: current.parent?.children?.indexOf(current)?.takeIf { it >= 0 }?.toString()
-                ?: ""
-        }
-        .toList()
-        .reversed()
-        .joinToString("/")
+public fun Element.driverPath(): String {
+    val parent = parent ?: return debugName ?: "root"
+    val root = generateSequence<Element>(this) { it.parent }.last()
+    debugName?.let { if (root.findByName(it) === this) return it }
+    val index = parent.driverChildren().indexOf(this)
+    return if (parent.parent == null) "$index" else "${parent.driverPath()}/$index"
+}
 
 /**
  * Resolves a `/`-separated driver path to a view in this subtree.

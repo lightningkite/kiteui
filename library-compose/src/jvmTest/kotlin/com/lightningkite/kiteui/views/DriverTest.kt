@@ -115,4 +115,27 @@ class DriverTest {
         runBlocking(Dispatchers.Main) { handleCommand("back", root.root, navigator) }
         assertEquals(1, navigator.stack.value.size)
     }
+
+    @Test
+    fun eachSnapshotLineStartsWithAPathToItsView() = runKiteUiTest {
+        val (root, navigator) = showApp {
+            col {
+                row { button { text("Unnamed"); onClick { } } }
+                col { debugName = "twin"; text("First twin") }
+                col { col { debugName = "twin"; button { text("Second twin"); onClick { } } } }
+                menuButton {
+                    requireClick = true
+                    opensMenu { button { text("Menu item"); onClick { } } }
+                    text("Menu")
+                }
+            }
+        }
+        fun command(command: String) = runBlocking(Dispatchers.Main) { handleCommand(command, root.root, navigator) }
+        val menu = command("${command("root\tfindClickable\tMenu").substringBefore(":")}\tclick")
+        waitForIdle()
+        val lines = (command("root\tsnapshot") + command("root\tsnapshot\t--interactive") + menu).lines().map { it.trim() }.filter { it.isNotEmpty() }
+        for (line in lines) {
+            assertEquals(line, command("${line.substringBefore(": ")}\tsnapshot").lines().first())
+        }
+    }
 }

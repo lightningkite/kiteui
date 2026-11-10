@@ -151,16 +151,17 @@ Views with `debugName` are directly addressable. Views without one use their num
 The `snapshot` command returns a text tree showing the view hierarchy:
 
 ```
-submitBtn: Button [click]
-  0: TextView = "Submit"
-form: RowOrCol
-  email: TextInput = "user@example.com" [setValue, submit]
-  password: TextInput = "" [setValue, submit]
-  0: Checkbox = "false" [toggle, setValue]
+submitBtn: submitBtn: Button [click]
+  submitBtn/0: 0: TextView = "Submit"
+form: form: RowOrCol
+  email: email: TextInput = "user@example.com" [setValue, submit]
+  password: password: TextInput = "" [setValue, submit]
+  form/2: 2: Checkbox = "false" [toggle, setValue]
 ```
 
-Each line shows: `name: Type = "value" [actions] (flags)`
+Each line shows: `path: name: Type = "value" [actions] (flags)`, as `find` prints its results.
 
+- **path**: the view's path from the root, usable as given in any command.  It's the view's `debugName` if no view before it has that name, or else its parent's path and its child index.  The root itself is `root` (or its name).
 - **name**: `debugName` or child index
 - **Type**: the Kotlin class name (Button, TextInput, RowOrCol, etc.)
 - **value**: the view's current value (text content, checked state, etc.) — only for interactive views
@@ -184,7 +185,7 @@ The `find` command searches the view subtree by:
 - **Widget type**: `find "TextInput"` matches all TextInput elements
 - **Action names**: `find "toggle"` matches all views with a `toggle` action (Checkbox, Switch, ToggleButton)
 
-Results include full path and display info:
+Results include the path, as in a snapshot, and display info:
 
 ```
 navigatorView/0/14/2: 2: TextInput = "text" [setValue]
