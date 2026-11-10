@@ -11,6 +11,7 @@ public fun Element.driverChildrenOrNull(): List<Element>? =
  */
 public fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Element.DriverSnapshotOptions()): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
+    val (start, paths) = driverTree()
 
     fun walk(view: Element, depth: Int) {
         if (!options.includeHidden && !(view.shown && view.visible)) return
@@ -23,14 +24,14 @@ public fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Eleme
         }
 
         repeat(depth) { append("  ") }
-        append(view.driverPath())
+        append(paths.getValue(view))
         append(": ")
         appendLine(line)
 
         for (child in view.driverChildren()) walk(child, depth + 1)
     }
 
-    walk(this@driverSnapshot, 0)
+    walk(start, 0)
 }
 
 /**
@@ -40,6 +41,7 @@ public fun Element.driverSnapshot(options: Element.DriverSnapshotOptions = Eleme
  */
 public fun Element.driverFind(query: String, includeHidden: Boolean = false): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
+    val (start, paths) = driverTree()
     val results = mutableListOf<Element>()
     fun walk(view: Element) {
         if (!includeHidden && !(view.shown && view.visible)) return
@@ -52,12 +54,12 @@ public fun Element.driverFind(query: String, includeHidden: Boolean = false): St
         }
         for (child in view.driverChildren()) walk(child)
     }
-    for (child in this@driverFind.driverChildren()) walk(child)
+    for (child in start.driverChildren()) walk(child)
     if (results.isEmpty()) {
         append("No views matching '$query'")
     } else {
         for (view in results) {
-            appendLine("${view.driverPath()}: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
+            appendLine("${paths.getValue(view)}: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
         }
     }
 }
@@ -69,6 +71,7 @@ public fun Element.driverFind(query: String, includeHidden: Boolean = false): St
  */
 public fun Element.driverFindClickable(query: String, includeHidden: Boolean = false): String = buildString {
     val baseActions = setOf("snapshot", "screenshot", "find", "findClickable", "scrollIntoView")
+    val (start, paths) = driverTree()
     val searched = mutableSetOf<Element>()
     val matches = mutableListOf<Element>()
 
@@ -84,7 +87,7 @@ public fun Element.driverFindClickable(query: String, includeHidden: Boolean = f
         }
         for (child in view.driverChildren()) walk(child)
     }
-    for (child in this@driverFindClickable.driverChildren()) walk(child)
+    for (child in start.driverChildren()) walk(child)
 
     val results = mutableSetOf<Element>()
     for (match in matches) {
@@ -102,21 +105,34 @@ public fun Element.driverFindClickable(query: String, includeHidden: Boolean = f
         append("No clickable views matching '$query'")
     } else {
         for (view in results) {
-            appendLine("${view.driverPath()}: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
+            appendLine("${paths.getValue(view)}: ${view.driverDisplay(Element.DriverSnapshotOptions())}")
         }
     }
 }
 
 /**
- * The shortest path [resolveDriverPath] finds this element by from the root: its name, if it's the first view with it
- * (names are deep-searched), or else its parent's path and its index.  Children of the root are just their index.
+ * This view as it is in the tree, with the paths [resolveDriverPath] resolves from the root to each view in the tree.
+ *
+ * A path is the view's name, if it's the first view with that name (names are deep-searched), or else its parent's path
+ * and its index.  They're built down from the root, because a view that another wraps (a recycler's frame, say) has a
+ * [Element.parent] that doesn't list it.  A view that delegates to another (a recycler to its frame) runs that one's
+ * actions, so this may be the delegate, when the view in the tree is the one delegating to it.
  */
-public fun Element.driverPath(): String {
-    val parent = parent ?: return debugName ?: "root"
-    val root = generateSequence<Element>(this) { it.parent }.last()
-    debugName?.let { if (root.findByName(it) === this) return it }
-    val index = parent.driverChildren().indexOf(this)
-    return if (parent.parent == null) "$index" else "${parent.driverPath()}/$index"
+private fun Element.driverTree(): Pair<Element, Map<Element, String>> {
+    val root = generateSequence(this) { it.parent }.last()
+    val paths = HashMap<Element, String>()
+    val names = HashSet<String>()
+    fun walk(view: Element, path: String) {
+        paths[view] = path
+        for ((index, child) in view.driverChildren().withIndex()) {
+            val name = child.debugName
+            walk(child, if (name != null && names.add(name)) name else if (view === root) "$index" else "$path/$index")
+        }
+    }
+    root.debugName?.let { names.add(it) }
+    walk(root, root.debugName ?: "root")
+    val inTree = if (this in paths) this else paths.keys.single { it.underlyingNativeElement === underlyingNativeElement }
+    return inTree to paths
 }
 
 /**

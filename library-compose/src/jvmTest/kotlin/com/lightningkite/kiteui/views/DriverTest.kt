@@ -10,7 +10,10 @@ import com.lightningkite.kiteui.navigation.RouteRendered
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.l2.appBase
+import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.reactive.core.Constant
 import com.lightningkite.kiteui.views.l2.dialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -127,6 +130,9 @@ class DriverTest {
                 row { button { text("Unnamed"); onClick { } } }
                 col { debugName = "twin"; text("First twin") }
                 col { col { debugName = "twin"; button { text("Second twin"); onClick { } } } }
+                sizeConstraints(height = 100.px).recyclerView {
+                    children(Constant(listOf(1, 2)), id = { it }) { item -> button { text { ::content { "Item ${item()}" } }; onClick { } } }
+                }
                 menuButton {
                     requireClick = true
                     opensMenu { button { text("Menu item"); onClick { } } }
