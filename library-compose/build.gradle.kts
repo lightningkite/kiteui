@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
@@ -41,13 +40,13 @@ kotlin {
             kotlin.srcDir("$library/src/commonMain/kotlin")
             resources.srcDir("$library/src/commonMain/resources")
             dependencies {
-                api(libs.reactive)
+                api(rx.reactive)
                 api(libs.kotlinx.serialization.json)
                 api(libs.kotlinx.serialization.properties)
                 api(libs.kotlinx.datetime)
                 api(libs.kotlinx.coroutines.core)
                 api(libs.kotlinx.serialization.uri)
-                api(libs.services.telemetry.shared)
+                api(sa.telemetry.shared)
                 implementation(libs.kotlinx.atomicfu)
             }
         }
@@ -93,6 +92,7 @@ tasks.named<Test>("jvmTest") {
     doFirst { dataDirectory.deleteRecursively() }
 }
 
-lkLibrary("lightningkite", "kiteui") {
-    description.set("KiteUI on Compose Multiplatform, for desktop")
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    pom { description.set("KiteUI on Compose Multiplatform, for desktop") }
 }

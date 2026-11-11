@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -89,6 +88,19 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
-lkLibrary("lightningkite", "kiteui-lottie") {
-    description.set("KiteUI Lottie Animation Support")
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    pom {
+        description.set("KiteUI Lottie Animation Support")
+        scm {
+            connection.set("scm:git:https://github.com/lightningkite/kiteui-lottie.git")
+            developerConnection.set("scm:git:https://github.com/lightningkite/kiteui-lottie.git")
+            url.set("https://github.com/lightningkite/kiteui-lottie")
+        }
+    }
+}
+dokka {
+    dokkaSourceSets.configureEach {
+        sourceLinks.configureEach { remoteUrl.set(uri("https://github.com/lightningkite/kiteui-lottie/tree/master/")) }
+    }
 }

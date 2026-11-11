@@ -18,19 +18,15 @@ kotlinxDatetime = "0.8.0"
 kotlinxSerializationJson = "1.12.0"
 ktorVersion = "3.6.1"
 ktx = "1.18.0"
-lkGradleHelpers = "4.1.2"
 lottie = "6.7.1"
 maplibreAndroidCore = "13.7.1"
 material = "1.14.0"
 media3Exoplayer = "1.11.1"
 miglayoutSwing = "11.4.3"
 photoview = "2.3.0"
-reactive = "7.1.0-prerelease-84-f487d8c"
 robolectric = "4.17"
 roborazzi = "1.75.0"
 roborazziVersion = "1.75.0"
-lightningServer = "5.4.0-prerelease-157-4212ff5ec"
-serviceAbstractions = "1.4.0-prerelease-129-e0cd3f36"
 atomicfu = "0.33.0"
 spatialk = "0.8.0"
 swingxAll = "1.6.5-1"
@@ -77,10 +73,6 @@ ktor-server-cors = { module = "io.ktor:ktor-server-cors", version = { ref = "kto
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version = { ref = "ktorVersion" } }
 ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version = { ref = "ktorVersion" } }
 ktx = { module = "androidx.core:core", version = { ref = "ktx" } }
-lightning-server-core = { module = "com.lightningkite.lightningserver:core", version.ref = "lightningServer" }
-lightning-server-engine-ktor = { module = "com.lightningkite.lightningserver:engine-ktor", version.ref = "lightningServer" }
-lightning-server-typed = { module = "com.lightningkite.lightningserver:typed", version.ref = "lightningServer" }
-lkGradleHelpers = { module = "com.lightningkite:lk-gradle-helpers", version = { ref = "lkGradleHelpers" } }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
 maplibre-android-core = { module = "org.maplibre.gl:android-sdk", version.ref = "maplibreAndroidCore" }
 material = { module = "com.google.android.material:material", version = { ref = "material" } }
@@ -89,10 +81,8 @@ media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version = { re
 media3-ui = { module = "androidx.media3:media3-ui", version = { ref = "media3Exoplayer" } }
 miglayout-swing = { module = "com.miglayout:miglayout-swing", version.ref = "miglayoutSwing" }
 photoview = { module = "com.github.chrisbanes:PhotoView", version = { ref = "photoview" } }
-reactive = { module = "com.lightningkite:reactive", version = { ref = "reactive" } }
 robolectric = { module = "org.robolectric:robolectric", version = { ref = "robolectric" } }
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazziVersion" }
-services-telemetry-shared = { module = "com.lightningkite.services:telemetry-shared", version = { ref = "serviceAbstractions" } }
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version = { ref = "atomicfu" } }
 spatialk-geojson = { module = "org.maplibre.spatialk:geojson", version.ref = "spatialk" }
 swingx-all = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingxAll" }

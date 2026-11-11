@@ -10,6 +10,18 @@ pluginManagement {
     }
 }
 
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
+    }
+    versionCatalogs {
+        create("sa") { from("com.lightningkite.stack:service-abstractions-catalog:unreleased") }
+        create("ls") { from("com.lightningkite.stack:lightning-server-catalog:unreleased") }
+        create("rx") { from("com.lightningkite.stack:reactive-catalog:unreleased") }
+    }
+}
+
 rootProject.name = "kiteui"
 
 include(":library")

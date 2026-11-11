@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lkLibrary
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -75,13 +74,13 @@ kotlin {
 
         val commonMain = getByName("commonMain") {
             dependencies {
-                api(libs.reactive)
+                api(rx.reactive)
                 api(libs.kotlinx.serialization.json)
                 api(libs.kotlinx.serialization.properties)
                 api(libs.kotlinx.datetime)
                 api(libs.kotlinx.coroutines.core)
                 api(libs.kotlinx.serialization.uri)
-                api(libs.services.telemetry.shared)
+                api(sa.telemetry.shared)
                 implementation(libs.kotlinx.atomicfu)
             }
         }
@@ -188,12 +187,10 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
-lkLibrary(
-    "lightningkite",
-    "kiteui",
-    mavenAutomaticRelease = project.findProperty("mavenAutomaticRelease") as? Boolean ?: false
-) {
-    description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
+mavenPublishing {
+    // Deployments are released by hand on the Central Portal.
+    publishToMavenCentral(automaticRelease = false)
+    pom { description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform") }
 }
 // ---------------------------------------------------------------------------------------------
 // Local echo server for the cross-platform network tests (see docs/TESTING_GUIDE.md).

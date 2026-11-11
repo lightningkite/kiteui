@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lkLibrary
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.plugin.serialization)
@@ -30,6 +29,7 @@ kotlin {
     }
 }
 
-lkLibrary("lightningkite", "kiteui") {
-    description.set("KiteUI Camera and Barcode Scanning Support on Compose Multiplatform")
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    pom { description.set("KiteUI Camera and Barcode Scanning Support on Compose Multiplatform") }
 }

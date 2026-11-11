@@ -28,7 +28,6 @@ rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlu
 }
 
 group = "com.lightningkite"
-version = "1.0-SNAPSHOT"
 
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -81,8 +80,8 @@ kotlin {
                 api(project(":library-lottie"))
                 api(project(":library-camera"))
                 api(project(":library-map"))
-                api("com.lightningkite.services:data-shared:1.3.0")
-                api("com.lightningkite.services:database-shared:1.3.0")
+                api(sa.data.shared)
+                api(sa.database.shared)
             }
         }
 

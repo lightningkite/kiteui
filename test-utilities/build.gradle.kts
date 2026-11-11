@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -123,6 +122,7 @@ kotlin {
     }
 }
 
-lkLibrary("lightningkite", "kiteui") {
-    description.set("KiteUI's testing companion.")
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    pom { description.set("KiteUI's testing companion.") }
 }

@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lkLibrary
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.plugin.serialization)
@@ -43,6 +42,7 @@ tasks.named<Test>("jvmTest") {
     systemProperty("java.awt.headless", "true")
 }
 
-lkLibrary("lightningkite", "kiteui") {
-    description.set("KiteUI Lottie Animation Support on Compose Multiplatform")
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    pom { description.set("KiteUI Lottie Animation Support on Compose Multiplatform") }
 }

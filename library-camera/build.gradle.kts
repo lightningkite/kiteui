@@ -1,5 +1,4 @@
 // by Claude
-import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -83,10 +82,8 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
-lkLibrary(
-    "lightningkite",
-    "kiteui",
-    mavenAutomaticRelease = project.findProperty("mavenAutomaticRelease") as? Boolean ?: false
-) {
-    description.set("KiteUI Camera and Barcode Scanning Support")
+mavenPublishing {
+    // Deployments are released by hand on the Central Portal.
+    publishToMavenCentral(automaticRelease = false)
+    pom { description.set("KiteUI Camera and Barcode Scanning Support") }
 }

@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -78,8 +77,8 @@ kotlin {
             kotlin.srcDir(generateMapLibreLayerTypes)
             dependencies {
                 api(project(":library"))
-                api("com.lightningkite.services:data-shared:1.3.0")
-                api("com.lightningkite.services:database-shared:1.3.0")
+                api(sa.data.shared)
+                api(sa.database.shared)
                 api(libs.spatialk.geojson)
                 api(libs.kotlinx.serialization.json)
             }
@@ -117,6 +116,19 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
-lkLibrary("lightningkite", "kiteui-map") {
-    description.set("KiteUI Map Support")
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    pom {
+        description.set("KiteUI Map Support")
+        scm {
+            connection.set("scm:git:https://github.com/lightningkite/kiteui-map.git")
+            developerConnection.set("scm:git:https://github.com/lightningkite/kiteui-map.git")
+            url.set("https://github.com/lightningkite/kiteui-map")
+        }
+    }
+}
+dokka {
+    dokkaSourceSets.configureEach {
+        sourceLinks.configureEach { remoteUrl.set(uri("https://github.com/lightningkite/kiteui-map/tree/master/")) }
+    }
 }

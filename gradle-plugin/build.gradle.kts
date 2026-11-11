@@ -1,5 +1,3 @@
-import com.lightningkite.deployhelpers.*
-
 plugins {
     `java-gradle-plugin`
     kotlin("jvm")
@@ -46,6 +44,7 @@ tasks.register("publishLocally", Copy::class.java) {
     into(rootProject.file("buildSrc/src/main/kotlin"))
 }
 
-lkLibrary("lightningkite", "kiteui") {
-    description.set("Automatically create your routers")
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    pom { description.set("Automatically create your routers") }
 }
