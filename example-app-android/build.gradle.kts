@@ -9,7 +9,7 @@ group = "com.lightningkite"
 android {
     // Must differ from :example-app's namespace; applicationId is what identifies the installed app.
     namespace = "com.lightningkite.mppexampleapp.android"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.lightningkite.kiteuiexample"

@@ -32,7 +32,7 @@ kotlin {
     android {
         namespace = "com.lightningkite.kiteui"
         testNamespace = "com.lightningkite.kiteui.test"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 23
         enableCoreLibraryDesugaring = true
         androidResources { enable = true }

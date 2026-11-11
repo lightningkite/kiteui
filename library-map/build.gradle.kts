@@ -44,7 +44,7 @@ kotlin {
 
     android {
         namespace = "com.lightningkite.kiteui.map"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 21
         enableCoreLibraryDesugaring = true
         compilerOptions {

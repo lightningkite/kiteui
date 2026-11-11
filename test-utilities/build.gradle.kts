@@ -22,7 +22,7 @@ kotlin {
 
     android {
         namespace = "com.lightningkite.kiteui.testing"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 21
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)

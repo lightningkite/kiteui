@@ -15,7 +15,7 @@ kotlin {
 
     android {
         namespace = "com.lightningkite.kiteui.camera"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 21
         enableCoreLibraryDesugaring = true
         compilerOptions {
