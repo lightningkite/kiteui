@@ -249,7 +249,7 @@ public class Nav(
                 checked bind drawerOpen
                 icon(Icon.menu, "Navigation menu")
             }
-            centered.sizeConstraints(height = 2.5.rem, width = 2.5.rem).link {
+            centered.sizeConstraints(height = 2.5.rem, width = 2.5.rem).unpadded.link {
                 rawImage(appLogo, appName)
                 accessibleLabel = "$appName home"
                 to = { context.mainPageNavigator.routes.parse(UrlLikePath(listOf(), mapOf()))!! }

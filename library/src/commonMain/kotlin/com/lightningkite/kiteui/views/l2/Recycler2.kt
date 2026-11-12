@@ -180,12 +180,12 @@ public class Recycler2(
             scroll.scrollTo(
                 left = if (vertical) 0.0 else when (align) {
                     Align.Start -> it.left - lastRecordedPaddingLeft
-                    Align.End -> it.right - previousViewport.width
+                    Align.End -> it.right + lastRecordedPaddingRight - previousViewport.width
                     else -> it.centerX - previousViewport.width / 2
                 },
                 top = if (!vertical) 0.0 else when (align) {
                     Align.Start -> it.top - lastRecordedPaddingTop
-                    Align.End -> it.bottom - previousViewport.height
+                    Align.End -> it.bottom + lastRecordedPaddingBottom - previousViewport.height
                     else -> it.centerY - previousViewport.height / 2
                 },
                 animated = animate
@@ -205,12 +205,12 @@ public class Recycler2(
                         scroll.scrollTo(
                             left = if (vertical) 0.0 else when (align) {
                                 Align.Start -> it.left - lastRecordedPaddingLeft
-                                Align.End -> it.right - previousViewport.width
+                                Align.End -> it.right + lastRecordedPaddingRight - previousViewport.width
                                 else -> it.centerX - previousViewport.width / 2
                             },
                             top = if (!vertical) 0.0 else when (align) {
                                 Align.Start -> it.top - lastRecordedPaddingTop
-                                Align.End -> it.bottom - previousViewport.height
+                                Align.End -> it.bottom + lastRecordedPaddingBottom - previousViewport.height
                                 else -> it.centerY - previousViewport.height / 2
                             },
                             animated = animate
@@ -561,6 +561,7 @@ public class Recycler2(
         var sentinelSize: Double = reallyBig
         var stahp = false
         var needToLayoutFirst = false
+        var pinnedToEnd = false
         override fun measure(
             layout: ProgrammaticLayout,
             inProgress: ProgrammingLayoutInProgress,
@@ -671,11 +672,14 @@ public class Recycler2(
                 }
 
                 log?.log("RUN PLACER IN $viewport, anchor is $anchor")
+                val pulledThisPass = HashMap<Int, MyCell<Any?>>()
                 placer.place(
                     dataRange = data.range,
                     anchor = anchor,
                     existingCells = previousCells,
-                    getNewCell = { index, size ->
+                    // Placers pull an anchor's cells once to measure them and again to place them; both pulls must
+                    // get the same cell, or the first is left on screen as a stale duplicate.
+                    getNewCell = { index, size -> pulledThisPass.getOrPut(index) {
                         if (index !in data.range) throw IllegalStateException("You can't pull a cell not in data range.")
                         val item = data[index]
                         val renderer = rendererSet.renderer(item)
@@ -696,7 +700,7 @@ public class Recycler2(
                             }
                             activeCells += it
                         }).also { usedCells += it }
-                    },
+                    } },
                     previousViewport = previousViewport,
                     viewport = viewport,
                     overdraw = overdraw,
@@ -708,6 +712,11 @@ public class Recycler2(
                 )
                 previousViewport = viewport
                 anchor = null
+            }
+            // A list resting at its end stays there when cells resize or arrive, unless the scroll itself moved.
+            val scrollMoved = if (vertical) viewport.top != previousViewport.top else viewport.left != previousViewport.left
+            if (anchor == null && pinnedToEnd && !scrollMoved && !data.range.isEmpty()) {
+                anchor = RecyclerViewAnchor.SpecificElement(data.range.last, Align.End)
             }
             runPlacer()
 
@@ -842,6 +851,17 @@ public class Recycler2(
                     }
                 }
             }
+
+            // When the start is also in view, the start wins, as the attachment above already decided.
+            val atStart = firstCell?.let {
+                if (vertical) viewport.top <= it.top - inProgress.paddingTop + 1
+                else viewport.left <= it.left - inProgress.paddingLeft + 1
+            } ?: false
+            val atEnd = lastCell?.let {
+                if (vertical) viewport.bottom >= it.bottom + inProgress.paddingBottom - 1
+                else viewport.right >= it.right + inProgress.paddingRight - 1
+            } ?: false
+            pinnedToEnd = atEnd && !atStart
 
             val v = if (vertical) within.copy(height = sentinelSize) else within.copy(width = sentinelSize)
             lastMeasure = v
