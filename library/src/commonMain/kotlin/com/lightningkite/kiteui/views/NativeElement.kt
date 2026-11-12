@@ -451,6 +451,15 @@ public abstract class NativeElementCommonCode internal constructor(override val 
 
     private val job = SupervisorJob()
 
+    private companion object {
+        // Claude: tearing down a page shuts down every element it built, and `job.cancel()` with no cause builds a
+        // JobCancellationException each time. On Kotlin/JS every Throwable captures a JS stack trace, and V8's
+        // capture cost grows with stack depth, so leaving one list-heavy page spent ~5 s in ~270k of these.
+        // Cancelling with a shared cause skips the construction. Safe to share: kotlinx never attaches
+        // suppressed exceptions to a CancellationException root cause, and children reuse the parent's cause.
+        val shutdownCause = CancellationException("Element shut down")
+    }
+
     override val coroutineContext: CoroutineContext = coroutineContextOf(
         job,
         CoroutineExceptionHandler { ctx, thr ->
@@ -500,7 +509,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
     @OverrideOnly
     override fun onShutdown() {
         if (isShutdown) return
-        job.cancel()
+        job.cancel(shutdownCause)
         isShutdown = true
         if (Element.Debugger.countInstances) Element.Debugger.recordShutdown(this)
         if (Element.Debugger.leakDetect) leakDetect()
