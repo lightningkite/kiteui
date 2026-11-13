@@ -407,7 +407,7 @@ public fun ViewWriter.navSidebar(
         debugName = "nav-sidebar"
         nav.appBar(this, menuButtonFor = MediaQuery.MaxWidth(compactBreakpoint))
         expanding.themed(OuterSemantic).frame {
-            applySafeInsets(top = false)
+            applySafeInsets(top = false, bottom = false)
             debugName = "nav and content"
             themed(OuterSemantic).row {
                 shownForQuery(MediaQuery.MinWidth(expandedBreakpoint)).frame {
@@ -461,7 +461,8 @@ public fun ViewWriter.navTopBar(
             inlineLinksFor = MediaQuery.MinWidth(breakpoint),
         )
         expanding.themed(OuterSemantic).frame {
-            applySafeInsets(top = false)
+            // Claude: bottom is reserved once, by the spacer frame below.
+            applySafeInsets(top = false, bottom = false)
             navigatorView(context.pageNavigator)
             nav.drawer(this, closeAbove = breakpoint)
         }
@@ -558,7 +559,8 @@ public fun ViewWriter.navDrawer(
         // MinWidth(0) reads as "at every width" - the drawer is this variant's only nav.
         nav.appBar(this, menuButtonFor = MediaQuery.MinWidth(0.dp))
         expanding.themed(OuterSemantic).frame {
-            applySafeInsets(top = false)
+            // Claude: bottom is reserved once, by the spacer frame below.
+            applySafeInsets(top = false, bottom = false)
             navigatorView(context.pageNavigator)
             nav.drawer(this, closeAbove = null)
         }
