@@ -18,7 +18,7 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("sa") { from("com.lightningkite.stack:service-abstractions-catalog:1000.0.0") }
         create("ls") { from("com.lightningkite.stack:lightning-server-catalog:1000.0.0") }
-        create("rx") { from("com.lightningkite.stack:reactive-catalog:2026.11.11.0956") }
+        create("rx") { from("com.lightningkite.stack:reactive-catalog:1000.0.0") }
     }
 }
 
