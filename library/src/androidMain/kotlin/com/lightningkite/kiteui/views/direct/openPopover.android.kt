@@ -8,7 +8,9 @@ import com.lightningkite.kiteui.views.currentPopover
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.native
 import com.lightningkite.kiteui.views.popoverWriter
+import com.lightningkite.kiteui.views.pushDismissableDialog
 import com.lightningkite.kiteui.views.themed
+import com.lightningkite.reactive.core.Release
 
 public actual fun Element.openPopover(
     preferredDirection: PopoverPreferredDirection,
@@ -16,8 +18,12 @@ public actual fun Element.openPopover(
     createMenu: Frame.() -> Unit
 ) {
     var willRemove: Element? = null
+    var unregister: Release? = null
     popoverWriter(context.overlayFrame) {
+        unregister?.invoke()
+        unregister = null
         willRemove?.let { context.overlayFrame.removeChild(it) }
+        willRemove = null
     }.run {
         willRemove = dismissBackground {
             themeChoice += ThemeDerivation {
@@ -50,6 +56,7 @@ public actual fun Element.openPopover(
             }
         }
     }
+    unregister = context.pushDismissableDialog { context.closePopovers() }
 }
 
 public fun Frame.configurePopoverLayout(
