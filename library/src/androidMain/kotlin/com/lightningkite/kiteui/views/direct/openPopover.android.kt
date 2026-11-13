@@ -56,7 +56,7 @@ public actual fun Element.openPopover(
             }
         }
     }
-    unregister = context.pushDismissableDialog { context.closePopovers() }
+    unregister = context.pushDismissableDialog { context.currentPopover?.close() }
 }
 
 public fun Frame.configurePopoverLayout(
