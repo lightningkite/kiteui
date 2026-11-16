@@ -32,6 +32,86 @@ class LayoutTest {
         assertTrue(breakAllHeight < normalHeight, "break-all should fill its lines, taking $breakAllHeight against $normalHeight")
     }
 
+    // CSS gives a line of text its whole line-height, half the leading above and half below, even when it's the only line.
+    @Test
+    fun aLineOfTextTakesItsWholeLineHeight() = runKiteUiTest {
+        lateinit var label: TextView
+        lateinit var field: TextInput
+        lateinit var area: TextArea
+        showKiteUi {
+            col {
+                label = text("One line")
+                field = unpadded.textInput { content.value = "One line" }
+                area = unpadded.textArea { content.value = "One line" }
+            }
+        }
+        val lineHeight = testTheme.font.size.value * testTheme.font.lineSpacingMultiplier
+        fun height(view: NativeElement) = runOnUiThread { view.screenRectangle()!!.let { it.bottom - it.top } }
+        assertEquals(lineHeight, height(label), 0.5, "text")
+        assertEquals(lineHeight, height(field), 0.5, "text input")
+        // The web's textarea is sized by a hidden copy of its text with 2px padding all round, while the textarea's own
+        // padding is reset to none, so it's 4px taller than its lines.
+        assertEquals(lineHeight + 4, height(area), 0.5, "text area")
+    }
+
+    // Compose caps a single-line field at its line's height as Skia reports it, which for some fonts and sizes (the
+    // default font at 14px and 1.5, Inter at 16px and 1.5) is a pixel short of the line-height the text is laid out in.
+    @Test
+    fun aSingleLineFieldIsAsTallAsItsLineHeight() = runKiteUiTest {
+        lateinit var field: TextInput
+        showKiteUi {
+            col {
+                themed(ThemeDerivation { it.copy(id = "lines", font = it.font.copy(size = 14.px, lineSpacingMultiplier = 1.5)).withoutBack }).col {
+                    field = unpadded.textInput { content.value = "One line" }
+                }
+            }
+        }
+        val height = runOnUiThread { field.screenRectangle()!!.let { it.bottom - it.top } }
+        assertEquals(21.0, height, 0.5)
+    }
+
+    // The web centers at a half pixel and paints there rounded to the nearest, half up.
+    @Test
+    fun centeringLeavesTheOddPixelAbove() = runKiteUiTest {
+        lateinit var frame: Frame
+        lateinit var box: Frame
+        lateinit var rowBox: Frame
+        showKiteUi {
+            col {
+                frame = sizeConstraints(width = 100.px, height = 33.px).frame {
+                    box = centered.sizeConstraints(width = 20.px, height = 20.px).frame { }
+                }
+                sizeConstraints(height = 33.px).row {
+                    rowBox = centered.sizeConstraints(width = 20.px, height = 20.px).frame { }
+                }
+            }
+        }
+        val frameTop = runOnUiThread { frame.screenRectangle()!!.top }
+        assertEquals(7.0, runOnUiThread { box.screenRectangle()!!.top } - frameTop, "in a frame")
+        assertEquals(40.0, runOnUiThread { box.screenRectangle()!!.left } - runOnUiThread { frame.screenRectangle()!!.left }, "across a frame")
+        assertEquals(33.0 + 7.0, runOnUiThread { rowBox.screenRectangle()!!.top } - frameTop - testTheme.gap.value, "in a row")
+    }
+
+    // While empty, Compose sizes a field's line from the font's own line height, which can be a few pixels more.
+    @Test
+    fun anEmptyFieldIsAsTallAsItsLineHeight() = runKiteUiTest {
+        val sizes = listOf(12, 13, 14, 15, 16, 17, 18, 20, 24)
+        val fields = arrayOfNulls<TextInput>(sizes.size)
+        showKiteUi {
+            col {
+                sizes.forEachIndexed { i, size ->
+                    themed(ThemeDerivation { it.copy(id = "lines$size", font = it.font.copy(size = size.px, lineSpacingMultiplier = 1.5)).withoutBack }).col {
+                        fields[i] = unpadded.textInput { hint = "Shown while empty" }
+                    }
+                }
+            }
+        }
+        sizes.forEachIndexed { i, size ->
+            val height = runOnUiThread { fields[i]!!.screenRectangle()!!.let { it.bottom - it.top } }
+            assertEquals(size * 1.5, height, 0.5, "at ${size}px")
+        }
+    }
+
     @Test
     fun textWrapsInsideAWrappingRow() = runKiteUiTest {
         val long = "word ".repeat(80)
@@ -124,6 +204,102 @@ class LayoutTest {
         assertEquals(3.0, (three / one).toDouble(), 0.05)
     }
 
+    // CSS flex-grow factors that add up to less than 1 take only that fraction of the free space.
+    @Test
+    fun weightsUnderOneLeaveSpaceUnused() = runKiteUiTest {
+        showKiteUi {
+            col {
+                sizeConstraints(width = 400.px).row {
+                    gap = 0.px
+                    weight(0.25f).text("Quarter")
+                    weight(0.5f).text("Half")
+                }
+            }
+        }
+        assertEquals(100.dp, onNodeWithText("Quarter").getUnclippedBoundsInRoot().width)
+        assertEquals(200.dp, onNodeWithText("Half").getUnclippedBoundsInRoot().width)
+    }
+
+    // The web's space has a min-width of the theme's gap, and CSS lets a min-width beat a smaller width.
+    @Test
+    fun aSpaceIsNeverNarrowerThanTheGap() = runKiteUiTest {
+        showKiteUi {
+            row {
+                gap = 0.px
+                text("Before")
+                sizeConstraints(width = 2.px).space()
+                text("After")
+            }
+        }
+        val before = onNodeWithText("Before").getUnclippedBoundsInRoot()
+        val after = onNodeWithText("After").getUnclippedBoundsInRoot()
+        assertEquals(testTheme.gap.toDp(), after.left - before.right)
+    }
+
+    // In CSS a min size beats a max size, which beats an explicit size.
+    @Test
+    fun minAndMaxSizesBeatAnExplicitSize() = runKiteUiTest {
+        showKiteUi {
+            col {
+                sizeConstraints(width = 50.px, minWidth = 80.px).text("Min")
+                sizeConstraints(width = 300.px, maxWidth = 120.px).text("Max")
+                sizeConstraints(width = 300.px, minWidth = 90.px, maxWidth = 60.px).text("Both")
+                sizeConstraints(minWidth = 90.px, maxWidth = 60.px).text("NoWidth")
+                sizeConstraints(height = 10.px, minHeight = 40.px).text("MinHeight")
+                sizeConstraints(height = 300.px, maxHeight = 30.px).text("MaxHeight")
+            }
+        }
+        fun bounds(text: String) = onNodeWithText(text).getUnclippedBoundsInRoot()
+        assertEquals(80.dp, bounds("Min").width)
+        assertEquals(120.dp, bounds("Max").width)
+        assertEquals(90.dp, bounds("Both").width)
+        assertEquals(90.dp, bounds("NoWidth").width)
+        assertEquals(40.dp, bounds("MinHeight").height)
+        assertEquals(30.dp, bounds("MaxHeight").height)
+    }
+
+    // As in CSS, an element's own min size beats the space its parent has: it overflows the parent, from the start.
+    @Test
+    fun aMinSizeOverflowsItsParent() = runKiteUiTest {
+        lateinit var parent: Frame
+        lateinit var min: Frame
+        lateinit var explicit: Frame
+        showKiteUi {
+            col {
+                sizeConstraints(height = 48.px).unpadded.frame {
+                    parent = this
+                    sizeConstraints(minHeight = 52.px).unpadded.frame { min = this }
+                }
+                sizeConstraints(height = 48.px).unpadded.frame {
+                    sizeConstraints(height = 10.px, minHeight = 52.px).unpadded.frame { explicit = this }
+                }
+            }
+        }
+        val parentBounds = runOnUiThread { parent.screenRectangle()!! }
+        val minBounds = runOnUiThread { min.screenRectangle()!! }
+        val explicitBounds = runOnUiThread { explicit.screenRectangle()!! }
+        assertEquals(48.0, parentBounds.height, 0.5)
+        assertEquals(parentBounds.top, minBounds.top, 0.5)
+        assertEquals(52.0, minBounds.height, 0.5)
+        assertEquals(52.0, explicitBounds.height, 0.5)
+    }
+
+    // The web's gap minimum is a class's min-width, which the space's own (inline) min-width replaces.
+    @Test
+    fun aSpacesOwnMinimumReplacesTheGap() = runKiteUiTest {
+        showKiteUi {
+            row {
+                gap = 0.px
+                text("Before")
+                sizeConstraints(minWidth = 4.px).space()
+                text("After")
+            }
+        }
+        val before = onNodeWithText("Before").getUnclippedBoundsInRoot()
+        val after = onNodeWithText("After").getUnclippedBoundsInRoot()
+        assertEquals(4.dp, after.left - before.right)
+    }
+
     @Test
     fun aspectRatioFollowsAHeightStretchedByARow() = runKiteUiTest {
         var box: Frame? = null
@@ -178,4 +354,70 @@ class LayoutTest {
         // shownWhen reacts on the Swing thread, which waitForIdle doesn't track.
         waitUntil { onAllNodesWithText("Swapped in", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
     }
+
+    // On the web, a scroller with no size limit grows to its content; Compose throws on an unbounded scroller.
+    @Test
+    fun nestedScrollersGrowToTheirContent() = runKiteUiTest {
+        lateinit var innerCol: RowOrCol
+        lateinit var innerRow: RowOrCol
+        showKiteUi {
+            col {
+                sizeConstraints(height = 300.px).scrolling.col {
+                    // Sized on the other axis only because a bare `scrolling` here is NativeElement's internal member.
+                    innerCol = sizeConstraints(width = 200.px).scrolling.col {
+                        gap = 0.px
+                        padding = 0.px
+                        for (i in 0 until 20) sizeConstraints(height = 40.px).text("Row $i")
+                    }
+                }
+                sizeConstraints(width = 300.px).scrollingHorizontally.row {
+                    innerRow = sizeConstraints(height = 40.px).scrollingHorizontally.row {
+                        gap = 0.px
+                        padding = 0.px
+                        for (i in 0 until 20) sizeConstraints(width = 40.px).text("Column $i")
+                    }
+                }
+            }
+        }
+        val colHeight = runOnUiThread { innerCol.screenRectangle()!!.let { it.bottom - it.top } }
+        assertEquals(800.0, colHeight, 1.0)
+        val rowWidth = runOnUiThread { innerRow.screenRectangle()!!.let { it.right - it.left } }
+        assertEquals(800.0, rowWidth, 1.0)
+    }
+
+    // Browsers ignore negative padding; Compose throws on it, which took down the whole window.
+    @Test
+    fun negativePaddingCountsAsNone() = runKiteUiTest {
+        showKiteUi {
+            col {
+                frame {
+                    paddingByEdge = Edges(left = 4.px, top = 0.px, bottom = 0.px, right = (-8).px)
+                    text("Inside")
+                }
+            }
+        }
+        assertEquals(4.dp, onNodeWithText("Inside").getUnclippedBoundsInRoot().left)
+    }
+
+    // As on the web, hovering recolors a button but doesn't pad one whose theme leaves it unpadded.
+    @Test
+    fun hoverDoesNotAddPadding() = runKiteUiTest {
+        showKiteUi {
+            col {
+                themed(UnpaddedClickables).col {
+                    button { text("Item"); onClick { } }
+                }
+            }
+        }
+        val before = onNodeWithText("Item").getUnclippedBoundsInRoot()
+        onNodeWithText("Item").performMouseInput { moveTo(center) }
+        waitForIdle()
+        assertEquals(before, onNodeWithText("Item").getUnclippedBoundsInRoot())
+    }
+}
+
+private object UnpaddedClickables : Semantic("unpadded-clickables") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+        semanticOverrides = SemanticOverrides(ClickableSemantic.override { it.withoutBack }),
+    )
 }

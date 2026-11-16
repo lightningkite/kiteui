@@ -97,12 +97,12 @@ kiteui-drive <app> root find "query"               # Find views by name/value/ty
 kiteui-drive <app> root findClickable "query"      # Find clickable ancestors of matching views
 kiteui-drive <app> <path> snapshot                 # Snapshot a single element subtree
 kiteui-drive <app> navigate /some/route            # Navigate to URL path
-kiteui-drive <app> url                             # Get current page URL
-kiteui-drive <app> back back                       # Go back in navigation
+kiteui-drive <app> url                             # Get the URL the web would show: the topmost page with a route
+kiteui-drive <app> back back                       # Close the top dialog, or else go back in navigation
 kiteui-drive <app> logs 50                         # Get recent log entries
 
 # Mocking external services (file picker, geolocation, etc.)
-kiteui-drive <app> mock file <base64> <mime> <name> # Queue a mock file for next requestFile()
+kiteui-drive <app> mock file <base64> <mime> <name> # Queue a mock file for the next file request (requestFiles takes all)
 kiteui-drive <app> mock fileNull                    # Queue a null (user cancelled) file response
 kiteui-drive <app> mock geolocation <lat> <lon> [accuracy]  # Queue a mock geolocation
 kiteui-drive <app> mock calls                       # Show recorded external service calls
@@ -151,16 +151,17 @@ Views with `debugName` are directly addressable. Views without one use their num
 The `snapshot` command returns a text tree showing the view hierarchy:
 
 ```
-submitBtn: Button [click]
-  0: TextView = "Submit"
-form: RowOrCol
-  email: TextInput = "user@example.com" [setValue, submit]
-  password: TextInput = "" [setValue, submit]
-  0: Checkbox = "false" [toggle, setValue]
+submitBtn: submitBtn: Button [click]
+  submitBtn/0: 0: TextView = "Submit"
+form: form: RowOrCol
+  email: email: TextInput = "user@example.com" [setValue, submit]
+  password: password: TextInput = "" [setValue, submit]
+  form/2: 2: Checkbox = "false" [toggle, setValue]
 ```
 
-Each line shows: `name: Type = "value" [actions] (flags)`
+Each line shows: `path: name: Type = "value" [actions] (flags)`, as `find` prints its results.
 
+- **path**: the view's path from the root, usable as given in any command.  It's the view's `debugName` if no view before it has that name, or else its parent's path and its child index.  The root itself is `root` (or its name).
 - **name**: `debugName` or child index
 - **Type**: the Kotlin class name (Button, TextInput, RowOrCol, etc.)
 - **value**: the view's current value (text content, checked state, etc.) — only for interactive views
@@ -184,7 +185,7 @@ The `find` command searches the view subtree by:
 - **Widget type**: `find "TextInput"` matches all TextInput elements
 - **Action names**: `find "toggle"` matches all views with a `toggle` action (Checkbox, Switch, ToggleButton)
 
-Results include full path and display info:
+Results include the path, as in a snapshot, and display info:
 
 ```
 navigatorView/0/14/2: 2: TextInput = "text" [setValue]
@@ -216,6 +217,7 @@ This is especially useful for AI agents and E2E tests — instead of finding a t
 | Slider | `setValue` (number) | current number |
 | Select | `setValue` | selected display text |
 | Link | `click` | — |
+| DismissBackground (a dialog's backdrop), or what blocks behind an open menu | `dismiss` | — |
 | Any view | `snapshot`, `screenshot`, `find`, `findClickable`, `scroll`, `scrollIntoView` | — |
 | View with dragData | `getDragData` | — |
 | View with dropTarget | `drop` (base64 drag data) | — |
@@ -234,7 +236,7 @@ Queues a file for the next `requestFile()`, `requestFiles()`, `requestCaptureSel
 mock	file	<base64-bytes>	<mimeType>	<fileName>
 ```
 
-Multiple files can be queued — they're consumed FIFO.
+Multiple files can be queued, and are consumed in order: a single-file request takes the next one, and a multi-file request (`requestFiles()`, as a multi-select picker) takes all of them, so queue exactly the files one pick should return.  A queued `fileNull` is a cancellation: a multi-file request leaves it out, so with nothing else queued it returns no files.
 
 ### mock fileNull
 
@@ -376,8 +378,8 @@ Requires: relay server running + app connected. Same `UiTestScope` API — tests
 | `drop(target, data)` | Drop base64 drag data onto view |
 | **Navigation** | |
 | `navigate(route)` | Navigate to URL path |
-| `url()` | Get current page URL |
-| `back()` | Go back in navigation |
+| `url()` | Get the URL the web would show: the topmost page with a route |
+| `back()` | Close the top dialog, or else go back in navigation |
 | **Mocking** | |
 | `mockFile(bytes, mime, name)` | Queue a mock file for next file picker call |
 | `mockFileCancel()` | Queue a null (cancelled) file picker response |

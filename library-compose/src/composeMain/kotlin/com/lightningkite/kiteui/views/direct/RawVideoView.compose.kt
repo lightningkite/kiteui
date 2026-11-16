@@ -40,8 +40,11 @@ import io.github.kdroidfilter.composemediaplayer.InitialPlayerState
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerSurface
 import io.github.kdroidfilter.composemediaplayer.createVideoPlayerState
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
@@ -86,6 +89,7 @@ public actual class RawVideoView actual constructor(
         launch {
             snapshotFlow { player.hasMedia && !player.isLoading }.collect { ready ->
                 if (!ready) return@collect
+                readTimes()
                 loadState.state = ReactiveState(Unit)
                 if (playWhenReady) {
                     playWhenReady = false
@@ -93,17 +97,30 @@ public actual class RawVideoView actual constructor(
                 }
             }
         }
-        launch { snapshotFlow { player.currentTime }.collect { position.value = it.seconds } }
-        launch { snapshotFlow { player.isPlaying }.collect { isPlaying.value = it } }
-        launch { snapshotFlow { player.duration.takeIf { it > 0 } }.collect { duration.value = it } }
         launch { snapshotFlow { player.volume }.collect { currentVolume.value = it } }
-        // The macOS player never calls onPlaybackEnded, so watch for playback stopping at the end instead.
-        // With loop on, the player seeks back to the start without stopping, so like the web's "ended" this doesn't fire.
+        // Claude: currentTime and duration aren't snapshot state on Linux, where reading them blocks on GStreamer
+        // (runBlocking), which inside a snapshotFlow ran other coroutines in its read-only snapshot.  So they're
+        // read out here and polled while playing, as Android does.
         launch {
-            snapshotFlow { !player.isPlaying && player.duration > 0 && player.currentTime >= player.duration }.collect { ended ->
-                if (ended) completed.invokeAll()
+            snapshotFlow { player.isPlaying }.collectLatest { playing ->
+                isPlaying.value = playing
+                readTimes()
+                // The macOS player never calls onPlaybackEnded, so watch for playback stopping at the end instead.
+                // With loop on, the player seeks back to the start without stopping, so like the web's "ended" this
+                // doesn't fire.
+                val total = duration.value
+                if (!playing && total != null && position.value.toDouble(DurationUnit.SECONDS) >= total) completed.invokeAll()
+                while (playing) {
+                    delay(50.milliseconds)
+                    readTimes()
+                }
             }
         }
+    }
+
+    private fun readTimes() {
+        duration.value = player.duration.takeIf { it > 0 }
+        position.value = player.currentTime.seconds
     }
 
     public actual val currentTime: MutableReactive<Duration> = position.withWrite { to ->
@@ -111,6 +128,8 @@ public actual class RawVideoView actual constructor(
         val total = player.duration
         check(total > 0) { "Can't seek $source before its duration is known; wait for state to be ready" }
         player.seekTo((to.toDouble(DurationUnit.SECONDS) / total * 1000).toFloat())
+        // Claude: time is only polled while playing, so a seek while paused shows here directly.
+        position.value = to
     }
 
     @Deprecated("Use currentTime instead")
