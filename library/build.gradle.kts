@@ -160,3 +160,4 @@ dependencies {
 lkLibrary("lightningkite", "kiteui") {
     description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
 }
+version = "6.0.1-version6ioswebaudio-97"

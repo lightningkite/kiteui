@@ -37,3 +37,4 @@ tasks.create("publishLocally", Copy::class.java) {
 lkLibrary("lightningkite", "kiteui") {
     description.set("Automatically create your routers")
 }
+version = "6.0.1-version6ioswebaudio-97"
