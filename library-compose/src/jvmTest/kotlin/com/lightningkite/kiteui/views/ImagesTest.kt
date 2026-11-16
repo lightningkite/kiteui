@@ -152,6 +152,31 @@ class ImagesTest {
     }
 
     @Test
+    fun maxSizeDoesNotGrowARow() = runKiteUiTest {
+        val views = mutableListOf<RawImageViewLike>()
+        val root = showKiteUi {
+            col {
+                row {
+                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px).rawImage(vector, "vector") { views += this }
+                    text("label")
+                }
+                row {
+                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px).rawImage(ImageResource("common/images/test-pattern.png"), "png") { views += this }
+                    text("label")
+                }
+            }
+        }
+        waitForLoad(views)
+        saveScreenshot(root, "image-max-size-rows")
+
+        // Like an <img> with max-width and max-height: the row is as tall as its text (or the 20dp image), not 100dp.
+        for (name in listOf("vector", "png")) {
+            val box = onNodeWithContentDescription(name).getUnclippedBoundsInRoot()
+            assertTrue(box.height < 30.dp, "$name's row grew to ${box.height}")
+        }
+    }
+
+    @Test
     fun remoteImagesAreCachedPerStrategy() = runKiteUiTest {
         val current = Signal<ImageRemote?>(null)
         var view: RawImageView? = null
@@ -514,5 +539,30 @@ class ImagesTest {
         // Centered, this point would be 80% of the way out; from the focus it's the first stop.
         assertEquals('W', at(60.0, 50.0), "the focus")
         assertEquals('B', at(140.0, 50.0), "near the edge")
+    }
+
+    // As in the web's SVG, a vector path's gradient spans that path's own bounds, whatever size the vector is drawn at.
+    @Test
+    fun vectorGradientsSpanTheirPath() = runKiteUiTest {
+        val gradient = ImageVector(
+            50.px, 50.px, viewBoxMinX = 100, viewBoxMinY = 100, viewBoxWidth = 200, viewBoxHeight = 200,
+            paths = listOf(
+                ImageVector.Path(
+                    fillColor = LinearGradient(listOf(GradientStop(0f, Color.red), GradientStop(1f, Color.blue))),
+                    path = "M150,150 L250,150 L250,250 L150,250 Z",
+                ),
+            ),
+        )
+        val views = mutableListOf<RawImageViewLike>()
+        val root = showKiteUi {
+            col {
+                sizeConstraints(width = 200.px, height = 200.px).rawImage(gradient, "gradient", ImageScaleType.Stretch) { views += this }
+            }
+        }
+        waitForLoad(views)
+        val shot = saveScreenshot(root, "vector-gradient")
+        val box = onNodeWithContentDescription("gradient").getUnclippedBoundsInRoot()
+        // The path covers the middle half of the 200dp image.
+        assertEquals("RB", "${shot.colorAt(root, box, 52.dp, 100.dp)}${shot.colorAt(root, box, 148.dp, 100.dp)}")
     }
 }

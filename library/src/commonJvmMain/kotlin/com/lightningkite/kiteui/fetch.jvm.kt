@@ -70,14 +70,16 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
 
                     null -> {}
                 }
+                // Ktor reports progress from its IO threads.  As on the web, deliver it on the main thread, where
+                // callers set the signals their views read.
                 onUploadProgress?.let {
                     onUpload { a, b ->
-                        it(a, b ?: -1)
+                        withContext(Dispatchers.Main) { it(a, b ?: -1) }
                     }
                 }
                 onDownloadProgress?.let {
                     onDownload { a, b ->
-                        it(a, b ?: -1)
+                        withContext(Dispatchers.Main) { it(a, b ?: -1) }
                     }
                 }
             }

@@ -19,6 +19,8 @@ public actual class ExternalLink actual constructor(context: ElementContext) : N
         }
     public actual var newTab: Boolean = false
 
+    override val handCursor: Boolean get() = true
+
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier.clickable(
         interactionSource = interactions.source,
         indication = null,
