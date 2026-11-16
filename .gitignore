@@ -30,3 +30,4 @@ screenshot-*.png
 .env
 tmp
 secrets.properties
+.swiftpm-locks

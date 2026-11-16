@@ -1,5 +1,0 @@
-framework module MapLibre {
-  umbrella header "MapLibre.h"
-  export *
-  module * { export * }
-}
