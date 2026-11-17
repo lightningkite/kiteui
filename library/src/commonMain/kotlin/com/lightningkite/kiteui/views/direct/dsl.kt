@@ -66,10 +66,7 @@ public inline fun ElementWriter.image(setup: ImageView.() -> Unit = {}): ImageVi
 
 public inline fun ElementWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): ZoomableImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return ZoomableImageView(this).apply {
-        setup()
-        postSetup()
-    }
+    return write(ZoomableImageView(context), setup)
 }
 
 public inline fun ElementWriter.rawImage(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageView.() -> Unit = {}): RawImageView {
