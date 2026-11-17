@@ -106,6 +106,8 @@ object RootPage : Page {
                 linkPage { Recycler2TestPage }
                 linkPage { RecyclerFilterTestPage }
                 linkPage { HorizontalRecyclerViewPage }
+                linkPage { WindowedListPage }
+                linkPage { WindowedListTypesPage }
                 linkPage { InfiniteImagesPage }
                 linkPage { R2VPPage }
                 linkPage { Recycler2PullToRefreshTest }

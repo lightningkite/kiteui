@@ -46,6 +46,8 @@ public actual class Checkbox actual constructor(context: ElementContext) : Nativ
     // The web forces a checkbox's padding to 0; it's a fixed-size box.
     override fun refreshPadding() {}
 
+    override val handCursor: Boolean get() = true
+
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier.toggleable(
         value = isChecked,
         interactionSource = interactions.source,
@@ -65,7 +67,7 @@ public actual class Checkbox actual constructor(context: ElementContext) : Nativ
         // borders of a small box rotated 45 degrees.
         Spacer(
             modifier
-                .requiredSize(25.dp)
+                .requiredSize(sizeConstraints.clampSize(25.dp, 25.dp))
                 .alpha(if (checked) 1f else 0.75f)
                 .drawBehind {
                     val border = 0.1.rem.toDp().toPx()

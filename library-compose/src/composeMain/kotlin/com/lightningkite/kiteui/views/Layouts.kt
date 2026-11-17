@@ -25,7 +25,8 @@ private val IntrinsicMeasurable.element: NativeElement get() = (parentData as La
 private fun Align?.stretches() = this == null || this == Align.Stretch
 
 private fun Align?.offset(free: Int): Int = when (this) {
-    Align.Center -> free / 2
+    // The web centers at the half pixel and paints rounded half up, as Compose's own Alignment.Center does.
+    Align.Center -> (free / 2f).roundToInt()
     Align.End -> free
     else -> 0
 }
@@ -110,7 +111,8 @@ internal fun linearMeasurePolicy(vertical: Boolean, gap: Int, ignoreWeights: Boo
             if (part > 0f) (natural(i) * part).roundToInt() else 0
         }
         var remaining = if (available == Infinity) 0 else (available - sizes.sum() - gaps(children)).coerceAtLeast(0)
-        var weightLeft = children.indices.sumOf { weight(it).toDouble() }.toFloat()
+        // As CSS's flex-grow, weights adding up to less than 1 share out only that fraction of the space.
+        var weightLeft = children.indices.sumOf { weight(it).toDouble() }.toFloat().coerceAtLeast(1f)
         for (i in children.indices) {
             val w = weight(i)
             if (w <= 0f) continue

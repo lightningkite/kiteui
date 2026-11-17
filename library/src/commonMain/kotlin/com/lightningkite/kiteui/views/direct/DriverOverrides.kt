@@ -100,9 +100,8 @@ public fun Slider.sliderDriverActions(): AiDriver.Actions = mapOf(
 // --- Link ---
 
 public fun Link.linkDriverActions(): AiDriver.Actions = buildMap {
-    if (to != null) put("click") {
-        val page = to?.invoke() ?: throw DriverActionException("no navigation target on this link")
-        if (resetsStack) onNavigator.reset(page) else onNavigator.navigate(page)
+    if (to != null || action != null) put("click") {
+        performClick()
         "OK"
     }
 }
@@ -118,6 +117,19 @@ public fun MenuButton.menuDriverActions(
             context.overlayFrame.driverChildren().lastOrNull()?.driverSnapshot() ?: "opened"
         }
     }
+}
+
+// --- CoordinatorDragHandle ---
+
+public fun CoordinatorDragHandle.dragHandleDriverActions(click: (() -> Unit)?): AiDriver.Actions = buildMap {
+    click?.let { fn -> put("click") { fn(); "OK" } }
+}
+
+// --- DismissBackground ---
+
+// "dismiss", not "click": findClickable would lead from a dialog's text to its background, though clicking the text doesn't dismiss.
+public fun DismissBackground.dismissBackgroundDriverActions(onClick: (suspend () -> Unit)?): AiDriver.Actions = buildMap {
+    onClick?.let { action -> put("dismiss") { action(); "OK" } }
 }
 
 // --- AutoCompleteTextField ---

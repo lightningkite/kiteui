@@ -62,8 +62,11 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.graphics.Brush
+import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.sin
 import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.vector.ImageVector as ComposeImageVector
 
@@ -225,14 +228,17 @@ private class NaturalSize(val painter: Painter?) : MeasurePolicy {
         return layout(width, height) {}
     }
 
+    // Claude: the size given here is usually a cap (e.g. a max size above), not a fixed one, so like Compose's Image
+    // these shrink to fit it but never grow past the natural size.  Otherwise a small icon under maxWidth = 12.rem
+    // made its row 12rem tall.
     override fun IntrinsicMeasureScope.maxIntrinsicWidth(measurables: List<IntrinsicMeasurable>, height: Int): Int {
         val natural = painter?.intrinsicSize ?: return 0
-        return if (height == Constraints.Infinity) natural.width.roundToInt() else (height * natural.width / natural.height).roundToInt()
+        return (natural.width * min(1f, height / natural.height)).roundToInt()
     }
 
     override fun IntrinsicMeasureScope.maxIntrinsicHeight(measurables: List<IntrinsicMeasurable>, width: Int): Int {
         val natural = painter?.intrinsicSize ?: return 0
-        return if (width == Constraints.Infinity) natural.height.roundToInt() else (width * natural.height / natural.width).roundToInt()
+        return (natural.height * min(1f, width / natural.width)).roundToInt()
     }
 
     override fun IntrinsicMeasureScope.minIntrinsicWidth(measurables: List<IntrinsicMeasurable>, height: Int): Int =
@@ -260,7 +266,28 @@ private fun ImageVector.toCompose(): ComposeImageVector = ComposeImageVector.Bui
     for (p in paths) addPath(
         pathData = PathParser().parsePathString(p.path).toNodes(),
         pathFillType = PathFillType.EvenOdd,
-        fill = p.fillColor?.toBrush(),
+        fill = when (val fill = p.fillColor) {
+            // A vector's brushes get the drawn size, not the viewport's, so gradients are placed here, across the
+            // path's bounds as SVG's objectBoundingBox does: the web's gradient is rotated about the box's center.
+            is LinearGradient -> {
+                val bounds = PathParser().parsePathString(p.path).toPath().getBounds()
+                val half = Offset(cos(fill.angle.radians) * bounds.width / 2, sin(fill.angle.radians) * bounds.height / 2)
+                Brush.linearGradient(
+                    *fill.stops.map { it.ratio to it.color.toCompose() }.toTypedArray(),
+                    start = bounds.center - half,
+                    end = bounds.center + half,
+                )
+            }
+            is RadialGradient -> {
+                val bounds = PathParser().parsePathString(p.path).toPath().getBounds()
+                Brush.radialGradient(
+                    *fill.stops.map { it.ratio to it.color.toCompose() }.toTypedArray(),
+                    center = bounds.center,
+                    radius = bounds.minDimension / 2,
+                )
+            }
+            else -> fill?.toBrush()
+        },
         stroke = p.strokeColor?.let { SolidColor(it.toCompose()) },
         strokeLineWidth = (p.strokeWidth ?: 0.0).toFloat(),
         strokeLineCap = when (p.strokeCap) {

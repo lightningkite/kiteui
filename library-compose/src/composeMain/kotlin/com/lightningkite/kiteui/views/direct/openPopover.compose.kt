@@ -105,6 +105,11 @@ internal class PopoverLayer(
         blocking = false
     }
 
+    // Like a DismissBackground's, which is what blocks a popover on Android and iOS.
+    override val driverActions: AiDriver.Actions get() = super.driverActions + buildMap {
+        if (blocking) put("dismiss") { close(); "OK" }
+    }
+
     // TODO: focusing the popover's first focusable child, and following the anchor when it scrolls.
     @Composable
     override fun Content(modifier: Modifier) {

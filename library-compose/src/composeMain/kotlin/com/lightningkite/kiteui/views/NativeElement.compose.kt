@@ -33,7 +33,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -43,6 +46,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
+import androidx.compose.ui.node.currentValueOf
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.layout
@@ -59,9 +70,12 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
+import androidx.compose.ui.unit.coerceAtLeast
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.lerp
 import com.lightningkite.kiteui.InternalKiteUi
@@ -395,7 +409,6 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
         // modifier), and those lists are reused by other nodes, whose modifiers (and so elements, and their
         // subtrees) then outlive them.  See the plan's known issues and PureComposeRetentionTest.
         var m = modifier
-            .onPlaced { coordinates = it }
             .bringIntoViewRequester(bringIntoView)
             .focusRequester(focusRequester)
         if (collapsible) m = m
@@ -413,6 +426,9 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
                 layout(width, height) { placeable.place(0, 0) }
             }
         sizeConstraints?.let { m = m.sized(it) }
+        // Inside the sizing, so that like the web's getBoundingClientRect this is the element's own box, even where it
+        // overflows the space its parent gave it.
+        m = m.onPlaced { coordinates = it }
         val takesInput = takesInput
         m = m.then(inputModifier(takesInput)).then(HoverElement(this, takesInput))
         val theme = currentTheme
@@ -430,9 +446,10 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             val pose = (if (screen?.entering == true) screen.transition.entryTransform else screen?.transition?.exitTransform) ?: Transformation()
             val fade = if (screen?.transition?.fade == true) 1f - away else 1f
             alpha = fade * if (visible) a?.alpha?.value ?: targetOpacity.toFloat() else 0f
-            shadowElevation = (a?.elevation?.value ?: theme.elevation).toPx()
+            // A clipping layer would cut off the shadow, so an elevated element clips its content as it draws it
+            // instead.  Clipping that way costs more, about 8% on the scroll benchmark when every element does it.
             shape = d?.shape ?: RectangleShape
-            this.clip = clip
+            this.clip = clip && (a?.elevation?.value ?: theme.elevation) == 0.dp
             val t = a?.translation?.value ?: transform.translation
             // The pose's translation is a fraction of the element's own size, like CSS's translate(%).
             translationX = t.x.dp.toPx() + (pose.translationX * size.width * away).toFloat()
@@ -462,23 +479,37 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
             val width = d.outlineWidth.toPx()
             // Inset by half the stroke, so that like Modifier.border's it lies inside the bounds.
             val border = d.shape.createOutline(Size(size.width - width, size.height - width), layoutDirection, this)
+            // On the web, a row or column's children paint under its outline, but a stack's children have a z-index
+            // and images are positioned, which paints them over it.
+            val outlineOverContent = this@NativeElement is NativeLinearLayoutElement
+            val contentClip = if (clip) Path().apply { addOutline(shape) } else null
             onDrawWithContent {
+                val elevation = (a?.elevation?.value ?: theme.elevation).toPx()
+                drawElevationShadow(shape, elevation)
+                fun content() = if (contentClip != null && elevation > 0f) clipPath(contentClip) { this@onDrawWithContent.drawContent() } else drawContent()
                 // Plain colours animate; gradients change at once.
                 when {
                     fading != null -> drawOutline(shape, fading.value)
                     a != null && d.background is Color -> drawOutline(shape, a.background.value)
                     else -> drawOutline(shape, backgroundBrush)
                 }
-                drawContent()
+                if (outlineOverContent) content()
                 if (width > 0f) translate(width / 2, width / 2) {
                     if (a != null && d.outline is Color) drawOutline(border, a.outline.value, style = Stroke(width))
                     else drawOutline(border, outlineBrush, style = Stroke(width))
                 }
+                if (!outlineOverContent) content()
             }
         }
         scrolling?.let { m = it.applyTo(m, takesInput) }
         val p = padding
-        m = m.padding(start = p.left.toDp(), top = p.top.toDp(), end = p.right.toDp(), bottom = p.bottom.toDp())
+        // Claude: Compose throws on negative padding; browsers ignore it, so it counts as none here.
+        m = m.padding(
+            start = p.left.toDp().coerceAtLeast(0.dp),
+            top = p.top.toDp().coerceAtLeast(0.dp),
+            end = p.right.toDp().coerceAtLeast(0.dp),
+            bottom = p.bottom.toDp().coerceAtLeast(0.dp),
+        )
         // Last, so that a view's own semantics still give the node its bounds (the view's, inside the padding).
         val label = label
         val paneTitle = paneTitle
@@ -497,10 +528,23 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     // doesn't take input, so that the modifiers keep their shape (see Render).
     protected open fun inputModifier(takesInput: Boolean): Modifier = Modifier
 
+    /** Whether the mouse pointer turns into a hand over this while it takes input, as the web's `.clickable` does. */
+    internal open val handCursor: Boolean get() = false
+
+    /**
+     * Runs when this, or something inside it, is double-clicked with the primary button, like the web's `dblclick`.
+     *
+     * The two clicks still run as clicks first.  It goes to the clicked element, then to its ancestors in turn.
+     */
+    public var onDoubleClick: (() -> Unit)? = null
+
     // It must apply its modifier to exactly one root layout node.
     @Composable
     protected abstract fun Content(modifier: Modifier)
 }
+
+// The release (by its time) that an element has taken as a double-click, so its ancestors don't take it too.
+private var claimedDoubleClick = -1L
 
 // Any pointer input node takes the pointer over the element's bounds so, as on the web, it doesn't reach what's
 // behind (a dialog card over a page).  So, like Compose's clickable, this only has one while it's enabled.
@@ -510,24 +554,71 @@ private data class HoverElement(val element: NativeElement, val enabled: Boolean
 }
 
 private class HoverNode(private var element: NativeElement, enabled: Boolean) : DelegatingNode() {
-    private var tracking: Tracking? = if (enabled) delegate(Tracking()) else null
+    private var tracking: Tracking? = null
+    private var cursor: Modifier.Node? = null
+
+    init {
+        update(element, enabled)
+    }
 
     fun update(element: NativeElement, enabled: Boolean) {
         this.element = element
-        val tracking = tracking
-        if (enabled && tracking == null) this.tracking = delegate(Tracking())
-        if (!enabled && tracking != null) {
-            undelegate(tracking)
-            this.tracking = null
+        tracking = tracking.delegatedWhile(enabled) { Tracking() }
+        // Claude: Compose's hover icon node class is internal, so it's made by the public modifier's element.
+        cursor = cursor.delegatedWhile(enabled && element.handCursor) {
+            (Modifier.pointerHoverIcon(PointerIcon.Hand) as ModifierNodeElement<*>).create()
         }
     }
 
-    private inner class Tracking : Modifier.Node(), PointerInputModifierNode {
+    // This node, delegated to while [on], else null.
+    private fun <T : DelegatableNode> T?.delegatedWhile(on: Boolean, create: () -> T): T? = when {
+        on && this == null -> delegate(create())
+        !on && this != null -> {
+            undelegate(this)
+            null
+        }
+        else -> this
+    }
+
+    private inner class Tracking : Modifier.Node(), PointerInputModifierNode, CompositionLocalConsumerModifierNode {
+        private var lastClickTime = 0L
+        private var lastClickPosition: Offset? = null
+        private var doubleClicked = false
+
+        @OptIn(ExperimentalComposeUiApi::class)
         override fun onPointerEvent(pointerEvent: PointerEvent, pass: PointerEventPass, bounds: IntSize) {
-            if (pass != PointerEventPass.Main) return
             when (pointerEvent.type) {
-                PointerEventType.Enter -> element.hovered.value = true
-                PointerEventType.Exit -> element.hovered.value = false
+                PointerEventType.Enter -> if (pass == PointerEventPass.Main) element.hovered.value = true
+                PointerEventType.Exit -> if (pass == PointerEventPass.Main) element.hovered.value = false
+                PointerEventType.Release -> when {
+                    pass == PointerEventPass.Main && pointerEvent.button == PointerButton.Primary -> {
+                        val click = pointerEvent.changes.first()
+                        val last = lastClickPosition
+                        val config = currentValueOf(LocalViewConfiguration)
+                        val isDouble = last != null &&
+                            click.uptimeMillis - lastClickTime <= config.doubleTapTimeoutMillis &&
+                            (click.position - last).getDistance() <= config.touchSlop
+                        lastClickTime = click.uptimeMillis
+                        lastClickPosition = if (isDouble) null else click.position
+                        // Claude: the main pass reaches the innermost element first, which takes it for everyone.
+                        if (isDouble && claimedDoubleClick != click.uptimeMillis) {
+                            claimedDoubleClick = click.uptimeMillis
+                            doubleClicked = true
+                        }
+                    }
+                    // Claude: launched from the final pass, after the clicks' actions launched, so they run first,
+                    // like the web's click, click, dblclick.  Then it bubbles up, like dblclick.
+                    pass == PointerEventPass.Final && doubleClicked -> {
+                        doubleClicked = false
+                        val clicked = element
+                        clicked.launch {
+                            generateSequence<Element>(clicked) { it.parent }
+                                .map { it.underlyingNativeElement }
+                                .distinct()
+                                .forEach { it.onDoubleClick?.invoke() }
+                        }
+                    }
+                }
             }
         }
 
@@ -542,19 +633,27 @@ private class HoverNode(private var element: NativeElement, enabled: Boolean) : 
 }
 
 /**
- * Explicit sizes are capped by the space the parent has, as Android does.  When the parent asks for more
- * (a stretched slot), Compose centers the smaller result in it, which also matches Android.
+ * As in CSS, a min size beats a max size, which beats an explicit size.  The result is capped by the space the
+ * parent has, as Android does, except that as in CSS the element's own min size beats that too: it overflows the
+ * parent from the start.  When the parent asks for more (a stretched slot), Compose centers the smaller result in it,
+ * which also matches Android.
  */
 private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, incoming ->
     fun Dimension?.toPx(): Int? = this?.let { it.value.dp.roundToPx() }
-    val width = c.width.toPx()?.coerceAtMost(incoming.maxWidth)
-    val height = c.height.toPx()?.coerceAtMost(incoming.maxHeight)
-    val maxWidth = width ?: minOf(incoming.maxWidth, c.maxWidth.toPx() ?: Constraints.Infinity)
-    val maxHeight = height ?: minOf(incoming.maxHeight, c.maxHeight.toPx() ?: Constraints.Infinity)
+    val ownMinWidth = c.minWidth.toPx() ?: 0
+    val ownMaxWidth = maxOf(ownMinWidth, c.maxWidth.toPx() ?: Constraints.Infinity)
+    val ownMinHeight = c.minHeight.toPx() ?: 0
+    val ownMaxHeight = maxOf(ownMinHeight, c.maxHeight.toPx() ?: Constraints.Infinity)
+    val roomWidth = maxOf(incoming.maxWidth, ownMinWidth)
+    val roomHeight = maxOf(incoming.maxHeight, ownMinHeight)
+    val width = c.width.toPx()?.coerceIn(ownMinWidth, ownMaxWidth)?.coerceAtMost(roomWidth)
+    val height = c.height.toPx()?.coerceIn(ownMinHeight, ownMaxHeight)?.coerceAtMost(roomHeight)
+    val maxWidth = width ?: minOf(roomWidth, ownMaxWidth)
+    val maxHeight = height ?: minOf(roomHeight, ownMaxHeight)
     var own = Constraints(
-        minWidth = width ?: maxOf(incoming.minWidth, c.minWidth.toPx() ?: 0).coerceAtMost(maxWidth),
+        minWidth = width ?: maxOf(incoming.minWidth, ownMinWidth).coerceAtMost(maxWidth),
         maxWidth = maxWidth,
-        minHeight = height ?: maxOf(incoming.minHeight, c.minHeight.toPx() ?: 0).coerceAtMost(maxHeight),
+        minHeight = height ?: maxOf(incoming.minHeight, ownMinHeight).coerceAtMost(maxHeight),
         maxHeight = maxHeight,
     )
     c.aspectRatio?.let { ratio ->
@@ -576,11 +675,21 @@ private fun Modifier.sized(c: SizeConstraints): Modifier = layout { measurable, 
         }
     }
     val placeable = measurable.measure(own)
-    // Coerced because intrinsic measurement reports the content's own size, ignoring explicit ones.
-    layout(own.constrainWidth(placeable.width), own.constrainHeight(placeable.height)) { placeable.place(0, 0) }
+    // Coerced because intrinsic measurement reports the content's own size, ignoring explicit ones.  Reporting no
+    // more than the parent's space keeps Compose from centering an overflowing element on it.
+    val reportedWidth = minOf(own.constrainWidth(placeable.width), incoming.maxWidth)
+    val reportedHeight = minOf(own.constrainHeight(placeable.height), incoming.maxHeight)
+    layout(reportedWidth, reportedHeight) { placeable.place(0, 0) }
 }
 
 private val Float.dp: Dp get() = Dp(this)
+
+// A check control's size, as the web's CSS sets it: a width and height marked !important, so a stretching parent
+// can't change them, but a min or max size still does, the min winning.
+internal fun SizeConstraints?.clampSize(width: Dp, height: Dp): DpSize {
+    fun clamp(size: Dp, min: Dimension?, max: Dimension?) = maxOf(min?.toDp() ?: 0.dp, minOf(max?.toDp() ?: Dp.Infinity, size))
+    return DpSize(clamp(width, this?.minWidth, this?.maxWidth), clamp(height, this?.minHeight, this?.maxHeight))
+}
 
 // What theme transitions animate.  Without a background, a theme's colours are transparent (so they fade in place
 // rather than through black), and it has no elevation or transform, as on the web.
