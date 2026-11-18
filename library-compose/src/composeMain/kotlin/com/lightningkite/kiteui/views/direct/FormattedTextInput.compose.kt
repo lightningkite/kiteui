@@ -41,7 +41,9 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
     }
 
     /** The raw data only, without the formatting characters. */
-    public actual val content: MutableReactiveValue<String> = Signal("").lens(get = { it }, set = { it.filter(isRawData) })
+    // Stores the data of the formatted text, as the other platforms read it back from the field, so a value set by code
+    // that the formatter would change can't disagree with what is shown.
+    public actual val content: MutableReactiveValue<String> = Signal("").lens(get = { it }, set = { formatter(it.filter(isRawData)).filter(isRawData) })
     public actual var hint: String by mutableStateOf("")
     public actual var align: Align? by mutableStateOf(null)
     public actual var keyboardHints: KeyboardHints by mutableStateOf(KeyboardHints(KeyboardCase.Sentences))

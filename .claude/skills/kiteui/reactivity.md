@@ -1,484 +1,104 @@
-# KiteUI Reactivity & State Management
+# KiteUI Reactivity & Lists
 
-## ⚠️ IMPORTANT: KiteUI Execution Model (Not Like React!)
+Condensed from [docs/reactivity.md](../../../docs/reactivity.md) and [docs/lists.md](../../../docs/lists.md); read those for detail.
 
-KiteUI uses **fine-grained reactivity** like Solid JS, NOT virtual DOM diffing like React.
+## Execution model (not React)
 
-**Key difference:** The `render()` function runs **only once** when the view is first created. It does NOT re-run when state changes. Instead, only the specific reactive bindings (like `::content { }`) re-execute.
+`render()` runs **once**.  Only bindings (`::prop { }`, `remember { }`, `reactive { }`) rerun when what they read changes.  `launch` in `render()` runs once and is cancelled when the view goes away.  There are no re-renders to avoid.
 
-```kotlin
-// ✅ This is FINE - render() only runs once, so launch runs once
-override fun ViewWriter.render() {
-    launch {
-        val session = currentSession.await()
-        if (session != null) {
-            pageNavigator.navigate(HomePage())
-        }
-    }
+## Types (package `com.lightningkite.reactive.core`)
 
-    col {
-        // This text binding re-runs when count changes, but render() does not
-        text { ::content { "Count: ${count()}" } }
-    }
-}
-```
-
-**DO NOT apply React patterns to KiteUI:**
-- ❌ Don't worry about "re-renders" - they don't exist in KiteUI
-- ❌ Don't avoid `launch` in render - it only fires once
-- ❌ Don't think of render as a "pure function" that shouldn't have side effects
-
-**DO understand KiteUI's model:**
-- ✅ `render()` sets up the view structure once
-- ✅ Reactive bindings (`::property { }`, `reactive { }`) update automatically
-- ✅ `launch` in render is fine for one-time initialization
-
----
-
-## Signal - Mutable Reactive State
+- `Signal(x)`: mutable, always ready; `.value` read/write anywhere.
+- `Reactive<T>`: watchable; may be loading or failed.  `MutableReactive<T>`: also `suspend set(x)`.
+- `LateInitSignal<T>()`: loading until set; `unset()`.  `Constant(x)`: never changes.
+- `remember { }` → derived `Reactive`; lazy, shared.  `rememberSuspending { }` → async derived; loading until done, reloads when deps change; `useLastWhileLoading = true` keeps the old value.
+- `x()` reads and subscribes.  Works in reactive blocks and in any suspend lambda (`onClick`, `Action`, `launch`).  `signal.value` inside a binding does NOT subscribe.
 
 ```kotlin
 val count = Signal(0)
+val doubled = remember { count() * 2 }
+val user = rememberSuspending { api.fetchUser(userId()) }   // views show loading automatically
 
-// Read value (in reactive context)
-text { ::content { "Count: ${count()}" } }
-
-// Write value
-count.value = 5
-count.value++
+text { ::content { "Count: ${count()} / ${user().name}" } }
+button { ::enabled { count() > 0 }; text("Go") }            // bind any var
+text { ::content bind someReactiveString }                   // copy from a Reactive
+textInput { content bind email }                             // two-way, same type
 ```
 
-## Property - Another name for Signal
+Don't store derived values in a second Signal and sync by hand; use `remember`.  Don't use `Signal + launch` for loading; use `rememberSuspending`.
+
+## Lenses (`com.lightningkite.reactive.extensions`)
 
 ```kotlin
-val email = Property("")
-textInput { content bind email }
+radioButton { checked bind size.equalTo(Size.Small) }
+checkbox { checked bind (tags contains "featured") }         // Set or List
+textInput { content bind nickname.nullToBlank() }            // String? ↔ String
+numberInput { content bind age.asDouble() }                  // numberInput.content is MutableReactiveValue<Double?>; Int? → Double?
+textInput { content bind user.lens(get = { it.first }, modify = { u, v -> u.copy(first = v) }) }
+val writable = someReactive.withWrite { v -> api.save(v) }   // Reactive → MutableReactive
 ```
 
-## Constant - Immutable Reactive Value
+Also: `notNull(default)`, `String.asInt()/asLong()/asDouble()` (String ↔ number?), `asIntHex()…`, `toggle()`, `modify { }`.
+
+## Conditional views
 
 ```kotlin
-val title: Reactive<String> = Constant("Welcome")
+shownWhen { showAdvanced() }.card.col { /* ... */ }          // views persist; visibility toggles
+swapping(current = { signedIn() }) { s -> if (s) text("Hi") else button { text("Sign in") } }
+// swapping rebuilds on change; transition = { ScreenTransition.Push } for another animation.
+// There is NO swapView(reactive) { } overload: use swapView { swapping(...) } or the swapping shortcut.
 ```
 
-## Shared / Remember - Computed Reactive Value
+## Other tools
+
+- `query.debounce(400.milliseconds)` inside a view (the `Long` overload is deprecated).  Also `tailThrottle`, `fullThrottle`.
+- `reactive { sideEffect(tab()) }`: reruns on change.  For side effects, not for building views.
+- `load { }`: like `launch` but shows the view's loading state.
+- `PersistentProperty("key", default)` (`com.lightningkite.kiteui.reactive`): Signal saved to platform storage **as JSON** (a `String` is stored as `"\"value\""`; inject the JSON form from test harnesses).  Keep it top-level.
+- `AppState.windowInfo / inForeground / softInputOpen / systemLanguages` (`com.lightningkite.kiteui.reactive`).
+- `withLoadTracking().col { }` + `shownWhen { section.context.loadTracker.loading() }.activityIndicator()` for one indicator over a region.
+
+## Lists
 
 ```kotlin
-val firstName = Signal("John")
-val lastName = Signal("Doe")
-val fullName = remember { "${firstName()} ${lastName()}" }
+colOf(todos, id = { it.id }) { todo -> card.text { ::content { todo().title } } }  // keyed, animated; ≤ few hundred
+rowOf(todos, id = { it.id }) { todo -> /* ... */ }
+colOf(todos, placeholdersWhileLoading = 3) { todo -> /* ... */ }                  // positional
+colOfExpensive(todos) { todo -> text(todo.title) }                                // rebuild each change; plain T
+renderListIn(ElementWriter::frame, items, id = { it.id }) { /* ... */ }           // other container
 
-text { ::content { fullName() } }
-```
-
-## RememberSuspending - Async Computed Reactive Value
-
-Use `rememberSuspending` for async data loading (preferred over `Signal + launch` pattern):
-
-```kotlin
-// ✅ CORRECT: Use rememberSuspending for async data
-val booth = rememberSuspending {
-    val session = currentSession() ?: return@rememberSuspending null
-    val res = session.reservations.get(reservationId).await() ?: return@rememberSuspending null
-    session.booths.get(res.booth).await()
+expanding.recyclerView {                         // virtualized; scrolls itself; needs bounded size
+    placer = RecyclerViewPlacerVerticalGrid(3)   // optional grid
+    children(items, id = { it.id }) { item -> card.text { ::content { item().title } } }
 }
-
-val location = rememberSuspending {
-    val b = booth() ?: return@rememberSuspending null
-    val session = currentSession() ?: return@rememberSuspending null
-    session.locations.get(b.location).await()
-}
-
-// UI automatically shows loading state until data is ready
-text { ::content { "Booth: ${booth()?.name}" } }
-text { ::content { "Location: ${location()?.name}" } }
+// horizontalRecyclerView { }, viewPager { } (centerIndex), recyclerView(refreshAction = Action(...)) { }
+// childrenMultipleTypes(items, id) { elementsMatching { it is X } renderedAs { ... }; elementsMatching { true } renderedAs { ... } }
+// list.scrollToIndex(i, Align.Start); firstIndex / lastIndex are Reactive<Int>
+// windowedList { children(...) } (@ExperimentalKiteUi): variable-height chat/feed; see docs/windowed-list.md
 ```
 
-**❌ AVOID: Signal + launch pattern**
-```kotlin
-// DON'T DO THIS - harder to manage, no automatic loading states
-val booth = Signal<Booth?>(null)
-launch {
-    booth.value = session.booths.get(boothId).await()
-}
-```
+`forEach`, `forEachById`, `forEachAnimated`, `forEachUpdating` are **deprecated and `@InternalKiteUi`**.  Use `colOfExpensive`, `colOf(items, id)`, `colOfExpensive(items, animate = true)`, `colOf(items)`.
 
-**Key Benefits:**
-- Automatic loading states in UI (shows spinner while loading)
-- Reactive recomputation when dependencies change
-- Cleaner code with less boilerplate
-- Proper error handling with nullable returns
+Load more: grow a `limit` Signal and re-query (`rememberSuspending(useLastWhileLoading = true) { api.list(limit()) }`), triggered from `reactive { if (lastIndex() >= items().size - 5 && items().size == limit()) limit.value += 50 }` inside the recyclerView.  Or `expanding.lazyColumn(items, id, loadMore = { ... }) { }` when you append pages yourself.
 
-**One-shot custom API calls (non-CRUD endpoints):** Use `rememberSuspending` for custom endpoint calls that return a snapshot rather than a live-updating list. This is the right pattern when ModelCache websocket updates are not available (e.g. a server-side joined feed):
+## Gotchas
 
 ```kotlin
-// One-shot fetch from a custom endpoint — not live-updating
-val posts = rememberSuspending {
-    session().api.post.followedFeed(Query())
-}
+// ❌ reactive that builds views duplicates them on every rerun, and clearChildren() clears siblings too
+col { h2("Items"); reactive { for (i in items()) text(i) } }
+// ✅ isolate and clear (or just use colOfExpensive)
+col { h2("Items"); col { reactive { clearChildren(); for (i in items()) text(i) } } }
 
-col {
-    expanding.scrolling.col {
-        col {
-            reactive {
-                clearChildren()
-                val list = posts() ?: return@reactive
-                list.forEach { post -> postCardStatic(post) }
-            }
-        }
-    }
-}
+// ❌ return is prohibited here      ✅ labeled return
+reactive { val x = s() ?: return }   reactive { val x = s() ?: return@reactive }
+
+// ❌ does not compile: shownWhen returns CanAddSizing, expanding needs CanAddWeight
+shownWhen { ready() }.expanding.recyclerView { }
+// ✅ modifier order: alignment → weight → shownWhen → sizing → theme → scrolling → element
+expanding.shownWhen { ready() }.recyclerView { }
 ```
 
-## LazyProperty - Computed with Override
-
-```kotlin
-val calculatedValue = LazyProperty { baseValue() * 2 }
-
-// Can override
-calculatedValue.value = 100
-
-// Reset to calculation
-calculatedValue.reset()
-```
-
-## LateInitProperty - Initially Unset
-
-```kotlin
-val userData = LateInitProperty<UserData>()
-
-// Components show loading until set
-userData.value = fetchedUserData
-
-// Can unset
-userData.unset()
-```
-
-## Reactive Scope
-
-```kotlin
-text {
-    // Automatically re-runs when dependencies change
-    ::content { "Total: ${price() * quantity()}" }
-}
-```
-
-## ReactiveScope Block
-
-**⚠️ WARNING: reactive adds duplicate views on every rerun!**
-
-```kotlin
-reactive {
-    // Re-runs when signals inside change
-    if (showAdvanced()) {
-        advancedSettings()  // ⚠️ This adds NEW views each time, doesn't replace!
-    }
-}
-```
-
-**When to use:**
-- Rarely! Almost always better to use `shownWhen`, `swapView`, or `::property { }` bindings
-- If you must use it, ALWAYS use `clearChildren()` first
-
-**Better alternatives:**
-
-```kotlin
-// ✅ BEST: Use shownWhen modifier for conditional visibility
-shownWhen { showAdvanced() }.card.col {
-    h3 { content = "Advanced Settings" }
-    // ... advanced content ...
-}  // Automatically shown/hidden reactively
-
-// ✅ BEST: Use swapView for animated transitions between views
-swapView(remember { if (showAdvanced()) "advanced" else "simple" }) { mode ->
-    when (mode) {
-        "advanced" -> advancedSettings()
-        "simple" -> simpleSettings()
-    }
-}
-
-// ✅ GOOD: Use reactive bindings for automatic loading states
-text { ::content { userData()?.name ?: "Loading..." } }
-
-// ❌ AVOID: Manual reactive creates duplicate views
-reactive {
-    val data = userData()
-    if (data != null) {
-        text { content = data.name }  // Adds new text view on every userData change!
-    }
-}
-
-// ⚠️ LAST RESORT: If you MUST use reactive, ALWAYS clear children first
-reactive {
-    clearChildren()  // ⚠️ CRITICAL: Remove old views before adding new ones
-    if (showAdvanced()) {
-        advancedSettings()
-    }
-}
-
-// Example: Dynamic lists with reactive (when forEach doesn't work)
-col {
-    reactive {
-        clearChildren()  // ⚠️ MUST call this to prevent duplicates
-
-        booth()?.lockIds?.forEach { lockInfo ->
-            button {
-                text { content = lockInfo.name }
-                onClick { unlock(lockInfo.id) }
-            }
-        }
-    }
-}
-```
-
-**Recommended patterns (in order of preference):**
-1. **shownWhen** - For simple show/hide of sections
-2. **swapView** - For animated transitions between different views
-3. **::property { }** - For automatic loading states and reactive text
-4. **forEach** - For dynamic lists (when it works - may have issues with complex types)
-5. **reactive + clearChildren()** - Last resort when the above don't work
-
-**⚠️ CRITICAL: Always call `clearChildren()` as the first line in reactive blocks that add views!**
-
-## ForEach - Reactive Lists
-
-Use `forEach` to render dynamic lists that update when the underlying data changes:
-
-```kotlin
-val items = Signal(listOf("A", "B", "C"))
-
-col {
-    forEach(items) { item ->
-        card.text(item)
-    }
-}
-```
-
-**Dynamic lists from async data:**
-```kotlin
-// Load data reactively
-val booth = rememberSuspending {
-    val session = currentSession() ?: return@rememberSuspending null
-    val res = session.reservations.get(reservationId).await() ?: return@rememberSuspending null
-    session.booths.get(res.booth).await()
-}
-
-// Render list of doors with forEach + shared
-col {
-    h3 { content = "Available Doors" }
-
-    forEach(remember { booth()?.lockIds ?: emptyList() }) { lockInfo ->
-        button {
-            row {
-                icon { source = AppIcons.lockOpen }
-                text { content = lockInfo.name }
-            }
-            action = Action("Unlock ${lockInfo.name}") {
-                unlockDoor(lockInfo.id)
-                toast("Unlocked ${lockInfo.name}")
-            }
-        }
-    }
-}
-```
-
-**Key points:**
-- `forEach` automatically updates when the list changes
-- Use `remember { }` to transform reactive data before rendering
-- Empty list handling: `booth()?.lockIds ?: emptyList()` gracefully handles null
-- Each item gets its own scope for actions and state
-
-## Two-way Binding
-
-```kotlin
-val text = Signal("")
-
-textInput {
-    content bind text  // Bidirectional binding
-}
-```
-
-## Reactive Lens Extensions
-
-KiteUI includes powerful reactive lens extensions for common transformations. These provide bidirectional bindings between different types.
-
-### Value Comparison - `.equalTo()`
-
-Perfect for radio buttons and conditional checks:
-
-```kotlin
-val selected = Signal(1)
-
-// Radio button binding
-radioButton { checked bind selected.equalTo(1) }
-radioButton { checked bind selected.equalTo(2) }
-radioButton { checked bind selected.equalTo(3) }
-```
-
-### Collection Membership - `.contains()`
-
-Toggle items in sets or lists:
-
-```kotlin
-val tags = Signal(setOf<String>())
-checkbox { checked bind tags.contains("important") }
-
-val items = Signal(listOf<String>())
-checkbox { checked bind items.contains("featured") }
-```
-
-### Null Handling
-
-Convert nullable signals to non-null with defaults:
-
-```kotlin
-// Nullable to non-null with default value
-val name = Signal<String?>(null)
-textInput { content bind name.notNull("Default") }
-
-// String? to String (null becomes blank)
-val description = Signal<String?>(null)
-textInput { content bind description.nullToBlank() }
-```
-
-### String to Number Conversions
-
-Bind number inputs directly to string signals:
-
-```kotlin
-val ageStr = Signal("")
-
-// Decimal conversions
-numberInput { content bind ageStr.asInt() }
-numberInput { content bind ageStr.asDouble() }
-numberInput { content bind ageStr.asFloat() }
-numberInput { content bind ageStr.asLong() }
-
-// Hexadecimal conversions
-val hexStr = Signal("")
-numberInput { content bind hexStr.asIntHex() }
-numberInput { content bind hexStr.asUIntHex() }
-```
-
-### How Lens Extensions Work
-
-These extensions use the reactive lens pattern to create bidirectional transformations:
-
-```kotlin
-// Example: .equalTo() implementation
-infix fun <T> MutableReactive<T>.equalTo(value: T): MutableReactive<Boolean> = lens(
-    get = { it == value },                    // Read: return true when equal
-    modify = { o, it -> if (it) value else o } // Write: set value when true
-)
-```
-
-This pattern enables:
-- **Type-safe transformations** at compile time
-- **Bidirectional data flow** between different types
-- **Automatic updates** when either side changes
-
-## Loading States
-
-```kotlin
-val data = LateInitProperty<MyData>()
-
-col {
-    // Automatically shows loading indicator while data is unset
-    text { ::content { data().displayName } }
-}
-
-// Later, set the data
-launch {
-    data.value = fetchData()
-}
-```
-
-## ReactiveScope Labeled Returns
-
-Always use labeled returns in `reactive` blocks when handling nullable values:
-
-```kotlin
-// ✅ CORRECT - Labeled return
-reactive {
-    val item = mySignal() ?: return@reactive
-    // Safe to use item here
-    text { content = item.name }
-}
-
-// ✅ CORRECT - Labeled return in launch
-launch {
-    val session = currentSession.await() ?: return@launch
-    // Safe to use session here
-}
-
-// ❌ WRONG - Bare return causes compilation error
-reactive {
-    val item = mySignal() ?: return  // Error: "return is prohibited here"
-}
-```
-
-**Why labeled returns?**
-`reactive` is a lambda, not a function body, so you must specify which lambda you're returning from.
-
-## Common Issue: clearChildren() Clears Sibling Elements
-
-**Symptoms:**
-- Only the last section of a page renders
-- Static elements (headers, buttons) disappear after reactive content loads
-- Page content vanishes when signals update
-
-**Root Cause:** When `reactive { clearChildren() }` is used directly inside a `col` or `row`, `clearChildren()` clears ALL children of the parent container, not just the content within the reactive.
-
-**❌ WRONG - clearChildren clears siblings:**
-```kotlin
-expanding.scrolling.col {
-    h2("Projects")  // Gets cleared!
-    reactive {
-        clearChildren()
-        projects().forEach { /* render project */ }
-    }
-
-    h2("Tasks")  // Gets cleared!
-    reactive {
-        clearChildren()
-        tasks().forEach { /* render task */ }
-    }
-
-    h2("Runners")  // Only this section survives (last reactive wins)
-    reactive {
-        clearChildren()
-        runners().forEach { /* render runner */ }
-    }
-}
-```
-
-**✅ CORRECT - Wrap each reactive in its own container:**
-```kotlin
-expanding.scrolling.col {
-    h2("Projects")
-    col {  // Isolated container
-        reactive {
-            clearChildren()  // Only clears this col's children
-            projects().forEach { /* render project */ }
-        }
-    }
-
-    h2("Tasks")
-    col {  // Isolated container
-        reactive {
-            clearChildren()
-            tasks().forEach { /* render task */ }
-        }
-    }
-
-    h2("Runners")
-    col {  // Isolated container
-        reactive {
-            clearChildren()
-            runners().forEach { /* render runner */ }
-        }
-    }
-}
-```
-
-**Key Insight:** `clearChildren()` operates on the ViewWriter's current context. Without an isolating container, all reactive blocks share the parent's context and interfere with each other.
+- `expanding`, `weight`, `shownWhen` and alignment don't exist at the top level of `render()` (receiver `ElementWriter.CanAddTheme`).  Wrap the page in `col { }`.
+- Don't build tabs from parallel `shownWhen`s: every tab stays alive, and on the web each adds a wrapper that can stop `expanding` children from stretching.  Use pages or `swapping`.
+- Reading a reactive needs a reactive block or suspend context.  Render-time lambdas (a list's `render`, `col { }`) are neither: read inside `::content { }`.
+- Old names (deprecated): `Property`→`Signal`, `shared`→`remember`, `LateInitProperty`→`LateInitSignal`, `LazyProperty`→`MutableRemember`, `Readable`/`Writable`→`Reactive`/`MutableReactive`.

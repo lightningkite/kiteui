@@ -17,7 +17,7 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * Renders children from a reactive list with lazy loading when scrolled near the end.
- * Uses [forEachById] for ID-based diffing with animations.
+ * Uses [renderListKeyed] for ID-based diffing, without animations.
  *
  * Caller owns [items] and [loadMore]. This function renders children, monitors scroll position,
  * and calls [loadMore] when the user scrolls within [threshold] of the end.

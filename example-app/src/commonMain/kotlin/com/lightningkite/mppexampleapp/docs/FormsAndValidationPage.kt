@@ -18,7 +18,7 @@ object FormsAndValidationPage : DocPage {
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
         article {
             titledSection("Forms and Validation") {
-                text("Learn how to build robust, validated forms in KiteUI.")
+                text("A form is ordinary state plus inputs: a Signal per field, field(label) { input } to label each input, and one Action to submit.")
 
                 space()
 
@@ -32,8 +32,9 @@ object FormsAndValidationPage : DocPage {
 
                             field("Your Name") {
                                 textInput {
-                                    content bind name
                                     hint = "Enter your name"
+                                    keyboardHints = KeyboardHints.title
+                                    content bind name
                                 }
                             }
 
@@ -44,13 +45,13 @@ object FormsAndValidationPage : DocPage {
                     }
 
                     space()
-                    text("The bind keyword creates two-way data binding between the input and the Signal.")
+                    text("bind creates a two-way binding between the input and the Signal. field applies fieldTheme, links the label for screen readers, and shows errors thrown inside it.")
                 }
 
                 space()
 
                 titledSection("Multiple Form Fields") {
-                    text("Use separate Signals for each form field:")
+                    text("Use a Signal for each field, and share one Action between the last input and the submit button:")
 
                     space()
                     code {
@@ -58,26 +59,31 @@ object FormsAndValidationPage : DocPage {
                             val username = Signal("")
                             val email = Signal("")
                             val password = Signal("")
+                            val signUp = Action("Sign up") { api.signUp(username(), email(), password()) }
 
                             col {
                                 field("Username") {
                                     textInput {
+                                        keyboardHints = KeyboardHints.id
                                         content bind username
                                     }
                                 }
-
                                 field("Email") {
                                     textInput {
-                                        content bind email
                                         keyboardHints = KeyboardHints.email
+                                        content bind email
                                     }
                                 }
-
                                 field("Password") {
                                     textInput {
+                                        keyboardHints = KeyboardHints.newPassword
                                         content bind password
-                                        keyboardHints = KeyboardHints.password
+                                        action = signUp          // Enter submits
                                     }
+                                }
+                                important.button {
+                                    text("Sign up")
+                                    action = signUp
                                 }
                             }
                         """.trimIndent()
@@ -87,34 +93,17 @@ object FormsAndValidationPage : DocPage {
                 space()
 
                 titledSection("Keyboard Hints") {
-                    text("Use keyboardHints to optimize mobile input:")
+                    text("Always set keyboardHints: it picks the mobile keyboard and autofill:")
 
                     space()
                     code {
                         content = """
-                            // For email addresses
-                            textInput {
-                                content bind email
-                                keyboardHints = KeyboardHints.email
-                            }
-
-                            // For passwords
-                            textInput {
-                                content bind password
-                                keyboardHints = KeyboardHints.password
-                            }
-
-                            // For phone numbers
-                            textInput {
-                                content bind phone
-                                keyboardHints = KeyboardHints.phone
-                            }
-
-                            // For URLs
-                            textInput {
-                                content bind website
-                                keyboardHints = KeyboardHints.url
-                            }
+                            textInput { keyboardHints = KeyboardHints.email; content bind email }
+                            textInput { keyboardHints = KeyboardHints.password; content bind password }
+                            textInput { keyboardHints = KeyboardHints.newPassword; content bind newPassword }
+                            textInput { keyboardHints = KeyboardHints.phone; content bind phone }
+                            textInput { keyboardHints = KeyboardHints.oneTimeCode; content bind code }
+                            textArea { keyboardHints = KeyboardHints.paragraph; content bind notes }
                         """.trimIndent()
                     }
                 }
@@ -122,7 +111,7 @@ object FormsAndValidationPage : DocPage {
                 space()
 
                 titledSection("Number Input") {
-                    text("Use numberInput for numeric values:")
+                    text("numberInput's content is a Double?. Bind a Signal<Double?>, or convert an Int? with asDouble():")
 
                     space()
                     code {
@@ -132,15 +121,17 @@ object FormsAndValidationPage : DocPage {
 
                             field("Age") {
                                 numberInput {
-                                    content bind age
                                     hint = "Enter age"
+                                    keyboardHints = KeyboardHints.integer
+                                    content bind age.asDouble()
                                 }
                             }
 
                             field("Price") {
                                 numberInput {
-                                    content bind price
                                     hint = "0.00"
+                                    keyboardHints = KeyboardHints.decimal
+                                    content bind price
                                 }
                             }
                         """.trimIndent()
@@ -149,171 +140,84 @@ object FormsAndValidationPage : DocPage {
 
                 space()
 
-                titledSection("Basic Validation") {
-                    text("Validate input using reactive expressions:")
+                titledSection("Reject Bad Input on Submit") {
+                    text("The simplest validation is a check inside the action. A PlainTextException is shown to the user as-is:")
 
                     space()
                     code {
                         content = """
-                            val email = Signal("")
-                            val emailError = remember {
-                                val value = email()
-                                when {
-                                    value.isEmpty() -> "Email is required"
-                                    !value.contains("@") -> "Invalid email format"
-                                    else -> null
+                            important.button {
+                                text("Continue")
+                                action = Action("Continue") {
+                                    if ("@" !in email()) throw PlainTextException("Enter a valid email address.", "Check your email")
+                                    api.start(email())
                                 }
                             }
+                        """.trimIndent()
+                    }
+                }
+
+                space()
+
+                titledSection("Validate as the User Types") {
+                    text("validate, assert and assertNotBlank wrap a Signal so it reports issues. Bind the input to the validated value, theme it with the validate(...) modifier, and show the issues with issueText:")
+
+                    space()
+                    code {
+                        content = """
+                            val email = Signal("").validate { if ("@" in it) null else "Enter a valid email address" }
+                            val password = Signal("").assert("At least 8 characters") { it.length >= 8 }
+                            val submitted = Signal(false)
 
                             col {
-                                field("Email") {
-                                    textInput {
-                                        content bind email
+                                label("Email") {
+                                    validate(email) { submitted() }.fieldTheme.textInput {
                                         keyboardHints = KeyboardHints.email
-                                    }
-                                }
-
-                                // Show error message if present
-                                emailError()?.let { error ->
-                                    danger.text(error)
-                                }
-                            }
-                        """.trimIndent()
-                    }
-                }
-
-                space()
-
-                titledSection("Field-Level Validation") {
-                    text("Create reusable validation functions:")
-
-                    space()
-                    code {
-                        content = """
-                            fun validateEmail(email: String): String? {
-                                return when {
-                                    email.isEmpty() -> "Email is required"
-                                    !email.contains("@") -> "Invalid email"
-                                    !email.contains(".") -> "Invalid email"
-                                    else -> null
-                                }
-                            }
-
-                            fun validatePassword(password: String): String? {
-                                return when {
-                                    password.isEmpty() -> "Password is required"
-                                    password.length < 8 -> "Password must be at least 8 characters"
-                                    else -> null
-                                }
-                            }
-
-                            val email = Signal("")
-                            val password = Signal("")
-
-                            val emailError = remember { validateEmail(email()) }
-                            val passwordError = remember { validatePassword(password()) }
-
-                            col {
-                                field("Email") {
-                                    textInput { content bind email }
-                                }
-                                emailError()?.let { danger.text(it) }
-
-                                field("Password") {
-                                    textInput {
-                                        content bind password
-                                        keyboardHints = KeyboardHints.password
-                                    }
-                                }
-                                passwordError()?.let { danger.text(it) }
-                            }
-                        """.trimIndent()
-                    }
-                }
-
-                space()
-
-                titledSection("Form-Level Validation") {
-                    text("Validate the entire form before submission:")
-
-                    space()
-                    code {
-                        content = """
-                            val username = Signal("")
-                            val email = Signal("")
-                            val password = Signal("")
-
-                            val isValid = remember {
-                                username().isNotBlank() &&
-                                email().contains("@") &&
-                                password().length >= 8
-                            }
-
-                            col {
-                                field("Username") {
-                                    textInput { content bind username }
-                                }
-
-                                field("Email") {
-                                    textInput {
                                         content bind email
-                                        keyboardHints = KeyboardHints.email
                                     }
+                                    issueText(email.issues) { submitted() }
                                 }
-
-                                field("Password") {
-                                    textInput {
+                                label("Password") {
+                                    validate(password) { submitted() }.fieldTheme.textInput {
+                                        keyboardHints = KeyboardHints.newPassword
                                         content bind password
-                                        keyboardHints = KeyboardHints.password
                                     }
+                                    issueText(password.issues) { submitted() }
                                 }
-
                                 important.button {
-                                    text("Submit")
-                                    enabled = isValid
-                                    onClick {
-                                        // Submit form
-                                        submitRegistration(
-                                            username(),
-                                            email(),
-                                            password()
-                                        )
+                                    text("Create account")
+                                    action = Action("Create account") {
+                                        submitted.value = true
+                                        if (email.issues().isNotEmpty() || password.issues().isNotEmpty())
+                                            throw PlainTextException("Fix the highlighted fields.", "Can't create account")
+                                        api.signUp(email(), password())
                                     }
                                 }
                             }
                         """.trimIndent()
                     }
+
+                    space()
+                    text("The condition ({ submitted() }) keeps the form quiet until the first submit attempt.")
                 }
 
                 space()
 
-                titledSection("Checkboxes") {
-                    text("Use checkbox for boolean values:")
+                titledSection("Enable a Button Reactively") {
+                    text("Bind enabled with ::enabled { }:")
 
                     space()
                     code {
                         content = """
                             val agreedToTerms = Signal(false)
-                            val subscribe = Signal(true)
 
                             col {
-                                row {
-                                    checkbox {
-                                        checked bind agreedToTerms
-                                    }
-                                    text("I agree to the terms and conditions")
+                                label("I agree to the terms and conditions") {
+                                    checkbox { checked bind agreedToTerms }
                                 }
-
-                                row {
-                                    checkbox {
-                                        checked bind subscribe
-                                    }
-                                    text("Subscribe to newsletter")
-                                }
-
-                                button {
+                                important.button {
                                     text("Continue")
-                                    enabled = agreedToTerms
+                                    ::enabled { agreedToTerms() }
                                     onClick { /* ... */ }
                                 }
                             }
@@ -324,17 +228,16 @@ object FormsAndValidationPage : DocPage {
                 space()
 
                 titledSection("Select Dropdown") {
-                    text("Use select for choosing from options:")
+                    text("select binds a MutableReactive<T> to a Reactive<List<T>> of options; wrap a fixed list in Constant:")
 
                     space()
                     code {
                         content = """
                             val country = Signal("US")
-                            val countries = listOf("US", "CA", "UK", "AU", "DE")
 
                             field("Country") {
                                 select {
-                                    bind(country, countries) { it }
+                                    bind(country, Constant(listOf("US", "CA", "UK", "AU", "DE"))) { it }
                                 }
                             }
 
@@ -345,21 +248,22 @@ object FormsAndValidationPage : DocPage {
                     }
 
                     space()
-                    text("With custom display:")
+                    text("With custom display and no initial choice:")
                     code {
                         content = """
                             data class Country(val code: String, val name: String)
 
                             val selected = Signal<Country?>(null)
                             val countries = listOf(
+                                null,
                                 Country("US", "United States"),
                                 Country("CA", "Canada"),
-                                Country("UK", "United Kingdom")
+                                Country("UK", "United Kingdom"),
                             )
 
                             field("Country") {
                                 select {
-                                    bind(selected, countries) { it.name }
+                                    bind(selected, Constant(countries)) { it?.name ?: "Choose a country" }
                                 }
                             }
                         """.trimIndent()
@@ -369,7 +273,7 @@ object FormsAndValidationPage : DocPage {
                 space()
 
                 titledSection("Radio Buttons") {
-                    text("Create radio button groups:")
+                    text("Bind each radio button to equalTo on one Signal:")
 
                     space()
                     code {
@@ -378,24 +282,15 @@ object FormsAndValidationPage : DocPage {
 
                             col {
                                 h4("Choose Your Plan")
-
-                                radio {
-                                    checked = remember { plan() == "basic" }
-                                    onCheckedChange = { if (it) plan.value = "basic" }
+                                label("Basic - Free") {
+                                    radioButton { checked bind plan.equalTo("basic") }
                                 }
-                                text("Basic - Free")
-
-                                radio {
-                                    checked = remember { plan() == "pro" }
-                                    onCheckedChange = { if (it) plan.value = "pro" }
+                                label("Pro - ${'$'}10/month") {
+                                    radioButton { checked bind plan.equalTo("pro") }
                                 }
-                                text("Pro - ${'$'}10/month")
-
-                                radio {
-                                    checked = remember { plan() == "enterprise" }
-                                    onCheckedChange = { if (it) plan.value = "enterprise" }
+                                label("Enterprise - ${'$'}50/month") {
+                                    radioButton { checked bind plan.equalTo("enterprise") }
                                 }
-                                text("Enterprise - ${'$'}50/month")
                             }
                         """.trimIndent()
                     }
@@ -404,26 +299,20 @@ object FormsAndValidationPage : DocPage {
                 space()
 
                 titledSection("Date and Time Input") {
-                    text("Use specialized pickers for dates and times:")
+                    text("localDateField, localTimeField and localDateTimeField bind to kotlinx.datetime values:")
 
                     space()
                     code {
                         content = """
-                            import kotlinx.datetime.*
-
                             val birthDate = Signal<LocalDate?>(null)
                             val appointmentTime = Signal<LocalTime?>(null)
 
                             field("Birth Date") {
-                                datePicker {
-                                    date bind birthDate
-                                }
+                                localDateField { content bind birthDate }
                             }
 
                             field("Appointment Time") {
-                                timePicker {
-                                    time bind appointmentTime
-                                }
+                                localTimeField { content bind appointmentTime }
                             }
                         """.trimIndent()
                     }
@@ -432,53 +321,33 @@ object FormsAndValidationPage : DocPage {
                 space()
 
                 titledSection("Form Submission") {
-                    text("Handle form submission with validation:")
+                    text("An Action shows a working state while it runs and shows any error it throws; you don't track submitting state yourself:")
 
                     space()
                     code {
                         content = """
                             val name = Signal("")
                             val email = Signal("")
-                            val submitting = Signal(false)
-
-                            val canSubmit = remember {
-                                name().isNotBlank() &&
-                                email().contains("@") &&
-                                !submitting()
-                            }
 
                             col {
                                 field("Name") {
-                                    textInput { content bind name }
+                                    textInput {
+                                        keyboardHints = KeyboardHints.title
+                                        content bind name
+                                    }
                                 }
-
                                 field("Email") {
                                     textInput {
-                                        content bind email
                                         keyboardHints = KeyboardHints.email
+                                        content bind email
                                     }
                                 }
-
                                 important.button {
-                                    text {
-                                        ::content {
-                                            if (submitting()) "Submitting..."
-                                            else "Submit"
-                                        }
-                                    }
-                                    enabled = canSubmit
-                                    onClick {
-                                        launch {
-                                            submitting.value = true
-                                            try {
-                                                submitForm(name(), email())
-                                                toast("Form submitted successfully!")
-                                            } catch (e: Exception) {
-                                                toast("Error: ${'$'}{e.message}")
-                                            } finally {
-                                                submitting.value = false
-                                            }
-                                        }
+                                    text("Submit")
+                                    ::enabled { name().isNotBlank() && "@" in email() }
+                                    action = Action("Submit") {
+                                        submitForm(name(), email())
+                                        context.toast("Form submitted successfully!")
                                     }
                                 }
                             }
@@ -489,43 +358,32 @@ object FormsAndValidationPage : DocPage {
                 space()
 
                 titledSection("Async Validation") {
-                    text("Validate against server (e.g., check username availability):")
+                    text("Check against the server as the user types, with debounce and rememberSuspending. The text shows a loading state while the check runs:")
 
                     space()
                     code {
                         content = """
                             val username = Signal("")
-                            val checking = Signal(false)
-                            val isAvailable = Signal<Boolean?>(null)
-
-                            // Debounce username check
-                            var checkJob: Job? = null
-
-                            reactive {
-                                val currentUsername = username()
-                                checkJob?.cancel()
-
-                                if (currentUsername.length >= 3) {
-                                    checkJob = launch {
-                                        checking.value = true
-                                        delay(500) // Debounce
-                                        try {
-                                            isAvailable.value = checkUsernameAvailable(currentUsername)
-                                        } finally {
-                                            checking.value = false
-                                        }
-                                    }
-                                }
+                            val debounced = username.debounce(500.milliseconds)
+                            val available = rememberSuspending {
+                                val name = debounced()
+                                if (name.length < 3) null else checkUsernameAvailable(name)
                             }
 
                             field("Username") {
-                                textInput { content bind username }
+                                textInput {
+                                    keyboardHints = KeyboardHints.id
+                                    content bind username
+                                }
                             }
-
-                            when {
-                                checking() -> text("Checking...")
-                                isAvailable() == true -> affirmative.text("Available!")
-                                isAvailable() == false -> danger.text("Username taken")
+                            subtext {
+                                ::content {
+                                    when (available()) {
+                                        null -> ""
+                                        true -> "Available!"
+                                        false -> "Username taken"
+                                    }
+                                }
                             }
                         """.trimIndent()
                     }
@@ -535,15 +393,12 @@ object FormsAndValidationPage : DocPage {
 
                 titledSection("Best Practices") {
                     card.col {
-                        text("✓ Use Signal for all form state")
-                        text("✓ Bind inputs with the bind keyword")
-                        text("✓ Set appropriate keyboardHints for mobile")
-                        text("✓ Validate on change, not just on submit")
-                        text("✓ Show validation errors near the relevant field")
-                        text("✓ Disable submit button until form is valid")
-                        text("✓ Show loading state during submission")
-                        text("✓ Provide clear error messages")
-                        text("✓ Use semantic modifiers (danger for errors, affirmative for success)")
+                        text("✓ Use a Signal (or a lens into one) for each field")
+                        text("✓ Set keyboardHints on every text input")
+                        text("✓ Use field(label) { } so labels and errors are wired up")
+                        text("✓ Submit with one Action shared by the last input and the button")
+                        text("✓ Throw PlainTextException for user-facing validation messages")
+                        text("✓ Validate on the server too: client checks are for convenience")
                     }
                 }
 
@@ -555,7 +410,7 @@ object FormsAndValidationPage : DocPage {
                         code {
                             content = """
                                 val text = Signal("")
-                                textInput { content bind text }
+                                textInput { keyboardHints = KeyboardHints.title; content bind text }
                             """.trimIndent()
                         }
 
@@ -563,12 +418,11 @@ object FormsAndValidationPage : DocPage {
                         h5("With Validation:")
                         code {
                             content = """
-                                val email = Signal("")
-                                val error = remember {
-                                    if (!email().contains("@")) "Invalid" else null
+                                val email = Signal("").validate { if ("@" in it) null else "Invalid" }
+                                label("Email") {
+                                    validate(email).fieldTheme.textInput { keyboardHints = KeyboardHints.email; content bind email }
+                                    issueText(email.issues)
                                 }
-                                textInput { content bind email }
-                                error()?.let { danger.text(it) }
                             """.trimIndent()
                         }
 
@@ -576,8 +430,8 @@ object FormsAndValidationPage : DocPage {
                         h5("Checkbox:")
                         code {
                             content = """
-                                val checked = Signal(false)
-                                checkbox { checked bind this.checked }
+                                val agreed = Signal(false)
+                                checkbox { checked bind agreed }
                             """.trimIndent()
                         }
 
@@ -586,7 +440,7 @@ object FormsAndValidationPage : DocPage {
                         code {
                             content = """
                                 val choice = Signal("A")
-                                select { bind(choice, listOf("A", "B", "C")) { it } }
+                                select { bind(choice, Constant(listOf("A", "B", "C"))) { it } }
                             """.trimIndent()
                         }
                     }

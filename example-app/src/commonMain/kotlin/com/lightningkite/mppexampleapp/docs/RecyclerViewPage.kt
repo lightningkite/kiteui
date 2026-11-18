@@ -7,8 +7,14 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.kiteui.views.l2.childrenMultipleTypes
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.reactive.core.*
+
+private sealed interface ListItem {
+    data class Header(val title: String) : ListItem
+    data class Entry(val text: String) : ListItem
+}
 
 @Routable("docs/recyclerView")
 object RecyclerViewPage : DocPage {
@@ -51,7 +57,7 @@ object RecyclerViewPage : DocPage {
                         items = remember { (1..100).toList() },
                         id = { it }
                     ) { value ->
-                        card.sizedBox(SizeConstraints(width = 10.rem)).centered.text("Item")
+                        centered.sizeConstraints(width = 10.rem).card.text("Item")
                     }
                 }
             """.trimIndent()) {
@@ -60,7 +66,7 @@ object RecyclerViewPage : DocPage {
                         items = remember { (1..20).toList() },
                         id = { it }
                     ) { _ ->
-                        centered.sizedBox(SizeConstraints(width = 10.rem)).card.text("Item")
+                        centered.sizeConstraints(width = 10.rem).card.text("Item")
                     }
                 }
             }
@@ -130,47 +136,55 @@ object RecyclerViewPage : DocPage {
             }
 
             h2("Multiple Item Types")
-            text("RecyclerView can display different types of items using childrenMultipleTypes:")
+            text("RecyclerView can display different types of items using childrenMultipleTypes. The first matching rule wins, and a cell is only reused for items of its own kind:")
             example("""
-                // Define item types outside the function
+                // Defined at the top level of the file
                 sealed interface ListItem {
-                    data class Text(val text: String) : ListItem
-                    data class Image(val imageUrl: String) : ListItem
+                    data class Header(val title: String) : ListItem
+                    data class Entry(val text: String) : ListItem
                 }
 
                 expanding.recyclerView {
                     childrenMultipleTypes(
-                        items = remember { 
+                        items = remember {
                             listOf(
-                                ListItem.Text("Text Item 1"),
-                                ListItem.Image("image1.jpg"),
-                                ListItem.Text("Text Item 2")
-                            ) 
+                                ListItem.Header("Fruits"),
+                                ListItem.Entry("Apple"),
+                                ListItem.Entry("Banana"),
+                                ListItem.Header("Vegetables"),
+                                ListItem.Entry("Carrot"),
+                            )
                         },
-                        id = { it.hashCode() }
+                        id = { it }
                     ) {
-                        type<ListItem.Text> { item ->
-                            card.text { ::content { item().text } }
+                        elementsMatching { it is ListItem.Header } renderedAs { item ->
+                            h4 { ::content { (item() as ListItem.Header).title } }
                         }
-                        type<ListItem.Image> { item ->
-                            card.image { source = ImageSource.Resource(item().imageUrl) }
+                        elementsMatching { true } renderedAs { item ->
+                            card.text { ::content { (item() as ListItem.Entry).text } }
                         }
                     }
                 }
             """.trimIndent()) {
-                // Simple example with a single type for demonstration
                 recyclerView {
-                    children(
-                        items = remember { 
+                    childrenMultipleTypes(
+                        items = remember {
                             listOf(
-                                "Text Item 1",
-                                "Image Item",
-                                "Text Item 2"
-                            ) 
+                                ListItem.Header("Fruits"),
+                                ListItem.Entry("Apple"),
+                                ListItem.Entry("Banana"),
+                                ListItem.Header("Vegetables"),
+                                ListItem.Entry("Carrot"),
+                            )
                         },
-                        id = { it.hashCode() }
+                        id = { it }
                     ) {
-                        card.text { ::content { it() } }
+                        elementsMatching { it is ListItem.Header } renderedAs { item ->
+                            h4 { ::content { (item() as ListItem.Header).title } }
+                        }
+                        elementsMatching { true } renderedAs { item ->
+                            card.text { ::content { (item() as ListItem.Entry).text } }
+                        }
                     }
                 }
             }
@@ -252,7 +266,7 @@ object RecyclerViewPage : DocPage {
                     }
 
                     // Using size constraints
-                    sizedBox(SizeConstraints(height = 10.rem)).recyclerView {
+                    sizeConstraints(height = 10.rem).recyclerView {
                         children(
                             items = remember { (1..20).toList() },
                             id = { it }
@@ -274,7 +288,7 @@ object RecyclerViewPage : DocPage {
                     }
 
                     // Using size constraints
-                    sizedBox(SizeConstraints(height = 10.rem)).recyclerView {
+                    sizeConstraints(height = 10.rem).recyclerView {
                         children(
                             items = remember { (1..20).toList() },
                             id = { it }

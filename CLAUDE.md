@@ -58,7 +58,7 @@ This is a multi-module Gradle project:
 
 ### Testing
 
-See **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** for the full guide including prerequisites, gotchas, and how to write tests.
+See **[docs/testing.md](docs/testing.md)** for the full guide including prerequisites, gotchas, and how to write tests.
 
 ```bash
 # Fastest — no external tools needed

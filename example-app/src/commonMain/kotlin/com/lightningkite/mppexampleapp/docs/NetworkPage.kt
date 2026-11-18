@@ -54,8 +54,7 @@ object NetworkPage : DocPage {
                         content = """
                             val userData = rememberSuspending {
                                 val response = fetch("https://api.example.com/user/123")
-                                val json = response.text()
-                                Json.decodeFromString<User>(json)
+                                Json.decodeFromString<User>(response.text())
                             }
 
                             text {
@@ -68,32 +67,24 @@ object NetworkPage : DocPage {
                 space()
 
                 titledSection("POST Request with Body") {
-                    text("Send data to an API:")
+                    text("Send a JSON body; type sets the Content-Type:")
 
                     space()
                     code {
                         content = """
-                            data class LoginRequest(val email: String, val password: String)
-                            data class LoginResponse(val token: String, val userId: String)
+                            @Serializable data class LoginRequest(val email: String, val password: String)
+                            @Serializable data class LoginResponse(val token: String, val userId: String)
 
                             button {
                                 text("Login")
                                 onClick {
-                                    val request = LoginRequest(email(), password())
-                                    val json = Json.encodeToString(request)
-
                                     val response = fetch(
                                         url = "https://api.example.com/login",
                                         method = HttpMethod.POST,
-                                        headers = RequestHeaders(
-                                            "Content-Type" to "application/json"
-                                        ),
-                                        body = HttpBody.Text(json)
+                                        type = "application/json",
+                                        body = Json.encodeToString(LoginRequest(email(), password())),
                                     )
-
-                                    val result = Json.decodeFromString<LoginResponse>(
-                                        response.text()
-                                    )
+                                    val result = Json.decodeFromString<LoginResponse>(response.text())
                                     authToken.value = result.token
                                 }
                             }
@@ -111,10 +102,7 @@ object NetworkPage : DocPage {
                         content = """
                             val response = fetch(
                                 url = "https://api.example.com/protected",
-                                headers = RequestHeaders(
-                                    "Authorization" to "Bearer ${'$'}{authToken}",
-                                    "Content-Type" to "application/json"
-                                )
+                                headers = HttpHeaders("Authorization" to "Bearer ${'$'}token"),
                             )
                         """.trimIndent()
                     }
@@ -123,33 +111,20 @@ object NetworkPage : DocPage {
                 space()
 
                 titledSection("Error Handling") {
-                    text("Handle network and HTTP errors:")
+                    text("fetch throws a FetchException (ConnectionException or RequestBlockedException) when the request can't complete. It does not throw for an HTTP error status: check response.ok yourself. Errors thrown while loading reach the views that read the value, and are shown by the exception handlers:")
 
                     space()
                     code {
                         content = """
                             val data = rememberSuspending {
-                                try {
-                                    val response = fetch("https://api.example.com/data")
-
-                                    if (response.status !in 200..299) {
-                                        throw Exception("HTTP ${'$'}{response.status}: ${'$'}{response.statusText}")
-                                    }
-
-                                    Json.decodeFromString<DataModel>(response.text())
-                                } catch (e: Exception) {
-                                    // Handle network errors
-                                    toast("Error: ${'$'}{e.message}")
-                                    throw e
-                                }
+                                val response = fetch("https://api.example.com/data")
+                                if (!response.ok) throw IllegalStateException("HTTP ${'$'}{response.status}")
+                                Json.decodeFromString<DataModel>(response.text())
                             }
 
-                            try {
-                                // Display data
+                            col {
                                 text { ::content { data().toString() } }
-                            } catch (e: Exception) {
-                                // Display error state
-                                danger.text("Failed to load data")
+                                errorText()   // show the error here instead of in a dialog
                             }
                         """.trimIndent()
                     }
@@ -158,35 +133,14 @@ object NetworkPage : DocPage {
                 space()
 
                 titledSection("Query Parameters") {
-                    text("Add query parameters to requests:")
+                    text("Encode each value with encodeURIComponent:")
 
                     space()
                     code {
                         content = """
-                            val searchQuery = "kotlin"
-                            val page = 1
-                            val limit = 20
-
-                            val url = "https://api.example.com/search?q=${'$'}searchQuery&page=${'$'}page&limit=${'$'}limit"
+                            val url = "https://api.example.com/search" +
+                                "?q=${'$'}{encodeURIComponent(searchQuery)}&page=${'$'}page&limit=${'$'}limit"
                             val response = fetch(url)
-                        """.trimIndent()
-                    }
-
-                    space()
-                    text("Or use a helper function:")
-                    code {
-                        content = """
-                            fun buildUrl(base: String, params: Map<String, String>): String {
-                                val query = params.entries.joinToString("&") { (k, v) ->
-                                    "${'$'}k=${'$'}{encodeURIComponent(v)}"
-                                }
-                                return if (query.isEmpty()) base else "${'$'}base?${'$'}query"
-                            }
-
-                            val url = buildUrl(
-                                "https://api.example.com/search",
-                                mapOf("q" to searchQuery, "page" to page.toString())
-                            )
                         """.trimIndent()
                     }
                 }
@@ -194,7 +148,7 @@ object NetworkPage : DocPage {
                 space()
 
                 titledSection("File Upload") {
-                    text("Upload files with multipart/form-data:")
+                    text("Ask the user for a file and send it as the request body:")
 
                     space()
                     code {
@@ -202,21 +156,14 @@ object NetworkPage : DocPage {
                             button {
                                 text("Upload Image")
                                 onClick {
-                                    // Get file from user
-                                    val file = pickFile()
-
+                                    val file = context.requestFile(listOf("image/*")) ?: return@onClick
                                     val response = fetch(
                                         url = "https://api.example.com/upload",
                                         method = HttpMethod.POST,
-                                        body = HttpBody.FormData(
-                                            mapOf(
-                                                "file" to file,
-                                                "description" to "My uploaded file"
-                                            )
-                                        )
+                                        body = file,
                                     )
-
-                                    toast("Upload complete!")
+                                    if (!response.ok) throw IllegalStateException("Upload failed: HTTP ${'$'}{response.status}")
+                                    context.toast("Upload complete!")
                                 }
                             }
                         """.trimIndent()
@@ -226,7 +173,7 @@ object NetworkPage : DocPage {
                 space()
 
                 titledSection("Progress Tracking") {
-                    text("Monitor upload and download progress:")
+                    text("Monitor upload and download progress. The total is -1 when the size isn't known:")
 
                     space()
                     code {
@@ -239,8 +186,8 @@ object NetworkPage : DocPage {
                                     val response = fetch(
                                         url = "https://example.com/large-file.zip",
                                         onDownloadProgress = { current, total ->
-                                            progress.value = current.toFloat() / total.toFloat()
-                                        }
+                                            if (total > 0) progress.value = current.toFloat() / total
+                                        },
                                     )
                                     // Process downloaded file
                                 }
@@ -256,7 +203,7 @@ object NetworkPage : DocPage {
                 space()
 
                 titledSection("JSON Serialization") {
-                    text("Use KotlinX Serialization for type-safe JSON handling:")
+                    text("Decode responses into @Serializable classes at the boundary:")
 
                     space()
                     code {
@@ -266,66 +213,10 @@ object NetworkPage : DocPage {
                                 val id: Int,
                                 val name: String,
                                 val email: String,
-                                val createdAt: String
+                                val createdAt: Instant,
                             )
 
-                            @Serializable
-                            data class ApiResponse<T>(
-                                val success: Boolean,
-                                val data: T?,
-                                val error: String?
-                            )
-
-                            // Deserialize response
-                            val json = response.text()
-                            val apiResponse = Json.decodeFromString<ApiResponse<User>>(json)
-
-                            if (apiResponse.success) {
-                                val user = apiResponse.data!!
-                                // Use user data
-                            } else {
-                                // Handle error
-                                toast(apiResponse.error ?: "Unknown error")
-                            }
-                        """.trimIndent()
-                    }
-                }
-
-                space()
-
-                titledSection("Authentication Patterns") {
-                    h5("Token-based Authentication:")
-                    code {
-                        content = """
-                            // Store auth token
-                            val authToken = Signal<String?>(null)
-
-                            // Login
-                            suspend fun login(email: String, password: String) {
-                                val response = fetch(
-                                    url = "https://api.example.com/login",
-                                    method = HttpMethod.POST,
-                                    body = HttpBody.Json(mapOf(
-                                        "email" to email,
-                                        "password" to password
-                                    ))
-                                )
-                                val result = Json.decodeFromString<LoginResponse>(response.text())
-                                authToken.value = result.token
-                            }
-
-                            // Make authenticated requests
-                            suspend fun fetchUserData() {
-                                val token = authToken() ?: throw Exception("Not authenticated")
-
-                                val response = fetch(
-                                    url = "https://api.example.com/user",
-                                    headers = RequestHeaders(
-                                        "Authorization" to "Bearer ${'$'}token"
-                                    )
-                                )
-                                return Json.decodeFromString<User>(response.text())
-                            }
+                            val user = Json.decodeFromString<User>(response.text())
                         """.trimIndent()
                     }
                 }
@@ -340,40 +231,30 @@ object NetworkPage : DocPage {
                         content = """
                             class ApiClient(
                                 private val baseUrl: String,
-                                private val authToken: Signal<String?>
+                                private val authToken: Signal<String?>,
                             ) {
-                                private suspend fun request(
-                                    path: String,
-                                    method: HttpMethod = HttpMethod.GET,
-                                    body: HttpBody? = null
-                                ): RequestResponse {
-                                    val headers = RequestHeaders(
-                                        "Content-Type" to "application/json"
-                                    )
+                                private fun headers() = HttpHeaders {
+                                    authToken.value?.let { set("Authorization", "Bearer ${'$'}it") }
+                                }
 
-                                    authToken()?.let { token ->
-                                        headers["Authorization"] = "Bearer ${'$'}token"
-                                    }
-
-                                    return fetch(
-                                        url = "${'$'}baseUrl${'$'}path",
-                                        method = method,
-                                        headers = headers,
-                                        body = body
-                                    )
+                                private suspend fun check(response: RequestResponse): RequestResponse {
+                                    if (!response.ok) throw IllegalStateException("HTTP ${'$'}{response.status}")
+                                    return response
                                 }
 
                                 suspend fun getUser(id: Int): User {
-                                    val response = request("/users/${'$'}id")
+                                    val response = check(fetch("${'$'}baseUrl/users/${'$'}id", headers = headers()))
                                     return Json.decodeFromString(response.text())
                                 }
 
                                 suspend fun updateUser(user: User): User {
-                                    val response = request(
-                                        "/users/${'$'}{user.id}",
+                                    val response = check(fetch(
+                                        url = "${'$'}baseUrl/users/${'$'}{user.id}",
                                         method = HttpMethod.PUT,
-                                        body = HttpBody.Text(Json.encodeToString(user))
-                                    )
+                                        headers = headers(),
+                                        type = "application/json",
+                                        body = Json.encodeToString(user),
+                                    ))
                                     return Json.decodeFromString(response.text())
                                 }
                             }
@@ -383,22 +264,20 @@ object NetworkPage : DocPage {
                             val user = rememberSuspending { api.getUser(123) }
                         """.trimIndent()
                     }
+
+                    space()
+                    text("With a Lightning Server backend, use its generated SDK and ModelCache instead of writing a client by hand.")
                 }
 
                 space()
 
                 titledSection("Best Practices") {
                     card.col {
-                        text("✓ Always handle errors gracefully")
-                        text("✓ Show loading states while requests are in progress")
-                        text("✓ Use proper HTTP methods (GET, POST, PUT, DELETE)")
-                        text("✓ Set appropriate Content-Type headers")
-                        text("✓ Validate and sanitize user input before sending")
-                        text("✓ Store sensitive data (tokens) securely")
-                        text("✓ Implement retry logic for transient failures")
+                        text("✓ Check response.ok: fetch doesn't throw for HTTP error statuses")
+                        text("✓ Let errors propagate to the exception handlers instead of catching them to show a toast")
+                        text("✓ Load with rememberSuspending so views show loading states automatically")
+                        text("✓ Decode JSON into @Serializable classes")
                         text("✓ Use HTTPS for production APIs")
-                        text("✓ Cache responses when appropriate")
-                        text("✓ Provide user feedback for long-running requests")
                     }
                 }
 
@@ -422,7 +301,8 @@ object NetworkPage : DocPage {
                                 fetch(
                                     url = url,
                                     method = HttpMethod.POST,
-                                    body = HttpBody.Text(Json.encodeToString(data))
+                                    type = "application/json",
+                                    body = Json.encodeToString(data),
                                 )
                             """.trimIndent()
                         }
@@ -431,12 +311,7 @@ object NetworkPage : DocPage {
                         h5("Authenticated Request:")
                         code {
                             content = """
-                                fetch(
-                                    url = url,
-                                    headers = RequestHeaders(
-                                        "Authorization" to "Bearer ${'$'}token"
-                                    )
-                                )
+                                fetch(url, headers = HttpHeaders("Authorization" to "Bearer ${'$'}token"))
                             """.trimIndent()
                         }
                     }

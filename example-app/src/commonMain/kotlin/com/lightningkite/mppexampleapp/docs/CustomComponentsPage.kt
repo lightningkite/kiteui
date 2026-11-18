@@ -13,7 +13,7 @@ import com.lightningkite.reactive.core.*
 object CustomComponentsPage : DocPage {
     override val covers: List<String> = listOf(
         "custom components", "components", "reusable", "composition",
-        "component design", "ViewWriter", "extensions"
+        "component design", "ViewWriter", "ElementWriter", "extensions"
     )
 
     override fun ElementWriter.CanAddTheme.render(): Unit = run {
@@ -24,22 +24,20 @@ object CustomComponentsPage : DocPage {
                 space()
 
                 titledSection("What are Components?") {
-                    text("In KiteUI, components are extension functions on ViewWriter that return Unit. They encapsulate reusable UI logic.")
+                    text("In KiteUI, a component is an extension function on ElementWriter.CanAddTheme. That receiver gives it theme modifiers, and lets callers put modifiers in front of it, like expanding.myComponent().")
 
                     space()
                     code {
                         content = """
-                            fun ViewWriter.myComponent(): Unit = run {
-                                card - col {
-                                    h3("My Component")
-                                    text("Component content here")
-                                }
+                            fun ElementWriter.CanAddTheme.myComponent() = card.col {
+                                h3("My Component")
+                                text("Component content here")
                             }
 
                             // Usage
                             col {
                                 myComponent()
-                                myComponent()  // Reuse
+                                expanding.myComponent()  // modifiers apply to the component's outer view
                             }
                         """.trimIndent()
                     }
@@ -48,15 +46,12 @@ object CustomComponentsPage : DocPage {
                 space()
 
                 titledSection("Component Design Principles") {
-                    text("From GoodKiteuiCode.md - follow these guidelines:")
-
-                    space()
                     card.col {
                         text("✓ Components should be reusable (used more than once)")
                         text("✓ Single-use components should be inlined")
                         text("✓ Take minimal parameters unique to each usage")
                         text("✓ Components should load their own data")
-                        text("✓ Keep components focused and small")
+                        text("✓ Write one outer view, so a caller's modifiers apply to the whole component")
                     }
                 }
 
@@ -67,11 +62,9 @@ object CustomComponentsPage : DocPage {
 
                     space()
                     example("""
-                        fun ViewWriter.userCard(name: String, email: String): Unit = run {
-                            card - col {
-                                h4(name)
-                                subtext(email)
-                            }
+                        fun ElementWriter.CanAddTheme.userCard(name: String, email: String) = card.col {
+                            h4(name)
+                            subtext(email)
                         }
 
                         // Usage
@@ -80,14 +73,12 @@ object CustomComponentsPage : DocPage {
                             userCard("Bob", "bob@example.com")
                         }
                     """.trimIndent()) {
-                        fun ViewWriter.userCard(name: String, email: String): Unit = run {
-                            card.col {
-                                h4(name)
-                                subtext(email)
-                            }
+                        fun ElementWriter.CanAddTheme.userCard(name: String, email: String) = card.col {
+                            h4(name)
+                            subtext(email)
                         }
 
-                        card.col {
+                        col {
                             userCard("Alice", "alice@example.com")
                             userCard("Bob", "bob@example.com")
                         }
@@ -101,21 +92,18 @@ object CustomComponentsPage : DocPage {
 
                     space()
                     example("""
-                        fun ViewWriter.counter(initialValue: Int = 0): Unit = run {
+                        fun ElementWriter.CanAddTheme.counter(initialValue: Int = 0) = card.row {
                             val count = Signal(initialValue)
-
-                            card.row {
-                                button {
-                                    text("-")
-                                    onClick { count.value-- }
-                                }
-                                centered.expanding.text {
-                                    ::content { count().toString() }
-                                }
-                                button {
-                                    text("+")
-                                    onClick { count.value++ }
-                                }
+                            button {
+                                text("-")
+                                onClick { count.value-- }
+                            }
+                            centered.expanding.text {
+                                ::content { count().toString() }
+                            }
+                            button {
+                                text("+")
+                                onClick { count.value++ }
                             }
                         }
 
@@ -125,21 +113,18 @@ object CustomComponentsPage : DocPage {
                             counter(initialValue = 10)
                         }
                     """.trimIndent()) {
-                        fun ViewWriter.counter(initialValue: Int = 0): Unit = run {
+                        fun ElementWriter.CanAddTheme.counter(initialValue: Int = 0) = card.row {
                             val count = Signal(initialValue)
-
-                            card.row {
-                                button {
-                                    text("-")
-                                    onClick { count.value-- }
-                                }
-                                centered.expanding.text {
-                                    ::content { count().toString() }
-                                }
-                                button {
-                                    text("+")
-                                    onClick { count.value++ }
-                                }
+                            button {
+                                text("-")
+                                onClick { count.value-- }
+                            }
+                            centered.expanding.text {
+                                ::content { count().toString() }
+                            }
+                            button {
+                                text("+")
+                                onClick { count.value++ }
                             }
                         }
 
@@ -153,86 +138,43 @@ object CustomComponentsPage : DocPage {
                 space()
 
                 titledSection("Components with Callbacks") {
-                    text("Pass callbacks for user interactions:")
+                    text("Pass suspend callbacks for user interactions; errors they throw are shown automatically:")
 
                     space()
                     example("""
-                        fun ViewWriter.confirmDialog(
-                            message: String,
-                            onConfirm: () -> Unit,
-                            onCancel: () -> Unit
-                        ): Unit = run {
-                            card - col {
-                                text(message)
-                                row {
-                                    expanding - button {
-                                        text("Cancel")
-                                        onClick { onCancel() }
-                                    }
-                                    expanding - important - button {
-                                        text("Confirm")
-                                        onClick { onConfirm() }
+                        fun ElementWriter.CanAddTheme.deleteRow(name: String, onDelete: suspend () -> Unit) = card.row {
+                            expanding.text(name)
+                            danger.button {
+                                text("Delete")
+                                onClick {
+                                    context.confirmDanger("Delete ${'$'}name", "This can't be undone.", actionName = "Delete") {
+                                        onDelete()
                                     }
                                 }
                             }
                         }
 
                         // Usage
-                        val showDialog = Signal(false)
-
-                        button {
-                            text("Show Dialog")
-                            onClick { showDialog.value = true }
+                        deleteRow("Report.pdf") {
+                            context.toast("Deleted")
                         }
-
-                        shownWhen { showDialog() } - confirmDialog(
-                            message = "Are you sure?",
-                            onConfirm = {
-                                context.toast("Confirmed!")
-                                showDialog.value = false
-                            },
-                            onCancel = {
-                                showDialog.value = false
-                            }
-                        )
                     """.trimIndent()) {
-
-                        fun ElementWriter.CanAddTheme.confirmDialog(
-                            message: String,
-                            onConfirm: () -> Unit,
-                            onCancel: () -> Unit
-                        ) = card.col {
-                            text(message)
-                            row {
-                                expanding.button {
-                                    text("Cancel")
-                                    onClick { onCancel() }
-                                }
-                                expanding.important.button {
-                                    text("Confirm")
-                                    onClick { onConfirm() }
+                        fun ElementWriter.CanAddTheme.deleteRow(name: String, onDelete: suspend () -> Unit) = card.row {
+                            expanding.text(name)
+                            danger.button {
+                                text("Delete")
+                                onClick {
+                                    context.confirmDanger("Delete $name", "This can't be undone.", actionName = "Delete") {
+                                        onDelete()
+                                    }
                                 }
                             }
                         }
 
-                        card.col {
-                            val showDialog = Signal(false)
-
-                            button {
-                                text("Show Dialog")
-                                onClick { showDialog.value = true }
+                        col {
+                            deleteRow("Report.pdf") {
+                                context.toast("Deleted")
                             }
-
-                            shownWhen { showDialog() }.confirmDialog(
-                                message = "Are you sure?",
-                                onConfirm = {
-                                    context.toast("Confirmed!")
-                                    showDialog.value = false
-                                },
-                                onCancel = {
-                                    showDialog.value = false
-                                }
-                            )
                         }
                     }
                 }
@@ -244,15 +186,13 @@ object CustomComponentsPage : DocPage {
 
                     space()
                     example("""
-                        fun ViewWriter.section(
+                        fun ElementWriter.CanAddTheme.section(
                             title: String,
-                            content: ViewWriter.() -> Unit
-                        ): Unit = run {
-                            card - col {
-                                h4(title)
-                                separator()
-                                content()
-                            }
+                            content: ViewWriter.() -> Unit,
+                        ) = card.col {
+                            h4(title)
+                            separator()
+                            content()
                         }
 
                         // Usage
@@ -263,13 +203,11 @@ object CustomComponentsPage : DocPage {
                     """.trimIndent()) {
                         fun ElementWriter.CanAddTheme.section(
                             title: String,
-                            content: ViewWriter.() -> Unit
-                        ): Unit = run {
-                            card.col {
-                                h4(title)
-                                separator()
-                                content()
-                            }
+                            content: ViewWriter.() -> Unit,
+                        ) = card.col {
+                            h4(title)
+                            separator()
+                            content()
                         }
 
                         section("User Information") {
@@ -287,16 +225,10 @@ object CustomComponentsPage : DocPage {
                     space()
                     code {
                         content = """
-                            fun ViewWriter.userProfile(userId: Int): Unit = run {
-                                val user = rememberSuspending {
-                                    // Component loads its own data
-                                    fetchUser(userId)
-                                }
-
-                                card - col {
-                                    h3 { ::content { user().name } }
-                                    text { ::content { user().email } }
-                                }
+                            fun ElementWriter.CanAddTheme.userProfile(userId: Int) = card.col {
+                                val user = rememberSuspending { fetchUser(userId) }   // shows loading automatically
+                                h3 { ::content { user().name } }
+                                text { ::content { user().email } }
                             }
 
                             // Usage - just pass the ID
@@ -305,37 +237,19 @@ object CustomComponentsPage : DocPage {
                     }
 
                     space()
-                    text("This is better than:")
-                    code {
-                        content = """
-                            // DON'T DO THIS - harder to debug
-                            fun ViewWriter.userProfile(user: User): Unit = run {
-                                card - col {
-                                    h3(user.name)
-                                    text(user.email)
-                                }
-                            }
-
-                            // Caller has to manage data loading
-                            val user = rememberSuspending { fetchUser(123) }
-                            userProfile(user())
-                        """.trimIndent()
-                    }
+                    text("This is better than making every caller load the data and pass it in.")
                 }
 
                 space()
 
                 titledSection("Modifier Order") {
-                    text("Remember: Position > Visibility > Scroll > Theme")
+                    text("The compiler enforces modifier order: alignment → weight → shownWhen → sizing → theme → scrolling → element.")
 
                     space()
                     code {
                         content = """
-                            fun ViewWriter.myComponent(): Unit = run {
-                                // Correct order
-                                centered - scrolling - card - col {
-                                    text("Content")
-                                }
+                            centered.sizeConstraints(maxWidth = 40.rem).card.scrolling.col {
+                                text("Content")
                             }
                         """.trimIndent()
                     }
@@ -349,54 +263,25 @@ object CustomComponentsPage : DocPage {
                     space()
                     code {
                         content = """
-                            fun ViewWriter.avatar(name: String, size: Dimension = 40.dp): Unit = run {
-                                sizeConstraints(width = size, height = size) - card - centered - text {
-                                    content = name.take(2).uppercase()
+                            fun ElementWriter.CanAddTheme.avatar(name: String) = card.text(name.take(2).uppercase())
+
+                            fun ElementWriter.CanAddTheme.userListItem(user: User) = card.row {
+                                centered.sizeConstraints(width = 3.rem, height = 3.rem).avatar(user.name)
+                                expanding.col {
+                                    text(user.name)
+                                    subtext(user.email)
+                                }
+                                button {
+                                    text("View")
+                                    onClick { context.pageNavigator.navigate(UserPage(user.id)) }
                                 }
                             }
 
-                            fun ViewWriter.userListItem(
-                                name: String,
-                                email: String,
-                                onClick: () -> Unit
-                            ): Unit = run {
-                                card - row {
-                                    avatar(name)
-                                    expanding - col {
-                                        text(name)
-                                        subtext(email)
-                                    }
-                                    button {
-                                        text("View")
-                                        onClick { onClick() }
-                                    }
-                                }
-                            }
-
-                            fun ViewWriter.userList(users: List<User>): Unit = run {
-                                col {
-                                    for (user in users) {
-                                        userListItem(
-                                            name = user.name,
-                                            email = user.email,
-                                            onClick = { context.pageNavigator.navigate(UserPage(user.id)) }
-                                        )
-                                    }
-                                }
+                            // Usage
+                            col {
+                                for (user in users) userListItem(user)
                             }
                         """.trimIndent()
-                    }
-                }
-
-                space()
-
-                titledSection("Testing Components") {
-                    text("Keep components testable by:")
-                    card.col {
-                        text("• Accepting data as parameters rather than hardcoding")
-                        text("• Using callbacks for side effects")
-                        text("• Keeping components pure when possible")
-                        text("• Avoiding global state")
                     }
                 }
 
@@ -407,14 +292,13 @@ object CustomComponentsPage : DocPage {
                         h5("Simple Display Component:")
                         code {
                             content = """
-                                fun ViewWriter.statusBadge(status: String): Unit = run {
-                                    val semantic = when(status) {
-                                        "active" -> ::affirmative
-                                        "error" -> ::danger
-                                        else -> ::card
+                                fun ElementWriter.CanAddTheme.statusBadge(status: String) = themed(
+                                    when (status) {
+                                        "active" -> AffirmativeSemantic
+                                        "error" -> DangerSemantic
+                                        else -> CardSemantic
                                     }
-                                    semantic() - text(status)
-                                }
+                                ).text(status)
                             """.trimIndent()
                         }
 
@@ -422,14 +306,9 @@ object CustomComponentsPage : DocPage {
                         h5("Interactive Component:")
                         code {
                             content = """
-                                fun ViewWriter.toggle(
-                                    label: String,
-                                    checked: Signal<Boolean>
-                                ): Unit = run {
-                                    row {
-                                        centered - checkbox { this.checked bind checked }
-                                        centered - expanding - text(label)
-                                    }
+                                fun ElementWriter.CanAddTheme.labeledCheckbox(label: String, checked: Signal<Boolean>) = row {
+                                    centered.checkbox { this.checked bind checked }
+                                    centered.expanding.text(label)
                                 }
                             """.trimIndent()
                         }
@@ -438,14 +317,12 @@ object CustomComponentsPage : DocPage {
                         h5("Container Component:")
                         code {
                             content = """
-                                fun ViewWriter.panel(
+                                fun ElementWriter.CanAddTheme.panel(
                                     title: String,
-                                    content: ViewWriter.() -> Unit
-                                ): Unit = run {
-                                    card - col {
-                                        bar - h4(title)
-                                        content()
-                                    }
+                                    content: ViewWriter.() -> Unit,
+                                ) = card.col {
+                                    h4(title)
+                                    content()
                                 }
                             """.trimIndent()
                         }
@@ -467,9 +344,7 @@ object CustomComponentsPage : DocPage {
                     code {
                         content = """
                             // DON'T - this is too specific and won't be reused
-                            fun ViewWriter.loginPageTitle(): Unit = run {
-                                h1("Login to MyApp")
-                            }
+                            fun ElementWriter.CanAddTheme.loginPageTitle() = h1("Login to MyApp")
 
                             // DO - just inline it
                             h1("Login to MyApp")
@@ -482,12 +357,10 @@ object CustomComponentsPage : DocPage {
                 titledSection("Best Practices Summary") {
                     card.col {
                         text("✓ Create components for reusable UI patterns")
+                        text("✓ Use ElementWriter.CanAddTheme as the receiver")
                         text("✓ Keep parameters minimal and focused")
                         text("✓ Let components load their own data")
-                        text("✓ Use callbacks for interactions")
-                        text("✓ Follow modifier ordering rules")
                         text("✓ Compose complex components from simple ones")
-                        text("✓ Make components testable")
                         text("✓ Inline single-use code")
                     }
                 }

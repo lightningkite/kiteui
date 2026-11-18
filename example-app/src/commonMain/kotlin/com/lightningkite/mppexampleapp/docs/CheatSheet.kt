@@ -27,6 +27,7 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import kotlin.math.PI
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlinx.coroutines.delay
@@ -395,7 +396,7 @@ object CheatSheet : DocPage {
                             text("A dangerous button")
                             action = Action("Explode") {
                                 delay(1.seconds)
-                                toast("KABOOM!!!")
+                                context.toast("KABOOM!!!")
                             }
                         } 
                     """.trimIndent(),
@@ -1061,7 +1062,7 @@ object CheatSheet : DocPage {
                             danger.text("danger")
                             affirmative.text("affirmative")
                             emphasized.text("emphasized")
-                            InsetSemantic.onNext.text("InsetSemantic.onNext")
+                            themed(InsetSemantic).text("themed(InsetSemantic)")
                         """.trimIndent(),
                             result = {
                                 text("None")
@@ -1075,7 +1076,7 @@ object CheatSheet : DocPage {
                                 danger.text("danger")
                                 affirmative.text("affirmative")
                                 emphasized.text("emphasized")
-                                themed(InsetSemantic).text("InsetSemantic.onNext")
+                                themed(InsetSemantic).text("themed(InsetSemantic)")
                             }
                         )
                     }
@@ -1236,7 +1237,7 @@ object CheatSheet : DocPage {
                                 }
                             }
 
-                            val debounced = input.debounce(200)
+                            val debounced = input.debounce(200.milliseconds)
 
                             dynamicThemed {
                                 val color = try {
@@ -1258,7 +1259,7 @@ object CheatSheet : DocPage {
                         button {
                                 text("Click Me")
                                 action = Action("Show toast") {
-                                    toast("I am a toast!")
+                                    context.toast("I am a toast!")
                                 }
                             }
                     """.trimIndent(),
@@ -1278,7 +1279,7 @@ object CheatSheet : DocPage {
                         button {
                                 text("Do a dangerous thing")
                                 onClick {
-                                    confirmDanger(
+                                    context.confirmDanger(
                                         "Danger",
                                         "Are you sure you wish to do this dangerous thing?"
                                     ) {
@@ -1308,7 +1309,7 @@ object CheatSheet : DocPage {
                         button {
                                 text("Alert Me")
                                 onClick {
-                                    alert("Alert", "This is an alert")
+                                    context.alert("Alert", "This is an alert")
                                 }
                             }
                     """.trimIndent(),

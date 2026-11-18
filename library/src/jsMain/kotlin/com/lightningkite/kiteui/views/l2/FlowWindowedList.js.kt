@@ -56,14 +56,11 @@ internal class FlowWindowedList(context: ElementContext) : NativeLinearLayoutEle
             this@FlowWindowedList.topSpacer = this
             native.setAttribute("aria-hidden", "true")
             native.setStyleProperty("flex-shrink", "0")
-            // Cancels the flex gap between the spacer and the first cell, so an empty spacer leaves no blank band.
-            native.setStyleProperty("margin-bottom", "calc(-1 * var(--spacing, 0px))")
         }
         unpadded.frame {
             this@FlowWindowedList.bottomSpacer = this
             native.setAttribute("aria-hidden", "true")
             native.setStyleProperty("flex-shrink", "0")
-            native.setStyleProperty("margin-top", "calc(-1 * var(--spacing, 0px))")
         }
         native.onElement {
             it.addEventListener("scroll", {
@@ -170,21 +167,31 @@ internal class FlowWindowedList(context: ElementContext) : NativeLinearLayoutEle
 
     private var topSpacerHeight = 0.0
     private var bottomSpacerHeight = 0.0
+    private var spacerGap = 0.0
 
     private class ScrollTarget(val index: Int, val align: Align, val animate: Boolean)
     private var scrollTarget: ScrollTarget? = null
 
     override fun scrollToIndex(index: Int, align: Align, animate: Boolean) {
-        if (index !in items.indices) throw IndexOutOfBoundsException("Index $index is not in ${items.indices}")
         scrollTarget = ScrollTarget(index, align, animate)
+        // Or holdAnchor drags it back to the end as the cells around the target render.
+        pinnedToEnd = false
         invalidate()
     }
+
+    override var startAtEnd: Boolean = false
+        set(value) {
+            field = value
+            pinnedToEnd = value
+            invalidate()
+        }
 
     private var scrolledSinceUpdate = false
 
     /**
      * The list was last scrolled to its end, so it stays there as items arrive or cells grow.
-     * Only a scroll changes this: content growing under a list at its end must not unpin it.
+     * Only a scroll, [startAtEnd] or [scrollToIndex] changes this: content growing under a list at its end must not
+     * unpin it.
      */
     private var pinnedToEnd = false
 
@@ -226,11 +233,21 @@ internal class FlowWindowedList(context: ElementContext) : NativeLinearLayoutEle
         if (viewportHeight == 0.0) return
         var viewportTop = scroller.scrollTop
         val items = items
-        val gap = window.getComputedStyle(scroller).getPropertyValue("row-gap").removeSuffix("px").toDoubleOrNull() ?: 0.0
+        val style = window.getComputedStyle(scroller)
+        val gap = style.getPropertyValue("row-gap").removeSuffix("px").toDoubleOrNull() ?: 0.0
+        if (gap != spacerGap) {
+            spacerGap = gap
+            // Cancels the flex gap between a spacer and its cell, so an empty spacer leaves no blank band.  Set from
+            // the measured gap because var(--spacing) on a spacer is the surrounding theme's, not this list's.
+            topSpacer.native.setStyleProperty("margin-bottom", "${-gap}px")
+            bottomSpacer.native.setStyleProperty("margin-top", "${-gap}px")
+        }
 
         if (scrolledSinceUpdate) {
             scrolledSinceUpdate = false
-            pinnedToEnd = viewportTop > 0.0 && viewportTop + viewportHeight >= scroller.scrollHeight - 2
+            val atEnd = viewportTop + viewportHeight >= scroller.scrollHeight - 2
+            // A list with nothing to scroll is at its start and its end at once, so it keeps what it was.
+            pinnedToEnd = atEnd && (viewportTop > 0.0 || pinnedToEnd)
         }
         if (shownMatchesItems) {
             recordShownExtents(gap)
@@ -247,17 +264,22 @@ internal class FlowWindowedList(context: ElementContext) : NativeLinearLayoutEle
             if (targetCell != null) {
                 // It's laid out, so its real position is known.
                 val cellBounds = targetCell.dom.getBoundingClientRect()
-                val scrollerBounds = scroller.getBoundingClientRect()
+                val paddingBoxTop = scroller.getBoundingClientRect().top + scroller.clientTop
+                val contentTop = paddingBoxTop + style.paddingTop.removeSuffix("px").toDouble()
+                val contentBottom = paddingBoxTop + viewportHeight - style.paddingBottom.removeSuffix("px").toDouble()
                 val alignedTop = viewportTop + when (target.align) {
-                    Align.Start -> cellBounds.top - scrollerBounds.top
-                    Align.End -> cellBounds.bottom - scrollerBounds.bottom
-                    else -> (cellBounds.top + cellBounds.bottom) / 2 - (scrollerBounds.top + scrollerBounds.bottom) / 2
+                    Align.Start -> cellBounds.top - contentTop
+                    Align.End -> cellBounds.bottom - contentBottom
+                    else -> (cellBounds.top + cellBounds.bottom) / 2 - (contentTop + contentBottom) / 2
                 }
                 scrollTarget = null
                 anchorCell = null
+                // Pinned now rather than by the scroll event, so a cell that grows before that event is still followed.
+                if (target.index == items.lastIndex && target.align == Align.End) pinnedToEnd = true
                 scroll.scrollTo(0.0, alignedTop, target.animate)
             } else {
                 // It isn't rendered, so its position is a guess.  Go there, render, then align next frame.
+                invalidate()
                 var aboveTarget = 0.0
                 for (index in 0 until target.index) aboveTarget += extent(index)
                 val guess = when (target.align) {
@@ -311,8 +333,6 @@ internal class FlowWindowedList(context: ElementContext) : NativeLinearLayoutEle
             // the window needs to reach further.
             invalidate()
         }
-        // Still waiting to align on the target, which this pass has only just rendered.
-        if (scrollTarget != null) invalidate()
 
         if (jumpTo != null) {
             // The view is moving on purpose, so there is nothing to hold in place.

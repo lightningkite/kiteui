@@ -1,207 +1,51 @@
 # KiteUI Dialogs & Overlays
 
-## Toast Notification
+Full chapter: [docs/dialogs.md](../../../docs/dialogs.md).  All are `ElementContext` functions: call `context.xxx(...)`.  `context` is in scope anywhere inside an element builder, including `onClick {}` and `Action {}`.  The receiver-less `toast(...)`, `dialog {}`, `alert`, `confirmDanger` on `ElementWriter` are deprecated.
 
 ```kotlin
-onClick {
-    toast("Operation successful!")
+context.toast("Saved")                                   // 3 s, bottom center
+context.toast(5.seconds) { row { icon(Icon.done, "Done"); text("Uploaded") } }
+
+context.alert("Offline", "Check your connection.")       // title + body, OK button
+
+context.confirmDanger("Delete project", "This can't be undone.", actionName = "Delete") {
+    deleteProject()                                       // runs only if confirmed (suspend)
 }
-```
+// There is NO confirm(): Boolean.  Put the follow-up in the block.
 
-## Alert Dialog
-
-```kotlin
-onClick {
-    alert("Are you sure you want to delete this?")
-}
-```
-
-## Confirm Dialog
-
-```kotlin
-onClick {
-    val confirmed = confirm("Delete this item?")
-    if (confirmed) {
-        deleteItem()
-    }
-}
-```
-
-## Custom Dialog
-
-Use `dialog { close -> }` pattern for modal dialogs:
-
-```kotlin
-onClick {
-    dialog { close ->  // close callback provided automatically
-        card.col {
-            h2("Custom Dialog")
-            text("Dialog content here")
-            row {
-                button {
-                    text("Cancel")
-                    onClick { close() }
-                }
-                important.button {
-                    text("Confirm")
-                    onClick {
-                        // Do something
-                        close()
-                    }
-                }
-            }
-        }
-    }
-}
-```
-
-**Benefits:**
-- No manual Signal needed to track dialog state
-- Automatic overlay/background handling
-- `close()` callback provided automatically
-- Cleaner than manual `dismissBackground` + `shownWhen` pattern
-
-## Bottom Sheet
-
-Bottom sheets are modal overlays that slide up from the bottom of the screen, commonly used for forms and option menus.
-
-```kotlin
-onClick {
-    openBottomSheet {
-        col {
-            h3 { content = "Options" }
-            subtext { content = "Select an option:" }
-            button {
-                text { content = "Option 1" }
-                onClick { /* ... */ }
-            }
-            button {
-                text { content = "Option 2" }
-                onClick { /* ... */ }
-            }
-        }
-    }
-}
-```
-
-**Closing behavior:**
-- User taps outside the sheet → closes automatically
-- User navigates to another page → closes automatically
-- Call `dismissBackground()` from inside the sheet to close programmatically
-
-### Form in Bottom Sheet
-
-```kotlin
-fun ViewWriter.EditItemSheet(item: Item, onSave: () -> Unit) {
-    val nameInput = Signal(item.name)
-    val descriptionInput = Signal(item.description)
-
-    col {
-        h2 { content = "Edit Item" }
-
-        field("Name") {
-            textInput {
-                content bind nameInput
-            }
-        }
-
-        field("Description") {
-            textArea {
-                content bind descriptionInput
-            }
-        }
-
+context.dialog { close ->                                 // dismissable = false to block bg/back
+    col {                                                 // no `card` - DialogSemantic is applied
+        h2("Rename")
+        textInput { content bind name }
         row {
-            button {
-                text { content = "Cancel" }
-                onClick { dismissBackground() }  // Close sheet
-            }
-            important.button {
-                text { content = "Save" }
-                action = Action("Save") {
-                    val session = currentSession.await() ?: return@Action
-                    session.items[item._id].modify(modification {
-                        it.name assign nameInput.value
-                        it.description assign descriptionInput.value
-                    })
-                    onSave()
-                    dismissBackground()  // Close sheet after save
-                }
-            }
-        }
-
-        subtext { content = "Tap outside to close" }
-    }
-}
-
-// Usage
-button {
-    text { content = "Edit" }
-    onClick {
-        openBottomSheet {
-            EditItemSheet(item) {
-                // Refresh list after save
-                loadItems()
-            }
+            expanding.button { centered.text("Cancel"); onClick { close() } }
+            expanding.important.button { centered.text("Save"); onClick { save(); close() } }
         }
     }
 }
-```
 
-**Note**: Use `openBottomSheet { }` (not `bottomSheet { }`). The function name indicates it opens a new sheet.
-
-## Confirm Danger Dialog
-
-For destructive actions that require extra confirmation:
-
-```kotlin
-onClick {
-    confirmDanger("Delete Project", "This cannot be undone. Are you sure?") {
-        // Only runs if user confirms
-        api.deleteProject(projectId)
-        toast("Project deleted")
+context.coordinatorFrame.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) { control ->
+    themed(DialogSemantic).col {
+        centered.coordinatorDragHandle()
+        button { text("Done"); onClick { control.close() } }
     }
 }
-```
+// also leftSlidingPanel / rightSlidingPanel.  openBottomSheet {} is deprecated.
 
-## Menu Buttons with opensMenu
-
-Create dropdown menus with complex content:
-
-```kotlin
 menuButton {
     icon(Icon.moreVert, "More options")
-    requireClick = true  // Don't open on hover, only on click
+    requireClick = true                                   // otherwise opens on hover (web)
+    preferredDirection = PopoverPreferredDirection.belowLeft
     opensMenu {
-        col {
-            button {
-                text("Edit")
-                onClick { edit() }
-            }
-            button {
-                text("Delete")
-                onClick { delete() }
-            }
-            separator()
-            row {
-                checkbox { checked bind includeArchived }
-                text("Include Archived")
-            }
-        }
+        col { button { text("Edit"); onClick { context.currentPopover?.close(); edit() } } }
     }
 }
 
-// Menu with dynamic theme
-menuButton {
-    dynamicTheme {
-        if (hasUnread()) SelectedSemantic
-        else null
-    }
-    icon(Icon.notification, "Notifications")
-    opensMenu {
-        sizeConstraints(width = 30.rem, height = 40.rem).col {
-            // Complex menu content with recyclerView, etc.
-        }
-    }
-}
+button { onClick { openPopover(PopoverPreferredDirection.aboveCenter) { text("Hint") } } }
+
+context.overlay(modal = false) { close -> atTopEnd.card.row { /* ... */ } }   // raw building block
 ```
+
+- Prefer `context.dialog` over a hand-rolled `shownWhen` + `Signal` overlay: it handles background, back, focus trap, stacking.
+- Back closes the top dialog before popping a page.
+- Errors thrown in `onClick`/`Action` already show an error dialog; see error-handling.md.

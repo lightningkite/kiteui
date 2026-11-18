@@ -159,6 +159,21 @@ class InputsTest {
     }
 
     @Test
+    fun phoneNumberInputKeepsEveryDigitAndTheCountryCode() = runKiteUiTest {
+        val phone = Signal("")
+        showKiteUi { col { fieldTheme.phoneNumberInput { content bind phone } } }
+        field(0).performTextInput("+18015550123")
+        awaitValue(phone, "+18015550123")
+        field(0).assertTextEquals("+1 (801) 555-0123")
+        phone.value = "801555012345"
+        awaitText(0, "(801) 555-012345")
+        // A '+' after the start is not data, so the bound value must lose it just as the shown text does.
+        phone.value = "801+5550123"
+        awaitText(0, "(801) 555-0123")
+        awaitValue(phone, "8015550123")
+    }
+
+    @Test
     fun dateAndTimeFieldsParseWhatIsTyped() = runKiteUiTest {
         val date = Signal<LocalDate?>(null)
         val time = Signal<LocalTime?>(null)

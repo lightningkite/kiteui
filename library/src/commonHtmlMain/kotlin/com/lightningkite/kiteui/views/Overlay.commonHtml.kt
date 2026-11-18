@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.dom.KeyboardEvent
+import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.reactive.core.Release
@@ -32,6 +34,11 @@ public actual fun ElementContext.overlay(
                 if (willRemove != null) throw IllegalStateException("overlay writer produced more than one element, when only one is allowed.")
                 animateIn(transition.forward)
                 willRemove = this
+                // Listening on the overlay itself, not the window, makes Escape close only the overlay holding focus:
+                // the topmost, because trapFocus makes the ones under it inert.
+                if (navClosable) native.addEventListener("keydown") {
+                    if ((it as KeyboardEvent).code == KeyCodes.escape) close()
+                }
                 if (modal) {
                     native.setAttribute("role", "dialog")
                     native.setAttribute("aria-modal", "true")

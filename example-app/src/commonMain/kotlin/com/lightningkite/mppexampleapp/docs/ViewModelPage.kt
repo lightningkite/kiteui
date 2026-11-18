@@ -59,9 +59,11 @@ object ViewModelPage: DocPage {
                             suspend fun submit() = ...
                             // ...
                             
-                            override fun ViewWriter.render2() = col {
-                                text {
-                                    ::content { "My UI state is: " + uiState().toString() }
+                            override fun ElementWriter.CanAddTheme.render() {
+                                col {
+                                    text {
+                                        ::content { "My UI state is: " + uiState().toString() }
+                                    }
                                 }
                             }
                         }

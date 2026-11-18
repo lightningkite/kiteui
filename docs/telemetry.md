@@ -1,4 +1,4 @@
-# KiteUI Telemetry
+# Telemetry
 
 KiteUI records spans and logs on the device and sends them through your own server, as Service Abstractions'
 `TelemetryBatch` (from the client-safe `telemetry-shared` module). The server adds the signed-in user and
@@ -38,7 +38,7 @@ telemetry.install(context, navigator)
 ```
 
 `upload` sends one batch: throwing keeps the batch for a retry, returning drops it. `telemetryUpload` (from
-lightning-server-kiteui) drops batches the server refused for good (a 4xx other than 401, 408 or 429) and
+lightning-server-kiteui, not yet merged there: until it is, write the `upload` lambda yourself) drops batches the server refused for good (a 4xx other than 401, 408 or 429) and
 retries everything else, including rate-limit 429s.
 
 Upload goes through your generated client so it carries the user's `Authorization` header. Anonymous
@@ -168,3 +168,8 @@ The fingerprint becomes the record's `error.fingerprint`, the same attribute ser
    the client metrics `http.client.request.duration`, `navigation.page_views`, `action.invocations` and
    `connectivity.issues` are gone; use the `http.*`, `screen.load` and `action.*` spans and the connectivity
    WARN logs.
+
+## See also
+
+- Lightning Server `ClientTelemetryEndpoints`, which receives the batches
+- Source: `library/src/commonMain/kotlin/com/lightningkite/kiteui/telemetry/`

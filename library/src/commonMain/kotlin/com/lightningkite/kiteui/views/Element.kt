@@ -49,9 +49,10 @@ import com.lightningkite.kiteui.views.AiDriver
  * **Most common use case: Configuring elements in your UI code**
  * ```kotlin
  * col {
- *     text("Hello") {
+ *     text {
+ *         content = "Hello"
  *         opacity = 0.8                    // Modifying Element properties
- *         shown = isVisible()
+ *         ::shown { isVisible() }          // Reactive binding
  *         debugName = "greeting-text"
  *     }
  * }
@@ -73,7 +74,7 @@ import com.lightningkite.kiteui.views.AiDriver
  * **You typically don't implement Element directly.** Instead:
  * - To create a **custom view**, extend [NativeElement] (see [NativeElement] docs)
  * - To create a **custom container**, extend [NativeContainerElement]
- * - To create a **wrapper** around an existing element, use delegation (see example below)
+ * - To create a **wrapper** around an existing element, use delegation (see `HighlightableText` above)
  *
  * ## Element Lifecycle
  *
@@ -122,22 +123,13 @@ import com.lightningkite.kiteui.views.AiDriver
  * class MyPage : Page {
  *     private lateinit var statusText: TextView
  *
- *     override fun ElementWriter.CanAddTheme.render() = col {
- *         text("Status") { statusText = this }
- *         button { text("Update") }.onClick {
- *             statusText.content = "Updated!"
- *         }
- *     }
- * }
- * ```
- *
- * ### Element Delegation (Wrapping)
- * ```kotlin
- * class LoggingButton(inner: Button) : Element by inner, InteractiveElement by inner {
- *     init {
- *         onClick {
- *             println("Button clicked: ${debugName}")
- *             // original onClick still fires
+ *     override fun ElementWriter.CanAddTheme.render() {
+ *         col {
+ *             statusText = text("Status")
+ *             button {
+ *                 text("Update")
+ *                 onClick { statusText.content = "Updated!" }
+ *             }
  *         }
  *     }
  * }
@@ -145,16 +137,16 @@ import com.lightningkite.kiteui.views.AiDriver
  *
  * ### Reactive Element Properties
  * ```kotlin
- * val isLoading = Property(false)
- * val loadingIndicator: Element = ...
- *
- * loadingIndicator::shown { isLoading() }
+ * val isLoading = Signal(false)
+ * activityIndicator {
+ *     ::shown { isLoading() }
+ * }
  * ```
  *
  * ## Important Notes
  *
  * - **Thread safety**: Element properties should only be accessed from the main/UI thread
- * - **Lifecycle**: Don't access element properties before [onStartup] or after [onShutdown]
+ * - **Lifecycle**: The setup block runs before [onStartup], so setting properties there is fine; bindings made there start at [onStartup].  Don't use an element after [onShutdown]
  * - **Delegation**: When using delegation, the framework tracks the "outermost" wrapper automatically
  * - **Parent**: The parent is automatically set when the element is added to a container
  *

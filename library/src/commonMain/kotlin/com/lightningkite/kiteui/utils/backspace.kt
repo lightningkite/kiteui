@@ -186,9 +186,11 @@ public inline fun repairFormatAndPosition(
     val clean = dirty.filter(isRawData)
     val result = formatter(clean)
 
-    // Finding the number of formatting characters in the selection range, and removing them from the selection index, resulting in the number of data characters in selection
-    val startPosOnClean = selectionStart?.minus(dirty.substring(0, selectionStart).count { !isRawData(it) })
-    val endPosOnClean = selectionEnd?.minus(dirty.substring(0, selectionEnd).count { !isRawData(it) })
+    // The number of data characters before each selection index that survive formatting.
+    // Formatting the prefix, not just counting its data characters, keeps the caret in place when the formatter
+    // discards a data character (e.g. a '+' that is only data at the start of a phone number).
+    val startPosOnClean = selectionStart?.let { formatter(dirty.substring(0, it).filter(isRawData)).count(isRawData) }
+    val endPosOnClean = selectionEnd?.let { formatter(dirty.substring(0, it).filter(isRawData)).count(isRawData) }
 
     // With the formatted string, we loop through each character, counting each character, until we've encountered the number of data characters calculated in the previous step
     val startPosOnResult = startPosOnClean?.let {

@@ -106,19 +106,21 @@ internal fun generateAutoroutes(sources: File, out: File) {
                             // mistakenly attributed to this one.
                             val bodyEnd = text.afterBraces(startingAt = bodyStart, filename = file.name)
                             val upperIndex = index
-                            val out = HashMap<String, String>()
+                            val out = LinkedHashMap<String, String>()
                             var index = upperIndex
                             while (true) {
                                 val next = text.indexOf("@QueryParameter", index)
                                 // Stop at end-of-file OR at the end of this class's body.
                                 if (next == -1 || next >= bodyEnd) break
                                 index = next + 1
-                                val argStart = text.indexOf('(', next).let { if (it == -1) text.length else it }
-                                val hasExplicitName = (next + 15..argStart).none { !text[it].isWhitespace() }
-                                if (argStart == text.length) continue
-                                var annoArgs: List<String>? = null
-                                val beginLoookingForVa = if (hasExplicitName) {
-                                    annoArgs = text.splitParens(startingAt = argStart, filename = file.name)
+                                val argStart = text.indexOf('(', next)
+                                val hasArguments = argStart != -1 &&
+                                    (next + "@QueryParameter".length until argStart).all { text[it].isWhitespace() }
+                                var urlName: String? = null
+                                val beginLoookingForVa = if (hasArguments) {
+                                    val nameArgument = text.splitParens(startingAt = argStart, filename = file.name).first()
+                                    urlName = Regex("\"([^\"]*)\"").find(nameArgument)?.groupValues?.get(1)
+                                        ?: throw IllegalStateException("@QueryParameter name must be a string literal in ${file.name}: $nameArgument")
                                     text.afterParens(startingAt = argStart, filename = file.name)
                                 } else {
                                     index
@@ -133,7 +135,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 val nameEnd = text.indexOf(nameStart, ' ', ':')
                                 if (nameEnd == -1) continue
                                 val codename = text.substring(nameStart, nameEnd)
-                                out[codename] = annoArgs?.getOrNull(0) ?: codename
+                                out[urlName?.takeIf { it.isNotEmpty() } ?: codename] = codename
                             }
                             out
                         }
@@ -303,7 +305,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                                 // writes; decode here so UrlLikePath gets the raw values its render() expects.
                                 appendLine("parameters = params.mapValues { decodeURIComponent(it.value) }")
                             }
-                            appendLine("), listOf(${routable.queryParams.keys.joinToString { param -> "it.${param}" }}))")
+                            appendLine("), listOf(${routable.queryParams.values.joinToString { property -> "it.${property}" }}))")
                         }
                         appendLine("},")
                     }
@@ -327,7 +329,7 @@ internal data class ScreenData(
     val params: List<String>,
     val url: List<Segment>,
     val isObject: Boolean,
-    val queryParams: Map<String, String>,
+    val queryParams: Map<String, String>,  // URL key to property name
     val isFallback: Boolean = false
 )
 

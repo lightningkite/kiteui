@@ -106,10 +106,8 @@ object DataLoadingPatternsPage : DocPage {
                                 ::content { data().toString() }
                             }
 
-                            // Or handle explicitly:
-                            try {
-                                text { ::content { "Data: ${'$'}{data()}" } }
-                            } catch (e: LoadingException) {
+                            // Or show your own indicator:
+                            shownWhen { !data.state().ready }.row {
                                 activityIndicator()
                                 text("Loading...")
                             }
@@ -125,29 +123,18 @@ object DataLoadingPatternsPage : DocPage {
                     space()
                     code {
                         content = """
+                            val retry = Signal(0)
                             val data = rememberSuspending {
-                                try {
-                                    fetchData()
-                                } catch (e: Exception) {
-                                    // Handle or re-throw
-                                    throw e
-                                }
+                                retry()
+                                fetchData()       // a thrown error reaches the views that read data
                             }
 
-                            // Catch errors in UI
-                            try {
-                                affirmative.text {
-                                    ::content { "Success: ${'$'}{data()}" }
-                                }
-                            } catch (e: Exception) {
-                                danger.col {
-                                    text("Error: ${'$'}{e.message}")
-                                    button {
-                                        text("Retry")
-                                        onClick {
-                                            // Trigger reload
-                                        }
-                                    }
+                            col {
+                                text { ::content { "Success: ${'$'}{data()}" } }
+                                errorText()       // shows errors from this col here instead of in a dialog
+                                shownWhen { data.state().exception != null }.button {
+                                    text("Retry")
+                                    onClick { retry.value++ }
                                 }
                             }
                         """.trimIndent()
@@ -290,13 +277,11 @@ object DataLoadingPatternsPage : DocPage {
                         content = """
                             val currentTime = Signal(Clock.System.now())
 
-                            // Update every 5 seconds
-                            reactive {
-                                launch {
-                                    while (true) {
-                                        delay(5000)
-                                        currentTime.value = Clock.System.now()
-                                    }
+                            // Runs once; cancelled when the view goes away
+                            launch {
+                                while (true) {
+                                    delay(5.seconds)
+                                    currentTime.value = Clock.System.now()
                                 }
                             }
 
@@ -331,14 +316,14 @@ object DataLoadingPatternsPage : DocPage {
                             }
 
                             col {
-                                forEach(items) { item ->
+                                colOf(items, id = { it.id }) { item ->
                                     card.text { ::content { item().name } }
                                 }
 
                                 row {
                                     button {
                                         text("Previous")
-                                        enabled = remember { currentPage() > 1 }
+                                        ::enabled { currentPage() > 1 }
                                         onClick { currentPage.value-- }
                                     }
 
@@ -359,37 +344,23 @@ object DataLoadingPatternsPage : DocPage {
                 space()
 
                 titledSection("Infinite Scroll") {
-                    text("Load more data as the user scrolls:")
+                    text("Grow how many items you request as the user nears the end. useLastWhileLoading keeps the current rows on screen while the bigger window loads:")
 
                     space()
                     code {
                         content = """
-                            val allItems = Signal(listOf<Item>())
-                            val page = Signal(1)
-                            val hasMore = Signal(true)
-
-                            val newItems = rememberSuspending {
-                                if (!hasMore()) return@rememberSuspending emptyList()
-                                val items = fetchPage(page())
-                                hasMore.value = items.isNotEmpty()
-                                items
+                            val limit = Signal(20)
+                            val items = rememberSuspending(useLastWhileLoading = true) {
+                                fetchItems(limit = limit())
                             }
 
-                            reactive {
-                                // Append new items to list
-                                allItems.value = allItems() + newItems()
-                            }
-
-                            scrolling.col {
-                                forEach(allItems) { item ->
+                            expanding.recyclerView {
+                                children(items, id = { it.id }) { item ->
                                     card.text { ::content { item().name } }
                                 }
-
-                                if (hasMore()) {
-                                    button {
-                                        text("Load More")
-                                        onClick { page.value++ }
-                                    }
+                                reactive {
+                                    val loaded = items()
+                                    if (lastIndex() >= loaded.size - 5 && loaded.size == limit()) limit.value += 20
                                 }
                             }
                         """.trimIndent()
@@ -412,22 +383,16 @@ object DataLoadingPatternsPage : DocPage {
                                     val newItem = Item(id = -1, name = "New")
 
                                     // Optimistically add to UI
-                                    items.value = items() + newItem
+                                    items.value += newItem
 
-                                    launch {
-                                        try {
-                                            // Save to server
-                                            val saved = createItem(newItem)
-
-                                            // Replace temp with real item
-                                            items.value = items().map {
-                                                if (it.id == -1) saved else it
-                                            }
-                                        } catch (e: Exception) {
-                                            // Rollback on error
-                                            items.value = items() - newItem
-                                            toast("Failed to create item")
-                                        }
+                                    try {
+                                        val saved = createItem(newItem)
+                                        // Replace temp with real item
+                                        items.value = items.value.map { if (it.id == -1) saved else it }
+                                    } catch (e: Exception) {
+                                        // Roll back, then let onClick show the error
+                                        items.value -= newItem
+                                        throw e
                                     }
                                 }
                             }
@@ -444,30 +409,30 @@ object DataLoadingPatternsPage : DocPage {
                     code {
                         content = """
                             val searchQuery = Signal("")
+                            val debounced = searchQuery.debounce(300.milliseconds)
 
-                            // Debounced search results
                             val results = rememberSuspending {
-                                val query = searchQuery()
+                                val query = debounced()
                                 if (query.length < 3) return@rememberSuspending emptyList()
-
-                                delay(300) // Debounce
                                 searchApi(query)
                             }
 
                             field("Search") {
                                 textInput {
+                                    hint = "Search"
+                                    keyboardHints = KeyboardHints.title
                                     content bind searchQuery
                                 }
                             }
 
-                            forEach(results) { result ->
+                            colOf(results, id = { it.id }) { result ->
                                 text { ::content { result().name } }
                             }
                         """.trimIndent()
                     }
 
                     space()
-                    text("The delay provides natural debouncing - typing quickly won't trigger multiple searches.")
+                    text("debounce waits until typing pauses, so typing quickly won't trigger multiple searches.")
                 }
 
                 space()
@@ -528,10 +493,9 @@ object DataLoadingPatternsPage : DocPage {
                         h5("Error Handling:")
                         code {
                             content = """
-                                try {
+                                col {
                                     text { ::content { data().toString() } }
-                                } catch (e: Exception) {
-                                    danger.text("Error: ${'$'}{e.message}")
+                                    errorText()   // the error shows here instead of in a dialog
                                 }
                             """.trimIndent()
                         }

@@ -148,6 +148,16 @@ public class Recycler2(
 
     private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor.SpecificElement(0, Align.Start)
 
+    internal var startAtEnd: Boolean = false
+        set(value) {
+            field = value
+            programmaticLayoutDelegate.pinnedToEnd = value
+            // Otherwise the first layout places item 0 at the top.  A pinned list with no anchor is placed from its
+            // last item.
+            if (value) anchor = null
+            cells.invalidateLayout()
+        }
+
     public var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1)
         set(value) {
             field = value
@@ -852,7 +862,6 @@ public class Recycler2(
                 }
             }
 
-            // When the start is also in view, the start wins, as the attachment above already decided.
             val atStart = firstCell?.let {
                 if (vertical) viewport.top <= it.top - inProgress.paddingTop + 1
                 else viewport.left <= it.left - inProgress.paddingLeft + 1
@@ -861,7 +870,8 @@ public class Recycler2(
                 if (vertical) viewport.bottom >= it.bottom + inProgress.paddingBottom - 1
                 else viewport.right >= it.right + inProgress.paddingRight - 1
             } ?: false
-            pinnedToEnd = atEnd && !atStart
+            // A list with nothing to scroll is at its start and its end at once, so it keeps what it was.
+            if (!data.range.isEmpty() && !(atStart && atEnd)) pinnedToEnd = atEnd
 
             val v = if (vertical) within.copy(height = sentinelSize) else within.copy(width = sentinelSize)
             lastMeasure = v

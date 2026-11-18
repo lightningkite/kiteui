@@ -27,7 +27,11 @@ public interface WindowedList : Element {
     /** Like [children], for lists whose items don't all look alike.  A cell is only reused for items of its own kind. */
     public fun <T, ID> childrenMultipleTypes(items: Reactive<List<T>>, id: (T) -> ID, renderers: MultiBuilder<T, ID>.() -> Unit)
 
+    /** Can be called before the item exists; the list goes there once it does. */
     public fun scrollToIndex(index: Int, align: Align, animate: Boolean = true)
+
+    /** Starts at the end instead of the top, and rests there, following new items, until scrolled away: a chat. */
+    public var startAtEnd: Boolean
 }
 
 @ExperimentalKiteUi
@@ -41,6 +45,7 @@ internal class Recycler2WindowedList(private val recycler: Recycler2) : Windowed
         recycler.childrenMultipleTypes(items, id, renderers)
     }
     override fun scrollToIndex(index: Int, align: Align, animate: Boolean): Unit = recycler.scrollToIndex(index, align, animate)
+    override var startAtEnd: Boolean by recycler::startAtEnd
 }
 
 @ExperimentalKiteUi

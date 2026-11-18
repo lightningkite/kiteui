@@ -31,7 +31,8 @@ public inline fun ElementWriter.stack(setup: Frame.() -> Unit = {}): Frame {
 
 @Deprecated("Use VideoView instead", ReplaceWith("VideoView"), level = DeprecationLevel.ERROR) public typealias Video = VideoView
 
-@Deprecated("Import has moved", ReplaceWith("label(label, content)", "com.lightningkite.kiteui.views.l2.label"))
+// HIDDEN, not WARNING: a visible copy makes every `label("…") { }` ambiguous for files that star-import views.direct and views.l2.
+@Deprecated("Import has moved", ReplaceWith("label(label, content)", "com.lightningkite.kiteui.views.l2.label"), level = DeprecationLevel.HIDDEN)
 public inline fun ElementWriter.label(label: String, content: LinearLayoutElement.() -> Unit): LabeledView = l2Label(label, content)
 
 @Deprecated("Use coordinatorFrame instead.")

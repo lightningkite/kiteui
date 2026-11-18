@@ -18,6 +18,8 @@ expanding.windowedList {
 }
 ```
 
+`windowedList` is experimental: opt in with `@OptIn(ExperimentalKiteUi::class)` (or `@file:OptIn`).
+
 Runnable versions are in the example app: `WindowedListPage` (route `windowed-list`), and `WindowedListTypesPage`
 (route `windowed-list/types`) for more than one kind of cell.
 
@@ -28,6 +30,7 @@ Runnable versions are in the example app: `WindowedListPage` (route `windowed-li
 | `children(items, id, render)` | Sets the items.  `id` must be unique and stable per item; `render` builds one cell from a `Reactive` of its item.  Set the children once, with this or the next. |
 | `childrenMultipleTypes(items, id) { ... }` | The same, for items that don't all look alike.  See below. |
 | `scrollToIndex(index, align, animate = true)` | Puts the item at the start, center or end of the viewport, rendering it first if it isn't on screen. |
+| `startAtEnd` | Starts at the end instead of the top, and rests there, following new items, until scrolled away: a chat. |
 | `firstIndex`, `lastIndex` | The range of items currently rendered, as `Reactive<Int>`.  Useful for loading more as the end approaches. |
 
 ## More than one kind of cell
@@ -53,8 +56,8 @@ This is the same builder `Recycler2.childrenMultipleTypes` takes.
 - **Same id, same cell.**  When the list changes, an item that is still shown keeps its cell, so only its bindings that
   actually changed rerun.
 - **It stays at the end.**  A list last scrolled to its end stays there as items are added or the last cell grows, which is
-  what a chat wants.  Scrolling away releases it; scrolling back to the end pins it again.  To start at the end, call
-  `scrollToIndex(lastIndex, Align.End, animate = false)` once the items are set.
+  what a chat wants.  Scrolling away releases it; scrolling back to the end pins it again.  To start at the end, set
+  `startAtEnd = true`; it waits there for items that arrive later.
 - **Cells can change height on their own.**  Text streaming in, an image loading or a section expanding needs nothing
   from you.  What is in view holds still when a cell above it grows or shrinks, and a list at its end follows its last
   cell.  On the web the list does this itself, in every browser, rather than relying on the browser's scroll anchoring,
@@ -72,7 +75,7 @@ This is the same builder `Recycler2.childrenMultipleTypes` takes.
 On the web this costs roughly a third of what `Recycler2` does to scroll the same list, because nothing is measured or
 positioned from Kotlin.  Elsewhere it performs exactly as `Recycler2` does.
 
-`scrollToIndex` throws on the web if the index is not in the list.  `Recycler2` does not.
+`scrollToIndex` may be called before the item exists; the list goes there once it does.
 
 ## Accessibility
 
@@ -92,6 +95,6 @@ On other platforms accessibility is whatever `Recycler2` provides, which has not
 
 ## When to use something else
 
-- A short list that fits in memory comfortably: a `col` with `forEach` is simpler.
+- A short list that fits in memory comfortably: `colOf` is simpler.  See [Lists](lists.md).
 - A grid, a horizontal list, snapping, drag-to-reorder or pull-to-refresh: `recyclerView` / `Recycler2` has these and
   `WindowedList` does not.

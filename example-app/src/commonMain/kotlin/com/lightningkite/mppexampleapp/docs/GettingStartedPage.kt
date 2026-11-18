@@ -106,8 +106,8 @@ object GettingStartedPage : DocPage {
 
                 space()
 
-                titledSection("Understanding ViewWriter") {
-                    text("ViewWriter is the context in which you build your UI. It provides access to all view-building functions.")
+                titledSection("Building Views") {
+                    text("Inside render() you build the UI by calling view functions. Each one adds a view to the container it is called in.")
 
                     space()
                     h5("Common View Functions:")
@@ -194,7 +194,7 @@ object GettingStartedPage : DocPage {
                 space()
 
                 titledSection("Using Modifiers") {
-                    text("Modifiers style and position your views. Chain them onto a view with '.' (the '-' operator also works, e.g. card - col { }):")
+                    text("Modifiers style and position your views. Chain them onto a view with '.':")
 
                     space()
                     example("""
@@ -212,7 +212,7 @@ object GettingStartedPage : DocPage {
                     }
 
                     space()
-                    text("Modifier order matters: Position > Visibility > Scroll > Theme")
+                    text("Modifier order is enforced by the compiler: alignment → weight → shownWhen → sizing → theme → scrolling → element. expanding.card.scrolling.col { } compiles; expanding.scrolling.card.col { } does not.")
                 }
 
                 space()
@@ -227,8 +227,9 @@ object GettingStartedPage : DocPage {
                         col {
                             field("Your Name") {
                                 textInput {
-                                    content bind name
                                     hint = "Enter your name"
+                                    keyboardHints = KeyboardHints.title
+                                    content bind name
                                 }
                             }
                             text {
@@ -241,8 +242,9 @@ object GettingStartedPage : DocPage {
 
                             field("Your Name") {
                                 textInput {
-                                    content bind name
                                     hint = "Enter your name"
+                                    keyboardHints = KeyboardHints.title
+                                    content bind name
                                 }
                             }
                             text {
@@ -312,7 +314,7 @@ object GettingStartedPage : DocPage {
                     code {
                         content = """
                             // Navigate with parameter
-                            context.pageNavigator.navigate(UserDetailPage("123"))
+                            context.pageNavigator.navigate(UserPage("123"))
                         """.trimIndent()
                     }
                 }
@@ -349,32 +351,31 @@ object GettingStartedPage : DocPage {
                                     col {
                                         h1("My Todo List")
 
-                                        field("New Todo") {
-                                            row {
-                                                expanding.textInput {
-                                                    content bind newTodo
+                                        row {
+                                            expanding.field("New Todo") {
+                                                textInput {
                                                     hint = "What needs to be done?"
+                                                    keyboardHints = KeyboardHints.title
+                                                    content bind newTodo
                                                 }
-                                                important.button {
-                                                    text("Add")
-                                                    onClick {
-                                                        if (newTodo().isNotBlank()) {
-                                                            todos.value = todos() + newTodo()
-                                                            newTodo.value = ""
-                                                        }
+                                            }
+                                            important.button {
+                                                text("Add")
+                                                onClick {
+                                                    if (newTodo().isNotBlank()) {
+                                                        todos.value += newTodo()
+                                                        newTodo.value = ""
                                                     }
                                                 }
                                             }
                                         }
 
-                                        forEach(todos) { todo ->
+                                        colOf(todos, id = { it }) { todo ->
                                             card.row {
-                                                expanding.text { content = todo }
+                                                expanding.text { ::content { todo() } }
                                                 danger.button {
                                                     text("Delete")
-                                                    onClick {
-                                                        todos.value = todos() - todo
-                                                    }
+                                                    onClick { todos.value -= todo() }
                                                 }
                                             }
                                         }
