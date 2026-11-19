@@ -12,6 +12,9 @@ public expect val Platform.Companion.probablyAppleUser: Boolean
 public expect val Platform.Companion.usesTouchscreen: Boolean
 public expect val Platform.Companion.userAgent: String
 
+/** Returns `true` when running in a browser on a phone or tablet, judged from [userAgent]. */
+public val Platform.Companion.usingWebOnMobile: Boolean get() = current == Platform.Web && "Mobi" in userAgent
+
 // by Claude - true when running in a development/debug context (debug builds, localhost, etc.)
 public expect val Platform.Companion.isDevelopment: Boolean
 

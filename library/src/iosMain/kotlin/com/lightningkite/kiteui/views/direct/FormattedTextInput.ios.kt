@@ -8,7 +8,11 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import platform.Foundation.*
 import platform.UIKit.*
+import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGRectMake
 import platform.darwin.NSObject
+import platform.objc.sel_registerName
 import com.lightningkite.kiteui.views.AiDriver
 
 public actual class FormattedTextInput actual constructor(context: ElementContext) : NativeElementWithAction(context) {
@@ -22,6 +26,31 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
         delegate = NextFocusDelegateShared
     }
     override val control: UIControl get() = textField
+
+    private val doneTrigger: NSObject = object : NSObject() {
+        @ObjCAction
+        fun done() {
+            action?.let {
+                textField.resignFirstResponder()
+                it.startAction(this@FormattedTextInput)
+            } ?: NextFocusDelegateShared.textFieldShouldReturn(textField)
+        }
+    }
+
+    // Claude: an explicit frame avoids UnsatisfiableConstraints when the system adds automatic constraints.
+    private val doneToolbar: UIToolbar by lazy {
+        UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
+            barStyle = UIBarStyleDefault
+            setTranslucent(true)
+            sizeToFit()
+            setItems(
+                listOf(
+                    UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
+                    UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = doneTrigger, action = sel_registerName("done")),
+                ), animated = false
+            )
+        }
+    }
 
     init {
         native.addSubview(textField)
@@ -110,6 +139,8 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             field = value
             textField.autocapitalizationType = value.case.ios
             textField.keyboardType = value.type.ios
+            // Claude: these keyboards have no return key, so without the toolbar there is no way to submit or move on.
+            textField.inputAccessoryView = if (value.type.ios in setOf(UIKeyboardTypeNumberPad, UIKeyboardTypeDecimalPad, UIKeyboardTypePhonePad)) doneToolbar else null
             textField.textContentType = value.autocomplete.iosTextContentType
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
@@ -149,6 +180,7 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
         set(value) {
             field = value
             updateHint()
+            textField.accessibilityHint = value.ifEmpty { null }
         }
     private var _align: Align? = null
     public actual var align: Align?

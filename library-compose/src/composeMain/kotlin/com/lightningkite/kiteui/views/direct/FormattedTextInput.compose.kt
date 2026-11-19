@@ -37,8 +37,9 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             val data = content.value
             field = value
             content.value = data
-            // Claude: the data can be unchanged while its layout isn't, so the shown text must be redone here.
-            fieldValue = format.format(content.value).let { TextFieldValue(it, TextRange(it.length)) }
+            // Claude: the data can be unchanged while its layout isn't, so the shown text may need redoing here.
+            val shown = format.format(content.value)
+            if (fieldValue.text != shown) fieldValue = TextFieldValue(shown, TextRange(shown.length))
         }
 
     // Claude: stores the data of the formatted text, as the other platforms read it back from the field, so a value

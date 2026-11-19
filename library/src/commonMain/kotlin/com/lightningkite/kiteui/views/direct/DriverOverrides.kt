@@ -142,7 +142,7 @@ public fun AutoCompleteTextField.autoCompleteDriverActions(): AiDriver.Actions =
 
 // --- NumberInput ---
 
-public fun NumberInput.numberInputDriverValue(): String = content.value?.toString() ?: ""
+public fun NumberInput.numberInputDriverValue(): String = redactedDriverValue(keyboardHints, content.value?.toString() ?: "")
 public fun NumberInput.numberInputDriverActions(): AiDriver.Actions = buildMap {
     put("setValue") { args ->
         val v = args.firstOrNull()?.toDoubleOrNull() ?: throw DriverActionException("expected number argument")

@@ -30,15 +30,15 @@ public interface TextFormat {
         private fun numberFormat(allowDecimal: Boolean) =
             TextFormat(isRawData = { it.isDigit() || it == '.' || it == '-' }) { clean ->
                 val sign = if (clean.startsWith('-')) "-" else ""
-                val digits = clean.filterNot { it == '-' || (!allowDecimal && it == '.') }
+                val digits = clean.filterNot { it == '-' }
                 val preDecimal = groupThousands(digits.substringBefore('.'))
                 val postDecimal = digits.substringAfter('.', "").filterNot { it == '.' }
-                if ('.' in digits) "$sign$preDecimal.$postDecimal" else "$sign$preDecimal"
+                if (allowDecimal && '.' in digits) "$sign$preDecimal.$postDecimal" else "$sign$preDecimal"
             }
 
         public val Decimal: TextFormat = numberFormat(allowDecimal = true)
 
-        /** Shows a whole number with commas between each group of three digits, keeping a leading '-'. */
+        /** Shows a whole number with commas between each group of three digits, keeping a leading '-' and dropping everything from the first '.'. */
         public val Integer: TextFormat = numberFormat(allowDecimal = false)
 
         public fun number(allowDecimal: Boolean): TextFormat = if (allowDecimal) Decimal else Integer

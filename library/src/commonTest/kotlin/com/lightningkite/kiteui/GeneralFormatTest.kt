@@ -57,7 +57,9 @@ class GeneralFormatTest {
     @Test
     fun commas() {
         assertEquals("-12,345.5", TextFormat.Decimal.format("-12345.5"))
-        assertEquals("1,234", TextFormat.Integer.format("1.234"))
+        assertEquals("1", TextFormat.Integer.format("1.234"))
+        assertEquals("-1,234", TextFormat.Integer.format("-1234.99"))
+        assertEquals("12", TextFormat.Integer.format("12."))
         // A '-' must not be grouped with the digits, e.g. "-100" -> "-,100", when the digit count is a multiple of 3.
         assertEquals("-100", TextFormat.Decimal.format("-100"))
         assertEquals("-123,456,789", TextFormat.Integer.format("-123456789"))

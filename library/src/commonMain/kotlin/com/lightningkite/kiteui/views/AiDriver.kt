@@ -121,21 +121,23 @@ public object AiDriver {
         }
 
         public fun defaultDriverDisplay(element: Element, options: Element.DriverSnapshotOptions): String = buildString {
-            val name = element.debugName
+            // Claude: a wrapper like NumberInput forwards this call to its native element, so describe the wrapper instead.
+            val described = (element as? NativeElement)?.outermostElement ?: element
+            val name = described.debugName
             if (name != null) {
                 append("$name: ")
             } else {
-                val idx = element.parent?.children?.indexOf(element)?.takeIf { it >= 0 } ?: 0
+                val idx = described.parent?.children?.indexOf(described)?.takeIf { it >= 0 } ?: 0
                 append("$idx: ")
             }
             if (options.includeThemes) {
-                element.themeChoice.takeUnless { it == ThemeDerivation.None }?.let { append(it); append(' ') }
+                described.themeChoice.takeUnless { it == ThemeDerivation.None }?.let { append(it); append(' ') }
             }
-            append(element::class.simpleName)
-            element.driverValue?.let { append(" = \"$it\"") }
-            if (!element.shown) append(" (hidden)")
-            else if (!element.visible) append(" (invisible)")
-            if (options.includeActions) element.driverActions.keys
+            append(described::class.simpleName)
+            described.driverValue?.let { append(" = \"$it\"") }
+            if (!described.shown) append(" (hidden)")
+            else if (!described.visible) append(" (invisible)")
+            if (options.includeActions) described.driverActions.keys
                 .filter { it != "snapshot" && it != "screenshot" && it != "find" && it != "findClickable" && it != "scrollIntoView" && it != "getAlignment" }
                 .takeUnless { it.isEmpty() }
                 ?.let { append(" [${it.joinToString(", ")}]") }

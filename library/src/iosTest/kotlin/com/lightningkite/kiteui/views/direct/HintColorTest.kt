@@ -50,7 +50,7 @@ class HintColorTest {
         vc.view.setNeedsLayout()
         vc.view.layoutIfNeeded()
 
-        val placeholderA = field.textField.attributedPlaceholder
+        val placeholderA = field.input.textField.attributedPlaceholder
         assertNotNull(placeholderA, "attributedPlaceholder should be set once a hint is applied")
         assertEquals("Enter a number", placeholderA.string)
         val colorA = placeholderA.attribute(NSForegroundColorAttributeName, atIndex = 0u, effectiveRange = null) as? UIColor
@@ -62,7 +62,7 @@ class HintColorTest {
         vc.view.setNeedsLayout()
         vc.view.layoutIfNeeded()
 
-        val placeholderB = field.textField.attributedPlaceholder
+        val placeholderB = field.input.textField.attributedPlaceholder
         assertNotNull(placeholderB)
         val colorB = placeholderB.attribute(NSForegroundColorAttributeName, atIndex = 0u, effectiveRange = null) as? UIColor
         assertNotNull(colorB, "attributedPlaceholder should carry a foreground color attribute")
