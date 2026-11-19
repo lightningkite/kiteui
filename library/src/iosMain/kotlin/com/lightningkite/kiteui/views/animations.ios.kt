@@ -29,12 +29,12 @@ public actual fun Element.animateIn(
 ) {
     if (!animationsEnabled) { done?.invoke(); return }
     withoutAnimation {
-        opacity = 0.0
+        native.alpha = 0.0
     }
     launch {
         delay(16)
         withoutAnimation {
-            native.alpha = if (transition.fade) 0.0 else 1.0
+            native.alpha = if (transition.fade) 0.0 else opacity
             native.transform = transition.entryTransform.toCGAffineTransform(native)
         }
         UIView.animateWithDuration(
@@ -45,7 +45,7 @@ public actual fun Element.animateIn(
                 isInAnimationBlock = true
                 try {
                     native.transform = CGAffineTransformMake(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
-                    native.alpha = 1.0
+                    native.alpha = opacity
                 } finally {
                     isInAnimationBlock = before
                 }

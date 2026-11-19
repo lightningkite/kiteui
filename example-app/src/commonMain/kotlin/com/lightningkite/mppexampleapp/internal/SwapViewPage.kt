@@ -110,6 +110,41 @@ object SwapViewPage : Page {
                     )
                 }
             }
+
+            h2("Opacity preserved through animateIn")
+            row {
+                text("Reference:")
+                h1 {
+                    content = "0"
+                    opacity = 0.5
+                }
+            }
+            for ((name, transition) in listOf(
+                "Fade" to ScreenTransition.Fade,
+                "Push" to ScreenTransition.Push,
+                "GrowFade" to ScreenTransition.GrowFade,
+            )) {
+                row {
+                    text("$name @ 0.5:")
+                    swapView {
+                        swapping(
+                            transition = { transition },
+                            current = { clock() },
+                            views = { tick ->
+                                h1 {
+                                    val label = "${(tick % 3) + 1}"
+                                    content = label
+                                    opacity = 0.5
+                                    launch {
+                                        delay(1000)
+                                        content = "$label (opacity=$opacity)"
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }

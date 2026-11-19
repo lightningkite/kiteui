@@ -135,6 +135,8 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
 
     actual override var shown: Boolean = true
         set(value) {
+            // hiding the focused input must let go of the keyboard; UIKit keeps first responder on a merely-hidden view, so nothing else would ever resign it.
+            if (!value) native.findFirstResponderChild()?.resignFirstResponder()
             field = value
             native.hidden = !value
             if (fullyStarted) {

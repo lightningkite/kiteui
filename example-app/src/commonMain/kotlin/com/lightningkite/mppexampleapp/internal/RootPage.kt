@@ -91,6 +91,7 @@ object RootPage : Page {
                 linkPage { FormattedInputTests() }
                 linkPage { RichTextButtonPage }
                 linkPage { SampleLogInPage }
+                linkPage { KeyboardDismissTestPage }
 
                 sectionLabel("Scrolling & Visibility")
                 linkPage { SpecialScrollTest }
