@@ -131,9 +131,9 @@ numberInput { content bind quantity.asDouble() }   // Int? → Double?
 
 formattedTextInput {
     content bind code                         // stores the raw characters only
-    format(
+    format = TextFormat(
         isRawData = { it.isLetterOrDigit() },
-        formatter = { clean -> if (clean.length > 3) clean.take(3) + "-" + clean.drop(3) else clean },
+        format = { clean -> if (clean.length > 3) clean.take(3) + "-" + clean.drop(3) else clean },
     )
 }
 

@@ -2,8 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.utils.commaString
-import com.lightningkite.kiteui.utils.numberAutocommaRepair
+import com.lightningkite.kiteui.models.reformatWithSelection
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.kiteui.views.AiDriver
@@ -18,16 +17,11 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
     public actual val content: MutableReactiveValue<Double?> = object : MutableReactiveValue<Double?>, BaseListenable() {
         init {
             native.addEventListener("input") {
-                numberAutocommaRepair(
-                    dirty = native.attributes.valueString ?: "",
-                    selectionStart = selectionStart,
-                    selectionEnd = selectionEnd,
-                    allowDecimal = keyboardHints.type.allowDecimal,
-                    setResult = {
-                        native.attributes.valueString = it
-                    },
-                    setSelectionRange = {start, end, -> setSelectionRange(start, end)}
-                )
+                val typed = native.attributes.valueString ?: ""
+                val format = if (keyboardHints.type.allowDecimal) TextFormat.Decimal else TextFormat.Integer
+                val result = format.reformatWithSelection(typed, (selectionStart ?: typed.length) until (selectionEnd ?: typed.length))
+                if (result.text != typed) native.attributes.valueString = result.text
+                setSelectionRange(result.selection.first, result.selection.last + 1)
                 invokeAllListeners()
             }
         }
@@ -35,8 +29,9 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
         override var value: Double?
             get() = native.attributes.valueString?.filter { it.isDigit() || it in setOf('-', '.') }?.toDoubleOrNull()
             set(value) {
-                if(native.attributes.valueString != value?.commaString()) {
-                    native.attributes.valueString = value?.commaString()
+                val shown = value?.let { TextFormat.Decimal.reformat(it.toStringNoExponential()) }
+                if (native.attributes.valueString != shown) {
+                    native.attributes.valueString = shown
                     invokeAllListeners()
                 }
             }

@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.reformatWithSelection
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -33,21 +33,16 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             if (block) return@onEvent
             block = true
             try {
-                repairFormatAndPosition(
-                    dirty = textField.text ?: "",
-                    selectionStart = textField.selectedTextRange?.start?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
-                    selectionEnd = textField.selectedTextRange?.end?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
-                    setResult = {
-                        textField.text = it
-                    },
-                    setSelectionRange = { start, end ->
-                        textField.selectedTextRange = textField.textRangeFromPosition(
-                            textField.positionFromPosition(textField.beginningOfDocument, start.toLong()) ?: return@repairFormatAndPosition,
-                            textField.positionFromPosition(textField.beginningOfDocument, end.toLong()) ?: return@repairFormatAndPosition,
-                        )
-                    },
-                    isRawData = isRawData,
-                    formatter = formatter,
+                val typed = textField.text ?: ""
+                val range = textField.selectedTextRange
+                val selection = if (range == null) typed.length until typed.length
+                else textField.offsetFromPosition(textField.beginningOfDocument, range.start).toInt() until
+                    textField.offsetFromPosition(textField.beginningOfDocument, range.end).toInt()
+                val result = format.reformatWithSelection(typed, selection)
+                if (result.text != typed) textField.text = result.text
+                textField.selectedTextRange = textField.textRangeFromPosition(
+                    textField.positionFromPosition(textField.beginningOfDocument, result.selection.first.toLong()) ?: return@onEvent,
+                    textField.positionFromPosition(textField.beginningOfDocument, result.selection.last + 1L) ?: return@onEvent,
                 )
             } finally {
                 block = false
@@ -85,18 +80,18 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             native.informParentOfSizeChange()
         }
 
-    private var isRawData: (Char) -> Boolean = { true }
-    private var formatter: (clean: String) -> String = { it }
-    public actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
-        this.isRawData = isRawData
-        this.formatter = formatter
-    }
+    public actual var format: TextFormat = TextFormat.None
+        set(value) {
+            val data = content.value
+            field = value
+            content.value = data
+        }
 
     public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
-            get() = (textField.text ?: "").filter(isRawData)
+            get() = (textField.text ?: "").filter(format::isRawData)
             set(value) {
-                val formatted = formatter(value.filter(isRawData))
+                val formatted = format.format(value.filter(format::isRawData))
                 if (textField.text != formatted) {
                     textField.text = formatted
                     // fire change event so reactive listeners are notified on programmatic updates

@@ -13,8 +13,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.utils.commaString
-import com.lightningkite.kiteui.utils.numberAutocommaRepair
+import com.lightningkite.kiteui.models.reformatWithSelection
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
@@ -47,7 +46,7 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
         reactive {
             val number = content()
             // Text like "-" or "" parses to null too; leave it alone while that null comes back around.
-            if (number != parse(field.text)) field = (number?.commaString() ?: "").let { TextFieldValue(it, TextRange(it.length)) }
+            if (number != parse(field.text)) field = (number?.let { TextFormat.Decimal.reformat(it.toStringNoExponential()) } ?: "").let { TextFieldValue(it, TextRange(it.length)) }
         }
     }
 
@@ -64,14 +63,9 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
                     field = typed
                     return@BasicTextField
                 }
-                numberAutocommaRepair(
-                    dirty = typed.text,
-                    selectionStart = typed.selection.start,
-                    selectionEnd = typed.selection.end,
-                    allowDecimal = hints.type.allowDecimal,
-                    setResult = { field = TextFieldValue(it) },
-                    setSelectionRange = { start, end -> field = field.copy(selection = TextRange(start, end)) },
-                )
+                val format = if (hints.type.allowDecimal) TextFormat.Decimal else TextFormat.Integer
+                val result = format.reformatWithSelection(typed.text, typed.selection.min until typed.selection.max)
+                field = TextFieldValue(result.text, TextRange(result.selection.first, result.selection.last + 1))
                 content.value = parse(field.text)
             },
             modifier = modifier,

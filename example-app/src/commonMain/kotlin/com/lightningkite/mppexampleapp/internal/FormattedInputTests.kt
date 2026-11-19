@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.internal
 
+import com.lightningkite.kiteui.models.TextFormat
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.rem
@@ -27,9 +28,9 @@ class FormattedInputTests : Page {
                     hint = "(Whatever you typed)"
                     content bind general
 
-                    format(
+                    format = TextFormat(
                         isRawData = { it != '(' && it != ')' },
-                        formatter = { clean -> if (clean.isNotBlank()) "($clean)" else "" }
+                        format = { clean -> if (clean.isNotBlank()) "($clean)" else "" }
                     )
                 }
             }

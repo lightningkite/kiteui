@@ -11,7 +11,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.utils.numberAutocommaRepair
+import com.lightningkite.kiteui.models.reformatWithSelection
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -29,18 +29,12 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
             post {
                 val str = this.text.toString()
                 try {
-                    numberAutocommaRepair(
-                        dirty = str,
-                        selectionStart = selectionStart,
-                        selectionEnd = selectionEnd,
-                        allowDecimal = keyboardHints.type.allowDecimal,
-                        setResult = {
-                            setText(it)
-                        },
-                        setSelectionRange = { start, end ->
-                            setSelection(start, end)
-                        }
-                    )
+                    val format = if (keyboardHints.type.allowDecimal) TextFormat.Decimal else TextFormat.Integer
+                    // Claude: Android reports a backwards selection with start after end.
+                    val result = format.reformatWithSelection(str, minOf(selectionStart, selectionEnd) until maxOf(selectionStart, selectionEnd))
+                    // Claude: setText resets the keyboard's in-progress input, so skip it when nothing changed.
+                    if (result.text != str) setText(result.text)
+                    setSelection(result.selection.first, result.selection.last + 1)
                 } finally {
                     block = false
                 }

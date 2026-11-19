@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.utils.repairFormatAndPosition
+import com.lightningkite.kiteui.models.reformatWithSelection
 import com.lightningkite.kiteui.views.direct.PhoneNumberFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,20 +13,9 @@ class PhoneNumberFormatTest {
     private fun edit(textWithCaret: String): String {
         val carets = textWithCaret.indices.filter { textWithCaret[it] == '|' }
         val dirty = textWithCaret.replace("|", "")
-        var result = ""
-        var start = -1
-        var end = -1
-        repairFormatAndPosition(
-            dirty = dirty,
-            selectionStart = carets.first(),
-            selectionEnd = carets.last() - (carets.size - 1),
-            setResult = { result = it },
-            setSelectionRange = { s, e -> start = s; end = e },
-            isRawData = format::isRawData,
-            formatter = format::format,
-        )
-        return if (start == end) result.substring(0, start) + "|" + result.substring(start)
-        else result.substring(0, start) + "|" + result.substring(start, end) + "|" + result.substring(end)
+        val (result, selection) = format.reformatWithSelection(dirty, carets.first() until carets.last() - (carets.size - 1))
+        return if (selection.isEmpty()) result.substring(0, selection.first) + "|" + result.substring(selection.first)
+        else result.substring(0, selection.first) + "|" + result.substring(selection) + "|" + result.substring(selection.last + 1)
     }
 
     @Test fun usNumbers() {

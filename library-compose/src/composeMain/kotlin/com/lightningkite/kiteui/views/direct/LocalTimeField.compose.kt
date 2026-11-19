@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.TextFormat
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -61,14 +62,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
         BasicTextField(
             value = field,
             onValueChange = { typed ->
-                field = if (typed.text == field.text) typed else typed.reformatted(Char::isDigit) { digits ->
-                    buildString {
-                        digits.take(4).forEachIndexed { i, digit ->
-                            if (i == 2) append(':')
-                            append(digit)
-                        }
-                    }
-                }
+                field = if (typed.text == field.text) typed else typed.reformatted(timeFormat)
                 content.value = parse(field.text)
             },
             modifier = modifier,
@@ -87,5 +81,14 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
                 }
             },
         )
+    }
+}
+
+private val timeFormat = TextFormat(Char::isDigit) { digits ->
+    buildString {
+        digits.take(4).forEachIndexed { i, digit ->
+            if (i == 2) append(':')
+            append(digit)
+        }
     }
 }

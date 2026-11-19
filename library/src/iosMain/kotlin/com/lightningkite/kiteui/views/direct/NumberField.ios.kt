@@ -3,8 +3,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.utils.commaString
-import com.lightningkite.kiteui.utils.numberAutocommaRepair
+import com.lightningkite.kiteui.models.reformatWithSelection
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -64,20 +63,17 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
             if (block) return@onEvent
             block = true
             try {
-                numberAutocommaRepair(
-                    dirty = textField.text ?: "",
-                    selectionStart = textField.selectedTextRange?.start?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
-                    selectionEnd = textField.selectedTextRange?.end?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
-                    allowDecimal = keyboardHints.type.allowDecimal,
-                    setResult = {
-                        textField.text = it
-                    },
-                    setSelectionRange = { start, end ->
-                        textField.selectedTextRange = textField.textRangeFromPosition(
-                            textField.positionFromPosition(textField.beginningOfDocument, start.toLong()) ?: return@numberAutocommaRepair,
-                            textField.positionFromPosition(textField.beginningOfDocument, end.toLong()) ?: return@numberAutocommaRepair,
-                        )
-                    }
+                val typed = textField.text ?: ""
+                val range = textField.selectedTextRange
+                val selection = if (range == null) typed.length until typed.length
+                else textField.offsetFromPosition(textField.beginningOfDocument, range.start).toInt() until
+                    textField.offsetFromPosition(textField.beginningOfDocument, range.end).toInt()
+                val format = if (keyboardHints.type.allowDecimal) TextFormat.Decimal else TextFormat.Integer
+                val result = format.reformatWithSelection(typed, selection)
+                if (result.text != typed) textField.text = result.text
+                textField.selectedTextRange = textField.textRangeFromPosition(
+                    textField.positionFromPosition(textField.beginningOfDocument, result.selection.first.toLong()) ?: return@onEvent,
+                    textField.positionFromPosition(textField.beginningOfDocument, result.selection.last + 1L) ?: return@onEvent,
                 )
             } finally {
                 block = false
@@ -119,8 +115,9 @@ public actual class NumberInput actual constructor(context: ElementContext) : Na
         override var value: Double?
             get() = (textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull()
             set(value) {
-                if (textField.text != (value?.commaString() ?: "")) {
-                    textField.text = value?.commaString() ?: ""
+                val shown = value?.let { TextFormat.Decimal.reformat(it.toStringNoExponential()) } ?: ""
+                if (textField.text != shown) {
+                    textField.text = shown
                     // fire change event so reactive listeners are notified on programmatic updates
                     textField.sendActionsForControlEvents(UIControlEventEditingChanged)
                 }

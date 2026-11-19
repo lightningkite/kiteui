@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.models.TextFormat
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.testing.uiTest
 import com.lightningkite.kiteui.views.direct.*
@@ -149,7 +150,7 @@ class DriverRedactionTest {
                 formattedTextInput {
                     debugName = "pwFormatted"
                     keyboardHints = KeyboardHints.password
-                    format(isRawData = { true }, formatter = { it })
+                    format = TextFormat.None
                 }
             }
         }
@@ -166,7 +167,7 @@ class DriverRedactionTest {
             col {
                 formattedTextInput {
                     debugName = "phone"
-                    format(isRawData = { it.isDigit() }, formatter = { it })
+                    format = TextFormat(isRawData = { it.isDigit() }, format = { it })
                 }
             }
         }

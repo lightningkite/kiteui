@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.TextFormat
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.views.Element
@@ -7,14 +8,7 @@ import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.ElementWithAction
 import com.lightningkite.reactive.core.MutableReactiveValue
 
-public fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
-    if (startIndex !in indices) return null
-    if (endIndex > length) return substring(startIndex, length)
-
-    return substring(startIndex, endIndex)
-}
-
-public enum class PhoneNumberFormat {
+public enum class PhoneNumberFormat : TextFormat {
     // This will need to be expanded over time, when the need arises. Phone numbers are complicated as hell.
 
     USA {
@@ -57,26 +51,26 @@ public enum class PhoneNumberFormat {
     /**
      * Determines if a character is valid data to be entered for the phone number.
      * */
-    public open fun isRawData(char: Char): Boolean = char.isDigit() || char == '+'
+    override fun isRawData(char: Char): Boolean = char.isDigit() || char == '+'
     /**
      * Takes in a clean phone number or partial phone number and formats it properly relative to its completion
      * */
-    public abstract fun format(clean: String): String
+    abstract override fun format(clean: String): String
 }
 
 public class PhoneNumberInput(private val input: FormattedTextInput): ElementWithAction by input {
     public constructor(context: ElementContext) : this(FormattedTextInput(context))
 
-    init {
-        input.keyboardHints = KeyboardHints.phone
-        input.format(PhoneNumberFormat.USA::isRawData, PhoneNumberFormat.USA::format)
-    }
-
     public var format: PhoneNumberFormat = PhoneNumberFormat.USA
         set(value) {
             field = value
-            input.format(value::isRawData, value::format)
+            input.format = value
         }
+
+    init {
+        input.keyboardHints = KeyboardHints.phone
+        input.format = format
+    }
 
     public val content: MutableReactiveValue<String> by input::content
     public var hint: String by input::hint

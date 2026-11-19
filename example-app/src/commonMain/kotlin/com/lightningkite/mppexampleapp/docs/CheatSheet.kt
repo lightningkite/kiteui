@@ -1211,9 +1211,9 @@ object CheatSheet : DocPage {
     
                                     // Hexadecimal format
                                     val hexCharacters = ('0'..'9') + ('a'..'f') + ('A'..'F')
-                                    format(
+                                    format = TextFormat(
                                         isRawData = { it in hexCharacters.toSet() },
-                                        formatter = { if (it.isBlank()) "" else "#${'$'}{it.take(6)}" }
+                                        format = { if (it.isBlank()) "" else "#${'$'}{it.take(6)}" }
                                     )
                                 }
                             }
@@ -1230,9 +1230,9 @@ object CheatSheet : DocPage {
 
                                     // Hexadecimal format
                                     val hexCharacters = ('0'..'9') + ('a'..'f') + ('A'..'F')
-                                    format(
+                                    format = TextFormat(
                                         isRawData = { it in hexCharacters.toSet() },
-                                        formatter = { if (it.isBlank()) "" else "#${it.take(6)}" }
+                                        format = { if (it.isBlank()) "" else "#${it.take(6)}" }
                                     )
                                 }
                             }

@@ -46,7 +46,7 @@ textInput { hint = "Email"; keyboardHints = KeyboardHints.email; content bind em
 textArea { keyboardHints = KeyboardHints.paragraph; content bind notes }
 textInput { content bind nullableString.nullToBlank() }
 numberInput { range = 0.0..100.0; content bind price }          // Double?  (Int? → .asDouble())
-formattedTextInput { content bind raw; format(isRawData = { it.isDigit() }, formatter = { it }) }
+formattedTextInput { content bind raw; format = TextFormat(isRawData = { it.isDigit() }, format = { it }) }
 phoneNumberInput { content bind phone }
 autoCompleteTextField { suggestions = listOf("A", "B"); content bind s }
 localDateField { content bind date }        // LocalDate?   also range = a..b

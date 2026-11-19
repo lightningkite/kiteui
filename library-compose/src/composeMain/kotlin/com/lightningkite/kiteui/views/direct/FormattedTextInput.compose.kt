@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.reformatWithSelection
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -14,7 +15,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.NativeElementWithAction
@@ -32,28 +32,29 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
     override val driverValue: String? get() = formattedTextInputDriverValue()
     override val driverActions: AiDriver.Actions get() = super.driverActions + formattedTextInputDriverActions()
 
-    private var isRawData: (Char) -> Boolean = { true }
-    private var formatter: (clean: String) -> String = { it }
+    public actual var format: TextFormat = TextFormat.None
+        set(value) {
+            val data = content.value
+            field = value
+            content.value = data
+            // Claude: the data can be unchanged while its layout isn't, so the shown text must be redone here.
+            fieldValue = format.format(content.value).let { TextFieldValue(it, TextRange(it.length)) }
+        }
 
-    public actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
-        this.isRawData = isRawData
-        this.formatter = formatter
-    }
-
-    /** The raw data only, without the formatting characters. */
-    // Stores the data of the formatted text, as the other platforms read it back from the field, so a value set by code
-    // that the formatter would change can't disagree with what is shown.
-    public actual val content: MutableReactiveValue<String> = Signal("").lens(get = { it }, set = { formatter(it.filter(isRawData)).filter(isRawData) })
+    // Claude: stores the data of the formatted text, as the other platforms read it back from the field, so a value
+    // set by code that the format would change can't disagree with what is shown.
+    public actual val content: MutableReactiveValue<String> =
+        Signal("").lens(get = { it }, set = { format.format(it.filter(format::isRawData)).filter(format::isRawData) })
     public actual var hint: String by mutableStateOf("")
     public actual var align: Align? by mutableStateOf(null)
     public actual var keyboardHints: KeyboardHints by mutableStateOf(KeyboardHints(KeyboardCase.Sentences))
 
-    private var field by mutableStateOf(TextFieldValue(""))
+    private var fieldValue by mutableStateOf(TextFieldValue(""))
 
     init {
         reactive {
             val raw = content()
-            if (raw != field.text.filter(isRawData)) field = formatter(raw).let { TextFieldValue(it, TextRange(it.length)) }
+            if (raw != fieldValue.text.filter(format::isRawData)) fieldValue = format.format(raw).let { TextFieldValue(it, TextRange(it.length)) }
         }
     }
 
@@ -64,11 +65,11 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
         val hints = keyboardHints
         val style = theme.font.toTextStyle(color.toCompose(), align ?: theme.font.align)
         BasicTextField(
-            value = field,
+            value = fieldValue,
             onValueChange = {
                 // Selection-only changes must not be reformatted, or the cursor can't rest beside a formatting character.
-                field = if (it.text == field.text) it else it.reformatted(isRawData, formatter)
-                content.value = field.text.filter(isRawData)
+                fieldValue = if (it.text == fieldValue.text) it else it.reformatted(format)
+                content.value = fieldValue.text.filter(format::isRawData)
             },
             modifier = modifier,
             enabled = enabled && takesInput,
@@ -81,7 +82,7 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@FormattedTextInput) }),
             decorationBox = { inner ->
                 SingleLineDecoration(theme.font) {
-                    if (field.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
+                    if (fieldValue.text.isEmpty()) BasicText(theme.font.cased(hint), style = style.copy(color = theme.hintColor))
                     inner()
                 }
             },
@@ -90,16 +91,7 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
 }
 
 /** Reapplies a format after an edit, keeping the cursor on the same data character. */
-internal fun TextFieldValue.reformatted(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String): TextFieldValue {
-    var result = this
-    repairFormatAndPosition(
-        dirty = text,
-        selectionStart = selection.start,
-        selectionEnd = selection.end,
-        setResult = { result = TextFieldValue(it) },
-        setSelectionRange = { start, end -> result = result.copy(selection = TextRange(start, end)) },
-        isRawData = isRawData,
-        formatter = formatter,
-    )
-    return result
+internal fun TextFieldValue.reformatted(format: TextFormat): TextFieldValue {
+    val result = format.reformatWithSelection(text, selection.min until selection.max)
+    return TextFieldValue(result.text, TextRange(result.selection.first, result.selection.last + 1))
 }
