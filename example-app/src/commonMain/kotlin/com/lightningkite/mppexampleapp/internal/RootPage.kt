@@ -119,6 +119,7 @@ object RootPage : Page {
                 linkPage { VideoElementPage }
                 linkPage { AudioPage }
                 linkPage { AudioTestPage }
+                linkPage { SpeechTestPage }
                 linkPage { CameraScannerTestPage }
                 linkPage { MarkdownDemoPage }
                 linkPage { MapViewTestPage }

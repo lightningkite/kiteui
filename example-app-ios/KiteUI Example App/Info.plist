@@ -4,6 +4,8 @@
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>For fun, of course!</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>To try out speech recognition.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>For fun, of course!</string>
 	<key>LSMinimumSystemVersion</key>
