@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.map.Camera
 import com.lightningkite.kiteui.map.I_SWEAR_ON_MY_JOB
 import com.lightningkite.kiteui.map.Layer
 import com.lightningkite.kiteui.map.LineLayer
+import com.lightningkite.kiteui.map.MapCache
 import com.lightningkite.kiteui.map.Style
 import com.lightningkite.kiteui.map.SymbolLayer
 import com.lightningkite.kiteui.map.addCircle
@@ -61,13 +62,15 @@ import kotlin.uuid.Uuid
 object MapViewTestPage : Page {
     override val title: Reactive<String> = Constant("Map View Test")
 
-    override fun ElementWriter.CanAddTheme.render(): Unit = run {
+    override fun ElementWriter.CanAddTheme.render() {
         unpadded.frame {
             val useBaseDemoTiles = Signal(true)
             val markerPosition = Signal(GeoCoordinate(0.0, 0.0))
             val coordinates = Signal(listOf<Pair<Uuid, GeoCoordinate>>())
             val recolor = BasicListenable()
             val selectedDot = Signal(Uuid.random())
+
+            MapCache.Ambient.setSize(bytes = 32_000)
 
             val map = mapView(I_SWEAR_ON_MY_JOB.I_DO_NOT_NEED_ATTRIBUTION) {
                 ::style style@{

@@ -327,7 +327,7 @@ private fun MapView.toMLNLayer(id: String, layer: Layer<*>?, style: MLNStyle): M
     return nativeLayer
 }
 
-private fun shapeFromGeoJson(json: String): MLNShape? = memScoped {
+internal fun shapeFromGeoJson(json: String): MLNShape? = memScoped {
     val data = (json as NSString).dataUsingEncoding(NSUTF8StringEncoding) ?: return null
     val error = alloc<ObjCObjectVar<NSError?>>()
     MLNShape.shapeWithData(data, NSUTF8StringEncoding, error.ptr)

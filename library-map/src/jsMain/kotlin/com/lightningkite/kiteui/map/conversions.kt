@@ -31,6 +31,7 @@ internal fun PreInit.toOptions(
         pitch = pitch,
         minPitch = minPitch ?: JsUndefined,
         maxPitch = maxPitch ?: JsUndefined,
+        transformRequest = PlatformMapCache::transformRequest,
     ).also { if (disableAttribution != null) it.attributionControl = false }
 }
 

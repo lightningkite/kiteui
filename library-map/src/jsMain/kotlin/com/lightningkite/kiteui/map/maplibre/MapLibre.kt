@@ -170,7 +170,17 @@ internal external class Map(options: Options) {
         val pitch: Double?
         val minPitch: Double?
         val maxPitch: Double?
+
+        val transformRequest: ((url: String, resourceType: String?) -> RequestParameters?)?
     }
+}
+
+/** Defined at https://github.com/maplibre/maplibre-gl-js/blob/v6.12.0/src/util/ajax.ts */
+@JsPlainObject
+internal external interface RequestParameters {
+    val url: String
+    /** A [RequestCache](https://developer.mozilla.org/en-US/docs/Web/API/Request/cache) mode */
+    val cache: String?
 }
 
 
