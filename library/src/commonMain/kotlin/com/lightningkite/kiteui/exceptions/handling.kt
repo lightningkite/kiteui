@@ -189,24 +189,26 @@ public interface ExceptionHandler {
     }
 }
 
-// One error dialog for the whole app, so a burst of errors doesn't stack dialogs: errors arriving while it's open
-// join it, and one that reads the same as an error already in it isn't repeated.
+// One error dialog per element tree, so a burst of errors doesn't stack dialogs: errors arriving while it's open
+// join it, and one that reads the same as an error already in it isn't repeated.  Per tree, not per process, so
+// another tree in the same process (an SSR request, the next UI test) still gets its own.
 private class ShownError(val message: ExceptionMessage, val stacktrace: String?)
-private val shownErrors = Signal<List<ShownError>>(listOf())
+private val ElementContext.shownErrors: Signal<List<ShownError>> by lazyContextAddon(ContextAddon.Scope.Global) { Signal(listOf()) }
 
 private fun ElementContext.errorDialog(message: ExceptionMessage, stacktrace: String?) {
-    val alreadyOpen = shownErrors.value.isNotEmpty()
+    val shown = shownErrors
+    val alreadyOpen = shown.value.isNotEmpty()
     // Actions are made fresh for each error, so they can't tell two errors apart.
-    if (shownErrors.value.any { it.message.title == message.title && it.message.body == message.body }) return
-    shownErrors.value += ShownError(message, stacktrace)
+    if (shown.value.any { it.message.title == message.title && it.message.body == message.body }) return
+    shown.value += ShownError(message, stacktrace)
     if (alreadyOpen) return
     var opened = false
     dialog { close ->
         col {
             opened = true
             // However the dialog closes (its button, the background, back), the next error opens a new one.
-            onRemove { shownErrors.value = listOf() }
-            sizeConstraints(maxHeight = 30.rem).scrolling.colOfExpensive(shownErrors, animate = false) { error ->
+            onRemove { shown.value = listOf() }
+            sizeConstraints(maxHeight = 30.rem).scrolling.colOfExpensive(shown, animate = false) { error ->
                 col {
                     h1(error.message.title)
                     text(error.message.body)
@@ -227,7 +229,7 @@ private fun ElementContext.errorDialog(message: ExceptionMessage, stacktrace: St
         }
     }
     // Without an overlay frame there's no dialog, and waiting on it would swallow every later error.
-    if (!opened) shownErrors.value = listOf()
+    if (!opened) shown.value = listOf()
 }
 
 /**

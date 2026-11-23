@@ -158,6 +158,31 @@ against.
   `commonTest` replaces the per-platform harnesses; `:test-server` provides the HTTP and WebSocket
   endpoints and is started and stopped by the build. See
   [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md#networking-tests).
+- **`uiTest` on JVM SSR now runs UI code on one thread, as Android and the browser do.** Building the page, the
+  test body and teardown all run on a thread named `uiTest main`, and work resuming from elsewhere (a response, a
+  timer) queues onto it. `Dispatchers.Main` used to be `Unconfined`, so UI code ran on whichever server or timer
+  thread resumed it, while the test read the tree from another: tests failed at random with
+  `ConcurrentModificationException`, `NoSuchElementException` and false `ReactiveReentrancyException`s. What changes
+  for tests:
+  - Blocking the UI thread now deadlocks, as on a device: don't `runBlocking` in `content` or the test body on
+    anything that needs `Dispatchers.Main` (`AppScope` work, for one). Do such setup before calling `uiTest`.
+  - Code after a `withContext(Dispatchers.IO)` (or any hop off the main thread) runs a little later, on the main
+    thread, instead of at once on the IO thread. Wait for its effects with `waitFor`/`waitForText`.
+  - `Dispatchers.Main` and `Dispatchers.Main.immediate` both run in place when already on the UI thread, so an
+    `AppScope.launch` from a click still starts at once.
+  - `Dispatchers.Main` is installed once per JVM and no longer reset after each test, so work a finished test left
+    behind can't race the next test's `setMain`.
+  - An exception that escapes a task on the UI thread, which would crash an app, fails the test.
+  - `rememberSuspending` and `remember` run `Unconfined` by default, so they carry on on whatever thread their
+    suspended call resumes on. A test fetcher should hand responses back on `Dispatchers.Main`, as `BulkFetcher`
+    does, or that code updates reactive state off the UI thread.
+- **`uiTest` on JVM SSR now shuts its page down when the test ends** and waits for the page's coroutines to finish,
+  so a finished test's page stops listening to sessions and live queries before the next test starts. It fails if
+  they are still running 10 s after shutdown. It used to leave the whole element tree running.
+- An element written into a container that has already shut down is now shut down too. It used to be dropped
+  while still running, so its reactive code lived on.
+- The error dialog is now one per element tree instead of one per process, so a dialog open in one tree (a
+  finished test's page, another SSR request) no longer swallows the errors of every other.
 - The JVM SSR stylesheet no longer re-writes every rule seen so far each time a new theme is first used: each
   flush writes only what was added since the last, as the browser one does. Redrawing a screen with many new
   themes took seconds.

@@ -463,7 +463,11 @@ public abstract class NativeContainerElementCommonCode internal constructor(cont
      * @see ContainerElement.addChild for complete documentation and warnings
      */
     override fun addChild(index: Int, element: Element) {
-        if (checkIsShutdown("addChild")) return
+        if (checkIsShutdown("addChild")) {
+            // Nothing else will ever shut this child down, and it is already started: its reactive work would outlive the page.
+            element.onShutdown()
+            return
+        }
         internalChildren.add(index, element)
         nativeAddChild(index, element)
         if (element.parent?.underlyingNativeElement !== this) {
