@@ -158,6 +158,9 @@ against.
   `commonTest` replaces the per-platform harnesses; `:test-server` provides the HTTP and WebSocket
   endpoints and is started and stopped by the build. See
   [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md#networking-tests).
+- The JVM SSR stylesheet no longer re-writes every rule seen so far each time a new theme is first used: each
+  flush writes only what was added since the last, as the browser one does. Redrawing a screen with many new
+  themes took seconds.
 
 ### AI Driver / Test Utilities
 
