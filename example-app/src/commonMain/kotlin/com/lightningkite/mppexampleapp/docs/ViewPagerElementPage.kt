@@ -32,12 +32,12 @@ object ViewPagerElementPage: DocPage {
                 
                 sizeConstraints(height = 10.rem).card.viewPager {
                     // Bind the current index of the ViewPager to `currentPage`
-                    index bind currentPage
-                    
+                    centerIndex bind currentPage
+
                     // Define what to show here
-                    children(items) {
+                    children(items, id = { it }) {
                         frame {
-                            centered.text { ::content { "Page ${'$'}{it.await()}" } }
+                            centered.text { ::content { "Page ${'$'}{it()}" } }
                         }
                     }
                 }
@@ -54,7 +54,7 @@ object ViewPagerElementPage: DocPage {
                     }
                 }
             }
-            text("You can scroll to certain pages by using 'index'.")
+            text("You can scroll to certain pages by setting the Signal bound to 'centerIndex'.")
             example(
                 """
                 col {

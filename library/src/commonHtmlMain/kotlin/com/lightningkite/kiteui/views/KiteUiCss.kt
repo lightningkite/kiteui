@@ -428,7 +428,7 @@ public class KiteUiCss(
                 transition-duration: var(--transition-duration, 0.25s);
             }
 
-            .checkbox:checked {
+            .checkbox.checkbox.checkbox:checked {
                 opacity: 1;
             }
 
@@ -521,8 +521,9 @@ public class KiteUiCss(
                 overflow: hidden;
             }
             
+            /* flow-root, not block: the bottom margins standing in for the gap must not collapse through an empty child or out of the column. */
             .optimized > * {
-                display: block;
+                display: flow-root;
             }
             .weakFill {
                 width: 100%;

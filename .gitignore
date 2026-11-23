@@ -20,7 +20,6 @@ LocalTest.kt
 LocalTelemetryConfig.kt
 TelemetryExportTest.kt
 xcuserdata
-library.podspec
 local
 .kbuild
 /.claude/settings.local.json
@@ -31,3 +30,4 @@ screenshot-*.png
 .env
 tmp
 secrets.properties
+.swiftpm-locks

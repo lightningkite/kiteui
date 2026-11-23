@@ -21,7 +21,8 @@ internal fun EditText.contentProperty(): MutableReactiveValue<String> = object :
     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
     override var value: String
         get() = text?.toString() ?: ""
-        set(value) {  setText(value) }
+        // Claude: setText resets the caret and the keyboard's in-progress input even when the text is the same.
+        set(value) { if (text?.toString() != value) setText(value) }
     override suspend fun set(value: String) { this.value = value }
     init { addTextChangedListener(this) }
 }

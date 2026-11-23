@@ -10,6 +10,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlinx.browser.document
+import kotlin.math.ceil
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
@@ -92,7 +93,9 @@ internal fun HTMLElement.measureByDuplicate(max: Size): Size {
     clone.style.maxHeight = "unset"
     clone.style.position = "fixed"
     document.body!!.appendChild(clone)
-    val out = Size(clone.scrollWidth.toDouble() + 1.0, clone.scrollHeight.toDouble() + 1.0)
+    // scrollWidth/scrollHeight round to whole pixels, so fractional content could come out short; the rect is exact.
+    val rect = clone.getBoundingClientRect()
+    val out = Size(ceil(rect.width), ceil(rect.height))
     document.body!!.removeChild(clone)
 //    console.log("Measuring by duplicate with max size $sizeConstraints got ${out}", this)
     return out
@@ -111,7 +114,9 @@ internal fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): S
     clone.style.height = sizeConstraints.height?.value?.toString() ?: "unset"
     clone.style.position = "fixed"
     document.body!!.appendChild(clone)
-    val out = Size(clone.scrollWidth.toDouble() + 1.0, clone.scrollHeight.toDouble() + 1.0)
+    // scrollWidth/scrollHeight round to whole pixels, so fractional content could come out short; the rect is exact.
+    val rect = clone.getBoundingClientRect()
+    val out = Size(ceil(rect.width), ceil(rect.height))
     document.body!!.removeChild(clone)
 //    console.log("Measuring by duplicate with max size $sizeConstraints got ${out}", this)
     return out

@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.testing.uiTest
 import com.lightningkite.kiteui.views.*
@@ -149,6 +150,34 @@ class NumberInputElementTest {
         // Below min → clamped to 0
         setValue("num", "-5.0")
         assertValue("num", "0.0")
+    }
+
+    @Test
+    fun integerKeyboardTruncatesDecimals() = uiTest(
+        content = {
+            col {
+                val amount = Signal<Double?>(1.5)
+                numberInput {
+                    debugName = "num"
+                    keyboardHints = KeyboardHints.integer
+                    content bind amount
+                }
+            }
+        }
+    ) {
+        assertValue("num", "1.0")
+    }
+
+    @Test
+    fun unnamedInputIsDescribedAsItself() = uiTest(
+        content = {
+            col {
+                text("first")
+                numberInput { }
+            }
+        }
+    ) {
+        assertTrue(snapshot().lineSequence().any { it.contains("1: NumberInput") }, snapshot())
     }
 
     // F. No leak after shutdown

@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.views.ElementContext
 import platform.Foundation.NSUserActivity
 
@@ -24,13 +24,13 @@ public actual fun PageNavigator.bindToPlatform(context: ElementContext) {
 // To be called from scene(_:willConnectTo:options:)
 public fun postUserActivity(activity: NSUserActivity) {
     postedLandingUrl = activity.webpageUrlLikePath()
-    ConsoleRoot.info("postUserActivity: $postedLandingUrl")
+    Log.info("postUserActivity: $postedLandingUrl")
 }
 
 // To be called from scene(_:continue:)
 public fun handleUserActivity(activity: NSUserActivity) {
     activity.webpageUrlLikePath()?.let { path ->
-        ConsoleRoot.info("handleUserActivity: $path")
+        Log.info("handleUserActivity: $path")
         lastBoundPageNavigator?.let { pageNavigator ->
             pageNavigator.navigate(pageNavigator.routes.parse(path) ?: return)
         }

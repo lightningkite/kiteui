@@ -18,6 +18,10 @@ import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.extensions.value
 import kotlin.math.min
 
+// Claude: > 0 while a positional list is building its placeholder rows; lists created inside them render none.
+// UI code runs on one thread, so a plain counter is enough.
+private var renderingPlaceholders = 0
+
 /**
  * **INTERNAL API:** Renders [items] using positional slot reuse with optional placeholder loading states.
  *
@@ -281,24 +285,35 @@ private fun <T> ContainerElement.renderListPositional(
     setupAsListContainer()
     val currentViews = ArrayList<LateInitSignal<T>>()
     val currentView = this
+    // Claude: a placeholder row renders the real row template against an unset signal, so every list inside it is
+    // "loading" and would show placeholders of its own, and so on down: 5 placeholders per level means 5, 25, 125
+    // rows. One app page built 1,895 placeholder cells for 4 real ones. Placeholders stop at the first level.
+    val wantedPlaceholders = if (renderingPlaceholders > 0) 0 else placeholders
+    var placeholdersShowing = false
     reactive(onLoad = {
         currentView.withoutAnimation {
-            if (placeholders <= 0) return@reactive
-            if (currentViews.size < placeholders) {
-                repeat(placeholders - currentViews.size) {
-                    val newProp = LateInitSignal<T>()
-                    beforeModifier().asListItem.render(newProp)
-                    currentViews.add(newProp)
+            if (wantedPlaceholders <= 0) return@reactive
+            if (currentViews.size < wantedPlaceholders) {
+                renderingPlaceholders++
+                try {
+                    repeat(wantedPlaceholders - currentViews.size) {
+                        val newProp = LateInitSignal<T>()
+                        beforeModifier().asListItem.render(newProp)
+                        currentViews.add(newProp)
+                    }
+                } finally {
+                    renderingPlaceholders--
                 }
             }
             val ch = currentView.children
-            for (index in 0 until placeholders) {
+            for (index in 0 until wantedPlaceholders) {
                 ch[index].shown = true
                 currentViews[index].unset()
             }
-            for (index in placeholders..<currentViews.size) {
+            for (index in wantedPlaceholders..<currentViews.size) {
                 ch[index].shown = false
             }
+            placeholdersShowing = true
         }
     }) {
         val itemList = items()
@@ -323,6 +338,15 @@ private fun <T> ContainerElement.renderListPositional(
             // Hide excess slots.
             for (index in itemList.size..<currentViews.size) {
                 ch[index].shown = false
+            }
+            // Claude: slots left over from the loading state hold unset signals, not pooled rows worth keeping, and a
+            // hidden slot still runs its reactive blocks. Drop them instead of pooling them.
+            if (placeholdersShowing) {
+                placeholdersShowing = false
+                for (index in currentViews.lastIndex downTo itemList.size) {
+                    currentView.removeChild(index)
+                    currentViews.removeAt(index)
+                }
             }
 
             // Evict tail slots when the hidden pool exceeds poolCap.
@@ -785,7 +809,7 @@ public fun <T> ContainerElement.forEach(
 @Deprecated("Use renderListIn instead")
 public fun <T> ContainerElement.forEachUpdating(
     items: Reactive<List<T>>,
-    placeholdersWhileLoading: Int = 5,
+    placeholdersWhileLoading: Int = 0,
     beforeListModifier: ViewWriter.() -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
 ): Unit = renderListPositional(items, placeholdersWhileLoading, 32, beforeListModifier, render)

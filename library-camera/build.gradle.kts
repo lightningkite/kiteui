@@ -1,11 +1,8 @@
 // by Claude
-import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.cocoapods) apply false
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.androidKmpLibrary)
     signing
@@ -13,15 +10,12 @@ plugins {
     alias(libs.plugins.dokka)
 }
 
-// Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
-if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
-
 kotlin {
     applyDefaultHierarchyTemplate()
 
     android {
         namespace = "com.lightningkite.kiteui.camera"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 21
         enableCoreLibraryDesugaring = true
         compilerOptions {
@@ -32,13 +26,6 @@ kotlin {
         iosArm64()
         iosSimulatorArm64()
         iosX64()
-        // No `cocoapods {}` accessor, since the plugin isn't applied in the plugins block.
-        (this as ExtensionAware).extensions.configure<CocoapodsExtension> {
-            summary = "KiteUI Camera and Barcode Scanning Support"
-            homepage = "https://github.com/lightningkite/kiteui"
-            version = "1.0"
-            ios.deploymentTarget = "14.0"
-        }
     }
     js { browser() }
     jvm("jvmSsr")
@@ -95,10 +82,8 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
-lkLibrary(
-    "lightningkite",
-    "kiteui",
-    mavenAutomaticRelease = project.findProperty("mavenAutomaticRelease") as? Boolean ?: false
-) {
-    description.set("KiteUI Camera and Barcode Scanning Support")
+mavenPublishing {
+    // Deployments are released by hand on the Central Portal.
+    publishToMavenCentral(automaticRelease = false)
+    pom { description.set("KiteUI Camera and Barcode Scanning Support") }
 }

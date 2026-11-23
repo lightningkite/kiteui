@@ -158,7 +158,7 @@ object NavigationPage: DocPage {
                     text("Open a dialog")
                     onClick {
                         context.dialog { close ->
-                            card.col {
+                            col {
                                 h1("Hello!")
                                 text("This is a dialog.")
                                 button {
@@ -175,7 +175,7 @@ object NavigationPage: DocPage {
                     text("Open a dialog")
                     onClick {
                         context.dialog { close ->
-                            card.col {
+                            col {
                                 h1("Hello!")
                                 text("This is a dialog.")
                                 button {

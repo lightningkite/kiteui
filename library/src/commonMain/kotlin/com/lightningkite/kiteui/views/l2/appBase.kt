@@ -10,12 +10,23 @@ import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.coordinatorFrame
 import com.lightningkite.kiteui.views.lazyContextAddon
 
+/**
+ * The container where dialogs, popovers, and overlays open.
+ *
+ * `appBase` sets it; reading it before then throws [IllegalStateException].
+ */
 public var ElementContext.overlayFrame: ContainerElement by lazyContextAddon {
     throw IllegalStateException(
         "'ElementContext.overlayFrame' has not been initialized, it must be set before dialogs, overlays, and popovers can be used. " +
             "It is recommended to call 'appBase { ... }' at the root of your app to properly initialize overlayFrame, as well as many other properties."
     )
 }
+
+/**
+ * The frame that lays out the app's main content and animates changes to it.
+ *
+ * `appBase` sets it; reading it before then throws [IllegalStateException].
+ */
 public var ElementContext.coordinatorFrame: CoordinatorFrame by lazyContextAddon {
     throw IllegalStateException(
         "'ElementContext.coordinatorFrame' has not been initialized. " +

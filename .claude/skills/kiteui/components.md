@@ -1,435 +1,103 @@
 # KiteUI Components
 
-## Text Components
+Condensed from [docs/components.md](../../../docs/components.md); read that for more examples.
+
+Builders: `com.lightningkite.kiteui.views.direct.*`.  `field`/`label`/`toast`: `views.l2.*`.  `Icon`, `KeyboardHints`, `rem`, `Align`: `kiteui.models.*`.
+
+## Text
 
 ```kotlin
-h1("Main Heading")
-h2("Subheading")
-h3("Smaller heading")
-h4("Even smaller")
-h5("Very small")
-h6("Smallest")
-text("Regular text")
-subtext("Smaller, muted text")
+h1("Title") … h6("…"); text("Body"); subtext("Muted"); text("Centered", align = Align.Center)
+text { ::content { "Count: ${count()}" } }           // reactive
+text { content = s; lineClamp = 2 }                   // also ellipsis, wraps, wordBreak
+bold.text("…"); italic.text("…")                      // underline, strikethrough, allCaps, textSize(x)
 ```
 
-### Text with Dynamic Content
-```kotlin
-val name = Signal("World")
-text { ::content { "Hello, ${name()}!" } }
-```
-
-## Buttons
+## Buttons and actions
 
 ```kotlin
-// Basic button
 button {
-    text("Click Me")
-    onClick {
-        println("Clicked!")
-    }
+    text("Save")                     // a button has NO text property; nest views
+    onClick { api.save() }           // suspending; shows loading; errors go to exception handlers; 500 ms tap cap
 }
+button { text("x"); onLongClick { } }
+important.button { }; danger.button { }   // critical, warning, affirmative, card
+button { text("Next"); ::enabled { agreed() }; onClick { } }
 
-// Button with action (preferred for async operations)
-button {
-    text("Save")
-    action = Action("Save", Icon.save) {
-        delay(1000)  // Simulated async work
-        saveData()
-    }
-}
-
-// Themed button
-important.button {
-    text("Important Action")
-    onClick { /* ... */ }
-}
-
-danger.button {
-    text("Delete")
-    onClick { /* ... */ }
-}
+// Shared action: Enter in the input and the button run the same Action
+val search = Action("Search", Icon.search) { runSearch(query()) }
+textInput { content bind query; action = search }
+button { icon(Icon.search, "Search"); action = search }
 ```
 
-### Actions with Loading
-
-Actions work on both **buttons** and **text fields** (runs on Enter key):
-
-```kotlin
-// Button action
-button {
-    text("Load Data")
-    action = Action("Load", Icon.download) {
-        // Button automatically shows loading state
-        delay(2000)
-        val result = fetchData()
-        toast("Data loaded successfully!")
-    }
-}
-
-// Action with API call and toast feedback
-button {
-    row {
-        icon { source = AppIcons.lockOpen }
-        text { content = "Unlock Door" }
-    }
-    action = Action("Unlock Door") {
-        val session = currentSession.await() ?: return@Action
-        session.api.reservation.unlockDoor(reservationId, doorId, "")
-        toast("Door unlocked!")
-    }
-}
-```
-
-**Key points:**
-- Action blocks are suspend functions - can call async APIs directly
-- Automatic loading state on buttons while action runs
-- Use `toast()` for immediate user feedback after actions
-- Return early with `return@Action` if preconditions aren't met
-
-## Text Inputs
-
-```kotlin
-val email = Signal("")
-
-textInput {
-    hint = "Enter your email"
-    keyboardHints = KeyboardHints.email
-    content bind email
-}
-
-// With action (runs on Enter key)
-textInput {
-    hint = "Search"
-    content bind searchQuery
-    action = Action("Search", Icon.search) {
-        performSearch(searchQuery())
-    }
-}
-```
-
-### Text Area (Multi-line)
-```kotlin
-val notes = Signal("")
-
-textArea {
-    hint = "Enter notes"
-    content bind notes
-}
-```
-
-## Checkbox
-
-```kotlin
-val isChecked = Signal(false)
-
-checkbox {
-    checked bind isChecked
-}
-
-// With label
-field("Accept Terms") {
-    checkbox {
-        checked bind acceptedTerms
-    }
-}
-```
-
-## Switch (Toggle)
-
-```kotlin
-val isEnabled = Signal(false)
-
-switch {
-    checked bind isEnabled  // Note: uses 'checked' not 'enabled'
-}
-```
-
-## Radio Buttons
-
-Use the `.equalTo()` extension for clean radio button binding:
-
-```kotlin
-val selectedOption = Signal<Int?>(null)
-
-val options = listOf(
-    null to "Never",
-    1 to "After 1 day",
-    7 to "After 7 days"
-)
-
-options.forEach { (value, label) ->
-    button {
-        row {
-            radioButton {
-                // ✅ Best: Use .equalTo() for automatic bidirectional binding
-                checked bind selectedOption.equalTo(value)
-            }
-            space()
-            text(label)
-        }
-        onClick {
-            selectedOption.value = value
-        }
-    }
-}
-```
-
-**How `.equalTo()` works:**
-- Returns `true` when `selectedOption() == value`
-- When set to `true`, automatically sets `selectedOption.value = value`
-- Much cleaner than manual `remember { }.withWrite { }` pattern
-
-### Radio Toggle Buttons (Preferred)
-
-For styled radio selection groups, use `radioToggleButton` instead of manual button+radioButton combinations:
-
-```kotlin
-val selectedActivity = Signal(0)
-val activities = listOf("Endurance", "Hill Climb", "HIIT", "Recovery")
-
-row {
-    activities.forEachIndexed { index, label ->
-        expanding.radioToggleButton {
-            centered.text { content = label }
-            checked bind selectedActivity.equalTo(index)
-        }
-    }
-}
-```
-
-**With icons:**
-```kotlin
-val activities = listOf(
-    AppIcons.bike to "Endurance",
-    AppIcons.mountain to "Hill Climb",
-    AppIcons.bolt to "HIIT",
-    AppIcons.fitness to "Recovery"
-)
-
-row {
-    activities.forEachIndexed { index, (icon, label) ->
-        expanding.radioToggleButton {
-            col {
-                centered.icon { source = icon }
-                centered.subtext { content = label }
-            }
-            checked bind selectedActivity.equalTo(index)
-        }
-    }
-}
-```
-
-**Key Points:**
-- `radioToggleButton` automatically uses `SelectedSemantic` when checked, `UnselectedSemantic` when unchecked
-- Style via theme overrides on `SelectedSemantic` and `UnselectedSemantic`
-- Use `expanding` modifier for equal-width buttons in a row
-- Cannot be deselected by clicking again (radio behavior)
-- For toggleable buttons (checkbox behavior), use `toggleButton` instead
-
-## Select (Dropdown)
-
-```kotlin
-val options = listOf("Option 1", "Option 2", "Option 3")
-val selected = Signal("Option 1")
-
-select {
-    bind(selected, options) { it }
-}
-```
-
-## Images
-
-```kotlin
-image {
-    source = Resources.myImage
-    scaleType = ImageScaleType.Crop
-    description = "Alt text for accessibility"
-}
-```
-
-## Icons
-
-```kotlin
-// Pattern 1: Direct icon with description (most common)
-icon(Icon.home, "Home")
-icon(Icon.settings, "Settings")
-
-// Pattern 2: DSL block with properties
-icon {
-    source = Icon.home
-    description = "Home"
-}
-
-// Pattern 3: Icon in a row with text
-row {
-    icon { source = Icon.settings }
-    text { content = "Settings" }
-}
-```
-
-### Custom Icons from SVG Paths
-
-Create custom icons using Material Design SVG paths. Icons use a viewBox typically `0, -960, 960, 960`:
-
-```kotlin
-object AppIcons {
-    // Use built-in icons when available
-    val arrowBack = Icon.arrowBack
-    val settings = Icon.settings
-    val check = Icon.done
-
-    // Create custom icons from Material Design SVG paths
-    val lockOpen = Icon(
-        1.5.rem, 1.5.rem, 0, -960, 960, 960,
-        listOf("M240-640h360v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85h-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640Z")
-    )
-
-    val camera = Icon(
-        1.5.rem, 1.5.rem, 0, -960, 960, 960,
-        listOf("M480-260q75 0 127.5-52.5T660-440q0-75-52.5-127.5T480-620q-75 0-127.5 52.5T300-440q0 75 52.5 127.5T480-260Z")
-    )
-}
-
-// Usage
-icon { source = AppIcons.lockOpen }
-```
-
-**Best Practice**: Centralize custom icons in an `AppIcons` object for consistency and reusability.
+`onClick { }` and `Action(...) { }` lambdas have no receiver of their own; `context` resolves to the enclosing element's or `render()`'s, so `context.toast(...)` and `context.pageNavigator.navigate(...)` work inside them.  Use `context.toast`, not bare `toast` (deprecated).
 
 ## Links
 
 ```kotlin
-// Internal navigation link
-link {
-    text("Go to Settings")
-    to = { SettingsPage }
-}
-
-// External link
-externalLink {
-    text("Visit Website")
-    to = "https://example.com"
-}
+link { text("Settings"); to = { SettingsPage } }          // <a href> on web
+externalLink { text("Docs"); to = "https://…"; newTab = true }
 ```
 
-## Separators and Space
+## Inputs
 
 ```kotlin
-col {
-    text("Above")
-    separator()  // Horizontal line
-    text("Below")
-    space()      // Empty space
-}
+textInput { hint = "Email"; keyboardHints = KeyboardHints.email; content bind email }   // String
+textArea { keyboardHints = KeyboardHints.paragraph; content bind notes }
+textInput { content bind nullableString.nullToBlank() }
+numberInput { range = 0.0..100.0; content bind price }          // Double?  (Int? → .asDouble())
+formattedTextInput { content bind raw; format = TextFormat(isRawData = { it.isDigit() }, format = { it }) }
+phoneNumberInput { content bind phone }
+autoCompleteTextField { suggestions = listOf("A", "B"); content bind s }
+localDateField { content bind date }        // LocalDate?   also range = a..b
+localTimeField { content bind time }        // LocalTime?
+localDateTimeField { content bind at }      // LocalDateTime?
 ```
 
-## Reusable Components (Custom Widgets)
+`KeyboardHints`: `paragraph`, `title`, `id`, `integer`, `integerWithNegative`, `decimal`, `decimalWithNegative`, `phone`, `email`, `password`, `newPassword`, `oneTimeCode`.  Always set one.  No `url`: build `KeyboardHints(case, type, autocomplete, autocorrect = false)`.
 
-Create reusable components as extension functions on `ViewWriter`:
+Dates are `kotlinx.datetime`; display with `renderToString()` from `com.lightningkite.kiteui.locale` (LocalDate, LocalTime, LocalDateTime, Instant).
+
+## Choices
 
 ```kotlin
-fun ViewWriter.userCard(user: User) = card.row {
-    gap = 1.rem
-    image {
-        source = user.avatarUrl
-        sizeConstraints(width = 3.rem, height = 3.rem)
-    }
-    col {
-        text(user.name)
-        subtext(user.email)
-    }
-}
-
-// Usage
-col {
-    forEach(users) { user ->
-        userCard(user)
-    }
-}
+checkbox { checked bind flag }; switch { checked bind flag }
+radioButton { checked bind size.equalTo(Size.Small) }
+expanding.radioToggleButton { centered.text("Small"); checked bind size.equalTo(Size.Small) }  // segmented
+toggleButton { text("Bold"); checked bind isBold }
+checkbox { checked bind tags.contains("urgent") }                 // Set/List membership
+select { bind(size, Constant(Size.entries)) { it.name } }          // list MUST be Reactive: wrap in Constant
+slider { range(0f, 1f, 0.1f); value bind volume }                  // Float
+progressBar(ratio); circularProgress { ::ratio { r() } }; activityIndicator()
 ```
 
-### Component that Loads its Own Data
+## Media
 
 ```kotlin
-fun ViewWriter.userDetails(userId: String) = col {
-    val userData = LateInitProperty<UserData>()
-
-    // Load data when component is created
-    launch {
-        userData.value = api.fetchUser(userId)
-    }
-
-    // UI automatically shows loading state
-    text { ::content { "Name: ${userData().name}" } }
-    text { ::content { "Email: ${userData().email}" } }
-}
+image { source = Resources.myImage; scaleType = ImageScaleType.Crop; description = "…" }  // Fit, Crop, Stretch, NoScale
+image { source = ImageRemote(url); description = "…" }
+icon(Icon.home, "Home"); icon(Icon.home.resize(3.rem), "Home")
+video { source = VideoRemote(url); showControls = true }
+webView { load(WebViewSource.Url(url)) }        // or WebViewSource.Html(html); permissions denied by default
+menuButton { icon(Icon.moreVert, "More"); requireClick = true; opensMenu { col { button { … } } } }
+separator(); space(); expanding.space()
 ```
 
-### Reusable Components with Bottom Sheets
+Built-in icons ONLY: `add arrowBack block certification chat chevronDown chevronLeft chevronRight close collapse copy darkMode delete deleteForever done dot download email expand externalLink filterList group help home info lightMode list login logout menu moreHoriz moreVert notification notificationFilled passkey person remove search send settings sort star starFilled sync upload warning`.  No `save`, `edit`, `calendar`, `event`.  Custom: `Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("<material symbol path>"))`.
 
-For components used across multiple screens, create dedicated files:
+## Custom components
 
 ```kotlin
-// UnlockDoorsSheet.kt
-package com.example.screens
-
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.direct.*
-
-/**
- * Reusable unlock doors bottom sheet content.
- */
-fun ViewWriter.UnlockDoorsSheetContent() {
-    col {
-        h3 { content = "Unlock Doors" }
-        subtext { content = "Select which doors to unlock:" }
-
-        button {
-            row {
-                icon { source = AppIcons.lockOpen }
-                text { content = "Main Entry Door" }
-            }
-            onClick { /* TODO: Unlock main door */ }
-        }
-        button {
-            row {
-                icon { source = AppIcons.lockOpen }
-                text { content = "Equipment Room" }
-            }
-            onClick { /* TODO: Unlock equipment room */ }
+fun ElementWriter.CanAddTheme.userCard(user: Reactive<User>) {     // NOT plain ElementWriter: card etc. won't resolve
+    card.row {
+        icon(Icon.person, "User")
+        expanding.col {
+            text { ::content { user().name } }
+            subtext { ::content { user().email } }
         }
     }
 }
-
-/**
- * Reusable button that opens the unlock doors bottom sheet.
- */
-fun ViewWriter.UnlockDoorsButton() {
-    button {
-        row {
-            icon { source = AppIcons.lockOpen }
-            text { content = "Unlock Doors" }
-        }
-        onClick {
-            openBottomSheet {
-                UnlockDoorsSheetContent()
-            }
-        }
-    }
-}
+// callers can still add modifiers: expanding.userCard(user)
 ```
 
-**Usage across screens**:
-```kotlin
-// In any screen
-col {
-    // ... other content ...
-    UnlockDoorsButton()  // Just call the function
-}
-```
-
-**Key Points**:
-- Extension functions on `ViewWriter` are automatically available in DSL context
-- Functions in the same package are accessible without imports
-- Separate content from trigger (e.g., `SheetContent` vs `Button`) for flexibility
+Only extract a component when it is reused; inline markup is fine.

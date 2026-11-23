@@ -52,7 +52,7 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
                 viewController.dismissViewControllerAnimated(true) {}
             }
         }
-        viewController.kiteUi(context.split(viewController)) {
+        viewController.kiteUi(context.child(viewController)) {
             beforeSetup {
                 underlyingNativeElement.parent = this@CoordinatorFrame
                 // Can confirm this is OK; automatically cleaned up properly.
@@ -62,7 +62,7 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
                         underlyingNativeElement.refreshTheming()
                     }
                 }
-            }.split().frame {
+            }.withChildContext().frame {
                 context.overlayFrame = this
                 content(control)
             }
@@ -128,7 +128,7 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
                     closePanel()
                 }
             }
-            willRemove = split().produceExactlyOneElement {
+            willRemove = withChildContext().produceExactlyOneElement {
                 frame {
                     overlayFrame = this
                     if (ratio == null) {
@@ -169,7 +169,7 @@ public actual class CoordinatorFrame actual constructor(context: ElementContext)
                     closePanel()
                 }
             }
-            willRemove = split().produceExactlyOneElement {
+            willRemove = withChildContext().produceExactlyOneElement {
                 frame {
                     overlayFrame = this
                     if (ratio == null) {

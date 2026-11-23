@@ -5,11 +5,16 @@ import platform.UIKit.UIApplication
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
-public actual class ElementContext(public val controller: UIViewController, public val parent: ElementContext? = null, shareAddons: Boolean = false) : ElementContextCommonCode(parent, shareAddons) {
-    // by Claude - use addons.child() for lazy parent lookup instead of copying
-    public actual fun split(): ElementContext = ElementContext(controller, parent = this)
-    public actual fun splitExceptionHandlers(): ElementContext = ElementContext(controller, parent = this, shareAddons = true)
-    public fun split(controller: UIViewController): ElementContext = ElementContext(controller, parent = this)
+public actual class ElementContext(public val controller: UIViewController, parent: ElementContext? = null) : ElementContextCommonCode(parent) {
+    public actual fun child(): ElementContext = ElementContext(controller, parent = this)
+    /**
+     * Returns a child context for a new view controller, such as a presented modal.
+     */
+    public fun child(controller: UIViewController): ElementContext = ElementContext(controller, parent = this)
+    @Deprecated("Renamed", ReplaceWith("child(controller)"))
+    public fun split(controller: UIViewController): ElementContext = child(controller)
+
+    public actual val root: ElementContext = parent?.root ?: this
 
     public actual val darkMode: Boolean?
         get() = when (controller.traitCollection.userInterfaceStyle) {
@@ -18,10 +23,12 @@ public actual class ElementContext(public val controller: UIViewController, publ
             else -> null
         }
 
-    // !!! SETUP REQUIRED !!!
-    // To enable immersive mode for iOS, you must:
-    //    1) set "View controller-based status bar appearance" to YES in your Info.plist
-    //    2) override prefersStatusBarHidden in your view controller and point it to this variable
+    /**
+     * Set to `true` to hide the system status bar.
+     *
+     * Set "View controller-based status bar appearance" to YES in Info.plist. Then make your view controller's
+     * `prefersStatusBarHidden` return `context.immersiveMode`.
+     */
     public actual var immersiveMode: Boolean = false
         set(value) {
             if (field != value) {
@@ -66,5 +73,5 @@ public actual class ElementContext(public val controller: UIViewController, publ
         }
     }
 
-    public actual companion object {}
+    public actual companion object : kotlin.coroutines.CoroutineContext.Key<ElementContext>
 }

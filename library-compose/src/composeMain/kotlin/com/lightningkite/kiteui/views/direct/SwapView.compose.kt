@@ -22,7 +22,7 @@ public actual class SwapView actual constructor(context: ElementContext) : Nativ
     public actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit) {
         val newViews = ArrayList<Element>()
         val writer = object : ViewWriter, CoroutineScope by this {
-            override val context: ElementContext get() = this@SwapView.context
+            override val context: ElementContext = this@SwapView.context.child()
 
             @OverrideOnly
             override fun willAddChild(element: Element) {

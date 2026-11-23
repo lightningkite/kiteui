@@ -100,9 +100,8 @@ public fun Slider.sliderDriverActions(): AiDriver.Actions = mapOf(
 // --- Link ---
 
 public fun Link.linkDriverActions(): AiDriver.Actions = buildMap {
-    if (to != null) put("click") {
-        val page = to?.invoke() ?: throw DriverActionException("no navigation target on this link")
-        if (resetsStack) onNavigator.reset(page) else onNavigator.navigate(page)
+    if (to != null || action != null) put("click") {
+        performClick()
         "OK"
     }
 }
@@ -120,6 +119,19 @@ public fun MenuButton.menuDriverActions(
     }
 }
 
+// --- CoordinatorDragHandle ---
+
+public fun CoordinatorDragHandle.dragHandleDriverActions(click: (() -> Unit)?): AiDriver.Actions = buildMap {
+    click?.let { fn -> put("click") { fn(); "OK" } }
+}
+
+// --- DismissBackground ---
+
+// "dismiss", not "click": findClickable would lead from a dialog's text to its background, though clicking the text doesn't dismiss.
+public fun DismissBackground.dismissBackgroundDriverActions(onClick: (suspend () -> Unit)?): AiDriver.Actions = buildMap {
+    onClick?.let { action -> put("dismiss") { action(); "OK" } }
+}
+
 // --- AutoCompleteTextField ---
 
 public fun AutoCompleteTextField.autoCompleteDriverValue(): String = redactedDriverValue(keyboardHints, content.value)
@@ -130,7 +142,7 @@ public fun AutoCompleteTextField.autoCompleteDriverActions(): AiDriver.Actions =
 
 // --- NumberInput ---
 
-public fun NumberInput.numberInputDriverValue(): String = content.value?.toString() ?: ""
+public fun NumberInput.numberInputDriverValue(): String = redactedDriverValue(keyboardHints, content.value?.toString() ?: "")
 public fun NumberInput.numberInputDriverActions(): AiDriver.Actions = buildMap {
     put("setValue") { args ->
         val v = args.firstOrNull()?.toDoubleOrNull() ?: throw DriverActionException("expected number argument")

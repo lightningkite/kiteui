@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.SoundEffectPool
+import com.lightningkite.kiteui.backgroundAudio
 import com.lightningkite.kiteui.load
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -61,19 +62,19 @@ object ResourcesPage: DocPage {
                 }
 
                 // Background audio with volume control
+                val playing = Signal(false)
                 toggleButton {
                     text("Background Audio")
-                    checked bind isPlaying
+                    checked bind playing
                 }
-                backgroundAudio(Resources.audioTaunt, 0.1f) { isPlaying() }
+                backgroundAudio(Resources.audioTaunt, 0.1f) { playing() }
             """.trimIndent()) {
                 val soundEffectPool = SoundEffectPool()
                 val playing = Signal(false)
-                val status = Signal("Click a button to play audio")
                 col {
                     row {
                         expanding.button {
-                            text("Play Audio")
+                            text("Play with Pool")
                             onClick { soundEffectPool.play(Resources.audioTaunt) }
                         }
                         expanding.button {
@@ -85,8 +86,7 @@ object ResourcesPage: DocPage {
                         text("Background Audio")
                         checked bind playing
                     }
-                    text { ::content { status() } }
-                    text { ::content { if(playing()) "Background audio playing" else "Background audio stopped" } }
+                    backgroundAudio(Resources.audioTaunt, 0.1f) { playing() }
                 }
             }
 
@@ -110,13 +110,11 @@ object ResourcesPage: DocPage {
             h3("Fonts")
             text("Font files can be used to customize the appearance of text in your application.")
             example("""
-                // Using a custom font in a theme
-                val myTheme = Theme.flat2("custom").customize(
-                    "customTheme",
-                    body = FontAndStyle(
-                        font = Resources.fontsRoboto,
-                        size = 1.rem
-                    )
+                // Using custom fonts in a theme
+                val myTheme = Theme.material3(
+                    "custom",
+                    title = FontAndStyle(font = Resources.fontsMontserrat, weight = 700),
+                    body = FontAndStyle(font = Resources.fontsRoboto),
                 )
             """.trimIndent()) {
                 text("Font usage example (not rendered in documentation)")

@@ -53,6 +53,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlin.system.exitProcess
 
 /**
  * Hosts a KiteUI app in Compose: builds the element tree with [app], then draws it from [Content].
@@ -198,7 +199,7 @@ public fun kiteUiWindow(
 }
 
 /**
- * Runs a KiteUI app with no window, drawing it offscreen at [width] x [height] pixels until the process ends.
+ * Runs a KiteUI app with no window, drawing it offscreen at [width] x [height] pixels until the process ends.  A crash while rendering ends it too.
  * For driving the app with the AI driver where no display is available (CI, sandboxes).
  */
 public fun kiteUiHeadless(
@@ -210,13 +211,20 @@ public fun kiteUiHeadless(
 ) {
     // Must be set before anything touches AWT (Dispatchers.Main is the Swing thread), or AWT looks for a display.
     System.setProperty("java.awt.headless", "true")
-    runBlocking(Dispatchers.Main) {
-        val root = KiteUiRoot(appId, theme, app)
-        val scene = ImageComposeScene(width, height) { root.Content() }
-        // Nothing else drives frames without a window; the root's screenshots read the last one drawn.
-        while (true) {
-            scene.render(System.nanoTime())
-            delay(16)
+    try {
+        runBlocking(Dispatchers.Main) {
+            val root = KiteUiRoot(appId, theme, app)
+            val scene = ImageComposeScene(width, height) { root.Content() }
+            // Nothing else drives frames without a window; the root's screenshots read the last one drawn.
+            while (true) {
+                scene.render(System.nanoTime())
+                delay(16)
+            }
         }
+    } catch (e: Throwable) {
+        // As a window's crash would.  Otherwise other threads (the AI driver's, say) keep the process up, showing the
+        // last frame drawn as if nothing were wrong.
+        e.printStackTrace()
+        exitProcess(1)
     }
 }

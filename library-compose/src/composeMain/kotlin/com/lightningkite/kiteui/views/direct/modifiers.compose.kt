@@ -1,4 +1,5 @@
 @file:OptIn(InternalKiteUi::class)
+@file:MustUseReturnValues
 
 package com.lightningkite.kiteui.views.direct
 
@@ -91,7 +92,7 @@ public actual fun ElementWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ElementWriter = beforeSetup {
-    val popover = Popover(source = this, anchor = this)
+    val popover = AnchoredPopover(source = this, anchor = this)
     reactive { if (underlyingNativeElement.hovered()) popover.open(preferredDirection, setup) }
 }
 

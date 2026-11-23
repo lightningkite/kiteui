@@ -29,21 +29,30 @@ import kotlin.time.Clock
  * @param parent Optional parent tree to fall back to when no local handler matches
  */
 public class ExceptionHandlersTree(private val parent: ExceptionHandlersTree? = null) {
-    private val handlers = ArrayList<ExceptionHandler>()
-    private val messages = ArrayList<ExceptionToMessage>()
+    // Claude: every container has a tree and most never add anything, so the lists start as the shared empty list
+    // and are replaced on change.
+    private var handlers: List<ExceptionHandler> = emptyList()
+    private var messages: List<ExceptionToMessage> = emptyList()
 
     public fun add(handler: ExceptionHandler) {
-        handlers.add(handler)
-        handlers.sortWith(handlerComparator)
+        handlers = (handlers + handler).sortedWith(handlerComparator)
     }
 
     public fun add(message: ExceptionToMessage) {
-        messages.add(message)
-        messages.sortWith(messageComparator)
+        messages = (messages + message).sortedWith(messageComparator)
     }
 
-    public fun remove(handler: ExceptionHandler): Boolean = handlers.remove(handler) || parent?.remove(handler) == true
-    public fun remove(message: ExceptionToMessage): Boolean = messages.remove(message) || parent?.remove(message) == true
+    public fun remove(handler: ExceptionHandler): Boolean {
+        if (handler !in handlers) return parent?.remove(handler) == true
+        handlers = handlers - handler
+        return true
+    }
+
+    public fun remove(message: ExceptionToMessage): Boolean {
+        if (message !in messages) return parent?.remove(message) == true
+        messages = messages - message
+        return true
+    }
 
     public operator fun plusAssign(handler: ExceptionHandler): Unit = add(handler)
 
@@ -180,24 +189,26 @@ public interface ExceptionHandler {
     }
 }
 
-// One error dialog for the whole app, so a burst of errors doesn't stack dialogs: errors arriving while it's open
-// join it, and one that reads the same as an error already in it isn't repeated.
+// One error dialog per element tree, so a burst of errors doesn't stack dialogs: errors arriving while it's open
+// join it, and one that reads the same as an error already in it isn't repeated.  Per tree, not per process, so
+// another tree in the same process (an SSR request, the next UI test) still gets its own.
 private class ShownError(val message: ExceptionMessage, val stacktrace: String?)
-private val shownErrors = Signal<List<ShownError>>(listOf())
+private val ElementContext.shownErrors: Signal<List<ShownError>> by lazyContextAddon(ContextAddon.Scope.Global) { Signal(listOf()) }
 
 private fun ElementContext.errorDialog(message: ExceptionMessage, stacktrace: String?) {
-    val alreadyOpen = shownErrors.value.isNotEmpty()
+    val shown = shownErrors
+    val alreadyOpen = shown.value.isNotEmpty()
     // Actions are made fresh for each error, so they can't tell two errors apart.
-    if (shownErrors.value.any { it.message.title == message.title && it.message.body == message.body }) return
-    shownErrors.value += ShownError(message, stacktrace)
+    if (shown.value.any { it.message.title == message.title && it.message.body == message.body }) return
+    shown.value += ShownError(message, stacktrace)
     if (alreadyOpen) return
     var opened = false
     dialog { close ->
         col {
             opened = true
             // However the dialog closes (its button, the background, back), the next error opens a new one.
-            onRemove { shownErrors.value = listOf() }
-            sizeConstraints(maxHeight = 30.rem).scrolling.colOfExpensive(shownErrors, animate = false) { error ->
+            onRemove { shown.value = listOf() }
+            sizeConstraints(maxHeight = 30.rem).scrolling.colOfExpensive(shown, animate = false) { error ->
                 col {
                     h1(error.message.title)
                     text(error.message.body)
@@ -218,7 +229,7 @@ private fun ElementContext.errorDialog(message: ExceptionMessage, stacktrace: St
         }
     }
     // Without an overlay frame there's no dialog, and waiting on it would swallow every later error.
-    if (!opened) shownErrors.value = listOf()
+    if (!opened) shown.value = listOf()
 }
 
 /**

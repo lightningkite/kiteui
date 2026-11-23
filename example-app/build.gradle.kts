@@ -1,24 +1,18 @@
 import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import java.util.*
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.cocoapods) apply false
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.roborazzi)
     alias(libs.plugins.kjsplain)
     alias(libs.plugins.kfc)
 }
-
-// Without iOS targets CocoaPods has no framework to build, and its generateDummyFramework task fails IDE sync.
-if (iosEnabled) apply(plugin = libs.plugins.kotlin.cocoapods.get().pluginId)
 
 apply<KiteUiPlugin>()
 configure<KiteUiPluginExtension> {
@@ -34,7 +28,6 @@ rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlu
 }
 
 group = "com.lightningkite"
-version = "1.0-SNAPSHOT"
 
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -45,7 +38,7 @@ kotlin {
         // Must match the KiteUI packageName above: the generated Resources.android.kt uses an unqualified R.
         namespace = "$group.mppexampleapp"
         testNamespace = "$group.mppexampleapp.test"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 24  // library-skia (Skiko) requires API 24+
         enableCoreLibraryDesugaring = true
         androidResources { enable = true }
@@ -62,35 +55,11 @@ kotlin {
     }
 
     if (iosEnabled) {
-        iosArm64()
-        iosSimulatorArm64()
-        // No `cocoapods {}` accessor, since the plugin isn't applied in the plugins block.
-        (this as ExtensionAware).extensions.configure<CocoapodsExtension> {
-            // Required properties
-            // Specify the required Pod version here. Otherwise, the Gradle project version is used.
-            version = "1.0"
-            summary = "Some description for a Kotlin/Native module"
-            homepage = "Link to a Kotlin/Native module homepage"
-            ios.deploymentTarget = "14.0"
-
-            // Optional properties
-            // Configure the Pod name here instead of changing the Gradle project name
-            name = "shared"
-
-            framework {
+        listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
+            target.binaries.framework {
                 baseName = "shared"
                 export(project(":library"))
-//            embedBitcode(BitcodeEmbeddingMode.DISABLE)
-//            podfile = project.file("../example-app-ios/Podfile")
             }
-//        pod("Library") {
-//            version = "1.0"
-//            source = path(project.file("../library"))
-//        }
-
-            // Maps custom Xcode configuration to NativeBuildType
-            xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
-            xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
         }
     }
 
@@ -111,8 +80,8 @@ kotlin {
                 api(project(":library-lottie"))
                 api(project(":library-camera"))
                 api(project(":library-map"))
-                api("com.lightningkite.services:data-shared:1.3.0")
-                api("com.lightningkite.services:database-shared:1.3.0")
+                api(sa.data.shared)
+                api(sa.database.shared)
             }
         }
 

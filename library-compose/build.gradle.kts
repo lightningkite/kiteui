@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lkLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
@@ -31,6 +30,7 @@ kotlin {
 
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
+        freeCompilerArgs.add("-Xreturn-value-checker=check")
         optIn.add("kotlin.time.ExperimentalTime")
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
@@ -40,12 +40,14 @@ kotlin {
             kotlin.srcDir("$library/src/commonMain/kotlin")
             resources.srcDir("$library/src/commonMain/resources")
             dependencies {
-                api(libs.reactive)
+                api(rx.reactive)
                 api(libs.kotlinx.serialization.json)
                 api(libs.kotlinx.serialization.properties)
                 api(libs.kotlinx.datetime)
                 api(libs.kotlinx.coroutines.core)
                 api(libs.kotlinx.serialization.uri)
+                api(sa.telemetry.shared)
+                implementation(libs.kotlinx.atomicfu)
             }
         }
         // Compose view implementations, kept free of JVM-only APIs so Android/iOS can reuse them later.
@@ -88,8 +90,11 @@ tasks.named<Test>("jvmTest") {
     val dataDirectory = layout.buildDirectory.dir("tmp/jvmTest/data").get().asFile
     systemProperty("kiteui.dataDirectory", dataDirectory.absolutePath)
     doFirst { dataDirectory.deleteRecursively() }
+    // Benchmarks are slow and print rather than assert: run them with -Pbenchmark.
+    if (!project.hasProperty("benchmark")) filter { excludeTestsMatching("*Benchmark") }
 }
 
-lkLibrary("lightningkite", "kiteui") {
-    description.set("KiteUI on Compose Multiplatform, for desktop")
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    pom { description.set("KiteUI on Compose Multiplatform, for desktop") }
 }

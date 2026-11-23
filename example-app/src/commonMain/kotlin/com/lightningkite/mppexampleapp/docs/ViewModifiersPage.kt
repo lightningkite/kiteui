@@ -22,38 +22,32 @@ object ViewModifiersPage : DocPage {
             h1("View Modifiers")
             text("KiteUI has a number of view modifiers that can be used to modify the look, behavior and position of views.")
             h2("Syntax")
-            text("There are two different syntaxes for using view modifiers.  You can either use the prefix annotation or the annotation, and they are fully equivalent.")
+            text("Modifiers go before the element, joined with '.'. The compiler enforces their order: alignment → weight → shownWhen → sizing → theme → scrolling → element.")
             example(
                 """
                 col {
-                    // Prefix style: use a dash to separate words
                     important.button { text("Hello World") }
-                    // Postfix style: use the 'in' operator
-                    button { text("Hello World") } in important
+                    centered.sizeConstraints(width = 20.rem).card.text("Centered card")
                 }
             """.trimIndent()
             ) {
                 col {
-                    // Prefix style: use a dash to separate words
                     important.button { text("Hello World") }
-                    // Postfix style: use the 'in' operator
-                    important.button { text("Hello World") }
+                    centered.sizeConstraints(width = 20.rem).card.text("Centered card")
                 }
             }
-            text("Both syntaxes are considered valid, but you should choose which one you use depending in on the context.  Prefixes can be more readable as adjectives, but it can also be more helpful to identify what the item is first.")
-            h2("Gravity")
-            text("Gravity has two parameters, horizontal and vertical.  It can be used to align items within a column, row or stack. " +
-                    "You can use the following values for the two parameters ${
+            h2("Alignment")
+            text("align takes a horizontal and a vertical alignment.  It positions items within a column, row or frame. " +
+                    "You can use the following values for the two parameters: ${
                         Align.entries.joinToString(", ") { it.name }
                     } ")
-            text("Using the gravity modifier, you can align items within a column.")
             example(
                 """
                sizeConstraints(minHeight = 200.px).frame {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
-                            text { content = "$\h $\v" } in gravity(h, v)
+                            align(h, v).text { content = "${'$'}h ${'$'}v" }
                         }
                     }
                 }
@@ -85,11 +79,11 @@ object ViewModifiersPage : DocPage {
             h3("Elements with Weight in a Row")
             example(
                 """
-                  row {
-                        text { content = "Card 1" } in card in weight(0.5f)
-                        text { content = "Card 2" } in card in weight(5f)
-                        text { content = "Card 3" } in card in weight(2f)
-                    }
+                row {
+                    weight(0.5f).card.text { content = "Card 1" }
+                    weight(5f).card.text { content = "Card 2" }
+                    weight(2f).card.text { content = "Card 3" }
+                }
             """.trimIndent()
             ) {
                 row {
@@ -102,11 +96,11 @@ object ViewModifiersPage : DocPage {
             h3("Elements with Weight in a Column")
             example(
                 """
-          sizeConstraints(minHeight = 200.px).col {
-                text { content = "Card 1" } in card in weight(0.5f)
-               text { content = "Card 2" } in card in weight(5f)
-               text { content = "Card 3" } in card in weight(2f)
-           }
+                sizeConstraints(minHeight = 200.px).col {
+                    weight(0.5f).card.text { content = "Card 1" }
+                    weight(5f).card.text { content = "Card 2" }
+                    weight(2f).card.text { content = "Card 3" }
+                }
             """.trimIndent()
             ) {
                 sizeConstraints(minHeight = 200.px).col {
@@ -120,7 +114,7 @@ object ViewModifiersPage : DocPage {
             text("The textPopover modifier is used to add a popover to a text view.")
             example(
                 """
-             text("Text Popover") in textPopover("This is a popover")
+                textPopover("This is a popover").text("Text Popover")
             """.trimIndent()
             ) {
                 textPopover("This is a popover").text("Text Popover")
@@ -188,7 +182,7 @@ object ViewModifiersPage : DocPage {
                 sizeConstraints(minHeight = 10.px).scrollingHorizontally.row {
                     text(
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
-                                "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollingHorizontally"
+                                "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut"
                     )
                 }
               """.trimIndent()
@@ -196,18 +190,18 @@ object ViewModifiersPage : DocPage {
                 sizeConstraints(minHeight = 10.px).scrollingHorizontally.row {
                     text(
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
-                                "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollingHorizontally"
+                                "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut"
                     )
                 }
             }
 
-            h2("Size Box")
-            text("You can set the width and height of a view in a column, row and stack using the sizedBox modifier.  You can set the minimum and maximum width and height, or just the width and height. You pass in a SizeConstraints object to the sizedBox modifier to set the size of the view.")
+            h2("Size Constraints")
+            text("sizeConstraints sets the width and height of a view in a column, row or frame: a fixed width and height, or minimums and maximums.")
             example(
                 """
                 col {
                     sizeConstraints(maxWidth = 200.px, maxHeight = 200.px).card.text(
-                        "Size Constraints with maxWidth, and maxHeight  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut \" +\n"
+                        "Size Constraints with maxWidth, and maxHeight  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut"
                     )
                 }
                 col {
@@ -220,12 +214,11 @@ object ViewModifiersPage : DocPage {
                         "Size Constraints with min width and minHeight"
                     )
                 }
-            }
             """.trimIndent()
             ) {
                 col {
                     sizeConstraints(maxWidth = 200.px, maxHeight = 200.px).card.text(
-                        "Size Constraints with maxWidth, and maxHeight  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut \" +\n"
+                        "Size Constraints with maxWidth, and maxHeight  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut"
                     )
                 }
                 col {
@@ -272,21 +265,22 @@ object ViewModifiersPage : DocPage {
 
             example(
                 """
+                val condition = Signal(true)
                 col {
                     important.toggleButton {
-                        text { reactive { content = if(condition()) "Hide" else "Show" } }
+                        text { ::content { if (condition()) "Hide" else "Show" } }
                         checked bind condition
                     }
-                    shownWhen(condition = { condition() }).text("Show Text Only When Toggled")
+                    shownWhen { condition() }.text("Show Text Only When Toggled")
                 }
             """.trimIndent()
             ) {
                 col {
                     important.toggleButton {
-                        text { reactive { content = if (condition()) "Hide" else "Show" } }
+                        text { ::content { if (condition()) "Hide" else "Show" } }
                         checked bind condition
                     }
-                    shownWhen(condition = { condition() }).text("Show Text Only When Toggled")
+                    shownWhen { condition() }.text("Show Text Only When Toggled")
                 }
             }
         }

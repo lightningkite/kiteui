@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.reformatWithSelection
 import android.graphics.Paint
 import android.text.method.PasswordTransformationMethod
 import android.util.TypedValue
@@ -12,7 +13,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.kiteui.views.AiDriver
@@ -29,19 +29,12 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
             post {
                 val str = this.text.toString()
                 try {
-                    repairFormatAndPosition(
-                        dirty = str,
-                        selectionStart = selectionStart,
-                        selectionEnd = selectionEnd,
-                        setResult = {
-                            setText(it)
-                        },
-                        setSelectionRange = { start, end ->
-                            setSelection(start, end)
-                        },
-                        isRawData = isRawData,
-                        formatter = formatter,
-                    )
+                    // Claude: Android reports a backwards selection with start after end.
+                    val selection = minOf(selectionStart, selectionEnd) until maxOf(selectionStart, selectionEnd)
+                    val result = format.reformatWithSelection(str, selection)
+                    // Claude: setText resets the keyboard's in-progress input, so skip it when nothing changed.
+                    if (result.text != str) setText(result.text)
+                    setSelection(result.selection.first, result.selection.last + 1)
                 } finally {
                     block = false
                 }
@@ -70,15 +63,15 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
         applyAlign(_align ?: theme.font.align)
     }
 
-    private var isRawData: (Char) -> Boolean = { true }
-    private var formatter: (clean: String) -> String = { it }
-    public actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
-        this.isRawData = isRawData
-        this.formatter = formatter
-    }
+    public actual var format: TextFormat = TextFormat.None
+        set(value) {
+            val data = content.value
+            field = value
+            content.value = data
+        }
     public actual val content: MutableReactiveValue<String> = native.contentProperty().lens(
-        get = { it.filter(isRawData) },
-        set = { formatter(it.filter(isRawData)) }
+        get = { it.filter(format::isRawData) },
+        set = { format.format(it.filter(format::isRawData)) }
     )
 
     private var useSensitiveDotMask = false

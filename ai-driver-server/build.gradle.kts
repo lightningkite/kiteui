@@ -16,9 +16,9 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.lightning.server.core)
-    implementation(libs.lightning.server.engine.ktor)
-    implementation(libs.lightning.server.typed)
+    implementation(ls.core.asProvider())
+    implementation(ls.engine.ktor)
+    implementation(ls.typed.asProvider())
     implementation(libs.ktor.server.netty)
     testImplementation(kotlin("test"))
 }

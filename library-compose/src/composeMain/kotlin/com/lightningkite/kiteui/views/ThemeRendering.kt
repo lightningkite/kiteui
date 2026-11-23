@@ -1,6 +1,21 @@
 package com.lightningkite.kiteui.views
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.boundingRect
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import org.jetbrains.skia.FilterBlurMode
+import org.jetbrains.skia.MaskFilter
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import org.jetbrains.skia.RRect
+import org.jetbrains.skia.Paint as SkiaPaint
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -17,6 +32,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -30,7 +46,8 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 
 public fun Color.toCompose(): ComposeColor = ComposeColor(red, green, blue, alpha)
 
-internal val Theme.hintColor: ComposeColor get() = foreground.closestColor().withAlpha(0.5f).toCompose()
+// As the web's ::placeholder: the text color, at 30% opacity.
+internal val Theme.hintColor: ComposeColor get() = foreground.closestColor().let { it.withAlpha(it.alpha * 0.3f) }.toCompose()
 
 public fun Paint.toBrush(): Brush = when (this) {
     is Color -> SolidColor(toCompose())
@@ -76,6 +93,36 @@ public fun Theme.shape(parentSpacing: Dimension): Shape = when (val c = cornerRa
     }
 }
 
+// The web's box-shadow for an elevation (KiteUiCss's toBoxShadow), which like any box-shadow is drawn only outside the
+// element.
+internal fun DrawScope.drawElevationShadow(outline: Outline, elevation: Float) {
+    if (elevation <= 0f) return
+    val box = when (outline) {
+        is Outline.Rectangle -> RoundRect(outline.rect)
+        is Outline.Rounded -> outline.roundRect
+        is Outline.Generic -> error("Only rounded rectangles cast shadows")
+    }
+    fun shadow(offsetY: Float, blur: Float, spread: Float, alpha: Float) {
+        val rect = box.boundingRect.inflate(spread).translate(0f, offsetY)
+        // As in CSS, spread grows the corners' radii with the box.
+        val radii = listOf(box.topLeftCornerRadius, box.topRightCornerRadius, box.bottomRightCornerRadius, box.bottomLeftCornerRadius)
+            .flatMap { listOf(maxOf(0f, it.x + spread), maxOf(0f, it.y + spread)) }
+        // A rounded rectangle, not a path: Skia caches its blur, which makes scrolling past shadows several times faster.
+        val shadowBox = RRect.makeComplexLTRB(rect.left, rect.top, rect.right, rect.bottom, radii.toFloatArray())
+        val paint = SkiaPaint().apply {
+            color = ComposeColor.Black.copy(alpha = alpha).toArgb()
+            // CSS blurs with a standard deviation of half the blur radius.
+            maskFilter = MaskFilter.makeBlur(FilterBlurMode.NORMAL, blur / 2)
+        }
+        drawIntoCanvas { it.nativeCanvas.drawRRect(shadowBox, paint) }
+    }
+    clipPath(Path().apply { addOutline(outline) }, ClipOp.Difference) {
+        shadow(offsetY = elevation * 1.5f, blur = elevation / 2, spread = -elevation, alpha = 0.2f)
+        shadow(offsetY = elevation, blur = elevation, spread = 0f, alpha = 0.14f)
+        shadow(offsetY = elevation / 2, blur = elevation * 2.5f, spread = 0f, alpha = 0.12f)
+    }
+}
+
 public expect fun Font.toFontFamily(): FontFamily
 
 // Compose's TextStyle has no text-transform, so allCaps changes the text itself wherever it's shown.  Character by
@@ -96,6 +143,8 @@ public fun FontAndStyle.toTextStyle(color: ComposeColor, align: Align = this.ali
     fontStyle = if (italic) FontStyle.Italic else FontStyle.Normal,
     fontSize = size.value.sp,
     lineHeight = lineSpacingMultiplier.em,
+    // Compose trims the leading above the first line and below the last by default; CSS keeps it, centering each line in its line-height.
+    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
     letterSpacing = additionalLetterSpacing.value.sp,
     textDecoration = TextDecoration.combine(
         listOfNotNull(

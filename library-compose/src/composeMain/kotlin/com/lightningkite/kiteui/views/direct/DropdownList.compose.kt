@@ -21,7 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
@@ -52,6 +52,7 @@ import com.lightningkite.kiteui.views.toBrush
 import com.lightningkite.kiteui.views.toCompose
 import com.lightningkite.kiteui.views.toTextStyle
 import com.lightningkite.kiteui.views.cased
+import com.lightningkite.kiteui.views.drawElevationShadow
 
 /**
  * The list of choices that [Select] and [AutoCompleteTextField] open below themselves, at least as wide as the owner.
@@ -108,7 +109,7 @@ internal class DropdownList(
                 Modifier
                     .widthIn(min = ownerWidth.dp)
                     .width(IntrinsicSize.Max)
-                    .shadow(theme.elevation.toDp(), shape)
+                    .drawBehind { drawElevationShadow(shape.createOutline(size, layoutDirection, this), theme.elevation.toDp().toPx()) }
                     .background(theme.background.toBrush(), shape)
                     .border(theme.outlineWidth.toDp(), theme.outline.toBrush(), shape)
                     .clip(shape)

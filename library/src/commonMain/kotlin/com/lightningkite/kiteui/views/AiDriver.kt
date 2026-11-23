@@ -42,8 +42,8 @@ public object AiDriver {
         tryAutoStartDaemon(port)
 
         // Install log interceptor that buffers for the driver's "logs" command
-        if (Log.interceptors.none { it is BufferingLogInterceptor }) {
-            Log.interceptors.add(BufferingLogInterceptor())
+        if (Log.Interceptor.global.snapshot().none { it is BufferingLogInterceptor }) {
+            Log.Interceptor.global.register(BufferingLogInterceptor())
         }
 
         val gate = ConnectivityGate()
@@ -121,21 +121,23 @@ public object AiDriver {
         }
 
         public fun defaultDriverDisplay(element: Element, options: Element.DriverSnapshotOptions): String = buildString {
-            val name = element.debugName
+            // Claude: a wrapper like NumberInput forwards this call to its native element, so describe the wrapper instead.
+            val described = (element as? NativeElement)?.outermostElement ?: element
+            val name = described.debugName
             if (name != null) {
                 append("$name: ")
             } else {
-                val idx = element.parent?.children?.indexOf(element)?.takeIf { it >= 0 } ?: 0
+                val idx = described.parent?.children?.indexOf(described)?.takeIf { it >= 0 } ?: 0
                 append("$idx: ")
             }
             if (options.includeThemes) {
-                element.themeChoice.takeUnless { it == ThemeDerivation.None }?.let { append(it); append(' ') }
+                described.themeChoice.takeUnless { it == ThemeDerivation.None }?.let { append(it); append(' ') }
             }
-            append(element::class.simpleName)
-            element.driverValue?.let { append(" = \"$it\"") }
-            if (!element.shown) append(" (hidden)")
-            else if (!element.visible) append(" (invisible)")
-            if (options.includeActions) element.driverActions.keys
+            append(described::class.simpleName)
+            described.driverValue?.let { append(" = \"$it\"") }
+            if (!described.shown) append(" (hidden)")
+            else if (!described.visible) append(" (invisible)")
+            if (options.includeActions) described.driverActions.keys
                 .filter { it != "snapshot" && it != "screenshot" && it != "find" && it != "findClickable" && it != "scrollIntoView" && it != "getAlignment" }
                 .takeUnless { it.isEmpty() }
                 ?.let { append(" [${it.joinToString(", ")}]") }
@@ -147,11 +149,12 @@ public object AiDriver {
  * Lazily installs a [MockExternalServices] on the root view's [RContext], wrapping the existing
  * external services as a delegate. Returns the mock instance. Subsequent calls return the same instance.
  */
+@OptIn(InternalKiteUi::class)
 public fun ensureMockExternalServices(root: Element): MockExternalServices {
     val existing = root.context.externalServices
     if (existing is MockExternalServices) return existing
     val mock = MockExternalServices(delegate = existing)
-    root.context.addons[ElementContext::externalServices.name] = mock
+    root.context.externalServices = mock
     return mock
 }
 
@@ -179,16 +182,19 @@ public suspend fun handleCommand(command: String, root: Element?, navigator: Pag
         }
         "url" -> {
             if (navigator == null) throw DriverActionException("no navigator available")
-            val currentPage = navigator.stack.value.lastOrNull()
-                ?: throw DriverActionException("no current page")
-            val rendered = navigator.routes.render(currentPage)
-                ?: throw DriverActionException("current page has no route")
+            // As the web's address bar, which a page without a route (a full-screen image, say) leaves showing the
+            // last page that had one.
+            val rendered = navigator.stack.value.asReversed().firstNotNullOfOrNull { navigator.routes.render(it) }
+                ?: throw DriverActionException("no page in the stack has a route")
             // The relay ignores blank replies, and the home page renders to an empty path.
             "/" + rendered.urlLikePath.render()
         }
-        "back" -> {
-            if (navigator == null) throw DriverActionException("no navigator available")
-            if (navigator.goBack()) "OK" else throw DriverActionException("can't go back, already at root")
+        // Like a user's back (the browser's, Android's, or Alt+Left on desktop), it closes the top dialog before any page.
+        "back" -> when {
+            root != null && root.context.dismissTopDialog() -> "OK"
+            navigator == null -> throw DriverActionException("no navigator available")
+            navigator.goBack() -> "OK"
+            else -> throw DriverActionException("can't go back, already at root")
         }
         "logs" -> {
             val count = action?.toIntOrNull() ?: 50
@@ -245,7 +251,7 @@ public suspend fun handleCommand(command: String, root: Element?, navigator: Pag
 }
 
 /** Log interceptor that buffers log calls for the driver's "logs" command. */
-private class BufferingLogInterceptor : LogInterceptor {
+private class BufferingLogInterceptor : Log.Interceptor {
     override fun intercept(level: LogLevel, tag: String, entries: Array<out Any?>) {
         LogBuffer.add(level.name, tag, entries.joinToString(" "))
     }

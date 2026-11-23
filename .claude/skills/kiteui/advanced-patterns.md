@@ -1,203 +1,70 @@
 # KiteUI Advanced Patterns
 
-## Keyboard Shortcuts
-
-Add keyboard shortcuts to actions for power users:
+## Keyboard shortcuts
 
 ```kotlin
-// Global shortcut
-onKeyCode(keyCode { shortcut + it.letter('n') }) {
-    pageNavigator.navigate(NewItemPage())
-}
-
-// Button with shortcut
-button {
-    text("Save")
-    action = saveAction
-    onKeyCode(keyCode { shortcut + it.letter('s') }) {
-        saveAction.startAction(this@button)
-    }
-}
-
-// Menu item with shortcut hint
-menuButton {
-    icon(Icon.notifications, "Notifications")
-    onKeyCode(keyCode { shortcut + it.letter('n') }) {
-        launch { handleNotifications() }
-    }
-    opensMenu { /* ... */ }
+col {
+    // onKeyCode needs a ViewWriter receiver (a container like col/row), not the page's CanAddTheme.
+    onKeyCode(keyCode { Ctrl + it.letter('s') }) { saveAction.startAction(this) }
+    onKeyCode(keyCode { Ctrl + Shift + it.letter('z') }) { redo() }
 }
 ```
 
-**Keyboard modifier combinations:**
-- `shortcut` - Cmd on Mac, Ctrl on Windows/Linux
-- `shift` - Shift key
-- `alt` - Alt/Option key
-- `ctrl` - Control key (even on Mac)
+- Modifiers: `Ctrl`, `Alt`, `Shift`, `Meta` (capitalized; there is no `shortcut`/platform-command modifier).  Keys: `it.letter('a')`, `it.num(1)`, `it.enter`, `it.escape`, `it.left`, … (`KeyCodes`).
+- The handler is a plain `() -> Unit`, not suspend: use `launch { }` or `action.startAction(this)` for async work.  It is removed with the view.
 
-## Drop Targets for Drag and Drop
-
-Implement drag and drop for reordering or moving items:
+## Drag and drop
 
 ```kotlin
-card.link {
+// Source
+card.text { content = "Drag me"; dragData = DragData("Greeting", "text/plain", "Hello there!") }
+
+// Target
+card.col {
+    text("Drop here")
     dropTargetDelegate = object : DropTargetDelegate {
-        override fun over(event: DragEvent): Boolean = true
-
-        override fun drop(event: DragEvent): Boolean {
-            val taskIds = DragConstants.decode(event.data) ?: return false
-            confirmDanger("Move Tasks", "Move to this project?") {
-                taskIds.forEach { taskId ->
-                    launch {
-                        session().task[taskId].modify(modification {
-                            it.project assign targetProject._id
-                        })
-                    }
-                }
-            }
-            return true
-        }
+        override fun drop(event: DragEvent): Boolean { dropped.value += event.data.data; return true }
     }
-    // ... link content ...
 }
 ```
 
-## Responsive Dual-Pane Navigation
+With star imports of both `kiteui.views.*` and `kiteui.models.*`, `DropTargetDelegate` is ambiguous (a deprecated alias remains in `views`): add `import com.lightningkite.kiteui.models.DropTargetDelegate`.  `DropTargetDelegate` also has `over`, `enter`, `exit`, `end` (default `true`).  `DragData` can carry several MIME types (`typeToData`) and a `dragShadow`.
 
-Show multiple pages side-by-side on wide screens:
+## Reorderable lists
 
 ```kotlin
-fun ViewWriter.sidewisePageNavigator(navigator: PageNavigator) = row {
-    val pages = remember {
-        val newPages = generateSequence(navigator.currentPage()) {
-            (it as? PagePlus)?.parentPage
-        }.toMutableList()
-        newPages.reverse()
-
-        // Limit to pages that fit on screen
-        while (newPages.sumOf { spaceByPageType(it::class) } > windowWidth() && newPages.size > 1) {
-            newPages.removeAt(0)
-        }
-        newPages.takeLast(2)
-    }
-
-    forEachAnimated(pages, preHidingModifiers = { weight(spaceByPageType(it::class).toFloat()) }) {
-        it.run { render() }
-    }
+renderReorderableListIn(ElementWriter::col, numbers, reorder = { move -> numbers.value = move.reorder(numbers.value) }) { n ->
+    card.text { ::content { n().toString() } }
 }
-
-// Check if using panes
-val usingPanes = remember {
-    activePagesAndWeights()?.invoke().let { it != null && it.size > 1 }
+expanding.recyclerView {
+    childrenReorderable(numbers, id = { it }, reorder = { move -> numbers.value = move.reorder(numbers.value) }) { n -> /* ... */ }
 }
 ```
 
-## Permission-Based UI Visibility
+`forEachReorderable` is deprecated; use `renderReorderableListIn`.
 
-Show/hide UI elements based on user permissions:
+## Permission-based UI
 
 ```kotlin
-shownWhen { session().myRole() != UserRole.Client }.button {
-    text("Add Project")
-    onClick { pageNavigator.navigate(NewProjectPage()) }
-}
+shownWhen { session().role >= UserRole.Admin }.button { text("Admin"); onClick { /* ... */ } }
 
-// Conditional action availability
 link {
-    ::to {
-        if (session().hasPermission(Permission.Edit)) {
-            { EditPage(item()._id) }
-        } else null
-    }
+    ::to { if (canEdit()) ({ EditPage(item()._id) }) else null }   // Link.to is (() -> Page)?
     text { ::content { item().name } }
 }
 ```
 
-## Conditional Rendering
+Hiding UI is not security; the server must enforce permissions too.
 
-```kotlin
-val showAdvanced = Signal(false)
+## Component design
 
-col {
-    checkbox {
-        checked bind showAdvanced
-    }
+1. Write the concrete view inline; extract a helper only when it's reused or prevents drift.
+2. Helpers take few parameters and may load their own data.
+3. Helper receiver: `ElementWriter.CanAddTheme` (or `ViewWriter` if callers need alignment/weight).
 
-    // Using shownWhen (preferred)
-    shownWhen { showAdvanced() }.card.col {
-        h3("Advanced Options")
-        // ... advanced controls
-    }
+## Performance
 
-    // Or using reactive (clear children first!)
-    col {
-        reactive {
-            clearChildren()
-            if (showAdvanced()) {
-                advancedSettings()
-            }
-        }
-    }
-}
-```
-
-## RecyclerView for Large Lists
-
-Use `recyclerView` + `children()` for efficient rendering of large lists:
-
-```kotlin
-expanding.frame {
-    // Empty state
-    shownWhen { items().isEmpty() }.centered.text {
-        content = "No items found."
-    }
-
-    // Efficient list rendering
-    recyclerView {
-        children(items, id = { it._id }) { item ->
-            card.row {
-                text { ::content { item().name } }
-                subtext { ::content { item().description } }
-            }
-        }
-    }
-}
-```
-
-## SwapView for Animated Transitions
-
-```kotlin
-swapView(remember { if (showAdvanced()) "advanced" else "simple" }) { mode ->
-    when (mode) {
-        "advanced" -> advancedSettings()
-        "simple" -> simpleSettings()
-    }
-}
-```
-
-## ForEachAnimated
-
-For lists with enter/exit animations:
-
-```kotlin
-forEachAnimated(items, preHidingModifiers = { /* ... */ }) { item ->
-    card.text { ::content { item().name } }
-}
-```
-
-## Component Design Best Practices
-
-1. **Components should take minimal parameters** unique per usage
-2. **Components should load their own data** (makes them easy to debug)
-3. **Components should be used more than once**; single-use components should be inlined
-4. **Keep view hierarchy shallow** to minimize theme recalculations
-
-## Performance Best Practices
-
-1. Use `forEach` for dynamic lists instead of manual child management
-2. Use `Recycler2` (or `recyclerView` + `children()`) for long lists that need virtualization
-3. **Use server-side filtering for search** - NEVER use client-side `.filter()` on ModelCache results
-4. Keep view hierarchy shallow
-5. Batch child operations when possible
-6. Use `shared` / `remember` to avoid redundant calculations
-7. Debounce user input (`.debounce(500)`) before triggering expensive operations
+- Long lists: `recyclerView` or `windowedList`, not `colOf`.
+- Filter on the server, not with `.filter()` over a big client list.
+- `remember` shares one calculation among readers; reuse it rather than recomputing in many bindings.
+- `debounce(…milliseconds)` input before expensive work.

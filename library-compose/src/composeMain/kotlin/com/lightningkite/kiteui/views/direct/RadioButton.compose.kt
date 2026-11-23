@@ -40,6 +40,8 @@ public actual class RadioButton actual constructor(context: ElementContext) : Na
     // The web forces a radio button's padding to 0; it's a fixed-size circle.
     override fun refreshPadding() {}
 
+    override val handCursor: Boolean get() = true
+
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier.selectable(
         selected = isChecked,
         interactionSource = interactions.source,
@@ -57,7 +59,7 @@ public actual class RadioButton actual constructor(context: ElementContext) : Na
         val checked = isChecked
         Spacer(
             modifier
-                .requiredSize(25.dp)
+                .requiredSize(sizeConstraints.clampSize(25.dp, 25.dp))
                 .drawBehind {
                     val border = 0.1.rem.toDp().toPx()
                     drawCircle(ringColor, radius = (size.minDimension - border) / 2, style = Stroke(border))
