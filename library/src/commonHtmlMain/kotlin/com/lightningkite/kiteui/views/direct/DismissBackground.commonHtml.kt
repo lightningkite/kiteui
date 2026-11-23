@@ -21,9 +21,14 @@ public actual class DismissBackground actual constructor(context: ElementContext
         element.native.addEventListener("click") { ev -> ev.stopImmediatePropagation() }
     }
 
+    private var onClick: (suspend () -> Unit)? = null
+
     public actual fun onClick(action: suspend () -> Unit) {
+        onClick = action
         native.replaceEventListener("click") { launch { action() } }
     }
+
+    override val driverActions: AiDriver.Actions get() = super.driverActions + dismissBackgroundDriverActions(onClick)
 
     init {
         themePipeline.add(

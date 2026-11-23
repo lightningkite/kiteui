@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.usingWebOnMobile
 import com.lightningkite.kiteui.models.AutoComplete
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.KeyboardType
@@ -24,8 +26,8 @@ internal fun FutureElement.applyKeyboardHints(hints: KeyboardHints) {
         KeyboardType.Integer -> "numeric"
         KeyboardType.Phone -> "tel"
         KeyboardType.Email -> "email"
-        KeyboardType.IntegerWithNegative -> if (usingWebOnMobile()) "text" else "numeric"
-        KeyboardType.DecimalWithNegative -> if (usingWebOnMobile()) "text" else "decimal"
+        KeyboardType.IntegerWithNegative -> if (Platform.usingWebOnMobile) "text" else "numeric"
+        KeyboardType.DecimalWithNegative -> if (Platform.usingWebOnMobile) "text" else "decimal"
     }
 
     val primaryAutocompleteValue: String?

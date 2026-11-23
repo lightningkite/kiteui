@@ -45,3 +45,12 @@ public fun Link.onNavigate(
 ) {
     onNavigateAction = Action(label, icon, frequencyCap = frequencyCap) { action() }
 }
+
+/** What a click on the link does on every platform: its action, then, if it goes somewhere, its onNavigate and the navigation. */
+public fun Link.performClick() {
+    action?.startAction(this)
+    to?.invoke()?.let { page ->
+        onNavigateAction?.startAction(this)
+        if (resetsStack) onNavigator.reset(page) else onNavigator.navigate(page)
+    }
+}

@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * What [platformFetch] must do identically on every platform, checked against a real server.
+ * What [HttpFetcher.Platform.fetch] must do identically on every platform, checked against a real server.
  *
  * Each target implements this over a different HTTP client, so agreement is a claim about four
  * separate pieces of code and cannot be established by testing one of them.
@@ -40,7 +40,7 @@ class HttpFetchTest {
     fun sendsRequestHeaders() = networkTest {
         val response = fetch(
             url = "${TestServer.http}/headers",
-            headers = httpHeaders("X-Kiteui-Test" to "present"),
+            headers = HttpHeaders("X-Kiteui-Test" to "present"),
         )
         assertContains(response.text().lines(), "x-kiteui-test: present")
     }
@@ -134,6 +134,15 @@ class HttpFetchTest {
         val response = gate.runRequest("GET /hello") { fetch("${TestServer.http}/hello") }
         assertEquals(TestServer.helloBody, response.text())
         assertTrue(gate.gate.permit, "a successful request should leave the gate open")
+    }
+
+    @Test
+    fun suppressedRequestsDontReportConnectivityIssues() = networkTest {
+        Connectivity.lastConnectivityIssueCode.value = 0
+        assertFailsWith<ServerUnavailableException> {
+            suppressConnectivityIssues { ConnectivityGate().runRequest("GET /status/503") { fetch("${TestServer.http}/status/503") } }
+        }
+        assertEquals(0.toShort(), Connectivity.lastConnectivityIssueCode.value)
     }
 
     /** Large enough that a client has to deliver the body in pieces, small enough to stay quick. */

@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.mainPageNavigator
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
-import kotlinx.coroutines.launch
 import com.lightningkite.kiteui.views.AiDriver
 
 
@@ -18,17 +17,7 @@ public actual class Link actual constructor(context: ElementContext): NativeCont
     }
 
     init {
-        native.setOnClickListener { _ ->
-            launch {
-                action?.startAction(this@launch)
-                to?.invoke()?.let { to ->
-                    onNavigateAction?.startAction(this@launch)
-
-                    if (resetsStack) onNavigator.reset(to)
-                    else onNavigator.navigate(to)
-                }
-            }
-        }
+        native.setOnClickListener { performClick() }
     }
 
     public actual var to: (() -> Page)? = null

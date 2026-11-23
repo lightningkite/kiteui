@@ -1,8 +1,9 @@
+@file:MustUseReturnValues
+
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.OverrideOnly
-import com.lightningkite.kiteui.UnsafeModifier
 
 private class BeforeSetup(
     val wraps: ElementWriter,
@@ -25,54 +26,26 @@ public fun ElementWriter.CanAddAlignment.beforeSetup(setup: Element.() -> Unit):
 public fun ViewWriter.beforeSetup(setup: Element.() -> Unit): ViewWriter = BeforeSetup(this, setup)
 
 
-private class Split(parent: ElementWriter) : ViewWriter, ElementWriter by parent {
-    override val context: ElementContext = parent.context.split()
+private class WithChildContext(parent: ElementWriter) : ViewWriter, ElementWriter by parent {
+    override val context: ElementContext = parent.context.child()
 }
 
-public fun ElementWriter.split(): ElementWriter = Split(this)
-public fun ElementWriter.CanAddScrolling.split(): ElementWriter.CanAddScrolling = Split(this)
-public fun ElementWriter.CanAddSizing.split(): ElementWriter.CanAddSizing = Split(this)
-public fun ElementWriter.CanAddTheme.split(): ElementWriter.CanAddTheme = Split(this)
-public fun ElementWriter.CanAddShownWhen.split(): ElementWriter.CanAddShownWhen = Split(this)
-public fun ElementWriter.CanAddWeight.split(): ElementWriter.CanAddWeight = Split(this)
-public fun ElementWriter.CanAddAlignment.split(): ElementWriter.CanAddAlignment = Split(this)
-public fun ViewWriter.split(): ViewWriter = Split(this)
-
-
-@UnsafeModifier
-public inline fun ElementWriter.produceAtMostOneUnsafe(action: ViewWriter.() -> Unit): Element? {
-    var output: Element? = null
-    val writer = object : ElementWriter by this, ViewWriter {
-        @OverrideOnly
-        override fun addChild(element: Element) {
-            if (output != null) throw IllegalStateException("Produced more than one element at this layer, but only one was expected.")
-            this@produceAtMostOneUnsafe.addChild(element)
-            output = element
-        }
-    }
-    action(writer)
-    return output
-}
-
-@UnsafeModifier
-public inline fun ElementWriter.produceExactlyOneUnsafe(action: ViewWriter.() -> Unit): Element =
-    produceAtMostOneUnsafe(action) ?: throw IllegalStateException("Produced no elements at this layer, but expected one.")
-
-
-public inline fun ViewWriter.produceAtMostOneView(action: ViewWriter.() -> Unit): Element? =
-    @OptIn(UnsafeModifier::class)
-    produceAtMostOneUnsafe(action)
-
-public inline fun ViewWriter.produceExactlyOneView(action: ViewWriter.() -> Unit): Element =
-    produceAtMostOneView(action) ?: throw IllegalStateException("Produced no elements at this layer, but expected one.")
-
-
-public inline fun ElementWriter.produceAtMostOneElement(action: ElementWriter.() -> Unit): Element? =
-    @OptIn(UnsafeModifier::class)
-    produceAtMostOneUnsafe(action)
-
-public inline fun ElementWriter.produceExactlyOneElement(action: ElementWriter.() -> Unit): Element =
-    produceAtMostOneElement(action) ?: throw IllegalStateException("Produced no elements at this layer, but expected one.")
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.withChildContext(): ElementWriter = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddScrolling.withChildContext(): ElementWriter.CanAddScrolling = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddSizing.withChildContext(): ElementWriter.CanAddSizing = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddTheme.withChildContext(): ElementWriter.CanAddTheme = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddShownWhen.withChildContext(): ElementWriter.CanAddShownWhen = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddWeight.withChildContext(): ElementWriter.CanAddWeight = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ElementWriter.CanAddAlignment.withChildContext(): ElementWriter.CanAddAlignment = WithChildContext(this)
+/** Returns a writer whose next element gets its own [child][ElementContext.child] context. Values it sets stay inside it. */
+public fun ViewWriter.withChildContext(): ViewWriter = WithChildContext(this)
 
 
 /**

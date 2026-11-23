@@ -3,33 +3,31 @@ agp = "9.1.1"
 appcompat = "1.8.0"
 cardview = "1.0.0"
 commonsLang3 = "3.20.0"
-composeMultiplatform = "1.12.1"
+composeMultiplatform = "1.12.2"
 composeMediaPlayer = "0.11.4"
 desugar_jdk_libs = "2.1.5"
-dokka = "2.2.0"
+dokka = "2.3.0"
 exifInterface = "1.4.2"
 fontbox = "3.0.8"
 glide = "5.0.7"
 jinput = "2.0.10"
 junit = "4.13.2"
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 kotlinxCoroutinesCore = "1.11.0"
 kotlinxDatetime = "0.8.0"
-kotlinxSerializationJson = "1.11.0"
+kotlinxSerializationJson = "1.12.0"
 ktorVersion = "3.5.2"
 ktx = "1.18.0"
-lightningServer = "5.4.0-prerelease-113-2148e0edd"
-lkGradleHelpers = "4.1.2"
 lottie = "6.7.1"
 maplibreAndroidCore = "13.7.1"
 material = "1.14.0"
 media3Exoplayer = "1.11.1"
 miglayoutSwing = "11.4.3"
 photoview = "2.3.0"
-reactive = "7.1.0-prerelease-84-f487d8c"
 robolectric = "4.17"
 roborazzi = "1.75.0"
 roborazziVersion = "1.75.0"
+atomicfu = "0.33.0"
 spatialk = "0.8.0"
 swingxAll = "1.6.5-1"
 swiperefreshlayout = "1.2.0"
@@ -75,10 +73,6 @@ ktor-server-cors = { module = "io.ktor:ktor-server-cors", version = { ref = "kto
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version = { ref = "ktorVersion" } }
 ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version = { ref = "ktorVersion" } }
 ktx = { module = "androidx.core:core", version = { ref = "ktx" } }
-lightning-server-core = { module = "com.lightningkite.lightningserver:core", version.ref = "lightningServer" }
-lightning-server-engine-ktor = { module = "com.lightningkite.lightningserver:engine-ktor", version.ref = "lightningServer" }
-lightning-server-typed = { module = "com.lightningkite.lightningserver:typed", version.ref = "lightningServer" }
-lkGradleHelpers = { module = "com.lightningkite:lk-gradle-helpers", version = { ref = "lkGradleHelpers" } }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
 maplibre-android-core = { module = "org.maplibre.gl:android-sdk", version.ref = "maplibreAndroidCore" }
 material = { module = "com.google.android.material:material", version = { ref = "material" } }
@@ -87,9 +81,9 @@ media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version = { re
 media3-ui = { module = "androidx.media3:media3-ui", version = { ref = "media3Exoplayer" } }
 miglayout-swing = { module = "com.miglayout:miglayout-swing", version.ref = "miglayoutSwing" }
 photoview = { module = "com.github.chrisbanes:PhotoView", version = { ref = "photoview" } }
-reactive = { module = "com.lightningkite:reactive", version = { ref = "reactive" } }
 robolectric = { module = "org.robolectric:robolectric", version = { ref = "robolectric" } }
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazziVersion" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version = { ref = "atomicfu" } }
 spatialk-geojson = { module = "org.maplibre.spatialk:geojson", version.ref = "spatialk" }
 swingx-all = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingxAll" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = { ref = "swiperefreshlayout" } }
@@ -101,11 +95,11 @@ transition = { module = "androidx.transition:transition", version = { ref = "tra
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version = { ref = "agp" } }
 dokka = { id = "org.jetbrains.dokka", version = { ref = "dokka" } }
-kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-plugin-samWithReceiver = { id = "org.jetbrains.kotlin.plugin.sam.with.receiver", version.ref = "kotlin" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 testing-manual = { id = "com.lightningkite.testing.manual", version = "0.0.9" }
 vannitechPublishing = { id = "com.vanniktech.maven.publish", version = { ref = "vannitechPublishing" } }

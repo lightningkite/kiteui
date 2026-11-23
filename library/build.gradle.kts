@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lkLibrary
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -33,7 +32,7 @@ kotlin {
     android {
         namespace = "com.lightningkite.kiteui"
         testNamespace = "com.lightningkite.kiteui.test"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 23
         enableCoreLibraryDesugaring = true
         androidResources { enable = true }
@@ -67,6 +66,7 @@ kotlin {
 
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
+        freeCompilerArgs.add("-Xreturn-value-checker=check")
         optIn.add("kotlin.time.ExperimentalTime")
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
@@ -74,12 +74,14 @@ kotlin {
 
         val commonMain = getByName("commonMain") {
             dependencies {
-                api(libs.reactive)
+                api(rx.reactive)
                 api(libs.kotlinx.serialization.json)
                 api(libs.kotlinx.serialization.properties)
                 api(libs.kotlinx.datetime)
                 api(libs.kotlinx.coroutines.core)
                 api(libs.kotlinx.serialization.uri)
+                api(sa.telemetry.shared)
+                implementation(libs.kotlinx.atomicfu)
             }
         }
         val commonTest = getByName("commonTest") {
@@ -185,15 +187,13 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
-lkLibrary(
-    "lightningkite",
-    "kiteui",
-    mavenAutomaticRelease = project.findProperty("mavenAutomaticRelease") as? Boolean ?: false
-) {
-    description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
+mavenPublishing {
+    // Deployments are released by hand on the Central Portal.
+    publishToMavenCentral(automaticRelease = false)
+    pom { description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform") }
 }
 // ---------------------------------------------------------------------------------------------
-// Local echo server for the cross-platform network tests (see docs/TESTING_GUIDE.md).
+// Local echo server for the cross-platform network tests (see docs/testing.md).
 // ---------------------------------------------------------------------------------------------
 
 /**

@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.WarningSemantic
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.UrlLikePath
+import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.externalLink
@@ -83,7 +84,7 @@ public interface CustomBlockHandler {
      * @param attributes The block's attributes (e.g., href from `::: card href="/path"`)
      * @param context Provides config and node rendering capability
      */
-    public fun ViewWriter.render(
+    public fun ElementWriter.CanAddSizing.render(
         children: List<MarkdownNode>,
         attributes: Map<String, String>,
         context: MarkdownRenderContext
@@ -102,7 +103,7 @@ public interface CustomBlockHandler {
 
     public open class JustSemantic(public val semantic: Semantic) : CustomBlockHandler {
 
-        override fun ViewWriter.render(
+        override fun ElementWriter.CanAddSizing.render(
             children: List<MarkdownNode>,
             attributes: Map<String, String>,
             context: MarkdownRenderContext

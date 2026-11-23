@@ -15,6 +15,7 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
         debugName = "navigatorView"
         Element.Debugger.debugTarget = this
         var lastStack = navigator.stack.value
+        context.pageNavigator = navigator
         swapping(
             transition = {
                 val newStack = navigator.stack.value
@@ -27,17 +28,13 @@ public fun ElementWriter.navigatorView(navigator: PageNavigator): SwapView {
             },
             current = { navigator.currentPage() },
             views = { screen ->
-                with(split()) {
-                    context.pageNavigator = navigator
-                    if (screen != null)
-                        with(screen) { themed(MainContentSemantic).asMain.padded.render() }
-                    // Tell assistive technology the screen changed, which it can't otherwise
-                    // notice. Deliberately not requestFocus: keyboard focus landing on the new
-                    // page's first field pops the soft keyboard on Android and iOS. Pages that
-                    // want a focused field ask for it themselves.
-                    if (screen != null) launch {
-                        this@swapView.announceAsNewScreen(screen.title.awaitOnce())
-                    }
+                if (screen != null) with(screen) { themed(MainContentSemantic).asMain.padded.render() }
+                // Tell assistive technology the screen changed, which it can't otherwise
+                // notice. Deliberately not requestFocus: keyboard focus landing on the new
+                // page's first field pops the soft keyboard on Android and iOS. Pages that
+                // want a focused field ask for it themselves.
+                if (screen != null) launch {
+                    this@swapView.announceAsNewScreen(screen.title.awaitOnce())
                 }
             }
         )

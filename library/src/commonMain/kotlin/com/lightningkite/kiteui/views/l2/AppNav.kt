@@ -44,12 +44,14 @@ public interface AppNav {
     }
 }
 
-
-public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> Unit> by contextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
-    Signal(
-        ViewWriter::appNavBottomTabs
-    )
-)
+/**
+ * The function that writes the app's navigation UI, such as bottom tabs or a top bar.
+ *
+ * It defaults to bottom tabs. Set its value to change the layout.
+ */
+public val ElementContext.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> Unit> by lazyContextAddon(ContextAddon.Scope.Global) {
+    Signal(ViewWriter::appNavBottomTabs)
+}
 
 public fun ElementWriter.appNav(main: PageNavigator, setup: AppNav.() -> Unit) {
     return appBase(main) {

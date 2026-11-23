@@ -2,6 +2,8 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.views.direct.FormattedTextInput
+import com.lightningkite.kiteui.models.TextFormat
+import com.lightningkite.kiteui.views.valueString
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.formattedTextInput
 import kotlin.test.Test
@@ -47,5 +49,19 @@ class FormattedTextInputNotificationTest {
 
         assertEquals(1, notifications, "a real change must notify exactly once")
         assertEquals("hello", field.content.value, "the change must reach the DOM")
+    }
+
+    @Test
+    fun settingTheFormatReformatsTheShownValue() {
+        val field = newFormattedTextInput()
+        field.content.value = "abc"
+        var notifications = 0
+        field.content.addListener { notifications++ }
+
+        field.format = TextFormat(isRawData = { it != '(' && it != ')' }, format = { "($it)" })
+
+        assertEquals("(abc)", field.native.attributes.valueString, "the current value must be shown in the new format")
+        assertEquals("abc", field.content.value)
+        assertEquals(0, notifications, "the data did not change, so nothing must notify")
     }
 }

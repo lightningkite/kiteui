@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.reformatWithSelection
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.kiteui.views.AiDriver
@@ -24,43 +24,48 @@ public actual class FormattedTextInput actual constructor(context: ElementContex
         }
     }
 
-    private var formatter: (String) -> String = { it }
-    private var isRawData: (Char) -> Boolean = { true }
-    public actual fun format(
-        isRawData: (Char) -> Boolean,
-        formatter: (clean: String) -> String,
-    ) {
-        this.formatter = formatter
-        this.isRawData = isRawData
-    }
+    public actual var format: TextFormat = TextFormat.None
+        set(value) {
+            val data = content.value
+            field = value
+            content.value = data
+        }
 
     public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String>, BaseListenable() {
+        private var lastValue = ""
+
+        private fun notifyIfChanged() {
+            val now = value
+            if (now == lastValue) return
+            lastValue = now
+            invokeAllListeners()
+        }
+
+        private fun reformatTyped() {
+            val typed = native.attributes.valueString ?: ""
+            val result = format.reformatWithSelection(typed, (selectionStart ?: typed.length) until (selectionEnd ?: typed.length))
+            if (result.text != typed) native.attributes.valueString = result.text
+            setSelectionRange(result.selection.first, result.selection.last + 1)
+            notifyIfChanged()
+        }
+
         init {
-            native.addEventListener("input") {
-                repairFormatAndPosition(
-                    dirty = native.attributes.valueString ?: "",
-                    selectionStart = selectionStart,
-                    selectionEnd = selectionEnd,
-                    setResult = {
-                        native.attributes.valueString = it
-                    },
-                    setSelectionRange = { start, end, -> setSelectionRange(start, end) },
-                    isRawData = isRawData,
-                    formatter = formatter,
-                )
-                invokeAllListeners()
+            // Claude: rewriting the value mid-composition breaks IME input, so wait for the composition to finish.
+            var composing = false
+            native.addEventListener("compositionstart") { composing = true }
+            native.addEventListener("compositionend") {
+                composing = false
+                reformatTyped()
             }
+            native.addEventListener("input") { if (!composing) reformatTyped() }
         }
 
         override var value: String
-            get() = native.attributes.valueString?.filter(isRawData) ?: ""
+            get() = native.attributes.valueString?.filter(format::isRawData) ?: ""
             set(value) {
-                val clean = value.filter(isRawData)
-                val formatted = formatter(clean)
-                if (native.attributes.valueString != formatted) {
-                    native.attributes.valueString = formatted
-                    invokeAllListeners()
-                }
+                val formatted = format.format(value.filter(format::isRawData))
+                if (native.attributes.valueString != formatted) native.attributes.valueString = formatted
+                notifyIfChanged()
             }
     }
     public actual var keyboardHints: KeyboardHints = KeyboardHints()

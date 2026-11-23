@@ -1,8 +1,7 @@
-import com.lightningkite.deployhelpers.*
-
 plugins {
     `java-gradle-plugin`
-    `kotlin-dsl`
+    kotlin("jvm")
+    alias(libs.plugins.kotlin.plugin.samWithReceiver)
     signing
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
@@ -17,11 +16,16 @@ gradlePlugin {
     }
 }
 
+// Claude: kotlin-dsl would do this for us; Gradle's Action lambdas use `this` as the receiver.
+samWithReceiver {
+    annotation("org.gradle.api.HasImplicitReceiver")
+}
 repositories {
     mavenCentral()
 }
 dependencies {
     implementation(libs.kotlin.gradle.plugin.api)
+    compileOnly(gradleKotlinDsl())
     implementation(libs.fontbox)
     testImplementation(libs.junit)
 }
@@ -40,6 +44,7 @@ tasks.register("publishLocally", Copy::class.java) {
     into(rootProject.file("buildSrc/src/main/kotlin"))
 }
 
-lkLibrary("lightningkite", "kiteui") {
-    description.set("Automatically create your routers")
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    pom { description.set("Automatically create your routers") }
 }

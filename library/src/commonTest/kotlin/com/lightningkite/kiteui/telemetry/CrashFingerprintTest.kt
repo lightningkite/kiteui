@@ -52,6 +52,22 @@ class CrashFingerprintTest {
     }
 
     @Test
+    fun messagesDoNotSplitTheSameCrash() {
+        // Claude: built on one line, so both have the same stack trace.
+        val (a, b) = listOf("User 42 not found\nwhile loading", "User 43 not found").map { IllegalStateException(it) }
+        assertEquals(CrashFingerprint.generate(a), CrashFingerprint.generate(b))
+    }
+
+    @Test
+    fun normalizationStripsColumns() {
+        // Minified JS puts the whole bundle on one line, so only the column says where a frame is.
+        assertEquals(
+            CrashFingerprint.normalize("at f (https://example.com/app.js:1:2345)"),
+            CrashFingerprint.normalize("at f (https://example.com/app.js:1:9876)"),
+        )
+    }
+
+    @Test
     fun differentExceptionTypesDifferentFingerprints() {
         val ex1 = RuntimeException("test")
         val ex2 = IllegalArgumentException("test")

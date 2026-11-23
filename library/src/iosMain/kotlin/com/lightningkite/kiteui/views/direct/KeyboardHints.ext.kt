@@ -15,7 +15,8 @@ public val KeyboardType.ios: UIKeyboardType get() = when (this) {
     KeyboardType.Text -> UIKeyboardTypeDefault
     KeyboardType.Integer, KeyboardType.IntegerWithNegative -> UIKeyboardTypeNumberPad
     KeyboardType.Phone -> UIKeyboardTypePhonePad
-    KeyboardType.Decimal, KeyboardType.DecimalWithNegative -> UIKeyboardTypeNumbersAndPunctuation
+    KeyboardType.Decimal -> UIKeyboardTypeDecimalPad
+    KeyboardType.DecimalWithNegative -> UIKeyboardTypeNumbersAndPunctuation
     KeyboardType.Email -> UIKeyboardTypeEmailAddress
 }
 public val AutoComplete?.iosTextContentType: UITextContentType? get() = when (this) {

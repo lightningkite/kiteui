@@ -27,7 +27,7 @@ object IconsPage : DocPage {
             text("You can use the built-in icons to add common icons to your app.")
             example(
                 """
-                 icon(Icon.home, "Forward")
+                 icon(Icon.home, "Home")
                  icon {
                      source = Icon.arrowBack
                      description = "Back"
@@ -37,7 +37,7 @@ object IconsPage : DocPage {
                 """.trimIndent()
             ) {
                 row {
-                    icon(Icon.home, "Forward")
+                    icon(Icon.home, "Home")
                     icon {
                         source = Icon.arrowBack
                         description = "Back"

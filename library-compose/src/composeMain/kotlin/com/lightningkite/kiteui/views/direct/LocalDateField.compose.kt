@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import androidx.compose.foundation.layout.Box
+import com.lightningkite.kiteui.models.TextFormat
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -61,14 +61,7 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
         BasicTextField(
             value = field,
             onValueChange = { typed ->
-                field = if (typed.text == field.text) typed else typed.reformatted(Char::isDigit) { digits ->
-                    buildString {
-                        digits.take(8).forEachIndexed { i, digit ->
-                            if (i == 4 || i == 6) append('-')
-                            append(digit)
-                        }
-                    }
-                }
+                field = if (typed.text == field.text) typed else typed.reformatted(dateFormat)
                 content.value = parse(field.text)
             },
             modifier = modifier,
@@ -81,11 +74,20 @@ public actual class LocalDateField actual constructor(context: ElementContext) :
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalDateField) }),
             decorationBox = { inner ->
-                Box {
+                SingleLineDecoration(theme.font) {
                     if (field.text.isEmpty()) BasicText(theme.font.cased("yyyy-mm-dd"), style = style.copy(color = theme.hintColor))
                     inner()
                 }
             },
         )
+    }
+}
+
+private val dateFormat = TextFormat(Char::isDigit) { digits ->
+    buildString {
+        digits.take(8).forEachIndexed { i, digit ->
+            if (i == 4 || i == 6) append('-')
+            append(digit)
+        }
     }
 }

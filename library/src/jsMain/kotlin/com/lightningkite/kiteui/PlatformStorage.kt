@@ -7,7 +7,8 @@ public actual object PlatformStorage {
         return window.localStorage.getItem(key)
     }
 
-    public actual fun set(key: String, value: String) {
+    // Claude: localStorage writes are synchronous, so every write is already on disk.
+    public actual fun set(key: String, value: String, ensureOnDisk: Boolean) {
         window.localStorage.setItem(key, value)
     }
 

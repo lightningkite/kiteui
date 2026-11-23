@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.ssr.SsrContext
 import com.lightningkite.kiteui.ssr.SsrDocument
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.col
 import kotlinx.coroutines.Dispatchers
@@ -358,7 +358,7 @@ class MarkdownRendererTest {
                 config = MarkdownConfig().withCustomBlocks(
                     mapOf(
                         "note" to object : CustomBlockHandler {
-                            override fun ViewWriter.render(
+                            override fun ElementWriter.CanAddSizing.render(
                                 children: List<MarkdownNode>,
                                 attributes: Map<String, String>,
                                 context: MarkdownRenderContext
@@ -516,7 +516,7 @@ class MarkdownRendererTest {
                                 )
                             }
 
-                            override fun ViewWriter.render(
+                            override fun ElementWriter.CanAddSizing.render(
                                 children: List<MarkdownNode>,
                                 attributes: Map<String, String>,
                                 context: MarkdownRenderContext

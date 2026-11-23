@@ -113,31 +113,32 @@ object TroubleshootingPage : DocPage {
 
                 titledSection("Styling and Theme Issues") {
 
-                    h5("Q: My semantic modifiers don't seem to work")
+                    h5("Q: My modifiers don't compile")
                     card.col {
-                        text("Check modifier order: Position > Visibility > Scroll > Theme")
+                        text("The compiler enforces modifier order: alignment → weight → shownWhen → sizing → theme → scrolling → element.")
                         code {
                             content = """
-                                // WRONG order
-                                card - centered - text("Hello")
+                                // WRONG order: theme before alignment
+                                card.centered.text("Hello")
 
                                 // CORRECT order
-                                centered - card - text("Hello")
+                                centered.card.text("Hello")
                             """.trimIndent()
                         }
+                        text("At the top level of render() the receiver only takes theme and scrolling modifiers. Put alignment, expanding and shownWhen inside a container such as col { }.")
                     }
 
                     space()
                     h5("Q: Why does applying 'card' not create a visible card?")
                     card.col {
-                        text("Applying the same semantic twice won't create a new card. Use explicit 'card' modifier:")
+                        text("Applying the same semantic twice won't create a new card. Use an explicit 'card' modifier:")
                         code {
                             content = """
-                                important - important - col {  // Won't create card
+                                important.important.col {  // Won't create card
                                     text("Text")
                                 }
 
-                                important - card - col {  // Will create card
+                                important.card.col {  // Will create card
                                     text("Text")
                                 }
                             """.trimIndent()
@@ -194,17 +195,16 @@ object TroubleshootingPage : DocPage {
 
                     h5("Q: Loading state shows forever")
                     card.col {
-                        text("Check that your suspend function completes:")
+                        text("A value stays loading until everything it reads is ready. Check that your suspend function returns, and that every LateInitSignal it reads is eventually set:")
                         code {
                             content = """
-                                val data = rememberSuspending {
-                                    try {
-                                        fetchData()
-                                    } catch (e: Exception) {
-                                        // Must handle or re-throw
-                                        throw e
-                                    }
+                                val selected = LateInitSignal<Item>()      // loading until set
+                                val details = rememberSuspending {
+                                    fetchDetails(selected().id)            // waits for selected
                                 }
+
+                                // Somewhere, this must happen:
+                                selected.value = firstItem
                             """.trimIndent()
                         }
                     }
@@ -252,13 +252,17 @@ object TroubleshootingPage : DocPage {
                     space()
                     h5("Q: Form validation doesn't trigger")
                     card.col {
-                        text("Validation should use reactive expressions:")
+                        text("Bind the input to the validated value, not the original Signal: its issues only update while something listens to it.")
                         code {
                             content = """
-                                val email = Signal("")
-                                val emailError = remember {
-                                    // This re-evaluates when email changes
-                                    if (!email().contains("@")) "Invalid" else null
+                                val email = Signal("").validate { if ("@" in it) null else "Invalid email" }
+
+                                label("Email") {
+                                    validate(email).fieldTheme.textInput {
+                                        keyboardHints = KeyboardHints.email
+                                        content bind email
+                                    }
+                                    issueText(email.issues)
                                 }
                             """.trimIndent()
                         }
@@ -273,24 +277,23 @@ object TroubleshootingPage : DocPage {
                     card.col {
                         text("Common causes and solutions:")
                         col {
-                            text("• Use recyclerView for long lists, not forEach")
+                            text("• Use recyclerView for long lists, not colOf")
                             text("• Avoid expensive computations in reactive blocks")
                             text("• Cache computed values with remember")
-                            text("• Check for unnecessary re-renders")
+                            text("• Bind properties (::content { }) instead of rebuilding views inside reactive { }")
                         }
                     }
 
                     space()
                     h5("Q: Too many network requests")
                     card.col {
-                        text("Implement caching:")
+                        text("One rememberSuspending shares its result with every reader. Create it once and read it from as many views as you like; don't create one per list cell:")
                         code {
                             content = """
-                                // Cache result to avoid refetching
-                                val cachedData = remember {
-                                    // Only fetches once
-                                    rememberSuspending { fetchData() }
-                                }
+                                val data = rememberSuspending { fetchData() }   // one request
+
+                                text { ::content { data().title } }
+                                text { ::content { data().summary } }           // same result, no new request
                             """.trimIndent()
                         }
                     }
@@ -361,7 +364,7 @@ object TroubleshootingPage : DocPage {
                                 ./gradlew build
 
                                 # Run web version
-                                ./gradlew :example-app:jsRun
+                                ./gradlew :example-app:jsViteDev
 
                                 # Generate routes
                                 ./gradlew generateAutoRoutes

@@ -59,12 +59,13 @@ public inline fun <T, ID, C : ContainerElement> ElementWriter.renderListIn(
  * Renders [items] in a container using positional slot reuse with optional placeholders.
  *
  * Views are created once and reused by position. Efficient for lists where items change
- * but order/count is relatively stable. Shows placeholder items during loading.
+ * but order/count is relatively stable. Can show placeholder items during loading.
  *
  * @param container The container factory. Use a DSL function reference like `ElementWriter::col`
  *                  or `ElementWriter::row`. If using a lambda, it MUST call the passed setup
  *                  lambda, e.g., `{ setup -> col { setup() } }`.
- * @param placeholdersWhileLoading Number of placeholder items to show while loading (default 5)
+ * @param placeholdersWhileLoading Number of placeholder items to show while loading (default 0; each one renders the
+ *   full row template, so opt in only for a top-level list)
  * @param poolCap Maximum hidden views to retain beyond list size (default 32)
  * @see colOf for a col-specific convenience wrapper
  * @see rowOf for a row-specific convenience wrapper
@@ -72,7 +73,7 @@ public inline fun <T, ID, C : ContainerElement> ElementWriter.renderListIn(
 public inline fun <T, C : ContainerElement> ElementWriter.renderListIn(
     container: ElementWriter.(C.() -> Unit) -> C,
     items: Reactive<List<T>>,
-    placeholdersWhileLoading: Int = 5,
+    placeholdersWhileLoading: Int = 0,
     poolCap: Int = 32,
     noinline beforeModifier: ViewWriter.() -> ElementWriter.CanAddListElementModifier = { this },
     noinline render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
@@ -283,7 +284,7 @@ public fun <T, ID> ElementWriter.colOf(
  * Creates a column ([col]) and renders [items] using positional slot reuse with placeholders.
  *
  * Views are created once and reused by position. Efficient for lists where items change
- * but order/count is relatively stable. Shows placeholder items during loading.
+ * but order/count is relatively stable. Can show placeholder items during loading.
  *
  * **Example:**
  * ```kotlin
@@ -292,13 +293,14 @@ public fun <T, ID> ElementWriter.colOf(
  * }
  * ```
  *
- * @param placeholdersWhileLoading Number of placeholder items to show while loading (default 5)
+ * @param placeholdersWhileLoading Number of placeholder items to show while loading (default 0; each one renders the
+ *   full row template, so opt in only for a top-level list)
  * @param poolCap Maximum hidden views to retain beyond list size (default 32)
  * @return The created RowOrCol container
  */
 public fun <T> ElementWriter.colOf(
     items: Reactive<List<T>>,
-    placeholdersWhileLoading: Int = 5,
+    placeholdersWhileLoading: Int = 0,
     poolCap: Int = 32,
     beforeModifier: ViewWriter.() -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit
@@ -421,7 +423,7 @@ public fun <T, ID> ElementWriter.rowOf(
  * Creates a row ([row]) and renders [items] using positional slot reuse with placeholders.
  *
  * Views are created once and reused by position. Efficient for lists where items change
- * but order/count is relatively stable. Shows placeholder items during loading.
+ * but order/count is relatively stable. Can show placeholder items during loading.
  *
  * **Example:**
  * ```kotlin
@@ -430,13 +432,14 @@ public fun <T, ID> ElementWriter.rowOf(
  * }
  * ```
  *
- * @param placeholdersWhileLoading Number of placeholder items to show while loading (default 5)
+ * @param placeholdersWhileLoading Number of placeholder items to show while loading (default 0; each one renders the
+ *   full row template, so opt in only for a top-level list)
  * @param poolCap Maximum hidden views to retain beyond list size (default 32)
  * @return The created RowOrCol container
  */
 public fun <T> ElementWriter.rowOf(
     items: Reactive<List<T>>,
-    placeholdersWhileLoading: Int = 5,
+    placeholdersWhileLoading: Int = 0,
     poolCap: Int = 32,
     beforeModifier: ViewWriter.() -> ElementWriter.CanAddListElementModifier = { this },
     render: ElementWriter.CanAddListElementModifier.(Reactive<T>) -> Unit

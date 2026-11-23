@@ -39,40 +39,38 @@ public actual class DynamicCss actual constructor(basePath: String) {
         return rules.joinToString("\n")
     }
 
-    internal val map: java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, String>>> = java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, String>>>()
+    // media -> selector -> property -> value, added since the last flush.
+    private var queue = mutableMapOf<String, MutableMap<String, MutableMap<String, String>>>()
 
+    @Synchronized
     public actual fun add(selector: String, key: String, value: String, media: String) {
-        map.getOrPut(media) { java.util.concurrent.ConcurrentHashMap() }.getOrPut(selector) { java.util.concurrent.ConcurrentHashMap() }[key] = value
+        queue.getOrPut(media) { mutableMapOf() }.getOrPut(selector) { mutableMapOf() }[key] = value
     }
 
     @Volatile internal var flushTotal: Duration = 0.seconds
     @Volatile internal var ruleTotal: Int = 0
-    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     @Synchronized
     public actual fun flush() {
         measureTime {
-            val merged = map.mapValues {
-                val merg = it.value.entries.groupBy { it.value }.values
-                merg.associate { it.map { it.key }.joinToString() to it.first().value }
-            }
-
-            merged.forEach { (media, it) ->
-                var str = "@media $media {"
-                it.forEach { (selector, it) ->
-                    str += selector
-                    str += "{"
-                    it.forEach { (key, value) ->
-                        str += key
-                        str += ":"
-                        str += value
-                        str += ";"
+            queue.forEach { (media, selectors) ->
+                val str = StringBuilder("@media $media {")
+                // Selectors with identical declarations share one rule.
+                selectors.entries.groupBy({ it.value }, { it.key }).forEach { (declarations, sameSelectors) ->
+                    sameSelectors.joinTo(str)
+                    str.append("{")
+                    declarations.forEach { (key, value) ->
+                        str.append(key)
+                        str.append(":")
+                        str.append(value)
+                        str.append(";")
                     }
-                    str += "}"
+                    str.append("}")
                     ruleTotal++
                 }
-                str += "}"
-                rule(str, 0)
+                str.append("}")
+                rule(str.toString(), 0)
             }
+            queue = mutableMapOf()
         }.also {
             flushTotal += it
         }

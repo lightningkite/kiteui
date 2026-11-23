@@ -361,7 +361,7 @@ public expect abstract class NativeContainerElement(context: ElementContext) : C
  * @see ContainerElement for the public interface
  * @see NativeElement for the base element class
  */
-public abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context.splitExceptionHandlers()), ContainerElement {
+public abstract class NativeContainerElementCommonCode internal constructor(context: ElementContext) : NativeElement(context.child()), ContainerElement {
     override val underlyingNativeElement: NativeContainerElement get() = this as NativeContainerElement
 
     // --- CHILDREN ---
@@ -463,7 +463,11 @@ public abstract class NativeContainerElementCommonCode internal constructor(cont
      * @see ContainerElement.addChild for complete documentation and warnings
      */
     override fun addChild(index: Int, element: Element) {
-        if (checkIsShutdown("addChild")) return
+        if (checkIsShutdown("addChild")) {
+            // Nothing else will ever shut this child down, and it is already started: its reactive work would outlive the page.
+            element.onShutdown()
+            return
+        }
         internalChildren.add(index, element)
         nativeAddChild(index, element)
         if (element.parent?.underlyingNativeElement !== this) {
