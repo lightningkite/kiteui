@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import androidx.compose.foundation.layout.Box
+import com.lightningkite.kiteui.models.TextFormat
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -63,18 +63,7 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
         BasicTextField(
             value = field,
             onValueChange = { typed ->
-                field = if (typed.text == field.text) typed else typed.reformatted(Char::isDigit) { digits ->
-                    buildString {
-                        digits.take(12).forEachIndexed { i, digit ->
-                            when (i) {
-                                4, 6 -> append('-')
-                                8 -> append(' ')
-                                10 -> append(':')
-                            }
-                            append(digit)
-                        }
-                    }
-                }
+                field = if (typed.text == field.text) typed else typed.reformatted(dateTimeFormat)
                 content.value = parse(field.text)
             },
             modifier = modifier,
@@ -87,11 +76,24 @@ public actual class LocalDateTimeField actual constructor(context: ElementContex
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalDateTimeField) }),
             decorationBox = { inner ->
-                Box {
+                SingleLineDecoration(theme.font) {
                     if (field.text.isEmpty()) BasicText(theme.font.cased("yyyy-mm-dd hh:mm"), style = style.copy(color = theme.hintColor))
                     inner()
                 }
             },
         )
+    }
+}
+
+private val dateTimeFormat = TextFormat(Char::isDigit) { digits ->
+    buildString {
+        digits.take(12).forEachIndexed { i, digit ->
+            when (i) {
+                4, 6 -> append('-')
+                8 -> append(' ')
+                10 -> append(':')
+            }
+            append(digit)
+        }
     }
 }

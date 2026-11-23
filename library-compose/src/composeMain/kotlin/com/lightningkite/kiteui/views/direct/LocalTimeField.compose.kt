@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import androidx.compose.foundation.layout.Box
+import com.lightningkite.kiteui.models.TextFormat
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -62,14 +62,7 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
         BasicTextField(
             value = field,
             onValueChange = { typed ->
-                field = if (typed.text == field.text) typed else typed.reformatted(Char::isDigit) { digits ->
-                    buildString {
-                        digits.take(4).forEachIndexed { i, digit ->
-                            if (i == 2) append(':')
-                            append(digit)
-                        }
-                    }
-                }
+                field = if (typed.text == field.text) typed else typed.reformatted(timeFormat)
                 content.value = parse(field.text)
             },
             modifier = modifier,
@@ -82,11 +75,20 @@ public actual class LocalTimeField actual constructor(context: ElementContext) :
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = if (action != null) ImeAction.Done else ImeAction.Default),
             keyboardActions = KeyboardActions(onDone = { action?.startAction(this@LocalTimeField) }),
             decorationBox = { inner ->
-                Box {
+                SingleLineDecoration(theme.font) {
                     if (field.text.isEmpty()) BasicText(theme.font.cased("hh:mm"), style = style.copy(color = theme.hintColor))
                     inner()
                 }
             },
         )
+    }
+}
+
+private val timeFormat = TextFormat(Char::isDigit) { digits ->
+    buildString {
+        digits.take(4).forEachIndexed { i, digit ->
+            if (i == 2) append(':')
+            append(digit)
+        }
     }
 }

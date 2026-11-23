@@ -1,5 +1,5 @@
 // Copy this file to LocalTelemetryConfig.kt (which is gitignored) and fill in your credentials.
-// See docs/TELEMETRY.md for Grafana Cloud setup instructions.
+// See docs/telemetry.md for Grafana Cloud setup instructions.
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.navigation.PageNavigator

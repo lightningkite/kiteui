@@ -1,12 +1,13 @@
 package com.lightningkite.kiteui.views
 
-public actual class ElementContext(parent: ElementContext? = null, shareAddons: Boolean = false) : ElementContextCommonCode(parent, shareAddons) {
-    public actual fun split(): ElementContext = ElementContext(this)
-    public actual fun splitExceptionHandlers(): ElementContext = ElementContext(this, shareAddons = true)
+public actual class ElementContext(parent: ElementContext? = null) : ElementContextCommonCode(parent) {
+    public actual fun child(): ElementContext = ElementContext(this)
 
     // TODO: follow the OS dark mode setting.
     public actual val darkMode: Boolean? get() = null
     public actual var immersiveMode: Boolean = false
 
-    public actual companion object
+    public actual val root: ElementContext = parent?.root ?: this
+
+    public actual companion object : kotlin.coroutines.CoroutineContext.Key<ElementContext>
 }

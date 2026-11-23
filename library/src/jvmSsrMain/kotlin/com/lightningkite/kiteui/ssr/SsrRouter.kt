@@ -34,15 +34,10 @@ public typealias AppWrapper = ViewWriter.(navigator: PageNavigator) -> Unit
  *     appWrapper = { navigator -> app(navigator) }
  * )
  *
- * // In your HTTP handler:
+ * // In your HTTP handler; unknown URLs render the app's @FallbackRoute page:
  * get("/{path...}") {
- *     val url = call.request.uri
- *     val result = router.render(url)
- *     if (result != null) {
- *         call.respondText(result, ContentType.Text.Html)
- *     } else {
- *         call.respond(HttpStatusCode.NotFound)
- *     }
+ *     val html = router.renderOrFallbackWithPreload(call.request.uri, call.request.userAgent())
+ *     call.respondText(html, ContentType.Text.Html)
  * }
  * ```
  */

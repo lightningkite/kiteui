@@ -18,6 +18,7 @@ import com.lightningkite.kiteui.views.l2.titledSection
 import com.lightningkite.kiteui.views.themed
 import com.lightningkite.mppexampleapp.appTheme
 import com.lightningkite.mppexampleapp.defaultTheme
+import com.lightningkite.mppexampleapp.widgets.code
 
 
 @Routable("docs/theming")
@@ -134,17 +135,18 @@ object ThemingPage : DocPage {
                     example(
                         """
                         data object InvertedSemantic : Semantic("invert") {
-                            override fun ThemeBuilder.apply() {
-                                background = background.map { it.invert() }
-                                outline = outline.map { it.invert() }
-                                foreground = foreground.map { it.invert() }
-                            }
+                            override fun default(theme: Theme): ThemeAndBack = theme.copy(
+                                id = key,
+                                background = theme.background.map { it.invert() },
+                                outline = theme.outline.map { it.invert() },
+                                foreground = theme.foreground.map { it.invert() },
+                            ).withBack
                         }
-                        @ViewModifierDsl3
-                        inline val ViewWriter.inverted: ViewWriter get() = InvertedSemantic.onNext
-                        
+
+                        val ElementWriter.CanAddTheme.inverted: ElementWriter.CanAddTheme get() = themed(InvertedSemantic)
+
                         //...
-                        
+
                         inverted.col {
                             h3("This block is inverted.")
                             card.col {
@@ -153,7 +155,7 @@ object ThemingPage : DocPage {
                             }
                             inverted.text("Inverting again here")
                         }
-                        """.trimIndent().also { println("'$it'") }) {
+                        """.trimIndent()) {
                         inverted.col {
                             h3("This block is inverted.")
                             card.col {
@@ -166,8 +168,14 @@ object ThemingPage : DocPage {
                 }
 
                 titledSection("Defining Your Application's Theme") {
-                    text("TODO - for now, take a look at Theme.flat for a good sample implementation.")
-                    text("The key is that you need to think about each semantic as a modifier, not a replacement of styles.")
+                    text("Start from a built-in theme and pass it to your platform's root, for example:")
+                    code {
+                        content = """
+                            val appTheme = Theme.flat2("app", hue = 0.6.turns)
+                            val lightTheme = Theme.light("light", accent = Color.fromHexString("#0E5C6B"))
+                        """.trimIndent()
+                    }
+                    text("Each built-in theme decides what every semantic looks like. Think of each semantic as a modifier, not a replacement of styles. The Theme Tester page lets you compare them.")
                 }
             }
         }

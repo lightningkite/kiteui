@@ -72,8 +72,9 @@ public class MockExternalServices(
 
     override suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> {
         calls.add(Call.RequestFiles(mimeTypes))
-        return if (pendingFileResponses.isNotEmpty()) listOfNotNull(pendingFileResponses.removeFirst())
-        else delegate?.requestFiles(mimeTypes) ?: emptyList()
+        if (pendingFileResponses.isEmpty()) return delegate?.requestFiles(mimeTypes) ?: emptyList()
+        // Like a multi-select picker, it takes all of them at once, where a queued null is a cancellation.
+        return pendingFileResponses.filterNotNull().also { pendingFileResponses.clear() }
     }
 
     // by Claude - all file/capture requests share one queue

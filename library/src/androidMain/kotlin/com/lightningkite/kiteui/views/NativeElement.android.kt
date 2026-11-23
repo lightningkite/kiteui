@@ -310,7 +310,7 @@ public actual abstract class NativeElement actual constructor(context: ElementCo
     }
 
     actual override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean) {
-        generateSequence(native) {
+        val _ = generateSequence(native) {
             it.parent as? View
         }.firstOrNull {
             when (it) {

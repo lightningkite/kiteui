@@ -11,7 +11,7 @@ public actual fun Element.openPopover(
 ) {
     var willRemove: Element? = null
     val f = overlayFrame
-    f.popoverWriter {
+    popoverWriter(f) {
         willRemove?.let { f.removeChild(it) }
         willRemove = null
     }.run {
@@ -34,7 +34,7 @@ public actual fun Element.openPopover(
             }
             native.anchor = preferredDirection to (anchor ?: this@openPopover).native
             onClick {
-                context.closePopovers()
+                context.currentPopover?.close()
             }
             themed(PopoverSemantic).frame {
                 createMenu()

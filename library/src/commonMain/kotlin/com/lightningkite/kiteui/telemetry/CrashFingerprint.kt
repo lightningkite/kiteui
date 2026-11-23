@@ -12,7 +12,7 @@ internal object CrashFingerprint {
 
     private val addressPattern = Regex("0x[0-9a-fA-F]+")
     private val identityHashPattern = Regex("@[0-9a-f]{4,}")
-    private val lineNumberPattern = Regex("(\\.[a-zA-Z]+:)\\d+")
+    private val lineNumberPattern = Regex("(\\.[a-zA-Z]+):\\d+(:\\d+)?")
     private val numberPattern = Regex("\\b\\d+\\b")
     private val hexLiteralPattern = Regex("\\b0x[0-9a-fA-F]+\\b")
     private val uuidPattern = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
@@ -20,7 +20,11 @@ internal object CrashFingerprint {
     /** Generates a 16-hex-char fingerprint for the given throwable. */
     public fun generate(throwable: Throwable): String {
         val chain = causeChain(throwable)
-        val normalized = normalize(throwable.stackTraceToString())
+        // Claude: each throwable's toString heads its part of the trace and carries its message, which varies
+        // between instances of the same crash; the types it also carries are already in chain.
+        var trace = throwable.stackTraceToString()
+        for (t in generateSequence(throwable) { it.cause }.take(10)) trace = trace.replace(t.toString(), "")
+        val normalized = normalize(trace)
 
         val input = if (isUsableTrace(normalized)) {
             "$chain\n$normalized"
@@ -66,7 +70,7 @@ internal object CrashFingerprint {
                 line
                     .replace(addressPattern, "0x???")
                     .replace(identityHashPattern, "@???")
-                    .replace(lineNumberPattern, "$1?")
+                    .replace(lineNumberPattern, "$1:?")
             }
             .take(10)
             .joinToString("\n")

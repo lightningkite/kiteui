@@ -210,6 +210,32 @@ class GenerateRoutesKtTest {
     }
 
     @Test
+    fun `an explicit QueryParameter name is the URL key, and the property keeps its own name`() {
+        val source = """
+            package com.example
+
+            @Routable("search")
+            object SearchScreen {
+                @QueryParameter("q")
+                val query: String = ""
+                @QueryParameter(name = "p")
+                val page: Int = 0
+                @QueryParameter
+                val sort: String = ""
+                fun init() {}
+            }
+        """.trimIndent()
+
+        val result = generateFromSources("Screens.kt" to source)
+
+        assertTrue(result, "DefaultUriFormat.mapContainsKey(it.parameters, \"q\")) query valueSet" in result)
+        assertTrue(result, "DefaultUriFormat.mapContainsKey(it.parameters, \"p\")) page valueSet" in result)
+        assertTrue(result, "DefaultUriFormat.mapContainsKey(it.parameters, \"sort\")) sort valueSet" in result)
+        assertTrue(result, "it.query.state.getOrNull()?.let { DefaultUriFormat.encodeToStringMap(\"q\"" in result)
+        assertTrue(result, "listOf(it.query, it.page, it.sort)" in result)
+    }
+
+    @Test
     fun `line comments on query parameters are properly ignored`() {
         val source = """
             package com.example

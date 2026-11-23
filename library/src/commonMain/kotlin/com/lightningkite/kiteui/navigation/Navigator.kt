@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.navigation
 
+import com.lightningkite.kiteui.views.ContextAddon
 import com.lightningkite.kiteui.views.ElementContext
 import com.lightningkite.kiteui.views.lateInitContextAddon
 import com.lightningkite.kiteui.views.lazyContextAddon
@@ -84,7 +85,12 @@ public expect fun PageNavigator.bindToPlatform(context: ElementContext)
 
 internal expect fun PageNavigator.askForConfirmNavigateAway(): Boolean
 
-public var ElementContext.pageNavigator: PageNavigator by lazyContextAddon {
+/**
+ * The app's page navigator.
+ *
+ * `appBase` sets it; reading it before then throws [IllegalStateException].
+ */
+public var ElementContext.pageNavigator: PageNavigator by lazyContextAddon(ContextAddon.Scope.Global) {
     throw IllegalStateException(
         "'ElementContext.pageNavigator' has not been initialized. " +
                 "It is recommended to call 'appBase { ... }' at the root of your app to properly initialize pageNavigator, as well as many other properties."

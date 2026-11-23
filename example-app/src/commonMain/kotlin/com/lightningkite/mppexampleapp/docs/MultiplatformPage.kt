@@ -53,7 +53,6 @@ object MultiplatformPage : DocPage {
                         content = """
                             // In commonMain
                             expect fun getPlatformName(): String
-                            expect fun openExternalUrl(url: String)
                         """.trimIndent()
                     }
 
@@ -63,28 +62,12 @@ object MultiplatformPage : DocPage {
                         content = """
                             // In androidMain
                             actual fun getPlatformName() = "Android"
-                            actual fun openExternalUrl(url: String) {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                context.startActivity(intent)
-                            }
 
                             // In iosMain
                             actual fun getPlatformName() = "iOS"
-                            actual fun openExternalUrl(url: String) {
-                                UIApplication.sharedApplication.openURL(NSURL(string = url))
-                            }
 
                             // In jsMain
                             actual fun getPlatformName() = "Web"
-                            actual fun openExternalUrl(url: String) {
-                                window.open(url, "_blank")
-                            }
-
-                            // In jvmMain
-                            actual fun getPlatformName() = "JVM"
-                            actual fun openExternalUrl(url: String) {
-                                Desktop.getDesktop().browse(URI(url))
-                            }
                         """.trimIndent()
                     }
 
@@ -92,39 +75,27 @@ object MultiplatformPage : DocPage {
                     h5("3. Use in common code:")
                     code {
                         content = """
-                            button {
-                                text("Visit Website")
-                                onClick {
-                                    openExternalUrl("https://example.com")
-                                }
-                            }
+                            text("Running on ${'$'}{getPlatformName()}")
                         """.trimIndent()
                     }
+
+                    space()
+                    text("Check for a built-in first: links, files, sharing, maps, clipboard and location are already on context (context.openLink, context.requestFile, context.share, ...).")
                 }
 
                 space()
 
                 titledSection("Platform-Specific UI") {
-                    text("Adapt your UI for different platform conventions:")
+                    text("Adapt your UI to the screen, not the platform: a phone browser is the Web platform too.")
 
                     space()
                     h5("Responsive Design:")
                     code {
                         content = """
-                            when (Platform.current) {
-                                Platform.Web -> {
-                                    // Desktop-optimized layout
-                                    row {
-                                        weight(1f).sidebar()
-                                        weight(3f).mainContent()
-                                    }
-                                }
-                                else -> {
-                                    // Mobile-optimized layout
-                                    col {
-                                        mainContent()
-                                    }
-                                }
+                            // A row on wide screens, a column on narrow ones (which ignores weights)
+                            rowCollapsingToColumn(50.rem) {
+                                weight(1f).sidebar()
+                                weight(3f).mainContent()
                             }
                         """.trimIndent()
                     }
@@ -133,15 +104,9 @@ object MultiplatformPage : DocPage {
                     h5("Platform-Appropriate Controls:")
                     code {
                         content = """
-                            // Use platform-native date pickers
+                            // Date fields use each platform's native picker
                             field("Birth Date") {
-                                datePicker {
-                                    date bind birthDate
-                                    // Renders as native control on each platform:
-                                    // - Android: Material DatePicker
-                                    // - iOS: UIDatePicker
-                                    // - Web: HTML5 date input
-                                }
+                                localDateField { content bind birthDate }
                             }
                         """.trimIndent()
                     }
@@ -159,11 +124,9 @@ object MultiplatformPage : DocPage {
                             button {
                                 text("Choose File")
                                 onClick {
-                                    requestFile(mimeTypes = listOf("image/*")) { file ->
-                                        // file is a platform-agnostic FileReference
-                                        val bytes = file.read()
-                                        uploadToServer(bytes)
-                                    }
+                                    // null if the user cancels; a FileReference works on every platform
+                                    val file = context.requestFile(listOf("image/*")) ?: return@onClick
+                                    uploadToServer(file)
                                 }
                             }
                         """.trimIndent()
@@ -176,12 +139,8 @@ object MultiplatformPage : DocPage {
                             button {
                                 text("Download Report")
                                 onClick {
-                                    val data = generateReport()
-                                    downloadFile(
-                                        filename = "report.pdf",
-                                        mimeType = "application/pdf",
-                                        data = data
-                                    )
+                                    val report: Blob = generateReport()
+                                    context.download("report.pdf", report)
                                 }
                             }
                         """.trimIndent()
@@ -191,27 +150,25 @@ object MultiplatformPage : DocPage {
                 space()
 
                 titledSection("Storage and Persistence") {
-                    text("Use KiteUI's storage APIs for cross-platform data persistence:")
+                    text("A PersistentProperty is a Signal saved to platform storage. Declare it at the top level:")
 
                     space()
-                    h5("Key-Value Storage:")
                     code {
                         content = """
-                            import com.lightningkite.kiteui.AppScope
+                            val darkMode = PersistentProperty("darkMode", false)
 
-                            // Save data
-                            AppScope.storage["user_id"] = "12345"
-                            AppScope.storage["theme"] = "dark"
+                            // Bind it like any Signal; the value survives restarts
+                            switch { checked bind darkMode }
+                        """.trimIndent()
+                    }
 
-                            // Retrieve data
-                            val userId = AppScope.storage["user_id"]
-                            val theme = AppScope.storage["theme"] ?: "light"
-
-                            // Storage maps to platform-specific mechanisms:
-                            // - Android: SharedPreferences
-                            // - iOS: UserDefaults
-                            // - Web: localStorage
-                            // - JVM: Properties file
+                    space()
+                    h5("Raw Key-Value Storage:")
+                    code {
+                        content = """
+                            PlatformStorage.set("user_id", "12345")
+                            val userId: String? = PlatformStorage.get("user_id")
+                            PlatformStorage.remove("user_id")
                         """.trimIndent()
                     }
                 }
@@ -219,24 +176,12 @@ object MultiplatformPage : DocPage {
                 space()
 
                 titledSection("Navigation Differences") {
-                    text("Platform-specific navigation patterns:")
+                    text("The same code navigates on every platform. On the web each page gets a URL and the browser's back button works; on Android the system back button pops the stack:")
 
                     space()
                     code {
                         content = """
-                            // Web: Full URL-based navigation
-                            when (Platform.current) {
-                                Platform.Web -> {
-                                    // Browser back button works automatically
-                                    // Deep linking just works
-                                    context.pageNavigator.navigate(DetailPage(id = "123"))
-                                }
-                                else -> {
-                                    // Mobile: Stack-based navigation
-                                    context.pageNavigator.navigate(DetailPage(id = "123"))
-                                    // Back button pops navigation stack
-                                }
-                            }
+                            context.pageNavigator.navigate(DetailPage(id = "123"))
                         """.trimIndent()
                     }
                 }
@@ -272,26 +217,25 @@ object MultiplatformPage : DocPage {
                     space()
                     code {
                         content = """
+                            val photo = Signal<ImageSource?>(null)
+
                             button {
                                 text("Take Photo")
                                 onClick {
-                                    requestCamera { photo ->
-                                        // photo is a FileReference
-                                        image {
-                                            source = photo.uri
-                                        }
-                                    }
+                                    val file = context.requestCaptureEnvironment() ?: return@onClick
+                                    photo.value = ImageLocal(file)
                                 }
                             }
 
                             button {
                                 text("Choose from Gallery")
                                 onClick {
-                                    requestFile(mimeTypes = listOf("image/*")) { image ->
-                                        processImage(image)
-                                    }
+                                    val file = context.requestFile(listOf("image/*")) ?: return@onClick
+                                    photo.value = ImageLocal(file)
                                 }
                             }
+
+                            image { ::source { photo() } }
                         """.trimIndent()
                     }
 
@@ -331,10 +275,10 @@ object MultiplatformPage : DocPage {
                                 text("Get Location")
                                 onClick {
                                     if (requestLocationPermission()) {
-                                        val location = getCurrentLocation()
-                                        toast("Location: ${'$'}location")
+                                        val position = context.getCurrentPosition()
+                                        context.toast("Location: ${'$'}{position.latitude}, ${'$'}{position.longitude}")
                                     } else {
-                                        toast("Permission denied")
+                                        context.toast("Permission denied")
                                     }
                                 }
                             }

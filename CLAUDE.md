@@ -58,7 +58,7 @@ This is a multi-module Gradle project:
 
 ### Testing
 
-See **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** for the full guide including prerequisites, gotchas, and how to write tests.
+See **[docs/testing.md](docs/testing.md)** for the full guide including prerequisites, gotchas, and how to write tests.
 
 ```bash
 # Fastest — no external tools needed
@@ -232,7 +232,7 @@ Theme switches should typically be applied to containers (`col`, `row`, `frame`,
 ## Platform Targets
 
 - **Android** - Min SDK varies, uses native Android views
-- **iOS** - Deployment target 14.0, uses CocoaPods
+- **iOS** - Deployment target 14.0, native dependencies via SwiftPM import (`swiftPMDependencies`)
 - **JVM** - Desktop/server support
 - **JS** - Web target with Vite bundling
 

@@ -28,22 +28,22 @@ object ImageElementPage: DocPage {
                 col {
                     sizeConstraints(height = 10.rem).image {
                         scaleType = ImageScaleType.Crop
-                        ::source { currentImage.await() }
+                        ::source { currentImage() }
                     }
                     row {
                         expanding.button {
                             text("Random")
                             onClick {
                                 currentImage.value =
-                                    ImageRemote("https://picsum.photos/seed/${Random.nextInt()}/640/480")
+                                    ImageRemote("https://picsum.photos/seed/${'$'}{Random.nextInt()}/640/480")
                             }
                         }
                         expanding.button {
                             text("Pick")
                             onClick {
-                                ExternalServices.requestFile(listOf("image/*")) {
-                                    if(it != null) currentImage.value = ImageLocal(it)
-                                }
+                                context.requestFile(listOf("image/*"))
+                                    ?.let(::ImageLocal)
+                                    ?.let { currentImage.value = it }
                             }
                         }
                     }

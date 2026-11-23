@@ -1,12 +1,13 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.utils.*
+import com.lightningkite.kiteui.models.TextFormat
+import com.lightningkite.kiteui.models.reformat
+import com.lightningkite.kiteui.models.reformatWithSelection
+import com.lightningkite.kiteui.models.toStringNoExponential
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.fail
 
 class GeneralFormatTest {
-    fun println(any: Any)  { /*suppress*/ }
     val testCases = listOf(
         "1234567",
         "12345678",
@@ -20,168 +21,50 @@ class GeneralFormatTest {
         "1,234.",
     )
 
-    @Test fun deleteComma() {
-        // "123,456"
-        numberAutocommaRepair("123,456", 4, 4, { println(it) }, { a, b -> println("$a, $b")})
-    }
-
     @Test
     fun editsKeepPosition() {
-        fun testOnString(string: String) {
-            repeat(string.length + 1) {
-                var post = ""
-                var postPos: Int = 0
-                var postPosB: Int = 0
-                println("--- $string $it Single")
-                println(string)
-                println("^".padStart(it + 1, ' '))
-                numberAutocommaRepair(
-                    string,
-                    selectionStart = it,
-                    setResult = { post = it; println(it) },
-                    setSelectionRange = { a, b ->
-                        postPos = a
-                        postPosB = b
-                        println("^".padStart(a + 1, ' ') + "^".repeat(postPosB - postPos))
-                    })
-                string.getOrNull(it)?.takeIf { it == '.' || it.isDigit() }?.let {
+        for (string in testCases) {
+            for (i in 0..string.length) {
+                val (post, selection) = TextFormat.Decimal.reformatWithSelection(string, i until i)
+                string.getOrNull(i)?.takeIf { it == '.' || it.isDigit() }?.let {
                     // Position should be before the comma
-                    if(post.getOrNull(postPos) == ',') postPos++
-                    assertEquals(it, post.getOrNull(postPos))
+                    var postPos = selection.first
+                    if (post.getOrNull(postPos) == ',') postPos++
+                    assertEquals(it, post.getOrNull(postPos), "$string at $i")
                 }
             }
-            repeat(string.length) {
-                var post = ""
-                var postPos: Int = 0
-                var postPosB: Int = 0
-                println("--- $string $it Span")
-                println(string)
-                println("^".padStart(it + 1, ' '))
-                numberAutocommaRepair(
-                    string,
-                    selectionStart = it,
-                    selectionEnd = it + 1,
-                    setResult = { post = it; println(it) },
-                    setSelectionRange = { a, b ->
-                        postPos = a
-                        postPosB = b
-                        println("^".padStart(a + 1, ' ') + "^".repeat(postPosB - postPos))
-                    })
-                string.getOrNull(it)?.takeIf { it == '.' || it.isDigit() }?.let {
-                    // Position should be before the comma
-                    if(post.getOrNull(postPos) == ',') postPos++
-                    assertEquals(it, post.getOrNull(postPos))
+            for (i in string.indices) {
+                val (post, selection) = TextFormat.Decimal.reformatWithSelection(string, i until i + 1)
+                string[i].takeIf { it == '.' || it.isDigit() }?.let {
+                    var postPos = selection.first
+                    if (post.getOrNull(postPos) == ',') postPos++
+                    assertEquals(it, post.getOrNull(postPos), "$string spanning $i")
                 }
             }
         }
-        testCases.forEach { testOnString(it) }
     }
 
     @Test
     fun insert() {
-        fun testOnString(string: String) {
-            repeat(string.length + 1) {
-                var post = ""
-                var postPos: Int = 0
-                var postPosB: Int = 0
-                println("---")
-                println(string)
-                println("^".padStart(it + 1, ' '))
-                numberAutocommaRepair(
-                    string.substring(0, it) + '0' + string.substring(it),
-                    selectionStart = it + 1,
-                    setResult = { post = it; println(it) },
-                    setSelectionRange = { a, b ->
-                        postPos = a
-                        postPosB = b
-                        println("^".padStart(a + 1, ' ') + "^".repeat(postPosB - postPos))
-                    })
-                assertEquals('0', post.substring(0, postPos).lastOrNull { it.isDigit() || it == '.' })
+        for (string in testCases) {
+            for (i in 0..string.length) {
+                val (post, selection) = TextFormat.Decimal.reformatWithSelection(string.substring(0, i) + '0' + string.substring(i), i + 1 until i + 1)
+                assertEquals('0', post.substring(0, selection.first).lastOrNull { it.isDigit() || it == '.' }, "$string at $i")
             }
         }
-        testCases.forEach { testOnString(it) }
     }
 
     @Test
-    fun testBackspace() {
-        fun testOnString(string: String) {
-            repeat(string.length + 1) {
-                var post = ""
-                var postPos: Int = 0
-                var postPosB: Int = 0
-                println("--- $string $it backspace")
-                println(string)
-                println("^".padStart(it + 1, ' '))
-                numberAutocommaBackspace(
-                    string,
-                    selectionStart = it,
-                    setResult = { post = it; println(it) },
-                    setSelectionRange = { a, b ->
-                        postPos = a
-                        postPosB = b
-                        println("^".padStart(a + 1, ' ') + "^".repeat(postPosB - postPos))
-                    })
-                string.getOrNull(it - 1)?.takeIf { it.isDigit() || it == '.' }?.let {
-                    if (post.contains(it)) fail()
-                }
-            }
-        }
-        testCases.forEach { testOnString(it) }
-    }
-
-    @Test
-    fun testDelete() {
-        fun testOnString(string: String) {
-            repeat(string.length + 1) {
-                var post = ""
-                var postPos: Int = 0
-                var postPosB: Int = 0
-                println("--- $string $it delete")
-                println(string)
-                println("^".padStart(it + 1, ' '))
-                numberAutocommaDelete(
-                    string,
-                    selectionStart = it,
-                    setResult = { post = it; println(it) },
-                    setSelectionRange = { a, b ->
-                        postPos = a
-                        postPosB = b
-                        println("^".padStart(a + 1, ' ') + "^".repeat(postPosB - postPos))
-                    })
-                string.getOrNull(it)?.takeIf { it.isDigit() || it == '.' }?.let {
-                    if (post.contains(it)) fail()
-                }
-            }
-        }
-        testCases.forEach { testOnString(it) }
-    }
-
-    @Test
-    fun testDeleteRange() {
-        fun testOnString(string: String) {
-            repeat(string.length) {
-                var post = ""
-                var postPos: Int = 0
-                var postPosB: Int = 0
-                println("--- $string $it delete range")
-                println(string)
-                println("^".padStart(it + 1, ' '))
-                numberAutocommaBackspace(
-                    string,
-                    selectionStart = it,
-                    selectionEnd = it + 1,
-                    setResult = { post = it; println(it) },
-                    setSelectionRange = { a, b ->
-                        postPos = a
-                        postPosB = b
-                        println("^".padStart(a + 1, ' ') + "^".repeat(postPosB - postPos))
-                    })
-                string.getOrNull(it)?.takeIf { it.isDigit() || it == '.' }?.let {
-                    if (post.contains(it)) fail()
-                }
-            }
-        }
-        testCases.forEach { testOnString(it) }
+    fun commas() {
+        assertEquals("-12,345.5", TextFormat.Decimal.format("-12345.5"))
+        assertEquals("1", TextFormat.Integer.format("1.234"))
+        assertEquals("-1,234", TextFormat.Integer.format("-1234.99"))
+        assertEquals("12", TextFormat.Integer.format("12."))
+        // A '-' must not be grouped with the digits, e.g. "-100" -> "-,100", when the digit count is a multiple of 3.
+        assertEquals("-100", TextFormat.Decimal.format("-100"))
+        assertEquals("-123,456,789", TextFormat.Integer.format("-123456789"))
+        assertEquals("-1,234.56", TextFormat.Decimal.reformat((-1234.56).toStringNoExponential()))
+        assertEquals("1,000,000", TextFormat.Decimal.reformat(1_000_000.0.toStringNoExponential()))
     }
 
     @Test
@@ -194,5 +77,10 @@ class GeneralFormatTest {
         assertEquals("1224.542871", 1224.5428713.toStringNoExponential())
         assertEquals("1224", 1224.0.toStringNoExponential())
         assertEquals("112348224342", 112348224342.0.toStringNoExponential())
+        assertEquals("0", 0.0.toStringNoExponential())
+        // Claude: toLong() drops the sign under 1 and rem(1) keeps it, which once gave "0.-5".
+        assertEquals("-0.5", (-0.5).toStringNoExponential())
+        assertEquals("-5", (-5.0).toStringNoExponential())
+        assertEquals("-1224.542871", (-1224.5428713).toStringNoExponential())
     }
 }

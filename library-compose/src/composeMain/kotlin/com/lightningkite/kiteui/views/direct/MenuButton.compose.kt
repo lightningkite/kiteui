@@ -12,7 +12,7 @@ import com.lightningkite.reactive.context.reactive
 public actual class MenuButton actual constructor(context: ElementContext) : NativeInteractiveContainerElement(context) {
     override val driverActions: AiDriver.Actions get() = super.driverActions + menuDriverActions(click = createMenu?.let { ::openAndBlock })
 
-    private val popover = Popover(source = this, anchor = this)
+    private val popover = AnchoredPopover(source = this, anchor = this)
     private var createMenu: (Frame.() -> Unit)? = null
 
     public actual fun opensMenu(createMenu: Frame.() -> Unit) {
@@ -33,6 +33,8 @@ public actual class MenuButton actual constructor(context: ElementContext) : Nat
         popover.open(preferredDirection, createMenu ?: return)
         popover.block()
     }
+
+    override val handCursor: Boolean get() = true
 
     override fun inputModifier(takesInput: Boolean): Modifier = Modifier.clickable(
         interactionSource = interactions.source,

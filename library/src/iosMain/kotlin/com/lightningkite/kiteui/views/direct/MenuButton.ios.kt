@@ -29,7 +29,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
         val openFn: () -> Unit = {
             var willRemove: Element? = null
             val f = overlayFrame
-            f.popoverWriter {
+            popoverWriter(f) {
                 willRemove?.let { f.removeChild(it) }
                 willRemove = null
             }.run {
@@ -52,7 +52,7 @@ public actual class MenuButton actual constructor(context: ElementContext): Nati
                     }
                     native.anchor = this@MenuButton.preferredDirection to this@MenuButton.native
                     onClick {
-                        closePopovers()
+                        context.currentPopover?.close()
                     }
                     themed(PopoverSemantic).frame {
                         createMenu()

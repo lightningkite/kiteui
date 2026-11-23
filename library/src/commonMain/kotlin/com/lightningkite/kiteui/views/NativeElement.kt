@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.DropTargetDelegate
-import com.lightningkite.kiteui.telemetry.TelemetryContext
 import com.lightningkite.kiteui.utils.OrderedKeyedList
 import com.lightningkite.reactive.context.StatusListener
 import com.lightningkite.reactive.context.onRemove
@@ -452,6 +451,15 @@ public abstract class NativeElementCommonCode internal constructor(override val 
 
     private val job = SupervisorJob()
 
+    private companion object {
+        // Claude: tearing down a page shuts down every element it built, and `job.cancel()` with no cause builds a
+        // JobCancellationException each time. On Kotlin/JS every Throwable captures a JS stack trace, and V8's
+        // capture cost grows with stack depth, so leaving one list-heavy page spent ~5 s in ~270k of these.
+        // Cancelling with a shared cause skips the construction. Safe to share: kotlinx never attaches
+        // suppressed exceptions to a CancellationException root cause, and children reuse the parent's cause.
+        val shutdownCause = CancellationException("Element shut down")
+    }
+
     override val coroutineContext: CoroutineContext = coroutineContextOf(
         job,
         CoroutineExceptionHandler { ctx, thr ->
@@ -480,7 +488,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
             override fun watchForegroundProcess(status: Reactive<*>): Release =
                 this@NativeElementCommonCode.watchForegroundProcess(status)
         },
-        TelemetryContext(element = asNativeElementOrFail())
+        context
     )
 
     public var fullyStarted: Boolean = false
@@ -501,7 +509,7 @@ public abstract class NativeElementCommonCode internal constructor(override val 
     @OverrideOnly
     override fun onShutdown() {
         if (isShutdown) return
-        job.cancel()
+        job.cancel(shutdownCause)
         isShutdown = true
         if (Element.Debugger.countInstances) Element.Debugger.recordShutdown(this)
         if (Element.Debugger.leakDetect) leakDetect()
@@ -633,7 +641,13 @@ public abstract class NativeElementCommonCode internal constructor(override val 
         private val processes = HashSet<Reactive<*>>()
 
         private var exceptionCount = 0
+        private val loadTracker = if (foreground) null else context.loadTracker
         private var notReadyCount = 0
+            set(value) {
+                if (field == 0 && value > 0) loadTracker?.startedLoading()
+                if (field > 0 && value == 0) loadTracker?.finishedLoading()
+                field = value
+            }
 
         private var releaseExceptionHandler: Release? = null
 
@@ -705,6 +719,8 @@ public abstract class NativeElementCommonCode internal constructor(override val 
 
             val release = status.addAndRunListener {
                 onMainThread {
+                    // A callback posted from another thread can land after release() already uncounted this process.
+                    if (status !in processes) return@onMainThread
                     val s = status.state.severity
                     if (prevSeverity != s) {    // severity changed
                         when (prevSeverity) {
