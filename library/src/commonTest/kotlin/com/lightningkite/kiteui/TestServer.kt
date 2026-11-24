@@ -38,6 +38,8 @@ internal object TestServer {
     const val retryAfterSeconds: Int = 7
     const val sessionPrefix: String = "session "
     const val dropCommand: String = "drop"
+    /** What `/cookie/set` stores, as it comes back in a `Cookie` header. */
+    const val testCookie: String = "kiteui-test=present"
 
     /** Matches the server's `/bytes/{count}` body. */
     fun deterministicBytes(count: Int): ByteArray = ByteArray(count) { (it % 251).toByte() }

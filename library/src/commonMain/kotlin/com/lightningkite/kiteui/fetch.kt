@@ -36,7 +36,8 @@ public suspend fun fetch(
     body: RequestBody? = null,
     onUploadProgress: ProgressCallback? = null,
     onDownloadProgress: ProgressCallback? = null,
-): RequestResponse = HttpFetcher.fetch(url, method, headers, body, onUploadProgress, onDownloadProgress)
+    webIncludeCredentials: Boolean = false,
+): RequestResponse = HttpFetcher.fetch(url, method, headers, body, onUploadProgress, onDownloadProgress, webIncludeCredentials)
 
 @Deprecated("Use webSocket, the proper spelling", ReplaceWith("webSocket")) public fun websocket(url: String): WebSocket = webSocket(url)
 public fun webSocket(url: String): WebSocket = HttpFetcher.Default.webSocket(url)

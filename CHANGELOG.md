@@ -127,6 +127,18 @@
 ### HTTP
 
 - `HttpHeaders.delete` is renamed to `remove`, matching Kotlin's collections. `delete` is deprecated.
+- **Android and iOS now keep cookies, like a browser.** A cookie a server sets is sent back on later requests it
+  matches (Domain, Path, Secure, expiry, through Ktor's `HttpCookies`), including after the app restarts. Cookies
+  without an expiry last until the app exits. They are kept in `SecurePlatformStorage`. Before this, native
+  requests never carried cookies, so any server that sets them now gets them back from every native app. The
+  server-side-rendering JVM target still keeps none: it serves many users from one process.
+- `fetch`, `connectivityFetch` and `HttpFetcher.fetch` take `webIncludeCredentials`, default `false`. On the web
+  it sends cookies with that cross-origin request (`XMLHttpRequest.withCredentials`), for an API on a sibling
+  subdomain or another port; the server must allow credentials for the page's origin. Other platforms ignore it.
+  A custom `HttpFetcher` must add the parameter to its `fetch` override and pass it on.
+- `SecurePlatformStorage`: `PlatformStorage` for secrets, on Android and iOS only: declared in a source set shared by the two, not in `commonMain`.
+  iOS stores in the Keychain, this device only; Android encrypts with an Android Keystore key into app-private
+  preferences. On Android a value restored from a backup onto another device can't be decrypted and reads as absent.
 
 ### WebSockets
 

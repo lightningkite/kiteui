@@ -29,6 +29,13 @@ public interface HttpFetcher {
         body: RequestBody? = null,
         onUploadProgress: ProgressCallback? = null,
         onDownloadProgress: ProgressCallback? = null,
+        /**
+         * Browser only: send cookies with a cross-origin request and accept the cookies its response sets
+         * (`XMLHttpRequest.withCredentials`). The server must answer with `Access-Control-Allow-Credentials: true`
+         * and its specific origin rather than `*`, or the browser rejects the response. Ignored elsewhere: Android and
+         * iOS keep cookies on every request, and server-side rendering on none.
+         */
+        webIncludeCredentials: Boolean = false,
     ): RequestResponse
 
     /** The socket is not opened until it is used; see [retryWebSocket] for the reconnecting form. */
@@ -63,9 +70,10 @@ public interface HttpFetcher {
             body: RequestBody?,
             onUploadProgress: ProgressCallback?,
             onDownloadProgress: ProgressCallback?,
+            webIncludeCredentials: Boolean,
         ): RequestResponse {
             var proceed: suspend (String, HttpMethod, HttpHeaders, RequestBody?) -> RequestResponse =
-                { u, m, h, b -> wraps.fetch(u, m, h, b, onUploadProgress, onDownloadProgress) }
+                { u, m, h, b -> wraps.fetch(u, m, h, b, onUploadProgress, onDownloadProgress, webIncludeCredentials) }
             for (interceptor in interceptors.snapshot().asReversed()) {
                 val next = proceed
                 proceed = { u, m, h, b -> interceptor.intercept(u, m, h, b, next) }
@@ -96,7 +104,8 @@ internal expect object PlatformHttpFetcher : HttpFetcher {
         headers: HttpHeaders,
         body: RequestBody?,
         onUploadProgress: ProgressCallback?,
-        onDownloadProgress: ProgressCallback?
+        onDownloadProgress: ProgressCallback?,
+        webIncludeCredentials: Boolean,
     ): RequestResponse
 
     override fun webSocket(url: String): WebSocket
@@ -146,6 +155,7 @@ private class HeaderCalculatingHttpFetcher(
         body: RequestBody?,
         onUploadProgress: ProgressCallback?,
         onDownloadProgress: ProgressCallback?,
+        webIncludeCredentials: Boolean,
     ): RequestResponse = wrapped.fetch(
         url = url,
         method = method,
@@ -153,6 +163,7 @@ private class HeaderCalculatingHttpFetcher(
         body = body,
         onUploadProgress = onUploadProgress,
         onDownloadProgress = onDownloadProgress,
+        webIncludeCredentials = webIncludeCredentials,
     )
 
     override fun webSocket(url: String): WebSocket = wrapped.webSocket(url)

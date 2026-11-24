@@ -39,6 +39,7 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
         body: RequestBody?,
         onUploadProgress: ProgressCallback?,
         onDownloadProgress: ProgressCallback?,
+        webIncludeCredentials: Boolean,
     ): RequestResponse {
         try {
             fetchLog.log("-> $method $url")

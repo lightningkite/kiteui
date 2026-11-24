@@ -67,6 +67,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version = { ref = "kto
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version = { ref = "ktorVersion" } }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version = { ref = "ktorVersion" } }
 ktor-client-okhttp-jvm = { module = "io.ktor:ktor-client-okhttp-jvm", version.ref = "ktorVersion" }
+ktor-client-mock-jvm = { module = "io.ktor:ktor-client-mock-jvm", version.ref = "ktorVersion" }
 ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version = { ref = "ktorVersion" } }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version = { ref = "ktorVersion" } }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version = { ref = "ktorVersion" } }

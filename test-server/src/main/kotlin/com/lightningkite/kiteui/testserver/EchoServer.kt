@@ -54,6 +54,8 @@ public fun Application.echoModule(cors: Boolean) {
         // A cross-origin page can only read the headers it is told it may; the tests assert on these.
         exposeHeader(HttpHeaders.RetryAfter)
         exposeHeader(ECHO_METHOD_HEADER)
+        // With this set, Ktor answers with the request's own origin instead of `*`, which a browser requires before it lets a credentialed response through.
+        allowCredentials = true
     }
     routing {
         get("/hello") { call.respondText(HELLO_BODY) }
@@ -75,6 +77,11 @@ public fun Application.echoModule(cors: Boolean) {
                     .sorted()
                     .joinToString("\n")
             )
+        }
+
+        get("/cookie/set") {
+            call.response.header(HttpHeaders.SetCookie, "$TEST_COOKIE; Path=/")
+            call.respondText("set")
         }
 
         // The status codes ConnectivityGate treats specially (429, 502, 503) plus ordinary failures.
@@ -134,6 +141,7 @@ public const val ECHO_METHOD_HEADER: String = "X-Echo-Method"
 public const val RETRY_AFTER_SECONDS: Int = 7
 public const val SESSION_PREFIX: String = "session "
 public const val DROP_COMMAND: String = "drop"
+public const val TEST_COOKIE: String = "kiteui-test=present"
 
 /** Content a test can predict byte for byte without the server and the test sharing a buffer. */
 public fun deterministicBytes(count: Int): ByteArray = ByteArray(count) { (it % 251).toByte() }

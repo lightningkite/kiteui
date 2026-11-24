@@ -260,9 +260,10 @@ public suspend fun connectivityFetch(
     method: HttpMethod = HttpMethod.GET,
     headers: suspend () -> HttpHeaders = { HttpHeaders() },
     body: RequestBody?,
+    webIncludeCredentials: Boolean = false,
 ): RequestResponse = Connectivity.fetchGate.runRequest("$method $url") {
     // headers() is called in here, not outside, so every retry carries a freshly computed set.
-    HttpFetcher.Default.fetch(url = url, method = method, headers = headers(), body = body)
+    HttpFetcher.Default.fetch(url = url, method = method, headers = headers(), body = body, webIncludeCredentials = webIncludeCredentials)
 }
 
 public class ConnectivityIssueSuppress(): CoroutineContext.Element {

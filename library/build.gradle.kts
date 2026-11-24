@@ -120,6 +120,7 @@ kotlin {
                 implementation(libs.junit)
                 implementation(libs.robolectric)
                 implementation(libs.roborazzi)
+                implementation(libs.ktor.client.mock.jvm)
                 implementation(project(":test-utilities"))
             }
         }
@@ -156,6 +157,17 @@ kotlin {
         val commonHtmlMain = create("commonHtmlMain") {
             dependsOn(commonMain)
         }
+
+        // Apps on a device: they have a secure store and keep cookies themselves. Neither applies to a browser, which
+        // keeps its own cookies, nor to server-side rendering, which serves many users from one process.
+        val mobileMain = create("mobileMain") {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(libs.ktor.client.core)
+            }
+        }
+        androidMain.dependsOn(mobileMain)
+        matching { it.name == "iosMain" }.configureEach { dependsOn(mobileMain) }
         val jsMain = getByName("jsMain") {
             dependsOn(commonHtmlMain)
         }

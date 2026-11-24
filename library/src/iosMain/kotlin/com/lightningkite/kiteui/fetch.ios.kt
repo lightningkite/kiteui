@@ -14,6 +14,7 @@ import io.ktor.client.engine.darwin.DarwinHttpRequestException
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
+import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -43,6 +44,7 @@ public val client: HttpClient = HttpClient {
     // Uses Ktor's default in-memory cache storage. Responses are therefore not retained across app
     // launches; a disk-backed CacheStorage has never been written for iOS.
     install(HttpCache)
+    install(HttpCookies) { storage = nativeCookies }
 }
 
 internal actual object PlatformHttpFetcher : HttpFetcher {
@@ -53,6 +55,7 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
         body: RequestBody?,
         onUploadProgress: ProgressCallback?,
         onDownloadProgress: ProgressCallback?,
+        webIncludeCredentials: Boolean,
     ): RequestResponse {
         return run {
             try {

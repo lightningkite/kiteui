@@ -43,6 +43,7 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
         body: RequestBody?,
         onUploadProgress: ProgressCallback?,
         onDownloadProgress: ProgressCallback?,
+        webIncludeCredentials: Boolean,
     ): RequestResponse {
         watchCspViolations()
         return suspendCancellableCoroutine { cont ->
@@ -62,6 +63,7 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
             }
             request.responseType = XMLHttpRequestResponseType.BLOB
             request.open(method.name, url)
+            request.withCredentials = webIncludeCredentials
             headers.forEach { key, value -> request.setRequestHeader(key, value) }
             request.onloadend = { ev ->
                 if(request.status >= 100)

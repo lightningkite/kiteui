@@ -12,6 +12,9 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
+import io.ktor.client.plugins.cookies.CookiesStorage
+import io.ktor.client.plugins.cookies.HttpCookies
+import com.lightningkite.kiteui.nativeCookies
 import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.lang.ref.WeakReference
@@ -26,6 +29,8 @@ public object AndroidAppContext {
     public val density: Float by lazy { res.displayMetrics.density }
     public val oneRem: Float by lazy { density * 14 }
     public var autoCompleteLayoutResource: Int = android.R.layout.simple_list_item_1
+    // A seam for host tests, which have neither the Keystore nor real preferences. Read once, when the client is made.
+    internal var cookiesStorage: CookiesStorage = nativeCookies
     internal val ktorClient: HttpClient by lazy {
         HttpClient(OkHttp) {
             install(WebSockets)
@@ -35,6 +40,7 @@ public object AndroidAppContext {
             install(HttpCache) {
                 publicStorage(FileStorage(applicationCtx.cacheDir.resolve("cachehttp")))
             }
+            install(HttpCookies) { storage = cookiesStorage }
             install(HttpTimeout) {
                 requestTimeoutMillis = 120_000
                 connectTimeoutMillis = 30_000

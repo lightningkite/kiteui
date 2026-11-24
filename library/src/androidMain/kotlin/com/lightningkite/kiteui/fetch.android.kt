@@ -50,6 +50,7 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
         body: RequestBody?,
         onUploadProgress: ProgressCallback?,
         onDownloadProgress: ProgressCallback?,
+        webIncludeCredentials: Boolean,
     ): RequestResponse {
         /**
          * There is currently a bug in android fetch where after a sleep or lock state it will

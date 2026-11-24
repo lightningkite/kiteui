@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import android.app.Application
 import android.content.Context
 import com.lightningkite.kiteui.views.AndroidAppContext
+import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +17,7 @@ import kotlinx.coroutines.test.setMain
  * The android.jar is stubbed in unit tests (`isReturnDefaultValues`), so a real Context is
  * unavailable without Robolectric. Android's networking reaches the wire through
  * [AndroidAppContext.ktorClient], whose only Context-dependent piece is HttpCache's directory, so
- * supplying a real one is all a unit test needs to exercise the actual client.
+ * supplying a real one, plus a cookie jar that needs no Keystore, is all a unit test needs to exercise the actual client.
  */
 private class FakeApplication : Application() {
     private val tempCacheDir: File by lazy {
@@ -30,6 +31,7 @@ private class FakeApplication : Application() {
 @OptIn(ExperimentalCoroutinesApi::class)
 internal actual fun runPlatformTest(block: suspend CoroutineScope.() -> Unit): TestResult = runBlocking {
     AndroidAppContext.applicationCtx = FakeApplication()
+    AndroidAppContext.cookiesStorage = AcceptAllCookiesStorage()
     // WebSocketWrapper delivers every callback on Dispatchers.Main, which a plain JVM test lacks.
     Dispatchers.setMain(Dispatchers.IO)
     try {
