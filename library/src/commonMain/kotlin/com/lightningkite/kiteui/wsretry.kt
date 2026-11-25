@@ -94,6 +94,9 @@ private class CurrentSocket {
     @Volatile var socket: WebSocket? = null
     @Volatile var id: Int = -1
     @Volatile var nextId: Int = 0
+
+    /** The keepalive loop for [socket]; cancelled whenever that socket is dropped, closed or replaced. */
+    @Volatile var pings: Job? = null
 }
 
 public fun retryWebSocket(
@@ -118,9 +121,9 @@ public fun retryWebSocket(
     suspend fun reset() {
         val id = current.nextId++
         current.id = id
+        current.pings?.cancel()
         current.socket?.close(1000, "Reconnecting")
         current.socket = underlyingSocket().also { socket ->
-            var pings: Job? = null
             // State changes before listeners hear about them: a listener that checks `connected` in onOpen (as
             // SharedCollectionUpdatesSocket does before sending its subscription) must see `true`, and `false` in onClose.
             socket.onOpen {
@@ -129,8 +132,8 @@ public fun retryWebSocket(
                 lastConnect = clockMillis()
                 lastPong = lastConnect
                 connectedSignal.value = true
-                pings?.cancel()
-                pings = AppScope.launch {
+                current.pings?.cancel()
+                current.pings = AppScope.launch {
                     while (true) {
                         delay(pingTime)
                         if (id != current.id) return@launch
@@ -165,7 +168,7 @@ public fun retryWebSocket(
             socket.onClose {
                 if (id != current.id) return@onClose
                 log?.log("$id onClose $it")
-                pings?.cancel()
+                current.pings?.cancel()
                 connectedSignal.value = false
                 onCloseList.toList().forEach { l -> l(it) }
             }
@@ -267,6 +270,9 @@ public fun retryWebSocket(
                         }
                     }
                 } else if (!wanted && isOn) {
+                    // Not left to the socket's onClose: that can be a long close handshake away, or
+                    // never come, and until then an unused socket would go on waking main to ping.
+                    current.pings?.cancel()
                     current.socket?.close(1000, "OK")
                 }
             }
@@ -277,6 +283,7 @@ public fun retryWebSocket(
             val closing = current.socket
             current.socket = null
             current.id = -1
+            current.pings?.cancel()
             closing?.close(code, reason)
             // Disowning the socket above also silences the onClose it is about to deliver, so the
             // closure has to be reported here.  Left unreported, `connected` stays true forever: the
