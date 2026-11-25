@@ -67,7 +67,7 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
             try {
                 attempt++
                 fetchLog.log("-> $method $url")
-                val response = client.request(url) {
+                val response = ioThenMain { client.request(url) {
                     this.method = when (method) {
                         HttpMethod.GET -> io.ktor.http.HttpMethod.Get
                         HttpMethod.POST -> io.ktor.http.HttpMethod.Post
@@ -108,15 +108,15 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
                     }
                     onUploadProgress?.let {
                         onUpload { a, b ->
-                            it(a, b ?: -1L)
+                            withContext(Dispatchers.Main) { it(a, b ?: -1L) }
                         }
                     }
                     onDownloadProgress?.let {
                         onDownload { a, b ->
-                            it(a, b ?: -1L)
+                            withContext(Dispatchers.Main) { it(a, b ?: -1L) }
                         }
                     }
-                }
+                } }
                 fetchLog.log("<- $method $url ${response.status}")
                 return RequestResponse(response)
             } catch (e: CancellationException) {
@@ -184,10 +184,9 @@ public actual class HttpHeaders internal constructor(public val map: MutableMap<
 public actual class RequestResponse(public val wraps: HttpResponse) {
     public actual val status: Short get() = wraps.status.value.toShort()
     public actual val ok: Boolean get() = wraps.status.isSuccess()
-    public actual suspend fun text(): String {
+    public actual suspend fun text(): String = ioThenMain {
         try {
-            val result = wraps.bodyAsText()
-            return result
+            wraps.bodyAsText()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -195,11 +194,10 @@ public actual class RequestResponse(public val wraps: HttpResponse) {
         }
     }
 
-    public actual suspend fun blob(): Blob {
+    public actual suspend fun blob(): Blob = ioThenMain {
         try {
-            val result = wraps.body<ByteArray>()
+            wraps.body<ByteArray>()
                 .let { Blob(it, wraps.contentType()?.toString() ?: "application/octet-stream") }
-            return result
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

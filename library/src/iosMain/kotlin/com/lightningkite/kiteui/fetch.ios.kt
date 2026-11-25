@@ -57,7 +57,7 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
         onDownloadProgress: ProgressCallback?,
         webIncludeCredentials: Boolean,
     ): RequestResponse {
-        return run {
+        return ioThenMain {
             try {
                 fetchLog.log("-> $method $url")
                 val response = run {
@@ -121,14 +121,14 @@ internal actual object PlatformHttpFetcher : HttpFetcher {
                         }
                         onUploadProgress?.let {
                             onUpload { a, b ->
-                                run {
+                                withContext(Dispatchers.Main) {
                                     it(a, b ?: -1)
                                 }
                             }
                         }
                         onDownloadProgress?.let {
                             onDownload { a, b ->
-                                run {
+                                withContext(Dispatchers.Main) {
                                     it(a, b ?: -1)
                                 }
                             }
@@ -206,9 +206,9 @@ public actual class HttpHeaders internal constructor(public val map: MutableMap<
 public actual class RequestResponse(public val wraps: HttpResponse) {
     public actual val status: Short get() = wraps.status.value.toShort()
     public actual val ok: Boolean get() = wraps.status.isSuccess()
-    public actual suspend fun text(): String {
+    public actual suspend fun text(): String = ioThenMain {
         try {
-            return wraps.bodyAsText()
+            wraps.bodyAsText()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -216,9 +216,9 @@ public actual class RequestResponse(public val wraps: HttpResponse) {
         }
     }
 
-    public actual suspend fun blob(): Blob {
+    public actual suspend fun blob(): Blob = ioThenMain {
         try {
-            return wraps.body<ByteArray>()
+            wraps.body<ByteArray>()
                 .let { Blob(it.toNSData(), wraps.contentType()?.toString() ?: "application/octet-stream") }
         } catch (e: CancellationException) {
             throw e

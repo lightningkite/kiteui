@@ -139,6 +139,12 @@
 - `SecurePlatformStorage`: `PlatformStorage` for secrets, on Android and iOS only: declared in a source set shared by the two, not in `commonMain`.
   iOS stores in the Keychain, this device only; Android encrypts with an Android Keystore key into app-private
   preferences. On Android a value restored from a backup onto another device can't be decrypted and reads as absent.
+- **On Android and iOS, code after a `fetch` and after reading its body (`text()`, `blob()`) carries on on the main
+  thread**, as it already did on the web. The request and the body read run on `Dispatchers.IO`. Callers on
+  `Dispatchers.Unconfined`, which includes every `rememberSuspending` and `remember`, used to continue on a
+  network engine thread and update reactive state from there, racing the main thread: views changed off
+  it, and bindings failed with spurious `ReactiveReentrancyException`s. Upload and download progress callbacks now
+  run on the main thread too, as on the JVM.
 
 ### WebSockets
 
