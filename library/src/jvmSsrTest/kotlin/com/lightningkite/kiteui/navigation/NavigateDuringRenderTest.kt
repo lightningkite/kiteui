@@ -8,6 +8,8 @@ import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.l2.navigatorView
 import com.lightningkite.reactive.context.await
+import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Signal
 import kotlinx.coroutines.launch
 import kotlin.test.Test
@@ -142,5 +144,52 @@ class NavigateDuringRenderTest {
             assertTextVisible("target page content")
         }
         kotlin.test.assertEquals(TargetPage, navigator.stack.value.lastOrNull())
+    }
+
+    // An auth guard: leave as soon as there is no session, on the first render or later.
+    private class GuardPage(val session: Signal<Int?>, val leaveTo: Page) : Page {
+        override fun ElementWriter.CanAddTheme.render() {
+            reactive {
+                if (session() == null) context.pageNavigator.reset(leaveTo)
+            }
+            text("guarded page content")
+        }
+    }
+
+    private class AwaitThenResetPage(val session: Signal<Int?>) : Page {
+        override fun ElementWriter.CanAddTheme.render() {
+            launch {
+                session.await()
+                context.pageNavigator.reset(TargetPage)
+            }
+            frame { centered.activityIndicator() }
+        }
+    }
+
+    @Test
+    fun guardResettingFromReactiveOnFirstRenderIsNotDropped() {
+        lateinit var navigator: PageNavigator
+        uiTest(content = {
+            navigator = PageNavigator { Routes(parsers = emptyList(), renderers = emptyMap()) }
+            navigatorView(navigator)
+        }) {
+            navigator.navigate(GuardPage(Signal(null), leaveTo = TargetPage))
+            waitForText("target page content")
+        }
+        kotlin.test.assertEquals(listOf<Page>(TargetPage), navigator.stack.value)
+    }
+
+    @Test
+    fun guardResettingToAnotherRedirectPageIsNotDropped() {
+        lateinit var navigator: PageNavigator
+        uiTest(content = {
+            navigator = PageNavigator { Routes(parsers = emptyList(), renderers = emptyMap()) }
+            navigatorView(navigator)
+        }) {
+            val session = Signal<Int?>(null)
+            navigator.navigate(GuardPage(session, leaveTo = AwaitThenResetPage(session)))
+            waitForText("target page content")
+        }
+        kotlin.test.assertEquals(listOf<Page>(TargetPage), navigator.stack.value)
     }
 }
