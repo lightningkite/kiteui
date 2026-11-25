@@ -45,7 +45,8 @@ class MenuButtonBackTest {
         Robolectric.buildActivity(TestActivity::class.java).use { controller ->
             controller.setup()
             val activity = controller.get()
-            val overlayFrame = activity.viewWriter.context.overlayFrame
+            // overlayFrame cascades from the frame that set it, so the activity's root context doesn't see it.
+            val overlayFrame = activity.menu.context.overlayFrame
             val before = overlayFrame.children.size
 
             activity.menu.native.performClick()
