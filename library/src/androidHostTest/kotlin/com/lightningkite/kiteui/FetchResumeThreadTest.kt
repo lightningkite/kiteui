@@ -16,8 +16,8 @@ import org.robolectric.Shadows.shadowOf
 import kotlin.test.assertEquals
 
 /**
- * Real OkHttp requests to the test server, checking where the caller carries on.  `rememberSuspending` runs
- * `Unconfined`, so it continues on whichever thread resumes it: an OkHttp engine thread, unless fetch hands back on main.
+ * Real OkHttp requests to the test server, checking where the caller carries on.  A caller on `Unconfined`
+ * continues on whichever thread resumes it: an OkHttp engine thread, unless fetch hands back on main.
  */
 @RunWith(RobolectricTestRunner::class)
 class FetchResumeThreadTest {

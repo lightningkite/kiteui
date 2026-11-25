@@ -141,10 +141,15 @@
   preferences. On Android a value restored from a backup onto another device can't be decrypted and reads as absent.
 - **On Android and iOS, code after a `fetch` and after reading its body (`text()`, `blob()`) carries on on the main
   thread**, as it already did on the web. The request and the body read run on `Dispatchers.IO`. Callers on
-  `Dispatchers.Unconfined`, which includes every `rememberSuspending` and `remember`, used to continue on a
-  network engine thread and update reactive state from there, racing the main thread: views changed off
-  it, and bindings failed with spurious `ReactiveReentrancyException`s. Upload and download progress callbacks now
-  run on the main thread too, as on the JVM.
+  `Dispatchers.Unconfined` used to continue on a network engine thread and update reactive state from there,
+  racing the main thread: views changed off it, and bindings failed with spurious `ReactiveReentrancyException`s.
+  Upload and download progress callbacks now run on the main thread too, as on the JVM.
+- **Reactive calculations stay on the main thread** (reactive). `remember`, `rememberSuspending` and their
+  `mutable` forms default to `Dispatchers.Main.immediate` instead of `Dispatchers.Unconfined`: they still run at
+  once when started on the main thread, but after any suspension (`delay`, `withContext(Dispatchers.Default)`, a
+  suspend call that resumes elsewhere) they carry on, and notify their listeners, on the main thread rather than on
+  whichever thread resumed them. Where there is no main dispatcher (a JVM server rendering pages) they run
+  `Unconfined` as before.
 
 ### WebSockets
 
@@ -191,9 +196,8 @@ against.
   - `Dispatchers.Main` is installed once per JVM and no longer reset after each test, so work a finished test left
     behind can't race the next test's `setMain`.
   - An exception that escapes a task on the UI thread, which would crash an app, fails the test.
-  - `rememberSuspending` and `remember` run `Unconfined` by default, so they carry on on whatever thread their
-    suspended call resumes on. A test fetcher should hand responses back on `Dispatchers.Main`, as `BulkFetcher`
-    does, or that code updates reactive state off the UI thread.
+  - `rememberSuspending` and `remember` carry on on the UI thread after a suspended call, as on a device (see
+    "Reactive calculations stay on the main thread" above).
 - **`uiTest` on JVM SSR now shuts its page down when the test ends** and waits for the page's coroutines to finish,
   so a finished test's page stops listening to sessions and live queries before the next test starts. It fails if
   they are still running 10 s after shutdown. It used to leave the whole element tree running.
