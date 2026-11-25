@@ -70,7 +70,8 @@ public fun Application.echoModule(cors: Boolean) {
         }
 
         // One "name: value" per line, sorted, so a test can assert the headers it asked for arrived.
-        get("/headers") {
+        // Also served inside the scoped cookie's Path, so a test can see which requests carry it.
+        for (path in listOf("/headers", "$SCOPED_COOKIE_PATH/headers")) get(path) {
             call.respondText(
                 call.request.headers.entries()
                     .flatMap { entry -> entry.value.map { "${entry.key.lowercase()}: $it" } }
@@ -82,6 +83,16 @@ public fun Application.echoModule(cors: Boolean) {
         get("/cookie/set") {
             call.response.header(HttpHeaders.SetCookie, "$TEST_COOKIE; Path=/")
             call.respondText("set")
+        }
+
+        // Shaped like a refresh token: outlives the app (Max-Age), goes only under its Path, hidden from page script.
+        get("$SCOPED_COOKIE_PATH/set") {
+            call.response.header(HttpHeaders.SetCookie, "$SCOPED_COOKIE; Path=$SCOPED_COOKIE_PATH; Max-Age=3600; HttpOnly")
+            call.respondText("set")
+        }
+        get("$SCOPED_COOKIE_PATH/clear") {
+            call.response.header(HttpHeaders.SetCookie, "${SCOPED_COOKIE.substringBefore('=')}=; Path=$SCOPED_COOKIE_PATH; Max-Age=0")
+            call.respondText("cleared")
         }
 
         // The status codes ConnectivityGate treats specially (429, 502, 503) plus ordinary failures.
@@ -142,6 +153,8 @@ public const val RETRY_AFTER_SECONDS: Int = 7
 public const val SESSION_PREFIX: String = "session "
 public const val DROP_COMMAND: String = "drop"
 public const val TEST_COOKIE: String = "kiteui-test=present"
+public const val SCOPED_COOKIE: String = "kiteui-scoped=present"
+public const val SCOPED_COOKIE_PATH: String = "/cookie/scoped"
 
 /** Content a test can predict byte for byte without the server and the test sharing a buffer. */
 public fun deterministicBytes(count: Int): ByteArray = ByteArray(count) { (it % 251).toByte() }

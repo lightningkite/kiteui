@@ -15,10 +15,11 @@ import kotlinx.serialization.json.Json
 
 /** The cookie jar for the native HTTP clients, which, like a browser's, keeps cookies through restarts. */
 internal val nativeCookies: PersistentCookiesStorage = PersistentCookiesStorage(
-    read = { SecurePlatformStorage.get("KiteUI.cookies") },
+    read = { SecurePlatformStorage.get(nativeCookiesKey) },
     // Usually a rotated refresh token: losing the write leaves only a revoked one.
-    write = { SecurePlatformStorage.set("KiteUI.cookies", it, ensureOnDisk = true) },
+    write = { SecurePlatformStorage.set(nativeCookiesKey, it, ensureOnDisk = true) },
 )
+internal const val nativeCookiesKey: String = "KiteUI.cookies"
 
 /**
  * Ktor's [io.ktor.client.plugins.cookies.AcceptAllCookiesStorage], but written out through [write] on every change

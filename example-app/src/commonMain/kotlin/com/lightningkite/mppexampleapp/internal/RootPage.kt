@@ -143,6 +143,7 @@ object RootPage : Page {
                 linkPage { DataLoadingExamplePage }
                 linkPage { WebSocketPage }
                 linkPage { ExternalServicesPage }
+                linkPage { SecureStorageAndCookiesPage }
                 linkPage { SsrResourceExamplePage() }
 
                 sectionLabel("Reactivity & State")

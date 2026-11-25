@@ -99,6 +99,13 @@ kotlin {
         val androidMain = getByName("androidMain") {
         }
 
+        // Android and iOS, matching :library's mobileMain, where SecurePlatformStorage lives.
+        val mobileMain = create("mobileMain") {
+            dependsOn(commonMain)
+        }
+        androidMain.dependsOn(mobileMain)
+        matching { it.name == "iosMain" }.configureEach { dependsOn(mobileMain) }
+
         // Opt in across the whole iOS hierarchy rather than on the native compilations. The
         // shared iosMain metadata compilation is not a KotlinNativeTarget compilation, so a
         // target-level opt-in leaves compileIosMainKotlinMetadata without it. Kotlin also

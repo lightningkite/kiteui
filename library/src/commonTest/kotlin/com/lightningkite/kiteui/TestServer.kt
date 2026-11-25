@@ -40,6 +40,9 @@ internal object TestServer {
     const val dropCommand: String = "drop"
     /** What `/cookie/set` stores, as it comes back in a `Cookie` header. */
     const val testCookie: String = "kiteui-test=present"
+    /** What `/cookie/scoped/set` stores: sent back only under [scopedCookiePath], and kept across restarts. */
+    const val scopedCookie: String = "kiteui-scoped=present"
+    const val scopedCookiePath: String = "/cookie/scoped"
 
     /** Matches the server's `/bytes/{count}` body. */
     fun deterministicBytes(count: Int): ByteArray = ByteArray(count) { (it % 251).toByte() }

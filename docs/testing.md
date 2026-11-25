@@ -174,6 +174,8 @@ fun readsBody() = networkTest {
 
 The tests talk to a local echo server (`:test-server`) that `library/build.gradle.kts` starts once per build and every test task shares.  `TestServer` lists its addresses: `http`, `ws`, `refused` (nothing listening), and `httpWithoutCors` (for `jsTest`).  To add an endpoint, add it to `test-server/.../EchoServer.kt` and mirror any constant the tests assert on in `TestServer`.  If port 18787 is taken, pass `-Pkiteui.testServerPort=<port>`.
 
+What a host test can't reach, the Android Keystore and the real client on a device, is in `library/src/androidDeviceTest`: run `./gradlew :library:connectedAndroidDeviceTest` with an emulator running, and it reaches the same echo server as `10.0.2.2`.  To try the example app's "Secure storage & cookies" page by hand, start the server with `./gradlew :test-server:run`.
+
 ## See also
 
 - [AI driver](ai-driver.md): the command protocol behind `UiTestScope`

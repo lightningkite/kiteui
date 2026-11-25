@@ -45,6 +45,10 @@ kotlin {
             // defaults is scoped to unit tests; instrumented and Robolectric tests are unaffected.
             isReturnDefaultValues = true
         }
+        // For what a host test can't reach: the Android Keystore, and the real client over a real socket.
+        withDeviceTest {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
@@ -113,6 +117,14 @@ kotlin {
                 api(libs.media3.common)
                 api(libs.androidxAutofill)
                 api(libs.exifinterface)
+            }
+        }
+        getByName("androidDeviceTest") {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.junit)
+                implementation(libs.androidx.test.runner)
+                implementation(libs.androidx.test.monitor)
             }
         }
         val androidHostTest = getByName("androidHostTest") {
@@ -307,13 +319,15 @@ val generateTestServerPort = tasks.register("generateTestServerPort") {
     }
 }
 kotlin.sourceSets.named("commonTest") { kotlin.srcDir(generateTestServerPort) }
+kotlin.sourceSets.named("androidDeviceTest") { kotlin.srcDir(generateTestServerPort) }
 
 val echoServer = gradle.sharedServices.registerIfAbsent("kiteuiEchoServer", EchoServerService::class) {
     parameters.classpath.from(echoServerClasspath)
     parameters.port.set(testServerPort)
 }
 
-tasks.withType<AbstractTestTask>().configureEach {
+// The device tests are not an AbstractTestTask, but reach the same server, through the emulator's alias for the host.
+tasks.matching { it is AbstractTestTask || it.name == "connectedAndroidDeviceTest" }.configureEach {
     dependsOn(echoServerClasspath)
     usesService(echoServer)
     doFirst { echoServer.get().ensureRunning() }
