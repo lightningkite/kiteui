@@ -166,6 +166,16 @@ kotlin {
             }
         }
 
+        // What the targets that reach the network through Ktor's OkHttp engine share.
+        val okHttpMain = create("okHttpMain") {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
+        }
+        commonJvmMain.dependsOn(okHttpMain)
+        androidMain.dependsOn(okHttpMain)
+
         val commonHtmlMain = create("commonHtmlMain") {
             dependsOn(commonMain)
         }

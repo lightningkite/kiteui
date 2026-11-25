@@ -31,6 +31,14 @@ internal object TestServer {
 
     private const val refusedPort: Int = TEST_SERVER_PORT + 2
 
+    /** Accepts the connection and never answers, so the socket stays connecting; see [stallState]. */
+    fun stalledWs(id: String): String = "ws://127.0.0.1:${TEST_SERVER_PORT + 3}/$id"
+
+    /** What the server knows of the connection to [stalledWs] with this [id]: one of the `stall*` states. */
+    suspend fun stallState(id: String): String = fetch("$http/stalled/$id").text()
+    const val stallConnecting: String = "connecting"
+    const val stallAbandoned: String = "abandoned"
+
     // Mirrors of what the server answers. Duplicated rather than shared because the server is a JVM
     // module and these tests compile for four targets; keep them in step with :test-server.
     const val helloBody: String = "hello, kiteui"

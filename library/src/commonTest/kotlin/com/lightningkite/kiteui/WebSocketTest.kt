@@ -4,8 +4,11 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
 
 /**
  * What [HttpFetcher.Platform.webSocket] must do identically on every platform, checked against a real server.
@@ -64,6 +67,34 @@ class WebSocketTest {
         withSocket(TestServer.refusedWs, waitForOpen = false) { socket ->
             socket.closed.await()
         }
+    }
+
+    /**
+     * The browser's rule for close() while CONNECTING, which every platform follows: the handshake is
+     * abandoned rather than left to finish or time out, and one abnormal close (1006) is reported, with
+     * nothing after it. A connect left running reports its own close whenever it ends, long after the
+     * caller has moved on.
+     */
+    @Test
+    fun closingBeforeOpenAbandonsTheConnect() = networkTest {
+        suspend fun awaitStall(id: String, state: String) {
+            while (TestServer.stallState(id) != state) delay(50)
+        }
+
+        val id = "close-before-open-${Random.nextLong().toULong()}"
+        val socket = webSocket(TestServer.stalledWs(id))
+        val events = Channel<String>(Channel.UNLIMITED)
+        socket.onOpen { events.trySend("open") }
+        socket.onClose { events.trySend("close $it") }
+        awaitStall(id, TestServer.stallConnecting)
+
+        socket.close(1000, "never mind")
+        // Well inside the handshake timeouts (OkHttp's 10 seconds at the shortest), so the attempt
+        // cannot simply have run out on its own.
+        withTimeout(3.seconds) { awaitStall(id, TestServer.stallAbandoned) }
+        assertEquals("close 1006", events.receive())
+        delay(1.seconds)
+        assertEquals(null, events.tryReceive().getOrNull())
     }
 
     /** Sockets must not share state; two at once is ordinary in an app with several live queries. */

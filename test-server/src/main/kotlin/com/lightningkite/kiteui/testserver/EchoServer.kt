@@ -28,7 +28,13 @@ import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
+import java.io.IOException
+import java.net.InetAddress
+import java.net.ServerSocket
+import java.net.SocketException
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.thread
 import kotlinx.io.readByteArray
 
 /**
@@ -131,6 +137,10 @@ public fun Application.echoModule(cors: Boolean) {
             close(CloseReason(code, call.request.queryParameters["reason"] ?: ""))
         }
 
+        get("/stalled/{id}") {
+            call.respondText(stalledConnections[call.parameters["id"]!!] ?: STALL_UNSEEN)
+        }
+
         // Announces which connection this is, then hangs up on request. Between them a client can
         // tell an established connection from a re-established one, which is what a reconnect is.
         webSocket("/ws/session") {
@@ -160,6 +170,42 @@ public const val SCOPED_COOKIE_PATH: String = "/cookie/scoped"
 public fun deterministicBytes(count: Int): ByteArray = ByteArray(count) { (it % 251).toByte() }
 
 private val sessions = AtomicInteger(0)
+
+public const val STALL_UNSEEN: String = "unseen"
+public const val STALL_CONNECTING: String = "connecting"
+public const val STALL_ABANDONED: String = "abandoned"
+
+/** By the id in each request's path, whether the client is still waiting; served at `/stalled/{id}`. */
+private val stalledConnections = ConcurrentHashMap<String, String>()
+
+/**
+ * Accepts connections on [port] and never answers them, so a client's WebSocket stays in its opening
+ * handshake. Records when the client hangs up, which is how a test sees that a connect was abandoned
+ * rather than left running.
+ */
+public fun startStallServer(port: Int): ServerSocket {
+    val server = ServerSocket(port, 50, InetAddress.getByName(LOOPBACK))
+    thread(isDaemon = true) {
+        while (!server.isClosed) {
+            val connection = try { server.accept() } catch (e: SocketException) { break }
+            thread(isDaemon = true) {
+                connection.use {
+                    val reader = it.getInputStream().bufferedReader()
+                    // "GET /{id} HTTP/1.1"
+                    val id = reader.readLine().split(" ")[1].removePrefix("/")
+                    stalledConnections[id] = STALL_CONNECTING
+                    try {
+                        while (reader.read() != -1) {}
+                    } catch (e: IOException) {
+                        // A reset is as much a hang-up as an orderly close.
+                    }
+                    stalledConnections[id] = STALL_ABANDONED
+                }
+            }
+        }
+    }
+    return server
+}
 
 /** Starts the server on [port]; the caller stops the returned engine. */
 public fun startEchoServer(port: Int, cors: Boolean): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration> =

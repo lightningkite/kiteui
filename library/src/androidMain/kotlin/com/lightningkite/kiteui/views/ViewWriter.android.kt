@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
+import com.lightningkite.kiteui.CloseAbortsHandshakeWebSocketFactory
 import com.lightningkite.kiteui.KiteUiActivity
 import com.lightningkite.kiteui.userAgent
 import io.ktor.client.HttpClient
@@ -22,6 +23,9 @@ import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
+import okhttp3.OkHttpClient
 
 public object AndroidAppContext {
     public lateinit var applicationCtx: Context
@@ -32,7 +36,16 @@ public object AndroidAppContext {
     // A seam for host tests, which have neither the Keystore nor real preferences. Read once, when the client is made.
     internal var cookiesStorage: CookiesStorage = nativeCookies
     internal val ktorClient: HttpClient by lazy {
+        val connectTimeout = 30.seconds
+        val socketTimeout = 120.seconds
+        // The sockets' handshakes are made by this client rather than one Ktor derives from HttpTimeout, so it is given the same timeouts.
+        val webSocketClient = OkHttpClient.Builder()
+            .connectTimeout(connectTimeout.toJavaDuration())
+            .readTimeout(socketTimeout.toJavaDuration())
+            .writeTimeout(socketTimeout.toJavaDuration())
+            .build()
         HttpClient(OkHttp) {
+            engine { webSocketFactory = CloseAbortsHandshakeWebSocketFactory(webSocketClient) }
             install(WebSockets)
             install(UserAgent) {
                 agent = com.lightningkite.kiteui.Platform.userAgent
@@ -43,8 +56,8 @@ public object AndroidAppContext {
             install(HttpCookies) { storage = cookiesStorage }
             install(HttpTimeout) {
                 requestTimeoutMillis = 120_000
-                connectTimeoutMillis = 30_000
-                socketTimeoutMillis = 120_000
+                connectTimeoutMillis = connectTimeout.inWholeMilliseconds
+                socketTimeoutMillis = socketTimeout.inWholeMilliseconds
             }
         }
     }

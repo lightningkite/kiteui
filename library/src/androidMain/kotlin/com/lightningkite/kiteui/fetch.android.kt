@@ -26,6 +26,7 @@ import javax.net.ssl.SSLException
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -252,9 +253,21 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
         onBinaryMessage.add { assertMainThread() }
     }
 
+    // Main thread only, like the callbacks.
+    private var opened = false
+    private var closeReported = false
+
+    private fun reportClose(code: Short) {
+        if (closeReported) return
+        closeReported = true
+        onClose.forEach { it(code) }
+    }
+
+    private val connection: Job
+
     init {
         @Suppress("OPT_IN_USAGE")
-        AppScope.launch(Dispatchers.IO) {
+        connection = AppScope.launch(Dispatchers.IO) {
             try {
                 // Retry on UnknownHostException, same Android DNS bug as HTTP fetch
                 // https://github.com/square/okhttp/issues/8200
@@ -266,6 +279,7 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
                         client.webSocket(url) {
                             attempt = 0 // Reset on successful connection
                             withContext(Dispatchers.Main) {
+                                opened = true
                                 onOpen.forEach { it() }
                             }
                             launch {
@@ -316,7 +330,7 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
                             // Null only when the connection ended without a handshake at all.
                             val code = closeReason.await()?.code ?: 0
                             withContext(Dispatchers.Main) {
-                                onClose.forEach { it(code) }
+                                reportClose(code)
                             }
                         }
                         break // Normal exit from webSocket block, don't retry
@@ -335,7 +349,7 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
             } catch(e: Exception) {
                 fetchLog.log("WebSocket connection failed: ${e::class.simpleName}: ${e.message}")
                 withContext(Dispatchers.Main) {
-                    onClose.forEach { it(0) }
+                    reportClose(0)
                 }
             }
         }
@@ -343,7 +357,14 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
 
     override fun close(code: Short, reason: String) {
         stayOn = false
-        closeReason.trySend(CloseReason(code, reason))
+        if (opened) {
+            closeReason.trySend(CloseReason(code, reason))
+        } else {
+            // As a browser does for close() while CONNECTING: abandon the handshake and report an
+            // abnormal close now, rather than let the attempt run on and report its own end later.
+            connection.cancel()
+            AppScope.launch(Dispatchers.Main) { reportClose(1006) }
+        }
     }
 
     override fun send(data: String) {

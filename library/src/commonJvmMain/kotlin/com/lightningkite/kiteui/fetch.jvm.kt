@@ -20,11 +20,13 @@ import javax.net.ssl.SSLException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 
 
 public val client: HttpClient by lazy { webSocketClient }
@@ -214,12 +216,25 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
         onBinaryMessage.add { assertMainThread() }
     }
 
+    // Main thread only, like the callbacks.
+    private var opened = false
+    private var closeReported = false
+
+    private fun reportClose(code: Short) {
+        if (closeReported) return
+        closeReported = true
+        onClose.forEach { it(code) }
+    }
+
+    private val connection: Job
+
     init {
         @Suppress("OPT_IN_USAGE")
-        AppScope.launch(Dispatchers.IO) {
+        connection = AppScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
                     withContext(Dispatchers.Main) {
+                        opened = true
                         onOpen.forEach { it() }
                     }
                     launch {
@@ -270,7 +285,7 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
                     // Null only when the connection ended without a handshake at all.
                     val code = closeReason.await()?.code ?: 0
                     withContext(Dispatchers.Main) {
-                        onClose.forEach { it(code) }
+                        reportClose(code)
                     }
                 }
             } catch (e: CancellationException) {
@@ -278,7 +293,7 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
             } catch (e: Exception) {
                 fetchLog.log("WebSocket connection failed: ${e::class.simpleName}: ${e.message}")
                 withContext(Dispatchers.Main) {
-                    onClose.forEach { it(0) }
+                    reportClose(0)
                 }
             }
         }
@@ -286,7 +301,14 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
 
     override fun close(code: Short, reason: String) {
         stayOn = false
-        closeReason.trySend(CloseReason(code, reason))
+        if (opened) {
+            closeReason.trySend(CloseReason(code, reason))
+        } else {
+            // As a browser does for close() while CONNECTING: abandon the handshake and report an
+            // abnormal close now, rather than let the attempt run on and report its own end later.
+            connection.cancel()
+            AppScope.launch(Dispatchers.Main) { reportClose(1006) }
+        }
     }
 
     override fun send(data: String) {
@@ -335,11 +357,11 @@ public actual fun FileReference.fileName(): String = file.toString().substringAf
 public actual class Blob(public val data: ByteArray, public val type: String)
 
 public val webSocketClient: HttpClient by lazy {
+    val okHttp = OkHttpClient.Builder().followRedirects(true).build()
     HttpClient(OkHttp) {
         engine {
-            config {
-                followRedirects(true)
-            }
+            preconfigured = okHttp
+            webSocketFactory = CloseAbortsHandshakeWebSocketFactory(okHttp)
         }
         install(WebSockets) {
             pingInterval = 20_000.milliseconds

@@ -5,7 +5,8 @@ package com.lightningkite.kiteui.testserver
  *
  * Two servers on adjacent ports: the first sends CORS headers, the second deliberately does not, so
  * that a browser test can exercise the "the server answered but the browser refused" path that
- * [com.lightningkite.kiteui.RequestBlockedException] reports.
+ * [com.lightningkite.kiteui.RequestBlockedException] reports. A third port, after the one tests keep
+ * free to be refused, is the [startStallServer] that never answers.
  *
  * Prints `LISTENING <port>` once both are accepting connections; the build waits for that line
  * rather than polling, so no test starts before the server can answer it.
@@ -19,9 +20,11 @@ public fun main(args: Array<String>) {
         startEchoServer(port, cors = true),
         startEchoServer(port + 1, cors = false),
     )
+    val stallServer = startStallServer(port + 3)
     println("LISTENING $port")
     System.out.flush()
     @Suppress("ControlFlowWithEmptyBody")
     while (System.`in`.read() != -1) {}
     servers.forEach { it.stop(0, 0) }
+    stallServer.close()
 }
