@@ -2,45 +2,51 @@ package com.lightningkite.kiteui
 
 import kotlin.concurrent.Volatile
 import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.concurrent.atomics.incrementAndFetch
+import kotlin.concurrent.atomics.update
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
 /**
  * [retryWebSocket]'s keepalive runs on main, so a socket nobody uses any more must stop waking it.
  *
- * Main is replaced by a dispatcher that counts what is dispatched to it; after the socket is closed
- * or released, that count must stand still.  Real time rather than virtual, because the ping loop
- * judges silence by [clockMillis].
+ * Main is replaced by a dispatcher that remembers every coroutine dispatched to it; once the socket is
+ * closed or released, none of them may still be alive.  Asking the coroutines rather than counting
+ * dispatches keeps stray timers from other tests out of it.  Real time rather than virtual, because
+ * the ping loop judges silence by [clockMillis].
  */
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalAtomicApi::class)
 class RetryWebSocketPingTest {
 
-    private val mainWork = AtomicInt(0)
-    private val countingMain = object : CoroutineDispatcher() {
+    private val mainJobs = AtomicReference(setOf<Job>())
+    private val recordingMain = object : CoroutineDispatcher() {
         val inner = Dispatchers.Default.limitedParallelism(1)
         override fun dispatch(context: CoroutineContext, block: Runnable) {
-            mainWork.incrementAndFetch()
+            context[Job]?.let { job -> mainJobs.update { it + job } }
             inner.dispatch(context, block)
         }
     }
+    private fun aliveOnMain() = mainJobs.load().filter { it.isActive }
 
-    @BeforeTest fun replaceMain() { Dispatchers.setMain(countingMain) }
+    @BeforeTest fun replaceMain() { Dispatchers.setMain(recordingMain) }
     @AfterTest fun restoreMain() { Dispatchers.resetMain() }
 
     /**
@@ -72,10 +78,8 @@ class RetryWebSocketPingTest {
         gate = ConnectivityGate(),
     )
 
-    private suspend fun realDelay(ms: Long) = withContext(Dispatchers.Default) { delay(ms) }
-
-    /** Opens the next socket [retryWebSocket] dials, and returns just after it has been pinged. */
-    private suspend fun openAndAwaitPing(socket: RetryWebSocket): FakeSocket = withContext(Dispatchers.Default) {
+    /** Opens the next socket [retryWebSocket] dials, and returns once it has been pinged. */
+    private suspend fun openAndAwaitPings(socket: RetryWebSocket): FakeSocket = withContext(Dispatchers.Default) {
         withTimeout(5_000) {
             val fake = sockets.receive()
             // Two listen for the open: retryWebSocket's own, and the attempt waiting for it to connect.
@@ -83,55 +87,46 @@ class RetryWebSocketPingTest {
             withContext(Dispatchers.Main) { listeners.forEach { it() } }
             assertEquals(true, socket.connected.state.getOrNull())
             while (fake.pings.load() < 2) delay(1)
+            assertTrue(aliveOnMain().isNotEmpty(), "the ping loop should be running on main")
             fake
         }
-    }
-
-    /**
-     * Called just after a ping, so a loop that survived would wake well inside the window.  The short
-     * settle lets the cancelled loop's own completion through first.
-     */
-    private suspend fun assertMainStaysQuiet() {
-        realDelay(pingTime / 5)
-        val before = mainWork.load()
-        realDelay(pingTime * 5)
-        assertEquals(before, mainWork.load(), "work was still being scheduled on main")
     }
 
     @Test fun releasingTheLastUseStopsThePings() = runTest {
         val socket = retrying()
         val release = socket.beginUse()
-        val fake = openAndAwaitPing(socket)
+        val fake = openAndAwaitPings(socket)
 
         release()
         // Releasing is acted on off main, after release() returns.
         withContext(Dispatchers.Default) { withTimeout(5_000) { while (!fake.closed) delay(1) } }
-        assertMainStaysQuiet()
+        assertEquals(listOf(), aliveOnMain(), "still running on main after the last use was released")
     }
 
     @Test fun closingStopsThePings() = runTest {
         val socket = retrying()
         val release = socket.beginUse()
-        openAndAwaitPing(socket)
+        openAndAwaitPings(socket)
 
         release()
         socket.close(1000, "done")
-        assertMainStaysQuiet()
+        assertEquals(listOf(), aliveOnMain(), "still running on main after close")
     }
 
     /** Still in use, a close only drops this connection: the next one is dialed and pinged like the first. */
     @Test fun closingWhileInUseRedialsAndPingsTheNewSocket() = runTest {
         val socket = retrying()
         val release = socket.beginUse()
-        val first = openAndAwaitPing(socket)
+        val first = openAndAwaitPings(socket)
 
         socket.close(1000, "drop")
+        assertEquals(listOf(), aliveOnMain(), "the dropped socket's ping loop is still running")
         val pingsOnFirst = first.pings.load()
-        openAndAwaitPing(socket)
-        assertEquals(pingsOnFirst, first.pings.load(), "the dropped socket was still being pinged")
+        openAndAwaitPings(socket)
+        assertEquals(pingsOnFirst, first.pings.load(), "the dropped socket was pinged")
 
         release()
         socket.close(1000, "done")
-        assertMainStaysQuiet()
+        assertEquals(listOf(), aliveOnMain(), "still running on main after close")
     }
 }
